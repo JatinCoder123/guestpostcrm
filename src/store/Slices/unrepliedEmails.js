@@ -47,7 +47,7 @@ export const getUnrepliedEmail = (filter, email) => {
       console.log(`Unreplied emails`, data);
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
-          count: data.data_count,
+          count: data.data_count ?? 0,
           emails: data.data,
         })
       );

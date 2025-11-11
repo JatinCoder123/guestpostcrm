@@ -47,7 +47,7 @@ export const getUnansweredEmails = (filter, email) => {
       console.log("Unanswered Emails", data);
       dispatch(
         unansweredSlice.actions.getEmailSucess({
-          count: data.data_count,
+          count: data.data_count ?? 0,
           emails: data.data,
         })
       );
