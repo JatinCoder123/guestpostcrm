@@ -5,76 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 
 export function UnrepliedEmailsPage() {
-  const emails = [
-    {
-      date: "Today at 07:58 AM",
-      sender: "kartikey@outrightlysystems.org",
-      subject: "i want guestpost insertion",
-      mailerSummary: "-",
-    },
-    {
-      date: "Today at 06:45 AM",
-      sender: "john.doe@example.com",
-      subject: "Guest post opportunity for tech blog",
-      mailerSummary: "-",
-    },
-    {
-      date: "Yesterday at 11:30 PM",
-      sender: "sarah.marketing@webagency.com",
-      subject: "Partnership proposal - Guest posting",
-      mailerSummary: "-",
-    },
-    {
-      date: "Yesterday at 09:15 PM",
-      sender: "alex.content@digitalmarketing.io",
-      subject: "Interested in guest post collaboration",
-      mailerSummary: "-",
-    },
-    {
-      date: "Yesterday at 05:20 PM",
-      sender: "michael.seo@seoexperts.com",
-      subject: "Link building and guest post inquiry",
-      mailerSummary: "-",
-    },
-    {
-      date: "2 days ago at 03:45 PM",
-      sender: "emma.blogger@contentcreators.net",
-      subject: "Guest blogging opportunity",
-      mailerSummary: "-",
-    },
-    {
-      date: "2 days ago at 01:20 PM",
-      sender: "david.outreach@linkbuilding.co",
-      subject: "Premium guest post placement",
-      mailerSummary: "-",
-    },
-    {
-      date: "2 days ago at 11:00 AM",
-      sender: "lisa.marketing@digitalboost.com",
-      subject: "Quick question about guest posting",
-      mailerSummary: "-",
-    },
-    {
-      date: "3 days ago at 04:30 PM",
-      sender: "robert.seo@rankingpro.com",
-      subject: "Backlink exchange proposal",
-      mailerSummary: "-",
-    },
-    {
-      date: "3 days ago at 02:15 PM",
-      sender: "jennifer.content@blognetwork.io",
-      subject: "Guest post package inquiry",
-      mailerSummary: "-",
-    },
-  ];
+  
   const dispatch = useDispatch();
-  const { count } = useSelector((state) => state.unreplied);
-  const { email } = useSelector((state) => state.ladger);
-  useEffect(() => {
-    if (email) {
-      dispatch(getUnrepliedEmail());
-    }
-  }, [email]);
+  const { count,emails } = useSelector((state) => state.unreplied);
+  
   return (
     <div className="p-6">
       {/* Welcome Header */}
@@ -126,21 +60,21 @@ export function UnrepliedEmailsPage() {
               </tr>
             </thead>
             <tbody>
-              {emails.map((email, index) => (
+              {emails.map((email) => (
                 <tr
-                  key={index}
+                  key={email.thread_id}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{email.date_created}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.sender}</td>
+                  <td className="px-6 py-4 text-gray-900">{email.from_email}</td>
                   <td className="px-6 py-4 text-purple-600">{email.subject}</td>
                   <td className="px-6 py-4 text-gray-500">
-                    {email.mailerSummary}
+                  No Summary Found
                   </td>
                 </tr>
               ))}

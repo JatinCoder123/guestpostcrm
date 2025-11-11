@@ -1,25 +1,85 @@
 import React, { useEffect } from "react";
 import { Mail, Gift, Eye, Search } from "lucide-react";
 import { Footer } from "../Footer";
-import { useOffersStore } from "../../store/offersStore";
+import { useSelector } from "react-redux";
 
 export function OffersPage() {
-  const { offers, loading, error, fetchOffers } = useOffersStore();
+  const { offers, count } = useSelector((state) => state.offers);
 
-  useEffect(() => {
-    fetchOffers();
-  }, [fetchOffers]);
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "Accepted":
+        return "bg-green-100 text-green-700";
+      case "Under Review":
+        return "bg-blue-100 text-blue-700";
+      case "Rejected":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white flex justify-between items-center shadow-md">
-        <h1 className="text-2xl font-semibold">Welcome GuestPostCRM</h1>
-        <div className="flex items-center bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/20">
-          <Mail className="w-4 h-4 text-white mr-2" />
-          <span className="bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-medium shadow">
-            your.business@email.com
-          </span>
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
+        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
+        <div className="flex items-center gap-2 text-purple-100">
+          <Mail className="w-4 h-4" />
+          <span>your.business@email.com</span>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Total Offers</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <Gift className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Pending</p>
+              <p className="text-2xl text-gray-900 mt-1">1</p>
+            </div>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Tag className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Accepted</p>
+              <p className="text-2xl text-gray-900 mt-1">1</p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">✓</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Total Value</p>
+              <p className="text-2xl text-gray-900 mt-1">$7K</p>
+            </div>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-purple-600" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -35,56 +95,76 @@ export function OffersPage() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="p-6 text-center text-gray-500">Loading offers...</div>
-        ) : error ? (
-          <div className="p-6 text-center text-red-500">{error}</div>
-        ) : offers.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            No offers found for this week.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-yellow-400 text-gray-900 font-semibold">
-                  <th className="px-6 py-4 text-sm uppercase">Date</th>
-                  <th className="px-6 py-4 text-sm uppercase">Sender</th>
-                  <th className="px-6 py-4 text-sm uppercase">Subject</th>
-                  <th className="px-6 py-4 text-sm uppercase text-right pr-10">
-                    Amount
-                  </th>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>CLIENT</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span>PRICE</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span>CLIENT OFFER</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span>OUR OFFER</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span> DATE</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">DESCRIPTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              {offers.map((offer, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-gray-100 hover:bg-green-50 transition-colors cursor-pointer"
+                >
+                  <td className="px-6 py-4 text-gray-900">{offer.name}</td>
+                  <td className="px-6 py-4 text-green-600">{offer.amount}</td>
+                  <td className="px-6 py-4 text-green-600">
+                    {offer.client_offer_c}
+                  </td>
+                  <td className="px-6 py-4 text-green-600">
+                    {offer.our_offer_c}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {offer.date_entered}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {offer.description}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {offers.map((offer) => (
-                  <tr
-                    key={offer.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-gray-700 text-sm">
-                      {offer.date}
-                    </td>
-                    <td className="px-6 py-4 text-gray-800 text-sm flex items-center gap-2">
-                      {offer.sender}
-                      <Eye className="w-4 h-4 text-gray-400" />
-                    </td>
-                    <td className="px-6 py-4 text-gray-700 text-sm">
-                      {offer.subject}
-                    </td>
-                    <td className="px-6 py-4 text-gray-900 font-semibold text-right flex items-center justify-end gap-4 pr-6">
-                      <span>{offer.amount}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="bg-purple-100 text-purple-600 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
-                          <span>AI</span>
-                        </div>
-                        <Search className="w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700" />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {offers.length === 0 && (
+          <div className="p-12 text-center">
+            <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">
+              No offers yet. Create your first offer to get started.
+            </p>
           </div>
         )}
       </div>

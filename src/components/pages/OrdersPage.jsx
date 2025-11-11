@@ -1,15 +1,25 @@
 import { useEffect } from "react";
 import { Mail, Eye, Package } from "lucide-react";
 import { Footer } from "../Footer";
-import { useOrdersStore } from "../../store/ordersStore";
-
+import { useSelector } from "react-redux";
 
 export function OrdersPage() {
-  const { orders, loading, error, fetchOrders } = useOrdersStore();
+  const { orders, count } = useSelector((state) => state.orders);
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Completed":
+        return "bg-green-100 text-green-700";
+      case "In Progress":
+        return "bg-blue-100 text-blue-700";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "Cancelled":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   return (
     <div className="p-6">
@@ -21,8 +31,61 @@ export function OrdersPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Total Orders</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
+            </div>
+            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <ShoppingCart className="w-6 h-6 text-indigo-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">In Progress</p>
+              <p className="text-2xl text-gray-900 mt-1">1</p>
+            </div>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Package className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Completed</p>
+              <p className="text-2xl text-gray-900 mt-1">1</p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">✓</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Revenue</p>
+              <p className="text-2xl text-gray-900 mt-1">$2.4K</p>
+            </div>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-purple-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Orders Section */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6 text-green-600" />
             <h2 className="text-lg font-semibold text-gray-800">ORDERS</h2>
@@ -32,51 +95,67 @@ export function OrdersPage() {
           </span>
         </div>
 
-        {loading && (
-          <div className="p-8 text-center text-gray-500">Loading orders...</div>
-        )}
-
-        {error && (
-          <div className="p-8 text-center text-red-500">{error}</div>
-        )}
-
-        {!loading && orders.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-green-600 text-white text-left">
-                  <th className="px-6 py-3 font-medium">ORDER ID</th>
-                  <th className="px-6 py-3 font-medium">CLIENT EMAIL</th>
-                  <th className="px-6 py-3 font-medium">ANCHOR TEXT</th>
-                  <th className="px-6 py-3 font-medium text-right">AMOUNT</th>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                <th className="px-6 py-4 text-left">ORDER ID</th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>CLIENT</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span>AMOUNT</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">STATUS</th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>ORDER DATE</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">DELIVERY DATE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
+                >
+                  <td className="px-6 py-4 text-indigo-600">{order.id_C}</td>
+                  <td className="px-6 py-4 text-gray-900">
+                    {order.client_email}
+                  </td>
+                  <td className="px-6 py-4 text-green-600">
+                    {order.total_amount_c}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
+                        order.order_status
+                      )}`}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {order.order_date}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {order.complete_data}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {orders.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-gray-700">{item.order_id || "N/A"}</td>
-                    <td className="px-6 py-4 text-gray-900">{item.client_email || "—"}</td>
-                    <td className="px-6 py-4 text-gray-700">{item.anchor_text_c || "—"}</td>
-                    <td className="px-6 py-4 text-gray-900 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <span className="font-semibold">
-                          {item.total_amount_c ? `$${item.total_amount_c}` : "—"}
-                        </span>
-                        <div className="relative flex items-center justify-center w-6 h-6 bg-purple-100 rounded-full text-[10px] font-bold text-purple-600">
-                          AI
-                        </div>
-                        <Eye className="w-4 h-4 text-purple-600 cursor-pointer hover:scale-110 transition-transform" />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {!loading && orders.length === 0 && (
           <div className="p-12 text-center text-gray-500">

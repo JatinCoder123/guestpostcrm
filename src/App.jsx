@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { LivePage } from "./components/pages/LivePage";
 import { TimelinePage } from "./components/pages/TimelinePage";
 import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
@@ -11,10 +10,8 @@ import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
 import { DealRemindersPage } from "./components/pages/DealRemindersPage";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
-import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
-import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
 const router = createBrowserRouter([
@@ -25,10 +22,6 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <TimelinePage />,
-      },
-      {
-        path: "live",
-        element: <LivePage />,
       },
       {
         path: "unreplied-emails",
@@ -78,9 +71,9 @@ const router = createBrowserRouter([
   },
 ]);
 export default function App() {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   useEffect(() => {
- dispatch(getLadger());
+    dispatch(getLadger());
   }, []);
   return (
     <>
