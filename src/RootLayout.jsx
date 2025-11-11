@@ -23,10 +23,10 @@ const RootLayout = () => {
   }, [email,timeline]);
   useEffect(() => {
     if (email) {
-      dispatch(getUnansweredEmails("last_week", email));
-      dispatch(getUnrepliedEmail("last_week", email));
+      dispatch(getUnansweredEmails(timeline, email));
+      dispatch(getUnrepliedEmail(timeline, email));
     }
-  }, [email]);
+  }, [email,timeline]);
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <TopNav />
