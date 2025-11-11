@@ -244,8 +244,8 @@ export function TimelinePage() {
       {/* End Icon */}
       <div className="relative flex gap-4">
         <div className="relative z-10 w-16 flex-shrink-0">
-          <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg">
-            <span className="text-xl">🏁</span>
+          <div className="w-12 h-12 flex items-center justify-center">
+            <span className="text-xl"><img src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png" alt="" /> </span>
           </div>
         </div>
       </div>
