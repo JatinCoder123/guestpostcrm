@@ -61,13 +61,14 @@ export function TimelinePage() {
                   <Mail className="w-4 h-4 text-gray-600" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-900">
-                      TIMELINE : {ladger.length > 0 && ladger[0].name}
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-semibold text-gray-900">
+                      TIMELINE : 
                     </span>
+                    <span className="text-gray-700 text-base">{ladger.length > 0 && ladger[0].name}</span>
                     <div className="flex items-center gap-1 text-green-600">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm">Verified</span>
+                      <CheckCircle className="w-8 h-8" />
+                      <span className="text-gray-900 text-sm font-medium">Verified</span>
                     </div>
                   </div>
                 </div>
@@ -105,7 +106,7 @@ export function TimelinePage() {
           </div>
 
           {/* Timeline Details */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
             <div>
               <span className="text-gray-500">SUBJECT</span>
               <p className="text-gray-900 mt-1">Guest Post Partnership</p>
@@ -117,6 +118,14 @@ export function TimelinePage() {
             <div>
               <span className="text-gray-500">MAILER SUMMARY</span>
               <p className="text-gray-900 mt-1">Complete Sales Cycle</p>
+            </div>
+            <div>
+              <span className="text-gray-500">STAGE</span>
+              <p className="text-gray-900 mt-1">Stage 1</p>
+            </div>
+            <div>
+              <span className="text-gray-500">STATUS</span>
+              <p className="text-gray-900 mt-1">Completed</p>
             </div>
             <div>
               <span className="text-gray-500">Date</span>
@@ -145,53 +154,62 @@ export function TimelinePage() {
           </div>
         </div>
 
-        {/* Timeline Events */}
-        <div className="p-6">
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+{/* Timeline Events */}
+<div className="py-[2%] px-[30%]">
+  <div className="relative">
+    {/* Timeline Line */}
+    <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
-            <div className="space-y-6">
-              {ladger.length > 0 &&
-                ladger.map((event, index) => (
-                  <div key={event.id} className="relative flex gap-4">
-                    {/* Timeline Icon */}
-                    <div className="relative z-10 w-16 flex-shrink-0">
-                      <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                        <img
-                          width="100"
-                          height="100"
-                          src="https://img.icons8.com/bubbles/100/new-post.png"
-                          alt="new-post"
-                        />
-                      </div>
-                    </div>
+    <div className="space-y-6">
+      {ladger.length > 0 &&
+        ladger.map((event, index) => (
+          <div key={event.id} className="relative flex items-center gap-4">
+            {/* Timeline Icon */}
+            <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                <img
+                  width="100"
+                  height="100"
+                  src="https://img.icons8.com/bubbles/100/new-post.png"
+                  alt="new-post"
+                />
+              </div>
 
-                    {/* Event Card */}
-                    <div
-                      className={`flex-1 border-2 rounded-xl p-4 ${event.color}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-700">{event.type_c}</span>
-                        <span className="text-gray-500 text-sm">
-                          {event.date_entered}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              {/* Horizontal Line */}
+              <div class="bg-gradient-to-r from-purple-600 to-blue-600 absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"></div>
 
-              {/* End Icon */}
-              <div className="relative flex gap-4">
-                <div className="relative z-10 w-16 flex-shrink-0">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                    <span className="text-xl">🏁</span>
-                  </div>
-                </div>
+            </div>
+
+            {/* Event Card */}
+            <div
+              className={`flex-1 border-2 rounded-xl p-4 ${event.color}`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-700">{event.type_c}</span>
+                <span className="text-gray-500 text-sm">
+                  {event.date_entered}
+                </span>
+                
+              </div>
+              <div className="flex items-center justify-end">
+                <button className="flex items-center gap-2 px-2 py-1 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">IP</button>
               </div>
             </div>
           </div>
+        ))}
+
+      {/* End Icon */}
+      <div className="relative flex gap-4">
+        <div className="relative z-10 w-16 flex-shrink-0">
+          <div className="w-12 h-12 flex items-center justify-center">
+            <span className="text-xl"><img src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png" alt="" /> </span>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
       </div>
 
       <Footer />
