@@ -149,7 +149,7 @@ export function TimelinePage() {
           </div>
 
           {/* Timeline Details */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
             <div>
               <span className="text-gray-500">SUBJECT</span>
               <p className="text-gray-900 mt-1">Guest Post Partnership</p>
@@ -161,6 +161,14 @@ export function TimelinePage() {
             <div>
               <span className="text-gray-500">MAILER SUMMARY</span>
               <p className="text-gray-900 mt-1">Complete Sales Cycle</p>
+            </div>
+            <div>
+              <span className="text-gray-500">STAGE</span>
+              <p className="text-gray-900 mt-1">Stage 1</p>
+            </div>
+            <div>
+              <span className="text-gray-500">STATUS</span>
+              <p className="text-gray-900 mt-1">Completed</p>
             </div>
             <div>
               <span className="text-gray-500">Date</span>
@@ -224,6 +232,10 @@ export function TimelinePage() {
                 <span className="text-gray-500 text-sm">
                   {event.date_entered}
                 </span>
+                
+              </div>
+              <div className="flex items-center justify-end">
+                <button className="flex items-center gap-2 px-2 py-1 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">IP</button>
               </div>
             </div>
           </div>
