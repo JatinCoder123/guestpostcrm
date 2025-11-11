@@ -107,13 +107,14 @@ export function TimelinePage() {
                   <Mail className="w-4 h-4 text-gray-600" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-900">
-                      TIMELINE : {ladger.length > 0 && ladger[0].name}
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-semibold text-gray-900">
+                      TIMELINE : 
                     </span>
+                    <span className="text-gray-700 text-base">{ladger.length > 0 && ladger[0].name}</span>
                     <div className="flex items-center gap-1 text-green-600">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="text-sm">Verified</span>
+                      <CheckCircle className="w-8 h-8" />
+                      <span className="text-gray-900 text-sm font-medium">Verified</span>
                     </div>
                   </div>
                 </div>
@@ -189,10 +190,10 @@ export function TimelinePage() {
         </div>
 
         {/* Timeline Events */}
-        <div className="p-6">
+        <div className="py-[2%] px-[30%]">
           <div className="relative">
             {/* Timeline Line */}
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+            <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
             <div className="space-y-6">
               {ladger.length > 0 &&
