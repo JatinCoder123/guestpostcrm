@@ -1,0 +1,99 @@
+import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { BACKEND_URL } from "../constants";
+
+const ladgerSlice = createSlice({
+  name: "ladger",
+  initialState: {
+    loading: false,
+    email: null,
+    ladger: [],
+    error: null,
+    message: null,
+    duplicate: 0,
+  },
+  reducers: {
+    getLadgerRequest(state) {
+      state.loading = true;
+      state.ladger = [];
+      state.duplicate = 0;
+      state.error = null;
+    },
+    getLadgerSuccess(state, action) {
+      const { duplicate, ladger, email } = action.payload;
+      state.loading = false;
+      state.ladger = ladger;
+      state.email = email;
+      state.duplicate = duplicate;
+      state.error = null;
+    },
+    getLadgerFailed(state, action) {
+      state.loading = false;
+      state.ladger = state.ladger;
+      state.duplicate = state.duplicate;
+      state.error = action.payload;
+    },
+
+    clearAllErrors(state) {
+      state.error = null;
+    },
+  },
+});
+
+export const getLadger = () => {
+  return async (dispatch) => {
+    dispatch(ladgerSlice.actions.getLadgerRequest());
+
+    try {
+      const { data } = await axios.get(
+        `${BACKEND_URL}&type=ledger&filter=today`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("Ladger", data);
+      dispatch(
+        ladgerSlice.actions.getLadgerSuccess({
+          duplicate: data.duplicate_threads_count,
+          ladger: data.data,
+          email: data.data && data.data[0].name,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.getLadgerFailed(error.response?.data?.message)
+      );
+    }
+  };
+};
+export const getLadgerEmail = (email) => {
+  return async (dispatch) => {
+    dispatch(ladgerSlice.actions.getLadgerRequest());
+
+    try {
+      const { data } = await axios.get(
+        `${BACKEND_URL}&type=ledger&filter=today&email=${email}`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("Ladger Of Email", data);
+      dispatch(
+        ladgerSlice.actions.getLadgerSuccess({
+          duplicate: data.duplicate_threads_count,
+          ladger: data.data,
+          email: email,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.getLadgerFailed(error.response?.data?.message)
+      );
+    }
+  };
+};
+
+export const ladgerAction = ladgerSlice.actions;
+export default ladgerSlice.reducer;
