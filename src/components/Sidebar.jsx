@@ -136,18 +136,18 @@ export function Sidebar({
       <div className="space-y-2">
         {/* Live Button */}
         <button
-          onClick={() => navigateTo("live")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-            currentPage === "live"
-              ? "bg-green-500 text-white shadow-md"
-              : "bg-green-50 text-green-700 hover:bg-green-100"
-          }`}
-        >
-          <div className="flex items-center gap-2 flex-1">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-            {!collapsed && <span>Live</span>}
-          </div>
-        </button>
+  onClick={() => onPageChange("live")}
+  className={`w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg transition-all ${
+    currentPage === "live"
+      ? "bg-green-600 text-white shadow-lg" // stronger color + bigger shadow
+      : "bg-green-500 text-green-800 hover:bg-green-500" // higher opacity green
+  }`}
+>
+  <div className="flex items-center justify-center gap-2">
+    <div className="w-3 h-3 bg-white rounded-full animate-pulse shadow-sm"></div>
+    {!collapsed && <span className="font-medium">Live</span>}
+  </div>
+</button>
 
         {/* Menu Items */}
         {menuItems.map((item) => (
