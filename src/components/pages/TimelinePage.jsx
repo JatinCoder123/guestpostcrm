@@ -3,77 +3,31 @@ import { useEffect, useState } from "react";
 import { Footer } from "../Footer";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { ladgerAction } from "../../store/Slices/ladger";
+import {
+  getLadger,
+  getLadgerEmail,
+  ladgerAction,
+} from "../../store/Slices/ladger";
 
 export function TimelinePage() {
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const { ladger, duplicate, loading, error } = useSelector(
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const { ladger, email, duplicate, loading, error } = useSelector(
     (state) => state.ladger
   );
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getLadger());
+  }, []);
+  useEffect(() => {
+    if (!autoRefresh) return;
 
-  // const timelineEvents = [
-  //   {
-  //     id: 1,
-  //     type: "First Reply Send",
-  //     subject: "Guest Post Partnership",
-  //     motive: "Business Collaboration",
-  //     mailerSummary: "Complete Sales Cycle",
-  //     stage: "",
-  //     status: "",
-  //     date: "11 Nov at 6:55 PM",
-  //     color: "bg-orange-100 border-orange-300",
-  //     icon: "📧",
-  //   },
-  //   {
-  //     id: 2,
-  //     type: "Contact Created",
-  //     subject: "Guest Post Partnership",
-  //     motive: "Business Collaboration",
-  //     mailerSummary: "Complete Sales Cycle",
-  //     stage: "",
-  //     status: "",
-  //     date: "11 Nov at 6:55 PM",
-  //     color: "bg-purple-100 border-purple-300",
-  //     icon: "👤",
-  //   },
-  //   {
-  //     id: 3,
-  //     type: "Account Created",
-  //     subject: "Guest Post Partnership",
-  //     motive: "Business Collaboration",
-  //     mailerSummary: "Complete Sales Cycle",
-  //     stage: "",
-  //     status: "",
-  //     date: "11 Nov at 6:55 PM",
-  //     color: "bg-green-100 border-green-300",
-  //     icon: "🏢",
-  //   },
-  //   {
-  //     id: 4,
-  //     type: "Deal",
-  //     subject: "Guest Post Partnership",
-  //     motive: "Business Collaboration",
-  //     mailerSummary: "Complete Sales Cycle",
-  //     stage: "",
-  //     status: "",
-  //     date: "11 Nov at 6:55 PM",
-  //     color: "bg-red-100 border-red-300",
-  //     icon: "💼",
-  //   },
-  //   {
-  //     id: 5,
-  //     type: "Offer",
-  //     subject: "Guest Post Partnership",
-  //     motive: "Business Collaboration",
-  //     mailerSummary: "Complete Sales Cycle",
-  //     stage: "",
-  //     status: "",
-  //     date: "11 Nov at 6:55 PM",
-  //     color: "bg-blue-100 border-blue-300",
-  //     icon: "🎁",
-  //   },
-  // ];
+    const interval = setInterval(() => {
+      dispatch(getLadgerEmail(email));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [autoRefresh]);
+
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -85,16 +39,16 @@ export function TimelinePage() {
     <div className="p-6">
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white flex justify-between items-center">
-         {/* Left Side - Welcome Text */}
-  <h1 className="text-2xl font-semibold">Welcome GuestPostCRM</h1>
+        {/* Left Side - Welcome Text */}
+        <h1 className="text-2xl font-semibold">Welcome GuestPostCRM</h1>
 
         {/* Right Side - Email Box */}
-  <div className="flex items-center bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/20">
-    <Mail className="w-4 h-4 text-white mr-2" />
-    <span className="bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-medium">
-      quietfluence@gmail.com
-    </span>
-  </div>
+        <div className="flex items-center bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/20">
+          <Mail className="w-4 h-4 text-white mr-2" />
+          <span className="bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-medium">
+            quietfluence@gmail.com
+          </span>
+        </div>
       </div>
 
       {/* Timeline Header */}
@@ -124,7 +78,10 @@ export function TimelinePage() {
               <span className="text-gray-600 text-sm">
                 Duplicate={duplicate}
               </span>
-              <button className="flex items-center gap-2 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+              <button
+                onClick={() => dispatch(getLadgerEmail(email))}
+                className="flex items-center cursor-pointer gap-2 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+              >
                 <RefreshCw className="w-4 h-4" />
                 <span>Refresh</span>
               </button>

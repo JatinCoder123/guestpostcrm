@@ -145,9 +145,9 @@ export function Sidebar({
       <div className="space-y-2">
         {/* Live Button */}
         <button
-          onClick={() => navigateTo("live")}
+          onClick={() => navigateTo("")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-            currentPage === "live"
+            currentPage === ""
               ? "bg-green-500 text-white shadow-md"
               : "bg-green-50 text-green-700 hover:bg-green-100"
           }`}
