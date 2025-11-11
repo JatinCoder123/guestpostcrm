@@ -1,11 +1,32 @@
 import { ToastContainer } from "react-toastify";
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
+import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
+import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
 const RootLayout = () => {
+  console.log("IN rootlayour")
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
+  const { ladger, email,timeline } = useSelector((state) => state.ladger);
+  const dispatch = useDispatch();
+  useEffect(() => {
+ dispatch(getLadger());
+  }, []);
+   useEffect(() => {
+    if(email){
+      dispatch(getLadgerEmail(email));
+    }
+ 
+  }, [email,timeline]);
+  useEffect(() => {
+    if (email) {
+      dispatch(getUnansweredEmails("last_week", email));
+      dispatch(getUnrepliedEmail("last_week", email));
+    }
+  }, [email]);
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <TopNav />
