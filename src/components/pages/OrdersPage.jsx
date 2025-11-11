@@ -7,37 +7,10 @@ import {
   User,
 } from "lucide-react";
 import { Footer } from "../Footer";
+import { useSelector } from "react-redux";
 
 export function OrdersPage() {
-  const orders = [
-    {
-      orderId: "#ORD-001",
-      client: "TechBlog Inc.",
-      service: "Guest Post DA60+",
-      amount: "$500",
-      status: "In Progress",
-      orderDate: "10 Nov 2025",
-      deliveryDate: "17 Nov 2025",
-    },
-    {
-      orderId: "#ORD-002",
-      client: "Digital Agency",
-      service: "Link Building Package",
-      amount: "$1,200",
-      status: "Completed",
-      orderDate: "05 Nov 2025",
-      deliveryDate: "12 Nov 2025",
-    },
-    {
-      orderId: "#ORD-003",
-      client: "SEO Company",
-      service: "Content Writing + Guest Post",
-      amount: "$750",
-      status: "Pending",
-      orderDate: "08 Nov 2025",
-      deliveryDate: "15 Nov 2025",
-    },
-  ];
+  const { orders, count } = useSelector((state) => state.orders);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -71,7 +44,7 @@ export function OrdersPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Orders</p>
-              <p className="text-2xl text-gray-900 mt-1">3</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
               <ShoppingCart className="w-6 h-6 text-indigo-600" />
@@ -141,7 +114,6 @@ export function OrdersPage() {
                     <span>CLIENT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">SERVICE</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
@@ -159,27 +131,32 @@ export function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order, index) => (
+              {orders.map((order) => (
                 <tr
-                  key={index}
+                  key={order.id}
                   className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-indigo-600">{order.orderId}</td>
-                  <td className="px-6 py-4 text-gray-900">{order.client}</td>
-                  <td className="px-6 py-4 text-gray-600">{order.service}</td>
-                  <td className="px-6 py-4 text-green-600">{order.amount}</td>
+                  <td className="px-6 py-4 text-indigo-600">{order.id_C}</td>
+                  <td className="px-6 py-4 text-gray-900">
+                    {order.client_email}
+                  </td>
+                  <td className="px-6 py-4 text-green-600">
+                    {order.total_amount_c}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                        order.status
+                        order.order_status
                       )}`}
                     >
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{order.orderDate}</td>
                   <td className="px-6 py-4 text-gray-600">
-                    {order.deliveryDate}
+                    {order.order_date}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {order.complete_data}
                   </td>
                 </tr>
               ))}

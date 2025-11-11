@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 export function TopNav() {
   const [input, setInput] = useState("");
   const [openPeriod, setOpenPeriod] = useState(false);
-  const {timeline} = useSelector(state=>state.ladger)
+  const { timeline } = useSelector((state) => state.ladger);
 
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
@@ -20,11 +20,15 @@ export function TopNav() {
 
   // Dropdown items
   const periodOptions = [
-   "today","yesterday","this_week","last_week","last_month",
+    "today",
+    "yesterday",
+    "this_week",
+    "last_week",
+    "this_month",
   ];
 
   const handleSelectPeriod = (option) => {
-    dispatch(ladgerAction.setTimeline(option))
+    dispatch(ladgerAction.setTimeline(option));
     setOpenPeriod(false);
   };
 

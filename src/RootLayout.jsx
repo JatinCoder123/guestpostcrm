@@ -7,26 +7,35 @@ import { useDispatch, useSelector } from "react-redux";
 import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
 import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
 import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
+import { getOrders } from "./store/Slices/orders";
+import { getDeals } from "./store/Slices/deals";
+import { getInvoices } from "./store/Slices/invoices";
+import { getOffers } from "./store/Slices/offers";
+import { getDetection } from "./store/Slices/detection";
 const RootLayout = () => {
-  console.log("IN rootlayour")
+  console.log("IN rootlayour");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { ladger, email,timeline } = useSelector((state) => state.ladger);
+  const { email, timeline } = useSelector((state) => state.ladger);
   const dispatch = useDispatch();
   useEffect(() => {
- dispatch(getLadger());
+    dispatch(getLadger());
   }, []);
-   useEffect(() => {
-    if(email){
-      dispatch(getLadgerEmail(email));
-    }
- 
-  }, [email,timeline]);
   useEffect(() => {
     if (email) {
-      dispatch(getUnansweredEmails("last_week", email));
-      dispatch(getUnrepliedEmail("last_week", email));
+      dispatch(getLadgerEmail(email));
     }
-  }, [email]);
+  }, [email, timeline]);
+  useEffect(() => {
+    if (email) {
+      dispatch(getUnansweredEmails(timeline, email));
+      dispatch(getUnrepliedEmail(timeline, email));
+      dispatch(getOrders(timeline, email));
+      dispatch(getDeals(timeline, email));
+      dispatch(getInvoices(timeline, email));
+      dispatch(getOffers(timeline, email));
+      dispatch(getDetection(timeline, email));
+    }
+  }, [email, timeline]);
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <TopNav />

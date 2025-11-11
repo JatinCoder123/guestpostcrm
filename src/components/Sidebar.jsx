@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 export function Sidebar({
@@ -22,12 +23,20 @@ export function Sidebar({
   onToggleCollapse,
 }) {
   const navigateTo = useNavigate();
+  const unrepliedCount = useSelector((state) => state.unreplied?.count ?? 0);
+  const unansweredCount = useSelector((state) => state.unanswered?.count ?? 0);
+  const dealCount = useSelector((state) => state.deals?.count ?? 0);
+  const offersCount = useSelector((state) => state.offers?.count ?? 0);
+  const detectionCount = useSelector((state) => state.detection?.count ?? 0);
+  const invoiceCount = useSelector((state) => state.invoices?.count ?? 0);
+  const orderCount = useSelector((state) => state.orders?.count ?? 0);
+
   const menuItems = [
     {
       id: "unreplied-emails",
       label: "Unreplied Emails",
       icon: Mail,
-      count: 24,
+      count: unrepliedCount,
       color: "text-red-600",
       bgColor: "hover:bg-red-50",
       countColor: "bg-red-500 text-white",
@@ -36,7 +45,7 @@ export function Sidebar({
       id: "spam-detection",
       label: "Spam Detection",
       icon: Shield,
-      count: 4,
+      count: detectionCount,
       color: "text-orange-600",
       bgColor: "hover:bg-orange-50",
       countColor: "bg-orange-500 text-white",
@@ -45,7 +54,7 @@ export function Sidebar({
       id: "unanswered",
       label: "Unanswered",
       icon: MessageSquare,
-      count: 24,
+      count: unansweredCount,
       color: "text-purple-600",
       bgColor: "hover:bg-purple-50",
       countColor: "bg-purple-500 text-white",
@@ -54,7 +63,7 @@ export function Sidebar({
       id: "deals",
       label: "Deals",
       icon: Handshake,
-      count: 0,
+      count: dealCount,
       color: "text-blue-600",
       bgColor: "hover:bg-blue-50",
       countColor: "bg-blue-500 text-white",
@@ -63,7 +72,7 @@ export function Sidebar({
       id: "offers",
       label: "Offers",
       icon: Gift,
-      count: 0,
+      count: offersCount,
       color: "text-green-600",
       bgColor: "hover:bg-green-50",
       countColor: "bg-green-500 text-white",
@@ -72,7 +81,7 @@ export function Sidebar({
       id: "orders",
       label: "Orders",
       icon: ShoppingCart,
-      count: 0,
+      count: orderCount,
       color: "text-indigo-600",
       bgColor: "hover:bg-indigo-50",
       countColor: "bg-indigo-500 text-white",
@@ -81,7 +90,7 @@ export function Sidebar({
       id: "invoices",
       label: "Invoices",
       icon: FileText,
-      count: 0,
+      count: invoiceCount,
       color: "text-yellow-600",
       bgColor: "hover:bg-yellow-50",
       countColor: "bg-yellow-500 text-white",
@@ -108,7 +117,7 @@ export function Sidebar({
       id: "deal-reminders",
       label: "Deal Reminders",
       icon: Bell,
-      count: 0,
+      count: dealCount,
       color: "text-cyan-600",
       bgColor: "hover:bg-cyan-50",
       countColor: "bg-cyan-500 text-white",

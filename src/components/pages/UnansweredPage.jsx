@@ -12,64 +12,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUnansweredEmails } from "../../store/Slices/unansweredEmails";
 
 export function UnansweredPage() {
-  const unansweredEmails = [
-    {
-      date: "Today at 08:15 AM",
-      sender: "contact@businesspartner.com",
-      subject: "Follow-up on our previous discussion",
-      mailerSummary: "-",
-    },
-    {
-      date: "Today at 07:30 AM",
-      sender: "info@contentmarketing.io",
-      subject: "Your guest post inquiry",
-      mailerSummary: "-",
-    },
-    {
-      date: "Yesterday at 10:45 PM",
-      sender: "outreach@linkbuilders.net",
-      subject: "Re: Guest posting opportunities",
-      mailerSummary: "-",
-    },
-    {
-      date: "Yesterday at 08:20 PM",
-      sender: "team@digitalagency.com",
-      subject: "Partnership discussion",
-      mailerSummary: "-",
-    },
-    {
-      date: "Yesterday at 06:15 PM",
-      sender: "hello@contentwriters.org",
-      subject: "Question about your services",
-      mailerSummary: "-",
-    },
-    {
-      date: "2 days ago at 04:00 PM",
-      sender: "marketing@techstartup.io",
-      subject: "Collaboration opportunity",
-      mailerSummary: "-",
-    },
-    {
-      date: "2 days ago at 02:30 PM",
-      sender: "sales@seocompany.com",
-      subject: "Your guest post request",
-      mailerSummary: "-",
-    },
-    {
-      date: "2 days ago at 12:15 PM",
-      sender: "support@webdevelopers.net",
-      subject: "Re: Link building package",
-      mailerSummary: "-",
-    },
-  ];
   const dispatch = useDispatch();
-  const { count } = useSelector((state) => state.unanswered);
-  const { email } = useSelector((state) => state.ladger);
-  useEffect(() => {
-    if (email) {
-      dispatch(getUnansweredEmails());
-    }
-  }, [email]);
+  const { count,emails } = useSelector((state) => state.unanswered);
   return (
     <div className="p-6">
       {/* Welcome Header */}
@@ -121,7 +65,7 @@ export function UnansweredPage() {
               </tr>
             </thead>
             <tbody>
-              {unansweredEmails.map((email, index) => (
+              {emails.map((email, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
@@ -129,13 +73,13 @@ export function UnansweredPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{email.date_created}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.sender}</td>
+                  <td className="px-6 py-4 text-gray-900">{email.from_email}</td>
                   <td className="px-6 py-4 text-purple-600">{email.subject}</td>
                   <td className="px-6 py-4 text-gray-500">
-                    {email.mailerSummary}
+                    NO Summary Found
                   </td>
                 </tr>
               ))}

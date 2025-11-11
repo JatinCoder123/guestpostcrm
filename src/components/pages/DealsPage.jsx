@@ -1,37 +1,16 @@
-import { Mail, Handshake, TrendingUp, DollarSign, Calendar, User } from 'lucide-react';
-import { Footer } from '../Footer';
+import {
+  Mail,
+  Handshake,
+  TrendingUp,
+  DollarSign,
+  Calendar,
+  User,
+} from "lucide-react";
+import { Footer } from "../Footer";
+import { useSelector } from "react-redux";
 
 export function DealsPage() {
-  const deals = [
-    {
-      dealName: 'TechBlog Partnership',
-      company: 'TechBlog Inc.',
-      value: '$5,000',
-      stage: 'Negotiation',
-      closeDate: '15 Nov 2025',
-      probability: '75%',
-      status: 'active'
-    },
-    {
-      dealName: 'Content Marketing Deal',
-      company: 'Digital Agency',
-      value: '$3,500',
-      stage: 'Proposal',
-      closeDate: '20 Nov 2025',
-      probability: '60%',
-      status: 'active'
-    },
-    {
-      dealName: 'Guest Post Package',
-      company: 'SEO Company',
-      value: '$2,000',
-      stage: 'Qualification',
-      closeDate: '25 Nov 2025',
-      probability: '40%',
-      status: 'active'
-    },
-  ];
-
+  const { count, deals } = useSelector((state) => state.deals);
   return (
     <div className="p-6">
       {/* Welcome Header */}
@@ -49,7 +28,7 @@ export function DealsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Deals</p>
-              <p className="text-2xl text-gray-900 mt-1">3</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Handshake className="w-6 h-6 text-blue-600" />
@@ -132,35 +111,27 @@ export function DealsPage() {
                     <span>CLOSE DATE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">PROBABILITY</th>
               </tr>
             </thead>
             <tbody>
               {deals.map((deal, index) => (
-                <tr 
-                  key={index} 
+                <tr
+                  key={index}
                   className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-blue-600">{deal.dealName}</td>
-                  <td className="px-6 py-4 text-gray-900">{deal.company}</td>
-                  <td className="px-6 py-4 text-green-600">{deal.value}</td>
+                  <td className="px-6 py-4 text-blue-600">{deal.email}</td>
+                  <td className="px-6 py-4 text-gray-900">
+                    {deal.website_c == "" ? "No Name" : deal.website_c}
+                  </td>
+                  <td className="px-6 py-4 text-green-600">
+                    {deal.dealamount}
+                  </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                      {deal.stage}
+                      {deal.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{deal.closeDate}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: deal.probability }}
-                        ></div>
-                      </div>
-                      <span className="text-gray-600 text-sm">{deal.probability}</span>
-                    </div>
-                  </td>
+                  <td className="px-6 py-4 text-gray-600">{deal.deal_date}</td>
                 </tr>
               ))}
             </tbody>
@@ -170,7 +141,9 @@ export function DealsPage() {
         {deals.length === 0 && (
           <div className="p-12 text-center">
             <Handshake className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No deals yet. Create your first deal to get started.</p>
+            <p className="text-gray-500">
+              No deals yet. Create your first deal to get started.
+            </p>
           </div>
         )}
       </div>

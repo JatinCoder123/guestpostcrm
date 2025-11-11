@@ -6,7 +6,7 @@ const unansweredSlice = createSlice({
   name: "unanswered",
   initialState: {
     loading: false,
-    emails: null,
+    emails: [],
     count: 0,
     error: null,
   },
@@ -14,7 +14,7 @@ const unansweredSlice = createSlice({
     getEmailRequest(state) {
       state.loading = true;
       state.count = 0;
-      state.emails = null;
+      state.emails = [];
       state.error = null;
     },
     getEmailSucess(state, action) {
@@ -22,11 +22,11 @@ const unansweredSlice = createSlice({
       state.loading = true;
       state.emails = emails;
       state.count = count;
-      state.count = state.error = null;
+      state.error = null;
     },
     getEmailFailed(state, action) {
       state.loading = false;
-      state.emails = null;
+      state.emails = [];
       state.count = 0;
       state.error = action.payload;
     },
@@ -47,7 +47,7 @@ export const getUnansweredEmails = (filter, email) => {
       console.log("Unanswered Emails", data);
       dispatch(
         unansweredSlice.actions.getEmailSucess({
-          count: data.data_count,
+          count: data.data_count ?? 0,
           emails: data.data,
         })
       );
