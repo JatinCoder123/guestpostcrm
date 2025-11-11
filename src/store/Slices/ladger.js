@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { BACKEND_URL } from "../constants";
+import { act } from "react";
 
 const ladgerSlice = createSlice({
   name: "ladger",
@@ -9,6 +10,7 @@ const ladgerSlice = createSlice({
     email: null,
     ladger: [],
     error: null,
+    timeline:"last_week",
     message: null,
     duplicate: 0,
   },
@@ -33,7 +35,10 @@ const ladgerSlice = createSlice({
       state.duplicate = state.duplicate;
       state.error = action.payload;
     },
-
+    setTimeline(state,action){
+      state.timeline= action.payload
+    },
+   
     clearAllErrors(state) {
       state.error = null;
     },
@@ -41,12 +46,12 @@ const ladgerSlice = createSlice({
 });
 
 export const getLadger = () => {
-  return async (dispatch) => {
+  return async (dispatch,getState) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=today`,
+        `${BACKEND_URL}&type=ledger&filter=${getState().ladger.timeline}`,
         {
           withCredentials: false,
         }
@@ -68,12 +73,12 @@ export const getLadger = () => {
   };
 };
 export const getLadgerEmail = (email) => {
-  return async (dispatch) => {
+  return async (dispatch,getState) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=today&email=${email}`,
+        `${BACKEND_URL}&type=ledger&filter=${getState().ladger.timeline}&email=${email}`,
         {
           withCredentials: false,
         }
