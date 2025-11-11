@@ -78,18 +78,10 @@ const router = createBrowserRouter([
   },
 ]);
 export default function App() {
-  const { ladger, email } = useSelector((state) => state.ladger);
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getLadger());
+ dispatch(getLadger());
   }, []);
-  useEffect(() => {
-    if (ladger.length > 0) {
-      dispatch(getUnrepliedEmail("last_week", email));
-      dispatch(getUnansweredEmails("last_week", email));
-    }
-  }, [ladger]);
-
   return (
     <>
       <RouterProvider router={router} />
