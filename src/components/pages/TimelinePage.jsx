@@ -189,53 +189,57 @@ export function TimelinePage() {
           </div>
         </div>
 
-        {/* Timeline Events */}
-        <div className="py-[2%] px-[30%]">
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
+{/* Timeline Events */}
+<div className="py-[2%] px-[30%]">
+  <div className="relative">
+    {/* Timeline Line */}
+    <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
-            <div className="space-y-6">
-              {ladger.length > 0 &&
-                ladger.map((event, index) => (
-                  <div key={event.id} className="relative flex gap-4">
-                    {/* Timeline Icon */}
-                    <div className="relative z-10 w-16 flex-shrink-0">
-                      <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                        <img
-                          width="100"
-                          height="100"
-                          src="https://img.icons8.com/bubbles/100/new-post.png"
-                          alt="new-post"
-                        />
-                      </div>
-                    </div>
+    <div className="space-y-6">
+      {ladger.length > 0 &&
+        ladger.map((event, index) => (
+          <div key={event.id} className="relative flex items-center gap-4">
+            {/* Timeline Icon */}
+            <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                <img
+                  width="100"
+                  height="100"
+                  src="https://img.icons8.com/bubbles/100/new-post.png"
+                  alt="new-post"
+                />
+              </div>
 
-                    {/* Event Card */}
-                    <div
-                      className={`flex-1 border-2 rounded-xl p-4 ${event.color}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-700">{event.type_c}</span>
-                        <span className="text-gray-500 text-sm">
-                          {event.date_entered}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              {/* Horizontal Line */}
+              <div className="absolute top-1/2 left-[56px] w-6 h-[7px] bg-gray-300"></div>
+            </div>
 
-              {/* End Icon */}
-              <div className="relative flex gap-4">
-                <div className="relative z-10 w-16 flex-shrink-0">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                    <span className="text-xl">🏁</span>
-                  </div>
-                </div>
+            {/* Event Card */}
+            <div
+              className={`flex-1 border-2 rounded-xl p-4 ${event.color}`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-700">{event.type_c}</span>
+                <span className="text-gray-500 text-sm">
+                  {event.date_entered}
+                </span>
               </div>
             </div>
           </div>
+        ))}
+
+      {/* End Icon */}
+      <div className="relative flex gap-4">
+        <div className="relative z-10 w-16 flex-shrink-0">
+          <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg">
+            <span className="text-xl">🏁</span>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
       </div>
 
       <Footer />
