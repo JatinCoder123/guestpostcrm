@@ -211,7 +211,8 @@ export function TimelinePage() {
               </div>
 
               {/* Horizontal Line */}
-              <div className="absolute top-1/2 left-[56px] w-6 h-[7px] bg-gray-300"></div>
+              <div class="bg-gradient-to-r from-purple-600 to-blue-600 absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"></div>
+
             </div>
 
             {/* Event Card */}
