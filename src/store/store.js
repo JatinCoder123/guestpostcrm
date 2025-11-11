@@ -13,7 +13,7 @@ export const store = configureStore({
     unreplied: unrepliedReducer,
     unanswered: unansweredReducer,
     deals: dealsReducer,
-    orderReducer: orderReducer,
+    orders: orderReducer,
     detection: detectionReducer,
     invoices: invoiceReducer,
     offers: offersReducer,

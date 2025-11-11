@@ -1,34 +1,9 @@
-import { Mail, Calendar, User, FileText, AlertTriangle } from 'lucide-react';
-import { Footer } from '../Footer';
+import { Mail, Calendar, User, FileText, AlertTriangle } from "lucide-react";
+import { Footer } from "../Footer";
+import { useSelector } from "react-redux";
 
 export function SpamDetectionPage() {
-  const spamEmails = [
-    {
-      date: '05 Nov 25 at 12:40 PM',
-      sender: 'kartikey@outrightlysystems.org',
-      spamReason: 'test mfgnsf',
-      spam: 'SPAM'
-    },
-    {
-      date: '05 Nov 25 at 12:29 PM',
-      sender: 'kartikey@outrightlysystems.org',
-      spamReason: 'test kfakas',
-      spam: 'SPAM'
-    },
-    {
-      date: '05 Nov 25 at 11:01 AM',
-      sender: 'kartikey@outrightlysystems.org',
-      spamReason: 'test kfakas',
-      spam: 'SPAM'
-    },
-    {
-      date: '05 Nov 25 at 05:48 PM',
-      sender: 'anshik@outrightlysystems.org',
-      spamReason: 'test 1',
-      spam: 'SPAM'
-    },
-  ];
-
+  const { detection, count } = useSelector((state) => state.detection);
   return (
     <div className="p-6">
       {/* Welcome Header */}
@@ -49,7 +24,7 @@ export function SpamDetectionPage() {
             <h2 className="text-xl text-gray-900">SPAM DETECTION</h2>
           </div>
           <span className="px-4 py-1.5 bg-orange-100 text-orange-700 rounded-full">
-            4 Spam Detected
+            {count} Spam Detected
           </span>
         </div>
 
@@ -80,29 +55,31 @@ export function SpamDetectionPage() {
               </tr>
             </thead>
             <tbody>
-              {spamEmails.map((email, index) => (
-                <tr 
-                  key={index} 
+              {detection.map((spam) => (
+                <tr
+                  key={spam.id}
                   className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{spam.date_entered}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-900">
-                      <span>{email.sender}</span>
+                      <span>{spam.name}</span>
                       <button className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
                         <span className="text-xs">📋</span>
                       </button>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.spamReason}</td>
+                  <td className="px-6 py-4 text-gray-900">
+                    {spam.description.slice(0, 12)}
+                  </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 bg-orange-500 text-white rounded-full text-xs">
-                      {email.spam}
+                      {spam.type_c}
                     </span>
                   </td>
                 </tr>
