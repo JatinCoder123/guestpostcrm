@@ -14,12 +14,15 @@ import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
 import { getViewEmail } from "./store/Slices/viewEmail";
 import { getAiCredits } from "./store/Slices/aiCredits";
-import { pageContext } from "./components/context/activePageContext";
+import { PageContext } from "./context/pageContext";
+import DisplayIntro from "./components/DisplayIntro";
+import { AnimatePresence } from "framer-motion";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { email, timeline } = useSelector((state) => state.ladger);
+  const { displayIntro, setActivePage } = useContext(PageContext);
+  console.log(displayIntro);
   const location = useLocation().pathname.split("/")[2];
-  const { setActivePage } = useContext(pageContext);
   useEffect(() => {
     setActivePage(location);
   }, [location]);
@@ -45,35 +48,42 @@ const RootLayout = () => {
       dispatch(getAiCredits(timeline));
     }
   }, [email, timeline]);
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <TopNav />
-      <div className="flex">
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
-        <main
-          className={`flex-1 transition-all duration-300 ${
-            sidebarCollapsed ? "ml-16" : "ml-0"
-          }`}
-        >
-          <Outlet />
-        </main>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark" // you can change to "light"
-        />
-      </div>
-    </div>
+    <AnimatePresence mode="">
+      {displayIntro ? (
+        <DisplayIntro key="intro" />
+      ) : (
+        <div className="min-h-screen bg-[#F8FAFC]">
+          <TopNav />
+          <div className="flex">
+            <Sidebar
+              collapsed={sidebarCollapsed}
+              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
+            <main
+              className={`flex-1 transition-all duration-300 ${
+                sidebarCollapsed ? "ml-16" : "ml-0"
+              }`}
+            >
+              <Outlet />
+            </main>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark" // you can change to "light"
+            />
+          </div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
 

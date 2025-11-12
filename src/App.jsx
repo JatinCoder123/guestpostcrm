@@ -15,7 +15,7 @@ import { getLadger } from "./store/Slices/ladger";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
 import { AiCreditsPage } from "./components/pages/AiCreditsPage";
-import { PageContextProvider } from "./components/context/activePageContext";
+import { PageContextProvider } from "./context/pageContext";
 const router = createBrowserRouter([
   {
     path: "/Dashboard",

@@ -16,7 +16,7 @@ import {
 import { useContext } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { pageContext } from "./context/activePageContext";
+import { PageContext } from "../context/pageContext";
 
 export function Sidebar({ collapsed, onToggleCollapse }) {
   const navigateTo = useNavigate();
@@ -27,7 +27,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
   const detectionCount = useSelector((state) => state.detection?.count ?? 0);
   const invoiceCount = useSelector((state) => state.invoices?.count ?? 0);
   const orderCount = useSelector((state) => state.orders?.count ?? 0);
-  const { activePage, setActivePage } = useContext(pageContext);
+  const { activePage } = useContext(PageContext);
 
   const menuItems = [
     {

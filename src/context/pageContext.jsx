@@ -1,13 +1,16 @@
 import { createContext, useState } from "react";
 
-export const pageContext = createContext();
+export const PageContext = createContext();
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
+  const [displayIntro, setDisplayIntro] = useState(true);
   const value = {
     activePage,
     setActivePage,
+    displayIntro,
+    setDisplayIntro,
   };
   return (
-    <pageContext.Provider value={value}>{props.children}</pageContext.Provider>
+    <PageContext.Provider value={value}>{props.children}</PageContext.Provider>
   );
 };
