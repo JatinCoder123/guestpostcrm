@@ -53,7 +53,7 @@ export function TimelinePage() {
     <div className="p-6">
       {showEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <EmailBox onClose={() => setShowEmails(false)} />
+          <EmailBox onClose={() => setShowEmails(false)} view={true} />
         </div>
       )}
 

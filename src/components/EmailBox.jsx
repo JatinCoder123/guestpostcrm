@@ -3,9 +3,11 @@ import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 
-export default function EmailBox({ onClose }) {
+export default function EmailBox({ onClose, view }) {
   const scrollRef = useRef();
-  const { viewEmail: emails } = useSelector((state) => state.viewEmail);
+  const { viewEmail } = useSelector((state) => state.viewEmail);
+  const { threadEmail } = useSelector((state) => state.threadEmail);
+  const emails = view ? viewEmail : threadEmail;
   const { email } = useSelector((state) => state.ladger);
   // Auto-scroll to bottom when new email arrives
   useEffect(() => {

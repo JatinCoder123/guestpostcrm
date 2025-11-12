@@ -8,7 +8,7 @@ import invoiceReducer from "./Slices/invoices.js";
 import detectionReducer from "./Slices/detection.js";
 import orderReducer from "./Slices/orders.js";
 import viewEmailReducer from "./Slices/viewEmail.js";
-
+import threadEmailReducer from "./Slices/threadEmail.js";
 import aiCreditsReducer from "./Slices/aiCredits.js";
 import linkRemReducer from "./Slices/linkRem.js";
 import orderRemReducer from "./Slices/orderRem.js";
@@ -25,7 +25,7 @@ export const store = configureStore({
     invoices: invoiceReducer,
     offers: offersReducer,
     viewEmail: viewEmailReducer,
-
+    threadEmail: threadEmailReducer,
     aiCredits: aiCreditsReducer,
     orderRem: orderRemReducer,
     dealRem: dealRemReducer,
