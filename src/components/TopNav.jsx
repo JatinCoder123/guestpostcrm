@@ -1,14 +1,14 @@
 import { Search, Clock, ChevronDown, Sparkles, User } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadgerEmail, ladgerAction } from "../store/Slices/ladger";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function TopNav() {
   const [input, setInput] = useState("");
   const [openPeriod, setOpenPeriod] = useState(false);
   const { timeline } = useSelector((state) => state.ladger);
-
+  const dropDownRef = useRef();
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
@@ -17,7 +17,21 @@ export function TopNav() {
       dispatch(getLadgerEmail(input));
     }
   };
-
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        openPeriod &&
+        dropDownRef.current &&
+        !dropDownRef.current.contains(event.target)
+      ) {
+        setOpenPeriod(false); // collapse sidebar
+      }
+    }
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
   // Dropdown items
   const periodOptions = [
     "today",
@@ -35,41 +49,39 @@ export function TopNav() {
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
       {/* Logo */}
-      <div
-        className="flex items-center gap-3 cursor-pointer"
-        onClick={() => navigateTo("/Dashboard")}
-      >
+      <div className="flex items-center gap-3 cursor-pointer">
         <img
-      src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/png%20(1).png"
-      alt="GuestPostCRM Logo"
-      className="w-80 h-10 object-contain rounded-full"
-    />
-    {/* Search Bar */}
-      <div className="flex items-center gap-3 mx-6 w-full max-w-2xl flex-shrink-0">
-        <div className="relative flex-1 min-w-[300px] max-w-[600px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={input}
-            placeholder="Search emails or campaigns..."
-            onChange={(e) => setInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
-          />
+          onClick={() => navigateTo("")}
+          src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/png%20(1).png"
+          alt="GuestPostCRM Logo"
+          className="w-80 h-10 object-contain rounded-full"
+        />
+        {/* Search Bar */}
+        <div className="flex items-center gap-3 mx-6 w-full max-w-2xl flex-shrink-0">
+          <div className="relative flex-1 min-w-[300px] max-w-[600px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={input}
+              placeholder="Search emails or campaigns..."
+              onChange={(e) => setInput(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+            />
+          </div>
+          <button
+            onClick={handleSearch}
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <span className="text-sm">Search</span>
+          </button>
+          <button
+            onClick={() => setInput("")}
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <span className="text-sm">Clear</span>
+          </button>
         </div>
-        <button
-          onClick={handleSearch}
-          className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <span className="text-sm">Search</span>
-        </button>
-        <button
-          onClick={() => setInput("")}
-          className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <span className="text-sm">Clear</span>
-        </button>
-      </div>
-       {/* My Timeline Dropdown */}
+        {/* My Timeline Dropdown */}
         <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors">
           <Clock className="w-4 h-4 text-gray-600" />
           <div className="text-left">
@@ -79,7 +91,7 @@ export function TopNav() {
           <ChevronDown className="w-4 h-4 text-gray-400" />
         </button>
         {/* Period Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={dropDownRef}>
           <button
             onClick={() => setOpenPeriod(!openPeriod)}
             className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
@@ -103,8 +115,6 @@ export function TopNav() {
           )}
         </div>
       </div>
-
-      
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">

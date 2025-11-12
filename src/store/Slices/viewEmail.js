@@ -32,7 +32,7 @@ const viewEmailSlice = createSlice({
   },
 });
 
-export const getViewEmail = (filter, email) => {
+export const getViewEmail = (email) => {
   return async (dispatch) => {
     dispatch(viewEmailSlice.actions.getViewEmailRequest());
 
