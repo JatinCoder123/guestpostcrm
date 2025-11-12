@@ -25,8 +25,26 @@ const threadEmailSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    sendEmailRequest(state) {
+      state.loading = true;
+      state.message = null;
+      state.error = null;
+    },
+    sendEmailSucess(state, action) {
+      const { message } = action.payload;
+      state.loading = false;
+      state.message = message;
+      state.error = null;
+    },
+    sendEmailFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
     clearAllErrors(state) {
       state.error = null;
+    },
+    clearAllMessage(state) {
+      state.message = null;
     },
   },
 });
@@ -49,6 +67,35 @@ export const getThreadEmail = (email, threadId) => {
     } catch (error) {
       dispatch(
         threadEmailSlice.actions.getThreadEmailFailed("Fetching Deals  Failed")
+      );
+    }
+  };
+};
+export const sendEmailToThread = (threadId, reply) => {
+  return async (dispatch) => {
+    dispatch(viewEmailSlice.actions.sendEmailRequest());
+
+    try {
+      const { data } = await axios.post(
+        `${BACKEND_URL}&type=thread_reply`,
+        {
+          threadId,
+          replyBody: reply,
+        },
+        {
+          headers: "application/json",
+        }
+      );
+      console.log(`Reply Data`, data);
+      dispatch(
+        viewEmailSlice.actions.sendEmailSucess({
+          message: data.message,
+        })
+      );
+      dispatch(viewEmailSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        viewEmailSlice.actions.sendEmailFailed("Fetching Deals  Failed")
       );
     }
   };

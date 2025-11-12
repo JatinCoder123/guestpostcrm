@@ -1,6 +1,6 @@
 import { Mail, Calendar, User, FileText } from "lucide-react";
 import { Footer } from "../Footer";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
 export function UnrepliedEmailsPage() {

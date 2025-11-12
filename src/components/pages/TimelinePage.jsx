@@ -9,6 +9,7 @@ import {
   ladgerAction,
 } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
+import { viewEmailAction } from "../../store/Slices/viewEmail";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -29,6 +30,11 @@ export function TimelinePage() {
   const { ladger, email, duplicate, loading, error } = useSelector(
     (state) => state.ladger
   );
+  const {
+    loading: sendLoading,
+    error: sendError,
+    message,
+  } = useSelector((state) => state.viewEmail);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getLadger());
@@ -48,6 +54,16 @@ export function TimelinePage() {
       dispatch(ladgerAction.clearAllErrors());
     }
   }, [dispatch, loading, error]);
+  useEffect(() => {
+    if (sendError) {
+      toast.error(sendError);
+      dispatch(viewEmailAction.clearAllErrors());
+    }
+    if (message) {
+      toast.success(message);
+      dispatch(viewEmailAction.clearAllMessage());
+    }
+  }, [dispatch, sendError, sendLoading, message]);
 
   return (
     <div className="p-6">

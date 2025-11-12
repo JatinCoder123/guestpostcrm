@@ -1,20 +1,34 @@
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { sendEmail } from "../store/Slices/viewEmail";
+import { sendEmailToThread } from "../store/Slices/threadEmail";
+import { toast } from "react-toastify";
 
-export default function EmailBox({ onClose, view }) {
+export default function EmailBox({ onClose, view, ...props }) {
   const scrollRef = useRef();
   const { viewEmail } = useSelector((state) => state.viewEmail);
   const { threadEmail } = useSelector((state) => state.threadEmail);
+  const [input, setInput] = useState("");
   const emails = view ? viewEmail : threadEmail;
   const { email } = useSelector((state) => state.ladger);
-  // Auto-scroll to bottom when new email arrives
+  const dispatch = useDispatch();
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [emails]);
+  const handleClickAiReplyBtn = () => {};
+  const handleClickSendBtn = (reply) => {
+    if (view) {
+      dispatch(sendEmail(reply));
+      // onClose();
+    } else {
+      // dispatch(sendEmailToThread(props.threadId, reply));
+      toast.info("This Funtionality still need to be added!");
+    }
+  };
 
   return (
     <motion.div
@@ -22,7 +36,7 @@ export default function EmailBox({ onClose, view }) {
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.9, opacity: 0 }}
       transition={{ type: "spring", stiffness: 120, damping: 15 }}
-      className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-3xl h-[80vh] flex flex-col overflow-hidden relative"
+      className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[80vh] flex flex-col overflow-hidden relative"
     >
       {/* Header */}
       <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
@@ -114,12 +128,15 @@ export default function EmailBox({ onClose, view }) {
         <div className="flex items-center gap-2">
           <input
             type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="Type your reply..."
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handleClickSendBtn}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow-md"
           >
             Send
@@ -127,6 +144,7 @@ export default function EmailBox({ onClose, view }) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handleClickAiReplyBtn}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow-md"
           >
             Ai Reply
