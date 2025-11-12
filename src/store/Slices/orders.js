@@ -13,21 +13,17 @@ const ordersSlice = createSlice({
   reducers: {
     getOrdersRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.orders = [];
       state.error = null;
     },
     getOrdersSucess(state, action) {
       const { count, orders } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.orders = orders;
       state.count = count;
       state.error = null;
     },
     getOrdersFailed(state, action) {
       state.loading = false;
-      state.orders = [];
-      state.count = 0;
       state.error = action.payload;
     },
     clearAllErrors(state) {

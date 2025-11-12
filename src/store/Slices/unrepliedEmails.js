@@ -13,21 +13,17 @@ const unrepliedSlice = createSlice({
   reducers: {
     getEmailRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.emails = [];
       state.error = null;
     },
     getEmailSucess(state, action) {
       const { count, emails } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.emails = emails;
       state.count = count;
       state.error = null;
     },
     getEmailFailed(state, action) {
       state.loading = false;
-      state.emails = [];
-      state.count = 0;
       state.error = action.payload;
     },
     clearAllErrors(state) {

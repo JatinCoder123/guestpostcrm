@@ -13,21 +13,17 @@ const invoicesSlice = createSlice({
   reducers: {
     getInvoicesRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.invoices = [];
       state.error = null;
     },
     getInvoicesSucess(state, action) {
       const { count, invoices } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.invoices = invoices;
       state.count = count;
       state.error = null;
     },
     getInvoicesFailed(state, action) {
       state.loading = false;
-      state.invoices = [];
-      state.count = 0;
       state.error = action.payload;
     },
     clearAllErrors(state) {

@@ -13,21 +13,17 @@ const detectionSlice = createSlice({
   reducers: {
     getDetectionRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.detection = [];
       state.error = null;
     },
     getDetectionSucess(state, action) {
       const { count, detection } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.detection = detection;
       state.count = count;
       state.error = null;
     },
     getDetectionFailed(state, action) {
       state.loading = false;
-      state.detection = [];
-      state.count = 0;
       state.error = action.payload;
     },
     clearAllErrors(state) {

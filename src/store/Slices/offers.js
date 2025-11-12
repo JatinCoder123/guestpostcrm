@@ -13,21 +13,19 @@ const offersSlice = createSlice({
   reducers: {
     getOffersRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.offers = [];
+
       state.error = null;
     },
     getOffersSucess(state, action) {
       const { count, offers } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.offers = offers;
       state.count = count;
       state.error = null;
     },
     getOffersFailed(state, action) {
       state.loading = false;
-      state.offers = [];
-      state.count = 0;
+
       state.error = action.payload;
     },
     clearAllErrors(state) {

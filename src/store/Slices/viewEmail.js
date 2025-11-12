@@ -17,7 +17,7 @@ const viewEmailSlice = createSlice({
     },
     getViewEmailSucess(state, action) {
       const { viewEmail } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.viewEmail = viewEmail;
       state.error = null;
     },

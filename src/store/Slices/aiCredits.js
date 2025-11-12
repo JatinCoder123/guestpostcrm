@@ -18,7 +18,7 @@ const aiCreditsSlice = createSlice({
     },
     getAiCreditsSucess(state, action) {
       const { aiCredits, count, balance } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.aiCredits = aiCredits;
       state.count = count;
       state.balance = balance;

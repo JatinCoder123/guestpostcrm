@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { BACKEND_URL } from "../constants";
-import { act } from "react";
 
 const ladgerSlice = createSlice({
   name: "ladger",
@@ -17,8 +16,6 @@ const ladgerSlice = createSlice({
   reducers: {
     getLadgerRequest(state) {
       state.loading = true;
-      state.ladger = state.ladger;
-      state.duplicate = state.duplicate;
       state.error = null;
     },
     getLadgerSuccess(state, action) {
@@ -31,8 +28,6 @@ const ladgerSlice = createSlice({
     },
     getLadgerFailed(state, action) {
       state.loading = false;
-      state.ladger = state.ladger;
-      state.duplicate = state.duplicate;
       state.error = action.payload;
     },
     setTimeline(state, action) {
