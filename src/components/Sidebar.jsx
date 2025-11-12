@@ -13,15 +13,12 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useContext } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { pageContext } from "./context/activePageContext";
 
-export function Sidebar({
-  currentPage,
-  onPageChange,
-  collapsed,
-  onToggleCollapse,
-}) {
+export function Sidebar({ collapsed, onToggleCollapse }) {
   const navigateTo = useNavigate();
   const unrepliedCount = useSelector((state) => state.unreplied?.count ?? 0);
   const unansweredCount = useSelector((state) => state.unanswered?.count ?? 0);
@@ -30,6 +27,7 @@ export function Sidebar({
   const detectionCount = useSelector((state) => state.detection?.count ?? 0);
   const invoiceCount = useSelector((state) => state.invoices?.count ?? 0);
   const orderCount = useSelector((state) => state.orders?.count ?? 0);
+  const { activePage, setActivePage } = useContext(pageContext);
 
   const menuItems = [
     {
@@ -147,7 +145,7 @@ export function Sidebar({
         <button
           onClick={() => navigateTo("")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-            currentPage === ""
+            activePage === ""
               ? "bg-green-500 text-white shadow-md"
               : "bg-green-50 text-green-700 hover:bg-green-100"
           }`}
@@ -164,14 +162,14 @@ export function Sidebar({
             key={item.id}
             onClick={() => navigateTo(item.id)}
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
-              currentPage === item.id
+              activePage === item.id
                 ? `bg-gray-100 ${item.color}`
                 : `text-gray-700 ${item.bgColor}`
             }`}
           >
             <item.icon
               className={`w-4 h-4 flex-shrink-0 ${
-                currentPage === item.id ? "" : "text-gray-500"
+                activePage === item.id ? "" : "text-gray-500"
               }`}
             />
             {!collapsed && (

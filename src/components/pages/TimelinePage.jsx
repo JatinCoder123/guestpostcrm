@@ -1,5 +1,5 @@
 import { Mail, CheckCircle, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Footer } from "../Footer";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -8,9 +8,24 @@ import {
   getLadgerEmail,
   ladgerAction,
 } from "../../store/Slices/ladger";
+import EmailBox from "../EmailBox";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [showEmail, setShowEmails] = useState(false);
+
+  useEffect(() => {
+    if (showEmail) {
+      document.body.style.overflow = "hidden"; // Disable background scroll
+    } else {
+      document.body.style.overflow = "auto"; // Restore when closed
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup
+    };
+  }, [showEmail]);
+
   const { ladger, email, duplicate, loading, error } = useSelector(
     (state) => state.ladger
   );
@@ -27,7 +42,6 @@ export function TimelinePage() {
 
     return () => clearInterval(interval);
   }, [autoRefresh]);
-
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -37,6 +51,12 @@ export function TimelinePage() {
 
   return (
     <div className="p-6">
+      {showEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <EmailBox onClose={() => setShowEmails(false)} />
+        </div>
+      )}
+
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white flex justify-between items-center">
         {/* Left Side - Welcome Text */}
@@ -141,20 +161,23 @@ export function TimelinePage() {
 
           {/* Action Buttons */}
           <div className="mt-4 flex flex-wrap gap-2">
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button
+              onClick={() => setShowEmails((p) => !p)}
+              className="flex items-center cursor-pointer  gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
               <Mail className="w-4 h-4" />
               <span>View Email</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
               <span>View Contact</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
               <span>View Deal</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
               <span>View Orders</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
               <span>AI Reply</span>
             </button>
           </div>

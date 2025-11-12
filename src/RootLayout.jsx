@@ -1,8 +1,8 @@
 import { ToastContainer } from "react-toastify";
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
-import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
 import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
@@ -12,10 +12,17 @@ import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
 import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
+import { getViewEmail } from "./store/Slices/viewEmail";
+import { getAiCredits } from "./store/Slices/aiCredits";
+import { pageContext } from "./components/context/activePageContext";
 const RootLayout = () => {
-  console.log("IN rootlayour");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { email, timeline } = useSelector((state) => state.ladger);
+  const location = useLocation().pathname.split("/")[2];
+  const { setActivePage } = useContext(pageContext);
+  useEffect(() => {
+    setActivePage(location);
+  }, [location]);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getLadger());
@@ -34,6 +41,8 @@ const RootLayout = () => {
       dispatch(getInvoices(timeline, email));
       dispatch(getOffers(timeline, email));
       dispatch(getDetection(timeline, email));
+      dispatch(getViewEmail(email));
+      dispatch(getAiCredits(timeline));
     }
   }, [email, timeline]);
   return (

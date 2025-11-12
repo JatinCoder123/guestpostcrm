@@ -14,6 +14,8 @@ import { useDispatch } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
+import { AiCreditsPage } from "./components/pages/AiCreditsPage";
+import { PageContextProvider } from "./components/context/activePageContext";
 const router = createBrowserRouter([
   {
     path: "/Dashboard",
@@ -26,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "unreplied-emails",
         element: <UnrepliedEmailsPage />,
+      },
+      {
+        path: "ai-credits",
+        element: <AiCreditsPage />,
       },
       {
         path: "spam-detection",
@@ -77,7 +83,9 @@ export default function App() {
   }, []);
   return (
     <>
-      <RouterProvider router={router} />
+      <PageContextProvider>
+        <RouterProvider router={router} />
+      </PageContextProvider>
     </>
   );
 }

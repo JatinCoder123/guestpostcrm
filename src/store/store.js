@@ -7,6 +7,8 @@ import offersReducer from "./Slices/offers.js";
 import invoiceReducer from "./Slices/invoices.js";
 import detectionReducer from "./Slices/detection.js";
 import orderReducer from "./Slices/orders.js";
+import viewEmailReducer from "./Slices/viewEmail.js";
+import aiCreditsReducer from "./Slices/aiCredits.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -17,5 +19,7 @@ export const store = configureStore({
     detection: detectionReducer,
     invoices: invoiceReducer,
     offers: offersReducer,
+    viewEmail: viewEmailReducer,
+    aiCredits: aiCreditsReducer,
   },
 });

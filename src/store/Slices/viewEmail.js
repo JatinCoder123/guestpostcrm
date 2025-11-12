@@ -43,7 +43,7 @@ export const getViewEmail = (email) => {
       console.log(`viewEmail`, data);
       dispatch(
         viewEmailSlice.actions.getViewEmailSucess({
-          viewEmail: data.data,
+          viewEmail: data.emails,
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());

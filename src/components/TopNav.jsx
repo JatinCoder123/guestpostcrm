@@ -119,7 +119,10 @@ export function TopNav() {
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
         {/* AI Credits Button */}
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#5E17EB] text-white rounded-lg hover:bg-[#4d12c4] transition-colors">
+        <button
+          onClick={() => navigateTo("ai-credits")}
+          className="flex items-center gap-2 px-4 py-2 bg-[#5E17EB] text-white rounded-lg hover:bg-[#4d12c4] transition-colors"
+        >
           <Sparkles className="w-4 h-4" />
           <span className="text-sm">AI Credits</span>
         </button>
