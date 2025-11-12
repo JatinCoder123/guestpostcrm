@@ -29,7 +29,7 @@ const RootLayout = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getLadger());
-  }, []);
+  }, [timeline]);
   useEffect(() => {
     if (email) {
       dispatch(getLadgerEmail(email));
@@ -50,7 +50,7 @@ const RootLayout = () => {
   }, [email, timeline]);
 
   return (
-    <AnimatePresence mode="">
+    <AnimatePresence mode="wait">
       {displayIntro ? (
         <DisplayIntro key="intro" />
       ) : (

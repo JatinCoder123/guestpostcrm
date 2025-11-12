@@ -16,6 +16,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
 import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";
+import { OrderReminderPage } from "./components/pages/OrderReminderPage";
 const router = createBrowserRouter([
   {
     path: "/Dashboard",
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
       {
         path: "deal-reminders",
         element: <DealRemindersPage />,
+      },
+      {
+        path: "order-reminders",
+        element: <OrderReminderPage />,
       },
       {
         path: "timeline",

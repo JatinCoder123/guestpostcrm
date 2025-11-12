@@ -177,9 +177,6 @@ export function TimelinePage() {
             <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
               <span>View Orders</span>
             </button>
-            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-              <span>AI Reply</span>
-            </button>
           </div>
         </div>
 

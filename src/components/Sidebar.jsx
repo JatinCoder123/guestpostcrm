@@ -12,6 +12,7 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
+  ShoppingBag,
 } from "lucide-react";
 import { useContext } from "react";
 import { useSelector } from "react-redux";
@@ -27,6 +28,10 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
   const detectionCount = useSelector((state) => state.detection?.count ?? 0);
   const invoiceCount = useSelector((state) => state.invoices?.count ?? 0);
   const orderCount = useSelector((state) => state.orders?.count ?? 0);
+  const linkRemCount = useSelector((state) => state.linkRem?.count ?? 0);
+  const orderRemCount = useSelector((state) => state.orderRem?.count ?? 0);
+  const paymentRemCount = useSelector((state) => state.paymentRem?.count ?? 0);
+  const dealRemCount = useSelector((state) => state.dealRem?.count ?? 0);
   const { activePage } = useContext(PageContext);
 
   const menuItems = [
@@ -97,7 +102,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "payment-missed",
       label: "Payment Missed",
       icon: CreditCard,
-      count: 0,
+      count: paymentRemCount,
       color: "text-red-600",
       bgColor: "hover:bg-red-50",
       countColor: "bg-red-500 text-white",
@@ -106,7 +111,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "link-removal",
       label: "Link Removal",
       icon: Link2,
-      count: 0,
+      count: linkRemCount,
       color: "text-pink-600",
       bgColor: "hover:bg-pink-50",
       countColor: "bg-pink-500 text-white",
@@ -115,10 +120,19 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "deal-reminders",
       label: "Deal Reminders",
       icon: Bell,
-      count: dealCount,
+      count: dealRemCount,
       color: "text-cyan-600",
       bgColor: "hover:bg-cyan-50",
       countColor: "bg-cyan-500 text-white",
+    },
+    {
+      id: "order-reminders",
+      label: "Order Reminders",
+      icon: ShoppingBag,
+      count: orderRemCount,
+      color: "text-cyan-600",
+      bgColor: "hover:bg-red-50",
+      countColor: "bg-red-500 text-white",
     },
   ];
 

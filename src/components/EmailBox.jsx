@@ -107,6 +107,30 @@ export default function EmailBox({ onClose }) {
           );
         })}
       </div>
+      {/* Footer (reply input area) */}
+      <div className="p-4 border-t bg-white">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Type your reply..."
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow-md"
+          >
+            Send
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow-md"
+          >
+            Ai Reply
+          </motion.button>
+        </div>
+      </div>
     </motion.div>
   );
 }

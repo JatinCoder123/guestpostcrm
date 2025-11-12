@@ -1,19 +1,11 @@
-import {
-  Mail,
-  Calendar,
-  User,
-  FileText,
-  MessageSquare,
-  Satellite,
-} from "lucide-react";
+import { Mail, Calendar, User, FileText, MessageSquare } from "lucide-react";
 import { Footer } from "../Footer";
-import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getUnansweredEmails } from "../../store/Slices/unansweredEmails";
+import { useState } from "react";
 
 export function UnansweredPage() {
   const dispatch = useDispatch();
-  const { count,emails } = useSelector((state) => state.unanswered);
+  const { count, emails } = useSelector((state) => state.unanswered);
   return (
     <div className="p-6">
       {/* Welcome Header */}
@@ -76,11 +68,11 @@ export function UnansweredPage() {
                       <span>{email.date_created}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from_email}</td>
-                  <td className="px-6 py-4 text-purple-600">{email.subject}</td>
-                  <td className="px-6 py-4 text-gray-500">
-                    NO Summary Found
+                  <td className="px-6 py-4 text-gray-900">
+                    {email.from_email}
                   </td>
+                  <td className="px-6 py-4 text-purple-600">{email.subject}</td>
+                  <td className="px-6 py-4 text-gray-500">NO Summary Found</td>
                 </tr>
               ))}
             </tbody>

@@ -8,10 +8,8 @@ import {
 } from "lucide-react";
 import { useSelector } from "react-redux";
 
-export function PaymentMissedPage() {
-  const { paymentRem: missedPayments } = useSelector(
-    (state) => state.paymentRem
-  );
+export function OrderReminderPage() {
+  const { orderRem, count } = useSelector((state) => state.orderRem);
 
   return (
     <div className="p-6">
@@ -29,8 +27,8 @@ export function PaymentMissedPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Missed Payments</p>
-              <p className="text-2xl text-gray-900 mt-1">3</p>
+              <p className="text-gray-500 text-sm">Order Reminder</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <AlertCircle className="w-6 h-6 text-red-600" />
@@ -116,19 +114,17 @@ export function PaymentMissedPage() {
               </tr>
             </thead>
             <tbody>
-              {missedPayments.map((payment, index) => (
+              {orderRem.map((order, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-red-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-gray-900">
-                    {payment.recipient}
-                  </td>
-                  <td className="px-6 py-4 text-red-600">{payment.name}</td>
-                  <td className="px-6 py-4 text-green-600">{payment.time}</td>
-                  <td className="px-6 py-4 text-gray-600">{payment.status}</td>
+                  <td className="px-6 py-4 text-gray-900">{order.recipient}</td>
+                  <td className="px-6 py-4 text-red-600">{order.name}</td>
+                  <td className="px-6 py-4 text-green-600">{order.time}</td>
+                  <td className="px-6 py-4 text-gray-600">{order.status}</td>
                   <td className="px-6 py-4 text-gray-600">
-                    {payment.scheduled_time}
+                    {order.scheduled_time}
                   </td>
                   <td className="px-6 py-4">
                     <button className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
@@ -141,7 +137,7 @@ export function PaymentMissedPage() {
           </table>
         </div>
 
-        {missedPayments.length === 0 && (
+        {orderRem.length === 0 && (
           <div className="p-12 text-center">
             <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">
