@@ -1,33 +1,9 @@
 import { Mail, Gift, Tag, DollarSign, Calendar, User } from "lucide-react";
 import { Footer } from "../Footer";
+import { useSelector } from "react-redux";
 
 export function OffersPage() {
-  const offers = [
-    {
-      offerName: "Premium Guest Post Package",
-      client: "TechBlog Inc.",
-      price: "$1,500",
-      status: "Pending",
-      validUntil: "30 Nov 2025",
-      services: "DA50+ Guest Post",
-    },
-    {
-      offerName: "Link Building Bundle",
-      client: "Digital Marketing Co.",
-      price: "$2,000",
-      status: "Accepted",
-      validUntil: "25 Nov 2025",
-      services: "5 High DA Guest Posts",
-    },
-    {
-      offerName: "Content Partnership",
-      client: "SEO Agency",
-      price: "$3,500",
-      status: "Under Review",
-      validUntil: "15 Dec 2025",
-      services: "Monthly Guest Posts",
-    },
-  ];
+  const { offers, count } = useSelector((state) => state.offers);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -61,7 +37,7 @@ export function OffersPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Offers</p>
-              <p className="text-2xl text-gray-900 mt-1">3</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <Gift className="w-6 h-6 text-green-600" />
@@ -124,7 +100,6 @@ export function OffersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-                <th className="px-6 py-4 text-left">OFFER NAME</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
@@ -137,14 +112,25 @@ export function OffersPage() {
                     <span>PRICE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">STATUS</th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span>CLIENT OFFER</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    <span>OUR OFFER</span>
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>VALID UNTIL</span>
+                    <span> DATE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">SERVICES</th>
+                <th className="px-6 py-4 text-left">DESCRIPTION</th>
               </tr>
             </thead>
             <tbody>
@@ -153,24 +139,20 @@ export function OffersPage() {
                   key={index}
                   className="border-b border-gray-100 hover:bg-green-50 transition-colors cursor-pointer"
                 >
+                  <td className="px-6 py-4 text-gray-900">{offer.name}</td>
+                  <td className="px-6 py-4 text-green-600">{offer.amount}</td>
                   <td className="px-6 py-4 text-green-600">
-                    {offer.offerName}
+                    {offer.client_offer_c}
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{offer.client}</td>
-                  <td className="px-6 py-4 text-green-600">{offer.price}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                        offer.status
-                      )}`}
-                    >
-                      {offer.status}
-                    </span>
+                  <td className="px-6 py-4 text-green-600">
+                    {offer.our_offer_c}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {offer.validUntil}
+                    {offer.date_entered}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{offer.services}</td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {offer.description}
+                  </td>
                 </tr>
               ))}
             </tbody>

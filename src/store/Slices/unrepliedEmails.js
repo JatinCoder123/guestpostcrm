@@ -6,28 +6,24 @@ const unrepliedSlice = createSlice({
   name: "unreplied",
   initialState: {
     loading: false,
-    emails: null,
+    emails: [],
     count: 0,
     error: null,
   },
   reducers: {
     getEmailRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.emails = null;
       state.error = null;
     },
     getEmailSucess(state, action) {
       const { count, emails } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.emails = emails;
       state.count = count;
-      state.count = state.error = null;
+      state.error = null;
     },
     getEmailFailed(state, action) {
       state.loading = false;
-      state.emails = null;
-      state.count = 0;
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -47,7 +43,7 @@ export const getUnrepliedEmail = (filter, email) => {
       console.log(`Unreplied emails`, data);
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
-          count: data.data_count,
+          count: data.data_count ?? 0,
           emails: data.data,
         })
       );

@@ -7,47 +7,20 @@ import {
   Download,
 } from "lucide-react";
 import { Footer } from "../Footer";
+import { useSelector } from "react-redux";
 
 export function InvoicesPage() {
-  const invoices = [
-    {
-      invoiceId: "#INV-001",
-      client: "TechBlog Inc.",
-      amount: "$500",
-      status: "Paid",
-      issueDate: "10 Nov 2025",
-      dueDate: "17 Nov 2025",
-      paidDate: "15 Nov 2025",
-    },
-    {
-      invoiceId: "#INV-002",
-      client: "Digital Agency",
-      amount: "$1,200",
-      status: "Pending",
-      issueDate: "05 Nov 2025",
-      dueDate: "19 Nov 2025",
-      paidDate: "-",
-    },
-    {
-      invoiceId: "#INV-003",
-      client: "SEO Company",
-      amount: "$750",
-      status: "Overdue",
-      issueDate: "01 Nov 2025",
-      dueDate: "08 Nov 2025",
-      paidDate: "-",
-    },
-  ];
+  const { invoices, count } = useSelector((state) => state.invoices);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Paid":
+      case "PAID":
         return "bg-green-100 text-green-700";
-      case "Pending":
+      case "DRAFT":
         return "bg-yellow-100 text-yellow-700";
-      case "Overdue":
+      case "CANCELLED":
         return "bg-red-100 text-red-700";
-      case "Cancelled":
+      case "SENT":
         return "bg-gray-100 text-gray-700";
       default:
         return "bg-gray-100 text-gray-700";
@@ -71,7 +44,7 @@ export function InvoicesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Invoices</p>
-              <p className="text-2xl text-gray-900 mt-1">3</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-yellow-600" />
@@ -160,31 +133,35 @@ export function InvoicesPage() {
               </tr>
             </thead>
             <tbody>
-              {invoices.map((invoice, index) => (
+              {invoices.map((invoice) => (
                 <tr
-                  key={index}
+                  key={invoice.id}
                   className="border-b border-gray-100 hover:bg-yellow-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4 text-yellow-600">
-                    {invoice.invoiceId}
+                    {invoice.invoice_id?.slice(0, 4)}
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{invoice.client}</td>
-                  <td className="px-6 py-4 text-green-600">{invoice.amount}</td>
+                  <td className="px-6 py-4 text-gray-900">{invoice.name}</td>
+                  <td className="px-6 py-4 text-green-600">
+                    {invoice.amount_c ?? "NOT PAID"}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                        invoice.status
+                        invoice.status_c
                       )}`}
                     >
-                      {invoice.status}
+                      {invoice.status_c}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {invoice.issueDate}
+                    {invoice.date_entered}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{invoice.dueDate}</td>
                   <td className="px-6 py-4 text-gray-600">
-                    {invoice.paidDate}
+                    {invoice.due_date ?? "PENDING"}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {invoice.payment_data ?? "PENDING"}
                   </td>
                   <td className="px-6 py-4">
                     <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">

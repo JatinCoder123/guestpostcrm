@@ -1,8 +1,6 @@
 import { useEffect } from "react";
-import { LivePage } from "./components/pages/LivePage";
 import { TimelinePage } from "./components/pages/TimelinePage";
 import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
-import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { UnansweredPage } from "./components/pages/UnansweredPage";
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
@@ -11,12 +9,12 @@ import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
 import { DealRemindersPage } from "./components/pages/DealRemindersPage";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
-import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
-import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
+import { AiCreditsPage } from "./components/pages/AiCreditsPage";
+import { PageContextProvider } from "./context/pageContext";
 const router = createBrowserRouter([
   {
     path: "/Dashboard",
@@ -27,12 +25,12 @@ const router = createBrowserRouter([
         element: <TimelinePage />,
       },
       {
-        path: "live",
-        element: <LivePage />,
-      },
-      {
         path: "unreplied-emails",
         element: <UnrepliedEmailsPage />,
+      },
+      {
+        path: "ai-credits",
+        element: <AiCreditsPage />,
       },
       {
         path: "spam-detection",
@@ -78,13 +76,15 @@ const router = createBrowserRouter([
   },
 ]);
 export default function App() {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   useEffect(() => {
- dispatch(getLadger());
+    dispatch(getLadger());
   }, []);
   return (
     <>
-      <RouterProvider router={router} />
+      <PageContextProvider>
+        <RouterProvider router={router} />
+      </PageContextProvider>
     </>
   );
 }

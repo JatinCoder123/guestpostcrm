@@ -14,6 +14,8 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
+import { useDispatch } from "react-redux";
+import { getLadger } from "../store/Slices/ladger";
 
 const initialEvents = [
   {
@@ -54,6 +56,7 @@ export function Timeline() {
   const [searchQuery, setSearchQuery] = useState("");
   const [timelineEvents, setTimelineEvents] = useState(initialEvents);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const dispatch = useDispatch();
 
   const refreshTimeline = () => {
     console.log("Refreshing timeline...");
@@ -170,11 +173,9 @@ export function Timeline() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-blue-500 text-blue-600 hover:bg-blue-50"
-              onClick={refreshTimeline}
+            <button
+              className="border-blue-500 cursor-pointer text-blue-600 hover:bg-blue-50"
+              onClick={() => dispatch(getLadger())}
             >
               <svg
                 className="w-4 h-4 mr-2"
@@ -190,7 +191,7 @@ export function Timeline() {
                 />
               </svg>
               Refresh
-            </Button>
+            </button>
 
             <div className="flex items-center gap-2">
               <span className="text-gray-600 text-sm">Auto Refresh:</span>
