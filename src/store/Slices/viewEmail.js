@@ -7,6 +7,8 @@ const viewEmailSlice = createSlice({
   initialState: {
     loading: false,
     viewEmail: [],
+    contactInfo: null,
+    accountInfo: null,
     threadId: null,
     message: null,
     error: null,
@@ -27,6 +29,25 @@ const viewEmailSlice = createSlice({
     getViewEmailFailed(state, action) {
       state.loading = false;
       state.viewEmail = [];
+      state.error = action.payload;
+    },
+    getContactRequest(state) {
+      state.loading = true;
+      state.contactInfo = null;
+      state.accountInfo = null;
+      state.error = null;
+    },
+    getContactSucess(state, action) {
+      const { contactInfo, accountInfo } = action.payload;
+      state.loading = false;
+      state.contactInfo = contactInfo;
+      state.accountInfo = accountInfo;
+      state.error = null;
+    },
+    getContactFailed(state, action) {
+      state.loading = false;
+      state.contactInfo = null;
+      state.accountInfo = null;
       state.error = action.payload;
     },
     sendEmailRequest(state) {
@@ -72,6 +93,31 @@ export const getViewEmail = (email) => {
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.getViewEmailFailed("Fetching Deals  Failed")
+      );
+    }
+  };
+};
+export const getContact = (email) => {
+  return async (dispatch) => {
+    dispatch(viewEmailSlice.actions.getContactRequest());
+
+    try {
+      const { data } = await axios.get(
+        `${BACKEND_URL}&type=get_contact&email=${email}`
+      );
+      console.log(`contact`, data);
+      dispatch(
+        viewEmailSlice.actions.getContactSucess({
+          contactInfo: data.contact ?? null,
+          accountInfo: data.account ?? null,
+        })
+      );
+      dispatch(viewEmailSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        viewEmailSlice.actions.getContactFailed(
+          "Fetching Contact Details failed"
+        )
       );
     }
   };

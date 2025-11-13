@@ -1,31 +1,17 @@
 import { Mail, Calendar, User, FileText } from "lucide-react";
 import { Footer } from "../Footer";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { threadEmailAction } from "../../store/Slices/threadEmail";
 export function UnrepliedEmailsPage() {
   const { count, emails } = useSelector((state) => state.unreplied);
-  const [currentThreadId, setCurrentThreadId] = useState(null);
-  const [handleThreadClick, showEmail, setShowEmails] = useThread();
-  const {
-    message,
-    error: sendError,
-    loading: sendLoading,
-  } = useSelector((state) => state.threadEmail);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    if (sendError) {
-      toast.error(sendError);
-      dispatch(threadEmailAction.clearAllErrors());
-    }
-    if (message) {
-      toast.success(message);
-      dispatch(threadEmailAction.clearAllMessage());
-    }
-  }, [dispatch, sendError, sendLoading, message]);
+  const [
+    handleThreadClick,
+    showEmail,
+    setShowEmails,
+    currentThreadId,
+    setCurrentThreadId,
+  ] = useThread();
   return (
     <div className="p-6">
       {showEmail && currentThreadId && (

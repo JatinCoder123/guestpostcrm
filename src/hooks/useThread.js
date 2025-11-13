@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { getThreadEmail } from "../store/Slices/threadEmail";
+import { useDispatch, useSelector } from "react-redux";
+import { getThreadEmail, threadEmailAction } from "../store/Slices/threadEmail";
+import { toast } from "react-toastify";
 
 function useThread() {
   const [showEmail, setShowEmails] = useState(false);
+  const {
+    message,
+    error: sendError,
+    loading: sendLoading,
+  } = useSelector((state) => state.threadEmail);
+  const [currentThreadId, setCurrentThreadId] = useState(null);
   const dispatch = useDispatch();
   const handleThreadClick = (email, threadId) => {
     dispatch(getThreadEmail(email, threadId));
@@ -20,7 +27,23 @@ function useThread() {
       document.body.style.overflow = "auto"; // Cleanup
     };
   }, [showEmail]);
-  return [handleThreadClick, showEmail, setShowEmails];
+  useEffect(() => {
+    if (sendError) {
+      toast.error(sendError);
+      dispatch(threadEmailAction.clearAllErrors());
+    }
+    if (message) {
+      toast.success(message);
+      dispatch(threadEmailAction.clearAllMessage());
+    }
+  }, [dispatch, sendError, sendLoading, message]);
+  return [
+    handleThreadClick,
+    showEmail,
+    setShowEmails,
+    currentThreadId,
+    setCurrentThreadId,
+  ];
 }
 
 export default useThread;

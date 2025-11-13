@@ -9,14 +9,16 @@ import {
   ladgerAction,
 } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
-import { viewEmailAction } from "../../store/Slices/viewEmail";
+import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
+import ContactBox from "../ContactBox";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
-    if (showEmail) {
+    if (showEmail || showContact) {
       document.body.style.overflow = "hidden"; // Disable background scroll
     } else {
       document.body.style.overflow = "auto"; // Restore when closed
@@ -25,7 +27,7 @@ export function TimelinePage() {
     return () => {
       document.body.style.overflow = "auto"; // Cleanup
     };
-  }, [showEmail]);
+  }, [showEmail, showContact]);
 
   const { ladger, email, duplicate, loading, error } = useSelector(
     (state) => state.ladger
@@ -70,6 +72,15 @@ export function TimelinePage() {
       {showEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
           <EmailBox onClose={() => setShowEmails(false)} view={true} />
+        </div>
+      )}
+      {showContact && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <ContactBox
+            onClose={() => {
+              setShowContact(false);
+            }}
+          />
         </div>
       )}
 
@@ -184,7 +195,13 @@ export function TimelinePage() {
               <Mail className="w-4 h-4" />
               <span>View Email</span>
             </button>
-            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <button
+              onClick={() => {
+                dispatch(getContact(email));
+                setShowContact((p) => !p);
+              }}
+              className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
               <span>View Contact</span>
             </button>
             <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">

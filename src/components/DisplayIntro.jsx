@@ -61,7 +61,7 @@ const DisplayIntro = () => {
           className="font-bold font-mono  text-5xl  "
         >
           <span className="text-[#cf4d4d] ">GuestPost</span>
-          <span className="text-[#33A852]">Crm</span>
+          <span className="text-[#33A852]">CRM</span>
         </motion.span>
       </AnimatePresence>
     </motion.div>
