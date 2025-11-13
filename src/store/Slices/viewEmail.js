@@ -100,8 +100,9 @@ export const sendEmail = (reply) => {
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
+      console.log(error);
       dispatch(
-        viewEmailSlice.actions.sendEmailFailed("Fetching Deals  Failed")
+        viewEmailSlice.actions.sendEmailFailed("Error while sending email")
       );
     }
   };

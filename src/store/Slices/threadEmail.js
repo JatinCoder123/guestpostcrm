@@ -73,7 +73,7 @@ export const getThreadEmail = (email, threadId) => {
 };
 export const sendEmailToThread = (threadId, reply) => {
   return async (dispatch) => {
-    dispatch(viewEmailSlice.actions.sendEmailRequest());
+    dispatch(threadEmailSlice.actions.sendEmailRequest());
 
     try {
       const { data } = await axios.post(
@@ -83,19 +83,19 @@ export const sendEmailToThread = (threadId, reply) => {
           replyBody: reply,
         },
         {
-          headers: "application/json",
+          headers: { "Content-Type": "application/json" },
         }
       );
       console.log(`Reply Data`, data);
       dispatch(
-        viewEmailSlice.actions.sendEmailSucess({
+        threadEmailSlice.actions.sendEmailSucess({
           message: data.message,
         })
       );
-      dispatch(viewEmailSlice.actions.clearAllErrors());
+      dispatch(threadEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.sendEmailFailed("Fetching Deals  Failed")
+        threadEmailSlice.actions.sendEmailFailed("Error while sending email")
       );
     }
   };

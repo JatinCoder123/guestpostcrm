@@ -21,7 +21,6 @@ const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { email, timeline } = useSelector((state) => state.ladger);
   const { displayIntro, setActivePage } = useContext(PageContext);
-  console.log(displayIntro);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
     setActivePage(location);

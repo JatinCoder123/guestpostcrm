@@ -49,7 +49,7 @@ export const getDeals = (filter, email) => {
       );
       dispatch(dealsSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(dealsSlice.actions.getDealsFailed("Fetching Deals  Failed"));
+      dispatch(dealsSlice.actions.getDealsFailed("Fetching Deal  Failed"));
     }
   };
 };

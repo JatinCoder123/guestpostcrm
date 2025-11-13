@@ -3,14 +3,38 @@ import { Footer } from "../Footer";
 import { useDispatch, useSelector } from "react-redux";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { threadEmailAction } from "../../store/Slices/threadEmail";
 export function UnrepliedEmailsPage() {
   const { count, emails } = useSelector((state) => state.unreplied);
+  const [currentThreadId, setCurrentThreadId] = useState(null);
   const [handleThreadClick, showEmail, setShowEmails] = useThread();
+  const {
+    message,
+    error: sendError,
+    loading: sendLoading,
+  } = useSelector((state) => state.threadEmail);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (sendError) {
+      toast.error(sendError);
+      dispatch(threadEmailAction.clearAllErrors());
+    }
+    if (message) {
+      toast.success(message);
+      dispatch(threadEmailAction.clearAllMessage());
+    }
+  }, [dispatch, sendError, sendLoading, message]);
   return (
     <div className="p-6">
-      {showEmail && (
+      {showEmail && currentThreadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <EmailBox onClose={() => setShowEmails(false)} view={false} />
+          <EmailBox
+            onClose={() => setShowEmails(false)}
+            view={false}
+            threadId={currentThreadId}
+          />
         </div>
       )}
       {/* Welcome Header */}
@@ -77,9 +101,10 @@ export function UnrepliedEmailsPage() {
                     {email.from_email}
                   </td>
                   <td
-                    onClick={() =>
-                      handleThreadClick(email.from_email, email.thread_id)
-                    }
+                    onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from_email, email.thread_id);
+                    }}
                     className="px-6 py-4 text-purple-600"
                   >
                     {email.subject}

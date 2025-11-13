@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
-import { toast } from "react-toastify";
 
 export default function EmailBox({ onClose, view, ...props }) {
   const scrollRef = useRef();
@@ -20,13 +19,11 @@ export default function EmailBox({ onClose, view, ...props }) {
     }
   }, [emails]);
   const handleClickAiReplyBtn = () => {};
-  const handleClickSendBtn = (reply) => {
+  const handleClickSendBtn = () => {
     if (view) {
-      dispatch(sendEmail(reply));
-      // onClose();
+      dispatch(sendEmail(input));
     } else {
-      // dispatch(sendEmailToThread(props.threadId, reply));
-      toast.info("This Funtionality still need to be added!");
+      dispatch(sendEmailToThread(props.threadId, input));
     }
   };
 
