@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 export function AiCreditsPage() {
   const { aiCredits, balance, count } = useSelector((state) => state.aiCredits);
   return (
-    <div className="p-6">
+    <>
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
         <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
@@ -123,6 +123,6 @@ export function AiCreditsPage() {
       </div>
 
       <Footer />
-    </div>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { Footer } from "../Footer";
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
+import WelcomeHeader from "../WelcomeHeader";
 export function UnansweredPage() {
   const { count, emails } = useSelector((state) => state.unanswered);
   const [
@@ -13,7 +14,7 @@ export function UnansweredPage() {
     setCurrentThreadId,
   ] = useThread();
   return (
-    <div className="p-6">
+    <>
       {showEmail && currentThreadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
           <EmailBox
@@ -23,15 +24,6 @@ export function UnansweredPage() {
           />
         </div>
       )}
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
       {/* Unanswered Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -102,8 +94,7 @@ export function UnansweredPage() {
           </table>
         </div>
       </div>
-
       <Footer />
-    </div>
+    </>
   );
 }

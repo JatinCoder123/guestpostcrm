@@ -11,6 +11,7 @@ import {
 import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
+import WelcomeHeader from "../WelcomeHeader";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -29,9 +30,8 @@ export function TimelinePage() {
     };
   }, [showEmail, showContact]);
 
-  const { ladger, email, duplicate, loading, error } = useSelector(
-    (state) => state.ladger
-  );
+  const { ladger, email, duplicate, mailersSummary, loading, error } =
+    useSelector((state) => state.ladger);
   const {
     loading: sendLoading,
     error: sendError,
@@ -68,7 +68,7 @@ export function TimelinePage() {
   }, [dispatch, sendError, sendLoading, message]);
 
   return (
-    <div className="p-6">
+    <>
       {showEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
           <EmailBox onClose={() => setShowEmails(false)} view={true} />
@@ -83,20 +83,6 @@ export function TimelinePage() {
           />
         </div>
       )}
-
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white flex justify-between items-center">
-        {/* Left Side - Welcome Text */}
-        <h1 className="text-2xl font-semibold">Welcome GuestPostCRM</h1>
-
-        {/* Right Side - Email Box */}
-        <div className="flex items-center bg-white/20 rounded-full px-4 py-2 backdrop-blur-sm border border-white/20">
-          <Mail className="w-4 h-4 text-white mr-2" />
-          <span className="bg-white text-gray-800 rounded-full px-3 py-1 text-sm font-medium">
-            quietfluence@gmail.com
-          </span>
-        </div>
-      </div>
 
       {/* Timeline Header */}
       <div className="bg-white rounded-2xl shadow-sm">
@@ -159,30 +145,41 @@ export function TimelinePage() {
           </div>
 
           {/* Timeline Details */}
+
           <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
             <div>
               <span className="text-gray-500">SUBJECT</span>
-              <p className="text-gray-900 mt-1">Guest Post Partnership</p>
+              <p className="text-gray-900 mt-1">
+                {" "}
+                {mailersSummary?.subject ?? "No Subject"}
+              </p>
             </div>
             <div>
               <span className="text-gray-500">MOTIVE</span>
-              <p className="text-gray-900 mt-1">Business Collaboration</p>
+              <p className="text-gray-900 mt-1">{mailersSummary?.motive}</p>
             </div>
             <div>
-              <span className="text-gray-500">MAILER SUMMARY</span>
-              <p className="text-gray-900 mt-1">Complete Sales Cycle</p>
+              <span className="text-gray-500 ">MAILER SUMMARY</span>
+              <p className="text-gray-900 mt-1">{mailersSummary?.summary}</p>
             </div>
             <div>
               <span className="text-gray-500">STAGE</span>
-              <p className="text-gray-900 mt-1">Stage 1</p>
+              <p className="text-gray-900 mt-1">
+                {" "}
+                {mailersSummary?.stage ?? "No Status"}
+              </p>
             </div>
             <div>
               <span className="text-gray-500">STATUS</span>
-              <p className="text-gray-900 mt-1">Completed</p>
+              <p className="text-gray-900 mt-1">
+                {mailersSummary?.status ?? "No Status"}
+              </p>
             </div>
             <div>
               <span className="text-gray-500">Date</span>
-              <p className="text-gray-900 mt-1">11 Nov at 6:55 PM</p>
+              <p className="text-gray-900 mt-1">
+                {mailersSummary?.date_entered}
+              </p>
             </div>
           </div>
 
@@ -279,6 +276,6 @@ export function TimelinePage() {
       </div>
 
       <Footer />
-    </div>
+    </>
   );
 }

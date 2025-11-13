@@ -5,16 +5,7 @@ import { useSelector } from "react-redux";
 export function SpamDetectionPage() {
   const { detection, count } = useSelector((state) => state.detection);
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
+    <>
       {/* Spam Detection Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -90,6 +81,6 @@ export function SpamDetectionPage() {
       </div>
 
       <Footer />
-    </div>
+    </>
   );
 }

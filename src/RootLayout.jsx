@@ -17,6 +17,7 @@ import { getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
+import WelcomeHeader from "./components/WelcomeHeader";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { email, timeline } = useSelector((state) => state.ladger);
@@ -65,7 +66,10 @@ const RootLayout = () => {
                 sidebarCollapsed ? "ml-16" : "ml-0"
               }`}
             >
-              <Outlet />
+              <div className="p-6">
+                <WelcomeHeader />
+                <Outlet />
+              </div>
             </main>
             <ToastContainer
               position="top-right"

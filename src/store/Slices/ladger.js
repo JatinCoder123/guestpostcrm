@@ -8,6 +8,7 @@ const ladgerSlice = createSlice({
     loading: false,
     email: null,
     ladger: [],
+    mailersSummary: null,
     error: null,
     timeline: "this_week",
     message: null,
@@ -19,9 +20,10 @@ const ladgerSlice = createSlice({
       state.error = null;
     },
     getLadgerSuccess(state, action) {
-      const { duplicate, ladger, email } = action.payload;
+      const { duplicate, ladger, email, mailersSummary } = action.payload;
       state.loading = false;
       state.ladger = ladger;
+      state.mailersSummary = mailersSummary;
       state.email = email;
       state.duplicate = duplicate;
       state.error = null;
@@ -56,6 +58,7 @@ export const getLadger = () => {
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
+          mailersSummary: data.mailers_summary,
           email: data.data && data.data[0].name,
         })
       );
@@ -85,6 +88,7 @@ export const getLadgerEmail = (email) => {
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
+          mailersSummary: data.mailers_summary[0],
           email: email,
         })
       );

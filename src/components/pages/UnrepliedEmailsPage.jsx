@@ -13,7 +13,7 @@ export function UnrepliedEmailsPage() {
     setCurrentThreadId,
   ] = useThread();
   return (
-    <div className="p-6">
+    <>
       {showEmail && currentThreadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
           <EmailBox
@@ -23,15 +23,6 @@ export function UnrepliedEmailsPage() {
           />
         </div>
       )}
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
       {/* Unreplied Emails Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -104,6 +95,6 @@ export function UnrepliedEmailsPage() {
       </div>
 
       <Footer />
-    </div>
+    </>
   );
 }

@@ -4,33 +4,8 @@ import { useSelector } from "react-redux";
 
 export function OffersPage() {
   const { offers, count } = useSelector((state) => state.offers);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Accepted":
-        return "bg-green-100 text-green-700";
-      case "Under Review":
-        return "bg-blue-100 text-blue-700";
-      case "Rejected":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
+    <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
@@ -170,6 +145,6 @@ export function OffersPage() {
       </div>
 
       <Footer />
-    </div>
+    </>
   );
 }

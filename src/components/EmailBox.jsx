@@ -4,15 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
+import { getAiReply } from "../store/Slices/aiReply";
 
-export default function EmailBox({ onClose, view, ...props }) {
+export default function EmailBox({ onClose, view, threadId }) {
   const scrollRef = useRef();
-  const { viewEmail } = useSelector((state) => state.viewEmail);
+  const { viewEmail, threadId: viewThreadId } = useSelector(
+    (state) => state.viewEmail
+  );
   const { threadEmail } = useSelector((state) => state.threadEmail);
+  const { aiReply, loading, error } = useSelector((state) => state.aiReply);
   const [input, setInput] = useState("");
   const emails = view ? viewEmail : threadEmail;
   const { email } = useSelector((state) => state.ladger);
   const dispatch = useDispatch();
+  useEffect(() => {
+    if (threadId) {
+      dispatch(getAiReply(threadId));
+    } else if (viewThreadId && view) dispatch(getAiReply(viewThreadId));
+  }, [threadId, viewThreadId]);
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -26,6 +35,9 @@ export default function EmailBox({ onClose, view, ...props }) {
       dispatch(sendEmailToThread(props.threadId, input));
     }
   };
+  useEffect(() => {
+    setInput(aiReply);
+  }, [aiReply, loading, dispatch]);
 
   return (
     <motion.div
@@ -123,13 +135,17 @@ export default function EmailBox({ onClose, view, ...props }) {
       {/* Footer (reply input area) */}
       <div className="p-4 border-t bg-white">
         <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your reply..."
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
+          {loading && <p>Loading Ai Reply...</p>}
+          {!loading && (
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your reply..."
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          )}
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
