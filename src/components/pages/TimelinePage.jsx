@@ -1,5 +1,5 @@
 import { Mail, CheckCircle, RefreshCw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Footer } from "../Footer";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -11,8 +11,6 @@ import {
 import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
-import WelcomeHeader from "../WelcomeHeader";
-
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
@@ -99,7 +97,7 @@ export function TimelinePage() {
                       TIMELINE :
                     </span>
                     <span className="text-gray-700 text-base">
-                      {ladger.length > 0 && ladger[0].name}
+                      {ladger?.length > 0 && ladger[0].name}
                     </span>
                     <div className="flex items-center gap-1 text-green-600">
                       <CheckCircle className="w-8 h-8" />

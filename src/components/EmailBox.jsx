@@ -20,7 +20,10 @@ export default function EmailBox({ onClose, view, threadId }) {
   useEffect(() => {
     if (threadId) {
       dispatch(getAiReply(threadId));
-    } else if (viewThreadId && view) dispatch(getAiReply(viewThreadId));
+    } else if (viewThreadId && view) {
+      console.log("Gettin AI Reply");
+      dispatch(getAiReply(viewThreadId));
+    }
   }, [threadId, viewThreadId]);
   useEffect(() => {
     if (scrollRef.current) {

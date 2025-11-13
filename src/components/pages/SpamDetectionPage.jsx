@@ -33,7 +33,13 @@ export function SpamDetectionPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>SENDER</span>
+                    <span>SENDER NAME</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>SENDER EMAIL</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -42,7 +48,6 @@ export function SpamDetectionPage() {
                     <span>SPAM REASON</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">Spam</th>
               </tr>
             </thead>
             <tbody>
@@ -54,25 +59,20 @@ export function SpamDetectionPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{spam.date_entered}</span>
+                      <span>{spam.date_created}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.name}</span>
-                      <button className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                        <span className="text-xs">📋</span>
-                      </button>
+                      <span>{spam.from_name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">
-                    {spam.description.slice(0, 12)}
-                  </td>
                   <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-orange-500 text-white rounded-full text-xs">
-                      {spam.type_c}
-                    </span>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <span>{spam.from_email}</span>
+                    </div>
                   </td>
+                  <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
                 </tr>
               ))}
             </tbody>
