@@ -37,9 +37,17 @@ export const getOrders = (filter, email) => {
     dispatch(ordersSlice.actions.getOrdersRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_orders&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${BACKEND_URL}&type=get_orders&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${BACKEND_URL}&type=get_orders&filter=${filter}`
+        );
+      }
+      const data = response.data;
       console.log(`Orders orders`, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({

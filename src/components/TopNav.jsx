@@ -1,4 +1,12 @@
-import { Search, Clock, ChevronDown, Sparkles, User } from "lucide-react";
+import {
+  Search,
+  Clock,
+  ChevronDown,
+  Sparkles,
+  User,
+  Phone,
+  Bell,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadgerEmail, ladgerAction } from "../store/Slices/ladger";
 import { useEffect, useRef, useState } from "react";
@@ -34,11 +42,11 @@ export function TopNav() {
   }, []);
   // Dropdown items
   const periodOptions = [
-    "today",
-    "yesterday",
-    "this_week",
-    "last_week",
-    "this_month",
+    { period: "today", title: "Today" },
+    { period: "yesterday", title: "Yesterday" },
+    { period: "this_week", title: "This Week" },
+    { period: "last_week", title: "Last Week" },
+    { period: "this_month", title: "This Month" },
   ];
 
   const handleSelectPeriod = (option) => {
@@ -81,22 +89,15 @@ export function TopNav() {
             <span className="text-sm">Clear</span>
           </button>
         </div>
-        {/* My Timeline Dropdown */}
-        <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors">
-          <Clock className="w-4 h-4 text-gray-600" />
-          <div className="text-left">
-            <div className="text-gray-900 text-sm w-20">My Timeline</div>
-            <div className="text-gray-500 text-xs">Everything</div>
-          </div>
-          <ChevronDown className="w-4 h-4 text-gray-400" />
-        </button>
         {/* Period Dropdown */}
         <div className="relative" ref={dropDownRef}>
           <button
             onClick={() => setOpenPeriod(!openPeriod)}
             className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
           >
-            <span className="text-gray-900 text-sm">{timeline}</span>
+            <span className="text-gray-900 text-sm ">
+              {periodOptions.find((option) => option.period == timeline).title}
+            </span>
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </button>
 
@@ -104,11 +105,11 @@ export function TopNav() {
             <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
               {periodOptions.map((option) => (
                 <div
-                  key={option}
-                  onClick={() => handleSelectPeriod(option)}
+                  key={option.period}
+                  onClick={() => handleSelectPeriod(option.period)}
                   className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                 >
-                  {option}
+                  {option.title}
                 </div>
               ))}
             </div>
@@ -118,19 +119,28 @@ export function TopNav() {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
+        <button
+          onClick={() => navigateTo("ai-credits")}
+          className="flex items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
+          <Bell className="w-4 h-4" />
+          {/* <span className="text-sm">AI Credits</span> */}
+        </button>
         {/* AI Credits Button */}
         <button
           onClick={() => navigateTo("ai-credits")}
-          className="flex items-center gap-2 px-4 py-2 bg-[#5E17EB] text-white rounded-lg hover:bg-[#4d12c4] transition-colors"
+          className="flex items-center gap-2 p-4 bg-[#5E17EB] text-white rounded-full hover:bg-[#4d12c4] transition-colors"
         >
           <Sparkles className="w-4 h-4" />
-          <span className="text-sm">AI Credits</span>
+          {/* <span className="text-sm">AI Credits</span> */}
         </button>
 
         {/* Profile Icon */}
-        <button className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center text-white hover:shadow-lg transition-shadow">
-          <User className="w-5 h-5" />
-        </button>
+        <div className="border-l-2 p-2">
+          <button className="p-4  rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center text-white hover:shadow-lg transition-shadow">
+            <User className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -29,6 +29,13 @@ const RootLayout = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getLadger());
+    dispatch(getUnrepliedEmail(timeline));
+    dispatch(getUnansweredEmails(timeline));
+    dispatch(getDetection(timeline));
+    dispatch(getDeals(timeline));
+    dispatch(getOffers(timeline));
+    dispatch(getOrders(timeline));
+    dispatch(getInvoices(timeline));
   }, [timeline]);
   useEffect(() => {
     if (email) {
@@ -37,13 +44,13 @@ const RootLayout = () => {
   }, [email, timeline]);
   useEffect(() => {
     if (email) {
-      dispatch(getUnansweredEmails(timeline, email));
-      dispatch(getUnrepliedEmail(timeline, email));
-      dispatch(getOrders(timeline, email));
-      dispatch(getDeals(timeline, email));
-      dispatch(getInvoices(timeline, email));
-      dispatch(getOffers(timeline, email));
-      dispatch(getDetection(timeline, email));
+      // dispatch(getUnansweredEmails(timeline, email));
+      // dispatch(getUnrepliedEmail(timeline, email));
+      // dispatch(getOrders(timeline, email));
+      // dispatch(getDeals(timeline, email));
+      // dispatch(getInvoices(timeline, email));
+      // dispatch(getOffers(timeline, email));
+      // dispatch(getDetection(timeline, email));
       dispatch(getViewEmail(email));
       dispatch(getAiCredits(timeline));
     }
@@ -82,6 +89,14 @@ const RootLayout = () => {
               draggable
               pauseOnHover
               theme="dark" // you can change to "light"
+            />
+          </div>
+          <div className="fixed bottom-1 right-2 cursor-pointer">
+            <img
+              width="80"
+              height="80"
+              src="https://img.icons8.com/3d-fluency/94/whatsapp-logo.png"
+              alt="whatsapp-logo"
             />
           </div>
         </div>

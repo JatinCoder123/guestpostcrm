@@ -37,9 +37,17 @@ export const getInvoices = (filter, email) => {
     dispatch(invoicesSlice.actions.getInvoicesRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_invoices&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${BACKEND_URL}&type=get_invoices&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${BACKEND_URL}&type=get_invoices&filter=${filter}`
+        );
+      }
+      const data = response.data;
       console.log(`invoices`, data);
       dispatch(
         invoicesSlice.actions.getInvoicesSucess({

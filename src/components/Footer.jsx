@@ -20,12 +20,12 @@ export function Footer() {
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-green-500 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 via-purple-400 to-green-400"></div>
-                </div>
-              </div>
-              <span className="text-gray-900">GuestPostCRM</span>
+              <img
+                onClick={() => navigateTo("")}
+                src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/png%20(1).png"
+                alt="GuestPostCRM Logo"
+                className="w-80 h-10 object-contain rounded-full"
+              />
             </div>
             <p className="text-gray-600 text-sm mb-4 max-w-md">
               The all-in-one platform for managing guest post campaigns, email

@@ -1,13 +1,17 @@
-import { Mail, CheckCircle, RefreshCw } from "lucide-react";
+import {
+  Mail,
+  CheckCircle,
+  RefreshCw,
+  MessageCircle,
+  Phone,
+  MessageSquare,
+} from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { Footer } from "../Footer";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import {
-  getLadger,
-  getLadgerEmail,
-  ladgerAction,
-} from "../../store/Slices/ladger";
+import { getLadgerEmail, ladgerAction } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
@@ -36,9 +40,6 @@ export function TimelinePage() {
     message,
   } = useSelector((state) => state.viewEmail);
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getLadger());
-  }, []);
   useEffect(() => {
     if (!autoRefresh) return;
 
@@ -91,18 +92,20 @@ export function TimelinePage() {
                 <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                   <Mail className="w-4 h-4 text-gray-600" />
                 </div>
+
                 <div>
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-semibold text-gray-900">
-                      TIMELINE :
-                    </span>
-                    <span className="text-gray-700 text-base">
+                    <span className="text-gray-700  font-medium">
                       {ladger?.length > 0 && ladger[0].name}
                     </span>
-                    <div className="flex items-center gap-1 text-green-600">
-                      <CheckCircle className="w-8 h-8" />
-                      <span className="text-gray-900 text-sm font-medium">
-                        Verified
+
+                    {/* Phone */}
+                    <div className="ml-2 flex items-center gap-2 text-green-600">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Phone className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <span className="text-gray-700  font-medium">
+                        +1234567890
                       </span>
                     </div>
                   </div>
@@ -137,7 +140,6 @@ export function TimelinePage() {
                     }`}
                   ></div>
                 </button>
-                <span className="text-gray-400 text-xs">(every 5s)</span>
               </div>
             </div>
           </div>
@@ -182,14 +184,18 @@ export function TimelinePage() {
           </div>
 
           {/* Action Buttons */}
+          {/* Action Buttons */}
           <div className="mt-4 flex flex-wrap gap-2">
+            {/* View Email */}
             <button
               onClick={() => setShowEmails((p) => !p)}
-              className="flex items-center cursor-pointer  gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Mail className="w-4 h-4" />
               <span>View Email</span>
             </button>
+
+            {/* View Contact */}
             <button
               onClick={() => {
                 dispatch(getContact(email));
@@ -199,11 +205,37 @@ export function TimelinePage() {
             >
               <span>View Contact</span>
             </button>
-            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-              <span>View Deal</span>
+
+            {/* WhatsApp */}
+            <button
+              onClick={() => console.log("Open WhatsApp")}
+              className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/color/48/whatsapp--v1.png"
+                alt="whatsapp--v1"
+              />
+              <span>WhatsApp</span>
             </button>
-            <button className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-              <span>View Orders</span>
+
+            {/* Call */}
+            <button
+              onClick={() => console.log("Call user")}
+              className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <Phone className="w-4 h-4" />
+              <span>Call</span>
+            </button>
+
+            {/* SMS */}
+            <button
+              onClick={() => console.log("Send SMS")}
+              className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>SMS</span>
             </button>
           </div>
         </div>

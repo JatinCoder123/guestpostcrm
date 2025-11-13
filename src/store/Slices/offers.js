@@ -39,9 +39,17 @@ export const getOffers = (filter, email) => {
     dispatch(offersSlice.actions.getOffersRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_offers&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${BACKEND_URL}&type=get_offers&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${BACKEND_URL}&type=get_offers&filter=${filter}`
+        );
+      }
+      const data = response.data;
       console.log(`offers`, data);
       dispatch(
         offersSlice.actions.getOffersSucess({

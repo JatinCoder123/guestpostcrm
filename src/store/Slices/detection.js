@@ -37,9 +37,17 @@ export const getDetection = (filter, email) => {
     dispatch(detectionSlice.actions.getDetectionRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=spam_detection&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${BACKEND_URL}&type=spam_detection&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${BACKEND_URL}&type=spam_detection&filter=${filter}`
+        );
+      }
+      const data = response.data;
       console.log(`detection`, data);
       dispatch(
         detectionSlice.actions.getDetectionSucess({

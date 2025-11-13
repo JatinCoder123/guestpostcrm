@@ -60,7 +60,6 @@ export function UnansweredPage() {
                     <span>SUBJECT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">MAILER SUMMARY</th>
               </tr>
             </thead>
             <tbody>
@@ -87,7 +86,6 @@ export function UnansweredPage() {
                   >
                     {email.subject}
                   </td>
-                  <td className="px-6 py-4 text-gray-500">NO Summary Found</td>
                 </tr>
               ))}
             </tbody>

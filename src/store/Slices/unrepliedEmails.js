@@ -35,12 +35,21 @@ const unrepliedSlice = createSlice({
 export const getUnrepliedEmail = (filter, email) => {
   return async (dispatch) => {
     dispatch(unrepliedSlice.actions.getEmailRequest());
-
+    console.log(email);
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=unreplied&filter=${filter}&email=${email}`
-      );
-      console.log(`Unreplied emails`, data);
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${BACKEND_URL}&type=unreplied&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${BACKEND_URL}&type=unreplied&filter=${filter}`
+        );
+      }
+
+      console.log(`Unreplied emails`, response.data);
+      const data = response.data;
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,

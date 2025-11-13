@@ -37,10 +37,19 @@ export const getUnansweredEmails = (filter, email) => {
     dispatch(unansweredSlice.actions.getEmailRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=unanswered&filter=${filter}&email=${email}`
-      );
-      console.log("Unanswered Emails", data);
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${BACKEND_URL}&type=unanswered&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${BACKEND_URL}&type=unanswered&filter=${filter}`
+        );
+      }
+
+      console.log(`Unanswered emails`, response.data);
+      const data = response.data;
       dispatch(
         unansweredSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
