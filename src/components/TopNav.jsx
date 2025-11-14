@@ -20,6 +20,13 @@ export function TopNav() {
       dispatch(setEnteredEmail(input));
     }
   };
+  const handleClear = () => {
+    if (input.trim()) {
+      setInput("");
+      navigateTo("");
+      dispatch(setEnteredEmail(null));
+    }
+  };
   const openPeriodRef = useRef(openPeriod);
 
   useEffect(() => {
@@ -84,7 +91,7 @@ export function TopNav() {
             <span className="text-sm">Search</span>
           </button>
           <button
-            onClick={() => setInput("")}
+            onClick={handleClear}
             className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <span className="text-sm">Clear</span>

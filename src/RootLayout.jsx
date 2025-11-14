@@ -13,7 +13,7 @@ import { getInvoices } from "./store/Slices/invoices";
 import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
 import { getViewEmail } from "./store/Slices/viewEmail";
-import { getAiCredits } from "./store/Slices/aiCredits";
+import { aiCreditsAction, getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
@@ -28,28 +28,18 @@ const RootLayout = () => {
   }, [location]);
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getLadger());
-    dispatch(getUnrepliedEmail(timeline));
-    dispatch(getUnansweredEmails(timeline));
-    dispatch(getDetection(timeline));
-    dispatch(getDeals(timeline));
-    dispatch(getOffers(timeline));
-    dispatch(getOrders(timeline));
-    dispatch(getInvoices(timeline));
+    enteredEmail
+      ? dispatch(getLadgerEmail(enteredEmail))
+      : dispatch(getLadger());
     dispatch(getAiCredits(timeline));
-  }, [timeline]);
-  useEffect(() => {
-    if (enteredEmail) {
-      dispatch(getLadgerEmail(enteredEmail));
-      dispatch(getUnansweredEmails(timeline, enteredEmail));
-      dispatch(getUnrepliedEmail(timeline, enteredEmail));
-      dispatch(getOrders(timeline, enteredEmail));
-      dispatch(getDeals(timeline, enteredEmail));
-      dispatch(getInvoices(timeline, enteredEmail));
-      dispatch(getOffers(timeline, enteredEmail));
-      dispatch(getDetection(timeline, enteredEmail));
-      dispatch(getViewEmail(enteredEmail));
-    }
+    dispatch(getUnansweredEmails(timeline, enteredEmail));
+    dispatch(getUnrepliedEmail(timeline, enteredEmail));
+    dispatch(getOrders(timeline, enteredEmail));
+    dispatch(getDeals(timeline, enteredEmail));
+    dispatch(getInvoices(timeline, enteredEmail));
+    dispatch(getOffers(timeline, enteredEmail));
+    dispatch(getDetection(timeline, enteredEmail));
+    dispatch(getViewEmail(enteredEmail));
   }, [enteredEmail, timeline]);
 
   return (

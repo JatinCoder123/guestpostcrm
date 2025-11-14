@@ -1,11 +1,4 @@
-import {
-  Mail,
-  CheckCircle,
-  RefreshCw,
-  MessageCircle,
-  Phone,
-  MessageSquare,
-} from "lucide-react";
+import { Mail, RefreshCw, Phone, MessageSquare } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { Footer } from "../Footer";
@@ -183,7 +176,6 @@ export function TimelinePage() {
           </div>
 
           {/* Action Buttons */}
-          {/* Action Buttons */}
           <div className="mt-4 flex flex-wrap gap-2">
             {/* View Email */}
             <button
@@ -247,7 +239,7 @@ export function TimelinePage() {
 
             <div className="space-y-6">
               {ladger.length > 0 &&
-                ladger.map((event, index) => (
+                ladger.map((event) => (
                   <div
                     key={event.id}
                     className="relative flex items-center gap-4"
