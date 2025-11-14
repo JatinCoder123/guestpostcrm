@@ -90,8 +90,8 @@ export function TopNav() {
             onClick={() => setOpenPeriod(!openPeriod)}
             className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
           >
-            <span className="text-gray-900 text-sm ">
-              {periodOptions.find((option) => option.period == timeline).title}
+            <span className="text-gray-900 text-sm whitespace-nowrap">
+              {periodOptions.find((option) => option.period == timeline)?.title}
             </span>
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </button>
@@ -102,7 +102,7 @@ export function TopNav() {
                 <div
                   key={option.period}
                   onClick={() => handleSelectPeriod(option.period)}
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
                 >
                   {option.title}
                 </div>
