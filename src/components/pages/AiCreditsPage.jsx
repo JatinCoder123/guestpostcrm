@@ -11,13 +11,37 @@ import {
 } from "lucide-react";
 import { Footer } from "../Footer";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function AiCreditsPage() {
   const { aiCredits, balance, count } = useSelector((state) => state.aiCredits);
   const [openPeriod, setOpenPeriod] = useState(false);
   const [type, setType] = useState("Credit");
   const periodOptions = ["Credit", "Debit", "Both"];
+
+  const dropDownRef = useRef(null);
+
+  const openPeriodRef = useRef(openPeriod);
+
+  useEffect(() => {
+    openPeriodRef.current = openPeriod;
+  }, [openPeriod]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        openPeriodRef.current && // always latest value
+        dropDownRef.current &&
+        !dropDownRef.current.contains(event.target)
+      ) {
+        setOpenPeriod(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <>
       {/* Stats Cards */}
@@ -55,12 +79,14 @@ export function AiCreditsPage() {
             <Sparkle className="w-6 h-6 text-indigo-600" />
             <h2 className="text-xl text-gray-900">CREDITS</h2>
           </div>
-          <div className="relative">
+
+          {/* Dropdown */}
+          <div className="relative" ref={dropDownRef}>
             <button
               onClick={() => setOpenPeriod(!openPeriod)}
               className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
             >
-              <span className="text-gray-900 ">{type}</span>
+              <span className="text-gray-900">{type}</span>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </button>
 
@@ -69,7 +95,10 @@ export function AiCreditsPage() {
                 {periodOptions.map((option) => (
                   <div
                     key={option}
-                    onClick={() => setType(option)}
+                    onClick={() => {
+                      setType(option);
+                      setOpenPeriod(false);
+                    }}
                     className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     {option}
@@ -91,11 +120,13 @@ export function AiCreditsPage() {
                     <span>EMAIL</span>
                   </div>
                 </th>
-                {(type == "Credit" || type == "Both") && (
-                  <th className="px-6 py-4 text-left">CREDIT </th>
+
+                {(type === "Credit" || type === "Both") && (
+                  <th className="px-6 py-4 text-left">CREDIT</th>
                 )}
-                {(type == "Debit" || type == "Both") && (
-                  <th className="px-6 py-4 text-left">DEBIT </th>
+
+                {(type === "Debit" || type === "Both") && (
+                  <th className="px-6 py-4 text-left">DEBIT</th>
                 )}
 
                 <th className="px-6 py-4 text-left">
@@ -104,7 +135,9 @@ export function AiCreditsPage() {
                     <span>BALANCE</span>
                   </div>
                 </th>
+
                 <th className="px-6 py-4 text-left">USER TYPE</th>
+
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
@@ -113,6 +146,7 @@ export function AiCreditsPage() {
                 </th>
               </tr>
             </thead>
+
             <tbody>
               {aiCredits.map((credit) => (
                 <tr
@@ -120,25 +154,29 @@ export function AiCreditsPage() {
                   className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4 text-gray-900">{credit.email}</td>
-                  {(type == "Credit" || type == "Both") && (
+
+                  {(type === "Credit" || type === "Both") && (
                     <td className="px-6 py-4 text-indigo-600">
                       {credit.credit}
                     </td>
                   )}
 
-                  {(type == "Debit" || type == "Both") && (
+                  {(type === "Debit" || type === "Both") && (
                     <td className="px-6 py-4 text-indigo-600">
                       {credit.debit}
                     </td>
                   )}
+
                   <td className="px-6 py-4 text-indigo-600">
                     {credit.balance}
                   </td>
+
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-sm `}>
+                    <span className="px-3 py-1 rounded-full text-sm">
                       {credit.user_type_c}
                     </span>
                   </td>
+
                   <td className="px-6 py-4 text-gray-600">
                     {credit.date_entered}
                   </td>

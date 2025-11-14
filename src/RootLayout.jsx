@@ -36,6 +36,7 @@ const RootLayout = () => {
     dispatch(getOffers(timeline));
     dispatch(getOrders(timeline));
     dispatch(getInvoices(timeline));
+    dispatch(getAiCredits(timeline));
   }, [timeline]);
   useEffect(() => {
     if (enteredEmail) {
@@ -48,7 +49,6 @@ const RootLayout = () => {
       dispatch(getOffers(timeline, enteredEmail));
       dispatch(getDetection(timeline, enteredEmail));
       dispatch(getViewEmail(enteredEmail));
-      -dispatch(getAiCredits(timeline));
     }
   }, [enteredEmail, timeline]);
 

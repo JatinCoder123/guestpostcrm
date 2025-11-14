@@ -20,19 +20,25 @@ export function TopNav() {
       dispatch(setEnteredEmail(input));
     }
   };
+  const openPeriodRef = useRef(openPeriod);
+
+  useEffect(() => {
+    openPeriodRef.current = openPeriod;
+  }, [openPeriod]);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (
-        openPeriod &&
+        openPeriodRef &&
         dropDownRef.current &&
         !dropDownRef.current.contains(event.target)
       ) {
         setOpenPeriod(false); // collapse sidebar
       }
     }
-    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
   // Dropdown items
