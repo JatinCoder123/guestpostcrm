@@ -21,7 +21,7 @@ import WelcomeHeader from "./components/WelcomeHeader";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { email, timeline } = useSelector((state) => state.ladger);
-  const { displayIntro, setActivePage } = useContext(PageContext);
+  const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
     setActivePage(location);
@@ -38,23 +38,19 @@ const RootLayout = () => {
     dispatch(getInvoices(timeline));
   }, [timeline]);
   useEffect(() => {
-    if (email) {
-      dispatch(getLadgerEmail(email));
+    if (enteredEmail) {
+      dispatch(getLadgerEmail(enteredEmail));
+      dispatch(getUnansweredEmails(timeline, enteredEmail));
+      dispatch(getUnrepliedEmail(timeline, enteredEmail));
+      dispatch(getOrders(timeline, enteredEmail));
+      dispatch(getDeals(timeline, enteredEmail));
+      dispatch(getInvoices(timeline, enteredEmail));
+      dispatch(getOffers(timeline, enteredEmail));
+      dispatch(getDetection(timeline, enteredEmail));
+      dispatch(getViewEmail(enteredEmail));
+      -dispatch(getAiCredits(timeline));
     }
-  }, [email, timeline]);
-  useEffect(() => {
-    if (email) {
-      // dispatch(getUnansweredEmails(timeline, email));
-      // dispatch(getUnrepliedEmail(timeline, email));
-      // dispatch(getOrders(timeline, email));
-      // dispatch(getDeals(timeline, email));
-      // dispatch(getInvoices(timeline, email));
-      // dispatch(getOffers(timeline, email));
-      // dispatch(getDetection(timeline, email));
-      dispatch(getViewEmail(email));
-      dispatch(getAiCredits(timeline));
-    }
-  }, [email, timeline]);
+  }, [enteredEmail, timeline]);
 
   return (
     <AnimatePresence mode="wait">

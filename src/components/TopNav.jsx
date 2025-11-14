@@ -1,28 +1,23 @@
-import {
-  Search,
-  Clock,
-  ChevronDown,
-  Sparkles,
-  User,
-  Phone,
-  Bell,
-} from "lucide-react";
+import { Search, ChevronDown, Sparkles, User, Bell } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadgerEmail, ladgerAction } from "../store/Slices/ladger";
-import { useEffect, useRef, useState } from "react";
+import { ladgerAction } from "../store/Slices/ladger";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PageContext } from "../context/pageContext";
 
 export function TopNav() {
   const [input, setInput] = useState("");
   const [openPeriod, setOpenPeriod] = useState(false);
   const { timeline } = useSelector((state) => state.ladger);
+  const { setEnteredEmail } = useContext(PageContext);
   const dropDownRef = useRef();
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
   const handleSearch = () => {
     if (input.trim()) {
-      dispatch(getLadgerEmail(input));
+      navigateTo("");
+      dispatch(setEnteredEmail(input));
     }
   };
   useEffect(() => {
@@ -90,7 +85,7 @@ export function TopNav() {
           </button>
         </div>
         {/* Period Dropdown */}
-        <div className="relative" ref={dropDownRef}>
+        <div className="relative w-full" ref={dropDownRef}>
           <button
             onClick={() => setOpenPeriod(!openPeriod)}
             className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"

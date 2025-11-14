@@ -19,7 +19,7 @@ import { PageContextProvider } from "./context/pageContext";
 import { OrderReminderPage } from "./components/pages/OrderReminderPage";
 const router = createBrowserRouter([
   {
-    path: "/Dashboard",
+    path: "",
     element: <RootLayout />,
     children: [
       {
