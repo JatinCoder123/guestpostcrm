@@ -8,13 +8,16 @@ import { getLadgerEmail, ladgerAction } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
+import CreateDeal from "../CreateDeal";
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
+  const [showDeal, setShowDeal] = useState(false);
+
   useEffect(() => {
-    if (showEmail || showContact) {
+    if (showEmail || showContact || showDeal) {
       document.body.style.overflow = "hidden"; // Disable background scroll
     } else {
       document.body.style.overflow = "auto"; // Restore when closed
@@ -23,7 +26,7 @@ export function TimelinePage() {
     return () => {
       document.body.style.overflow = "auto"; // Cleanup
     };
-  }, [showEmail, showContact]);
+  }, [showEmail, showContact, showDeal]);
 
   const { ladger, email, duplicate, mailersSummary, loading, error } =
     useSelector((state) => state.ladger);
@@ -71,6 +74,15 @@ export function TimelinePage() {
           <ContactBox
             onClose={() => {
               setShowContact(false);
+            }}
+          />
+        </div>
+      )}
+      {showDeal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <CreateDeal
+            onClose={() => {
+              setShowDeal(false);
             }}
           />
         </div>
@@ -195,6 +207,15 @@ export function TimelinePage() {
               className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               <span>View Contact</span>
+            </button>
+            {/* Create Deal */}
+            <button
+              onClick={() => {
+                setShowDeal((p) => !p);
+              }}
+              className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <span>+ Create Deal</span>
             </button>
 
             {/* WhatsApp */}

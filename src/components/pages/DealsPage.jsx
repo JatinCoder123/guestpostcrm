@@ -8,11 +8,35 @@ import {
 } from "lucide-react";
 import { Footer } from "../Footer";
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import CreateDeal from "../CreateDeal";
 
 export function DealsPage() {
   const { count, deals } = useSelector((state) => state.deals);
+  const [showDeal, setShowDeal] = useState(false);
+  useEffect(() => {
+    if (showDeal) {
+      document.body.style.overflow = "hidden"; // Disable background scroll
+    } else {
+      document.body.style.overflow = "auto"; // Restore when closed
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup
+    };
+  }, [showDeal]);
   return (
     <>
+      {showDeal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <CreateDeal
+            onClose={() => {
+              setShowDeal(false);
+            }}
+          />
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
@@ -72,7 +96,10 @@ export function DealsPage() {
             <Handshake className="w-6 h-6 text-blue-600" />
             <h2 className="text-xl text-gray-900">DEALS</h2>
           </div>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button
+            onClick={() => setShowDeal(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
             + New Deal
           </button>
         </div>
