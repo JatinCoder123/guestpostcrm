@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import logo from "../assets/assets.js";
 const DisplayIntro = () => {
   const { setDisplayIntro } = useContext(PageContext);
+  const params = new URLSearchParams(window.location.href);
+  const currentCRM = params.get("domain");
+  console.log("currentcrm", currentCRM);
   useEffect(() => {
     const timer = setTimeout(() => {
       setDisplayIntro(false);

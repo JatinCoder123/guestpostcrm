@@ -4,6 +4,9 @@ import { ladgerAction } from "../store/Slices/ladger";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
+import { clearAllUserErrors } from "../store/Slices/userSlice";
+import { toast } from "react-toastify";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function TopNav() {
   const [input, setInput] = useState("");
@@ -13,6 +16,20 @@ export function TopNav() {
   const dropDownRef = useRef();
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+  const { isAuthenticated, user, loading, error, message } = useSelector(
+    (state) => state.user
+  );
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearAllUserErrors());
+    }
+    if (message) {
+      toast.success(message);
+      dispatch(clearAllUserErrors());
+      navigateTo(`/`);
+    }
+  }, [error, dispatch, message]);
 
   const handleSearch = () => {
     if (input.trim()) {
@@ -52,9 +69,9 @@ export function TopNav() {
   const periodOptions = [
     { period: "today", title: "Today" },
     { period: "yesterday", title: "Yesterday" },
-    { period: "this_week", title: "This Week" },
-    { period: "last_week", title: "Last Week" },
-    { period: "this_month", title: "This Month" },
+    { period: "this_week", title: "Last 7 Days" },
+    { period: "last_week", title: "Last 14 Days" },
+    { period: "this_month", title: "Last 30 Days" },
   ];
 
   const handleSelectPeriod = (option) => {
@@ -143,11 +160,49 @@ export function TopNav() {
           {/* <span className="text-sm">AI Credits</span> */}
         </button>
 
-        {/* Profile Icon */}
-        <div className="border-l-2 p-2">
-          <button className="p-4  rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center text-white hover:shadow-lg transition-shadow">
-            <User className="w-5 h-5" />
-          </button>
+        {/* Profile + Info */}
+        <div className="flex items-center gap-4">
+          <div className="relative flex items-center">
+            {loading ? (
+              <p className="text-sm text-gray-500">Loading...</p>
+            ) : !isAuthenticated ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigateTo("login")}
+                className="px-4 py-2 rounded-xl bg-black text-white font-medium shadow-sm hover:opacity-90 transition-all"
+              >
+                Login
+              </motion.button>
+            ) : (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center gap-3 cursor-pointer"
+              >
+                <img
+                  src={user.profile_pic || "/logo.png"}
+                  alt="User"
+                  className="w-10 h-10 rounded-full border border-[var(--border)] shadow-sm"
+                />
+              </motion.div>
+            )}
+          </div>
+
+          <AnimatePresence>
+            {isAuthenticated && (
+              <motion.div
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.25 }}
+                className="leading-tight"
+              >
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  {user?.name || "User"}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

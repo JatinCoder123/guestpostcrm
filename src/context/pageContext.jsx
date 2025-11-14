@@ -4,7 +4,9 @@ export const PageContext = createContext();
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
   const [displayIntro, setDisplayIntro] = useState(true);
+  const [currentCRM, setCurrentCRM] = useState(null);
   const [enteredEmail, setEnteredEmail] = useState(null);
+
   const value = {
     activePage,
     setActivePage,
@@ -12,6 +14,8 @@ export const PageContextProvider = (props) => {
     setDisplayIntro,
     enteredEmail,
     setEnteredEmail,
+    currentCRM,
+    setCurrentCRM,
   };
   return (
     <PageContext.Provider value={value}>{props.children}</PageContext.Provider>

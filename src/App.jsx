@@ -17,7 +17,18 @@ import RootLayout from "./RootLayout";
 import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";
 import { OrderReminderPage } from "./components/pages/OrderReminderPage";
+import DisplayIntro from "./components/DisplayIntro";
+import { getUser } from "./store/Slices/userSlice";
+import Login from "./components/pages/Login";
 const router = createBrowserRouter([
+  {
+    path: "/verify",
+    element: <DisplayIntro />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
   {
     path: "",
     element: <RootLayout />,
@@ -84,7 +95,8 @@ const router = createBrowserRouter([
 export default function App() {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getLadger());
+    // dispatch(getLadger());
+    dispatch(getUser());
   }, []);
   return (
     <>
