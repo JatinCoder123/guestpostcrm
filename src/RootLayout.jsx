@@ -17,6 +17,7 @@ import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
+import Footer from "./components/Footer";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { timeline } = useSelector((state) => state.ladger);
@@ -62,8 +63,10 @@ const RootLayout = () => {
                 <WelcomeHeader />
                 <Outlet />
               </div>
+              <Footer />
             </main>
           </div>
+
           <div className="fixed bottom-1 right-2 cursor-pointer">
             <img
               width="80"

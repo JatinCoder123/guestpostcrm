@@ -8,6 +8,7 @@ import { getAiReply } from "../store/Slices/aiReply";
 
 export default function EmailBox({ onClose, view, threadId }) {
   const scrollRef = useRef();
+  const textareaRef = useRef(null);
   const { viewEmail, threadId: viewThreadId } = useSelector(
     (state) => state.viewEmail
   );
@@ -38,6 +39,27 @@ export default function EmailBox({ onClose, view, threadId }) {
       dispatch(sendEmailToThread(props.threadId, input));
     }
   };
+  // ⌨️ Enter key
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (view) {
+        dispatch(sendEmail(input));
+      } else {
+        dispatch(sendEmailToThread(props.threadId, input));
+      }
+    }
+  };
+  // 🧠 Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        200
+      )}px`;
+    }
+  }, [input]);
   useEffect(() => {
     setInput(aiReply);
   }, [aiReply, loading, dispatch]);
@@ -138,14 +160,19 @@ export default function EmailBox({ onClose, view, threadId }) {
       {/* Footer (reply input area) */}
       <div className="p-4 border-t bg-white">
         <div className="flex items-center gap-2">
-          {loading && <p>Loading Ai Reply...</p>}
+          {loading && <p>Generating Ai Reply...</p>}
           {!loading && (
-            <input
-              type="text"
+            <textarea
+              ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Type your reply..."
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="flex-1 min-w-0 resize-none max-h-40 overflow-y-auto
+              px-3 py-2 rounded-lg border-none outline-none bg-gray-200
+              text-black placeholder-gray-400
+              w-full sm:w-auto"
+              rows={1}
             />
           )}
 

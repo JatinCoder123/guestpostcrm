@@ -1,5 +1,4 @@
 import {
-  Clock,
   Mail,
   Shield,
   MessageSquare,
@@ -13,14 +12,37 @@ import {
   ChevronLeft,
   ChevronRight,
   ShoppingBag,
+  Settings,
+  Cpu,
+  Radio,
+  Globe,
+  User,
 } from "lucide-react";
-import { useContext } from "react";
+
+import { useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 
 export function Sidebar({ collapsed, onToggleCollapse }) {
   const navigateTo = useNavigate();
+  const { activePage, setActivePage } = useContext(PageContext);
+
+  const [openSettingsCard, setOpenSettingsCard] = useState(false);
+  const cardRef = useRef(null);
+
+  // Close settings card when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
+        setOpenSettingsCard(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Counts
   const unrepliedCount = useSelector((state) => state.unreplied?.count ?? 0);
   const unansweredCount = useSelector((state) => state.unanswered?.count ?? 0);
   const dealCount = useSelector((state) => state.deals?.count ?? 0);
@@ -32,7 +54,6 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
   const orderRemCount = useSelector((state) => state.orderRem?.count ?? 0);
   const paymentRemCount = useSelector((state) => state.paymentRem?.count ?? 0);
   const dealRemCount = useSelector((state) => state.dealRem?.count ?? 0);
-  const { activePage } = useContext(PageContext);
 
   const menuItems = [
     {
@@ -138,26 +159,30 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
 
   return (
     <div
-      className={`${
-        collapsed ? "w-16" : "w-64"
-      } bg-white border-r border-gray-200 min-h-[calc(100vh-65px)] p-4 transition-all duration-300 relative`}
+      className={`${collapsed ? "w-16" : "w-64"}
+      bg-white border-r border-gray-200 min-h-[calc(100vh-65px)]
+      p-4 transition-all duration-300 relative flex flex-col`}
     >
-      {/* Toggle Button */}
+      {/* Toggle Button
       <button
         onClick={onToggleCollapse}
-        className="absolute -right-3 top-6 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm z-10"
+        className="absolute -right-3 top-6 w-6 h-6 bg-white border border-gray-200 
+                 rounded-full flex items-center justify-center hover:bg-gray-50 shadow-sm"
       >
         {collapsed ? (
           <ChevronRight className="w-3 h-3" />
         ) : (
           <ChevronLeft className="w-3 h-3" />
         )}
-      </button>
+      </button> */}
 
-      <div className="space-y-2">
-        {/* Live Button */}
+      <div className="space-y-2 flex-1 mb-10">
+        {/* LIVE BUTTON */}
         <button
-          onClick={() => navigateTo("")}
+          onClick={() => {
+            setActivePage("");
+            navigateTo("");
+          }}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
             activePage === ""
               ? "bg-green-500 text-white shadow-md"
@@ -165,16 +190,19 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
           }`}
         >
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <Radio className="w-4 h-4 animate-pulse" strokeWidth={3} />
             {!collapsed && <span>Live</span>}
           </div>
         </button>
 
-        {/* Menu Items */}
+        {/* MENU ITEMS */}
         {menuItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => navigateTo(item.id)}
+            onClick={() => {
+              setActivePage(item.id);
+              navigateTo(item.id);
+            }}
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
               activePage === item.id
                 ? `bg-gray-100 ${item.color}`
@@ -182,7 +210,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
             }`}
           >
             <item.icon
-              className={`w-4 h-4 flex-shrink-0 ${
+              className={`w-4 h-4 ${
                 activePage === item.id ? "" : "text-gray-500"
               }`}
             />
@@ -198,6 +226,82 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
             )}
           </button>
         ))}
+      </div>
+
+      {/* SETTINGS BUTTON FIXED */}
+      <div className="fixed bottom-4 left-2 w-[230px]">
+        {/* Settings Button */}
+        <button
+          onClick={() => setOpenSettingsCard((prev) => !prev)}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg 
+               bg-gray-200 hover:bg-gray-300 transition-all"
+        >
+          <Settings className="w-5 h-5 text-gray-700" />
+          <span className="text-sm">Settings</span>
+        </button>
+
+        {/* SETTINGS CARD */}
+        {openSettingsCard && (
+          <div
+            ref={cardRef}
+            className="absolute bottom-14 left-0 bg-white shadow-xl border border-gray-200 
+                 rounded-lg p-3 z-50 min-w-max"
+          >
+            {/* Update Machine Learning */}
+            <button
+              onClick={() => setOpenSettingsCard(false)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
+                   rounded-md w-full whitespace-nowrap"
+            >
+              <Cpu className="w-4 h-4 text-blue-600" />
+              <span className="text-sm text-gray-700 ">
+                Update Machine Learning
+              </span>
+            </button>
+
+            {/* Update PayPal */}
+            <button
+              onClick={() => setOpenSettingsCard(false)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
+                   rounded-md w-full whitespace-nowrap"
+            >
+              <CreditCard className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-gray-700 w-full">
+                Update PayPal Credentials
+              </span>
+            </button>
+
+            {/* Templates */}
+            <button
+              onClick={() => setOpenSettingsCard(false)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
+                   rounded-md w-full whitespace-nowrap"
+            >
+              <FileText className="w-4 h-4 text-purple-600" />
+              <span className="text-sm text-gray-700 ">Templates</span>
+            </button>
+
+            {/* Websites */}
+            <button
+              onClick={() => setOpenSettingsCard(false)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
+                   rounded-md w-full whitespace-nowrap"
+            >
+              <Globe className="w-4 h-4 text-indigo-600" />
+              <span className="text-sm text-gray-700 ">Websites</span>
+            </button>
+
+            {/* Add Users */}
+            <button
+              onClick={() => setOpenSettingsCard(false)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
+                   rounded-md w-full whitespace-nowrap"
+            >
+              <User className="w-4 h-4 text-lime-500" />
+              <span className="text-sm text-gray-700 ">Add Users</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

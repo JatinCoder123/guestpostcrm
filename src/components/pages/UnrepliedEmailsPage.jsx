@@ -1,5 +1,5 @@
 import { Mail, Calendar, User, FileText } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";

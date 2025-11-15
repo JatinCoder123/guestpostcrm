@@ -9,7 +9,7 @@ import {
   Sparkle,
   ChevronDown,
 } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 

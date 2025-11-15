@@ -1,5 +1,5 @@
 import { Mail, Calendar, User, FileText, AlertTriangle } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
 
 export function SpamDetectionPage() {

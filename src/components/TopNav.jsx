@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
+import { periodOptions } from "../assets/assets";
 
 export function TopNav() {
   const [input, setInput] = useState("");
@@ -41,14 +42,6 @@ export function TopNav() {
       dispatch(userAction.clearAllErrors());
     }
   }, [dispatch, error]);
-
-  const periodOptions = [
-    { period: "today", title: "Today" },
-    { period: "yesterday", title: "Yesterday" },
-    { period: "this_week", title: "Last 7 Days" },
-    { period: "last_week", title: "Last 14 Days" },
-    { period: "this_month", title: "Last 30 Days" },
-  ];
 
   const handleSelectPeriod = (option) => {
     dispatch(ladgerAction.setTimeline(option));

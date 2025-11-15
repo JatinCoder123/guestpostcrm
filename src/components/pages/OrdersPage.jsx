@@ -6,7 +6,7 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
 
 export function OrdersPage() {
