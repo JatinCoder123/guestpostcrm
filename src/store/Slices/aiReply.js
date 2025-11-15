@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const aiReplySlice = createSlice({
   name: "aiReply",
@@ -31,12 +30,12 @@ const aiReplySlice = createSlice({
 });
 
 export const getAiReply = (threadId) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(aiReplySlice.actions.getAiReplyRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ai_reply&thread_id=${threadId}`
+        `${getState().user.crmEndpoint}&type=ai_reply&thread_id=${threadId}`
       );
       console.log(`aiReply`, data);
       dispatch(

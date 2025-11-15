@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const threadEmailSlice = createSlice({
   name: "threadEmail",
@@ -50,12 +49,12 @@ const threadEmailSlice = createSlice({
 });
 
 export const getThreadEmail = (email, threadId) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(threadEmailSlice.actions.getThreadEmailRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=view_thread&thread_id=${threadId}&email=${email}`
+        `${getState().user.crmEndpoint}&type=view_thread&thread_id=${threadId}&email=${email}`
       );
       console.log(`threadEmail`, data);
       dispatch(
@@ -72,12 +71,12 @@ export const getThreadEmail = (email, threadId) => {
   };
 };
 export const sendEmailToThread = (threadId, reply) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(threadEmailSlice.actions.sendEmailRequest());
 
     try {
       const { data } = await axios.post(
-        `${BACKEND_URL}&type=thread_reply`,
+        `${getState().user.crmEndpoint}&type=thread_reply`,
         {
           threadId,
           replyBody: reply,

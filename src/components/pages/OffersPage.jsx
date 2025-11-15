@@ -144,7 +144,7 @@ export function OffersPage() {
         )}
       </div>
 
-      <Footer />
+      
     </>
   );
 }

@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const unansweredSlice = createSlice({
   name: "unanswered",
@@ -33,18 +32,18 @@ const unansweredSlice = createSlice({
 });
 
 export const getUnansweredEmails = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(unansweredSlice.actions.getEmailRequest());
 
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${BACKEND_URL}&type=unanswered&filter=${filter}&email=${email}`
+          `${getState().user.crmEndpoint}&type=unanswered&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
-          `${BACKEND_URL}&type=unanswered&filter=${filter}`
+          `${getState().user.crmEndpoint}&type=unanswered&filter=${filter}`
         );
       }
 

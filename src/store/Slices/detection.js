@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const detectionSlice = createSlice({
   name: "detection",
@@ -33,18 +32,18 @@ const detectionSlice = createSlice({
 });
 
 export const getDetection = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(detectionSlice.actions.getDetectionRequest());
 
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${BACKEND_URL}&type=spam_detection&filter=${filter}&email=${email}`
+          `${getState().user.crmEndpoint}&type=spam_detection&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
-          `${BACKEND_URL}&type=spam_detection&filter=${filter}`
+          `${getState().user.crmEndpoint}&type=spam_detection&filter=${filter}`
         );
       }
       const data = response.data;

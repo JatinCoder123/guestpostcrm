@@ -92,7 +92,7 @@ export function UnansweredPage() {
           </table>
         </div>
       </div>
-      <Footer />
+      
     </>
   );
 }

@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const paymentRemSlice = createSlice({
   name: "paymentRem",
@@ -33,12 +32,12 @@ const paymentRemSlice = createSlice({
 });
 
 export const getPaymentRem = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(paymentRemSlice.actions.getPaymentRemRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=payment_reminder&filter=${filter}&email=${email}`
+        `${getState().user.crmEndpoint}&type=payment_reminder&filter=${filter}&email=${email}`
       );
       console.log(`Payments Rem`, data);
       dispatch(

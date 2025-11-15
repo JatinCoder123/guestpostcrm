@@ -92,7 +92,7 @@ export function UnrepliedEmailsPage() {
         </div>
       </div>
 
-      <Footer />
+      
     </>
   );
 }

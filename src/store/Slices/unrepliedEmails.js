@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const unrepliedSlice = createSlice({
   name: "unreplied",
@@ -33,18 +32,18 @@ const unrepliedSlice = createSlice({
 });
 
 export const getUnrepliedEmail = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(unrepliedSlice.actions.getEmailRequest());
     console.log(email);
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${BACKEND_URL}&type=unreplied&filter=${filter}&email=${email}`
+          `${getState().user.crmEndpoint}&type=unreplied&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
-          `${BACKEND_URL}&type=unreplied&filter=${filter}`
+          `${getState().user.crmEndpoint}&type=unreplied&filter=${filter}`
         );
       }
 

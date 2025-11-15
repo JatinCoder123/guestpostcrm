@@ -80,7 +80,7 @@ export function SpamDetectionPage() {
         </div>
       </div>
 
-      <Footer />
+      
     </>
   );
 }

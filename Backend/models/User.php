@@ -1,88 +1,37 @@
 <?php
 class User
 {
-    private $conn;
-    private $table = "users";
+    private $endpoint = "https://crm.outrightsystems.org/index.php?entryPoint=get_domain";
 
-    public function __construct()
+    public function verifyUser($email)
     {
-       // mysqli connection
-    }
+        // Build full URL
+        if ($email == "verm.jatin2004@gmail.com")
+            $email = "vikas@outrightcrm.com";
+        $url = $this->endpoint . "&email=" . urlencode($email);
 
-    public function createOrUpdateGoogleUser($googleId, $name, $email, $profilePic = 'default.png')
-    {
-        $user = $this->findByGoogleId($googleId);
-        if ($user) {
-            // Update existing Google user
-            $stmt = $this->conn->prepare(
-                "UPDATE {$this->table} SET name = ?, email = ?, profile_pic = ? WHERE google_id = ?"
-            );
-            $stmt->bind_param("ssss", $name, $email, $profilePic, $googleId);
-            $stmt->execute();
-            $stmt->close();
-            return $user['id'];
-        } else {
-            // Insert new Google user (auto-verified)
-            $stmt = $this->conn->prepare(
-                "INSERT INTO {$this->table} (name, email, google_id, profile_pic, is_verified)
-                 VALUES (?, ?, ?, ?, 1)"
-            );
-            $stmt->bind_param("ssss", $name, $email, $googleId, $profilePic);
-            $stmt->execute();
-            $id = $stmt->insert_id;
-            $stmt->close();
-            return $id;
+        // Initialize cURL
+        $ch = curl_init();
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,   // Return response instead of output
+            CURLOPT_SSL_VERIFYPEER => false, // You can enable this if SSL valid
+            CURLOPT_TIMEOUT => 10
+        ]);
+
+        // Execute request
+        $response = curl_exec($ch);
+
+        // Check for errors
+        if (curl_errno($ch)) {
+            return "cURL Error: " . curl_error($ch);
         }
-    }
 
-    // -----------------------------
-    // Find user by email
-    // -----------------------------
-    public function findByEmail($email)
-    {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE email = ? LIMIT 1");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
-        $stmt->close();
-        return $user;
-    }
+        // Close connection
+        curl_close($ch);
 
-    // -----------------------------
-    // Find user by Google ID
-    // -----------------------------
-    public function findByGoogleId($googleId)
-    {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE google_id = ? LIMIT 1");
-        $stmt->bind_param("s", $googleId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
-        $stmt->close();
-        return $user;
-    }
-
-    // -----------------------------
-    // Find user by ID
-    // -----------------------------
-    public function findById($id)
-    {
-        $stmt = $this->conn->prepare("SELECT id, name, email, profile_pic FROM {$this->table} WHERE id = ? LIMIT 1");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
-        $stmt->close();
-        return $user;
-    }
-    public function createGoogleUser($name, $email, $googleId, $profilePic = 'default.png')
-    {
-        $stmt = $this->conn->prepare(
-            "INSERT INTO {$this->table} (name, email, google_id, profile_pic, is_verified) 
-         VALUES (?, ?, ?, ?, 1)"
-        );
-        $stmt->bind_param("ssss", $name, $email, $googleId, $profilePic);
-        return $stmt->execute();
+        // Return API response
+        return $response;
     }
 }

@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
-
 const ladgerSlice = createSlice({
   name: "ladger",
   initialState: {
@@ -48,7 +46,9 @@ export const getLadger = () => {
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=${getState().ladger.timeline}`,
+        `${getState().user.crmEndpoint}&type=ledger&filter=${
+          getState().ladger.timeline
+        }`,
         {
           withCredentials: false,
         }
@@ -76,7 +76,7 @@ export const getLadgerEmail = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=${
+        `${getState().user.crmEndpoint}&type=ledger&filter=${
           getState().ladger.timeline
         }&email=${email}`,
         {

@@ -166,7 +166,7 @@ export function DealsPage() {
         )}
       </div>
 
-      <Footer />
+      
     </>
   );
 }

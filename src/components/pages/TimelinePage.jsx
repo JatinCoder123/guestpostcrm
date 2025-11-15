@@ -317,7 +317,7 @@ export function TimelinePage() {
         </div>
       </div>
 
-      <Footer />
+      
     </>
   );
 }

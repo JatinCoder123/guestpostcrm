@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const aiCreditsSlice = createSlice({
   name: "aiCredits",
@@ -35,12 +34,12 @@ const aiCreditsSlice = createSlice({
 });
 
 export const getAiCredits = (filter) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(aiCreditsSlice.actions.getAiCreditsRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_credits&filter=${filter}`
+        `${getState().user.crmEndpoint}&type=get_credits&filter=${filter}`
       );
       console.log(`aiCredits`, data);
       dispatch(

@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const dealRemSlice = createSlice({
   name: "dealRem",
@@ -33,12 +32,14 @@ const dealRemSlice = createSlice({
 });
 
 export const getDealRem = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(dealRemSlice.actions.getDealRemRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=deal_reminder&filter=${filter}&email=${email}`
+        `${
+          getState().user.crmEndpoint
+        }&type=deal_reminder&filter=${filter}&email=${email}`
       );
       console.log(`deal Rem`, data);
       dispatch(

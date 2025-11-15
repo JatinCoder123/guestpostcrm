@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import axios from "axios";
-import { AUTH_URL, BACKEND_URL } from "../constants";
+import { AUTH_URL } from "../constants";
 
 const userSlice = createSlice({
   name: "user",
@@ -9,46 +9,35 @@ const userSlice = createSlice({
     loading: false,
     user: {},
     isAuthenticated: false,
+    crmEndpoint: null,
     error: null,
     message: null,
-    isUpdated: false,
   },
   reducers: {
-    loginRequest(state) {
-      state.loading = true;
-      state.isAuthenticated = false;
-      state.user = {};
-      state.error = null;
-    },
-    loginSuccess(state, action) {
-      state.loading = false;
-      state.isAuthenticated = true;
-      state.user = action.payload;
-      state.error = null;
-    },
-    loginFailed(state, action) {
-      state.loading = false;
-      state.isAuthenticated = false;
-      state.user = {};
-      state.error = action.payload;
-    },
     loadUserRequest(state) {
       state.loading = true;
       state.isAuthenticated = false;
       state.user = {};
+      state.crmEndpoint = null;
       state.error = null;
     },
     loadUserSuccess(state, action) {
+      const { crmEndpoint, user } = action.payload;
       state.loading = false;
       state.isAuthenticated = true;
-      state.user = action.payload;
+      state.user = user;
+      state.crmEndpoint = crmEndpoint;
       state.error = null;
     },
     loadUserFailed(state, action) {
       state.loading = false;
       state.isAuthenticated = false;
       state.user = {};
+      state.crmEndpoint = null;
       state.error = action.payload;
+    },
+    logoutRequest(state) {
+      state.loading = true;
     },
 
     logoutSuccess(state, action) {
@@ -60,8 +49,6 @@ const userSlice = createSlice({
     },
     logoutFailed(state, action) {
       state.loading = false;
-      state.isAuthenticated = state.isAuthenticated;
-      state.user = state.user;
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -73,25 +60,68 @@ const userSlice = createSlice({
 export const getUser = () => {
   return async (dispatch) => {
     dispatch(userSlice.actions.loadUserRequest());
-    console.log("gettin user");
+
     try {
       const { data } = await axios.get(
         `${AUTH_URL}?controller=auth&action=me`,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-      console.log("res", data);
-      dispatch(userSlice.actions.loadUserSuccess(data.user));
+      console.log("user", data);
+      dispatch(
+        userSlice.actions.loadUserSuccess({
+          user: data.user,
+          crmEndpoint: data.crmEndpoint,
+        })
+      );
+
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       console.log(error);
-      dispatch(userSlice.actions.loadUserFailed(error.response.data.message));
+
+      let message = "Something went wrong. Please try again.";
+
+      if (error.response) {
+        const status = error.response.status;
+        const backendError = error.response.data?.error || "";
+
+        switch (status) {
+          case 404:
+            message = "You are not logged in. Please log in again.";
+            break;
+
+          case 401:
+            // Read backend error message and convert to friendly message
+            if (backendError.includes("Invalid token")) {
+              message =
+                "Your login session is not valid. Please sign in again.";
+            } else if (backendError.includes("Unauthorized user")) {
+              message = "Your account is not authorized to access this system.";
+            } else if (backendError.includes("email missing")) {
+              message =
+                "Something went wrong with your session. Please log in again.";
+            } else {
+              // Default fallback for unknown 401 reason
+              message = "Your session has expired. Please log in again.";
+            }
+            break;
+
+          case 400:
+            message = "Unable to process your request.";
+            break;
+
+          default:
+            message = "An unexpected error occurred. Please try again.";
+        }
+      }
+
+      dispatch(userSlice.actions.loadUserFailed(message));
     }
   };
 };
+
 export const logout = () => {
   return async (dispatch) => {
+    dispatch(userSlice.actions.logoutRequest());
     try {
       const { data } = await axios.get(
         `${AUTH_URL}?controller=auth&action=logout`,

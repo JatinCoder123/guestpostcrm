@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const invoicesSlice = createSlice({
   name: "invoices",
@@ -33,18 +32,18 @@ const invoicesSlice = createSlice({
 });
 
 export const getInvoices = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(invoicesSlice.actions.getInvoicesRequest());
 
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${BACKEND_URL}&type=get_invoices&filter=${filter}&email=${email}`
+          `${getState().user.crmEndpoint}&type=get_invoices&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
-          `${BACKEND_URL}&type=get_invoices&filter=${filter}`
+          `${getState().user.crmEndpoint}&type=get_invoices&filter=${filter}`
         );
       }
       const data = response.data;

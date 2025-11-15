@@ -175,7 +175,7 @@ export function InvoicesPage() {
         )}
       </div>
 
-      <Footer />
+      
     </>
   );
 }

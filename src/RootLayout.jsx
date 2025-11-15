@@ -1,4 +1,3 @@
-import { ToastContainer } from "react-toastify";
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useState } from "react";
@@ -13,14 +12,14 @@ import { getInvoices } from "./store/Slices/invoices";
 import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
 import { getViewEmail } from "./store/Slices/viewEmail";
-import { aiCreditsAction, getAiCredits } from "./store/Slices/aiCredits";
+import { getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { email, timeline } = useSelector((state) => state.ladger);
+  const { timeline } = useSelector((state) => state.ladger);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
@@ -64,18 +63,6 @@ const RootLayout = () => {
                 <Outlet />
               </div>
             </main>
-            <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="dark" // you can change to "light"
-            />
           </div>
           <div className="fixed bottom-1 right-2 cursor-pointer">
             <img

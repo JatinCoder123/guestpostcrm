@@ -165,7 +165,7 @@ export function OrdersPage() {
         )}
       </div>
 
-      <Footer />
+      
     </>
   );
 }

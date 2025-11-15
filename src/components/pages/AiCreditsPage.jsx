@@ -196,7 +196,7 @@ export function AiCreditsPage() {
         )}
       </div>
 
-      <Footer />
+      
     </>
   );
 }

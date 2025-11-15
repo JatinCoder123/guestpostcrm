@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const linkRemSlice = createSlice({
   name: "linkRem",
@@ -33,12 +32,12 @@ const linkRemSlice = createSlice({
 });
 
 export const getLinkRem = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(linkRemSlice.actions.getLinkRemRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=link_removal&filter=${filter}&email=${email}`
+        `${getState().user.crmEndpoint}&type=link_removal&filter=${filter}&email=${email}`
       );
       console.log(`link Rem`, data);
       dispatch(

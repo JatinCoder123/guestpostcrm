@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -75,12 +74,12 @@ const viewEmailSlice = createSlice({
 });
 
 export const getViewEmail = (email) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getViewEmailRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=view_email&email=${email}`
+        `${getState().user.crmEndpoint}&type=view_email&email=${email}`
       );
       console.log(`viewEmail`, data);
       dispatch(
@@ -98,12 +97,12 @@ export const getViewEmail = (email) => {
   };
 };
 export const getContact = (email) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getContactRequest());
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_contact&email=${email}`
+        `${getState().user.crmEndpoint}&type=get_contact&email=${email}`
       );
       console.log(`contact`, data);
       dispatch(
@@ -129,7 +128,7 @@ export const sendEmail = (reply) => {
 
     try {
       const { data } = await axios.post(
-        `${BACKEND_URL}&type=thread_reply`,
+        `${getState().user.crmEndpoint}&type=thread_reply`,
         {
           threadId,
           replyBody: reply,
