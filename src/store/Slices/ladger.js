@@ -8,7 +8,7 @@ const ladgerSlice = createSlice({
     ladger: [],
     mailersSummary: null,
     error: null,
-    timeline: "today",
+    timeline: "this_week",
     message: null,
     duplicate: 0,
   },
@@ -88,7 +88,7 @@ export const getLadgerEmail = (email) => {
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
-          mailersSummary: data.mailers_summary[0],
+          mailersSummary: data.mailers_summary,
           email: email,
         })
       );

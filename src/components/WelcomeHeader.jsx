@@ -1,10 +1,13 @@
-import { Mail, Server } from "lucide-react";
+import { Mail, Link2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
+import { useContext } from "react";
+import { PageContext } from "../context/pageContext";
 
 const WelcomeHeader = () => {
   const { email, timeline } = useSelector((state) => state.ladger);
   const { crmEndpoint } = useSelector((state) => state.user);
+  const { enteredEmail } = useContext(PageContext);
 
   // Extract CRM domain from https://domain.com...
   const crmDomain = crmEndpoint
@@ -14,40 +17,52 @@ const WelcomeHeader = () => {
 
   const time = periodOptions.find((option) => option.period == timeline)?.title;
 
+  const finalEmail = email; // shorten
   return (
     <div
       className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 
                     rounded-2xl p-6 mb-6 text-white shadow-lg relative overflow-hidden"
     >
-      {/* Decorative Gradient Glow */}
+      {/* Soft glow */}
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,white,transparent)] pointer-events-none"></div>
 
-      {/* Main Content */}
       <div className="relative flex justify-between items-center flex-wrap gap-4 z-10">
-        {/* Left Section */}
+        {/* LEFT */}
         <div>
-          <h1 className="text-2xl font-bold tracking-wide drop-shadow">
-            Welcome to GuestPostCRM
-          </h1>
-
           {/* Result Line */}
           <p className="text-white/80 text-sm mt-1">
             Showing results of{" "}
             <span className="font-semibold text-white">
               {time?.replace("_", " ")}
-            </span>{" "}
-            for <span className="font-semibold text-white">{email}</span>
+            </span>
+            {/* Only show "for email" IF email exists */}
+            {finalEmail && (
+              <>
+                {" "}
+                for{" "}
+                <span className="font-semibold text-white">{finalEmail}</span>
+              </>
+            )}
           </p>
 
-          {/* Connected CRM */}
+          {/* CRM INFO — Hover Expand */}
           {crmDomain && (
             <div
-              className="flex items-center gap-2 mt-3 bg-white/20 px-3 py-1.5 
-                            rounded-lg backdrop-blur-xl border border-white/30 
-                            shadow-sm w-fit"
+              className="group flex items-center gap-2 mt-3 
+                            bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-xl 
+                            border border-white/20 shadow-sm w-fit 
+                            transition-all duration-300 cursor-pointer"
             >
-              <Server className="w-4 h-4 text-white" />
-              <span className="text-white font-medium text-sm">
+              <Link2
+                className="w-4 h-4 text-white transition-all duration-300 
+                                group-hover:scale-110"
+              />
+
+              <span
+                className="text-white font-medium text-sm 
+                               max-w-0 overflow-hidden whitespace-nowrap 
+                               group-hover:max-w-[500px] transition-all duration-300"
+              >
                 Connected CRM:{" "}
                 <span className="text-white font-semibold">{crmDomain}</span>
               </span>
@@ -55,19 +70,21 @@ const WelcomeHeader = () => {
           )}
         </div>
 
-        {/* Email Badge */}
-        <div
-          className="flex items-center bg-white/20 rounded-full px-4 py-2 
-                        backdrop-blur-xl border border-white/30 shadow-md"
-        >
-          <Mail className="w-4 h-4 text-white mr-2" />
-          <span
-            className="bg-white text-gray-800 rounded-full px-3 py-1 
-                           text-sm font-medium shadow-sm"
+        {/* EMAIL BADGE */}
+        {email && (
+          <div
+            className="flex items-center bg-white/20 rounded-full px-4 py-2 
+                          backdrop-blur-xl border border-white/30 shadow-md"
           >
-            {email}
-          </span>
-        </div>
+            <Mail className="w-4 h-4 text-white mr-2" />
+            <span
+              className="bg-white text-gray-800 rounded-full px-3 py-1 
+                               text-sm font-medium shadow-sm"
+            >
+              {email}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

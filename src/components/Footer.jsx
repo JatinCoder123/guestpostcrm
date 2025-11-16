@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <div className="w-full mt-50 flex justify-center bg-white py-6">
-      <div className="w-[95%] md:w-[90%] lg:w-[85%] bg-[#DFF0C9] rounded-xl px-6 py-6 text-center">
+      <div className="w-[95%]  bg-gray-100 rounded-xl px-6 py-6 text-center">
         <p className="text-sm md:text-base text-gray-700 leading-relaxed">
           <span className="font-semibold">Copyright © 2025 GuestPostCRM™</span>,
           All Rights Reserved. The{" "}

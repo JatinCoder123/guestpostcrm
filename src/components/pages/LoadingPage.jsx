@@ -10,9 +10,9 @@ export default function LoadingPage() {
           src={logo}
           alt="logo"
           className="w-24 h-24 object-contain"
-          animate={{ rotate: 360 }}
+          animate={{ rotateY: 360 }}
           transition={{
-            duration: 3,
+            duration: 1,
             repeat: Infinity,
             ease: "linear",
           }}

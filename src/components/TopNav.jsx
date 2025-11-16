@@ -24,7 +24,7 @@ export function TopNav() {
   const handleSearch = () => {
     if (input.trim()) {
       navigateTo("");
-      dispatch(setEnteredEmail(input));
+      setEnteredEmail(input);
     }
   };
 
@@ -32,7 +32,7 @@ export function TopNav() {
     if (input.trim()) {
       setInput("");
       navigateTo("");
-      dispatch(setEnteredEmail(null));
+      setEnteredEmail(null);
     }
   };
 
@@ -45,7 +45,6 @@ export function TopNav() {
 
   const handleSelectPeriod = (option) => {
     dispatch(ladgerAction.setTimeline(option));
-    setOpenPeriod(false);
   };
 
   return (

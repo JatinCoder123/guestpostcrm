@@ -23,6 +23,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Sidebar({ collapsed, onToggleCollapse }) {
   const navigateTo = useNavigate();
@@ -31,7 +32,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
   const [openSettingsCard, setOpenSettingsCard] = useState(false);
   const cardRef = useRef(null);
 
-  // Close settings card when clicking outside
+  // Close modal when clicked outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (cardRef.current && !cardRef.current.contains(e.target)) {
@@ -42,19 +43,20 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Counts
-  const unrepliedCount = useSelector((state) => state.unreplied?.count ?? 0);
-  const unansweredCount = useSelector((state) => state.unanswered?.count ?? 0);
-  const dealCount = useSelector((state) => state.deals?.count ?? 0);
-  const offersCount = useSelector((state) => state.offers?.count ?? 0);
-  const detectionCount = useSelector((state) => state.detection?.count ?? 0);
-  const invoiceCount = useSelector((state) => state.invoices?.count ?? 0);
-  const orderCount = useSelector((state) => state.orders?.count ?? 0);
-  const linkRemCount = useSelector((state) => state.linkRem?.count ?? 0);
-  const orderRemCount = useSelector((state) => state.orderRem?.count ?? 0);
-  const paymentRemCount = useSelector((state) => state.paymentRem?.count ?? 0);
-  const dealRemCount = useSelector((state) => state.dealRem?.count ?? 0);
+  // Redux counts
+  const unrepliedCount = useSelector((s) => s.unreplied?.count ?? 0);
+  const unansweredCount = useSelector((s) => s.unanswered?.count ?? 0);
+  const dealCount = useSelector((s) => s.deals?.count ?? 0);
+  const offersCount = useSelector((s) => s.offers?.count ?? 0);
+  const detectionCount = useSelector((s) => s.detection?.count ?? 0);
+  const invoiceCount = useSelector((s) => s.invoices?.count ?? 0);
+  const orderCount = useSelector((s) => s.orders?.count ?? 0);
+  const linkRemCount = useSelector((s) => s.linkRem?.count ?? 0);
+  const orderRemCount = useSelector((s) => s.orderRem?.count ?? 0);
+  const paymentRemCount = useSelector((s) => s.paymentRem?.count ?? 0);
+  const dealRemCount = useSelector((s) => s.dealRem?.count ?? 0);
 
+  // MENU ITEMS WITH COLORS
   const menuItems = [
     {
       id: "unreplied-emails",
@@ -62,8 +64,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: Mail,
       count: unrepliedCount,
       color: "text-red-600",
-      bgColor: "hover:bg-red-50",
-      countColor: "bg-red-500 text-white",
+      hover: "hover:bg-red-50",
+      countBg: "bg-red-500 text-white",
     },
     {
       id: "spam-detection",
@@ -71,8 +73,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: Shield,
       count: detectionCount,
       color: "text-orange-600",
-      bgColor: "hover:bg-orange-50",
-      countColor: "bg-orange-500 text-white",
+      hover: "hover:bg-orange-50",
+      countBg: "bg-orange-500 text-white",
     },
     {
       id: "unanswered",
@@ -80,8 +82,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: MessageSquare,
       count: unansweredCount,
       color: "text-purple-600",
-      bgColor: "hover:bg-purple-50",
-      countColor: "bg-purple-500 text-white",
+      hover: "hover:bg-purple-50",
+      countBg: "bg-purple-500 text-white",
     },
     {
       id: "deals",
@@ -89,8 +91,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: Handshake,
       count: dealCount,
       color: "text-blue-600",
-      bgColor: "hover:bg-blue-50",
-      countColor: "bg-blue-500 text-white",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "offers",
@@ -98,8 +100,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: Gift,
       count: offersCount,
       color: "text-green-600",
-      bgColor: "hover:bg-green-50",
-      countColor: "bg-green-500 text-white",
+      hover: "hover:bg-green-50",
+      countBg: "bg-green-500 text-white",
     },
     {
       id: "orders",
@@ -107,8 +109,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: ShoppingCart,
       count: orderCount,
       color: "text-indigo-600",
-      bgColor: "hover:bg-indigo-50",
-      countColor: "bg-indigo-500 text-white",
+      hover: "hover:bg-indigo-50",
+      countBg: "bg-indigo-500 text-white",
     },
     {
       id: "invoices",
@@ -116,8 +118,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: FileText,
       count: invoiceCount,
       color: "text-yellow-600",
-      bgColor: "hover:bg-yellow-50",
-      countColor: "bg-yellow-500 text-white",
+      hover: "hover:bg-yellow-50",
+      countBg: "bg-yellow-500 text-white",
     },
     {
       id: "payment-missed",
@@ -125,8 +127,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: CreditCard,
       count: paymentRemCount,
       color: "text-red-600",
-      bgColor: "hover:bg-red-50",
-      countColor: "bg-red-500 text-white",
+      hover: "hover:bg-red-50",
+      countBg: "bg-red-500 text-white",
     },
     {
       id: "link-removal",
@@ -134,8 +136,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: Link2,
       count: linkRemCount,
       color: "text-pink-600",
-      bgColor: "hover:bg-pink-50",
-      countColor: "bg-pink-500 text-white",
+      hover: "hover:bg-pink-50",
+      countBg: "bg-pink-500 text-white",
     },
     {
       id: "deal-reminders",
@@ -143,166 +145,200 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       icon: Bell,
       count: dealRemCount,
       color: "text-cyan-600",
-      bgColor: "hover:bg-cyan-50",
-      countColor: "bg-cyan-500 text-white",
+      hover: "hover:bg-cyan-50",
+      countBg: "bg-cyan-500 text-white",
     },
     {
       id: "order-reminders",
       label: "Order Reminders",
       icon: ShoppingBag,
       count: orderRemCount,
-      color: "text-cyan-600",
-      bgColor: "hover:bg-red-50",
-      countColor: "bg-red-500 text-white",
+      color: "text-teal-600",
+      hover: "hover:bg-teal-50",
+      countBg: "bg-teal-500 text-white",
     },
   ];
 
   return (
-    <div
-      className={`${collapsed ? "w-16" : "w-64"}
-      bg-white border-r border-gray-200 min-h-[calc(100vh-65px)]
-      p-4 transition-all duration-300 relative flex flex-col`}
-    >
-      {/* Toggle Button
-      <button
-        onClick={onToggleCollapse}
-        className="absolute -right-3 top-6 w-6 h-6 bg-white border border-gray-200 
-                 rounded-full flex items-center justify-center hover:bg-gray-50 shadow-sm"
+    <>
+      {/* SIDEBAR */}
+      <motion.div
+        animate={{ width: collapsed ? 100 : 260 }}
+        transition={{ duration: 0.25 }}
+        className="bg-white border-r border-gray-200 min-h-[calc(100vh-65px)]
+                   p-4 relative flex flex-col shadow-sm"
       >
-        {collapsed ? (
-          <ChevronRight className="w-3 h-3" />
-        ) : (
-          <ChevronLeft className="w-3 h-3" />
-        )}
-      </button> */}
+        {/* COLLAPSE BUTTON */}
+        <button
+          onClick={onToggleCollapse}
+          className="absolute -right-3 top-6 w-7 h-7 bg-white border border-gray-300 
+                     rounded-full flex items-center justify-center hover:bg-gray-100 shadow"
+        >
+          {collapsed ? <ChevronRight /> : <ChevronLeft />}
+        </button>
 
-      <div className="space-y-2 flex-1 mb-10">
         {/* LIVE BUTTON */}
         <button
           onClick={() => {
             setActivePage("");
             navigateTo("");
           }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-            activePage === ""
-              ? "bg-green-500 text-white shadow-md"
-              : "bg-green-50 text-green-700 hover:bg-green-100"
-          }`}
+          className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
+            ${
+              activePage === ""
+                ? "bg-green-500 text-white"
+                : "bg-green-50 text-green-700"
+            }`}
         >
-          <div className="flex items-center gap-2 flex-1">
-            <Radio className="w-4 h-4 animate-pulse" strokeWidth={3} />
-            {!collapsed && <span>Live</span>}
-          </div>
+          <Radio className="w-5 h-5 animate-pulse" />
+          {!collapsed && <span className="font-medium">Live</span>}
         </button>
 
         {/* MENU ITEMS */}
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => {
-              setActivePage(item.id);
-              navigateTo(item.id);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
-              activePage === item.id
-                ? `bg-gray-100 ${item.color}`
-                : `text-gray-700 ${item.bgColor}`
-            }`}
-          >
-            <item.icon
-              className={`w-4 h-4 ${
-                activePage === item.id ? "" : "text-gray-500"
-              }`}
-            />
-            {!collapsed && (
-              <>
-                <span className="flex-1 text-left text-sm">{item.label}</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs ${item.countColor} min-w-[24px] text-center`}
-                >
-                  {item.count}
-                </span>
-              </>
-            )}
-          </button>
-        ))}
-      </div>
+        <div className="mt-4 space-y-2 flex-1">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActivePage(item.id);
+                navigateTo(item.id);
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all cursor-pointer 
+                         ${collapsed ? "justify-center" : ""}
+                         ${
+                           activePage === item.id
+                             ? `bg-gray-100 ${item.color}`
+                             : `${item.hover} text-gray-700`
+                         }`}
+            >
+              {/* FIXED ICON SIZE ALWAYS */}
+              <item.icon
+                className={`w-5 h-5 ${
+                  activePage === item.id ? item.color : "text-gray-500"
+                }`}
+              />
 
-      {/* SETTINGS BUTTON FIXED */}
-      <div className="fixed bottom-4 left-2 w-[230px]">
-        {/* Settings Button */}
+              {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
+              {!collapsed && (
+                <>
+                  <span className="flex-1 text-left">{item.label}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
+                  >
+                    {item.count}
+                  </span>
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* SETTINGS BUTTON */}
         <button
-          onClick={() => setOpenSettingsCard((prev) => !prev)}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg 
-               bg-gray-200 hover:bg-gray-300 transition-all"
+          onClick={() => setOpenSettingsCard(true)}
+          className=" fixed bottom-2 cursor-pointer mt-auto flex items-center gap-3 px-3 py-2.5 
+                     bg-gray-200 hover:bg-gray-300 rounded-lg transition-all shadow"
         >
           <Settings className="w-5 h-5 text-gray-700" />
-          <span className="text-sm">Settings</span>
         </button>
+      </motion.div>
 
-        {/* SETTINGS CARD */}
+      {/* SETTINGS MODAL */}
+      <AnimatePresence>
         {openSettingsCard && (
-          <div
-            ref={cardRef}
-            className="absolute bottom-14 left-0 bg-white shadow-xl border border-gray-200 
-                 rounded-lg p-3 z-50 min-w-max"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
           >
-            {/* Update Machine Learning */}
-            <button
-              onClick={() => setOpenSettingsCard(false)}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
-                   rounded-md w-full whitespace-nowrap"
+            <motion.div
+              ref={cardRef}
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.7, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="bg-white p-6 rounded-2xl shadow-2xl w-[90%] max-w-3xl"
             >
-              <Cpu className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-gray-700 ">
-                Update Machine Learning
-              </span>
-            </button>
+              {/* HEADER */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Settings</h2>
 
-            {/* Update PayPal */}
-            <button
-              onClick={() => setOpenSettingsCard(false)}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
-                   rounded-md w-full whitespace-nowrap"
-            >
-              <CreditCard className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-gray-700 w-full">
-                Update PayPal Credentials
-              </span>
-            </button>
+                <button
+                  onClick={() => setOpenSettingsCard(false)}
+                  className="w-8 h-8 cursor-pointer  bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center"
+                >
+                  ✕
+                </button>
+              </div>
 
-            {/* Templates */}
-            <button
-              onClick={() => setOpenSettingsCard(false)}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
-                   rounded-md w-full whitespace-nowrap"
-            >
-              <FileText className="w-4 h-4 text-purple-600" />
-              <span className="text-sm text-gray-700 ">Templates</span>
-            </button>
+              {/* CARDS GRID */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {/* Machine Learning */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setOpenSettingsCard(false)}
+                  className="p-4 bg-blue-50 rounded-xl shadow hover:shadow-lg"
+                >
+                  <Cpu className="w-8 h-8 text-blue-600 mb-2" />
+                  <div className="font-semibold text-gray-800">
+                    Machine Learning
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Update ML settings
+                  </div>
+                </motion.button>
 
-            {/* Websites */}
-            <button
-              onClick={() => setOpenSettingsCard(false)}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
-                   rounded-md w-full whitespace-nowrap"
-            >
-              <Globe className="w-4 h-4 text-indigo-600" />
-              <span className="text-sm text-gray-700 ">Websites</span>
-            </button>
+                {/* PayPal */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setOpenSettingsCard(false)}
+                  className="p-4 bg-green-50 rounded-xl shadow hover:shadow-lg"
+                >
+                  <CreditCard className="w-8 h-8 text-green-600 mb-2" />
+                  <div className="font-semibold text-gray-800">
+                    PayPal Credentials
+                  </div>
+                  <div className="text-sm text-gray-500">Manage payments</div>
+                </motion.button>
 
-            {/* Add Users */}
-            <button
-              onClick={() => setOpenSettingsCard(false)}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 
-                   rounded-md w-full whitespace-nowrap"
-            >
-              <User className="w-4 h-4 text-lime-500" />
-              <span className="text-sm text-gray-700 ">Add Users</span>
-            </button>
-          </div>
+                {/* Templates */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setOpenSettingsCard(false)}
+                  className="p-4 bg-purple-50 rounded-xl shadow hover:shadow-lg"
+                >
+                  <FileText className="w-8 h-8 text-purple-600 mb-2" />
+                  <div className="font-semibold text-gray-800">Templates</div>
+                  <div className="text-sm text-gray-500">Manage templates</div>
+                </motion.button>
+
+                {/* Websites */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setOpenSettingsCard(false)}
+                  className="p-4 bg-indigo-50 rounded-xl shadow hover:shadow-lg"
+                >
+                  <Globe className="w-8 h-8 text-indigo-600 mb-2" />
+                  <div className="font-semibold text-gray-800">Websites</div>
+                  <div className="text-sm text-gray-500">Manage websites</div>
+                </motion.button>
+
+                {/* Users */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setOpenSettingsCard(false)}
+                  className="p-4 bg-yellow-50 rounded-xl shadow hover:shadow-lg"
+                >
+                  <User className="w-8 h-8 text-yellow-600 mb-2" />
+                  <div className="font-semibold text-gray-800">Users</div>
+                  <div className="text-sm text-gray-500">Manage users</div>
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
-    </div>
+      </AnimatePresence>
+    </>
   );
 }

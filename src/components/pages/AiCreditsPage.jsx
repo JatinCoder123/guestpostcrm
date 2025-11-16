@@ -137,13 +137,6 @@ export function AiCreditsPage() {
                 </th>
 
                 <th className="px-6 py-4 text-left">USER TYPE</th>
-
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>CREDIT DATE</span>
-                  </div>
-                </th>
               </tr>
             </thead>
 
@@ -176,10 +169,6 @@ export function AiCreditsPage() {
                       {credit.user_type_c}
                     </span>
                   </td>
-
-                  <td className="px-6 py-4 text-gray-600">
-                    {credit.date_entered}
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -195,8 +184,6 @@ export function AiCreditsPage() {
           </div>
         )}
       </div>
-
-      
     </>
   );
 }

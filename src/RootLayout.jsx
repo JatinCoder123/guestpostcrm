@@ -56,7 +56,7 @@ const RootLayout = () => {
             />
             <main
               className={`flex-1 transition-all duration-300 ${
-                sidebarCollapsed ? "ml-16" : "ml-0"
+                sidebarCollapsed ? "ml-4" : "ml-0"
               }`}
             >
               <div className="p-6">

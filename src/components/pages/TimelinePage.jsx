@@ -3,10 +3,10 @@ import {
   RefreshCw,
   CheckCircle,
   Phone,
-  MessageSquare,
   User,
   Globe,
   Handshake,
+  Reply,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
+import { formatDateWithDifference } from "../../assets/assets";
 
 /* =====================================================
    LOADING SKELETON COMPONENT
@@ -161,34 +162,36 @@ export function TimelinePage() {
               {/* TOP HEADER */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                      <Mail className="w-4 h-4 text-gray-600" />
-                    </div>
+                  {ladger.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Mail className="w-4 h-4 text-gray-600" />
+                      </div>
 
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-700 font-medium">
-                            {ladger?.length > 0 && ladger[0].name}
-                          </span>
+                      <div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-700 font-medium">
+                              {ladger[0].name}
+                            </span>
 
-                          {/* Verified Icon */}
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                        </div>
-
-                        {/* Phone */}
-                        <div className="ml-2 flex items-center gap-2 text-green-600">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Phone className="w-4 h-4 text-gray-600" />
+                            {/* Verified Icon */}
+                            <CheckCircle className="w-5 h-5 text-green-600" />
                           </div>
-                          <span className="text-gray-700 font-medium">
-                            +1234567890
-                          </span>
+
+                          {/* Phone */}
+                          <div className="ml-2 flex items-center gap-2 text-green-600">
+                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                              <Phone className="w-4 h-4 text-gray-600" />
+                            </div>
+                            <span className="text-gray-700 font-medium">
+                              +1234567890
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* REFRESH + AUTO REFRESH */}
@@ -201,26 +204,19 @@ export function TimelinePage() {
 
                   <button
                     onClick={() => dispatch(getLadgerEmail(email))}
-                    className="flex items-center cursor-pointer gap-2 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                    className="flex items-center cursor-pointer text-blue-500  border rounded-3xl p-2 border-blue-600"
                   >
                     <RefreshCw className="w-4 h-4" />
-                    <span>Refresh</span>
                   </button>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600 text-sm">Auto Refresh:</span>
-                    <button
-                      onClick={() => setAutoRefresh(!autoRefresh)}
-                      className={`relative w-12 h-6 rounded-full transition-colors ${
-                        autoRefresh ? "bg-gray-800" : "bg-gray-300"
-                      }`}
-                    >
-                      <div
-                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
-                          autoRefresh ? "translate-x-6" : "translate-x-0.5"
-                        }`}
-                      ></div>
-                    </button>
+                  {/* ICON WITH NUMBER 5 */}
+                  <div className="  flex items-center">
+                    <img
+                      width="36"
+                      height="36"
+                      src="https://img.icons8.com/pulsar-gradient/48/replay-5.png"
+                      alt="replay-5"
+                    />
                   </div>
                 </div>
               </div>
@@ -236,7 +232,7 @@ export function TimelinePage() {
                     alt="no-result"
                   />
                   <h2 className="text-xl font-semibold text-gray-700">
-                    No Result Found
+                    No Result Found ,Change your Search
                   </h2>
                   <p className="text-gray-500 mt-1">
                     We couldn’t find any summary or recent email activity.
@@ -245,40 +241,64 @@ export function TimelinePage() {
               ) : (
                 <>
                   {/* TIMELINE DETAILS */}
-                  <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">SUBJECT</span>
-                      <p className="text-gray-900 mt-1">
-                        {mailersSummary?.subject ?? "No Subject"}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">MOTIVE</span>
-                      <p className="text-gray-900 mt-1">
-                        {mailersSummary?.motive}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">TYPE</span>
-                      <p className="text-gray-900 mt-1">Brand</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">STAGE</span>
-                      <p className="text-gray-900 mt-1">
-                        {mailersSummary?.stage ?? "No Status"}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">STATUS</span>
-                      <p className="text-gray-900 mt-1">
-                        {mailersSummary?.status ?? "No Status"}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">DATE</span>
-                      <p className="text-gray-900 mt-1">
-                        {mailersSummary?.date_entered}
-                      </p>
+                  <div className="mt-4 p-6  bg-gradient-to-br from-white/80 via-cyan-50 to-white/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/40  hover:shadow-2xl hover:border-cyan-200 transition-all duration-300">
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-6 text-sm">
+                      {/* Item */}
+                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
+                        <span className="text-gray-500 font-medium tracking-wide">
+                          SUBJECT
+                        </span>
+                        <p className="text-gray-900 font-semibold mt-1">
+                          {mailersSummary?.subject ?? "No Subject"}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
+                        <span className="text-gray-500 font-medium tracking-wide">
+                          MOTIVE
+                        </span>
+                        <p className="text-gray-900 font-semibold mt-1">
+                          {mailersSummary?.motive}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
+                        <span className="text-gray-500 font-medium tracking-wide">
+                          TYPE
+                        </span>
+                        <p className="text-gray-900 font-semibold mt-1">
+                          Brand
+                        </p>
+                      </div>
+
+                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
+                        <span className="text-gray-500 font-medium tracking-wide">
+                          STAGE
+                        </span>
+                        <p className="text-gray-900 font-semibold mt-1">
+                          {mailersSummary?.stage ?? "No Status"}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
+                        <span className="text-gray-500 font-medium tracking-wide">
+                          STATUS
+                        </span>
+                        <p className="text-gray-900 font-semibold mt-1">
+                          {mailersSummary?.status ?? "No Status"}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-gray-500 font-medium tracking-wide">
+                          DATE
+                        </span>
+                        <p className="text-gray-900 font-semibold mt-1">
+                          {formatDateWithDifference(
+                            mailersSummary?.date_entered
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -293,13 +313,27 @@ export function TimelinePage() {
                         {mailersSummary?.summary ?? "No AI summary available."}
                       </p>
                     </div>
-
                     {/* Latest Message */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto">
-                      <h3 className="text-yellow-700 font-semibold mb-2">
-                        Latest Message
-                      </h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
+                      {/* Header Row with Reply Button */}
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-yellow-700 font-semibold">
+                          Latest Message
+                        </h3>
+
+                        <button
+                          className="flex cursor-pointer items-center gap-1 text-sm text-yellow-800 bg-yellow-100 
+                 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 
+                 rounded-md transition-all shadow-sm"
+                          onClick={() => console.log("Reply clicked")}
+                        >
+                          <Reply className="w-4 h-4" />
+                          Reply
+                        </button>
+                      </div>
+
+                      {/* Message Content */}
+                      <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                         {mailersSummary?.latest_message ??
                           "No recent message found."}
                       </p>
@@ -428,12 +462,14 @@ export function TimelinePage() {
 
                         {/* Card */}
                         <div className="flex-1 border-2 rounded-xl p-4">
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2 justify-between mb-2">
                             <span className="text-gray-700">
-                              {event.type_c}
+                              {event.type_c?.charAt(0).toUpperCase() +
+                                event.type_c?.slice(1)}
                             </span>
+
                             <span className="text-gray-500 text-sm">
-                              {event.date_entered}
+                              {formatDateWithDifference(event.date_entered)}
                             </span>
                           </div>
                         </div>
