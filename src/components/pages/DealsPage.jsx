@@ -99,15 +99,12 @@ export function DealsPage() {
             <Handshake className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
           </div>
-<<<<<<< HEAD
-=======
           <button
             onClick={() => setShowDeal(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             + New Deal
           </button>
->>>>>>> 6ff9668325db3a4c57703e5ff3dc0fcd5e93c45d
         </div>
 
         {/* Table */}

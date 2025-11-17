@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-import React, { useEffect } from "react";
-import { Mail, Gift, Eye, Search } from "lucide-react";
-import { Footer } from "../Footer";
-=======
 import { Mail, Gift, Tag, DollarSign, Calendar, User } from "lucide-react";
 
->>>>>>> 6ff9668325db3a4c57703e5ff3dc0fcd5e93c45d
 import { useSelector } from "react-redux";
 
 export function OffersPage() {
