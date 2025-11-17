@@ -18,6 +18,7 @@ import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
+import Pagination from "./components/Pagination";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { timeline } = useSelector((state) => state.ladger);

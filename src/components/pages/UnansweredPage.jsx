@@ -12,6 +12,7 @@ import {
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
+import Pagination from "../Pagination";
 export function UnansweredPage() {
   const { count, emails } = useSelector((state) => state.unanswered);
   const [
@@ -111,6 +112,7 @@ export function UnansweredPage() {
             </tbody>
           </table>
         </div>
+        <Pagination />
       </div>
     </>
   );

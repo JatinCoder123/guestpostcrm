@@ -1,4 +1,4 @@
-import { Search, Sparkles, Bell, LogOut, X } from "lucide-react";
+import { Search, Sparkles, Bell, LogOut, X, User2Icon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
 import { useContext, useEffect, useState } from "react";
@@ -100,7 +100,7 @@ export function TopNav() {
       <div className="flex items-center gap-3 relative">
         {/* Notification Button */}
         <button className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors">
-          <Bell className="w-4 h-4" />
+          <User2Icon className="w-4 h-4" />
         </button>
 
         {/* AI Credits Button */}

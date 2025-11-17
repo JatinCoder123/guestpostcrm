@@ -19,89 +19,15 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
-import { formatTime, getDifference } from "../../assets/assets";
-
-/* =====================================================
-   LOADING SKELETON COMPONENT
-===================================================== */
-const LoadingSkeleton = () => {
-  return (
-    <div className="p-6 animate-fade-in">
-      {/* Header Skeleton */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full"></div>
-          <div className="space-y-2">
-            <div className="w-40 h-4 bg-gray-200 rounded animate-pulse"></div>
-            <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
-          <div className="w-10 h-5 bg-gray-200 rounded-full animate-pulse"></div>
-        </div>
-      </div>
-
-      {/* Cards Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-        <div className="h-40 bg-gray-200 animate-pulse rounded-xl"></div>
-        <div className="h-40 bg-gray-200 animate-pulse rounded-xl"></div>
-      </div>
-
-      {/* Buttons Skeleton */}
-      <div className="flex gap-3 mt-6">
-        <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse"></div>
-        <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse"></div>
-        <div className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
-        <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse"></div>
-      </div>
-    </div>
-  );
-};
-
-/* =====================================================
-   HELPERS
-===================================================== */
-
-function daysUntil(dateString) {
-  if (!dateString) return null;
-  const d = new Date(dateString);
-  const now = new Date();
-  const diffMs = d - now;
-  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-  return days;
-}
-
-function formatExpiryLabel(dateString) {
-  const days = daysUntil(dateString) ?? 2;
-  if (days === null) return "No Expiry Date";
-  if (days <= 0) return "Expired";
-  if (days <= 3) return `🔥 ${days} day${days > 1 ? "s" : ""} left`;
-  return `⏳ ${days} day${days > 1 ? "s" : ""} left`;
-}
-
-// If mailersSummary has numeric progress return it, otherwise map common stage text to progress %
-function getStageProgress(stageText) {
-  if (!stageText) return 0;
-  // if stageText is numeric string or number
-  const num = Number(stageText);
-  if (!isNaN(num)) {
-    return Math.max(0, Math.min(100, num));
-  }
-
-  const s = stageText.toLowerCase();
-  if (s.includes("won") || s.includes("closed") || s.includes("completed"))
-    return 100;
-  if (s.includes("proposal") || s.includes("negotiation")) return 75;
-  if (s.includes("contacted") || s.includes("follow")) return 45;
-  if (s.includes("lead") || s.includes("new")) return 20;
-  return 40; // default
-}
-
-/* =====================================================
-   MAIN COMPONENT
-===================================================== */
+import {
+  daysUntil,
+  formatExpiryLabel,
+  formatTime,
+  getDifference,
+  getStageProgress,
+} from "../../assets/assets";
+import LoadingSkeleton from "../LoadingSkeleton";
+import Pagination from "../Pagination";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -191,14 +117,7 @@ export function TimelinePage() {
 
       {/* MAIN CARD */}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {/* ===========================
-            LOADING SKELETON
-        ============================ */}
         {loading && <LoadingSkeleton />}
-
-        {/* ===========================
-            ACTUAL CONTENT (when NOT loading)
-        ============================ */}
         {!loading && (
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
@@ -589,6 +508,7 @@ export function TimelinePage() {
                 </div>
               </div>
             </div>
+            <Pagination slice={"ladger"} />
           </>
         )}
       </div>
