@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const detectionSlice = createSlice({
   name: "detection",
@@ -13,21 +12,17 @@ const detectionSlice = createSlice({
   reducers: {
     getDetectionRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.detection = [];
       state.error = null;
     },
     getDetectionSucess(state, action) {
       const { count, detection } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.detection = detection;
       state.count = count;
       state.error = null;
     },
     getDetectionFailed(state, action) {
       state.loading = false;
-      state.detection = [];
-      state.count = 0;
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -37,13 +32,21 @@ const detectionSlice = createSlice({
 });
 
 export const getDetection = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(detectionSlice.actions.getDetectionRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=spam_detection&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint}&type=spam_detection&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint}&type=spam_detection&filter=${filter}`
+        );
+      }
+      const data = response.data;
       console.log(`detection`, data);
       dispatch(
         detectionSlice.actions.getDetectionSucess({

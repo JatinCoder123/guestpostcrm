@@ -51,16 +51,7 @@ export function LinkRemovalPage() {
   };
 
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
+    <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-pink-500">
@@ -208,6 +199,6 @@ export function LinkRemovalPage() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

@@ -1,0 +1,147 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+import axios from "axios";
+import { AUTH_URL } from "../constants";
+
+const userSlice = createSlice({
+  name: "user",
+  initialState: {
+    loading: false,
+    user: {},
+    isAuthenticated: false,
+    crmEndpoint: null,
+    error: null,
+    message: null,
+  },
+  reducers: {
+    loadUserRequest(state) {
+      state.loading = true;
+      state.isAuthenticated = false;
+      state.user = {};
+      state.crmEndpoint = null;
+      state.error = null;
+    },
+    loadUserSuccess(state, action) {
+      const { crmEndpoint, user } = action.payload;
+      state.loading = false;
+      state.isAuthenticated = true;
+      state.user = user;
+      state.crmEndpoint = crmEndpoint;
+      state.error = null;
+    },
+    loadUserFailed(state, action) {
+      state.loading = false;
+      state.isAuthenticated = false;
+      state.user = {};
+      state.crmEndpoint = null;
+      state.error = action.payload;
+    },
+    logoutRequest(state) {
+      state.loading = true;
+    },
+
+    logoutSuccess(state, action) {
+      state.loading = false;
+      state.isAuthenticated = false;
+      state.user = {};
+      state.error = null;
+      state.message = action.payload;
+    },
+    logoutFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    clearAllErrors(state) {
+      state.error = null;
+    },
+  },
+});
+
+export const getUser = () => {
+  return async (dispatch) => {
+    dispatch(userSlice.actions.loadUserRequest());
+
+    try {
+      const { data } = await axios.get(
+        `${AUTH_URL}?controller=auth&action=me`,
+        { withCredentials: true }
+      );
+      console.log("user", data);
+      dispatch(
+        userSlice.actions.loadUserSuccess({
+          user: data.user,
+          crmEndpoint: data.crmEndpoint,
+        })
+      );
+
+      dispatch(userSlice.actions.clearAllErrors());
+    } catch (error) {
+      console.log(error);
+
+      let message = "Something went wrong. Please try again.";
+
+      if (error.response) {
+        const status = error.response.status;
+        const backendError = error.response.data?.error || "";
+
+        switch (status) {
+          case 404:
+            message = "You are not logged in. Please log in again.";
+            break;
+
+          case 401:
+            // Read backend error message and convert to friendly message
+            if (backendError.includes("Invalid token")) {
+              message =
+                "Your login session is not valid. Please sign in again.";
+            } else if (backendError.includes("Unauthorized user")) {
+              message = "Your account is not authorized to access this system.";
+            } else if (backendError.includes("email missing")) {
+              message =
+                "Something went wrong with your session. Please log in again.";
+            } else {
+              // Default fallback for unknown 401 reason
+              message = "Your session has expired. Please log in again.";
+            }
+            break;
+
+          case 400:
+            message = "Unable to process your request.";
+            break;
+
+          default:
+            message = "An unexpected error occurred. Please try again.";
+        }
+      }
+
+      dispatch(userSlice.actions.loadUserFailed(message));
+    }
+  };
+};
+
+export const logout = () => {
+  return async (dispatch) => {
+    dispatch(userSlice.actions.logoutRequest());
+    try {
+      const { data } = await axios.get(
+        `${AUTH_URL}?controller=auth&action=logout`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      dispatch(userSlice.actions.logoutSuccess(data.message));
+      dispatch(userSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(userSlice.actions.logoutFailed(error.response.data.message));
+    }
+  };
+};
+
+export const clearAllUserErrors = () => {
+  return async (dispatch) => {
+    dispatch(userSlice.actions.clearAllErrors);
+  };
+};
+export const userAction = userSlice.actions;
+export default userSlice.reducer;

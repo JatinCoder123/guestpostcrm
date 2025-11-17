@@ -6,53 +6,15 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { Footer } from "../Footer";
+import { useSelector } from "react-redux";
 
 export function PaymentMissedPage() {
-  const missedPayments = [
-    {
-      client: "TechBlog Inc.",
-      invoiceId: "#INV-003",
-      amount: "$750",
-      dueDate: "08 Nov 2025",
-      daysPastDue: 1,
-      lastContact: "09 Nov 2025",
-    },
-    {
-      client: "Digital Marketing Co.",
-      invoiceId: "#INV-005",
-      amount: "$1,500",
-      dueDate: "05 Nov 2025",
-      daysPastDue: 4,
-      lastContact: "07 Nov 2025",
-    },
-    {
-      client: "Content Agency",
-      invoiceId: "#INV-007",
-      amount: "$900",
-      dueDate: "01 Nov 2025",
-      daysPastDue: 8,
-      lastContact: "03 Nov 2025",
-    },
-  ];
-
-  const getSeverityColor = (days) => {
-    if (days >= 7) return "bg-red-100 text-red-700 border-red-300";
-    if (days >= 3) return "bg-orange-100 text-orange-700 border-orange-300";
-    return "bg-yellow-100 text-yellow-700 border-yellow-300";
-  };
+  const { paymentRem: missedPayments } = useSelector(
+    (state) => state.paymentRem
+  );
 
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
+    <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
@@ -125,25 +87,23 @@ export function PaymentMissedPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>CLIENT</span>
+                    <span>RECIPIENT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">INVOICE ID</th>
+                <th className="px-6 py-4 text-left">NAME</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
-                    <span>AMOUNT</span>
+                    <span>TIME</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DUE DATE</span>
+                    <span>STATUS</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">DAYS PAST DUE</th>
-                <th className="px-6 py-4 text-left">LAST CONTACT</th>
-                <th className="px-6 py-4 text-left">ACTION</th>
+                <th className="px-6 py-4 text-left">DATE CREATED</th>
               </tr>
             </thead>
             <tbody>
@@ -152,23 +112,14 @@ export function PaymentMissedPage() {
                   key={index}
                   className="border-b border-gray-100 hover:bg-red-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-gray-900">{payment.client}</td>
-                  <td className="px-6 py-4 text-red-600">
-                    {payment.invoiceId}
+                  <td className="px-6 py-4 text-gray-900">
+                    {payment.recipient}
                   </td>
-                  <td className="px-6 py-4 text-green-600">{payment.amount}</td>
-                  <td className="px-6 py-4 text-gray-600">{payment.dueDate}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm border ${getSeverityColor(
-                        payment.daysPastDue
-                      )}`}
-                    >
-                      {payment.daysPastDue} days
-                    </span>
-                  </td>
+                  <td className="px-6 py-4 text-red-600">{payment.name}</td>
+                  <td className="px-6 py-4 text-green-600">{payment.time}</td>
+                  <td className="px-6 py-4 text-gray-600">{payment.status}</td>
                   <td className="px-6 py-4 text-gray-600">
-                    {payment.lastContact}
+                    {payment.scheduled_time}
                   </td>
                   <td className="px-6 py-4">
                     <button className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
@@ -190,6 +141,6 @@ export function PaymentMissedPage() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

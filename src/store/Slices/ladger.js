@@ -1,38 +1,33 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
-import { act } from "react";
-
 const ladgerSlice = createSlice({
   name: "ladger",
   initialState: {
     loading: false,
     email: null,
     ladger: [],
+    mailersSummary: null,
     error: null,
-    timeline: "last_week",
+    timeline: "this_week",
     message: null,
     duplicate: 0,
   },
   reducers: {
     getLadgerRequest(state) {
       state.loading = true;
-      state.ladger = state.ladger;
-      state.duplicate = state.duplicate;
       state.error = null;
     },
     getLadgerSuccess(state, action) {
-      const { duplicate, ladger, email } = action.payload;
+      const { duplicate, ladger, email, mailersSummary } = action.payload;
       state.loading = false;
       state.ladger = ladger;
+      state.mailersSummary = mailersSummary;
       state.email = email;
       state.duplicate = duplicate;
       state.error = null;
     },
     getLadgerFailed(state, action) {
       state.loading = false;
-      state.ladger = state.ladger;
-      state.duplicate = state.duplicate;
       state.error = action.payload;
     },
     setTimeline(state, action) {
@@ -51,7 +46,9 @@ export const getLadger = () => {
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=${getState().ladger.timeline}`,
+        `${getState().user.crmEndpoint}&type=ledger&filter=${
+          getState().ladger.timeline
+        }`,
         {
           withCredentials: false,
         }
@@ -61,6 +58,7 @@ export const getLadger = () => {
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
+          mailersSummary: data.mailers_summary,
           email: data.data && data.data[0].name,
         })
       );
@@ -78,7 +76,7 @@ export const getLadgerEmail = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=${
+        `${getState().user.crmEndpoint}&type=ledger&filter=${
           getState().ladger.timeline
         }&email=${email}`,
         {
@@ -90,6 +88,7 @@ export const getLadgerEmail = (email) => {
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
+          mailersSummary: data.mailers_summary,
           email: email,
         })
       );

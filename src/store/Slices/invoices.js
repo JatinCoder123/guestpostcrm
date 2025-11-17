@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const invoicesSlice = createSlice({
   name: "invoices",
@@ -13,21 +12,17 @@ const invoicesSlice = createSlice({
   reducers: {
     getInvoicesRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.invoices = [];
       state.error = null;
     },
     getInvoicesSucess(state, action) {
       const { count, invoices } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.invoices = invoices;
       state.count = count;
       state.error = null;
     },
     getInvoicesFailed(state, action) {
       state.loading = false;
-      state.invoices = [];
-      state.count = 0;
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -37,13 +32,21 @@ const invoicesSlice = createSlice({
 });
 
 export const getInvoices = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(invoicesSlice.actions.getInvoicesRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_invoices&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint}&type=get_invoices&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint}&type=get_invoices&filter=${filter}`
+        );
+      }
+      const data = response.data;
       console.log(`invoices`, data);
       dispatch(
         invoicesSlice.actions.getInvoicesSucess({

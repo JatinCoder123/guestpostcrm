@@ -6,21 +6,36 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import CreateDeal from "../CreateDeal";
 
 export function DealsPage() {
   const { count, deals } = useSelector((state) => state.deals);
+  const [showDeal, setShowDeal] = useState(false);
+  useEffect(() => {
+    if (showDeal) {
+      document.body.style.overflow = "hidden"; // Disable background scroll
+    } else {
+      document.body.style.overflow = "auto"; // Restore when closed
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup
+    };
+  }, [showDeal]);
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
+    <>
+      {showDeal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <CreateDeal
+            onClose={() => {
+              setShowDeal(false);
+            }}
+          />
         </div>
-      </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -84,6 +99,15 @@ export function DealsPage() {
             <Handshake className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
           </div>
+<<<<<<< HEAD
+=======
+          <button
+            onClick={() => setShowDeal(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            + New Deal
+          </button>
+>>>>>>> 6ff9668325db3a4c57703e5ff3dc0fcd5e93c45d
         </div>
 
         {/* Table */}
@@ -148,7 +172,7 @@ export function DealsPage() {
         )}
       </div>
 
-      <Footer />
-    </div>
+      
+    </>
   );
 }

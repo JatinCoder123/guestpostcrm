@@ -1,6 +1,18 @@
+<<<<<<< HEAD
 import { useEffect } from "react";
 import { Mail, Eye, Package } from "lucide-react";
 import { Footer } from "../Footer";
+=======
+import {
+  Mail,
+  ShoppingCart,
+  Package,
+  DollarSign,
+  Calendar,
+  User,
+} from "lucide-react";
+
+>>>>>>> 6ff9668325db3a4c57703e5ff3dc0fcd5e93c45d
 import { useSelector } from "react-redux";
 
 export function OrdersPage() {
@@ -22,6 +34,7 @@ export function OrdersPage() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="p-6">
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
         <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
@@ -31,6 +44,9 @@ export function OrdersPage() {
         </div>
       </div>
 
+=======
+    <>
+>>>>>>> 6ff9668325db3a4c57703e5ff3dc0fcd5e93c45d
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
@@ -164,7 +180,7 @@ export function OrdersPage() {
         )}
       </div>
 
-      <Footer />
-    </div>
+      
+    </>
   );
 }

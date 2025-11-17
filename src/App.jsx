@@ -10,13 +10,20 @@ import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
 import { DealRemindersPage } from "./components/pages/DealRemindersPage";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
+import { AiCreditsPage } from "./components/pages/AiCreditsPage";
+import { PageContextProvider } from "./context/pageContext";
+import { OrderReminderPage } from "./components/pages/OrderReminderPage";
+import { getUser, userAction } from "./store/Slices/userSlice";
+import Login from "./components/pages/Login";
+import LoadingPage from "./components/pages/LoadingPage";
+import { toast, ToastContainer } from "react-toastify";
 const router = createBrowserRouter([
   {
-    path: "/Dashboard",
+    path: "",
     element: <RootLayout />,
     children: [
       {
@@ -26,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: "unreplied-emails",
         element: <UnrepliedEmailsPage />,
+      },
+      {
+        path: "ai-credits",
+        element: <AiCreditsPage />,
       },
       {
         path: "spam-detection",
@@ -64,6 +75,10 @@ const router = createBrowserRouter([
         element: <DealRemindersPage />,
       },
       {
+        path: "order-reminders",
+        element: <OrderReminderPage />,
+      },
+      {
         path: "timeline",
         element: <TimelinePage />,
       },
@@ -72,12 +87,42 @@ const router = createBrowserRouter([
 ]);
 export default function App() {
   const dispatch = useDispatch();
+  const { isAuthenticated, loading, error } = useSelector(
+    (state) => state.user
+  );
   useEffect(() => {
-    dispatch(getLadger());
+    dispatch(getUser());
   }, []);
+  useEffect(() => {
+    if (isAuthenticated) dispatch(getLadger());
+  }, [isAuthenticated]);
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(userAction.clearAllErrors());
+    }
+  }, [dispatch, error]);
   return (
     <>
-      <RouterProvider router={router} />
+      {isAuthenticated && (
+        <PageContextProvider>
+          <RouterProvider router={router} />
+        </PageContextProvider>
+      )}
+      {!isAuthenticated && loading && <LoadingPage />}
+      {!isAuthenticated && !loading && <Login />}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark" // you can change to "light"
+      />
     </>
   );
 }

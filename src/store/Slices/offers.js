@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -13,21 +12,19 @@ const offersSlice = createSlice({
   reducers: {
     getOffersRequest(state) {
       state.loading = true;
-      state.count = 0;
-      state.offers = [];
+
       state.error = null;
     },
     getOffersSucess(state, action) {
       const { count, offers } = action.payload;
-      state.loading = true;
+      state.loading = false;
       state.offers = offers;
       state.count = count;
       state.error = null;
     },
     getOffersFailed(state, action) {
       state.loading = false;
-      state.offers = [];
-      state.count = 0;
+
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -37,13 +34,21 @@ const offersSlice = createSlice({
 });
 
 export const getOffers = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch ,getState) => {
     dispatch(offersSlice.actions.getOffersRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_offers&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint}&type=get_offers&filter=${filter}&email=${email}`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint}&type=get_offers&filter=${filter}`
+        );
+      }
+      const data = response.data;
       console.log(`offers`, data);
       dispatch(
         offersSlice.actions.getOffersSucess({

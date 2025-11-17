@@ -1,93 +1,60 @@
+import logo from "./logo.png";
+export default logo;
 
-export const menuItems = [
-  {
-    id: "unreplied-emails",
-    label: "Unreplied Emails",
-    icon: Mail,
-    count: 24,
-    color: "text-red-600",
-    bgColor: "hover:bg-red-50",
-    countColor: "bg-red-500 text-white",
-  },
-  {
-    id: "spam-detection",
-    label: "Spam Detection",
-    icon: Shield,
-    count: 4,
-    color: "text-orange-600",
-    bgColor: "hover:bg-orange-50",
-    countColor: "bg-orange-500 text-white",
-  },
-  {
-    id: "unanswered",
-    label: "Unanswered",
-    icon: MessageSquare,
-    count: 24,
-    color: "text-purple-600",
-    bgColor: "hover:bg-purple-50",
-    countColor: "bg-purple-500 text-white",
-  },
-  {
-    id: "deals",
-    label: "Deals",
-    icon: Handshake,
-    count: 0,
-    color: "text-blue-600",
-    bgColor: "hover:bg-blue-50",
-    countColor: "bg-blue-500 text-white",
-  },
-  {
-    id: "offers",
-    label: "Offers",
-    icon: Gift,
-    count: 0,
-    color: "text-green-600",
-    bgColor: "hover:bg-green-50",
-    countColor: "bg-green-500 text-white",
-  },
-  {
-    id: "orders",
-    label: "Orders",
-    icon: ShoppingCart,
-    count: 0,
-    color: "text-indigo-600",
-    bgColor: "hover:bg-indigo-50",
-    countColor: "bg-indigo-500 text-white",
-  },
-  {
-    id: "invoices",
-    label: "Invoices",
-    icon: FileText,
-    count: 0,
-    color: "text-yellow-600",
-    bgColor: "hover:bg-yellow-50",
-    countColor: "bg-yellow-500 text-white",
-  },
-  {
-    id: "payment-missed",
-    label: "Payment Missed",
-    icon: CreditCard,
-    count: 0,
-    color: "text-red-600",
-    bgColor: "hover:bg-red-50",
-    countColor: "bg-red-500 text-white",
-  },
-  {
-    id: "link-removal",
-    label: "Link Removal",
-    icon: Link2,
-    count: 0,
-    color: "text-pink-600",
-    bgColor: "hover:bg-pink-50",
-    countColor: "bg-pink-500 text-white",
-  },
-  {
-    id: "deal-reminders",
-    label: "Deal Reminders",
-    icon: Bell,
-    count: 0,
-    color: "text-cyan-600",
-    bgColor: "hover:bg-cyan-50",
-    countColor: "bg-cyan-500 text-white",
-  },
+export const websiteListForDeal = [
+  "https://www.wp-1click.com/",
+  "https://www.outrightcrm.com/",
+  "https://store.outrightcrm.com/",
+  "https://www.extractmails.com/",
+  "https://www.outrightsystems.org/",
+  "https://www.mailsextract.com/",
+  "https://www.guestpostcrm.com/",
 ];
+export const periodOptions = [
+  { period: "today", title: "Today" },
+  { period: "yesterday", title: "Yesterday" },
+  { period: "this_week", title: "Last 7 Days" },
+  { period: "last_week", title: "Last 14 Days" },
+  { period: "this_month", title: "Last 30 Days" },
+];
+export function getDifference(dateString) {
+  const inputDate = new Date(dateString);
+  const now = new Date();
+
+  // --- TIME DIFFERENCE ---
+  let diffMs = Math.abs(now - inputDate);
+
+  const months = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44));
+  diffMs -= months * (1000 * 60 * 60 * 24 * 30.44);
+
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  diffMs -= days * (1000 * 60 * 60 * 24);
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  diffMs -= hours * (1000 * 60 * 60);
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+
+  // --- BUILD PARTS ARRAY ---
+  const parts = [];
+
+  if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
+  if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+  if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
+  if (minutes > 0) parts.push(`${minutes} min${minutes > 1 ? "s" : ""}`);
+
+  const formattedDifference = parts.length > 0 ? `(${parts.join(" , ")})` : "";
+
+  return `${formattedDifference}`;
+}
+export function formatTime(dateString) {
+  const inputDate = new Date(dateString);
+
+  // --- SHORT MONTH NAME ---
+  const shortMonth = inputDate.toLocaleString("en-US", { month: "short" });
+
+  const day = inputDate.getDate();
+  const year = inputDate.getFullYear();
+
+  return `${day} ${shortMonth} ${year}`;
+}

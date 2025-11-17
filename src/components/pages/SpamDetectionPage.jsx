@@ -1,20 +1,11 @@
 import { Mail, Calendar, User, FileText, AlertTriangle } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
 
 export function SpamDetectionPage() {
   const { detection, count } = useSelector((state) => state.detection);
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
+    <>
       {/* Spam Detection Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -42,7 +33,13 @@ export function SpamDetectionPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>SENDER</span>
+                    <span>SENDER NAME</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>SENDER EMAIL</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -51,37 +48,31 @@ export function SpamDetectionPage() {
                     <span>SPAM REASON</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">Spam</th>
               </tr>
             </thead>
             <tbody>
               {detection.map((spam) => (
                 <tr
-                  key={spam.id}
+                  key={spam.thread_id}
                   className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{spam.date_entered}</span>
+                      <span>{spam.date_created}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.name}</span>
-                      <button className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                        <span className="text-xs">📋</span>
-                      </button>
+                      <span>{spam.from_name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">
-                    {spam.description.slice(0, 12)}
-                  </td>
                   <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-orange-500 text-white rounded-full text-xs">
-                      {spam.type_c}
-                    </span>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <span>{spam.from_email}</span>
+                    </div>
                   </td>
+                  <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
                 </tr>
               ))}
             </tbody>
@@ -89,7 +80,7 @@ export function SpamDetectionPage() {
         </div>
       </div>
 
-      <Footer />
-    </div>
+      
+    </>
   );
 }

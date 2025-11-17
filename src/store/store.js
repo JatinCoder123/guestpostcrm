@@ -7,6 +7,15 @@ import offersReducer from "./Slices/offers.js";
 import invoiceReducer from "./Slices/invoices.js";
 import detectionReducer from "./Slices/detection.js";
 import orderReducer from "./Slices/orders.js";
+import viewEmailReducer from "./Slices/viewEmail.js";
+import threadEmailReducer from "./Slices/threadEmail.js";
+import aiCreditsReducer from "./Slices/aiCredits.js";
+import aiReplyReducer from "./Slices/aiReply.js";
+import linkRemReducer from "./Slices/linkRem.js";
+import orderRemReducer from "./Slices/orderRem.js";
+import paymetnRemReducer from "./Slices/paymentRem.js";
+import dealRemReducer from "./Slices/dealRem.js";
+import userReducer from "./Slices/userSlice.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -17,5 +26,14 @@ export const store = configureStore({
     detection: detectionReducer,
     invoices: invoiceReducer,
     offers: offersReducer,
+    viewEmail: viewEmailReducer,
+    threadEmail: threadEmailReducer,
+    aiCredits: aiCreditsReducer,
+    aiReply: aiReplyReducer,
+    orderRem: orderRemReducer,
+    dealRem: dealRemReducer,
+    paymentRem: paymetnRemReducer,
+    linkRem: linkRemReducer,
+    user: userReducer,
   },
 });
