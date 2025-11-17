@@ -8,7 +8,7 @@ const ladgerSlice = createSlice({
     ladger: [],
     mailersSummary: null,
     error: null,
-    timeline: "this_week",
+    timeline: "last_7_days",
     message: null,
     duplicate: 0,
   },

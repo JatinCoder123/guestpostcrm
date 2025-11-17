@@ -112,20 +112,13 @@ export function TimelinePage() {
 
   const dispatch = useDispatch();
 
-  const {
-    ladger = [],
-    email,
-    duplicate = 0,
-    mailersSummary = {},
-    loading,
-    error,
-  } = useSelector((state) => state.ladger || {});
-
+  const { ladger, email, duplicate, mailersSummary, loading, error } =
+    useSelector((state) => state.ladger);
   const {
     loading: sendLoading,
     error: sendError,
     message,
-  } = useSelector((state) => state.viewEmail || {});
+  } = useSelector((state) => state.viewEmail);
 
   /** Disable body scroll when modals open */
   useEffect(() => {
@@ -212,15 +205,14 @@ export function TimelinePage() {
               {/* TOP HEADER */}
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  {ladger.length > 0 && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Mail className="w-5 h-5 text-gray-600" />
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        {ladger.length > 0 && (
                           <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                              <Mail className="w-5 h-5 text-gray-600" />
+                            </div>
                             <span className="text-gray-800 text-lg font-semibold">
                               {ladger[0].name}
                             </span>
@@ -233,53 +225,49 @@ export function TimelinePage() {
                               alt="verified-account"
                             />
                           </div>
+                        )}
 
-                          {/* NEW: TYPE / STATUS / STAGE — ICONS WITH COLORED BACKGROUND */}
-                          <div className="ml-4 flex items-center gap-2">
-                            {/* TYPE */}
-                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md">
-                              <div className="text-sm">
-                                <div className="text-gray-500 text-xs">
-                                  Type
-                                </div>
-                                <div className="text-gray-800 font-medium">
-                                  {mailersSummary?.type ?? "Brand"}
-                                </div>
+                        {/* NEW: TYPE / STATUS / STAGE — ICONS WITH COLORED BACKGROUND */}
+                        <div className="ml-4 flex items-center gap-2">
+                          {/* TYPE */}
+                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md">
+                            <div className="text-sm">
+                              <div className="text-gray-500 text-xs">Type</div>
+                              <div className="text-gray-800 font-medium">
+                                {mailersSummary?.type ?? "Brand"}
                               </div>
                             </div>
+                          </div>
 
-                            {/* STATUS */}
-                            <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-2 py-1 rounded-md">
-                              <div className="text-sm">
-                                <div className="text-gray-500 text-xs">
-                                  Status
-                                </div>
-                                <div className="text-gray-800 font-medium">
-                                  {mailersSummary?.status ?? "N/A"}
-                                </div>
+                          {/* STATUS */}
+                          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-2 py-1 rounded-md">
+                            <div className="text-sm">
+                              <div className="text-gray-500 text-xs">
+                                Status
+                              </div>
+                              <div className="text-gray-800 font-medium">
+                                {mailersSummary?.status ?? "N/A"}
                               </div>
                             </div>
+                          </div>
 
-                            {/* STAGE with tiny progress bar */}
-                            <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-2 py-1 rounded-md">
-                              <div className="text-sm min-w-[150px]">
-                                <div className="text-gray-500 text-xs">
-                                  Stage
+                          {/* STAGE with tiny progress bar */}
+                          <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-2 py-1 rounded-md">
+                            <div className="text-sm min-w-[150px]">
+                              <div className="text-gray-500 text-xs">Stage</div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                  <div
+                                    className="h-2 rounded-full"
+                                    style={{
+                                      width: `${stageProgress}%`,
+                                      background:
+                                        "linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6)",
+                                    }}
+                                  />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                    <div
-                                      className="h-2 rounded-full"
-                                      style={{
-                                        width: `${stageProgress}%`,
-                                        background:
-                                          "linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6)",
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="text-xs text-gray-600 w-10 text-right">
-                                    {Math.round(stageProgress)}%
-                                  </div>
+                                <div className="text-xs text-gray-600 w-10 text-right">
+                                  {Math.round(stageProgress)}%
                                 </div>
                               </div>
                             </div>
@@ -287,7 +275,7 @@ export function TimelinePage() {
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* REFRESH + AUTO REFRESH */}
@@ -446,91 +434,91 @@ export function TimelinePage() {
                       </p>
                     </div>
                   </div>
+                  {/* ===================== */}
+                  {/*     ACTION BUTTONS    */}
+                  {/* ===================== */}
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {/* View Email */}
+                    <button
+                      onClick={() => setShowEmails(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm"
+                    >
+                      <Mail className="w-4 h-4" />
+                      <span>View Email</span>
+                    </button>
+
+                    {/* View Contact */}
+                    <button
+                      onClick={() => {
+                        dispatch(getContact(email));
+                        setShowContact(true);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                    >
+                      <User className="w-4 h-4" />
+                      <span>View Contact</span>
+                    </button>
+
+                    {/* View IP */}
+                    <button
+                      onClick={() => setShowIP(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all shadow-sm"
+                    >
+                      <Globe className="w-4 h-4" />
+                      <span>View IP</span>
+                    </button>
+
+                    {/* Create Deal */}
+                    <button
+                      onClick={() => setShowDeal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-sm"
+                    >
+                      <Handshake className="w-4 h-4" />
+                      <span>Create Deal</span>
+                    </button>
+
+                    {/* WhatsApp */}
+                    <button
+                      onClick={() => console.log("Open WhatsApp")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
+                        alt="whatsapp--v1"
+                      />
+                    </button>
+
+                    {/* Call */}
+                    <button
+                      onClick={() => console.log("Call user")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/apple-phone.png"
+                        alt="apple-phone"
+                      />
+                    </button>
+
+                    {/* SMS */}
+                    <button
+                      onClick={() => console.log("Send SMS")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
+                        alt="speech-bubble-with-dots"
+                      />
+                    </button>
+                  </div>
                 </>
               )}
-
-              {/* ===================== */}
-              {/*     ACTION BUTTONS    */}
-              {/* ===================== */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {/* View Email */}
-                <button
-                  onClick={() => setShowEmails(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm"
-                >
-                  <Mail className="w-4 h-4" />
-                  <span>View Email</span>
-                </button>
-
-                {/* View Contact */}
-                <button
-                  onClick={() => {
-                    dispatch(getContact(email));
-                    setShowContact(true);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
-                >
-                  <User className="w-4 h-4" />
-                  <span>View Contact</span>
-                </button>
-
-                {/* View IP */}
-                <button
-                  onClick={() => setShowIP(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all shadow-sm"
-                >
-                  <Globe className="w-4 h-4" />
-                  <span>View IP</span>
-                </button>
-
-                {/* Create Deal */}
-                <button
-                  onClick={() => setShowDeal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-sm"
-                >
-                  <Handshake className="w-4 h-4" />
-                  <span>Create Deal</span>
-                </button>
-
-                {/* WhatsApp */}
-                <button
-                  onClick={() => console.log("Open WhatsApp")}
-                  className="cursor-pointer hover:scale-105"
-                >
-                  <img
-                    width="48"
-                    height="48"
-                    src="https://img.icons8.com/color/48/whatsapp--v1.png"
-                    alt="whatsapp--v1"
-                  />
-                </button>
-
-                {/* Call */}
-                <button
-                  onClick={() => console.log("Call user")}
-                  className="cursor-pointer hover:scale-105"
-                >
-                  <img
-                    width="48"
-                    height="48"
-                    src="https://img.icons8.com/color/48/apple-phone.png"
-                    alt="apple-phone"
-                  />
-                </button>
-
-                {/* SMS */}
-                <button
-                  onClick={() => console.log("Send SMS")}
-                  className="cursor-pointer hover:scale-105"
-                >
-                  <img
-                    width="48"
-                    height="48"
-                    src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
-                    alt="speech-bubble-with-dots"
-                  />
-                </button>
-              </div>
             </div>
 
             {/* TIMELINE EVENTS */}
