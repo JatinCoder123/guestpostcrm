@@ -19,6 +19,7 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
+import { useNavigate } from "react-router-dom";
 import {
   daysUntil,
   formatExpiryLabel,
@@ -28,7 +29,6 @@ import {
 } from "../../assets/assets";
 import LoadingSkeleton from "../LoadingSkeleton";
 import Pagination from "../Pagination";
-import { useNavigate } from "react-router-dom";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
