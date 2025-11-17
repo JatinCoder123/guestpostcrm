@@ -7,6 +7,8 @@ const ladgerSlice = createSlice({
     email: null,
     ladger: [],
     mailersSummary: null,
+    pageCount: 1,
+    pageIndex: 0,
     error: null,
     timeline: "last_7_days",
     message: null,
@@ -18,10 +20,12 @@ const ladgerSlice = createSlice({
       state.error = null;
     },
     getLadgerSuccess(state, action) {
-      const { duplicate, ladger, email, mailersSummary } = action.payload;
+      const { duplicate, ladger, email, pageCount, mailersSummary } =
+        action.payload;
       state.loading = false;
       state.ladger = ladger;
       state.mailersSummary = mailersSummary;
+      state.pageCount = pageCount;
       state.email = email;
       state.duplicate = duplicate;
       state.error = null;
@@ -37,6 +41,9 @@ const ladgerSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
+    updateIndex(state, action) {
+      state.pageIndex = action.payload;
+    },
   },
 });
 
@@ -48,7 +55,7 @@ export const getLadger = () => {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger&filter=${
           getState().ladger.timeline
-        }`,
+        }&page=1&page_size=50`,
         {
           withCredentials: false,
         }
@@ -60,6 +67,7 @@ export const getLadger = () => {
           ladger: data.data,
           mailersSummary: data.mailers_summary,
           email: data.data && data.data[0].name,
+          pageCount: data.total_pages,
         })
       );
       dispatch(ladgerSlice.actions.clearAllErrors());
@@ -78,7 +86,7 @@ export const getLadgerEmail = (email) => {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger&filter=${
           getState().ladger.timeline
-        }&email=${email}`,
+        }&email=${email}&page=1&page_size=50`,
         {
           withCredentials: false,
         }
@@ -89,6 +97,7 @@ export const getLadgerEmail = (email) => {
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
           mailersSummary: data.mailers_summary,
+          pageCount: data.total_pages,
           email: email,
         })
       );
@@ -100,6 +109,7 @@ export const getLadgerEmail = (email) => {
     }
   };
 };
+export const getLadgerData = () => {};
 
 export const ladgerAction = ladgerSlice.actions;
 export default ladgerSlice.reducer;
