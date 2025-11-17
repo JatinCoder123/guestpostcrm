@@ -20,6 +20,7 @@ import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { formatTime, getDifference } from "../../assets/assets";
+import { useNavigate } from "react-router-dom";
 
 /* =====================================================
    LOADING SKELETON COMPONENT
@@ -109,6 +110,7 @@ export function TimelinePage() {
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
+  const navigateTo = useNavigate();
 
   const dispatch = useDispatch();
 
@@ -466,7 +468,8 @@ export function TimelinePage() {
                 <button
                   onClick={() => {
                     dispatch(getContact(email));
-                    setShowContact(true);
+                    // setShowContact(true);
+                    navigateTo("/contacts");
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
                 >
