@@ -13,7 +13,7 @@ import { SettingsPage } from "./components/pages/SettingsPage";
 import { DealRemindersPage } from "./components/pages/DealRemindersPage";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
 import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";

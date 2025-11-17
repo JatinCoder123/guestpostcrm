@@ -10,6 +10,7 @@ const userSlice = createSlice({
     user: {},
     isAuthenticated: false,
     crmEndpoint: null,
+    businessEmail: null,
     error: null,
     message: null,
   },
@@ -19,14 +20,16 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.user = {};
       state.crmEndpoint = null;
+      state.businessEmail = null;
       state.error = null;
     },
     loadUserSuccess(state, action) {
-      const { crmEndpoint, user } = action.payload;
+      const { crmEndpoint, businessEmail, user } = action.payload;
       state.loading = false;
       state.isAuthenticated = true;
       state.user = user;
       state.crmEndpoint = crmEndpoint;
+      state.businessEmail = businessEmail;
       state.error = null;
     },
     loadUserFailed(state, action) {
@@ -34,6 +37,7 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.user = {};
       state.crmEndpoint = null;
+      state.businessEmail = null;
       state.error = action.payload;
     },
     logoutRequest(state) {
@@ -71,6 +75,7 @@ export const getUser = () => {
         userSlice.actions.loadUserSuccess({
           user: data.user,
           crmEndpoint: data.crmEndpoint,
+          businessEmail: data.businessEmail,
         })
       );
 

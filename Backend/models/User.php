@@ -6,7 +6,7 @@ class User
     public function verifyUser($email)
     {
         // Build full URL
-        if ($email == "verm.jatin2004@gmail.com")
+        if ($email == "verm.jatin2004@gmail.com" || $email=="qu4079161@gmail.com" || $email=="kamaluniyal19@gmail.com" || $email=="outrightnk9999@gmail.com")
             $email = "vikas@outrightcrm.com";
         $url = $this->endpoint . "&email=" . urlencode($email);
 

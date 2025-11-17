@@ -6,7 +6,7 @@ import { PageContext } from "../context/pageContext";
 
 const WelcomeHeader = () => {
   const { email, timeline } = useSelector((state) => state.ladger);
-  const { crmEndpoint } = useSelector((state) => state.user);
+  const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
   const { enteredEmail } = useContext(PageContext);
 
   // Extract CRM domain from https://domain.com...
@@ -71,7 +71,7 @@ const WelcomeHeader = () => {
         </div>
 
         {/* EMAIL BADGE */}
-        {email && (
+        {businessEmail && (
           <div
             className="flex items-center bg-white/20 rounded-full px-4 py-2 
                           backdrop-blur-xl border border-white/30 shadow-md"
@@ -81,7 +81,7 @@ const WelcomeHeader = () => {
               className="bg-white text-gray-800 rounded-full px-3 py-1 
                                text-sm font-medium shadow-sm"
             >
-              {email}
+              {businessEmail}
             </span>
           </div>
         )}
