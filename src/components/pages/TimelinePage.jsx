@@ -19,6 +19,7 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
+import { useNavigate } from "react-router-dom";
 import {
   daysUntil,
   formatExpiryLabel,
