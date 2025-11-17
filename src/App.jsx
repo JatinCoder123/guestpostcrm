@@ -9,6 +9,7 @@ import { OrdersPage } from "./components/pages/OrdersPage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
+import { SettingsPage } from "./components/pages/SettingsPage";
 import { DealRemindersPage } from "./components/pages/DealRemindersPage";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
@@ -81,6 +82,11 @@ const router = createBrowserRouter([
       {
         path: "timeline",
         element: <TimelinePage />,
+      },
+
+       {
+        path: "settings",
+        element: <SettingsPage/>,
       },
     ],
   },
