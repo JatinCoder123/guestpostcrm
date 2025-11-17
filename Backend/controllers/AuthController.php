@@ -61,6 +61,7 @@
                 if (isset($verifyJson['success']) && $verifyJson['success'] === true) {
 
                     // Build CRM endpoint using domain description
+                     $businessEmail = $verifyJson['email'] ?? null;
                     $description = $verifyJson['data']['description'] ?? null;
 
                     if (!$description) {
@@ -74,6 +75,7 @@
                     // ⭐ Final Success Response
                     echo json_encode([
                         "user" => $decoded->data,
+                        "businessEmail" => $businessEmail,
                         "crmEndpoint" => $crmEndpoint
                     ]);
                     return;
