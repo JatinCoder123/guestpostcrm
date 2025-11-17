@@ -33,8 +33,10 @@ export default function Contactpage() {
           <InfoRow icon={<User />} label="Stage" value={contactInfo?.stage} />
           <InfoRow icon={<User />} label="Phone" value={contactInfo?.phone_mobile} />
           <InfoRow icon={<Mail />} label="Email" value={contactInfo?.email1} />
-          <InfoRow icon={<MapPin />} label="Address" value={contactInfo?.billing_address_street} />
+          <InfoRow icon={<MapPin />} label="Primary Address" value={contactInfo?.billing_address_street} />
+          <InfoRow icon={<MapPin />} label="Secondary Address" value={contactInfo?.alt_address_street} />
           <InfoRow icon={<MapPin />} label="date_entered" value={contactInfo?.date_entered} />
+           <InfoRow icon={<MapPin />} label="Customer_type" value={contactInfo?.customer_type} />
         </div>
 
         <hr className="my-6 border-gray-300" />
@@ -46,6 +48,11 @@ export default function Contactpage() {
 
         <div className="space-y-4">
           <InfoRow icon={<Building2 />} label="Company" value={accountInfo?.company} />
+          <InfoRow icon={<Building2 />} label="Primary Address" value={accountInfo?.billing_address_street} />
+          <InfoRow icon={<Building2 />} label="Billing Address" value={accountInfo?.billing_address_street} />
+          <InfoRow icon={<Building2 />} label="Shipping Address" value={accountInfo?.shipping_address_street} />
+          <InfoRow icon={<Building2 />} label="Phone" value={accountInfo?.phone_office} />
+          <InfoRow icon={<Building2 />} label="website" value={accountInfo?.website} />
           <InfoRow
             icon={<CreditCard />}
             label="Account ID"
