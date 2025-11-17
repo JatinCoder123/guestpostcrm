@@ -49,12 +49,14 @@ const threadEmailSlice = createSlice({
 });
 
 export const getThreadEmail = (email, threadId) => {
-  return async (dispatch ,getState) => {
+  return async (dispatch, getState) => {
     dispatch(threadEmailSlice.actions.getThreadEmailRequest());
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_thread&thread_id=${threadId}&email=${email}`
+        `${
+          getState().user.crmEndpoint
+        }&type=view_thread&thread_id=${threadId}&email=${email}&page=1&page_size=50`
       );
       console.log(`threadEmail`, data);
       dispatch(
@@ -71,7 +73,7 @@ export const getThreadEmail = (email, threadId) => {
   };
 };
 export const sendEmailToThread = (threadId, reply) => {
-  return async (dispatch ,getState) => {
+  return async (dispatch, getState) => {
     dispatch(threadEmailSlice.actions.sendEmailRequest());
 
     try {

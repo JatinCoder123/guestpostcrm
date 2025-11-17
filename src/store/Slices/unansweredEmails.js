@@ -32,18 +32,22 @@ const unansweredSlice = createSlice({
 });
 
 export const getUnansweredEmails = (filter, email) => {
-  return async (dispatch ,getState) => {
+  return async (dispatch, getState) => {
     dispatch(unansweredSlice.actions.getEmailRequest());
 
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${getState().user.crmEndpoint}&type=unanswered&filter=${filter}&email=${email}`
+          `${
+            getState().user.crmEndpoint
+          }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${getState().user.crmEndpoint}&type=unanswered&filter=${filter}`
+          `${
+            getState().user.crmEndpoint
+          }&type=unanswered&filter=${filter}&page=1&page_size=50`
         );
       }
 
