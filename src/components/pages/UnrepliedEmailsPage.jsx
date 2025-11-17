@@ -1,8 +1,16 @@
-import { Mail, Calendar, User, FileText } from "lucide-react";
+import {
+  Mail,
+  Calendar,
+  User,
+  FileText,
+  Repeat,
+  BarChart2,
+} from "lucide-react";
 
 import { useSelector } from "react-redux";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
+import { BarChart } from "recharts";
 export function UnrepliedEmailsPage() {
   const { count, emails } = useSelector((state) => state.unreplied);
   const [
@@ -59,6 +67,18 @@ export function UnrepliedEmailsPage() {
                     <span>SUBJECT</span>
                   </div>
                 </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <BarChart2 className="w-4 h-4" />
+                    <span>THREAD SIZE</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="w-4 h-4" />
+                    <span>DUPLICATE</span>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -91,8 +111,6 @@ export function UnrepliedEmailsPage() {
           </table>
         </div>
       </div>
-
-      
     </>
   );
 }

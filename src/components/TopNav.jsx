@@ -99,10 +99,7 @@ export function TopNav() {
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
         {/* Notification Button */}
-        <button
-          onClick={() => navigateTo("ai-credits")}
-          className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors"
-        >
+        <button className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors">
           <Bell className="w-4 h-4" />
         </button>
 

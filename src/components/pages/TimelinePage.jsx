@@ -2,11 +2,13 @@ import {
   Mail,
   RefreshCw,
   CheckCircle,
-  Phone,
   User,
   Globe,
   Handshake,
   Reply,
+  Calendar,
+  FileText,
+  Clock,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -17,7 +19,7 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
-import { formatDateWithDifference } from "../../assets/assets";
+import { formatTime, getDifference } from "../../assets/assets";
 
 /* =====================================================
    LOADING SKELETON COMPONENT
@@ -59,6 +61,45 @@ const LoadingSkeleton = () => {
 };
 
 /* =====================================================
+   HELPERS
+===================================================== */
+
+function daysUntil(dateString) {
+  if (!dateString) return null;
+  const d = new Date(dateString);
+  const now = new Date();
+  const diffMs = d - now;
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return days;
+}
+
+function formatExpiryLabel(dateString) {
+  const days = daysUntil(dateString) ?? 2;
+  if (days === null) return "No Expiry Date";
+  if (days <= 0) return "Expired";
+  if (days <= 3) return `🔥 ${days} day${days > 1 ? "s" : ""} left`;
+  return `⏳ ${days} day${days > 1 ? "s" : ""} left`;
+}
+
+// If mailersSummary has numeric progress return it, otherwise map common stage text to progress %
+function getStageProgress(stageText) {
+  if (!stageText) return 0;
+  // if stageText is numeric string or number
+  const num = Number(stageText);
+  if (!isNaN(num)) {
+    return Math.max(0, Math.min(100, num));
+  }
+
+  const s = stageText.toLowerCase();
+  if (s.includes("won") || s.includes("closed") || s.includes("completed"))
+    return 100;
+  if (s.includes("proposal") || s.includes("negotiation")) return 75;
+  if (s.includes("contacted") || s.includes("follow")) return 45;
+  if (s.includes("lead") || s.includes("new")) return 20;
+  return 40; // default
+}
+
+/* =====================================================
    MAIN COMPONENT
 ===================================================== */
 
@@ -71,14 +112,20 @@ export function TimelinePage() {
 
   const dispatch = useDispatch();
 
-  const { ladger, email, duplicate, mailersSummary, loading, error } =
-    useSelector((state) => state.ladger);
+  const {
+    ladger = [],
+    email,
+    duplicate = 0,
+    mailersSummary = {},
+    loading,
+    error,
+  } = useSelector((state) => state.ladger || {});
 
   const {
     loading: sendLoading,
     error: sendError,
     message,
-  } = useSelector((state) => state.viewEmail);
+  } = useSelector((state) => state.viewEmail || {});
 
   /** Disable body scroll when modals open */
   useEffect(() => {
@@ -102,7 +149,7 @@ export function TimelinePage() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh]);
+  }, [autoRefresh, dispatch, email]);
 
   /** Error Handling */
   useEffect(() => {
@@ -122,6 +169,9 @@ export function TimelinePage() {
       dispatch(viewEmailAction.clearAllMessage());
     }
   }, [dispatch, sendError, sendLoading, message]);
+
+  // Stage progress for header chip
+  const stageProgress = getStageProgress(mailersSummary?.stage);
 
   return (
     <>
@@ -160,33 +210,79 @@ export function TimelinePage() {
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
               {/* TOP HEADER */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
                   {ladger.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Mail className="w-4 h-4 text-gray-600" />
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-gray-600" />
                       </div>
 
                       <div>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-700 font-medium">
+                            <span className="text-gray-800 text-lg font-semibold">
                               {ladger[0].name}
                             </span>
 
                             {/* Verified Icon */}
-                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <img
+                              width="50"
+                              height="50"
+                              src="https://img.icons8.com/bubbles/100/verified-account.png"
+                              alt="verified-account"
+                            />
                           </div>
 
-                          {/* Phone */}
-                          <div className="ml-2 flex items-center gap-2 text-green-600">
-                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                              <Phone className="w-4 h-4 text-gray-600" />
+                          {/* NEW: TYPE / STATUS / STAGE — ICONS WITH COLORED BACKGROUND */}
+                          <div className="ml-4 flex items-center gap-2">
+                            {/* TYPE */}
+                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md">
+                              <div className="text-sm">
+                                <div className="text-gray-500 text-xs">
+                                  Type
+                                </div>
+                                <div className="text-gray-800 font-medium">
+                                  {mailersSummary?.type ?? "Brand"}
+                                </div>
+                              </div>
                             </div>
-                            <span className="text-gray-700 font-medium">
-                              +1234567890
-                            </span>
+
+                            {/* STATUS */}
+                            <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-2 py-1 rounded-md">
+                              <div className="text-sm">
+                                <div className="text-gray-500 text-xs">
+                                  Status
+                                </div>
+                                <div className="text-gray-800 font-medium">
+                                  {mailersSummary?.status ?? "N/A"}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* STAGE with tiny progress bar */}
+                            <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-2 py-1 rounded-md">
+                              <div className="text-sm min-w-[150px]">
+                                <div className="text-gray-500 text-xs">
+                                  Stage
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                    <div
+                                      className="h-2 rounded-full"
+                                      style={{
+                                        width: `${stageProgress}%`,
+                                        background:
+                                          "linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6)",
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="text-xs text-gray-600 w-10 text-right">
+                                    {Math.round(stageProgress)}%
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -204,13 +300,14 @@ export function TimelinePage() {
 
                   <button
                     onClick={() => dispatch(getLadgerEmail(email))}
-                    className="flex items-center cursor-pointer text-blue-500  border rounded-3xl p-2 border-blue-600"
+                    className="flex items-center cursor-pointer text-blue-500 border rounded-3xl p-2 border-blue-600"
+                    title="Refresh"
                   >
                     <RefreshCw className="w-4 h-4" />
                   </button>
 
-                  {/* ICON WITH NUMBER 5 */}
-                  <div className="  flex items-center">
+                  {/* ICON WITH NUMBER 5 — kept (from earlier) */}
+                  <div className="flex items-center">
                     <img
                       width="36"
                       height="36"
@@ -241,63 +338,75 @@ export function TimelinePage() {
               ) : (
                 <>
                   {/* TIMELINE DETAILS */}
-                  <div className="mt-4 p-6  bg-gradient-to-br from-white/80 via-cyan-50 to-white/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/40  hover:shadow-2xl hover:border-cyan-200 transition-all duration-300">
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-6 text-sm">
-                      {/* Item */}
-                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
-                        <span className="text-gray-500 font-medium tracking-wide">
-                          SUBJECT
-                        </span>
-                        <p className="text-gray-900 font-semibold mt-1">
-                          {mailersSummary?.subject ?? "No Subject"}
-                        </p>
+                  <div className="mt-4 p-6 bg-gradient-to-br from-white/80 via-cyan-50 to-white/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/40 hover:shadow-2xl hover:border-cyan-200 transition-all duration-300">
+                    <div className="flex items-start  justify-between gap-6 text-sm ">
+                      {/* DATE - col-span 2 */}
+                      <div className="flex items-start gap-3 border-r md:pr-4">
+                        <div>
+                          <div className="text-gray-500 font-medium">DATE</div>
+                          <p className="text-gray-900 font-semibold mt-1">
+                            {formatTime(mailersSummary?.date_entered)}
+                          </p>
+                          <p className="text-gray-900 font-semibold mt-1">
+                            {getDifference(mailersSummary?.date_entered)}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
-                        <span className="text-gray-500 font-medium tracking-wide">
-                          MOTIVE
-                        </span>
-                        <p className="text-gray-900 font-semibold mt-1">
-                          {mailersSummary?.motive}
-                        </p>
+                      {/* SUBJECT - col-span 2 */}
+                      <div className=" flex items-start gap-3 border-r md:pr-4">
+                        <div>
+                          <div className="text-gray-500 font-medium">
+                            SUBJECT
+                          </div>
+                          <p className="text-gray-900 font-semibold mt-1">
+                            {mailersSummary?.subject ?? "No Subject"}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
-                        <span className="text-gray-500 font-medium tracking-wide">
-                          TYPE
-                        </span>
-                        <p className="text-gray-900 font-semibold mt-1">
-                          Brand
-                        </p>
+                      {/* MOTIVE */}
+                      <div className="flex items-start gap-3 border-r md:pr-4">
+                        <div>
+                          <div className="text-gray-500 font-medium">
+                            MOTIVE
+                          </div>
+                          <p className="text-gray-900 font-semibold mt-1">
+                            {mailersSummary?.motive ?? "N/A"}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
-                        <span className="text-gray-500 font-medium tracking-wide">
-                          STAGE
-                        </span>
-                        <p className="text-gray-900 font-semibold mt-1">
-                          {mailersSummary?.stage ?? "No Status"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1 border-r md:border-r md:pr-4 last:border-none">
-                        <span className="text-gray-500 font-medium tracking-wide">
-                          STATUS
-                        </span>
-                        <p className="text-gray-900 font-semibold mt-1">
-                          {mailersSummary?.status ?? "No Status"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <span className="text-gray-500 font-medium tracking-wide">
-                          DATE
-                        </span>
-                        <p className="text-gray-900 font-semibold mt-1">
-                          {formatDateWithDifference(
-                            mailersSummary?.date_entered
+                      {/* DEAL EXPIRY */}
+                      <div className="flex items-start gap-3 border-r md:pr-4">
+                        <div>
+                          <div className="text-gray-500 font-medium">
+                            DEAL EXPIRY
+                          </div>
+                          <p
+                            className={`text-gray-900 font-semibold mt-1 ${
+                              daysUntil(2) <= 3 ? "text-rose-600" : ""
+                            }`}
+                          >
+                            {formatExpiryLabel(mailersSummary.deal_expiry)}
+                          </p>
+                          {mailersSummary?.deal_expiry && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {mailersSummary?.deal_expiry &&
+                                `(${formatTime(mailersSummary.deal_expiry)})`}
+                            </div>
                           )}
-                        </p>
+                        </div>
+                      </div>
+
+                      {/* DEAL */}
+                      <div className="md:col-span-1 flex items-start gap-3">
+                        <div>
+                          <div className="text-gray-500 font-medium">DEAL</div>
+                          <p className="text-gray-900 font-semibold mt-1">
+                            {mailersSummary?.deal ?? "No Deal"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -322,9 +431,7 @@ export function TimelinePage() {
                         </h3>
 
                         <button
-                          className="flex cursor-pointer items-center gap-1 text-sm text-yellow-800 bg-yellow-100 
-                 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 
-                 rounded-md transition-all shadow-sm"
+                          className="flex cursor-pointer items-center gap-1 text-sm text-yellow-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 rounded-md transition-all shadow-sm"
                           onClick={() => console.log("Reply clicked")}
                         >
                           <Reply className="w-4 h-4" />
@@ -349,8 +456,7 @@ export function TimelinePage() {
                 {/* View Email */}
                 <button
                   onClick={() => setShowEmails(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg 
-               hover:bg-blue-700 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm"
                 >
                   <Mail className="w-4 h-4" />
                   <span>View Email</span>
@@ -362,8 +468,7 @@ export function TimelinePage() {
                     dispatch(getContact(email));
                     setShowContact(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg 
-               hover:bg-emerald-700 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
                 >
                   <User className="w-4 h-4" />
                   <span>View Contact</span>
@@ -372,8 +477,7 @@ export function TimelinePage() {
                 {/* View IP */}
                 <button
                   onClick={() => setShowIP(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg 
-               hover:bg-amber-600 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all shadow-sm"
                 >
                   <Globe className="w-4 h-4" />
                   <span>View IP</span>
@@ -382,8 +486,7 @@ export function TimelinePage() {
                 {/* Create Deal */}
                 <button
                   onClick={() => setShowDeal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg 
-               hover:bg-purple-700 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-sm"
                 >
                   <Handshake className="w-4 h-4" />
                   <span>Create Deal</span>
@@ -469,9 +572,15 @@ export function TimelinePage() {
                             </span>
 
                             <span className="text-gray-500 text-sm">
-                              {formatDateWithDifference(event.date_entered)}
+                              {formatTime(event.date_entered)}
                             </span>
                           </div>
+                          {/* optionally add event message preview */}
+                          {event.subject && (
+                            <div className="text-sm text-gray-600">
+                              {event.subject}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

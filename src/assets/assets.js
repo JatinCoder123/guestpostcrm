@@ -17,15 +17,9 @@ export const periodOptions = [
   { period: "last_week", title: "Last 14 Days" },
   { period: "this_month", title: "Last 30 Days" },
 ];
-export function formatDateWithDifference(dateString) {
+export function getDifference(dateString) {
   const inputDate = new Date(dateString);
   const now = new Date();
-
-  // --- SHORT MONTH NAME ---
-  const shortMonth = inputDate.toLocaleString("en-US", { month: "short" });
-
-  const day = inputDate.getDate();
-  const year = inputDate.getFullYear();
 
   // --- TIME DIFFERENCE ---
   let diffMs = Math.abs(now - inputDate);
@@ -49,9 +43,18 @@ export function formatDateWithDifference(dateString) {
   if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
   if (minutes > 0) parts.push(`${minutes} min${minutes > 1 ? "s" : ""}`);
 
-  const formattedDate = `${day} ${shortMonth} ${year}`;
-
   const formattedDifference = parts.length > 0 ? `(${parts.join(" , ")})` : "";
 
-  return `${formattedDate} ${formattedDifference}`;
+  return `${formattedDifference}`;
+}
+export function formatTime(dateString) {
+  const inputDate = new Date(dateString);
+
+  // --- SHORT MONTH NAME ---
+  const shortMonth = inputDate.toLocaleString("en-US", { month: "short" });
+
+  const day = inputDate.getDate();
+  const year = inputDate.getFullYear();
+
+  return `${day} ${shortMonth} ${year}`;
 }

@@ -1,9 +1,17 @@
-import { Mail, Calendar, User, FileText, MessageSquare } from "lucide-react";
+import {
+  Mail,
+  Calendar,
+  User,
+  FileText,
+  MessageSquare,
+  LeafyGreen,
+  BarChart,
+  Repeat,
+} from "lucide-react";
 
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
-import WelcomeHeader from "../WelcomeHeader";
 export function UnansweredPage() {
   const { count, emails } = useSelector((state) => state.unanswered);
   const [
@@ -60,6 +68,18 @@ export function UnansweredPage() {
                     <span>SUBJECT</span>
                   </div>
                 </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <BarChart className="w-4 h-4" />
+                    <span>THREAD SIZE</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="w-4 h-4" />
+                    <span>DUPLICATE</span>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -92,7 +112,6 @@ export function UnansweredPage() {
           </table>
         </div>
       </div>
-      
     </>
   );
 }

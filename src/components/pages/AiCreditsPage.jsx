@@ -135,8 +135,6 @@ export function AiCreditsPage() {
                     <span>BALANCE</span>
                   </div>
                 </th>
-
-                <th className="px-6 py-4 text-left">USER TYPE</th>
               </tr>
             </thead>
 
@@ -162,12 +160,6 @@ export function AiCreditsPage() {
 
                   <td className="px-6 py-4 text-indigo-600">
                     {credit.balance}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1 rounded-full text-sm">
-                      {credit.user_type_c}
-                    </span>
                   </td>
                 </tr>
               ))}
