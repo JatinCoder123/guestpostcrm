@@ -32,12 +32,14 @@ const orderRemSlice = createSlice({
 });
 
 export const getOrderRem = (filter, email) => {
-  return async (dispatch ,getState) => {
+  return async (dispatch, getState) => {
     dispatch(orderRemSlice.actions.getOrderRemRequest());
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=order_reminder&filter=${filter}&email=${email}`
+        `${
+          getState().user.crmEndpoint
+        }&type=order_reminder&filter=${filter}&email=${email}&page=1&page_size=50`
       );
       console.log(`Orders orders`, data);
       dispatch(

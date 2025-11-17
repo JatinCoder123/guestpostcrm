@@ -62,11 +62,13 @@ export const getDeals = (filter, email) => {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=get_deals&filter=${filter}&email=${email}`
+          }&type=get_deals&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${getState().user.crmEndpoint}&type=get_deals&filter=${filter}`
+          `${
+            getState().user.crmEndpoint
+          }&type=get_deals&filter=${filter}&page=1&page_size=50`
         );
       }
       const data = response.data;

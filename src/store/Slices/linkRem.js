@@ -32,12 +32,14 @@ const linkRemSlice = createSlice({
 });
 
 export const getLinkRem = (filter, email) => {
-  return async (dispatch ,getState) => {
+  return async (dispatch, getState) => {
     dispatch(linkRemSlice.actions.getLinkRemRequest());
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=link_removal&filter=${filter}&email=${email}`
+        `${
+          getState().user.crmEndpoint
+        }&type=link_removal&filter=${filter}&email=${email}&page=1&page_size=50`
       );
       console.log(`link Rem`, data);
       dispatch(

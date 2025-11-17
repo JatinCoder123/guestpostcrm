@@ -60,3 +60,38 @@ export function formatTime(dateString) {
 
   return `${day} ${shortMonth} ${year}`;
 }
+
+export function daysUntil(dateString) {
+  if (!dateString) return null;
+  const d = new Date(dateString);
+  const now = new Date();
+  const diffMs = d - now;
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return days;
+}
+
+export function formatExpiryLabel(dateString) {
+  const days = daysUntil(dateString) ?? 2;
+  if (days === null) return "No Expiry Date";
+  if (days <= 0) return "Expired";
+  if (days <= 3) return `🔥 ${days} day${days > 1 ? "s" : ""} left`;
+  return `⏳ ${days} day${days > 1 ? "s" : ""} left`;
+}
+
+// If mailersSummary has numeric progress return it, otherwise map common stage text to progress %
+export function getStageProgress(stageText) {
+  if (!stageText) return 0;
+  // if stageText is numeric string or number
+  const num = Number(stageText);
+  if (!isNaN(num)) {
+    return Math.max(0, Math.min(100, num));
+  }
+
+  const s = stageText.toLowerCase();
+  if (s.includes("won") || s.includes("closed") || s.includes("completed"))
+    return 100;
+  if (s.includes("proposal") || s.includes("negotiation")) return 75;
+  if (s.includes("contacted") || s.includes("follow")) return 45;
+  if (s.includes("lead") || s.includes("new")) return 20;
+  return 40; // default
+}
