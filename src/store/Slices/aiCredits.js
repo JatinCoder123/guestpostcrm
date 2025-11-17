@@ -6,6 +6,8 @@ const aiCreditsSlice = createSlice({
   initialState: {
     loading: false,
     balance: 0,
+    pageCount: 1,
+    pageIndex: 1,
     count: 0,
     aiCredits: [],
     error: null,
@@ -16,14 +18,36 @@ const aiCreditsSlice = createSlice({
       state.error = null;
     },
     getAiCreditsSucess(state, action) {
-      const { aiCredits, count, balance } = action.payload;
+      const { aiCredits, count, pageIndex, pageCount, balance } =
+        action.payload;
       state.loading = false;
       state.aiCredits = aiCredits;
       state.count = count;
       state.balance = balance;
+      state.pageIndex = pageIndex;
+      state.pageCount = pageCount;
       state.error = null;
     },
     getAiCreditsFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    updateIndexRequest(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    updateIndexSucess(state, action) {
+      const { aiCredits, pageIndex, count, pageCount, balance } =
+        action.payload;
+      state.loading = false;
+      state.aiCredits = aiCredits;
+      state.count = count;
+      state.balance = balance;
+      state.pageIndex = pageIndex;
+      state.pageCount = pageCount;
+      state.error = null;
+    },
+    updateIndexFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
@@ -39,7 +63,9 @@ export const getAiCredits = (filter) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=get_credits&filter=${filter}`
+        `${
+          getState().user.crmEndpoint
+        }&type=get_credits&filter=${filter}&page=1&page_size=50`
       );
       console.log(`aiCredits`, data);
       dispatch(
@@ -47,12 +73,42 @@ export const getAiCredits = (filter) => {
           count: data.data_count,
           balance: data.credit_balance,
           aiCredits: data.data,
+          pageIndex: data.currentPage,
+          pageCount: data.total_pages,
         })
       );
       dispatch(aiCreditsSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
         aiCreditsSlice.actions.getAiCreditsFailed("Fetching Deals  Failed")
+      );
+    }
+  };
+};
+export const updateIndex = (filter, index) => {
+  return async (dispatch, getState) => {
+    dispatch(aiCreditsSlice.actions.updateIndexRequest());
+
+    try {
+      const { data } = await axios.get(
+        `${
+          getState().user.crmEndpoint
+        }&type=get_credits&filter=${filter}&page=${index}&page_size=50`
+      );
+      console.log(`aiCredits`, data);
+      dispatch(
+        aiCreditsSlice.actions.updateIndexSucess({
+          count: data.data_count,
+          balance: data.credit_balance,
+          aiCredits: data.data,
+          pageIndex: data.currentPage,
+          pageCount: data.total_pages,
+        })
+      );
+      dispatch(aiCreditsSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        aiCreditsSlice.actions.updateIndexFailed("Fetching Credits  Failed")
       );
     }
   };

@@ -32,18 +32,22 @@ const ordersSlice = createSlice({
 });
 
 export const getOrders = (filter, email) => {
-  return async (dispatch ,getState) => {
+  return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.getOrdersRequest());
 
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${getState().user.crmEndpoint}&type=get_orders&filter=${filter}&email=${email}`
+          `${
+            getState().user.crmEndpoint
+          }&type=get_orders&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${getState().user.crmEndpoint}&type=get_orders&filter=${filter}`
+          `${
+            getState().user.crmEndpoint
+          }&type=get_orders&filter=${filter}&page=1&page_size=50`
         );
       }
       const data = response.data;

@@ -32,12 +32,14 @@ const paymentRemSlice = createSlice({
 });
 
 export const getPaymentRem = (filter, email) => {
-  return async (dispatch ,getState) => {
+  return async (dispatch, getState) => {
     dispatch(paymentRemSlice.actions.getPaymentRemRequest());
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=payment_reminder&filter=${filter}&email=${email}`
+        `${
+          getState().user.crmEndpoint
+        }&type=payment_reminder&filter=${filter}&email=${email}&page=1&page_size=50`
       );
       console.log(`Payments Rem`, data);
       dispatch(

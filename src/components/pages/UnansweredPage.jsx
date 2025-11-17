@@ -112,7 +112,6 @@ export function UnansweredPage() {
             </tbody>
           </table>
         </div>
-        <Pagination />
       </div>
     </>
   );

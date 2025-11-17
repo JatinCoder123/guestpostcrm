@@ -102,7 +102,9 @@ export const getContact = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=get_contact&email=${email}`
+        `${
+          getState().user.crmEndpoint
+        }&type=get_contact&email=${email}&page=1&page_size=50`
       );
       console.log(`contact`, data);
       dispatch(

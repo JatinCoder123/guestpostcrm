@@ -39,7 +39,7 @@ export const getDealRem = (filter, email) => {
       const { data } = await axios.get(
         `${
           getState().user.crmEndpoint
-        }&type=deal_reminder&filter=${filter}&email=${email}`
+        }&type=deal_reminder&filter=${filter}&email=${email}&page=1&page_size=50`
       );
       console.log(`deal Rem`, data);
       dispatch(
