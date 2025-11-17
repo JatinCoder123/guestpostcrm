@@ -89,12 +89,15 @@ export function DealsPage() {
       </div>
 
       {/* Deals Section */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden relative">
+        <div className="absolute top-3 right-3 bg-cyan-100 text-cyan-800 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+          {deals.length > 0 ? `${deals.length} Active Deals` : "No Active Deals"}
+        </div>
+
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <Handshake className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl text-gray-900">DEALS</h2>
+            <Handshake className="w-6 h-6 text-orange-600" />
+            <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
           </div>
           <button
             onClick={() => setShowDeal(true)}
@@ -156,7 +159,7 @@ export function DealsPage() {
           </table>
         </div>
 
-        {deals.length === 0 && (
+        {!loading && !error && deals.length === 0 && (
           <div className="p-12 text-center">
             <Handshake className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">

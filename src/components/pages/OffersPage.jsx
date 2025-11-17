@@ -58,16 +58,15 @@ export function OffersPage() {
       </div>
 
       {/* Offers Section */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
+      <div className="bg-white rounded-2xl shadow-md overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <Gift className="w-6 h-6 text-green-600" />
-            <h2 className="text-xl text-gray-900">OFFERS</h2>
+            <Gift className="w-6 h-6 text-yellow-600" />
+            <h2 className="text-xl text-gray-900 font-semibold">OFFERS</h2>
           </div>
-          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-            + New Offer
-          </button>
+          <div className="px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+            {offers.length} Active Offers
+          </div>
         </div>
 
         {/* Table */}
