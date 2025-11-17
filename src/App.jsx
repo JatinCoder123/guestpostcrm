@@ -21,6 +21,7 @@ import { getUser, userAction } from "./store/Slices/userSlice";
 import Login from "./components/pages/Login";
 import LoadingPage from "./components/pages/LoadingPage";
 import { toast, ToastContainer } from "react-toastify";
+import Contactpage from "./components/pages/Contactpage";
 const router = createBrowserRouter([
   {
     path: "",
@@ -82,6 +83,11 @@ const router = createBrowserRouter([
         path: "timeline",
         element: <TimelinePage />,
       },
+       {
+        path: "contacts",
+        element: <Contactpage />,
+      },
+         
     ],
   },
 ]);
