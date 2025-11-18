@@ -9,6 +9,10 @@ import {
   Calendar,
   FileText,
   Clock,
+  Heart,
+  Heater,
+  Move,
+  Check,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -203,7 +207,46 @@ export function TimelinePage() {
                       </div>
                     </div>
                   </div>
+                    {/* WhatsApp */}
+                    <button
+                      onClick={() => console.log("Open WhatsApp")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
+                        alt="whatsapp--v1"
+                      />
+                    </button>
+
+                    {/* Call */}
+                    <button
+                      onClick={() => console.log("Call user")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/apple-phone.png"
+                        alt="apple-phone"
+                      />
+                    </button>
+
+                    {/* SMS */}
+                    <button
+                      onClick={() => console.log("Send SMS")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
+                        alt="speech-bubble-with-dots"
+                      />
+                    </button>
                 </div>
+                
 
                 {/* REFRESH + AUTO REFRESH */}
                 <div className="flex items-center gap-4">
@@ -406,43 +449,33 @@ export function TimelinePage() {
                       <span>Create Deal</span>
                     </button>
 
-                    {/* WhatsApp */}
-                    <button
-                      onClick={() => console.log("Open WhatsApp")}
+                    {/* Mark favourit*/}
+                   <button
+                      onClick={() => console.log("Open FAVOURITE")}
                       className="cursor-pointer hover:scale-105"
                     >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
-                        alt="whatsapp--v1"
-                      />
+                     <img width="40" height="40" src="https://img.icons8.com/color/48/filled-like.png" alt="filled-like"/>
                     </button>
-
-                    {/* Call */}
+                    {/* Warm Forward */}
                     <button
-                      onClick={() => console.log("Call user")}
+                      onClick={() => console.log("Open FORWARD")}
                       className="cursor-pointer hover:scale-105"
                     >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/apple-phone.png"
-                        alt="apple-phone"
-                      />
+                      <img width="40" height="40" src="https://img.icons8.com/color/48/redo.png" alt="redo"/>
                     </button>
-
-                    {/* SMS */}
+                    {/* Move To */}
                     <button
-                      onClick={() => console.log("Send SMS")}
+                      onClick={() => console.log("Open MOVE TO")}
                       className="cursor-pointer hover:scale-105"
                     >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
-                        alt="speech-bubble-with-dots"
-                      />
+                      <img width="40" height="40" src="https://img.icons8.com/color/48/resize-four-directions.png" alt="resize-four-directions"/>
+                    </button>
+                    {/* Mark Bulk */}
+                    <button
+                      onClick={() => console.log("Open MARK BULK")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img width="40" height="40" src="https://img.icons8.com/ios-filled/50/double-tick.png" alt="double-tick"/>
                     </button>
                   </div>
                 </>
