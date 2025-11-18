@@ -1,71 +1,99 @@
 import { Link } from "react-router-dom";
+import useModule from "../../../hooks/useModule";
+import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
+import { m, AnimatePresence } from "framer-motion";
+import { Edit3, X } from "lucide-react";
+import { useState } from "react";
+import SkeletonGrid from "../../SkeletonGrid"; // <== Import Skeleton
+import EditModal from "../../EditModal";
+import Loading from "../../Loading";
+import Header from "./Header";
 
 export function MachineLearningPage() {
+  const [editItem, setEditItem] = useState(null);
+
+  const { loading, data, error, refetch } = useModule({
+    url: `${MODULE_URL}&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "outr_machine_learning",
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+  });
+
   return (
     <div className="p-8">
+      {/* Header */}
+      <Header text={"Machine Learning Manager"} />
+      {/* Loading Skeleton */}
+      {loading && <Loading text={"Machine Learning"} />}
 
-      {/* Header + Button Row */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Machine Learning Settings</h1>
+      {/* Error Component */}
+      {error && <ErrorBar message={error.message} onRetry={refetch} />}
 
-        <Link
-          to="/settings"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Go to Settings Page
-        </Link>
-      </div>
+      {/* Empty State */}
+      {!loading && !error && (
+        <div className="mt-6 text-center p-10 bg-gray-50 border border-gray-200 rounded-xl">
+          <p className="text-gray-600 text-lg">
+            No machine learning items found.
+          </p>
+          <p className="text-gray-400 text-sm mt-1">
+            Add new items from your backend or configuration panel.
+          </p>
+        </div>
+      )}
 
-      <p className="text-gray-700 mb-6">
-        Manage and configure machine learning modules used across the platform.
-        These settings allow you to improve prediction accuracy, update model
-        behavior, optimize performance, and track training results.
-      </p>
+      {/* Data Cards */}
+      {data?.length > 0 && (
+        <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data.map((item) => (
+            <m.div
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-200 
+                        p-5 flex flex-col justify-between group transition-all"
+            >
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition">
+                  {item.name}
+                </h2>
 
-      {/* Section 1 */}
-      <div className="bg-white shadow-md rounded-xl p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-3">Model Configuration</h2>
-        <p className="text-gray-600">
-          Update machine learning model parameters such as learning rate,
-          training intervals, dataset sources, and optimization settings.
-        </p>
-      </div>
+                <div className="mt-3 flex items-center gap-3">
+                  <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                    Motive: {item.motive}
+                  </span>
+                  <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                    Type: {item.type}
+                  </span>
+                </div>
 
-      {/* Section 2 */}
-      <div className="bg-white shadow-md rounded-xl p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-3">Data Source Settings</h2>
-        <p className="text-gray-600">
-          Manage data sources that the ML model uses for training. You can update
-          API connections, enable data filters, and set preprocessing rules.
-        </p>
-      </div>
+                <p className="mt-4 text-sm text-gray-700 line-clamp-3 group-hover:line-clamp-none transition-all duration-300">
+                  {item.description}
+                </p>
+              </div>
 
-      {/* Section 3 */}
-      <div className="bg-white shadow-md rounded-xl p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-3">Training Controls</h2>
-        <p className="text-gray-600">
-          Start or schedule model training, monitor training progress, and view
-          historical training logs and performance metrics.
-        </p>
-      </div>
+              <div className="mt-5 flex justify-end">
+                <button
+                  onClick={() => setEditItem(item)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white 
+                             rounded-xl shadow-sm hover:bg-blue-700 transition"
+                >
+                  <Edit3 size={18} />
+                  Edit
+                </button>
+              </div>
+            </m.div>
+          ))}
+        </div>
+      )}
 
-      {/* Section 4 */}
-      <div className="bg-white shadow-md rounded-xl p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-3">Model Performance</h2>
-        <p className="text-gray-600">
-          Track accuracy, precision, recall, and other key performance indicators
-          to evaluate the effectiveness of the current model.
-        </p>
-      </div>
-
-      {/* Section 5 */}
-      <div className="bg-white shadow-md rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-3">Automation Settings</h2>
-        <p className="text-gray-600">
-          Enable or disable automated learning tasks like scheduled retraining,
-          auto-optimization, and real-time prediction adjustments.
-        </p>
-      </div>
+      {/* Edit Modal */}
+      <EditModal item={editItem} onClose={() => setEditItem(null)} />
     </div>
   );
 }
