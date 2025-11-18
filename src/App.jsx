@@ -9,16 +9,28 @@ import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
+import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { DealRemindersPage } from "./components/pages/DealRemindersPage";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
 import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";
+import { OrderReminderPage } from "./components/pages/OrderReminderPage";
+import { getUser, userAction } from "./store/Slices/userSlice";
+import Login from "./components/pages/Login";
+import LoadingPage from "./components/pages/LoadingPage";
+import { toast, ToastContainer } from "react-toastify";
+import { MachineLearningPage } from "./components/pages/settingpages/MachineLearningPage";
+import { PayplaCredentialsPage } from "./components/pages/settingpages/PaypalCredentialsPage";
+import { TemlatesPage } from "./components/pages/settingpages/TemplatesPage";
+import { WebsitesPage } from "./components/pages/settingpages/WebsitesPage";
+import { UsersPage } from "./components/pages/settingpages/UsersPage";
+import Contactpage from "./components/pages/Contactpage";
 const router = createBrowserRouter([
   {
-    path: "/Dashboard",
+    path: "",
     element: <RootLayout />,
     children: [
       {
@@ -70,22 +82,89 @@ const router = createBrowserRouter([
         element: <DealRemindersPage />,
       },
       {
+        path: "order-reminders",
+        element: <OrderReminderPage />,
+      },
+      {
         path: "timeline",
         element: <TimelinePage />,
+      },
+      {
+        path: "contacts",
+        element: <Contactpage />,
+      },
+
+      {
+        path: "settings",
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <SettingsPage />,
+          },
+          {
+            path: "machine-learning",
+            element: <MachineLearningPage />,
+          },
+          {
+            path: "paypal-credentials",
+            element: <PayplaCredentialsPage />,
+          },
+          {
+            path: "templates",
+            element: <TemlatesPage />,
+          },
+          {
+            path: "websites",
+            element: <WebsitesPage />,
+          },
+          {
+            path: "users",
+            element: <UsersPage />,
+          },
+        ],
       },
     ],
   },
 ]);
 export default function App() {
   const dispatch = useDispatch();
+  const { isAuthenticated, loading, error } = useSelector(
+    (state) => state.user
+  );
   useEffect(() => {
-    dispatch(getLadger());
+    dispatch(getUser());
   }, []);
+  useEffect(() => {
+    if (isAuthenticated) dispatch(getLadger());
+  }, [isAuthenticated]);
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(userAction.clearAllErrors());
+    }
+  }, [dispatch, error]);
   return (
     <>
-      <PageContextProvider>
-        <RouterProvider router={router} />
-      </PageContextProvider>
+      {isAuthenticated && (
+        <PageContextProvider>
+          <RouterProvider router={router} />
+        </PageContextProvider>
+      )}
+      {!isAuthenticated && loading && <LoadingPage />}
+      {!isAuthenticated && !loading && <Login />}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark" // you can change to "light"
+      />
     </>
   );
 }

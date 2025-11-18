@@ -6,21 +6,36 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import CreateDeal from "../CreateDeal";
 
 export function DealsPage() {
-  const { count, deals } = useSelector((state) => state.deals);
+  const { count, deals, loading, error } = useSelector((state) => state.deals);
+  const [showDeal, setShowDeal] = useState(false);
+  useEffect(() => {
+    if (showDeal) {
+      document.body.style.overflow = "hidden"; // Disable background scroll
+    } else {
+      document.body.style.overflow = "auto"; // Restore when closed
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup
+    };
+  }, [showDeal]);
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
+    <>
+      {showDeal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <CreateDeal
+            onClose={() => {
+              setShowDeal(false);
+            }}
+          />
         </div>
-      </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -74,14 +89,22 @@ export function DealsPage() {
       </div>
 
       {/* Deals Section */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden relative">
+        <div className="absolute top-3 right-3 bg-cyan-100 text-cyan-800 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+          {deals.length > 0
+            ? `${deals.length} Active Deals`
+            : "No Active Deals"}
+        </div>
+
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <Handshake className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl text-gray-900">DEALS</h2>
+            <Handshake className="w-6 h-6 text-orange-600" />
+            <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
           </div>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button
+            onClick={() => setShowDeal(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
             + New Deal
           </button>
         </div>
@@ -138,7 +161,7 @@ export function DealsPage() {
           </table>
         </div>
 
-        {deals.length === 0 && (
+        {!loading && !error && deals.length === 0 && (
           <div className="p-12 text-center">
             <Handshake className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">
@@ -147,8 +170,6 @@ export function DealsPage() {
           </div>
         )}
       </div>
-
-      <Footer />
-    </div>
+    </>
   );
 }

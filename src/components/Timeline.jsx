@@ -138,11 +138,6 @@ export function Timeline() {
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white">
               U
             </div>
-
-            {/* Login with Google */}
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              Login with Google
-            </Button>
           </div>
         </div>
       </div>

@@ -1,15 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
-
 const ladgerSlice = createSlice({
   name: "ladger",
   initialState: {
     loading: false,
     email: null,
     ladger: [],
+    mailersSummary: null,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
-    timeline: "last_week",
+    timeline: "last_7_days",
     message: null,
     duplicate: 0,
   },
@@ -19,9 +20,12 @@ const ladgerSlice = createSlice({
       state.error = null;
     },
     getLadgerSuccess(state, action) {
-      const { duplicate, ladger, email } = action.payload;
+      const { duplicate, ladger, email, pageCount, mailersSummary } =
+        action.payload;
       state.loading = false;
       state.ladger = ladger;
+      state.mailersSummary = mailersSummary;
+      state.pageCount = pageCount;
       state.email = email;
       state.duplicate = duplicate;
       state.error = null;
@@ -37,6 +41,9 @@ const ladgerSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
+    updateIndex(state, action) {
+      state.pageIndex = action.payload;
+    },
   },
 });
 
@@ -46,7 +53,9 @@ export const getLadger = () => {
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=${getState().ladger.timeline}`,
+        `${getState().user.crmEndpoint}&type=ledger&filter=${
+          getState().ladger.timeline
+        }&page=1&page_size=50`,
         {
           withCredentials: false,
         }
@@ -56,7 +65,9 @@ export const getLadger = () => {
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
+          mailersSummary: data.mailers_summary,
           email: data.data && data.data[0].name,
+          pageCount: data.total_pages,
         })
       );
       dispatch(ladgerSlice.actions.clearAllErrors());
@@ -73,9 +84,9 @@ export const getLadgerEmail = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${BACKEND_URL}&type=ledger&filter=${
+        `${getState().user.crmEndpoint}&type=ledger&filter=${
           getState().ladger.timeline
-        }&email=${email}`,
+        }&email=${email}&page=1&page_size=50`,
         {
           withCredentials: false,
         }
@@ -85,6 +96,8 @@ export const getLadgerEmail = (email) => {
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
+          mailersSummary: data.mailers_summary,
+          pageCount: data.total_pages,
           email: email,
         })
       );
@@ -96,6 +109,7 @@ export const getLadgerEmail = (email) => {
     }
   };
 };
+export const getLadgerData = () => {};
 
 export const ladgerAction = ladgerSlice.actions;
 export default ladgerSlice.reducer;

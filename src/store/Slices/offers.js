@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { BACKEND_URL } from "../constants";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -35,13 +34,25 @@ const offersSlice = createSlice({
 });
 
 export const getOffers = (filter, email) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(offersSlice.actions.getOffersRequest());
 
     try {
-      const { data } = await axios.get(
-        `${BACKEND_URL}&type=get_offers&filter=${filter}&email=${email}`
-      );
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${
+            getState().user.crmEndpoint
+          }&type=get_offers&filter=${filter}&email=${email}&page=1&page_size=50`
+        );
+      } else {
+        response = await axios.get(
+          `${
+            getState().user.crmEndpoint
+          }&type=get_offers&filter=${filter}&page=1&page_size=50`
+        );
+      }
+      const data = response.data;
       console.log(`offers`, data);
       dispatch(
         offersSlice.actions.getOffersSucess({

@@ -6,11 +6,13 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
 
 export function OrdersPage() {
-  const { orders, count } = useSelector((state) => state.orders);
+  const { orders, count, loading, error } = useSelector(
+    (state) => state.orders
+  );
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -28,16 +30,7 @@ export function OrdersPage() {
   };
 
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
-
+    <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
@@ -94,12 +87,12 @@ export function OrdersPage() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <ShoppingCart className="w-6 h-6 text-indigo-600" />
-            <h2 className="text-xl text-gray-900">ORDERS</h2>
+            <Package className="w-6 h-6 text-green-600" />
+            <h2 className="text-lg font-semibold text-gray-800">ORDERS</h2>
           </div>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-            + New Order
-          </button>
+          <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+            {orders.length} Active Orders
+          </span>
         </div>
 
         {/* Table */}
@@ -164,17 +157,12 @@ export function OrdersPage() {
           </table>
         </div>
 
-        {orders.length === 0 && (
-          <div className="p-12 text-center">
-            <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">
-              No orders yet. Create your first order to get started.
-            </p>
+        {!loading && orders.length === 0 && (
+          <div className="p-12 text-center text-gray-500">
+            No orders found for this week.
           </div>
         )}
       </div>
-
-      <Footer />
-    </div>
+    </>
   );
 }

@@ -1,25 +1,36 @@
-import { Mail, Calendar, User, FileText } from "lucide-react";
-import { Footer } from "../Footer";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import {
+  Mail,
+  Calendar,
+  User,
+  FileText,
+  Repeat,
+  BarChart2,
+} from "lucide-react";
 
+import { useSelector } from "react-redux";
+import useThread from "../../hooks/useThread";
+import EmailBox from "../EmailBox";
+import { BarChart } from "recharts";
 export function UnrepliedEmailsPage() {
-  
-  const dispatch = useDispatch();
-  const { count,emails } = useSelector((state) => state.unreplied);
-  
+  const { count, emails } = useSelector((state) => state.unreplied);
+  const [
+    handleThreadClick,
+    showEmail,
+    setShowEmails,
+    currentThreadId,
+    setCurrentThreadId,
+  ] = useThread();
   return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
+    <>
+      {showEmail && currentThreadId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <EmailBox
+            onClose={() => setShowEmails(false)}
+            view={false}
+            threadId={currentThreadId}
+          />
         </div>
-      </div>
-
+      )}
       {/* Unreplied Emails Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -56,7 +67,18 @@ export function UnrepliedEmailsPage() {
                     <span>SUBJECT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">MAILER SUMMARY</th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <BarChart2 className="w-4 h-4" />
+                    <span>THREAD SIZE</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="w-4 h-4" />
+                    <span>DUPLICATE</span>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -71,10 +93,17 @@ export function UnrepliedEmailsPage() {
                       <span>{email.date_created}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from_email}</td>
-                  <td className="px-6 py-4 text-purple-600">{email.subject}</td>
-                  <td className="px-6 py-4 text-gray-500">
-                  No Summary Found
+                  <td className="px-6 py-4 text-gray-900">
+                    {email.from_email}
+                  </td>
+                  <td
+                    onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from_email, email.thread_id);
+                    }}
+                    className="px-6 py-4 text-purple-600"
+                  >
+                    {email.subject}
                   </td>
                 </tr>
               ))}
@@ -82,8 +111,6 @@ export function UnrepliedEmailsPage() {
           </table>
         </div>
       </div>
-
-      <Footer />
-    </div>
+    </>
   );
 }

@@ -1,29 +1,49 @@
 import {
-  Mail,
   ShoppingCart,
   DollarSign,
-  Calendar,
   User,
   Flame,
   User2Icon,
   Sparkle,
+  ChevronDown,
 } from "lucide-react";
-import { Footer } from "../Footer";
+
 import { useSelector } from "react-redux";
+import { useEffect, useRef, useState } from "react";
+import Pagination from "../Pagination";
+import { getAiCredits } from "../../store/Slices/aiCredits";
 
 export function AiCreditsPage() {
   const { aiCredits, balance, count } = useSelector((state) => state.aiCredits);
-  return (
-    <div className="p-6">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 mb-6 text-white">
-        <h1 className="text-2xl mb-2">Welcome GuestPostCRM</h1>
-        <div className="flex items-center gap-2 text-purple-100">
-          <Mail className="w-4 h-4" />
-          <span>your.business@email.com</span>
-        </div>
-      </div>
+  const [openPeriod, setOpenPeriod] = useState(false);
+  const [type, setType] = useState("Credit");
+  const periodOptions = ["Credit", "Debit", "Both"];
 
+  const dropDownRef = useRef(null);
+
+  const openPeriodRef = useRef(openPeriod);
+
+  useEffect(() => {
+    openPeriodRef.current = openPeriod;
+  }, [openPeriod]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        openPeriodRef.current && // always latest value
+        dropDownRef.current &&
+        !dropDownRef.current.contains(event.target)
+      ) {
+        setOpenPeriod(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
@@ -59,6 +79,34 @@ export function AiCreditsPage() {
             <Sparkle className="w-6 h-6 text-indigo-600" />
             <h2 className="text-xl text-gray-900">CREDITS</h2>
           </div>
+
+          {/* Dropdown */}
+          <div className="relative" ref={dropDownRef}>
+            <button
+              onClick={() => setOpenPeriod(!openPeriod)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <span className="text-gray-900">{type}</span>
+              <ChevronDown className="w-4 h-4 text-gray-400" />
+            </button>
+
+            {openPeriod && (
+              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                {periodOptions.map((option) => (
+                  <div
+                    key={option}
+                    onClick={() => {
+                      setType(option);
+                      setOpenPeriod(false);
+                    }}
+                    className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Table */}
@@ -72,22 +120,24 @@ export function AiCreditsPage() {
                     <span>EMAIL</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">CREDIT </th>
+
+                {(type === "Credit" || type === "Both") && (
+                  <th className="px-6 py-4 text-left">CREDIT</th>
+                )}
+
+                {(type === "Debit" || type === "Both") && (
+                  <th className="px-6 py-4 text-left">DEBIT</th>
+                )}
+
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
                     <span>BALANCE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">USER TYPE</th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>CREDIT DATE</span>
-                  </div>
-                </th>
               </tr>
             </thead>
+
             <tbody>
               {aiCredits.map((credit) => (
                 <tr
@@ -95,22 +145,28 @@ export function AiCreditsPage() {
                   className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4 text-gray-900">{credit.email}</td>
-                  <td className="px-6 py-4 text-indigo-600">{credit.credit}</td>
 
-                  <td className="px-6 py-4 text-green-600">{credit.balance}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-sm `}>
-                      {credit.user_type_c}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {credit.date_entered}
+                  {(type === "Credit" || type === "Both") && (
+                    <td className="px-6 py-4 text-indigo-600">
+                      {credit.credit}
+                    </td>
+                  )}
+
+                  {(type === "Debit" || type === "Both") && (
+                    <td className="px-6 py-4 text-indigo-600">
+                      {credit.debit}
+                    </td>
+                  )}
+
+                  <td className="px-6 py-4 text-indigo-600">
+                    {credit.balance}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <Pagination slice={"aiCredits"} fn={getAiCredits} />
 
         {aiCredits.length === 0 && (
           <div className="p-12 text-center">
@@ -121,8 +177,6 @@ export function AiCreditsPage() {
           </div>
         )}
       </div>
-
-      <Footer />
-    </div>
+    </>
   );
 }

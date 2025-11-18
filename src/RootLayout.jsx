@@ -1,4 +1,3 @@
-import { ToastContainer } from "react-toastify";
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useState } from "react";
@@ -17,68 +16,69 @@ import { getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
+import WelcomeHeader from "./components/WelcomeHeader";
+import Footer from "./components/Footer";
+import Pagination from "./components/Pagination";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { email, timeline } = useSelector((state) => state.ladger);
-  const { displayIntro, setActivePage } = useContext(PageContext);
-  console.log(displayIntro);
+  const { timeline } = useSelector((state) => state.ladger);
+  const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
     setActivePage(location);
   }, [location]);
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getLadger());
-  }, []);
-  useEffect(() => {
-    if (email) {
-      dispatch(getLadgerEmail(email));
-    }
-  }, [email, timeline]);
-  useEffect(() => {
-    if (email) {
-      dispatch(getUnansweredEmails(timeline, email));
-      dispatch(getUnrepliedEmail(timeline, email));
-      dispatch(getOrders(timeline, email));
-      dispatch(getDeals(timeline, email));
-      dispatch(getInvoices(timeline, email));
-      dispatch(getOffers(timeline, email));
-      dispatch(getDetection(timeline, email));
-      dispatch(getViewEmail(email));
-      dispatch(getAiCredits(timeline));
-    }
-  }, [email, timeline]);
+    enteredEmail
+      ? dispatch(getLadgerEmail(enteredEmail))
+      : dispatch(getLadger());
+    dispatch(getAiCredits(timeline));
+    dispatch(getUnansweredEmails(timeline, enteredEmail));
+    dispatch(getUnrepliedEmail(timeline, enteredEmail));
+    dispatch(getOrders(timeline, enteredEmail));
+    dispatch(getDeals(timeline, enteredEmail));
+    dispatch(getInvoices(timeline, enteredEmail));
+    dispatch(getOffers(timeline, enteredEmail));
+    dispatch(getDetection(timeline, enteredEmail));
+    dispatch(getViewEmail(enteredEmail));
+  }, [enteredEmail, timeline]);
 
   return (
-    <AnimatePresence mode="">
+    <AnimatePresence mode="wait">
       {displayIntro ? (
         <DisplayIntro key="intro" />
       ) : (
         <div className="min-h-screen bg-[#F8FAFC]">
           <TopNav />
-          <div className="flex">
-            <Sidebar
-              collapsed={sidebarCollapsed}
-              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            />
+          <div className="flex h-[calc(100vh-100px)]">
+            {/* Sidebar scrolls independently */}
+            <div className="overflow-y-auto overflow-x-hidden scrollbar-hide">
+              <Sidebar
+                collapsed={sidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              />
+            </div>
+
+            {/* Main content scrolls independently */}
             <main
-              className={`flex-1 transition-all duration-300 ${
-                sidebarCollapsed ? "ml-16" : "ml-0"
+              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${
+                sidebarCollapsed ? "ml-4" : "ml-0"
               }`}
             >
-              <Outlet />
+              <div className="p-6">
+                <WelcomeHeader />
+                <Outlet />
+              </div>
+              <Footer />
             </main>
-            <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="dark" // you can change to "light"
+          </div>
+
+          <div className="fixed bottom-1 right-2 cursor-pointer">
+            <img
+              width="80"
+              height="80"
+              src="https://img.icons8.com/3d-fluency/94/whatsapp-logo.png"
+              alt="whatsapp-logo"
             />
           </div>
         </div>
