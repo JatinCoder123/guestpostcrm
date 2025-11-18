@@ -103,30 +103,19 @@ export function TimelinePage() {
       </>
     );
   }
+  if (showContact) {
+    return (
+      <>
+        <ContactBox onClose={() => setShowContact(false)} />
+      </>
+    );
+  }
+  if (showDeal) {
+    return <CreateDeal onClose={() => setShowDeal(false)} />;
+  }
 
   return (
     <>
-      {/* EMAIL POPUP */}
-      {showEmail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <EmailBox onClose={() => setShowEmails(false)} view={true} />
-        </div>
-      )}
-
-      {/* CONTACT POPUP */}
-      {showContact && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <ContactBox onClose={() => setShowContact(false)} />
-        </div>
-      )}
-
-      {/* DEAL POPUP */}
-      {showDeal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <CreateDeal onClose={() => setShowDeal(false)} />
-        </div>
-      )}
-
       {/* MAIN CARD */}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {loading && <LoadingSkeleton />}
