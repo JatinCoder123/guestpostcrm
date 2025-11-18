@@ -9,6 +9,10 @@ import {
   Calendar,
   FileText,
   Clock,
+   Send,
+  Brain,
+  Zap, 
+  MessageCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -77,7 +81,8 @@ export default function EmailBox({ onClose, view, threadId }) {
   }, [aiReply, loading, dispatch]);
 
   return (
-    
+
+    <>
     <div className="flex items-center justify-center">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -172,11 +177,17 @@ export default function EmailBox({ onClose, view, threadId }) {
           })}
         </div>
         {/* Footer (reply input area) */}
+        {/* Footer (reply input area) */}
         <div className="p-4 border-t bg-white">
-          <div className="flex items-center gap-2">
-            {loading && <p>Generating Ai Reply...</p>}
+          <div className="flex gap-4 w-full items-center">
+            {/* Editor - 80% width */}
+            {loading && (
+              <div className="w-4/5 flex items-center justify-center">
+                <p>Generating Ai Reply...</p>
+              </div>
+            )}
             {!loading && (
-              <div className="flex-1 min-w-0">
+              <div className="w-4/5 min-w-0">
                 <Editor
                   apiKey="qomfxtyvjw82d3xf7px5alxly39lblt50zmpijue6yvozquf" 
                   onInit={handleEditorInit}
@@ -191,9 +202,9 @@ export default function EmailBox({ onClose, view, threadId }) {
                       'insertdatetime media table paste code help wordcount'
                     ],
                     toolbar: 'undo redo | bold italic underline | \
-                             alignleft aligncenter alignright | \
-                             bullist numlist outdent indent | \
-                             removeformat | help',
+                            alignleft aligncenter alignright | \
+                            bullist numlist outdent indent | \
+                            removeformat | help',
                     content_style: `
                       body { 
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
@@ -217,26 +228,77 @@ export default function EmailBox({ onClose, view, threadId }) {
                 />
               </div>
             )}
+            
+            {/* Buttons - 20% width in 3x3 grid */}
+            <div className="w-1/5">
+              <div className="grid grid-cols-3 gap-2">
+                {/* Send Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleClickSendBtn}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
+                  title="Send"
+                >
+                  <Send className="w-4 h-4" />
+                </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleClickSendBtn}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow-md"
-            >
-              Send
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleClickAiReplyBtn}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow-md"
-            >
-              Ai Reply
-            </motion.button>
+                {/* AI Reply Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleClickAiReplyBtn}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
+                  title="AI Reply"
+                >
+                  <Brain className="w-4 h-4" />
+                </motion.button>
+
+                {/* View Mail Button */}
+                <motion.button
+                  onClick={() => setShowEmails(true)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
+                  title="View Mail"
+                >
+                  <Mail className="w-4 h-4" />
+                </motion.button>
+
+                {/* View Contact Button */}
+                <motion.button
+                  onClick={() => {
+                    dispatch(getContact(email));
+                    navigateTo("/contacts");
+                  }}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
+                  title="View Contact"
+                >
+                  <User className="w-4 h-4" />
+                </motion.button>
+
+                {/* View IP Button */}
+                <motion.button
+                  // onClick={() => setShowIP(true)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
+                  title="View IP"
+                >
+                  <Globe className="w-4 h-4" />
+                </motion.button>
+
+                {/* Create Deal Button */}
+                <motion.button
+                  onClick={() => setShowDeal(true)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
+                  title="Create Deal"
+                >
+                  <Handshake className="w-4 h-4" />
+                </motion.button>
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
     </div>
+
+    </>
   );
 }
