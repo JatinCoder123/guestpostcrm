@@ -20,12 +20,13 @@ const ladgerSlice = createSlice({
       state.error = null;
     },
     getLadgerSuccess(state, action) {
-      const { duplicate, ladger, email, pageCount, mailersSummary } =
+      const { duplicate, ladger, email, pageCount, pageIndex, mailersSummary } =
         action.payload;
       state.loading = false;
       state.ladger = ladger;
       state.mailersSummary = mailersSummary;
       state.pageCount = pageCount;
+      state.pageCount = pageIndex;
       state.email = email;
       state.duplicate = duplicate;
       state.error = null;
@@ -68,6 +69,7 @@ export const getLadger = () => {
           mailersSummary: data.mailers_summary,
           email: data.data && data.data[0].name,
           pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(ladgerSlice.actions.clearAllErrors());
@@ -98,6 +100,7 @@ export const getLadgerEmail = (email) => {
           ladger: data.data,
           mailersSummary: data.mailers_summary,
           pageCount: data.total_pages,
+          pageIndex: data.current_page,
           email: email,
         })
       );

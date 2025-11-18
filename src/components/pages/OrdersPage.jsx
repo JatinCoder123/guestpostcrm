@@ -94,6 +94,7 @@ export function OrdersPage() {
       {/* Orders Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
+
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6 text-green-600" />

@@ -21,10 +21,10 @@ const useModule = ({
       const response = await axios({
         url,
         method,
-        rowBody: body,
+        data: body,
         headers,
       });
-      console.log(`${Object.entries(body)} : `, response);
+      console.log(`${Object.entries(body)} : `, response.data);
       setData(response.data);
     } catch (err) {
       setError(err);

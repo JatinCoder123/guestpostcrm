@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
-import { m, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Edit3, X } from "lucide-react";
 import { useState } from "react";
 import SkeletonGrid from "../../SkeletonGrid"; // <== Import Skeleton
 import EditModal from "../../EditModal";
 import Loading from "../../Loading";
 import Header from "./Header";
+import ErrorBox from "./ErrorBox";
 
 export default function TemplatesPage() {
   const [editItem, setEditItem] = useState(null);
@@ -33,10 +34,10 @@ export default function TemplatesPage() {
       {loading && <Loading text={"Templates"} />}
 
       {/* Error Component */}
-      {error && <ErrorBar message={error.message} onRetry={refetch} />}
+      {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
       {/* Empty State */}
-      {!loading && !error && (
+      {!loading && !error && !data && (
         <div className="mt-6 text-center p-10 bg-gray-50 border border-gray-200 rounded-xl">
           <p className="text-gray-600 text-lg">No Template items found.</p>
           <p className="text-gray-400 text-sm mt-1">
@@ -49,7 +50,7 @@ export default function TemplatesPage() {
       {data?.length > 0 && (
         <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {data.map((item) => (
-            <m.div
+            <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -86,7 +87,7 @@ export default function TemplatesPage() {
                   Edit
                 </button>
               </div>
-            </m.div>
+            </motion.div>
           ))}
         </div>
       )}

@@ -506,7 +506,7 @@ export function TimelinePage() {
                 </div>
               </div>
             </div>
-            <Pagination slice={"ladger"} />
+            <Pagination slice={"ladger"} fn={getLadgerEmail} />
           </>
         )}
       </div>

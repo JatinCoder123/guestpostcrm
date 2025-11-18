@@ -8,6 +8,7 @@ import SkeletonGrid from "../../SkeletonGrid"; // <== Import Skeleton
 import EditModal from "../../EditModal";
 import Loading from "../../Loading";
 import Header from "./Header";
+import ErrorBox from "./ErrorBox";
 
 export default function WebsitesPage() {
   const [editItem, setEditItem] = useState(null);
@@ -32,10 +33,10 @@ export default function WebsitesPage() {
       {loading && <Loading text={"Websites"} />}
 
       {/* Error Component */}
-      {error && <ErrorBar message={error.message} onRetry={refetch} />}
+      {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
       {/* Empty State */}
-      {!loading && !error && (
+      {!loading && !error && !data && (
         <div className="mt-6 text-center p-10 bg-gray-50 border border-gray-200 rounded-xl">
           <p className="text-gray-600 text-lg">No Webistes found.</p>
           <p className="text-gray-400 text-sm mt-1">
