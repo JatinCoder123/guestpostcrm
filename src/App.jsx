@@ -22,6 +22,8 @@ import Login from "./components/pages/Login";
 import LoadingPage from "./components/pages/LoadingPage";
 import { toast, ToastContainer } from "react-toastify";
 import Contactpage from "./components/pages/Contactpage";
+import { ForwardedPage } from "./components/pages/ForwardedPage";
+import { FavouritePage } from "./components/pages/FavouritePage";
 const router = createBrowserRouter([
   {
     path: "",
@@ -86,6 +88,14 @@ const router = createBrowserRouter([
        {
         path: "contacts",
         element: <Contactpage />,
+      },
+      {
+        path: "forwarded-emails",
+        element: <ForwardedPage />,
+      },
+       {
+        path: "favourite-emails",
+        element: <FavouritePage />,
       },
          
     ],
