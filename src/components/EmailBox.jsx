@@ -22,6 +22,7 @@ import { sendEmail } from "../store/Slices/viewEmail";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
 import { Editor } from '@tinymce/tinymce-react';
+import {TINY_EDITOR_API_KEY} from '../store/constants';
 
 export default function EmailBox({ onClose, view, threadId }) {
   const scrollRef = useRef();
@@ -176,11 +177,11 @@ export default function EmailBox({ onClose, view, threadId }) {
             );
           })}
         </div>
-        {/* Footer (reply input area) */}
+        
         {/* Footer (reply input area) */}
         <div className="p-4 border-t bg-white">
           <div className="flex gap-4 w-full items-center">
-            {/* Editor - 80% width */}
+            
             {loading && (
               <div className="w-4/5 flex items-center justify-center">
                 <p>Generating Ai Reply...</p>
@@ -189,7 +190,7 @@ export default function EmailBox({ onClose, view, threadId }) {
             {!loading && (
               <div className="w-4/5 min-w-0">
                 <Editor
-                  apiKey="qomfxtyvjw82d3xf7px5alxly39lblt50zmpijue6yvozquf" 
+                  apiKey={TINY_EDITOR_API_KEY} 
                   onInit={handleEditorInit}
                   value={input}
                   onEditorChange={handleEditorChange}
