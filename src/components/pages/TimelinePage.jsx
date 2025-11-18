@@ -24,6 +24,7 @@ import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   daysUntil,
   formatExpiryLabel,
@@ -438,34 +439,91 @@ export function TimelinePage() {
                       <span>Create Deal</span>
                     </button>
 
-                    {/* Mark favourit*/}
-                   <button
-                      onClick={() => console.log("Open FAVOURITE")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                     <img width="40" height="40" src="https://img.icons8.com/color/48/filled-like.png" alt="filled-like"/>
-                    </button>
-                    {/* Warm Forward */}
-                    <button
-                      onClick={() => console.log("Open FORWARD")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img width="40" height="40" src="https://img.icons8.com/color/48/redo.png" alt="redo"/>
-                    </button>
-                    {/* Move To */}
-                    <button
-                      onClick={() => console.log("Open MOVE TO")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img width="40" height="40" src="https://img.icons8.com/color/48/resize-four-directions.png" alt="resize-four-directions"/>
-                    </button>
-                    {/* Mark Bulk */}
-                    <button
-                      onClick={() => console.log("Open MARK BULK")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img width="40" height="40" src="https://img.icons8.com/ios-filled/50/double-tick.png" alt="double-tick"/>
-                    </button>
+
+                  {/* Mark Favourite */}
+<button
+  onClick={() => console.log("Open FAVOURITE")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img
+    width="30"
+    height="30"
+    src="https://img.icons8.com/color/48/filled-like.png"
+    alt="filled-like"
+  />
+
+  {/* Tooltip */}
+  <span
+    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Favourite
+  </span>
+</button>
+
+{/* Warm Forward */}
+<button
+  onClick={() => console.log("Open FORWARD")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img
+    width="30"
+    height="30"
+    src="https://img.icons8.com/color/48/redo.png"
+    alt="redo"
+  />
+
+  <span
+    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Forward
+  </span>
+</button>
+
+{/* Move To */}
+<button
+  onClick={() => console.log("Open MOVE TO")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img
+    width="30"
+    height="30"
+    src="https://img.icons8.com/color/48/resize-four-directions.png"
+    alt="resize-four-directions"
+  />
+
+  <span
+    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Move To
+  </span>
+</button>
+
+{/* Mark Bulk */}
+<button
+  onClick={() => console.log("Open MARK BULK")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img width="30" height="30" src="https://img.icons8.com/color/48/bursts.png" alt="bursts"/>
+
+  <span
+    className="absolute -bottom-8 left/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Mark Bulk
+  </span>
+</button>
+
                   </div>
                 </>
               )}
