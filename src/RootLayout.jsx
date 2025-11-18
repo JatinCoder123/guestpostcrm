@@ -50,13 +50,18 @@ const RootLayout = () => {
       ) : (
         <div className="min-h-screen bg-[#F8FAFC]">
           <TopNav />
-          <div className="flex">
-            <Sidebar
-              collapsed={sidebarCollapsed}
-              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            />
+          <div className="flex h-[calc(100vh-100px)]">
+            {/* Sidebar scrolls independently */}
+            <div className="overflow-y-auto overflow-x-hidden scrollbar-hide">
+              <Sidebar
+                collapsed={sidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              />
+            </div>
+
+            {/* Main content scrolls independently */}
             <main
-              className={`flex-1 transition-all duration-300 ${
+              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${
                 sidebarCollapsed ? "ml-4" : "ml-0"
               }`}
             >

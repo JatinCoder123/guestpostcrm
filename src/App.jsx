@@ -9,6 +9,7 @@ import { OrdersPage } from "./components/pages/OrdersPage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
+import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { DealRemindersPage } from "./components/pages/DealRemindersPage";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger } from "./store/Slices/ladger";
@@ -21,6 +22,11 @@ import { getUser, userAction } from "./store/Slices/userSlice";
 import Login from "./components/pages/Login";
 import LoadingPage from "./components/pages/LoadingPage";
 import { toast, ToastContainer } from "react-toastify";
+import { MachineLearningPage } from "./components/pages/settingpages/MachineLearningPage";
+import { PayplaCredentialsPage } from "./components/pages/settingpages/PaypalCredentialsPage";
+import { TemlatesPage } from "./components/pages/settingpages/TemplatesPage";
+import { WebsitesPage } from "./components/pages/settingpages/WebsitesPage";
+import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
 import { ForwardedPage } from "./components/pages/ForwardedPage";
 import { FavouritePage } from "./components/pages/FavouritePage";
@@ -85,7 +91,7 @@ const router = createBrowserRouter([
         path: "timeline",
         element: <TimelinePage />,
       },
-       {
+      {
         path: "contacts",
         element: <Contactpage />,
       },
@@ -98,6 +104,37 @@ const router = createBrowserRouter([
         element: <FavouritePage />,
       },
          
+
+      {
+        path: "settings",
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <SettingsPage />,
+          },
+          {
+            path: "machine-learning",
+            element: <MachineLearningPage />,
+          },
+          {
+            path: "paypal-credentials",
+            element: <PayplaCredentialsPage />,
+          },
+          {
+            path: "templates",
+            element: <TemlatesPage />,
+          },
+          {
+            path: "websites",
+            element: <WebsitesPage />,
+          },
+          {
+            path: "users",
+            element: <UsersPage />,
+          },
+        ],
+      },
     ],
   },
 ]);

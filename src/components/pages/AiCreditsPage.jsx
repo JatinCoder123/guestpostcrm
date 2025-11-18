@@ -1,8 +1,6 @@
 import {
-  Mail,
   ShoppingCart,
   DollarSign,
-  Calendar,
   User,
   Flame,
   User2Icon,
@@ -13,7 +11,7 @@ import {
 import { useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import Pagination from "../Pagination";
-import { aiCreditsAction, updateIndex } from "../../store/Slices/aiCredits";
+import { getAiCredits } from "../../store/Slices/aiCredits";
 
 export function AiCreditsPage() {
   const { aiCredits, balance, count } = useSelector((state) => state.aiCredits);
@@ -168,7 +166,7 @@ export function AiCreditsPage() {
             </tbody>
           </table>
         </div>
-        <Pagination slice={"aiCredits"} fn={updateIndex} />
+        <Pagination slice={"aiCredits"} fn={getAiCredits} />
 
         {aiCredits.length === 0 && (
           <div className="p-12 text-center">

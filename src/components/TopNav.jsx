@@ -1,4 +1,12 @@
-import { Search, Sparkles, Bell, LogOut, X, User2Icon, ChevronDown } from "lucide-react";
+import {
+  Search,
+  Sparkles,
+  Bell,
+  LogOut,
+  X,
+  User2Icon,
+  ChevronDown,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
 import { useContext, useEffect, useState, useRef } from "react";
@@ -54,7 +62,10 @@ export function TopNav() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
         setShowProfileMenu(false);
       }
     };
@@ -93,8 +104,8 @@ export function TopNav() {
               type="text"
               value={input}
               placeholder="Input Email to Search"
+              onKeyDown={handleKeyPress}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg 
                          focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
             />
@@ -152,54 +163,59 @@ export function TopNav() {
               </span>
             </div>
           </motion.div>
-
           {/* Profile Dropdown Menu */}
           <AnimatePresence>
             {showProfileMenu && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                className="
+        absolute right-2 mt-3 w-72 
+        bg-white/80 backdrop-blur-xl 
+        border border-gray-200 
+        rounded-2xl shadow-2xl z-50 
+        overflow-hidden
+      "
               >
-                {/* User Info */}
-                <div className="px-4 py-3 border-b border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between w-full px-4 py-2 bg-white rounded-lg border">
-  {/* User Name */}
-  <p className="font-semibold text-gray-900 truncate">
-    {user?.name || "User"}
-  </p>
+                <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                  {/* User Info */}
+                  <div className="flex flex-col overflow-hidden">
+                    <p className="font-semibold text-gray-900 text-lg truncate">
+                      {user?.name || "User"}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">
+                      {user?.email || "user@example.com"}
+                    </p>
+                  </div>
 
-  {/* Logout Button */}
-  <motion.button
-    whileHover={!loading ? { scale: 1.05 } : {}}
-    whileTap={!loading ? { scale: 0.95 } : {}}
-    onClick={handleLogout}
-    disabled={loading}
-    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200
+                  {/* Logout Button */}
+                  <motion.button
+                    onClick={handleLogout}
+                    disabled={loading}
+                    whileHover={!loading ? { scale: 1.1, x: 5 } : {}}
+                    whileTap={{ scale: 0.95 }}
+                    className={`
+      flex items-center justify-center cursor-pointer
+      p-2 rounded-full transition-all duration-300 shadow-sm
       ${
         loading
-          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-          : "text-red-600 hover:bg-red-50"
-      }`}
-  >
-    <LogOut className="w-5 h-5" />
-   
-  </motion.button>
-</div>
-  
-                      <p className="text-sm text-gray-500 truncate item-center">
-                        {user?.email || "user@example.com"}
-                      </p>
-                 
-                    </div>
-                  </div>
+          ? "opacity-50 cursor-not-allowed bg-gray-200"
+          : "hover:bg-red-200"
+      }
+    `}
+                  >
+                    <img
+                      className={`
+        w-10 h-10 transition-all duration-300 
+        ${loading ? "opacity-40" : "opacity-100"}
+      `}
+                      src="https://img.icons8.com/arcade/64/exit.png"
+                      alt="exit"
+                    />
+                  </motion.button>
                 </div>
-
-                
               </motion.div>
             )}
           </AnimatePresence>

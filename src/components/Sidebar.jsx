@@ -141,15 +141,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       hover: "hover:bg-yellow-50",
       countBg: "bg-yellow-500 text-white",
     },
-    {
-      id: "payment-missed",
-      label: "Payment Missed",
-      icon: CreditCard,
-      count: paymentRemCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-red-500 text-white",
-    },
+
     {
       id: "link-removal",
       label: "Link Removal",
@@ -176,6 +168,15 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       color: "text-teal-600",
       hover: "hover:bg-teal-50",
       countBg: "bg-teal-500 text-white",
+    },
+    {
+      id: "payment-missed",
+      label: "Payment Reminders",
+      icon: CreditCard,
+      count: paymentRemCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-red-500 text-white",
     },
   ];
 
@@ -255,7 +256,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
 
         {/* SETTINGS BUTTON */}
         <button
-          onClick={() => setOpenSettingsCard(true)}
+          onClick={() => navigateTo("settings")}
           className=" fixed bottom-2 cursor-pointer mt-auto flex items-center gap-3 px-3 py-2.5 
                      bg-gray-200 hover:bg-gray-300 rounded-lg transition-all shadow"
         >

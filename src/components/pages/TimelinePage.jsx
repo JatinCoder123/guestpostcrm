@@ -37,7 +37,6 @@ export function TimelinePage() {
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
   const navigateTo = useNavigate();
-
   const dispatch = useDispatch();
 
   const { ladger, email, duplicate, mailersSummary, loading, error } =
@@ -93,6 +92,13 @@ export function TimelinePage() {
 
   // Stage progress for header chip
   const stageProgress = getStageProgress(mailersSummary?.stage);
+  if (showEmail) {
+    return (
+      <>
+        <EmailBox onClose={() => setShowEmails(false)} view={true} />
+      </>
+    );
+  }
 
   return (
     <>
@@ -374,7 +380,7 @@ export function TimelinePage() {
                       onClick={() => {
                         dispatch(getContact(email));
                         // setShowContact(true);
-                        navigateTo("/contacts")
+                        navigateTo("/contacts");
                       }}
                       className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
                     >
