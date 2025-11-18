@@ -17,6 +17,8 @@ import {
   Radio,
   Globe,
   User,
+  Forward,
+  Heart,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -84,6 +86,24 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       color: "text-purple-600",
       hover: "hover:bg-purple-50",
       countBg: "bg-purple-500 text-white",
+    },
+        {
+      id: "forwarded-emails",
+      label: "Forwarded Emails",
+      icon: Forward,
+      count: unrepliedCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-blue-500 text-white",
+    },
+     {
+      id: "favourite-emails",
+      label: "Favourite Emails",
+      icon: Heart,
+      count: unrepliedCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-pink-500 text-white",
     },
     {
       id: "deals",

@@ -9,6 +9,10 @@ import {
   Calendar,
   FileText,
   Clock,
+  Heart,
+  Heater,
+  Move,
+  Check,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -20,6 +24,7 @@ import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   daysUntil,
   formatExpiryLabel,
@@ -192,7 +197,46 @@ export function TimelinePage() {
                       </div>
                     </div>
                   </div>
+                    {/* WhatsApp */}
+                    <button
+                      onClick={() => console.log("Open WhatsApp")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
+                        alt="whatsapp--v1"
+                      />
+                    </button>
+
+                    {/* Call */}
+                    <button
+                      onClick={() => console.log("Call user")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/apple-phone.png"
+                        alt="apple-phone"
+                      />
+                    </button>
+
+                    {/* SMS */}
+                    <button
+                      onClick={() => console.log("Send SMS")}
+                      className="cursor-pointer hover:scale-105"
+                    >
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
+                        alt="speech-bubble-with-dots"
+                      />
+                    </button>
                 </div>
+                
 
                 {/* REFRESH + AUTO REFRESH */}
                 <div className="flex items-center gap-4">
@@ -395,44 +439,91 @@ export function TimelinePage() {
                       <span>Create Deal</span>
                     </button>
 
-                    {/* WhatsApp */}
-                    <button
-                      onClick={() => console.log("Open WhatsApp")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
-                        alt="whatsapp--v1"
-                      />
-                    </button>
 
-                    {/* Call */}
-                    <button
-                      onClick={() => console.log("Call user")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/apple-phone.png"
-                        alt="apple-phone"
-                      />
-                    </button>
+                  {/* Mark Favourite */}
+<button
+  onClick={() => console.log("Open FAVOURITE")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img
+    width="30"
+    height="30"
+    src="https://img.icons8.com/color/48/filled-like.png"
+    alt="filled-like"
+  />
 
-                    {/* SMS */}
-                    <button
-                      onClick={() => console.log("Send SMS")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
-                        alt="speech-bubble-with-dots"
-                      />
-                    </button>
+  {/* Tooltip */}
+  <span
+    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Favourite
+  </span>
+</button>
+
+{/* Warm Forward */}
+<button
+  onClick={() => console.log("Open FORWARD")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img
+    width="30"
+    height="30"
+    src="https://img.icons8.com/color/48/redo.png"
+    alt="redo"
+  />
+
+  <span
+    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Forward
+  </span>
+</button>
+
+{/* Move To */}
+<button
+  onClick={() => console.log("Open MOVE TO")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img
+    width="30"
+    height="30"
+    src="https://img.icons8.com/color/48/resize-four-directions.png"
+    alt="resize-four-directions"
+  />
+
+  <span
+    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Move To
+  </span>
+</button>
+
+{/* Mark Bulk */}
+<button
+  onClick={() => console.log("Open MARK BULK")}
+  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
+             hover:scale-110 transition-all cursor-pointer"
+>
+  <img width="30" height="30" src="https://img.icons8.com/color/48/bursts.png" alt="bursts"/>
+
+  <span
+    className="absolute -bottom-8 left/2 -translate-x-1/2 bg-gray-800 text-white 
+               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
+               transition-all whitespace-nowrap"
+  >
+    Mark Bulk
+  </span>
+</button>
+
                   </div>
                 </>
               )}

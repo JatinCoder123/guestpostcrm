@@ -30,6 +30,8 @@ import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
 import ReportPage from"./components/pages/Reportpage";
 
+import { ForwardedPage } from "./components/pages/ForwardedPage";
+import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 const router = createBrowserRouter([
   {
@@ -101,6 +103,16 @@ const router = createBrowserRouter([
         element: <ReportPage />,
       },
     
+      {
+        path: "forwarded-emails",
+        element: <ForwardedPage />,
+      },
+       {
+        path: "favourite-emails",
+        element: <FavouritePage />,
+      },
+         
+
       {
         path: "settings",
         element: <Outlet />,
