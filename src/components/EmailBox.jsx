@@ -1,3 +1,15 @@
+import {
+  Mail,
+  RefreshCw,
+  CheckCircle,
+  User,
+  Globe,
+  Handshake,
+  Reply,
+  Calendar,
+  FileText,
+  Clock,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -5,10 +17,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
+import { Editor } from '@tinymce/tinymce-react';
 
 export default function EmailBox({ onClose, view, threadId }) {
   const scrollRef = useRef();
-  const textareaRef = useRef(null);
+  const editorRef = useRef(null);
   const { viewEmail, threadId: viewThreadId } = useSelector(
     (state) => state.viewEmail
   );
@@ -39,32 +52,32 @@ export default function EmailBox({ onClose, view, threadId }) {
       dispatch(sendEmailToThread(props.threadId, input));
     }
   };
-  // ⌨️ Enter key
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (view) {
-        dispatch(sendEmail(input));
-      } else {
-        dispatch(sendEmailToThread(props.threadId, input));
-      }
-    }
+  
+  const handleEditorChange = (content) => {
+    setInput(content);
   };
-  // 🧠 Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        200
-      )}px`;
+
+  
+  const handleEditorInit = (evt, editor) => {
+    editorRef.current = editor;
+  };
+ useEffect(() => {
+  if (aiReply) {
+    
+    const containsHTML = /<[a-z][\s\S]*>/i.test(aiReply);
+    
+    if (containsHTML) {
+      setInput(aiReply);
+    } else {
+      
+      const formattedText = aiReply.replace(/\n/g, '<br>');
+      setInput(formattedText);
     }
-  }, [input]);
-  useEffect(() => {
-    setInput(aiReply);
+  }
   }, [aiReply, loading, dispatch]);
 
   return (
+    
     <div className="flex items-center justify-center">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -163,18 +176,46 @@ export default function EmailBox({ onClose, view, threadId }) {
           <div className="flex items-center gap-2">
             {loading && <p>Generating Ai Reply...</p>}
             {!loading && (
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your reply..."
-                className="flex-1 min-w-0 resize-none max-h-40 overflow-y-auto
-              px-3 py-2 rounded-lg border-none outline-none bg-gray-200
-              text-black placeholder-gray-400
-              w-full sm:w-auto"
-                rows={1}
-              />
+              <div className="flex-1 min-w-0">
+                <Editor
+                  apiKey="qomfxtyvjw82d3xf7px5alxly39lblt50zmpijue6yvozquf" 
+                  onInit={handleEditorInit}
+                  value={input}
+                  onEditorChange={handleEditorChange}
+                  init={{
+                    height: 200,
+                    menubar: false,
+                    plugins: [
+                      'advlist autolink lists link charmap preview anchor',
+                      'searchreplace visualblocks code fullscreen',
+                      'insertdatetime media table paste code help wordcount'
+                    ],
+                    toolbar: 'undo redo | bold italic underline | \
+                             alignleft aligncenter alignright | \
+                             bullist numlist outdent indent | \
+                             removeformat | help',
+                    content_style: `
+                      body { 
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                        font-size: 14px;
+                        background-color: #f3f4f6;
+                      }
+                      .mce-content-body {
+                        background-color: #f3f4f6;
+                        padding: 8px 12px;
+                      }
+                    `,
+                    skin: 'oxide',
+                    content_css: 'default',
+                    branding: false,
+                    resize: false,
+                    statusbar: false,
+                    forced_root_block: 'p',
+                    convert_newlines_to_brs: false,
+                    remove_trailing_brs: true
+                  }}
+                />
+              </div>
             )}
 
             <motion.button
