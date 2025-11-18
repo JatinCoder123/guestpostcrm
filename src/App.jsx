@@ -28,12 +28,9 @@ import TemplatesPage from "./components/pages/settingpages/TemplatesPage";
 import WebsitesPage from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
-<<<<<<< HEAD
 import ReportPage from"./components/pages/Reportpage";
 
-=======
 import ErrorBoundary from "./components/ErrorBoundary";
->>>>>>> 3e42ac718f739db24bcdc3e6aab61d3eec493379
 const router = createBrowserRouter([
   {
     path: "",
