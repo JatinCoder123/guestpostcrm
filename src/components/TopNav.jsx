@@ -18,7 +18,7 @@ import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
 
-export function TopNav() {
+export function TopNav({setShowAvatar}) {
   const [input, setInput] = useState("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
@@ -138,7 +138,7 @@ export function TopNav() {
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
         {/* Notification Button */}
-        <button className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors">
+        <button onClick={()=>setShowAvatar(prev=>!prev)} className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors">
           <User2Icon className="w-4 h-4" />
         </button>
 

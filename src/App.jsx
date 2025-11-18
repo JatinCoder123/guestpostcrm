@@ -28,6 +28,8 @@ import { TemlatesPage } from "./components/pages/settingpages/TemplatesPage";
 import { WebsitesPage } from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
+import ReportPage from"./components/pages/Reportpage";
+
 const router = createBrowserRouter([
   {
     path: "",
@@ -93,7 +95,11 @@ const router = createBrowserRouter([
         path: "contacts",
         element: <Contactpage />,
       },
-
+        {
+        path: "all-report",
+        element: <ReportPage />,
+      },
+    
       {
         path: "settings",
         element: <Outlet />,

@@ -158,6 +158,17 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       hover: "hover:bg-red-50",
       countBg: "bg-red-500 text-white",
     },
+
+    {
+      id: "all-report",
+      label: "Report",
+      icon: MessageSquare,
+      count: paymentRemCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-blue-500 text-white",
+    },
+     
   ];
 
   return (
