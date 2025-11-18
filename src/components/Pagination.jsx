@@ -1,97 +1,138 @@
+import { m } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ladgerAction } from "../store/Slices/ladger";
 
 function Pagination({ slice, fn }) {
   const dispatch = useDispatch();
 
-  let { pageCount, pageIndex = 1 } = useSelector((state) => state[slice]);
+  let { pageCount, pageIndex } = useSelector((state) => state[slice]);
   let { timeline } = useSelector((state) => state.ladger);
 
+  const [gotoValue, setGotoValue] = useState("");
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [pageIndex]);
+
   const handlePrev = useCallback(() => {
-    if (pageIndex > 0) {
+    if (pageIndex > 1) {
       dispatch(fn(timeline, pageIndex - 1));
     }
-  }, [pageIndex, dispatch, slice]);
+  }, [pageIndex, dispatch, timeline]);
 
   const handleNext = useCallback(() => {
-    if (pageIndex < pageCount - 1) {
-      dispatch(fn(timeline, pageIndex + 1));
+    if (pageIndex < pageCount) {
+      dispatch(fn(timeline, Number(pageIndex) + 1));
     }
-  }, [pageIndex, dispatch, slice]);
+  }, [pageIndex, dispatch, pageCount, timeline]);
 
   const goToPage = useCallback(
     (p) => {
       dispatch(fn(timeline, p));
     },
-    [dispatch, slice]
+    [dispatch, timeline]
   );
 
   // --- Build pagination numbers ---
   const pagesToShow = [];
 
-  // Always show first 3 pages
-  for (let i = 1; i <= Math.min(3, pageCount); i++) {
+  let start = Number(pageIndex);
+  let end = Number(pageIndex) + 2;
+
+  if (end > pageCount) {
+    end = pageCount;
+  }
+
+  for (let i = start; i <= end; i++) {
     pagesToShow.push(i);
   }
 
-  // Add ellipsis if needed
-  if (pageCount > 4) {
+  if (end < pageCount - 1) {
     pagesToShow.push("ellipsis");
-    pagesToShow.push(pageCount - 1); // last page
-  } else if (pageCount === 4) {
-    pagesToShow.push(3); // show last page directly
+    pagesToShow.push(pageCount);
   }
 
-  return (
-    <div className="flex items-center justify-center gap-6 py-8">
-      {/* Left Arrow */}
-      <button
-        onClick={handlePrev}
-        disabled={pageIndex === 0}
-        className={`text-cyan-500 hover:text-cyan-700 transition text-3xl 
-          ${pageIndex === 0 ? "opacity-0 " : "cursor-pointer"}
-        `}
-      >
-        <ChevronLeft />
-      </button>
+  // --- Handle 'Go to Page' Enter key ---
+  const handleGoto = (e) => {
+    if (e.key === "Enter") {
+      const p = Number(gotoValue);
 
-      {/* Page Numbers */}
-      <div className="flex items-center gap-4">
-        {pagesToShow.map((p, idx) =>
-          p === "ellipsis" ? (
-            <span key={idx} className="text-2xl text-gray-500 px-2">
-              …
-            </span>
-          ) : (
-            <button
-              key={p * Math.random()}
-              onClick={() => goToPage(p)}
-              className={`w-12 h-12  flex items-center justify-center cursor-pointer rounded-full text-lg font-semibold transition
+      if (p >= 1 && p <= pageCount) {
+        goToPage(p);
+        setGotoValue("");
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 py-8">
+      {/* Pagination Buttons */}
+      <div className="flex items-center justify-center gap-6">
+        {/* Left Arrow */}
+        <button
+          onClick={handlePrev}
+          disabled={pageIndex == 1}
+          className={`text-cyan-500 hover:text-cyan-700 transition text-3xl 
+          ${pageIndex == 1 ? "opacity-0" : "cursor-pointer"}
+        `}
+        >
+          <ChevronLeft />
+        </button>
+
+        {/* Page Numbers */}
+        <div className="flex items-center gap-4">
+          {pagesToShow.map((p, idx) =>
+            p == "ellipsis" ? (
+              <span key={idx} className="text-2xl text-gray-500 px-2">
+                …
+              </span>
+            ) : (
+              <button
+                key={p * Math.random()}
+                onClick={() => goToPage(p)}
+                className={`w-12 h-12 flex items-center justify-center cursor-pointer rounded-full text-lg font-semibold transition
                 ${
                   p == pageIndex
                     ? "bg-cyan-600 text-white scale-110 shadow-md"
                     : "bg-cyan-100 text-cyan-700 hover:bg-cyan-200"
                 }
               `}
-            >
-              {p}
-            </button>
-          )
-        )}
+              >
+                {p}
+              </button>
+            )
+          )}
+        </div>
+
+        {/* Right Arrow */}
+        <button
+          onClick={handleNext}
+          disabled={pageIndex == pageCount}
+          className={`text-cyan-500 hover:text-cyan-700 transition text-3xl 
+          ${pageIndex == pageCount ? "opacity-0" : "cursor-pointer"}
+        `}
+        >
+          <ChevronRight />
+        </button>
       </div>
 
-      {/* Right Arrow */}
-      <button
-        onClick={handleNext}
-        disabled={pageIndex === pageCount - 1}
-        className={`text-cyan-500 hover:text-cyan-700 transition text-3xl 
-          ${pageIndex === pageCount - 1 ? "opacity-0 " : "cursor-pointer"}
-        `}
-      >
-        <ChevronRight />
-      </button>
+      {/* Go To Page Input */}
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          min="1"
+          max={pageCount}
+          value={gotoValue}
+          onChange={(e) => setGotoValue(e.target.value)}
+          onKeyDown={handleGoto}
+          className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-cyan-500"
+          placeholder="Go to..."
+        />
+      </div>
     </div>
   );
 }

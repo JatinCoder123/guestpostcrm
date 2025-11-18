@@ -27,7 +27,7 @@ import { PayplaCredentialsPage } from "./components/pages/settingpages/PaypalCre
 import { TemlatesPage } from "./components/pages/settingpages/TemplatesPage";
 import { WebsitesPage } from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
-import ContactPage from "./components/pages/Contactpage";
+import Contactpage from "./components/pages/Contactpage";
 const router = createBrowserRouter([
   {
     path: "",
@@ -91,7 +91,11 @@ const router = createBrowserRouter([
       },
       {
         path: "contacts",
+<<<<<<< HEAD
         element: <ContactPage />,
+=======
+        element: <Contactpage />,
+>>>>>>> e82745b0317c37696ead4716dabae72f51a5aa02
       },
 
       {

@@ -10,7 +10,9 @@ import {
 import { useSelector } from "react-redux";
 
 export function OrdersPage() {
-  const { orders, count } = useSelector((state) => state.orders);
+  const { orders, count, loading, error } = useSelector(
+    (state) => state.orders
+  );
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -161,8 +163,6 @@ export function OrdersPage() {
           </div>
         )}
       </div>
-
-      
     </>
   );
 }
