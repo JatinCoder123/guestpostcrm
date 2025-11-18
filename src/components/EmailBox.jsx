@@ -50,11 +50,38 @@ export default function EmailBox({ onClose, view, threadId }) {
     }
   }, [emails]);
   const handleClickAiReplyBtn = () => {};
+
+  const htmlToPlainText = (html) => {
+    if (!html) return '';
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || '';
+  };
+
   const handleClickSendBtn = () => {
+    let contentToSend;
+    
+    // Method 1: Use TinyMCE's built-in method (best option)
+    if (editorRef.current) {
+      contentToSend = editorRef.current.getContent({ format: 'text' });
+    } 
+    // Method 2: Fallback to manual conversion
+    else {
+      contentToSend = htmlToPlainText(input);
+    }
+    
+    console.log('Sending content:', contentToSend); // Debug log
+    
     if (view) {
-      dispatch(sendEmail(input));
+      dispatch(sendEmail(contentToSend));
     } else {
-      dispatch(sendEmailToThread(props.threadId, input));
+      dispatch(sendEmailToThread(threadId, contentToSend));
+    }
+    
+    // Clear input after sending
+    setInput("");
+    if (editorRef.current) {
+      editorRef.current.setContent('');
     }
   };
   
