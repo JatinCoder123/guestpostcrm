@@ -19,8 +19,10 @@ import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
 import Pagination from "./components/Pagination";
+import Avatar from "./components/Avatar";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showAvatar,setShowAvatar]=useState(false)
   const { timeline } = useSelector((state) => state.ladger);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const location = useLocation().pathname.split("/")[2];
@@ -49,7 +51,7 @@ const RootLayout = () => {
         <DisplayIntro key="intro" />
       ) : (
         <div className="min-h-screen bg-[#F8FAFC]">
-          <TopNav />
+          <TopNav setShowAvatar={setShowAvatar}/>
           <div className="flex h-[calc(100vh-100px)]">
             {/* Sidebar scrolls independently */}
             <div className="overflow-y-auto overflow-x-hidden scrollbar-hide">
@@ -68,6 +70,7 @@ const RootLayout = () => {
               <div className="p-6">
                 <WelcomeHeader />
                 <Outlet />
+                {showAvatar &&<Avatar/>}
               </div>
               <Footer />
             </main>
