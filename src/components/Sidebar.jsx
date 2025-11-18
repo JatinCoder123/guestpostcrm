@@ -235,7 +235,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
 
         {/* SETTINGS BUTTON */}
         <button
-          onClick={() => setOpenSettingsCard(true)}
+          onClick={() => navigateTo("/settings")}
           className=" fixed bottom-2 cursor-pointer mt-auto flex items-center gap-3 px-3 py-2.5 
                      bg-gray-200 hover:bg-gray-300 rounded-lg transition-all shadow"
         >
