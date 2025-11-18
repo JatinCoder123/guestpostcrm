@@ -44,7 +44,7 @@ export function UsersPage() {
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
       {/* Empty State */}
-      {!loading && !error && users?.length === 0 && (
+      {!loading && !error && users?.length == 0 && (
         <div className="mt-6 text-center p-10 bg-gray-50 border border-gray-200 rounded-xl">
           <p className="text-gray-600 text-lg">No users found.</p>
           <p className="text-gray-400 text-sm mt-1">
@@ -54,7 +54,7 @@ export function UsersPage() {
       )}
 
       {/* Data Cards */}
-      {users.length > 0 && (
+      {users?.length > 0 && (
         <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.map((item) => (
             <div

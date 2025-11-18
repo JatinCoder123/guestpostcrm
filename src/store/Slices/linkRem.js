@@ -51,7 +51,7 @@ export const getLinkRem = (filter, email) => {
       dispatch(linkRemSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        linkRemSlice.actions.getLinkRemFailed("Fetching Orders Rem  Failed")
+        linkRemSlice.actions.getLinkRemFailed("Fetching Link Rem  Failed")
       );
     }
   };

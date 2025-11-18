@@ -36,7 +36,7 @@ export default function WebsitesPage() {
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
       {/* Empty State */}
-      {!loading && !error && !data && (
+      {!loading && !error && (
         <div className="mt-6 text-center p-10 bg-gray-50 border border-gray-200 rounded-xl">
           <p className="text-gray-600 text-lg">No Webistes found.</p>
           <p className="text-gray-400 text-sm mt-1">

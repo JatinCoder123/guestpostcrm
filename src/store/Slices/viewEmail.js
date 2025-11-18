@@ -116,9 +116,7 @@ export const getContact = (email) => {
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getContactFailed(
-          "Fetching Contact Details failed"
-        )
+        viewEmailSlice.actions.getContactFailed("Fetching View Details failed")
       );
     }
   };
