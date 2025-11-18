@@ -92,6 +92,13 @@ export function TimelinePage() {
 
   // Stage progress for header chip
   const stageProgress = getStageProgress(mailersSummary?.stage);
+  if (showEmail) {
+    return (
+      <>
+        <EmailBox onClose={() => setShowEmails(false)} view={true} />
+      </>
+    );
+  }
 
   return (
     <>

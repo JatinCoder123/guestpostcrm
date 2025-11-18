@@ -3,7 +3,9 @@ import { Mail, Gift, Tag, DollarSign, Calendar, User } from "lucide-react";
 import { useSelector } from "react-redux";
 
 export function OffersPage() {
-  const { offers, count } = useSelector((state) => state.offers);
+  const { offers, count, loading, error } = useSelector(
+    (state) => state.offers
+  );
   return (
     <>
       {/* Stats Cards */}
@@ -142,8 +144,6 @@ export function OffersPage() {
           </div>
         )}
       </div>
-
-      
     </>
   );
 }
