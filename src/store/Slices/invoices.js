@@ -5,9 +5,11 @@ const invoicesSlice = createSlice({
   name: "invoices",
   initialState: {
     loading: false,
+    creating: false, // ✅ Add creating state
     invoices: [],
     count: 0,
     error: null,
+    message: null, // ✅ Add success message state
   },
   reducers: {
     getInvoicesRequest(state) {
@@ -25,8 +27,28 @@ const invoicesSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    // ✅ Add create invoice reducers
+    createInvoiceRequest(state) {
+      state.creating = true;
+      state.error = null;
+      state.message = null;
+    },
+    createInvoiceSuccess(state, action) {
+      state.creating = false;
+      state.message = action.payload;
+      state.error = null;
+    },
+    createInvoiceFailed(state, action) {
+      state.creating = false;
+      state.error = action.payload;
+      state.message = null;
+    },
     clearAllErrors(state) {
       state.error = null;
+    },
+    // ✅ Add clear messages reducer
+    clearAllMessages(state) {
+      state.message = null;
     },
   },
 });
@@ -63,6 +85,32 @@ export const getInvoices = (filter, email) => {
       dispatch(
         invoicesSlice.actions.getInvoicesFailed("Fetching Invoices  Failed")
       );
+    }
+  };
+};
+
+// ✅ ADD THIS CREATE INVOICE ACTION
+export const createInvoice = (formData) => {
+  return async (dispatch, getState) => {
+    dispatch(invoicesSlice.actions.createInvoiceRequest());
+
+    try {
+      const response = await axios.post(
+        `${getState().user.crmEndpoint}&type=create_invoice`,
+        formData
+      );
+      
+      const data = response.data;
+      
+      if (data.success) {
+        dispatch(invoicesSlice.actions.createInvoiceSuccess("Invoice created successfully!"));
+        // Optional: Refresh invoices list after creation
+        // dispatch(getInvoices("all"));
+      } else {
+        dispatch(invoicesSlice.actions.createInvoiceFailed(data.message || "Failed to create invoice"));
+      }
+    } catch (error) {
+      dispatch(invoicesSlice.actions.createInvoiceFailed("Network error: Failed to create invoice"));
     }
   };
 };
