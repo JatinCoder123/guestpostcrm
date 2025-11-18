@@ -7,6 +7,7 @@ import { useState } from "react";
 import SkeletonGrid from "../../SkeletonGrid"; // <== Import Skeleton
 import EditModal from "../../EditModal";
 import Loading from "../../Loading";
+import Header from "./Header";
 
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
@@ -26,17 +27,7 @@ export function MachineLearningPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Machine Learning Settings</h1>
-
-        <Link
-          to="/settings"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          BACK
-        </Link>
-      </div>
-
+      <Header text={"Machine Learning Manager"} />
       {/* Loading Skeleton */}
       {loading && <Loading text={"Machine Learning"} />}
 

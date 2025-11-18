@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
 import { m, AnimatePresence } from "framer-motion";
-import { Edit3, X } from "lucide-react";
+import { Edit3, Undo2, X } from "lucide-react";
 import { useState } from "react";
 import SkeletonGrid from "../../SkeletonGrid"; // <== Import Skeleton
 import EditModal from "../../EditModal";
 import Loading from "../../Loading";
+import Header from "./Header";
 
 export default function WebsitesPage() {
   const [editItem, setEditItem] = useState(null);
@@ -26,17 +27,7 @@ export default function WebsitesPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Website Manager</h1>
-
-        <Link
-          to="/settings"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          BACK
-        </Link>
-      </div>
-
+      <Header text={"Website Manager"} />
       {/* Loading Skeleton */}
       {loading && <Loading text={"Websites"} />}
 

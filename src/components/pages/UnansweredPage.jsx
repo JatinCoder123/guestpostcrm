@@ -22,17 +22,17 @@ export function UnansweredPage() {
     currentThreadId,
     setCurrentThreadId,
   ] = useThread();
+  if (showEmail && currentThreadId) {
+    return (
+      <EmailBox
+        onClose={() => setShowEmails(false)}
+        view={false}
+        threadId={currentThreadId}
+      />
+    );
+  }
   return (
     <>
-      {showEmail && currentThreadId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <EmailBox
-            onClose={() => setShowEmails(false)}
-            view={false}
-            threadId={currentThreadId}
-          />
-        </div>
-      )}
       {/* Unanswered Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
