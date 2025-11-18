@@ -25,18 +25,17 @@ export function DealsPage() {
       document.body.style.overflow = "auto"; // Cleanup
     };
   }, [showDeal]);
+  if (showDeal) {
+    return (
+      <CreateDeal
+        onClose={() => {
+          setShowDeal(false);
+        }}
+      />
+    );
+  }
   return (
     <>
-      {showDeal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <CreateDeal
-            onClose={() => {
-              setShowDeal(false);
-            }}
-          />
-        </div>
-      )}
-
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
