@@ -350,10 +350,22 @@ export function TimelinePage() {
                       {/* DEAL */}
                       <div className="md:col-span-1 flex items-start gap-3">
                         <div>
+                          
                           <div className="text-gray-500 font-medium">DEAL</div>
-                          <p className="text-gray-900 font-semibold mt-1">
+                          <div className="flex item-center justify-center gap-2 mt-1">
+                          <button
+      onClick={() => console.log("Add Deal")}
+      className="w-5 h-5 rounded-full 
+                 bg-gray-200 hover:bg-gray-300 text-gray-800 
+                 hover:scale-110 transition-all"
+    >
+      +
+    </button>
+                          <p className="text-gray-900 font-semibold">
                             {mailersSummary?.deal ?? "No Deal"}
                           </p>
+                          </div>
+                          
                         </div>
                       </div>
                     </div>
