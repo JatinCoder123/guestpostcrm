@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { TimelinePage } from "./components/pages/TimelinePage";
 import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
-import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { UnansweredPage } from "./components/pages/UnansweredPage";
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
+import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
 import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
