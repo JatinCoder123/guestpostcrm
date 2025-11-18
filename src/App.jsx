@@ -23,13 +23,17 @@ import Login from "./components/pages/Login";
 import LoadingPage from "./components/pages/LoadingPage";
 import { toast, ToastContainer } from "react-toastify";
 import { MachineLearningPage } from "./components/pages/settingpages/MachineLearningPage";
-import { PayplaCredentialsPage } from "./components/pages/settingpages/PaypalCredentialsPage";
-import { TemlatesPage } from "./components/pages/settingpages/TemplatesPage";
-import { WebsitesPage } from "./components/pages/settingpages/WebsitesPage";
+import { PaypalCredentials } from "./components/pages/settingpages/PaypalCredentialsPage";
+import TemplatesPage from "./components/pages/settingpages/TemplatesPage";
+import WebsitesPage from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
+<<<<<<< HEAD
 import ReportPage from"./components/pages/Reportpage";
 
+=======
+import ErrorBoundary from "./components/ErrorBoundary";
+>>>>>>> 3e42ac718f739db24bcdc3e6aab61d3eec493379
 const router = createBrowserRouter([
   {
     path: "",
@@ -114,11 +118,11 @@ const router = createBrowserRouter([
           },
           {
             path: "paypal-credentials",
-            element: <PayplaCredentialsPage />,
+            element: <PaypalCredentials />,
           },
           {
             path: "templates",
-            element: <TemlatesPage />,
+            element: <TemplatesPage />,
           },
           {
             path: "websites",
@@ -153,9 +157,11 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <PageContextProvider>
-          <RouterProvider router={router} />
-        </PageContextProvider>
+        <ErrorBoundary>
+          <PageContextProvider>
+            <RouterProvider router={router} />
+          </PageContextProvider>
+        </ErrorBoundary>
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}
