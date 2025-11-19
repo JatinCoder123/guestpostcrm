@@ -5,6 +5,8 @@ const detectionSlice = createSlice({
   name: "detection",
   initialState: {
     loading: false,
+    pageCount: 1,
+    pageIndex: 1,
     detection: [],
     count: 0,
     error: null,
@@ -15,10 +17,12 @@ const detectionSlice = createSlice({
       state.error = null;
     },
     getDetectionSucess(state, action) {
-      const { count, detection } = action.payload;
+      const { count, detection, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.detection = detection;
       state.count = count;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.error = null;
     },
     getDetectionFailed(state, action) {
@@ -56,6 +60,8 @@ export const getDetection = (filter, email) => {
         detectionSlice.actions.getDetectionSucess({
           count: data.data_count ?? 0,
           detection: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(detectionSlice.actions.clearAllErrors());

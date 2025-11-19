@@ -76,12 +76,6 @@ export function UnrepliedEmailsPage() {
                     <span>THREAD SIZE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Repeat className="w-4 h-4" />
-                    <span>DUPLICATE</span>
-                  </div>
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -99,12 +93,15 @@ export function UnrepliedEmailsPage() {
                   <td className="px-6 py-4 text-gray-900">{email.from}</td>
                   <td
                     onClick={() => {
-                      setCurrentThreadId(email.threadId);
-                      handleThreadClick(email.from, email.threadId);
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
                     {email.subject}
+                  </td>
+                  <td className="px-6 py-4 text-purple-600">
+                    {email.thread_count}
                   </td>
                 </tr>
               ))}

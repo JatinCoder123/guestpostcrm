@@ -1,7 +1,15 @@
-
-import { Mail, Calendar, User, FileText, AlertTriangle } from "lucide-react";
+import {
+  Mail,
+  Calendar,
+  User,
+  FileText,
+  AlertTriangle,
+  BarChart,
+} from "lucide-react";
 
 import { useSelector } from "react-redux";
+import Pagination from "../Pagination";
+import { getDetection } from "../../store/Slices/detection";
 
 export function SpamDetectionPage() {
   const { detection, count } = useSelector((state) => state.detection);
@@ -37,16 +45,17 @@ export function SpamDetectionPage() {
                     <span>SENDER NAME</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>SENDER EMAIL</span>
-                  </div>
-                </th>
+
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
                     <span>SPAM REASON</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <BarChart className="w-4 h-4" />
+                    <span>THREAD SIZE</span>
                   </div>
                 </th>
               </tr>
@@ -60,28 +69,27 @@ export function SpamDetectionPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{spam.date_created}</span>
+                      <span>{spam.date}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.from_name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.from_email}</span>
+                      <span>{spam.from}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <span>{spam.thread_count}</span>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <Pagination slice={"detection"} fn={getDetection} />
       </div>
-
-      
     </>
   );
 }
