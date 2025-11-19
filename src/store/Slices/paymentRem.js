@@ -7,6 +7,8 @@ const paymentRemSlice = createSlice({
     loading: false,
     paymentRem: [],
     count: 0,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
   },
   reducers: {
@@ -15,9 +17,11 @@ const paymentRemSlice = createSlice({
       state.error = null;
     },
     getPaymentRemSucess(state, action) {
-      const { count, paymentRem } = action.payload;
+      const { count, paymentRem, pageIndex, pageCount } = action.payload;
       state.loading = false;
       state.paymentRem = paymentRem;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.count = count;
       state.error = null;
     },
@@ -46,6 +50,8 @@ export const getPaymentRem = (filter, email) => {
         paymentRemSlice.actions.getPaymentRemSucess({
           count: data.data_count ?? 0,
           paymentRem: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(paymentRemSlice.actions.clearAllErrors());

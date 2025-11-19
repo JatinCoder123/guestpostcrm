@@ -9,7 +9,7 @@ import {
 import { useSelector } from "react-redux";
 
 export function PaymentMissedPage() {
-  const { paymentRem: missedPayments } = useSelector(
+  const { paymentRem: missedPayments, count } = useSelector(
     (state) => state.paymentRem
   );
 
@@ -20,8 +20,8 @@ export function PaymentMissedPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Missed Payments</p>
-              <p className="text-2xl text-gray-900 mt-1">3</p>
+              <p className="text-gray-500 text-sm">Payments Reminder</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <AlertCircle className="w-6 h-6 text-red-600" />
@@ -72,7 +72,7 @@ export function PaymentMissedPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <CreditCard className="w-6 h-6 text-red-600" />
-            <h2 className="text-xl text-gray-900">PAYMENT MISSED</h2>
+            <h2 className="text-xl text-gray-900">PAYMENT REMINDERS</h2>
           </div>
           <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
             Send Reminders

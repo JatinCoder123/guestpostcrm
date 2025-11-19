@@ -11,6 +11,8 @@ import { useSelector } from "react-redux";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
 import { BarChart } from "recharts";
+import Pagination from "../Pagination";
+import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 export function UnrepliedEmailsPage() {
   const { count, emails } = useSelector((state) => state.unreplied);
   const [
@@ -85,22 +87,20 @@ export function UnrepliedEmailsPage() {
             <tbody>
               {emails.map((email) => (
                 <tr
-                  key={email.thread_id}
+                  key={Math.random()}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_created}</span>
+                      <span>{email.date}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">
-                    {email.from_email}
-                  </td>
+                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
                   <td
                     onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from_email, email.thread_id);
+                      setCurrentThreadId(email.threadId);
+                      handleThreadClick(email.from, email.threadId);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
@@ -111,6 +111,7 @@ export function UnrepliedEmailsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination slice={"unreplied"} fn={getUnrepliedEmail} />
       </div>
     </>
   );

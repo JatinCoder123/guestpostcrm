@@ -6,34 +6,12 @@ import {
   User,
   ExternalLink,
 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 export function LinkRemovalPage() {
-  const linkRemovals = [
-    {
-      website: "techblog.com",
-      linkUrl: "https://techblog.com/article-123",
-      client: "TechBlog Inc.",
-      requestDate: "08 Nov 2025",
-      reason: "Content update requested",
-      status: "Pending",
-    },
-    {
-      website: "digitalmarketing.io",
-      linkUrl: "https://digitalmarketing.io/post-456",
-      client: "Digital Agency",
-      requestDate: "05 Nov 2025",
-      reason: "Partnership ended",
-      status: "In Progress",
-    },
-    {
-      website: "seoexperts.com",
-      linkUrl: "https://seoexperts.com/guide-789",
-      client: "SEO Company",
-      requestDate: "01 Nov 2025",
-      reason: "Client request",
-      status: "Completed",
-    },
-  ];
+  const { linkRem: linkRemovals, count } = useSelector(
+    (state) => state.linkRem
+  );
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -58,7 +36,7 @@ export function LinkRemovalPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Requests</p>
-              <p className="text-2xl text-gray-900 mt-1">3</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
               <Link2 className="w-6 h-6 text-pink-600" />

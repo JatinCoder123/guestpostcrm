@@ -1,6 +1,8 @@
 import { Mail, Gift, Tag, DollarSign, Calendar, User } from "lucide-react";
 
 import { useSelector } from "react-redux";
+import { getOffers } from "../../store/Slices/offers";
+import Pagination from "../Pagination";
 
 export function OffersPage() {
   const { offers, count, loading, error } = useSelector(
@@ -134,7 +136,7 @@ export function OffersPage() {
             </tbody>
           </table>
         </div>
-
+        <Pagination slice={"offers"} fn={getOffers} />
         {offers.length === 0 && (
           <div className="p-12 text-center">
             <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />

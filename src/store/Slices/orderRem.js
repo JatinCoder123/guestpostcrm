@@ -7,6 +7,8 @@ const orderRemSlice = createSlice({
     loading: false,
     orderRem: [],
     count: 0,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
   },
   reducers: {
@@ -15,9 +17,11 @@ const orderRemSlice = createSlice({
       state.error = null;
     },
     getOrderRemSucess(state, action) {
-      const { count, orderRem } = action.payload;
+      const { count, orderRem, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.orderRem = orderRem;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.count = count;
       state.error = null;
     },
@@ -41,11 +45,13 @@ export const getOrderRem = (filter, email) => {
           getState().user.crmEndpoint
         }&type=order_reminder&filter=${filter}&email=${email}&page=1&page_size=50`
       );
-      console.log(`Orders orders`, data);
+      console.log(`Orders Rem`, data);
       dispatch(
         orderRemSlice.actions.getOrderRemSucess({
           count: data.data_count ?? 0,
           orderRem: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(orderRemSlice.actions.clearAllErrors());

@@ -10,9 +10,21 @@ import {
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import CreateDeal from "../CreateDeal";
+import { websiteListForDeal } from "../../assets/assets";
+import { getDeals } from "../../store/Slices/deals";
+import Pagination from "../Pagination";
 
 export function DealsPage() {
   const { count, deals, loading, error } = useSelector((state) => state.deals);
+  const [validWebsites, setValidWebsites] = useState([]);
+
+  useEffect(() => {
+    const web = websiteListForDeal.filter((web) => {
+      return deals.every((deal) => deal.website_c !== web);
+    });
+    setValidWebsites(web);
+  }, []);
+
   const [showDeal, setShowDeal] = useState(false);
   useEffect(() => {
     if (showDeal) {
@@ -28,6 +40,7 @@ export function DealsPage() {
   if (showDeal) {
     return (
       <CreateDeal
+        validWebsites={validWebsites}
         onClose={() => {
           setShowDeal(false);
         }}
@@ -153,6 +166,7 @@ export function DealsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination slice={"deals"} fn={getDeals} />
 
         {!loading && !error && deals.length === 0 && (
           <div className="p-12 text-center">

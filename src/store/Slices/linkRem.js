@@ -7,6 +7,8 @@ const linkRemSlice = createSlice({
     loading: false,
     linkRem: [],
     count: 0,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
   },
   reducers: {
@@ -15,9 +17,11 @@ const linkRemSlice = createSlice({
       state.error = null;
     },
     getLinkRemSucess(state, action) {
-      const { count, linkRemSlice } = action.payload;
+      const { count, linkRemSlice, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.linkRemSlice = linkRemSlice;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.count = count;
       state.error = null;
     },
@@ -46,6 +50,8 @@ export const getLinkRem = (filter, email) => {
         linkRemSlice.actions.getLinkRemSucess({
           count: data.data_count ?? 0,
           dealRem: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(linkRemSlice.actions.clearAllErrors());
