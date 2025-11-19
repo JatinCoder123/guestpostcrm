@@ -136,6 +136,15 @@ export function TopNav({ setShowAvatar }) {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
+
+        {/*WOLF SECTION */}
+        {/* <div>
+          <img
+            src="https://errika.guestpostcrm.com/images/image%20(8).jpg"
+            alt="wolf"
+            className="w-10 h-10"
+          />
+        </div> */}
         {/* Notification Button */}
         <button
           onClick={() => setShowAvatar((prev) => !prev)}
@@ -222,6 +231,7 @@ export function TopNav({ setShowAvatar }) {
             )}
           </AnimatePresence>
         </div>
+
       </div>
     </div>
   );

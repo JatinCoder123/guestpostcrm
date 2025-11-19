@@ -19,6 +19,7 @@ import {
   User,
   Forward,
   Heart,
+  Cog,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -225,6 +226,16 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",
     },
+    {
+      id: "default-report",
+      label: "Default",
+      icon: Cog,
+      loading: paymentRemLoading,
+      count: paymentRemCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-blue-500 text-white",
+    },
   ];
 
   return (
@@ -239,7 +250,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
         {/* COLLAPSE BUTTON */}
         <button
           onClick={onToggleCollapse}
-          className="absolute -right-3 top-6 w-7 h-7 bg-white border border-gray-300 
+          className="absolute -right-3 bottom-10 w-7 h-7 bg-white border border-gray-300 
                      rounded-full flex items-center justify-center hover:bg-gray-100 shadow"
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}

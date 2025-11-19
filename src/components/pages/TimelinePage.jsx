@@ -148,52 +148,58 @@ export function TimelinePage() {
                           </div>
                         )}
 
-                        {/* NEW: TYPE / STATUS / STAGE — ICONS WITH COLORED BACKGROUND */}
-                        <div className="ml-4 flex items-center gap-2">
-                          {/* TYPE */}
-                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md">
-                            <div className="text-sm">
-                              <div className="text-gray-500 text-xs">Type</div>
-                              <div className="text-gray-800 font-medium">
-                                {mailersSummary?.type ?? "Brand"}
-                              </div>
-                            </div>
-                          </div>
+                     <div className="ml-4 flex items-center gap-4">
 
-                          {/* STATUS */}
-                          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-2 py-1 rounded-md">
-                            <div className="text-sm">
-                              <div className="text-gray-500 text-xs">
-                                Status
-                              </div>
-                              <div className="text-gray-800 font-medium">
-                                {mailersSummary?.status ?? "N/A"}
-                              </div>
-                            </div>
-                          </div>
+  {/* TYPE */}
+  <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
+    <div className="text-sm">
+      <div className="text-gray-500 text-xs">Type</div>
+      <div className="text-gray-800 font-medium">
+        {mailersSummary?.type ?? "Brand"}
+      </div>
+    </div>
+  </div>
 
-                          {/* STAGE with tiny progress bar */}
-                          <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-2 py-1 rounded-md">
-                            <div className="text-sm min-w-[150px]">
-                              <div className="text-gray-500 text-xs">Stage</div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                  <div
-                                    className="h-2 rounded-full"
-                                    style={{
-                                      width: `${stageProgress}%`,
-                                      background:
-                                        "linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6)",
-                                    }}
-                                  />
-                                </div>
-                                <div className="text-xs text-gray-600 w-10 text-right">
-                                  {Math.round(stageProgress)}%
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+  {/* Vertical Divider */}
+  <div className="w-px h-10 bg-gray-200"></div>
+
+  {/* STATUS */}
+  <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+    <div className="text-sm">
+      <div className="text-gray-500 text-xs">Status</div>
+      <div className="text-gray-800 font-medium">
+        {mailersSummary?.status ?? "N/A"}
+      </div>
+    </div>
+  </div>
+
+  {/* Vertical Divider */}
+  <div className="w-px h-10 bg-gray-200"></div>
+
+  {/* STAGE */}
+  <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-3 py-2 rounded-md">
+    <div className="text-sm min-w-[160px]">
+      <div className="text-gray-500 text-xs">Stage</div>
+      <div className="flex items-center gap-2">
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div
+            className="h-2 rounded-full"
+            style={{
+              width: `${stageProgress}%`,
+              background:
+                "linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6)",
+            }}
+          />
+        </div>
+        <div className="text-xs text-gray-600 w-10 text-right">
+          {Math.round(stageProgress)}%
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
                       </div>
                     </div>
                   </div>
