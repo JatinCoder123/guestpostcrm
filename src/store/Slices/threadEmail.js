@@ -67,7 +67,9 @@ export const getThreadEmail = (email, threadId) => {
       dispatch(threadEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        threadEmailSlice.actions.getThreadEmailFailed("Fetching Deals  Failed")
+        threadEmailSlice.actions.getThreadEmailFailed(
+          "Fetching Thread Email  Failed"
+        )
       );
     }
   };

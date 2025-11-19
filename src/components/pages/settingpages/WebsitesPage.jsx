@@ -8,6 +8,7 @@ import SkeletonGrid from "../../SkeletonGrid"; // <== Import Skeleton
 import EditModal from "../../EditModal";
 import Loading from "../../Loading";
 import Header from "./Header";
+import ErrorBox from "./ErrorBox";
 
 export default function WebsitesPage() {
   const [editItem, setEditItem] = useState(null);
@@ -32,7 +33,7 @@ export default function WebsitesPage() {
       {loading && <Loading text={"Websites"} />}
 
       {/* Error Component */}
-      {error && <ErrorBar message={error.message} onRetry={refetch} />}
+      {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
       {/* Empty State */}
       {!loading && !error && (

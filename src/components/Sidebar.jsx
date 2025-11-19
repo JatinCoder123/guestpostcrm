@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { LoadingSpin } from "./Loading";
 
 export function Sidebar({ collapsed, onToggleCollapse }) {
   const navigateTo = useNavigate();
@@ -46,17 +47,39 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
   }, []);
 
   // Redux counts
-  const unrepliedCount = useSelector((s) => s.unreplied?.count ?? 0);
-  const unansweredCount = useSelector((s) => s.unanswered?.count ?? 0);
-  const dealCount = useSelector((s) => s.deals?.count ?? 0);
-  const offersCount = useSelector((s) => s.offers?.count ?? 0);
-  const detectionCount = useSelector((s) => s.detection?.count ?? 0);
-  const invoiceCount = useSelector((s) => s.invoices?.count ?? 0);
-  const orderCount = useSelector((s) => s.orders?.count ?? 0);
-  const linkRemCount = useSelector((s) => s.linkRem?.count ?? 0);
-  const orderRemCount = useSelector((s) => s.orderRem?.count ?? 0);
-  const paymentRemCount = useSelector((s) => s.paymentRem?.count ?? 0);
-  const dealRemCount = useSelector((s) => s.dealRem?.count ?? 0);
+  const { count: unrepliedCount, loading: unrepliedLoading } = useSelector(
+    (s) => s.unreplied
+  );
+  const { count: unansweredCount, loading: unansweredLoading } = useSelector(
+    (s) => s.unanswered
+  );
+  const { count: dealCount, loading: dealsLoading } = useSelector(
+    (s) => s.deals
+  );
+  const { count: offersCount, loading: offersLoading } = useSelector(
+    (s) => s.offers
+  );
+  const { count: detectionCount, loading: detectionLoading } = useSelector(
+    (s) => s.detection
+  );
+  const { count: invoiceCount, loading: invoicesLoading } = useSelector(
+    (s) => s.invoices
+  );
+  const { count: orderCount, loading: ordersLoading } = useSelector(
+    (s) => s.orders
+  );
+  const { count: linkRemCount, loading: linkRemLoading } = useSelector(
+    (s) => s.linkRem
+  );
+  const { count: orderRemCount, loading: orderRemLoading } = useSelector(
+    (s) => s.orderRem
+  );
+  const { count: paymentRemCount, loading: paymentRemLoading } = useSelector(
+    (s) => s.paymentRem
+  );
+  const { count: dealRemCount, loading: dealRemLoading } = useSelector(
+    (s) => s.dealRem
+  );
 
   // MENU ITEMS WITH COLORS
   const menuItems = [
@@ -64,6 +87,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "unreplied-emails",
       label: "Unreplied Emails",
       icon: Mail,
+      loading: unrepliedLoading,
       count: unrepliedCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
@@ -73,6 +97,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "spam-detection",
       label: "Spam Detection",
       icon: Shield,
+      loading: detectionLoading,
       count: detectionCount,
       color: "text-orange-600",
       hover: "hover:bg-orange-50",
@@ -82,24 +107,27 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "unanswered",
       label: "Unanswered",
       icon: MessageSquare,
+      loading: unansweredLoading,
       count: unansweredCount,
       color: "text-purple-600",
       hover: "hover:bg-purple-50",
       countBg: "bg-purple-500 text-white",
     },
-        {
+    {
       id: "forwarded-emails",
       label: "Forwarded Emails",
       icon: Forward,
+      loading: unrepliedLoading,
       count: unrepliedCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",
     },
-     {
+    {
       id: "favourite-emails",
       label: "Favourite Emails",
       icon: Heart,
+      loading: unrepliedLoading,
       count: unrepliedCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
@@ -109,6 +137,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "deals",
       label: "Deals",
       icon: Handshake,
+      loading: dealsLoading,
       count: dealCount,
       color: "text-blue-600",
       hover: "hover:bg-blue-50",
@@ -118,6 +147,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "offers",
       label: "Offers",
       icon: Gift,
+      loading: offersLoading,
       count: offersCount,
       color: "text-green-600",
       hover: "hover:bg-green-50",
@@ -127,6 +157,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "orders",
       label: "Orders",
       icon: ShoppingCart,
+      loading: ordersLoading,
       count: orderCount,
       color: "text-indigo-600",
       hover: "hover:bg-indigo-50",
@@ -136,6 +167,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "invoices",
       label: "Invoices",
       icon: FileText,
+      loading: invoicesLoading,
       count: invoiceCount,
       color: "text-yellow-600",
       hover: "hover:bg-yellow-50",
@@ -146,6 +178,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "link-removal",
       label: "Link Removal",
       icon: Link2,
+      loading: linkRemLoading,
       count: linkRemCount,
       color: "text-pink-600",
       hover: "hover:bg-pink-50",
@@ -155,6 +188,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "deal-reminders",
       label: "Deal Reminders",
       icon: Bell,
+      loading: dealRemLoading,
       count: dealRemCount,
       color: "text-cyan-600",
       hover: "hover:bg-cyan-50",
@@ -164,6 +198,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "order-reminders",
       label: "Order Reminders",
       icon: ShoppingBag,
+      loading: ordersLoading,
       count: orderRemCount,
       color: "text-teal-600",
       hover: "hover:bg-teal-50",
@@ -173,10 +208,22 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "payment-missed",
       label: "Payment Reminders",
       icon: CreditCard,
+      loading: paymentRemLoading,
       count: paymentRemCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-red-500 text-white",
+    },
+
+    {
+      id: "all-report",
+      label: "Report",
+      icon: MessageSquare,
+      loading: paymentRemLoading,
+      count: paymentRemCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-blue-500 text-white",
     },
   ];
 
@@ -246,7 +293,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
                   >
-                    {item.count}
+                    {item.loading ? <LoadingSpin /> : <>{item.count}</>}
                   </span>
                 </>
               )}
