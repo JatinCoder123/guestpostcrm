@@ -23,6 +23,9 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      {
+        console.log("ERROR");
+      }
       return (
         <div className="p-6 rounded-xl bg-red-50 border border-red-300 shadow">
           <h2 className="text-xl font-semibold text-red-600">

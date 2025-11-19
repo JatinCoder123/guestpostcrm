@@ -1,4 +1,14 @@
-import { Cpu, CreditCard, FileCog, Globe, Users } from "lucide-react";
+import {
+  Clock9Icon,
+  Cpu,
+  CreditCard,
+  FileCog,
+  Gamepad2,
+  GamepadIcon,
+  Globe,
+  Settings2Icon,
+  Users,
+} from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
 export function SettingsPage() {
@@ -36,6 +46,20 @@ export function SettingsPage() {
       subtitle: "Manage users",
       icon: <Users className="w-8 h-8 text-yellow-600" />,
       bg: "bg-yellow-50",
+      link: "users",
+    },
+    {
+      title: "GENERAL",
+      subtitle: "General settings",
+      icon: <Settings2Icon className="w-8 h-8 text-cyan-600" />,
+      bg: "bg-cyan-50",
+      link: "users",
+    },
+    {
+      title: "BUTTON",
+      subtitle: "Button management",
+      icon: <GamepadIcon className="w-8 h-8 text-pink-600" />,
+      bg: "bg-pink-50",
       link: "users",
     },
   ];

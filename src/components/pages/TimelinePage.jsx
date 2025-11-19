@@ -197,46 +197,45 @@ export function TimelinePage() {
                       </div>
                     </div>
                   </div>
-                    {/* WhatsApp */}
-                    <button
-                      onClick={() => console.log("Open WhatsApp")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
-                        alt="whatsapp--v1"
-                      />
-                    </button>
+                  {/* WhatsApp */}
+                  <button
+                    onClick={() => console.log("Open WhatsApp")}
+                    className="cursor-pointer hover:scale-105"
+                  >
+                    <img
+                      width="48"
+                      height="48"
+                      src="https://img.icons8.com/color/48/whatsapp--v1.png"
+                      alt="whatsapp--v1"
+                    />
+                  </button>
 
-                    {/* Call */}
-                    <button
-                      onClick={() => console.log("Call user")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/apple-phone.png"
-                        alt="apple-phone"
-                      />
-                    </button>
+                  {/* Call */}
+                  <button
+                    onClick={() => console.log("Call user")}
+                    className="cursor-pointer hover:scale-105"
+                  >
+                    <img
+                      width="48"
+                      height="48"
+                      src="https://img.icons8.com/color/48/apple-phone.png"
+                      alt="apple-phone"
+                    />
+                  </button>
 
-                    {/* SMS */}
-                    <button
-                      onClick={() => console.log("Send SMS")}
-                      className="cursor-pointer hover:scale-105"
-                    >
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
-                        alt="speech-bubble-with-dots"
-                      />
-                    </button>
+                  {/* SMS */}
+                  <button
+                    onClick={() => console.log("Send SMS")}
+                    className="cursor-pointer hover:scale-105"
+                  >
+                    <img
+                      width="48"
+                      height="48"
+                      src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
+                      alt="speech-bubble-with-dots"
+                    />
+                  </button>
                 </div>
-                
 
                 {/* REFRESH + AUTO REFRESH */}
                 <div className="flex items-center gap-4">
@@ -286,76 +285,77 @@ export function TimelinePage() {
               ) : (
                 <>
                   {/* TIMELINE DETAILS */}
-                  <div className="mt-4 p-6 bg-gradient-to-br from-white/80 via-cyan-50 to-white/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/40 hover:shadow-2xl hover:border-cyan-200 transition-all duration-300">
-                    <div className="flex items-start  justify-between gap-6 text-sm ">
-                      {/* DATE - col-span 2 */}
-                      <div className="flex items-start gap-3 border-r md:pr-4">
-                        <div>
-                          <div className="text-gray-500 font-medium">DATE</div>
-                          <p className="text-gray-900 font-semibold mt-1">
-                            {formatTime(mailersSummary?.date_entered)}
-                          </p>
-                          <p className="text-gray-900 font-semibold mt-1">
-                            {getDifference(mailersSummary?.date_entered)}
-                          </p>
-                        </div>
-                      </div>
+                  <div className="mt-4 p-6 bg-cyan-50 backdrop-blur-xl rounded-3xl shadow-xl border border-white/40 hover:shadow-2xl hover:border-cyan-200 transition-all duration-300">
+                    <div className="w-full overflow-x-auto">
+                      <table className="min-w-full border border-blue-400 rounded-xl overflow-hidden text-sm">
+                        <thead className="bg-blue-50">
+                          <tr>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              DATE
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              SUBJECT
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              MOTIVE
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              DEAL EXPIRY
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              DEAL
+                            </th>
+                          </tr>
+                        </thead>
 
-                      {/* SUBJECT - col-span 2 */}
-                      <div className=" flex items-start gap-3 border-r md:pr-4">
-                        <div>
-                          <div className="text-gray-500 font-medium">
-                            SUBJECT
-                          </div>
-                          <p className="text-gray-900 font-semibold mt-1">
-                            {mailersSummary?.subject ?? "No Subject"}
-                          </p>
-                        </div>
-                      </div>
+                        <tbody>
+                          <tr className="text-center">
+                            {/* DATE */}
+                            <td className="border border-blue-400 px-4 py-3">
+                              <div className="font-semibold text-gray-900">
+                                {formatTime(mailersSummary?.date_entered)}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {getDifference(mailersSummary?.date_entered)}
+                              </div>
+                            </td>
 
-                      {/* MOTIVE */}
-                      <div className="flex items-start gap-3 border-r md:pr-4">
-                        <div>
-                          <div className="text-gray-500 font-medium">
-                            MOTIVE
-                          </div>
-                          <p className="text-gray-900 font-semibold mt-1">
-                            {mailersSummary?.motive ?? "N/A"}
-                          </p>
-                        </div>
-                      </div>
+                            {/* SUBJECT */}
+                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
+                              {mailersSummary?.subject ?? "No Subject"}
+                            </td>
 
-                      {/* DEAL EXPIRY */}
-                      <div className="flex items-start gap-3 border-r md:pr-4">
-                        <div>
-                          <div className="text-gray-500 font-medium">
-                            DEAL EXPIRY
-                          </div>
-                          <p
-                            className={`text-gray-900 font-semibold mt-1 ${
-                              daysUntil(2) <= 3 ? "text-rose-600" : ""
-                            }`}
-                          >
-                            {formatExpiryLabel(mailersSummary.deal_expiry)}
-                          </p>
-                          {mailersSummary?.deal_expiry && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {mailersSummary?.deal_expiry &&
-                                `(${formatTime(mailersSummary.deal_expiry)})`}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                            {/* MOTIVE */}
+                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
+                              {mailersSummary?.motive ?? "N/A"}
+                            </td>
 
-                      {/* DEAL */}
-                      <div className="md:col-span-1 flex items-start gap-3">
-                        <div>
-                          <div className="text-gray-500 font-medium">DEAL</div>
-                          <p className="text-gray-900 font-semibold mt-1">
-                            {mailersSummary?.deal ?? "No Deal"}
-                          </p>
-                        </div>
-                      </div>
+                            {/* DEAL EXPIRY */}
+                            <td className="border border-blue-400 px-4 py-3">
+                              <div
+                                className={`font-semibold ${
+                                  daysUntil(2) <= 3
+                                    ? "text-rose-600"
+                                    : "text-gray-900"
+                                }`}
+                              >
+                                {formatExpiryLabel(mailersSummary.deal_expiry)}
+                              </div>
+
+                              {mailersSummary?.deal_expiry && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  ({formatTime(mailersSummary.deal_expiry)})
+                                </div>
+                              )}
+                            </td>
+
+                            {/* DEAL */}
+                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
+                              {mailersSummary?.deal ?? "No Deal"}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
 
@@ -398,132 +398,101 @@ export function TimelinePage() {
                   {/*     ACTION BUTTONS    */}
                   {/* ===================== */}
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {/* View Email */}
-                    <button
-                      onClick={() => setShowEmails(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm"
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span>View Email</span>
-                    </button>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {/* Generic Action Button Component Style */}
+                    {[
+                      {
+                        icon: <Mail className="w-5 h-5" />,
+                        label: "Email",
+                        action: () => setShowEmails(true),
+                      },
+                      {
+                        icon: <User className="w-5 h-5" />,
+                        label: "Contact",
+                        action: () => {
+                          dispatch(getContact(email));
+                          navigateTo("/contacts");
+                        },
+                      },
+                      {
+                        icon: <Globe className="w-5 h-5" />,
+                        label: "IP",
+                        action: () => setShowIP(true),
+                      },
+                      {
+                        icon: (
+                          <img
+                            src="https://img.icons8.com/color/48/filled-like.png"
+                            className="w-6 h-6"
+                          />
+                        ),
+                        label: "Favourite",
+                        action: () => console.log("Open FAVOURITE"),
+                      },
+                      {
+                        icon: (
+                          <img
+                            src="https://img.icons8.com/color/48/redo.png"
+                            className="w-6 h-6"
+                          />
+                        ),
+                        label: "Forward",
+                        action: () => console.log("Open FORWARD"),
+                      },
+                      {
+                        icon: (
+                          <img
+                            src="https://img.icons8.com/color/48/resize-four-directions.png"
+                            className="w-6 h-6"
+                          />
+                        ),
+                        label: "Move To",
+                        action: () => console.log("Open MOVE TO"),
+                      },
+                      {
+                        icon: (
+                          <img
+                            src="https://img.icons8.com/color/48/bursts.png"
+                            className="w-6 h-6"
+                          />
+                        ),
+                        label: "Mark Bulk",
+                        action: () => console.log("Open MARK BULK"),
+                      },
+                    ].map((btn, i) => (
+                      <button
+                        key={i}
+                        onClick={btn.action}
+                        className="
+        relative group 
+        flex items-center justify-center
+        w-12 h-12 
+        bg-white 
+        rounded-xl 
+        shadow-md border border-gray-200 
+        hover:shadow-lg 
+        active:scale-95 
+        hover:-translate-y-1
+        transition-all cursor-pointer
+      "
+                      >
+                        {btn.icon}
 
-                    {/* View Contact */}
-                    <button
-                      onClick={() => {
-                        dispatch(getContact(email));
-                        // setShowContact(true);
-                        navigateTo("/contacts");
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
-                    >
-                      <User className="w-4 h-4" />
-                      <span>View Contact</span>
-                    </button>
-
-                    {/* View IP */}
-                    <button
-                      onClick={() => setShowIP(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all shadow-sm"
-                    >
-                      <Globe className="w-4 h-4" />
-                      <span>View IP</span>
-                    </button>
-
-                    {/* Create Deal */}
-                    <button
-                      onClick={() => setShowDeal(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-sm"
-                    >
-                      <Handshake className="w-4 h-4" />
-                      <span>Create Deal</span>
-                    </button>
-
-
-                  {/* Mark Favourite */}
-<button
-  onClick={() => console.log("Open FAVOURITE")}
-  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
-             hover:scale-110 transition-all cursor-pointer"
->
-  <img
-    width="30"
-    height="30"
-    src="https://img.icons8.com/color/48/filled-like.png"
-    alt="filled-like"
-  />
-
-  {/* Tooltip */}
-  <span
-    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
-               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
-               transition-all whitespace-nowrap"
-  >
-    Favourite
-  </span>
-</button>
-
-{/* Warm Forward */}
-<button
-  onClick={() => console.log("Open FORWARD")}
-  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
-             hover:scale-110 transition-all cursor-pointer"
->
-  <img
-    width="30"
-    height="30"
-    src="https://img.icons8.com/color/48/redo.png"
-    alt="redo"
-  />
-
-  <span
-    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
-               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
-               transition-all whitespace-nowrap"
-  >
-    Forward
-  </span>
-</button>
-
-{/* Move To */}
-<button
-  onClick={() => console.log("Open MOVE TO")}
-  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
-             hover:scale-110 transition-all cursor-pointer"
->
-  <img
-    width="30"
-    height="30"
-    src="https://img.icons8.com/color/48/resize-four-directions.png"
-    alt="resize-four-directions"
-  />
-
-  <span
-    className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
-               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
-               transition-all whitespace-nowrap"
-  >
-    Move To
-  </span>
-</button>
-
-{/* Mark Bulk */}
-<button
-  onClick={() => console.log("Open MARK BULK")}
-  className="relative group p-2 rounded-xl bg-white shadow-md hover:shadow-lg 
-             hover:scale-110 transition-all cursor-pointer"
->
-  <img width="30" height="30" src="https://img.icons8.com/color/48/bursts.png" alt="bursts"/>
-
-  <span
-    className="absolute -bottom-8 left/2 -translate-x-1/2 bg-gray-800 text-white 
-               text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 
-               transition-all whitespace-nowrap"
-  >
-    Mark Bulk
-  </span>
-</button>
-
+                        {/* Tooltip */}
+                        <span
+                          className="
+          absolute -bottom-9 left-1/2 -translate-x-1/2
+          bg-black text-white 
+          text-xs px-2 py-1 rounded 
+          opacity-0 group-hover:opacity-100
+          transition-all whitespace-nowrap
+          shadow-lg z-20
+        "
+                        >
+                          {btn.label}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </>
               )}
@@ -531,6 +500,9 @@ export function TimelinePage() {
 
             {/* TIMELINE EVENTS */}
             <div className="py-[2%] px-[30%]">
+              <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600  p-2 rounded-4xl  text-center text-white">
+                TIMELINE
+              </h1>
               <div className="relative">
                 {/* Vertical Line */}
                 <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
@@ -543,7 +515,7 @@ export function TimelinePage() {
                         className="relative flex items-center gap-4"
                       >
                         {/* Dot */}
-                        <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center">
+                        <div className="relative z-10 w-16 flex-shrink-0 mt-3   flex items-center justify-center">
                           <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
                             <img
                               width="100"
@@ -560,7 +532,7 @@ export function TimelinePage() {
                         </div>
 
                         {/* Card */}
-                        <div className="flex-1 border-2 rounded-xl p-4">
+                        <div className="flex-1 border-2 rounded-xl p-4 mt-3">
                           <div className="flex items-center gap-2 justify-between mb-2">
                             <span className="text-gray-700">
                               {event.type_c?.charAt(0).toUpperCase() +

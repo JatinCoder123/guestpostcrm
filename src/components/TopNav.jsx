@@ -18,7 +18,7 @@ import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
 
-export function TopNav({setShowAvatar}) {
+export function TopNav({ setShowAvatar }) {
   const [input, setInput] = useState("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
@@ -97,7 +97,7 @@ export function TopNav({setShowAvatar}) {
         />
 
         {/* Search Bar */}
-        <div className="flex items-center gap-3 mx-6 w-full max-w-xl flex-shrink-0">
+        <div className="flex items-center gap-2 mx-6 w-full max-w-xl flex-shrink-0">
           <div className="relative flex-1 min-w-[250px] max-w-[400px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -122,23 +122,25 @@ export function TopNav({setShowAvatar}) {
           {/* Clear Button */}
           <button
             onClick={handleClear}
-            className="flex cursor-pointer items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex cursor-pointer items-center justify-center mr-3 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <X className="w-4 h-4 text-white" />
           </button>
+          {/* Period Dropdown */}
+          <DropDown
+            options={periodOptions}
+            handleSelectOption={handleSelectPeriod}
+          />
         </div>
-
-        {/* Period Dropdown */}
-        <DropDown
-          options={periodOptions}
-          handleSelectOption={handleSelectPeriod}
-        />
       </div>
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
         {/* Notification Button */}
-        <button onClick={()=>setShowAvatar(prev=>!prev)} className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors">
+        <button
+          onClick={() => setShowAvatar((prev) => !prev)}
+          className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
           <User2Icon className="w-4 h-4" />
         </button>
 
