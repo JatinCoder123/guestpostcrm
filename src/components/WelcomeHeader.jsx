@@ -92,7 +92,7 @@ const WelcomeHeader = () => {
                 px-3 py-1 rounded-full
               "
             >
-              {crmDomain}
+              {businessEmail}
             </span>
           </div>
         )}

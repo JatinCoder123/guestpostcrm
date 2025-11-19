@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
   const { email } = useSelector((state) => state.ladger);
-  const { loading, data, error, refetch, fetch } = useModule({
+  const { loading, data, error, refetch, fetch, update } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
     method: "POST",
     body: {
@@ -42,6 +42,27 @@ export function MachineLearningPage() {
         "Content-Type": "application/json",
       },
     });
+  };
+  const handleUpdate = (updatedItem) => {
+    fetch({
+      url: `${MODULE_URL}&action_type=post_data`,
+      method: "POST",
+      body: {
+        parent_bean: {
+          module: "outr_machine_learning",
+          id: updatedItem.id,
+          name: updatedItem.name,
+          type: updatedItem.type,
+          description: updatedItem.description,
+          motive: updatedItem.motive,
+        },
+      },
+      headers: {
+        "x-api-key": `${CREATE_DEAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+    refetch();
   };
 
   return (
@@ -125,7 +146,11 @@ export function MachineLearningPage() {
       )}
 
       {/* Edit Modal */}
-      <EditModal item={editItem} onClose={() => setEditItem(null)} />
+      <EditModal
+        item={editItem}
+        onClose={() => setEditItem(null)}
+        handleUpdate={handleUpdate}
+      />
     </div>
   );
 }

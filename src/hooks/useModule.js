@@ -51,12 +51,30 @@ const useModule = ({
       setCreating(false);
     }
   };
+  const update = async ({ url, method, body, headers }) => {
+    setCreating(true);
+    setError(null);
+
+    try {
+      const response = await axios({
+        url,
+        method,
+        data: body,
+        headers,
+      });
+      console.log(`${Object.entries(body)} : `, response.data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   useEffect(() => {
     if (enabled) run();
   }, [...dependencies, enabled]);
 
-  return { loading, error, data, refetch: run, fetch };
+  return { loading, error, data, refetch: run, fetch, update };
 };
 
 export default useModule;
