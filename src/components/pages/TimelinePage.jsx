@@ -154,6 +154,9 @@ export function TimelinePage() {
   <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
     <div className="text-sm">
       <div className="text-gray-500 text-xs">Type</div>
+     <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+
+
       <div className="text-gray-800 font-medium">
         {mailersSummary?.type ?? "Brand"}
       </div>
@@ -167,6 +170,8 @@ export function TimelinePage() {
   <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
     <div className="text-sm">
       <div className="text-gray-500 text-xs">Status</div>
+      <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+
       <div className="text-gray-800 font-medium">
         {mailersSummary?.status ?? "N/A"}
       </div>
@@ -180,6 +185,7 @@ export function TimelinePage() {
   <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-3 py-2 rounded-md">
     <div className="text-sm min-w-[160px]">
       <div className="text-gray-500 text-xs">Stage</div>
+      <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
       <div className="flex items-center gap-2">
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div
