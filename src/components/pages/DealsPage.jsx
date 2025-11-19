@@ -90,12 +90,6 @@ export function DealsPage() {
 
       {/* Deals Section */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden relative">
-        <div className="absolute top-3 right-3 bg-cyan-100 text-cyan-800 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
-          {deals.length > 0
-            ? `${deals.length} Active Deals`
-            : "No Active Deals"}
-        </div>
-
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Handshake className="w-6 h-6 text-orange-600" />

@@ -57,7 +57,7 @@ export const getAiCredits = (filter, index = 1) => {
       dispatch(aiCreditsSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        aiCreditsSlice.actions.getAiCreditsFailed("Fetching Credits Failed")
+        aiCreditsSlice.actions.getAiCreditsFailed("Fetching Avatar Failed")
       );
     }
   };

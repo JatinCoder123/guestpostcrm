@@ -51,7 +51,7 @@ export const getDealRem = (filter, email) => {
       dispatch(dealRemSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        dealRemSlice.actions.getDealRemFailed("Fetching Orders Rem  Failed")
+        dealRemSlice.actions.getDealRemFailed("Fetching deal Rem  Failed")
       );
     }
   };

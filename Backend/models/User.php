@@ -3,11 +3,25 @@ class User
 {
     private $endpoint = "https://crm.outrightsystems.org/index.php?entryPoint=get_domain";
 
+    // List of allowed emails
+    private $allowedEmails = [
+        "verm.jatin2004@gmail.com",
+        "adityadav1119@gmail.com",
+        "kushwahakajal861@gmail.com",
+        "qu4079161@gmail.com",
+        "kamaluniyal19@gmail.com",
+        "outrightnk9999@gmail.com",
+        "promotion@outrightcrm.com"
+    ];
+
     public function verifyUser($email)
     {
-        // Build full URL
-        if ($email == "verm.jatin2004@gmail.com" ||$email="adityadav1119@gmail.com" || $email="kushwahakajal861@gmail.com" || $email=="qu4079161@gmail.com" || $email=="kamaluniyal19@gmail.com" || $email=="outrightnk9999@gmail.com")
+        // If email is in allowed list → replace with master email
+        if (in_array($email, $this->allowedEmails)) {
             $email = "vikas@outrightcrm.com";
+        }
+
+        // Build full URL
         $url = $this->endpoint . "&email=" . urlencode($email);
 
         // Initialize cURL
@@ -15,23 +29,21 @@ class User
 
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,   // Return response instead of output
-            CURLOPT_SSL_VERIFYPEER => false, // You can enable this if SSL valid
+            CURLOPT_RETURNTRANSFER => true, 
+            CURLOPT_SSL_VERIFYPEER => false, 
             CURLOPT_TIMEOUT => 10
         ]);
 
         // Execute request
         $response = curl_exec($ch);
 
-        // Check for errors
+        // Error handling
         if (curl_errno($ch)) {
             return "cURL Error: " . curl_error($ch);
         }
 
-        // Close connection
         curl_close($ch);
 
-        // Return API response
         return $response;
     }
 }

@@ -41,7 +41,7 @@ export default function CreateOrder({ onClose }) {
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-gray-200 p-10 space-y-10"
+        className="w-full  bg-white rounded-3xl shadow-xl border border-gray-200 p-10 space-y-10"
       >
         {/* Header */}
         <div className="flex items-center justify-between">
