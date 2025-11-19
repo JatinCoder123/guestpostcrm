@@ -61,7 +61,7 @@ export function SettingsPage() {
       subtitle: "Button management",
       icon: <GamepadIcon className="w-8 h-8 text-pink-600" />,
       bg: "bg-pink-50",
-      link: "users",
+      link: "buttons",
     },
     {
       title: "Twillio Management",

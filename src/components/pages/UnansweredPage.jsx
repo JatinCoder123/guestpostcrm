@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
+import { getUnansweredEmails } from "../../store/Slices/unansweredEmails";
 export function UnansweredPage() {
   const { count, emails } = useSelector((state) => state.unanswered);
   const [
@@ -92,16 +93,14 @@ export function UnansweredPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_created}</span>
+                      <span>{email.date}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">
-                    {email.from_email}
-                  </td>
+                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
                   <td
                     onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from_email, email.thread_id);
+                      setCurrentThreadId(email.threadId);
+                      handleThreadClick(email.from, email.threadId);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
@@ -112,6 +111,7 @@ export function UnansweredPage() {
             </tbody>
           </table>
         </div>
+        <Pagination slice={"unanswered"} fn={getUnansweredEmails} />
       </div>
     </>
   );

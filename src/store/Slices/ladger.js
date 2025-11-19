@@ -6,6 +6,8 @@ const ladgerSlice = createSlice({
     loading: false,
     email: null,
     ladger: [],
+    ip: null,
+    ipMails: [],
     mailersSummary: null,
     pageCount: 1,
     pageIndex: 1,
@@ -38,7 +40,23 @@ const ladgerSlice = createSlice({
     setTimeline(state, action) {
       state.timeline = action.payload;
     },
-
+    getIpWithEmailRequest(state, action) {
+      state.loading = true;
+      state.ip = null;
+      state.ipMails = [];
+      state.error = null;
+    },
+    getIpWithEmailSuccess(state, action) {
+      const { ip, ipWithMails } = action.payload;
+      state.loading = false;
+      state.ip = ip;
+      state.ipMails = ipWithMails;
+      state.error = null;
+    },
+    getIpWithEmailFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
     clearAllErrors(state) {
       state.error = null;
     },
@@ -112,7 +130,37 @@ export const getLadgerEmail = (email) => {
     }
   };
 };
-export const getLadgerData = () => {};
+export const getIpWithEmail = () => {
+  return async (dispatch, getState) => {
+    dispatch(ladgerSlice.actions.getIpWithEmailRequest());
+    try {
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint}&type=ledger&filter=${
+          getState().ladger.timeline
+        }&email=${email}&page=1&page_size=50`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("Ladger Of Email", data);
+      dispatch(
+        ladgerSlice.actions.getIpWithEmailSuccess({
+          duplicate: data.duplicate_threads_count,
+          ladger: data.data,
+          mailersSummary: data.mailers_summary,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
+          email: email,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.getIpWithEmailFailed(error.response?.data?.message)
+      );
+    }
+  };
+};
 
 export const ladgerAction = ladgerSlice.actions;
 export default ladgerSlice.reducer;

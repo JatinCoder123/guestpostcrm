@@ -7,6 +7,8 @@ const unrepliedSlice = createSlice({
     loading: false,
     emails: [],
     count: 0,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
   },
   reducers: {
@@ -15,10 +17,12 @@ const unrepliedSlice = createSlice({
       state.error = null;
     },
     getEmailSucess(state, action) {
-      const { count, emails } = action.payload;
+      const { count, emails, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.emails = emails;
       state.count = count;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.error = null;
     },
     getEmailFailed(state, action) {
@@ -57,6 +61,8 @@ export const getUnrepliedEmail = (filter, email) => {
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(unrepliedSlice.actions.clearAllErrors());

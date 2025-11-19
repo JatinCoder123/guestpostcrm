@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, CREATE_DEAL_URL } from "../constants";
+import { CREATE_DEAL_API_KEY, CREATE_DEAL_URL, MODULE_URL } from "../constants";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -9,6 +9,8 @@ const dealsSlice = createSlice({
     creating: false,
     deals: [],
     count: 0,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
     message: null,
   },
@@ -18,10 +20,12 @@ const dealsSlice = createSlice({
       state.error = null;
     },
     getDealsSucess(state, action) {
-      const { count, deals } = action.payload;
+      const { count, deals, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.deals = deals;
       state.count = count;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.error = null;
     },
     getDealsFailed(state, action) {
@@ -77,6 +81,8 @@ export const getDeals = (filter, email) => {
         dealsSlice.actions.getDealsSucess({
           count: data.data_count ?? 0,
           deals: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
@@ -85,24 +91,35 @@ export const getDeals = (filter, email) => {
     }
   };
 };
-export const createDeal = (formData) => {
+export const createDeal = (deals = []) => {
   return async (dispatch) => {
     dispatch(dealsSlice.actions.createDealRequest());
-    console.log(formData);
     try {
-      const { data } = await axios.post(
-        `${CREATE_DEAL_URL}&action_type=post_data`,
-        formData,
-        {
-          headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
+      deals.map(async (deal) => {
+        console.log(deal);
+        const { data } = await axios.post(
+          `${MODULE_URL}&action_type=post_data`,
+
+          {
+            parent_bean: {
+              module: "outr_deal_fetch",
+              dealamount: deal.dealamount,
+              email: deal.email,
+              website_c: deal.website_c,
+            },
           },
-        }
-      );
-      console.log(`Create Deal`, data);
+          {
+            headers: {
+              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+              "Content-Type": "aplication/json",
+            },
+          }
+        );
+        console.log(`Create Deal`, data);
+      });
+
       dispatch(
-        dealsSlice.actions.createDealSucess("Deal Created Successfully")
+        dealsSlice.actions.createDealSucess("Deals Created Successfully")
       );
       dispatch(dealsSlice.actions.clearAllErrors());
     } catch (error) {

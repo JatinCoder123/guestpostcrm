@@ -7,6 +7,8 @@ const dealRemSlice = createSlice({
     loading: false,
     dealRem: [],
     count: 0,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
   },
   reducers: {
@@ -15,9 +17,11 @@ const dealRemSlice = createSlice({
       state.error = null;
     },
     getDealRemSucess(state, action) {
-      const { count, dealRem } = action.payload;
+      const { count, dealRem, pageIndex, pageCount } = action.payload;
       state.loading = false;
       state.dealRem = dealRem;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.count = count;
       state.error = null;
     },
@@ -46,6 +50,8 @@ export const getDealRem = (filter, email) => {
         dealRemSlice.actions.getDealRemSucess({
           count: data.data_count ?? 0,
           dealRem: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(dealRemSlice.actions.clearAllErrors());
