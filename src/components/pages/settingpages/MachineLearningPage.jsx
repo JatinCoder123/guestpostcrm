@@ -3,17 +3,18 @@ import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Edit3 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditModal from "../../EditModal";
+import { useSelector } from "react-redux";
 
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
-
-  const { loading, data, error, refetch } = useModule({
+  const { email } = useSelector((state) => state.ladger);
+  const { loading, data, error, refetch, fetch } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
     method: "POST",
     body: {
@@ -26,11 +27,27 @@ export function MachineLearningPage() {
   });
 
   const rows = Array.isArray(data) ? data : [];
+  const handleCreate = () => {
+    fetch({
+      url: `${MODULE_URL}&action_type=post_data`,
+      method: "POST",
+      body: {
+        parent_bean: {
+          module: "outr_machine_learning",
+          email: "verm.jatin@gmail.com",
+        },
+      },
+      headers: {
+        "x-api-key": `${CREATE_DEAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+  };
 
   return (
     <div className="p-8">
       {/* Header */}
-      <Header text={"Machine Learning Manager"} />
+      <Header text={"Machine Learning Manager"} handleCreate={handleCreate} />
 
       {/* Loading */}
       {loading && <Loading text="Machine Learning" />}
