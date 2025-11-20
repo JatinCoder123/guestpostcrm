@@ -5,7 +5,7 @@ import { AUTH_URL } from "../../store/constants.js";
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
 
-  const handleLoginWithGoogle = async () => {
+  const handleLoginWithGoogle = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=googleLogin`;
   };
 
@@ -14,102 +14,88 @@ export default function Login() {
   };
 
   return (
-    <div
-      className="flex min-h-screen"
-      style={{ backgroundColor: "#0d0f12", color: "#ffffff" }}
-    >
-      {/* Left Side - Auth Form */}
+    <div className="flex min-h-screen bg-gradient-to-r from-[#e8f0ff] via-[#f3fffa] to-[#f8fff5]">
+      {/* LEFT SECTION */}
       <motion.div
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="flex flex-1 flex-col items-center justify-center p-6 sm:p-8 w-full min-h-screen"
+        className="flex flex-1 flex-col items-center justify-center px-6 md:px-10"
       >
-        <div className="w-full max-w-sm text-center">
-          <h1 className="text-2xl font-bold">
-            {isLogin ? "Login to your account" : "Create your account"}
-          </h1>
+        {/* Logo */}
+        <img
+          src="/logo.png"
+          alt="GuestPostCRM"
+          className="w-56 mb-10 select-none"
+        />
 
-          <p className="mt-2 text-sm" style={{ color: "#b0b0b0" }}>
-            {isLogin
-              ? "Enter your email below to login to your account"
-              : "Sign up with your email and password to get started"}
-          </p>
-        </div>
+        {/* Heading */}
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+          Login to your account
+        </h1>
 
-        <div className="mt-4 w-full max-w-sm">
-          {/* Google Login */}
+        <p className="mt-2 text-gray-600 text-sm">
+          Enter Your Email Below to Login to Your Account
+        </p>
+
+        {/* Google Login */}
+        <button
+          onClick={handleLoginWithGoogle}
+          className="mt-8 w-full max-w-xs flex items-center justify-center gap-3 rounded-full px-4 py-3 border border-gray-300 bg-white shadow-sm hover:bg-gray-100 transition"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          <span className="text-gray-800 font-medium">Login with Google</span>
+        </button>
+
+        {/* Microsoft Login */}
+        <button
+          onClick={handleLoginWithMicrosoft}
+          className="mt-4 w-full max-w-xs flex items-center justify-center gap-3 rounded-full px-4 py-3 border border-gray-300 bg-black text-white shadow-sm hover:bg-gray-900 transition"
+        >
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+            alt="Microsoft"
+            className="w-5 h-5 bg-white rounded"
+          />
+          <span className="font-medium">Log in with Microsoft</span>
+        </button>
+
+        <p className="mt-6 text-gray-600 text-sm">
+          Don’t have an account?
           <button
-            className="mt-6 w-full flex items-center justify-center gap-3 rounded-full px-4 py-2 font-medium transition"
-            onClick={handleLoginWithGoogle}
-            style={{
-              backgroundColor: "#0d0f12",
-              border: "1px solid #2c2f34",
-            }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = "#25292e")
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = "#0d0f12")
-            }
+            onClick={() => setIsLogin(!isLogin)}
+            className="ml-1 text-purple-600 font-medium hover:underline"
           >
-            <span className="flex items-center justify-center w-6 h-6 bg-white rounded-full">
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                className="w-4 h-4"
-              />
-            </span>
-            <span>
-              {isLogin ? "Login With Google" : "Continue With Google"}
-            </span>
+            Sign Up
           </button>
-
-          {/* Microsoft Login */}
-          <a
-            className="mt-6 w-full flex items-center justify-center gap-3 rounded-full px-4 py-2 font-medium transition"
-            onClick={handleLoginWithMicrosoft}
-            style={{
-              backgroundColor: "#0d0f12",
-              border: "1px solid #2c2f34",
-              opacity: 0.6,
-            }}
-          >
-            <span className="flex items-center justify-center w-6 h-6 bg-white rounded-full">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
-                alt="Microsoft"
-                className="w-4 h-4"
-              />
-            </span>
-            <span>
-              {isLogin ? "Login With Microsoft" : "Continue With Microsoft"}
-            </span>
-          </a>
-
-          <p className="mt-6 text-center text-sm" style={{ color: "#b0b0b0" }}>
-            {isLogin ? "Don’t have an account?" : "Already have an account?"}
-
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="ml-1 hover:underline"
-              style={{ color: "#7c5dfa" }}
-            >
-              {isLogin ? "Sign up" : "Login"}
-            </button>
-          </p>
-        </div>
+        </p>
       </motion.div>
 
-      {/* Right Side - Image */}
+      {/* RIGHT SECTION (IMAGE / VIDEO) */}
       <motion.div
         initial={{ x: 50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="hidden flex-1 items-center justify-center lg:flex"
-        style={{ backgroundColor: "#1a1d21" }}
+        className="hidden lg:flex flex-1 items-center justify-center p-6"
       >
-        <img src={`/logo.png`} alt="Auth" className="max-w-sm rounded-full" />
+        <div className="w-full h-[88vh] rounded-[30px] overflow-hidden shadow-xl">
+          <video
+            className="w-full h-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+          >
+            <source
+              src="https://dev.outrightcrm.in/dev/demokjl1/wp-content/nov20_test/Login%20G-Bot%20second%201.mp4"
+              type="video/mp4"
+            />
+          </video>
+        </div>
       </motion.div>
     </div>
   );
