@@ -79,7 +79,9 @@ export const getViewEmail = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email}`
+        `${getState().user.crmEndpoint}&type=view_email&email=${
+          getState().ladger.email
+        }`
       );
       console.log(`viewEmail`, data);
       dispatch(
@@ -91,7 +93,9 @@ export const getViewEmail = (email) => {
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getViewEmailFailed("Fetching Deals  Failed")
+        viewEmailSlice.actions.getViewEmailFailed(
+          "Fetching View Emails  Failed"
+        )
       );
     }
   };

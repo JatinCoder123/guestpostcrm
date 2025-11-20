@@ -6,6 +6,8 @@ const ladgerSlice = createSlice({
     loading: false,
     email: null,
     ladger: [],
+    ip: null,
+    ipMails: null,
     mailersSummary: null,
     pageCount: 1,
     pageIndex: 1,
@@ -38,7 +40,23 @@ const ladgerSlice = createSlice({
     setTimeline(state, action) {
       state.timeline = action.payload;
     },
-
+    getIpWithEmailRequest(state, action) {
+      state.loading = true;
+      state.ip = null;
+      state.ipMails = null;
+      state.error = null;
+    },
+    getIpWithEmailSuccess(state, action) {
+      const { ip, ipWithMails } = action.payload;
+      state.loading = false;
+      state.ip = ip;
+      state.ipMails = ipWithMails;
+      state.error = null;
+    },
+    getIpWithEmailFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
     clearAllErrors(state) {
       state.error = null;
     },
@@ -67,7 +85,7 @@ export const getLadger = () => {
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
           mailersSummary: data.mailers_summary,
-          email: data.data && data.data[0].name,
+          email: data.mailers_summary.email,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })
@@ -112,7 +130,45 @@ export const getLadgerEmail = (email) => {
     }
   };
 };
-export const getLadgerData = () => {};
+export const getIpWithEmail = () => {
+  return async (dispatch, getState) => {
+    dispatch(ladgerSlice.actions.getIpWithEmailRequest());
+    const crmDomain = getState()
+      .user.crmEndpoint?.replace("https://", "")
+      ?.replace("http://", "")
+      ?.split("/")[0];
+    try {
+      const { ip } = await axios.get(
+        `https://${crmDomain}/index.php?entryPoint=tracker&email=${
+          getState().ladger.email
+        }`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("IP OF EMAIL", ip);
+      ip = ip.records[0].ip;
+      const { data } = await axios.get(
+        `https://${crmDomain}index.php?entryPoint=tracker&ip=${ip}`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("EMAIL OF IP", data);
+      dispatch(
+        ladgerSlice.actions.getIpWithEmailSuccess({
+          ip,
+          ipWithMails: data,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.getIpWithEmailFailed(error.response?.data?.message)
+      );
+    }
+  };
+};
 
 export const ladgerAction = ladgerSlice.actions;
 export default ladgerSlice.reducer;

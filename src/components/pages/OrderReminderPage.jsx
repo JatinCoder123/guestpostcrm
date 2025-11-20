@@ -7,6 +7,8 @@ import {
   User,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import Pagination from "../Pagination";
+import { getOrderRem } from "../../store/Slices/orderRem";
 
 export function OrderReminderPage() {
   const { orderRem, count } = useSelector((state) => state.orderRem);
@@ -127,7 +129,9 @@ export function OrderReminderPage() {
             </tbody>
           </table>
         </div>
-
+        {orderRem.length > 0 && (
+          <Pagination slice={"orderRem"} fn={getOrderRem} />
+        )}
         {orderRem.length === 0 && (
           <div className="p-12 text-center">
             <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />

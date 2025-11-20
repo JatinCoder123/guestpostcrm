@@ -5,11 +5,13 @@ const invoicesSlice = createSlice({
   name: "invoices",
   initialState: {
     loading: false,
-    creating: false, // ✅ Add creating state
+    creating: false,
     invoices: [],
     count: 0,
     error: null,
-    message: null, // ✅ Add success message state
+    pageCount: 1,
+    pageIndex: 1,
+    message: null,
   },
   reducers: {
     getInvoicesRequest(state) {
@@ -17,9 +19,11 @@ const invoicesSlice = createSlice({
       state.error = null;
     },
     getInvoicesSucess(state, action) {
-      const { count, invoices } = action.payload;
+      const { count, invoices, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.invoices = invoices;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.count = count;
       state.error = null;
     },
@@ -27,7 +31,6 @@ const invoicesSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    // ✅ Add create invoice reducers
     createInvoiceRequest(state) {
       state.creating = true;
       state.error = null;
@@ -46,7 +49,6 @@ const invoicesSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
-    // ✅ Add clear messages reducer
     clearAllMessages(state) {
       state.message = null;
     },
@@ -78,6 +80,8 @@ export const getInvoices = (filter, email) => {
         invoicesSlice.actions.getInvoicesSucess({
           count: data.data_count ?? 0,
           invoices: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(invoicesSlice.actions.clearAllErrors());
@@ -89,28 +93,85 @@ export const getInvoices = (filter, email) => {
   };
 };
 
-// ✅ ADD THIS CREATE INVOICE ACTION
+// ✅ UPDATED CREATE INVOICE ACTION
 export const createInvoice = (formData) => {
+  console.log("📝 Form Data:", formData);
+
   return async (dispatch, getState) => {
     dispatch(invoicesSlice.actions.createInvoiceRequest());
 
     try {
-      const response = await axios.post(
-        `${getState().user.crmEndpoint}&type=create_invoice`,
-        formData
-      );
-      
-      const data = response.data;
-      
-      if (data.success) {
-        dispatch(invoicesSlice.actions.createInvoiceSuccess("Invoice created successfully!"));
-        // Optional: Refresh invoices list after creation
-        // dispatch(getInvoices("all"));
-      } else {
-        dispatch(invoicesSlice.actions.createInvoiceFailed(data.message || "Failed to create invoice"));
+      const params = new URLSearchParams();
+
+      // Basic fields
+      params.append("email", formData.email || "");
+      params.append("name", formData.name || "");
+      params.append("quantity", formData.quantity || "1");
+      params.append("value", formData.value || "0");
+
+      // Handle array fields
+      if (formData.from_url) {
+        const fromUrls = formData.from_url
+          .split(/[\n,]/)
+          .filter((url) => url.trim());
+        fromUrls.forEach((url) => {
+          params.append("from[]", url.trim());
+        });
       }
+
+      if (formData.to_url) {
+        const toUrls = formData.to_url
+          .split(/[\n,]/)
+          .filter((url) => url.trim());
+        toUrls.forEach((url) => {
+          params.append("to[]", url.trim());
+        });
+      }
+
+      if (formData.anchor_url) {
+        const anchorUrls = formData.anchor_url
+          .split(/[\n,]/)
+          .filter((url) => url.trim());
+        anchorUrls.forEach((url) => {
+          params.append("anchor[]", url.trim());
+        });
+      }
+
+      // ✅ USE PROXY URL
+      const apiUrl = `/api/index.php?entryPoint=get_invoice&${params.toString()}`;
+
+      const response = await axios.get(apiUrl);
+
+      const data = response.data;
+
+      if (typeof data === "string" && data.includes("window.open")) {
+        const urlMatch = data.match(/window\.open\('([^']+)'/);
+        if (urlMatch && urlMatch[1]) {
+          const invoiceUrl = urlMatch[1];
+
+          window.open(invoiceUrl, "_blank");
+
+          if (data.includes("alert")) {
+            const alertMatch = data.match(/alert\('([^']+)'/);
+            if (alertMatch && alertMatch[1]) {
+              alert(alertMatch[1]);
+            }
+          }
+        }
+      }
+
+      dispatch(
+        invoicesSlice.actions.createInvoiceSuccess(
+          "Invoice created successfully!"
+        )
+      );
     } catch (error) {
-      dispatch(invoicesSlice.actions.createInvoiceFailed("Network error: Failed to create invoice"));
+      console.error("❌ Error:", error);
+      dispatch(
+        invoicesSlice.actions.createInvoiceFailed(
+          "Network error: Failed to create invoice"
+        )
+      );
     }
   };
 };

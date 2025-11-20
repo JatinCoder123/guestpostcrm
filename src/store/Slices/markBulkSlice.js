@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const unansweredSlice = createSlice({
-  name: "unanswered",
+const bulkSlice = createSlice({
+  name: "bulk",
   initialState: {
     loading: false,
     emails: [],
@@ -35,9 +35,9 @@ const unansweredSlice = createSlice({
   },
 });
 
-export const getUnansweredEmails = (filter, email) => {
+export const getBulkEmails = (filter, email) => {
   return async (dispatch, getState) => {
-    dispatch(unansweredSlice.actions.getEmailRequest());
+    dispatch(bulkSlice.actions.getEmailRequest());
 
     try {
       let response;
@@ -45,36 +45,32 @@ export const getUnansweredEmails = (filter, email) => {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=mark_bulk&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&page=1&page_size=50`
+          }&type=mark_bulk&filter=${filter}&page=1&page_size=50`
         );
       }
 
-      console.log(`Unanswered emails`, response.data);
+      console.log(`Bulk emails`, response.data);
       const data = response.data;
       dispatch(
-        unansweredSlice.actions.getEmailSucess({
+        bulkSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })
       );
-      dispatch(unansweredSlice.actions.clearAllErrors());
+      dispatch(bulkSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(
-        unansweredSlice.actions.getEmailFailed(
-          "Fetching Unreplied Emails Failed"
-        )
-      );
+      dispatch(bulkSlice.actions.getEmailFailed("Fetching Bulk Emails Failed"));
     }
   };
 };
 
-export const unansweredAction = unansweredSlice.actions;
-export default unansweredSlice.reducer;
+export const bulkAction = bulkSlice.actions;
+export default bulkSlice.reducer;

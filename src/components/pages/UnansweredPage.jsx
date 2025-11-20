@@ -7,12 +7,14 @@ import {
   LeafyGreen,
   BarChart,
   Repeat,
+  EqualApproximatelyIcon,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
+import { getUnansweredEmails } from "../../store/Slices/unansweredEmails";
 export function UnansweredPage() {
   const { count, emails } = useSelector((state) => state.unanswered);
   const [
@@ -75,12 +77,6 @@ export function UnansweredPage() {
                     <span>THREAD SIZE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Repeat className="w-4 h-4" />
-                    <span>DUPLICATE</span>
-                  </div>
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -92,26 +88,36 @@ export function UnansweredPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_created}</span>
+                      <span>{email.date}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">
-                    {email.from_email}
-                  </td>
+                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
                   <td
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from_email, email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
                     {email.subject}
+                  </td>
+                  <td className="px-6 py-4 text-purple-600">
+                    {email.thread_count}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {emails?.length > 0 && (
+          <Pagination slice={"unanswered"} fn={getUnansweredEmails} />
+        )}
+        {emails.length === 0 && (
+          <div className="p-12 text-center">
+            <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Unanswered emails yet.</p>
+          </div>
+        )}
       </div>
     </>
   );

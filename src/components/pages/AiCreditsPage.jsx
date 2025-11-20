@@ -166,14 +166,14 @@ export function AiCreditsPage() {
             </tbody>
           </table>
         </div>
-        <Pagination slice={"aiCredits"} fn={getAiCredits} />
+        {aiCredits.length > 0 && (
+          <Pagination slice={"aiCredits"} fn={getAiCredits} />
+        )}
 
         {aiCredits.length === 0 && (
           <div className="p-12 text-center">
-            <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">
-              No orders yet. Create your first order to get started.
-            </p>
+            <Sparkle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Credits yet.</p>
           </div>
         )}
       </div>

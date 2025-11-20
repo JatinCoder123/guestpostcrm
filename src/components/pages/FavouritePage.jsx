@@ -7,14 +7,17 @@ import {
   LeafyGreen,
   BarChart,
   Repeat,
+  Heart,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
+import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
+import { getFavEmails } from "../../store/Slices/favEmailSlice";
 export function FavouritePage() {
-  const { count, emails } = useSelector((state) => state.unanswered);
+  const { count, emails } = useSelector((state) => state.fav);
   const [
     handleThreadClick,
     showEmail,
@@ -72,13 +75,7 @@ export function FavouritePage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <BarChart className="w-4 h-4" />
-                    <span>THREAD SIZE</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Repeat className="w-4 h-4" />
-                    <span>DUPLICATE</span>
+                    <span>DESCRIPTION</span>
                   </div>
                 </th>
               </tr>
@@ -92,26 +89,27 @@ export function FavouritePage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_created}</span>
+                      <span>{email.date}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">
-                    {email.from_email}
-                  </td>
-                  <td
-                    onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from_email, email.thread_id);
-                    }}
-                    className="px-6 py-4 text-purple-600"
-                  >
-                    {email.subject}
+                  <td className="px-6 py-4 text-gray-900">{email.sender}</td>
+                  <td className="px-6 py-4 text-purple-600">{email.subject}</td>
+                  <td className="px-6 py-4 text-purple-600">
+                    {email.description}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {emails.length > 0 && <Pagination slice={"fav"} fn={getFavEmails} />}
+
+        {emails.length === 0 && (
+          <div className="p-12 text-center">
+            <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Favourite emails yet.</p>
+          </div>
+        )}
       </div>
     </>
   );

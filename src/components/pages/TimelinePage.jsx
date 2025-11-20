@@ -34,6 +34,7 @@ import {
 } from "../../assets/assets";
 import LoadingSkeleton from "../LoadingSkeleton";
 import Pagination from "../Pagination";
+import MoveToDropdown from "../MoveToDropdown";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -43,6 +44,7 @@ export function TimelinePage() {
   const [showIP, setShowIP] = useState(false);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
+  const [showMoveModal, setShowMoveModal] = useState(false);
 
   const { ladger, email, duplicate, mailersSummary, loading, error } =
     useSelector((state) => state.ladger);
@@ -51,6 +53,12 @@ export function TimelinePage() {
     error: sendError,
     message,
   } = useSelector((state) => state.viewEmail);
+
+  const currentThreadId =
+    mailersSummary?.thread_id_c ||
+    ladger[1]?.thread_id_c ||
+    ladger[0]?.thread_id_c ||
+    "";
 
   /** Disable body scroll when modals open */
   useEffect(() => {
@@ -94,6 +102,10 @@ export function TimelinePage() {
       dispatch(viewEmailAction.clearAllMessage());
     }
   }, [dispatch, sendError, sendLoading, message]);
+
+  const handleMoveSuccess = () => {
+    dispatch(getLadgerEmail(email));
+  };
 
   // Stage progress for header chip
   const stageProgress = getStageProgress(mailersSummary?.stage);
@@ -148,48 +160,47 @@ export function TimelinePage() {
                           </div>
                         )}
 
-                        {/* NEW: TYPE / STATUS / STAGE — ICONS WITH COLORED BACKGROUND */}
-                        <div className="ml-4 flex items-center gap-2">
+                        <div className="ml-4 flex items-center gap-4">
                           {/* TYPE */}
-                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md">
+                          <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
                             <div className="text-sm">
                               <div className="text-gray-500 text-xs">Type</div>
+                              <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+
                               <div className="text-gray-800 font-medium">
-                                {mailersSummary?.type ?? "Brand"}
+                                {mailersSummary?.type ?? "N/A"}
                               </div>
                             </div>
                           </div>
 
+                          {/* Vertical Divider */}
+                          <div className="w-px h-10 bg-gray-200"></div>
+
                           {/* STATUS */}
-                          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-2 py-1 rounded-md">
+                          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
                             <div className="text-sm">
                               <div className="text-gray-500 text-xs">
                                 Status
                               </div>
+                              <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+
                               <div className="text-gray-800 font-medium">
                                 {mailersSummary?.status ?? "N/A"}
                               </div>
                             </div>
                           </div>
 
-                          {/* STAGE with tiny progress bar */}
-                          <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-2 py-1 rounded-md">
-                            <div className="text-sm min-w-[150px]">
+                          {/* Vertical Divider */}
+                          <div className="w-px h-10 bg-gray-200"></div>
+
+                          {/* STAGE */}
+                          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+                            <div className="text-sm">
                               <div className="text-gray-500 text-xs">Stage</div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                  <div
-                                    className="h-2 rounded-full"
-                                    style={{
-                                      width: `${stageProgress}%`,
-                                      background:
-                                        "linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6)",
-                                    }}
-                                  />
-                                </div>
-                                <div className="text-xs text-gray-600 w-10 text-right">
-                                  {Math.round(stageProgress)}%
-                                </div>
+                              <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+
+                              <div className="text-gray-800 font-medium">
+                                {mailersSummary?.stage ?? "N/A"}
                               </div>
                             </div>
                           </div>
@@ -369,6 +380,21 @@ export function TimelinePage() {
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {mailersSummary?.summary ?? "No AI summary available."}
                       </p>
+                      <div>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          className="p-2 rounded-full"
+                        >
+                          <img
+                            width="40"
+                            height="40"
+                            src="https://img.icons8.com/office/40/circled-play.png"
+                            alt="circled-play"
+                          />
+                        </motion.button>
+                      </div>
                     </div>
                     {/* Latest Message */}
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
@@ -439,16 +465,16 @@ export function TimelinePage() {
                         label: "Forward",
                         action: () => console.log("Open FORWARD"),
                       },
-                      {
-                        icon: (
-                          <img
-                            src="https://img.icons8.com/color/48/resize-four-directions.png"
-                            className="w-6 h-6"
-                          />
-                        ),
-                        label: "Move To",
-                        action: () => console.log("Open MOVE TO"),
-                      },
+                      // {
+                      //   icon: (
+                      //     <img
+                      //       src="https://img.icons8.com/color/48/resize-four-directions.png"
+                      //       className="w-6 h-6"
+                      //     />
+                      //   ),
+                      //   label: "Move To",
+                      //   action: () => setShowMoveModal(true),
+                      // },
                       {
                         icon: (
                           <img
@@ -493,83 +519,90 @@ export function TimelinePage() {
                         </span>
                       </button>
                     ))}
+                    {/* Move To Dropdown Component */}
+                    <MoveToDropdown
+                      currentThreadId={currentThreadId}
+                      onMoveSuccess={handleMoveSuccess}
+                    />
+                  </div>
+                  {/* TIMELINE EVENTS */}
+                  <div className="py-[2%] px-[30%]">
+                    <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600  p-2 rounded-4xl  text-center text-white">
+                      TIMELINE
+                    </h1>
+                    <div className="relative">
+                      {/* Vertical Line */}
+                      <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
+
+                      <div className="space-y-6">
+                        {ladger.length > 0 &&
+                          ladger.map((event) => (
+                            <div
+                              key={event.id}
+                              className="relative flex items-center gap-4"
+                            >
+                              {/* Dot */}
+                              <div className="relative z-10 w-16 flex-shrink-0 mt-3   flex items-center justify-center">
+                                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                                  <img
+                                    width="100"
+                                    height="100"
+                                    src="https://img.icons8.com/bubbles/100/new-post.png"
+                                    alt="new-post"
+                                  />
+                                </div>
+
+                                <div
+                                  className="bg-gradient-to-r from-purple-600 to-blue-600 
+                                          absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
+                                ></div>
+                              </div>
+
+                              {/* Card */}
+                              <div className="flex-1 border-2 rounded-xl p-4 mt-3">
+                                <div className="flex items-center gap-2 justify-between mb-2">
+                                  <span className="text-gray-700">
+                                    {event.type_c?.charAt(0).toUpperCase() +
+                                      event.type_c?.slice(1)}
+                                  </span>
+
+                                  <span className="text-gray-500 text-sm">
+                                    {formatTime(event.date_entered)}
+                                  </span>
+                                </div>
+                                {/* optionally add event message preview */}
+                                {event.subject && (
+                                  <div className="text-sm text-gray-600">
+                                    {event.subject}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+
+                        {/* END ICON */}
+                        {ladger.length > 0 && (
+                          <div className="relative flex gap-4">
+                            <div className="relative z-10 w-16 flex-shrink-0">
+                              <div className="w-12 h-12 flex items-center justify-center">
+                                <img
+                                  src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
+                                  alt=""
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
             </div>
 
-            {/* TIMELINE EVENTS */}
-            <div className="py-[2%] px-[30%]">
-              <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600  p-2 rounded-4xl  text-center text-white">
-                TIMELINE
-              </h1>
-              <div className="relative">
-                {/* Vertical Line */}
-                <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
-
-                <div className="space-y-6">
-                  {ladger.length > 0 &&
-                    ladger.map((event) => (
-                      <div
-                        key={event.id}
-                        className="relative flex items-center gap-4"
-                      >
-                        {/* Dot */}
-                        <div className="relative z-10 w-16 flex-shrink-0 mt-3   flex items-center justify-center">
-                          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                            <img
-                              width="100"
-                              height="100"
-                              src="https://img.icons8.com/bubbles/100/new-post.png"
-                              alt="new-post"
-                            />
-                          </div>
-
-                          <div
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 
-                                          absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
-                          ></div>
-                        </div>
-
-                        {/* Card */}
-                        <div className="flex-1 border-2 rounded-xl p-4 mt-3">
-                          <div className="flex items-center gap-2 justify-between mb-2">
-                            <span className="text-gray-700">
-                              {event.type_c?.charAt(0).toUpperCase() +
-                                event.type_c?.slice(1)}
-                            </span>
-
-                            <span className="text-gray-500 text-sm">
-                              {formatTime(event.date_entered)}
-                            </span>
-                          </div>
-                          {/* optionally add event message preview */}
-                          {event.subject && (
-                            <div className="text-sm text-gray-600">
-                              {event.subject}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-
-                  {/* END ICON */}
-                  {ladger.length > 0 && (
-                    <div className="relative flex gap-4">
-                      <div className="relative z-10 w-16 flex-shrink-0">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <img
-                            src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
-                            alt=""
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <Pagination slice={"ladger"} fn={getLadgerEmail} />
+            {ladger?.length > 0 && (
+              <Pagination slice={"ladger"} fn={getLadgerEmail} />
+            )}
           </>
         )}
       </div>

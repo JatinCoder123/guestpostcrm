@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const unansweredSlice = createSlice({
-  name: "unanswered",
+const forwardedSlice = createSlice({
+  name: "forwarded",
   initialState: {
     loading: false,
     emails: [],
@@ -35,9 +35,9 @@ const unansweredSlice = createSlice({
   },
 });
 
-export const getUnansweredEmails = (filter, email) => {
+export const getForwardedEmails = (filter, email) => {
   return async (dispatch, getState) => {
-    dispatch(unansweredSlice.actions.getEmailRequest());
+    dispatch(forwardedSlice.actions.getEmailRequest());
 
     try {
       let response;
@@ -45,36 +45,36 @@ export const getUnansweredEmails = (filter, email) => {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=forwarded&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&page=1&page_size=50`
+          }&type=forwarded&filter=${filter}&page=1&page_size=50`
         );
       }
 
-      console.log(`Unanswered emails`, response.data);
+      console.log(`forwarded emails`, response.data);
       const data = response.data;
       dispatch(
-        unansweredSlice.actions.getEmailSucess({
+        forwardedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })
       );
-      dispatch(unansweredSlice.actions.clearAllErrors());
+      dispatch(forwardedSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        unansweredSlice.actions.getEmailFailed(
-          "Fetching Unreplied Emails Failed"
+        forwardedSlice.actions.getEmailFailed(
+          "Fetching Forwarded Emails Failed"
         )
       );
     }
   };
 };
 
-export const unansweredAction = unansweredSlice.actions;
-export default unansweredSlice.reducer;
+export const forwardedAction = forwardedSlice.actions;
+export default forwardedSlice.reducer;

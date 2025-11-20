@@ -3,17 +3,18 @@ import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Edit3 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
-import EditModal from "../../EditModal";
+import EditModal from "./EditModal";
+import { useSelector } from "react-redux";
 
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
-
-  const { loading, data, error, refetch } = useModule({
+  const { email } = useSelector((state) => state.ladger);
+  const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
     method: "POST",
     body: {
@@ -26,6 +27,26 @@ export function MachineLearningPage() {
   });
 
   const rows = Array.isArray(data) ? data : [];
+
+  const handleUpdate = (updatedItem) => {
+    setData((prev) =>
+      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
+    );
+    update({
+      url: `${MODULE_URL}&action_type=post_data`,
+      method: "POST",
+      body: {
+        parent_bean: {
+          module: "outr_machine_learning",
+          ...updatedItem,
+        },
+      },
+      headers: {
+        "x-api-key": `${CREATE_DEAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+  };
 
   return (
     <div className="p-8">
@@ -87,7 +108,9 @@ export function MachineLearningPage() {
                     </span>
                   </td>
                   <td className="p-4 text-gray-700 max-w-[300px]">
-                    <p className="line-clamp-2">{item.description}</p>
+                    <p className="line-clamp-2 " title={item.description}>
+                      {item.description}
+                    </p>
                   </td>
 
                   <td className="p-4 text-right">
@@ -108,7 +131,11 @@ export function MachineLearningPage() {
       )}
 
       {/* Edit Modal */}
-      <EditModal item={editItem} onClose={() => setEditItem(null)} />
+      <EditModal
+        item={editItem}
+        onClose={() => setEditItem(null)}
+        handleUpdate={handleUpdate}
+      />
     </div>
   );
 }

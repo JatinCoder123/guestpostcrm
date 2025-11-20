@@ -62,7 +62,7 @@
 
                     // Build CRM endpoint using domain description
                      $businessEmail = $verifyJson['email'] ?? null;
-                    $description = $verifyJson['data']['description'] ?? null;
+                    $description = $verifyJson['domain'] ?? null;
 
                     if (!$description) {
                         http_response_code(401);

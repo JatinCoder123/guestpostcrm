@@ -6,6 +6,7 @@ export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
   const [displayIntro, setDisplayIntro] = useState(true);
   const [enteredEmail, setEnteredEmail] = useState(null);
+  const [search, setSearch] = useState("");
 
   // Set activePage based on current URL
   useEffect(() => {
@@ -22,6 +23,8 @@ export const PageContextProvider = (props) => {
     setDisplayIntro,
     enteredEmail,
     setEnteredEmail,
+    search,
+    setSearch,
   };
 
   return (

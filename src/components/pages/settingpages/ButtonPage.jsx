@@ -8,15 +8,16 @@ import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditWebSite from "./EditWebSite";
+import EditBtn from "./EditBtn";
 
-export default function WebsitesPage() {
+export default function ButtonPage() {
   const [editItem, setEditItem] = useState(null);
 
   const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
     method: "POST",
     body: {
-      module: "outr_Website_manage",
+      module: "outr_btn_manager",
     },
     headers: {
       "x-api-key": `${CREATE_DEAL_API_KEY}`,
@@ -30,7 +31,7 @@ export default function WebsitesPage() {
       method: "POST",
       body: {
         parent_bean: {
-          module: "outr_Website_manage",
+          module: "outr_btn_manager",
           ...updatedItem,
         },
       },
@@ -49,7 +50,7 @@ export default function WebsitesPage() {
       method: "POST",
       body: {
         parent_bean: {
-          module: "outr_Website_manage",
+          module: "outr_btn_manager",
           ...updatedItem,
         },
       },
@@ -63,7 +64,7 @@ export default function WebsitesPage() {
     <div className="p-8">
       {/* Header */}
       <Header
-        text={"Website Manager"}
+        text={"Button Manager"}
         handleCreate={() =>
           setEditItem(() => {
             return {
@@ -73,7 +74,7 @@ export default function WebsitesPage() {
         }
       />
       {/* Loading Skeleton */}
-      {loading && <Loading text={"Websites"} />}
+      {loading && <Loading text={"Button"} />}
 
       {/* Error Component */}
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
@@ -81,13 +82,14 @@ export default function WebsitesPage() {
       {/* Empty State */}
       {!loading && !error && !data && (
         <div className="mt-6 text-center p-10 bg-gray-50 border border-gray-200 rounded-xl">
-          <p className="text-gray-600 text-lg">No Webistes found.</p>
+          <p className="text-gray-600 text-lg">No Button found.</p>
           <p className="text-gray-400 text-sm mt-1">
             Add new items from your backend or configuration panel.
           </p>
         </div>
       )}
 
+      {/* Data Cards */}
       {/* Data Cards */}
       {data?.length > 0 && (
         <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -101,33 +103,40 @@ export default function WebsitesPage() {
                    border border-blue-200 p-5 flex flex-col 
                    justify-between group transition-all"
             >
-              {/* Name */}
+              {/* Button Label */}
               <h2
                 className="text-lg font-semibold text-gray-900 
-                       group-hover:text-blue-600 transition"
+                     group-hover:text-blue-600 transition"
               >
-                {item.name}
+                {item.button_label || "Unnamed Button"}
               </h2>
 
-              {/* Stage Badge */}
+              {/* Priority Badge */}
               <div className="mt-4">
                 <span
                   className={`
               px-3 py-1 text-xs font-semibold rounded-full
               ${
-                item.website_stage_c === "1"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : item.website_stage_c === "2"
-                  ? "bg-blue-100 text-blue-700"
-                  : item.website_stage_c === "3"
+                item.priority === "1"
                   ? "bg-green-100 text-green-700"
+                  : item.priority === "2"
+                  ? "bg-blue-100 text-blue-700"
+                  : item.priority === "3"
+                  ? "bg-yellow-100 text-yellow-700"
                   : "bg-gray-100 text-gray-600"
               }
             `}
                 >
-                  Type: {item.website_type}
+                  Priority: {item.priority}
                 </span>
               </div>
+
+              {/* Description */}
+              {item.description && (
+                <p className="mt-4 text-sm text-gray-700 line-clamp-3 group-hover:line-clamp-none transition-all">
+                  {item.description}
+                </p>
+              )}
 
               {/* Edit Button */}
               <div className="mt-6 flex justify-end">
@@ -147,7 +156,7 @@ export default function WebsitesPage() {
       )}
 
       {/* Edit Modal */}
-      <EditWebSite
+      <EditBtn
         item={editItem}
         onClose={() => setEditItem(null)}
         handleUpdate={handleUpdate}

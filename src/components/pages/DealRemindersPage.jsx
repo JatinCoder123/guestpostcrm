@@ -1,5 +1,6 @@
 import { Mail, Bell, Handshake, Calendar, User, Clock } from "lucide-react";
 import { useSelector } from "react-redux";
+import { getDealRem } from "../../store/Slices/dealRem";
 
 export function DealRemindersPage() {
   const { dealRem: reminders, count } = useSelector((state) => state.dealRem);
@@ -124,7 +125,9 @@ export function DealRemindersPage() {
             </tbody>
           </table>
         </div>
-
+        {reminders.length > 0 && (
+          <Pagination slice={"dealRem"} fn={getDealRem} />
+        )}
         {reminders.length === 0 && (
           <div className="p-12 text-center">
             <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />

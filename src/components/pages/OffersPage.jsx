@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import CreateOffer from "../CreateOffer";
 import { Gift, User, Calendar, DollarSign, Tag, Pencil } from "lucide-react";
+import { getOffers } from "../../store/Slices/offers";
+import Pagination from "../Pagination";
 
 export function OffersPage() {
   const { offers, count, loading } = useSelector((state) => state.offers);
@@ -162,6 +164,7 @@ export function OffersPage() {
 
           </table>
         </div>
+        {offers.length > 0 && <Pagination slice={"offers"} fn={getOffers} />}
 
         {!loading && offers.length === 0 && (
           <div className="p-12 text-center">

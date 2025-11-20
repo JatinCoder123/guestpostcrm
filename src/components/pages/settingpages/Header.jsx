@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Header = ({ text, onCreate, create }) => {
+const Header = ({ text, handleCreate }) => {
   return (
     <div className="flex items-center justify-between mb-6">
       {/* LEFT: Back Button + Title */}
@@ -19,17 +19,19 @@ const Header = ({ text, onCreate, create }) => {
       </div>
 
       {/* RIGHT: Create Button */}
-      <button
-        onClick={onCreate}
-        className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center  transition "
-      >
-        <img
-          width="36"
-          height="36"
-          src="https://img.icons8.com/arcade/64/plus.png"
-          alt="plus"
-        />
-      </button>
+      {handleCreate && (
+        <button
+          onClick={handleCreate}
+          className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center  transition "
+        >
+          <img
+            width="36"
+            height="36"
+            src="https://img.icons8.com/arcade/64/plus.png"
+            alt="plus"
+          />
+        </button>
+      )}
     </div>
   );
 };
