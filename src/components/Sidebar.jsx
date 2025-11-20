@@ -20,6 +20,7 @@ import {
   Forward,
   Heart,
   Cog,
+  RectangleEllipsis,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -228,8 +229,18 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
     },
     {
       id: "default-report",
-      label: "Default",
+      label: "Defaulter",
       icon: Cog,
+      loading: paymentRemLoading,
+      count: paymentRemCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-blue-500 text-white",
+    },
+    {
+      id: "more-report",
+      label: "other",
+      icon: RectangleEllipsis,
       loading: paymentRemLoading,
       count: paymentRemCount,
       color: "text-red-600",

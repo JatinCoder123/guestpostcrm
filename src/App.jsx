@@ -34,6 +34,8 @@ import { ForwardedPage } from "./components/pages/ForwardedPage";
 import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
+import { MorePage } from "./components/pages/MorePage";
+import { DefaulterPage } from "./components/pages/Defaulterpage";
 const router = createBrowserRouter([
   {
     path: "",
@@ -111,6 +113,14 @@ const router = createBrowserRouter([
       {
         path: "favourite-emails",
         element: <FavouritePage />,
+      },
+      {
+        path: "default-report",
+        element: <DefaulterPage />,
+      },
+       {
+        path: "more-report",
+        element: <MorePage />,
       },
 
       {
