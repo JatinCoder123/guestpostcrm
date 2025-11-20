@@ -15,7 +15,7 @@ import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 export function ForwardedPage() {
-  const { count, emails } = useSelector((state) => state.unanswered);
+  const { count, emails } = useSelector((state) => state.forwarded);
   const [
     handleThreadClick,
     showEmail,

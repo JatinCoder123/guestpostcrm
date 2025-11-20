@@ -19,17 +19,19 @@ const Header = ({ text, handleCreate }) => {
       </div>
 
       {/* RIGHT: Create Button */}
-      <button
-        onClick={handleCreate}
-        className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center  transition "
-      >
-        <img
-          width="36"
-          height="36"
-          src="https://img.icons8.com/arcade/64/plus.png"
-          alt="plus"
-        />
-      </button>
+      {handleCreate && (
+        <button
+          onClick={handleCreate}
+          className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center  transition "
+        >
+          <img
+            width="36"
+            height="36"
+            src="https://img.icons8.com/arcade/64/plus.png"
+            alt="plus"
+          />
+        </button>
+      )}
     </div>
   );
 };

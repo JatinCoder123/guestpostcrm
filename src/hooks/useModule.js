@@ -33,7 +33,7 @@ const useModule = ({
       setLoading(false);
     }
   }, [url, method, body, headers]);
-  const fetch = async ({ url, method, body, headers }) => {
+  const add = async ({ url, method, body, headers }) => {
     setCreating(true);
     setError(null);
 
@@ -74,7 +74,7 @@ const useModule = ({
     if (enabled) run();
   }, [...dependencies, enabled]);
 
-  return { loading, error, data, refetch: run, fetch, update };
+  return { loading, error, data, setData, refetch: run, add, update };
 };
 
 export default useModule;

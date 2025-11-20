@@ -85,7 +85,7 @@ export const getLadger = () => {
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
           mailersSummary: data.mailers_summary,
-          email: data.data && data.data[0].name,
+          email: data.mailers_summary.email,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })

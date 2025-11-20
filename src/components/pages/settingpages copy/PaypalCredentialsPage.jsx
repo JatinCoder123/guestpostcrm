@@ -1,17 +1,20 @@
+import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Edit3 } from "lucide-react";
 import { useState } from "react";
+
+import SkeletonGrid from "../../SkeletonGrid";
+import EditModal from "../settingpages/EditModal";
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
-import EditPayPal from "./EditPayPal";
 
 export function PaypalCredentials() {
   const [editItem, setEditItem] = useState(null);
 
-  const { loading, data, error, setData, refetch, update } = useModule({
+  const { loading, data, error, refetch } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
     method: "POST",
     body: {
@@ -22,25 +25,6 @@ export function PaypalCredentials() {
       "Content-Type": "application/json",
     },
   });
-  const handleUpdate = (updatedItem) => {
-    setData((prev) =>
-      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
-    );
-    update({
-      url: `${MODULE_URL}&action_type=post_data`,
-      method: "POST",
-      body: {
-        parent_bean: {
-          module: "outr_credentials",
-          ...updatedItem,
-        },
-      },
-      headers: {
-        "x-api-key": `${CREATE_DEAL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-    });
-  };
 
   // Ensure array format
   const rows = Array.isArray(data) ? data : [];
@@ -155,11 +139,7 @@ export function PaypalCredentials() {
       )}
 
       {/* Edit Modal */}
-      <EditPayPal
-        item={editItem}
-        onClose={() => setEditItem(null)}
-        handleUpdate={handleUpdate}
-      />
+      <EditModal item={editItem} onClose={() => setEditItem(null)} />
     </div>
   );
 }

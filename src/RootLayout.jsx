@@ -24,6 +24,8 @@ import { getDealRem } from "./store/Slices/dealRem";
 import { getOrderRem } from "./store/Slices/orderRem";
 import { getLinkRem } from "./store/Slices/linkRem";
 import { getPaymentRem } from "./store/Slices/paymentRem";
+import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
+import { getFavEmails } from "./store/Slices/favEmailSlice";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(false);
@@ -41,6 +43,8 @@ const RootLayout = () => {
     dispatch(getAiCredits(timeline));
     dispatch(getUnansweredEmails(timeline, enteredEmail));
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
+    dispatch(getForwardedEmails(timeline, enteredEmail));
+    dispatch(getFavEmails(timeline, enteredEmail));
     dispatch(getOrders(timeline, enteredEmail));
     dispatch(getDeals(timeline, enteredEmail));
     dispatch(getInvoices(timeline, enteredEmail));
@@ -50,7 +54,7 @@ const RootLayout = () => {
     dispatch(getOrderRem(timeline, enteredEmail));
     dispatch(getLinkRem(timeline, enteredEmail));
     dispatch(getPaymentRem(timeline, enteredEmail));
-    dispatch(getViewEmail(enteredEmail));
+    dispatch(getViewEmail());
   }, [enteredEmail, timeline]);
 
   return (

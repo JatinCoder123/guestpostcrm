@@ -2,6 +2,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import ladgerReducer from "./Slices/ladger.js";
 import unrepliedReducer from "./Slices/unrepliedEmails.js";
 import unansweredReducer from "./Slices/unansweredEmails.js";
+import favReducer from "./Slices/favEmailSlice.js";
+import forwarededReducer from "./Slices/forwardedEmailSlice.js";
 import dealsReducer from "./Slices/deals.js";
 import offersReducer from "./Slices/offers.js";
 import invoiceReducer from "./Slices/invoices.js";
@@ -21,6 +23,8 @@ export const store = configureStore({
     ladger: ladgerReducer,
     unreplied: unrepliedReducer,
     unanswered: unansweredReducer,
+    fav: favReducer,
+    forwarded: forwarededReducer,
     deals: dealsReducer,
     orders: orderReducer,
     detection: detectionReducer,

@@ -20,6 +20,7 @@ import {
   Forward,
   Heart,
   Cog,
+  Layers,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -81,6 +82,10 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
   const { count: dealRemCount, loading: dealRemLoading } = useSelector(
     (s) => s.dealRem
   );
+  const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
+  const { count: forwardCount, loading: forwardLoading } = useSelector(
+    (s) => s.forwarded
+  );
 
   // MENU ITEMS WITH COLORS
   const menuItems = [
@@ -118,8 +123,8 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "forwarded-emails",
       label: "Forwarded Emails",
       icon: Forward,
-      loading: unrepliedLoading,
-      count: unrepliedCount,
+      loading: forwardLoading,
+      count: forwardCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",
@@ -128,12 +133,13 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       id: "favourite-emails",
       label: "Favourite Emails",
       icon: Heart,
-      loading: unrepliedLoading,
-      count: unrepliedCount,
+      loading: favLoading,
+      count: favCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-pink-500 text-white",
     },
+
     {
       id: "deals",
       label: "Deals",

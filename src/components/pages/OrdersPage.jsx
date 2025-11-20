@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
-import CreateOrder from "../CreateOrder";
 import { useState } from "react";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
@@ -17,7 +16,6 @@ export function OrdersPage() {
   const { orders, count, loading, error } = useSelector(
     (state) => state.orders
   );
-  const [showOrder, setShowOrder] = useState(false);
   const getStatusColor = (status) => {
     switch (status) {
       case "Completed":
@@ -32,13 +30,6 @@ export function OrdersPage() {
         return "bg-gray-100 text-gray-700";
     }
   };
-  if (showOrder) {
-    return (
-      <>
-        <CreateOrder onClose={() => setShowOrder(false)} />
-      </>
-    );
-  }
 
   return (
     <>
@@ -102,12 +93,6 @@ export function OrdersPage() {
             <Package className="w-6 h-6 text-green-600" />
             <h2 className="text-lg font-semibold text-gray-800">ORDERS</h2>
           </div>
-          <button
-            onClick={() => setShowOrder(true)}
-            className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
-          >
-            + New Order
-          </button>
         </div>
 
         {/* Table */}

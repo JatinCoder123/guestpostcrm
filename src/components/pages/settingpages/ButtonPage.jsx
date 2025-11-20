@@ -4,11 +4,10 @@ import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { Edit3, Undo2, X } from "lucide-react";
 import { useState } from "react";
-import SkeletonGrid from "../../SkeletonGrid"; // <== Import Skeleton
-import EditModal from "../../EditModal";
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
+import EditWebSite from "./EditWebSite";
 
 export default function ButtonPage() {
   const [editItem, setEditItem] = useState(null);
@@ -112,7 +111,7 @@ export default function ButtonPage() {
       )}
 
       {/* Edit Modal */}
-      <EditModal item={editItem} onClose={() => setEditItem(null)} />
+      <EditWebSite item={editItem} onClose={() => setEditItem(null)} />
     </div>
   );
 }

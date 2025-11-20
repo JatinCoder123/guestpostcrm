@@ -1,21 +1,24 @@
 import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
-import { m } from "framer-motion";
+import { motion } from "framer-motion";
 import { Edit3 } from "lucide-react";
 import { useState } from "react";
 
-import SkeletonGrid from "../../SkeletonGrid";
-import EditModal from "../../EditModal";
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
+import EditPayPal from "./EditPayPal";
+import EditUser from "./EditUser";
+import { useSelector } from "react-redux";
+import { Description } from "@radix-ui/react-dialog";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);
+  const { businessEmail } = useSelector((state) => state.user);
 
-  const { loading, data, error, refetch } = useModule({
-    url: `https://crm.outrightsystems.org/index.php?entryPoint=get_gpc_users&email=quietfluence@gmail.com`,
+  const { loading, data, error, setData, refetch, add, update } = useModule({
+    url: `https://crm.outrightsystems.org/index.php?entryPoint=get_gpc_users&email=${businessEmail}`,
     method: "POST",
     body: {
       module: "outr_gpc_users",
@@ -25,13 +28,73 @@ export function UsersPage() {
       "Content-Type": "application/json",
     },
   });
+  const handleCreate = (updatedItem) => {
+    setData((prev) => {
+      const updated = { ...prev };
+      updated.data = [{ id: Math.random(), ...updatedItem }, ...updated.data];
+      return updated;
+    });
+    add({
+      url: `https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,
+      method: "POST",
+      body: {
+        parent_bean: {
+          id: data.parent_bean_id,
+          module: data.parent_bean_module,
+        },
+        child_bean: {
+          module: "outr_gpc_users",
+          description: updatedItem.email,
+          name: updatedItem.name,
+        },
+      },
+      headers: {
+        "x-api-key": `${CREATE_DEAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+  };
+  const handleUpdate = (updatedItem) => {
+    setData((prev) => {
+      const updated = { ...prev };
+      updated.data = updated.data.map((obj) =>
+        obj.id === updatedItem.id ? updatedItem : obj
+      );
+      return updated;
+    });
+    update({
+      url: `https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,
+      method: "POST",
+      body: {
+        parent_bean: {
+          module: "outr_gpc_users",
+          id: updatedItem.id,
+          description: updatedItem.email,
+          name: updatedItem.name,
+        },
+      },
+      headers: {
+        "x-api-key": `${CREATE_DEAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+  };
 
   // Normalize API data response
   const users = data?.data;
   return (
     <div className="p-8">
       {/* Header */}
-      <Header text={"User Manager"} />
+      <Header
+        text={"User Manager"}
+        handleCreate={() =>
+          setEditItem(() => {
+            return {
+              type: "new",
+            };
+          })
+        }
+      />
 
       {/* Loading */}
       {loading && (
@@ -67,12 +130,10 @@ export function UsersPage() {
             >
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition">
-                  {console.log(item.name)}
                   {item.name}
                 </h2>
 
                 <p className="text-gray-600 mt-2 text-sm">
-                  {console.log(item.email)}
                   {item.email || "No Email"}
                 </p>
               </div>
@@ -93,7 +154,12 @@ export function UsersPage() {
       )}
 
       {/* Edit Modal */}
-      <EditModal item={editItem} onClose={() => setEditItem(null)} />
+      <EditUser
+        item={editItem}
+        onClose={() => setEditItem(null)}
+        handleUpdate={handleUpdate}
+        handleCreate={handleCreate}
+      />
     </div>
   );
 }
