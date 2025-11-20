@@ -7,6 +7,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import Pagination from "../Pagination";
+import { getLinkRem } from "../../store/Slices/linkRem";
 
 export function LinkRemovalPage() {
   const { linkRem: linkRemovals, count } = useSelector(
@@ -167,7 +169,9 @@ export function LinkRemovalPage() {
             </tbody>
           </table>
         </div>
-
+        {linkRemovals?.length > 0 && (
+          <Pagination slice={"linkRem"} fn={getLinkRem} />
+        )}
         {linkRemovals.length === 0 && (
           <div className="p-12 text-center">
             <Link2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />

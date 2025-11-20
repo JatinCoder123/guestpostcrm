@@ -7,6 +7,8 @@ import {
   User,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import Pagination from "../Pagination";
+import { getPaymentRem } from "../../store/Slices/paymentRem";
 
 export function PaymentMissedPage() {
   const { paymentRem: missedPayments, count } = useSelector(
@@ -131,6 +133,9 @@ export function PaymentMissedPage() {
             </tbody>
           </table>
         </div>
+        {missedPayments.length > 0 && (
+          <Pagination slice={"paymentRem"} fn={getPaymentRem} />
+        )}
 
         {missedPayments.length === 0 && (
           <div className="p-12 text-center">

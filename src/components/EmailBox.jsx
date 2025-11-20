@@ -1,332 +1,242 @@
-import {
-  Mail,
-  RefreshCw,
-  CheckCircle,
-  User,
-  Globe,
-  Handshake,
-  Reply,
-  Calendar,
-  FileText,
-  Clock,
-   Send,
-  Brain,
-  Zap, 
-  MessageCircle
-} from "lucide-react";
+import { Mail, User, Globe, Handshake, Send, Brain, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
-import { Editor } from '@tinymce/tinymce-react';
-import {TINY_EDITOR_API_KEY} from '../store/constants';
+import { Editor } from "@tinymce/tinymce-react";
+import { TINY_EDITOR_API_KEY } from "../store/constants";
 
 export default function EmailBox({ onClose, view, threadId }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
-  const { viewEmail, threadId: viewThreadId } = useSelector(
-    (state) => state.viewEmail
-  );
-  const { threadEmail } = useSelector((state) => state.threadEmail);
-  const { aiReply, loading, error } = useSelector((state) => state.aiReply);
-  const [input, setInput] = useState("");
+
+  const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const { threadEmail } = useSelector((s) => s.threadEmail);
+  const { aiReply, loading } = useSelector((s) => s.aiReply);
+  const { email } = useSelector((s) => s.ladger);
+
   const emails = view ? viewEmail : threadEmail;
-  const { email } = useSelector((state) => state.ladger);
   const dispatch = useDispatch();
+
+  // NEW STATES
+  const [messageLimit, setMessageLimit] = useState(3); // initially 3
+  const [showEditorScreen, setShowEditorScreen] = useState(false); // editor hidden
+  const [input, setInput] = useState("");
+
+  // Load AI reply
   useEffect(() => {
     if (threadId) {
       dispatch(getAiReply(threadId));
     } else if (viewThreadId && view) {
-      console.log("Gettin AI Reply");
       dispatch(getAiReply(viewThreadId));
     }
   }, [threadId, viewThreadId]);
+
+  // Insert AI reply into editor
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (aiReply) {
+      const isHTML = /<[a-z][\s\S]*>/i.test(aiReply);
+      const formatted = isHTML ? aiReply : aiReply.replace(/\n/g, "<br>");
+
+      setInput(formatted);
     }
-  }, [emails]);
-  const handleClickAiReplyBtn = () => {};
+  }, [aiReply]);
 
   const htmlToPlainText = (html) => {
-    if (!html) return '';
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    return tempDiv.textContent || tempDiv.innerText || '';
+    const temp = document.createElement("div");
+    temp.innerHTML = html || "";
+    return temp.textContent || temp.innerText || "";
   };
 
-  const handleClickSendBtn = () => {
-    let contentToSend;
-    
-    // Method 1: Use TinyMCE's built-in method (best option)
-    if (editorRef.current) {
-      contentToSend = editorRef.current.getContent({ format: 'text' });
-    } 
-    // Method 2: Fallback to manual conversion
-    else {
-      contentToSend = htmlToPlainText(input);
+  // FIRST CLICK = show editor
+  // SECOND CLICK = send message
+  const handleSendClick = () => {
+    if (!showEditorScreen) {
+      setShowEditorScreen(true);
+      return;
     }
-    
-    console.log('Sending content:', contentToSend); // Debug log
-    
-    if (view) {
-      dispatch(sendEmail(contentToSend));
-    } else {
-      dispatch(sendEmailToThread(threadId, contentToSend));
-    }
-    
-    // Clear input after sending
+
+    let contentToSend =
+      editorRef.current?.getContent({ format: "text" }) ||
+      htmlToPlainText(input);
+
+    if (view) dispatch(sendEmail(contentToSend));
+    else dispatch(sendEmailToThread(threadId, contentToSend));
+
     setInput("");
-    if (editorRef.current) {
-      editorRef.current.setContent('');
-    }
-  };
-  
-  const handleEditorChange = (content) => {
-    setInput(content);
+    onClose();
+    editorRef.current?.setContent("");
   };
 
-  
-  const handleEditorInit = (evt, editor) => {
-    editorRef.current = editor;
-  };
- useEffect(() => {
-  if (aiReply) {
-    
-    const containsHTML = /<[a-z][\s\S]*>/i.test(aiReply);
-    
-    if (containsHTML) {
-      setInput(aiReply);
-    } else {
-      
-      const formattedText = aiReply.replace(/\n/g, '<br>');
-      setInput(formattedText);
-    }
-  }
-  }, [aiReply, loading, dispatch]);
+  // Show only latest messages
+  const visibleMessages = emails.slice(-messageLimit);
 
   return (
-
-    <>
     <div className="flex items-center justify-center">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", stiffness: 120, damping: 15 }}
-        className="bg-white rounded-2xl shadow-2xl w-full  h-[100vh] flex flex-col overflow-hidden relative"
+        className="bg-white rounded-2xl shadow-2xl w-full h-[100vh] flex flex-col overflow-hidden"
       >
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-          <h2 className="text-lg font-semibold">Email Conversation</h2>
-          <button
-            onClick={onClose}
-            className="text-white cursor-pointer hover:text-gray-200 transition"
-          >
+          <h2 className="text-lg font-semibold">
+            {showEditorScreen ? "Write Email" : "Email Conversation"}
+          </h2>
+          <button onClick={onClose} className="text-white">
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Email Thread */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-6"
-        >
-          {emails.map((mail, index) => {
-            const isUser = mail.from_email.includes(email);
-            return (
-              <motion.div
-                key={mail.message_id || index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`flex ${
-                  isUser ? "justify-end" : "justify-start"
-                } w-full`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl p-4 shadow-md ${
-                    isUser
-                      ? "bg-blue-600 text-white rounded-br-none"
-                      : "bg-white border border-gray-200 text-gray-800 rounded-bl-none"
-                  }`}
-                >
-                  {/* Header Info */}
-                  <div className="mb-2">
-                    <p className="text-sm font-semibold">
-                      {isUser ? "You" : mail.from_name || "Unknown Sender"}
-                    </p>
-                    <p className="text-xs opacity-70">
-                      {new Date(mail.date_created).toLocaleString()}
-                    </p>
-                  </div>
+        {/* ================================================= */}
+        {/* ============= EDITOR SCREEN ====================== */}
+        {/* ================================================= */}
+        {showEditorScreen ? (
+          <div className="flex flex-col h-full">
+            {/* BACK BUTTON */}
+            <button
+              onClick={() => setShowEditorScreen(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 m-4 rounded-lg w-28"
+            >
+              ← Back
+            </button>
 
-                  {/* Subject */}
-                  {mail.subject && (
-                    <p
-                      className={`text-sm mb-2 font-medium ${
-                        isUser ? "text-blue-100" : "text-gray-600"
-                      }`}
-                    >
-                      {mail.subject}
-                    </p>
-                  )}
+            {/* EDITOR */}
+            <div className="flex-1 px-4">
+              <Editor
+                apiKey={TINY_EDITOR_API_KEY}
+                value={input}
+                onInit={(e, editor) => (editorRef.current = editor)}
+                onEditorChange={setInput}
+                init={{
+                  height: 350,
+                  menubar: false,
+                  toolbar:
+                    "undo redo | bold italic underline | bullist numlist | removeformat",
+                  branding: false,
+                  statusbar: false,
+                }}
+              />
+            </div>
 
-                  {/* Email Body Handling */}
-                  <div className="space-y-3">
-                    {/* Plain Text Body */}
-                    {mail.body && mail.body.trim() !== "" && (
-                      <p
-                        className={`whitespace-pre-line leading-relaxed text-sm ${
-                          isUser ? "text-blue-50" : "text-gray-800"
-                        }`}
-                      >
-                        {mail.body}
-                      </p>
-                    )}
+            {/* FOOTER WITH ALL BUTTONS */}
+            <div className="p-4 border-t bg-white flex items-start gap-4">
+              {/* BUTTON GRID */}
+              <div className="w-1/5">
+                <div className="grid grid-cols-3 gap-2">
+                  {/* AI Reply */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center"
+                  >
+                    <Brain className="w-4 h-4" />
+                  </motion.button>
 
-                    {/* No Content Fallback */}
-                    {!mail.body && (
-                      <p
-                        className={`italic ${
-                          isUser ? "text-blue-100" : "text-gray-500"
-                        }`}
-                      >
-                        (No content)
-                      </p>
-                    )}
-                  </div>
+                  {/* View Mail */}
+                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
+                    <Mail className="w-4 h-4" />
+                  </motion.button>
+
+                  {/* View Contact */}
+                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
+                    <User className="w-4 h-4" />
+                  </motion.button>
+
+                  {/* View IP */}
+                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
+                    <Globe className="w-4 h-4" />
+                  </motion.button>
+
+                  {/* Create Deal */}
+                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
+                    <Handshake className="w-4 h-4" />
+                  </motion.button>
                 </div>
-              </motion.div>
-            );
-          })}
-        </div>
-        
-        {/* Footer (reply input area) */}
-        <div className="p-4 border-t bg-white">
-          <div className="flex gap-4 w-full items-center">
-            
-            {loading && (
-              <div className="w-4/5 flex items-center justify-center">
-                <p>Generating Ai Reply...</p>
               </div>
-            )}
-            {!loading && (
-              <div className="w-4/5 min-w-0">
-                <Editor
-                  apiKey={TINY_EDITOR_API_KEY} 
-                  onInit={handleEditorInit}
-                  value={input}
-                  onEditorChange={handleEditorChange}
-                  init={{
-                    height: 200,
-                    menubar: false,
-                    plugins: [
-                      'advlist autolink lists link charmap preview anchor',
-                      'searchreplace visualblocks code fullscreen',
-                      'insertdatetime media table paste code help wordcount'
-                    ],
-                    toolbar: 'undo redo | bold italic underline | \
-                            alignleft aligncenter alignright | \
-                            bullist numlist outdent indent | \
-                            removeformat | help',
-                    content_style: `
-                      body { 
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-                        font-size: 14px;
-                        background-color: #f3f4f6;
-                      }
-                      .mce-content-body {
-                        background-color: #f3f4f6;
-                        padding: 8px 12px;
-                      }
-                    `,
-                    skin: 'oxide',
-                    content_css: 'default',
-                    branding: false,
-                    resize: false,
-                    statusbar: false,
-                    forced_root_block: 'p',
-                    convert_newlines_to_brs: false,
-                    remove_trailing_brs: true
-                  }}
-                />
-              </div>
-            )}
-            
-            {/* Buttons - 20% width in 3x3 grid */}
-            <div className="w-1/5">
-              <div className="grid grid-cols-3 gap-2">
-                {/* Send Button */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleClickSendBtn}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
-                  title="Send"
-                >
-                  <Send className="w-4 h-4" />
-                </motion.button>
 
-                {/* AI Reply Button */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleClickAiReplyBtn}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
-                  title="AI Reply"
+              {/* SEND BUTTON */}
+              <div className="flex-1 flex justify-end">
+                <button
+                  onClick={handleSendClick}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"
                 >
-                  <Brain className="w-4 h-4" />
-                </motion.button>
-
-                {/* View Mail Button */}
-                <motion.button
-                  onClick={() => setShowEmails(true)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
-                  title="View Mail"
-                >
-                  <Mail className="w-4 h-4" />
-                </motion.button>
-
-                {/* View Contact Button */}
-                <motion.button
-                  onClick={() => {
-                    dispatch(getContact(email));
-                    navigateTo("/contacts");
-                  }}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
-                  title="View Contact"
-                >
-                  <User className="w-4 h-4" />
-                </motion.button>
-
-                {/* View IP Button */}
-                <motion.button
-                  // onClick={() => setShowIP(true)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
-                  title="View IP"
-                >
-                  <Globe className="w-4 h-4" />
-                </motion.button>
-
-                {/* Create Deal Button */}
-                <motion.button
-                  onClick={() => setShowDeal(true)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg font-medium shadow-md flex items-center justify-center"
-                  title="Create Deal"
-                >
-                  <Handshake className="w-4 h-4" />
-                </motion.button>
+                  Send
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          /* ================================================= */
+          /* ============= CHAT SCREEN ======================== */
+          /* ================================================= */
+          <>
+            {/* LOAD MORE BUTTONS AT TOP */}
+            <div className="px-4 pt-4 pb-2 bg-gray-100 flex gap-3">
+              {messageLimit < emails.length && (
+                <>
+                  <button
+                    onClick={() => setMessageLimit((p) => p + 3)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                  >
+                    Load More
+                  </button>
+
+                  <button
+                    onClick={() => setMessageLimit(emails.length)}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg"
+                  >
+                    Show All
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* CHAT MESSAGES */}
+            <div
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-6"
+            >
+              {visibleMessages.map((mail, idx) => {
+                const isUser = mail.from_email.includes(email);
+                return (
+                  <div
+                    key={mail.message_id || idx}
+                    className={`flex ${
+                      isUser ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[75%] p-4 rounded-xl shadow ${
+                        isUser
+                          ? "bg-blue-600 text-white rounded-br-none"
+                          : "bg-white border text-gray-800 rounded-bl-none"
+                      }`}
+                    >
+                      <p className="text-xs opacity-75 mb-1">
+                        {new Date(mail.date_created).toLocaleString()}
+                      </p>
+                      <p className="whitespace-pre-line text-sm">{mail.body}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* FOOTER - ONLY SEND BUTTON */}
+            <div className="p-4 border-t bg-white flex justify-end">
+              <button
+                onClick={handleSendClick}
+                className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"
+              >
+                Send
+              </button>
+            </div>
+          </>
+        )}
       </motion.div>
     </div>
-
-    </>
   );
 }

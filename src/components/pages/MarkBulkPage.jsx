@@ -4,20 +4,19 @@ import {
   User,
   FileText,
   MessageSquare,
-  LeafyGreen,
+  Layers,
   BarChart,
-  Repeat,
-  MoveRight,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
-import { getForwardedEmails } from "../../store/Slices/forwardedEmailSlice";
-export function ForwardedPage() {
-  const { count, emails } = useSelector((state) => state.forwarded);
+import { getBulkEmails } from "../../store/Slices/markBulkSlice";
+
+export function MarkBulkPage() {
+  const { count, emails } = useSelector((state) => state.bulk);
+
   const [
     handleThreadClick,
     showEmail,
@@ -25,8 +24,10 @@ export function ForwardedPage() {
     currentThreadId,
     setCurrentThreadId,
   ] = useThread();
+
   return (
     <>
+      {/* OPEN EMAIL BOX */}
       {showEmail && currentThreadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
           <EmailBox
@@ -36,20 +37,21 @@ export function ForwardedPage() {
           />
         </div>
       )}
-      {/* Unanswered Section */}
+
+      {/* MAIN WRAPPER */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl text-gray-900">FORWARDED EMAILS</h2>
+            <h2 className="text-xl text-gray-900">BULK EMAILS</h2>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
-            {count} Unanswered
+            {count} Bulk
           </span>
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -72,52 +74,47 @@ export function ForwardedPage() {
                     <span>SUBJECT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <BarChart className="w-4 h-4" />
-                    <span>THREAD SIZE</span>
-                  </div>
-                </th>
               </tr>
             </thead>
+
             <tbody>
               {emails.map((email, index) => (
                 <tr
-                  key={index}
+                  key={email.id}
+                  onClick={() => handleThreadClick(email.id)}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
+                  {/* DATE */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{email.date_entered || "—"}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
-                  <td
-                    onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                    }}
-                    className="px-6 py-4 text-purple-600"
-                  >
-                    {email.subject}
+
+                  {/* SENDER */}
+                  <td className="px-6 py-4 text-gray-900">
+                    {email.sender || "—"}
                   </td>
+
+                  {/* SUBJECT */}
                   <td className="px-6 py-4 text-purple-600">
-                    {email.thread_count}
+                    {email.subject || "—"}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {emails.length > 0 && (
-          <Pagination slice={"forwarded"} fn={getForwardedEmails} />
-        )}
 
+        {/* PAGINATION */}
+        {emails.length > 0 && <Pagination slice={"bulk"} fn={getBulkEmails} />}
+
+        {/* EMPTY UI */}
         {emails.length === 0 && (
           <div className="p-12 text-center">
-            <MoveRight className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No Favourite emails yet.</p>
+            <Layers className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Bulk emails yet.</p>
           </div>
         )}
       </div>

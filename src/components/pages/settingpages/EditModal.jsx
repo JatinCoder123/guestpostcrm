@@ -78,7 +78,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
                 </label>
                 <input
                   value={form.name}
-                  onChange={(e) => updateField("name", e.target.value)}
+                  disabled
                   className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
                 />
               </div>
@@ -90,7 +90,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
                 </label>
                 <input
                   value={form.motive}
-                  onChange={(e) => updateField("motive", e.target.value)}
+                  disabled
                   className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
                 />
               </div>
@@ -102,7 +102,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
                 </label>
                 <input
                   value={form.type}
-                  onChange={(e) => updateField("type", e.target.value)}
+                  disabled
                   className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
                 />
               </div>

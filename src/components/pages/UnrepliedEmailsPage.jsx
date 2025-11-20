@@ -5,6 +5,7 @@ import {
   FileText,
   Repeat,
   BarChart2,
+  MessageCircleDashed,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
@@ -13,8 +14,12 @@ import EmailBox from "../EmailBox";
 import { BarChart } from "recharts";
 import Pagination from "../Pagination";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
+import { useContext } from "react";
+import { PageContext } from "../../context/pageContext";
+import { useNavigate } from "react-router-dom";
 export function UnrepliedEmailsPage() {
   const { count, emails } = useSelector((state) => state.unreplied);
+  const { setEnteredEmail, setSearch } = useContext(PageContext);
   const [
     handleThreadClick,
     showEmail,
@@ -22,6 +27,7 @@ export function UnrepliedEmailsPage() {
     currentThreadId,
     setCurrentThreadId,
   ] = useThread();
+  const navigateTo = useNavigate();
   if (showEmail && currentThreadId) {
     return (
       <EmailBox
@@ -90,11 +96,22 @@ export function UnrepliedEmailsPage() {
                       <span>{email.date}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
+                  <td
+                    onClick={() => {
+                      const input = email.from.split("<")[1].split(">")[0];
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/");
+                    }}
+                    className="px-6 py-4 text-gray-900"
+                  >
+                    {email.from}
+                  </td>
                   <td
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
+                      na;
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
@@ -108,7 +125,15 @@ export function UnrepliedEmailsPage() {
             </tbody>
           </table>
         </div>
-        <Pagination slice={"unreplied"} fn={getUnrepliedEmail} />
+        {emails?.length > 0 && (
+          <Pagination slice={"unreplied"} fn={getUnrepliedEmail} />
+        )}
+        {emails.length === 0 && (
+          <div className="p-12 text-center">
+            <MessageCircleDashed className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Unreplied emails yet.</p>
+          </div>
+        )}
       </div>
     </>
   );

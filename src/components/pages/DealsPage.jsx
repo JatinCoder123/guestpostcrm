@@ -166,7 +166,7 @@ export function DealsPage() {
             </tbody>
           </table>
         </div>
-        <Pagination slice={"deals"} fn={getDeals} />
+        {deals?.length > 0 && <Pagination slice={"deals"} fn={getDeals} />}
 
         {!loading && !error && deals.length === 0 && (
           <div className="p-12 text-center">

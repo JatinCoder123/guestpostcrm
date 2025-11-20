@@ -26,6 +26,7 @@ import { getLinkRem } from "./store/Slices/linkRem";
 import { getPaymentRem } from "./store/Slices/paymentRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
+import { getBulkEmails } from "./store/Slices/markBulkSlice";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(false);
@@ -45,6 +46,7 @@ const RootLayout = () => {
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
     dispatch(getForwardedEmails(timeline, enteredEmail));
     dispatch(getFavEmails(timeline, enteredEmail));
+    dispatch(getBulkEmails(timeline, enteredEmail));
     dispatch(getOrders(timeline, enteredEmail));
     dispatch(getDeals(timeline, enteredEmail));
     dispatch(getInvoices(timeline, enteredEmail));
@@ -69,6 +71,7 @@ const RootLayout = () => {
             <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
               <Sidebar
                 collapsed={sidebarCollapsed}
+                setSidebarCollapsed={setSidebarCollapsed}
                 onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
               />
             </div>

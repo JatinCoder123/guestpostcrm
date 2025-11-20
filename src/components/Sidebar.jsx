@@ -30,7 +30,7 @@ import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingSpin } from "./Loading";
 
-export function Sidebar({ collapsed, onToggleCollapse }) {
+export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const navigateTo = useNavigate();
   const { activePage, setActivePage } = useContext(PageContext);
 
@@ -83,6 +83,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
     (s) => s.dealRem
   );
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
+  const { count: bulkCount, loading: bulkLoading } = useSelector((s) => s.bulk);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
     (s) => s.forwarded
   );
@@ -138,6 +139,16 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-pink-500 text-white",
+    },
+    {
+      id: "mark-bulk",
+      label: "Mark Bulk",
+      icon: Layers,
+      loading: bulkLoading,
+      count: bulkCount,
+      color: "text-yellow-600",
+      hover: "hover:bg-yellow-50",
+      countBg: "bg-yellow-500 text-white",
     },
 
     {
@@ -256,8 +267,10 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
         {/* COLLAPSE BUTTON */}
         <button
           onClick={onToggleCollapse}
-          className="absolute -right-3 bottom-10 w-7 h-7 bg-white border border-gray-300 
-                     rounded-full flex items-center justify-center hover:bg-gray-100 shadow"
+          className={`fixed ${
+            collapsed ? "left-23" : "left-62"
+          } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
+                     rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}
         </button>
@@ -285,6 +298,7 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
             <button
               key={item.id}
               onClick={() => {
+                setSidebarCollapsed(true);
                 setActivePage(item.id);
                 navigateTo(item.id);
               }}
@@ -320,7 +334,10 @@ export function Sidebar({ collapsed, onToggleCollapse }) {
 
         {/* SETTINGS BUTTON */}
         <button
-          onClick={() => navigateTo("settings")}
+          onClick={() => {
+            setSidebarCollapsed(true);
+            navigateTo("settings");
+          }}
           className=" fixed bottom-2 cursor-pointer mt-auto flex items-center gap-3 px-3 py-2.5 
                      bg-gray-200 hover:bg-gray-300 rounded-lg transition-all shadow"
         >

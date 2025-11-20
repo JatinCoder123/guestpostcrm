@@ -5,12 +5,14 @@ import {
   Calendar,
   User,
   Download,
-  Pen
+  Pen,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
+import Pagination from "../Pagination";
+import { getInvoices } from "../../store/Slices/invoices";
 
 export function InvoicesPage() {
   const { invoices, count } = useSelector((state) => state.invoices);
@@ -30,7 +32,6 @@ export function InvoicesPage() {
         return "bg-gray-100 text-gray-700";
     }
   };
-
 
   useEffect(() => {
     if (showCreateInvoice) {
@@ -114,9 +115,6 @@ export function InvoicesPage() {
             <FileText className="w-6 h-6 text-yellow-600" />
             <h2 className="text-xl text-gray-900">INVOICES</h2>
           </div>
-          <button className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"  onClick={() => setShowCreateInvoice(true)}>
-            + New Invoice
-          </button>
         </div>
 
         {/* Table */}
@@ -183,12 +181,18 @@ export function InvoicesPage() {
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       {/* Download Button */}
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Download">
+                      <button
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Download"
+                      >
                         <Download className="w-4 h-4 text-gray-600" />
                       </button>
-                      
+
                       {/* Update Button */}
-                      <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors" title="Update">
+                      <button
+                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Update"
+                      >
                         <Pen className="w-4 h-4 text-blue-600" />
                       </button>
                     </div>
@@ -198,6 +202,9 @@ export function InvoicesPage() {
             </tbody>
           </table>
         </div>
+        {invoices?.length > 0 && (
+          <Pagination slice={"invoices"} fn={getInvoices} />
+        )}
 
         {invoices.length === 0 && (
           <div className="p-12 text-center">
@@ -208,8 +215,6 @@ export function InvoicesPage() {
           </div>
         )}
       </div>
-
-      
     </>
   );
 }

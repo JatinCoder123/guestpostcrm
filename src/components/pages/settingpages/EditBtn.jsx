@@ -3,27 +3,21 @@ import { X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useState, useEffect } from "react";
 
-export default function EditPayPal({ item, onClose, handleUpdate }) {
+export default function EditBtn({ item, onClose, handleUpdate, ...props }) {
   // Local form state
   const [form, setForm] = useState({
     id: "",
-    name: "",
-    dev_endpoint: "",
-    production_endpoint: "",
-    production_first_token: "",
-    production_second_token: "",
+    button_label: "",
+    priority: "",
   });
 
   // Fill state when modal opens
   useEffect(() => {
     if (item) {
       setForm({
-        id: item.id,
-        name: item.name || "",
-        dev_endpoint: item.dev_endpoint || "",
-        production_endpoint: item.production_endpoint || "",
-        production_first_token: item.production_first_token || "",
-        production_second_token: item.production_second_token || "",
+        id: item.id || "",
+        button_label: item.button_label || "",
+        priority: item.priority || "",
       });
     }
   }, [item]);
@@ -31,17 +25,22 @@ export default function EditPayPal({ item, onClose, handleUpdate }) {
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
-
   const handleSave = () => {
-    if (!form.name.trim()) {
+    if (!form.button_label.trim()) {
       toast.error("Name cannot be empty");
       return;
     }
 
     const updated = { ...item, ...form };
-    handleUpdate(updated);
-    toast.success("Updated successfully!");
-    onClose();
+    if (item.type == "new") {
+      props.handleCreate(updated);
+      toast.success("Created successfully!");
+      onClose();
+    } else {
+      handleUpdate(updated);
+      toast.success("Updated successfully!");
+      onClose();
+    }
   };
 
   return (
@@ -70,9 +69,7 @@ export default function EditPayPal({ item, onClose, handleUpdate }) {
               <X />
             </button>
 
-            <h2 className="text-2xl font-semibold mb-4">
-              Edit PayPal Settings
-            </h2>
+            <h2 className="text-2xl font-semibold mb-4">Edit Item</h2>
 
             <div className="space-y-4">
               {/* NAME */}
@@ -81,60 +78,21 @@ export default function EditPayPal({ item, onClose, handleUpdate }) {
                   Name
                 </label>
                 <input
-                  value={form.name}
-                  disabled
+                  value={form.button_label}
+                  onChange={(e) => updateField("button_label", e.target.value)}
                   className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
                 />
               </div>
 
-              {/* Dev Endpoint */}
+              {/* TYPE */}
               <div>
                 <label className="text-sm font-medium text-gray-600">
-                  Development Endpoint
+                  Priority
                 </label>
                 <input
-                  value={form.dev_endpoint}
-                  disabled
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
-                />
-              </div>
-
-              {/* Production Endpoint */}
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Production Endpoint
-                </label>
-                <input
-                  value={form.production_endpoint}
-                  disabled
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
-                />
-              </div>
-
-              {/* First Token */}
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  First Token
-                </label>
-                <input
-                  value={form.production_first_token}
-                  onChange={(e) =>
-                    updateField("production_first_token", e.target.value)
-                  }
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
-                />
-              </div>
-
-              {/* Second Token */}
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Second Token
-                </label>
-                <input
-                  value={form.production_second_token}
-                  onChange={(e) =>
-                    updateField("production_second_token", e.target.value)
-                  }
+                  value={form.priority}
+                  type="number"
+                  onChange={(e) => updateField("priority", e.target.value)}
                   className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
                 />
               </div>
@@ -144,7 +102,7 @@ export default function EditPayPal({ item, onClose, handleUpdate }) {
                 onClick={handleSave}
                 className="w-full mt-2 bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 transition"
               >
-                Save Changes
+                {item.type == "new" ? "Create Button" : "Save Changes"}
               </button>
             </div>
           </motion.div>

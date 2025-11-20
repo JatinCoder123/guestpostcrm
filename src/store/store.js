@@ -3,6 +3,7 @@ import ladgerReducer from "./Slices/ladger.js";
 import unrepliedReducer from "./Slices/unrepliedEmails.js";
 import unansweredReducer from "./Slices/unansweredEmails.js";
 import favReducer from "./Slices/favEmailSlice.js";
+import bulkReducer from "./Slices/markBulkSlice.js";
 import forwarededReducer from "./Slices/forwardedEmailSlice.js";
 import dealsReducer from "./Slices/deals.js";
 import offersReducer from "./Slices/offers.js";
@@ -39,5 +40,6 @@ export const store = configureStore({
     paymentRem: paymetnRemReducer,
     linkRem: linkRemReducer,
     user: userReducer,
+    bulk: bulkReducer,
   },
 });

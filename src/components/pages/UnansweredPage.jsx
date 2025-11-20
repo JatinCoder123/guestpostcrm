@@ -7,6 +7,7 @@ import {
   LeafyGreen,
   BarChart,
   Repeat,
+  EqualApproximatelyIcon,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
@@ -108,7 +109,15 @@ export function UnansweredPage() {
             </tbody>
           </table>
         </div>
-        <Pagination slice={"unanswered"} fn={getUnansweredEmails} />
+        {emails?.length > 0 && (
+          <Pagination slice={"unanswered"} fn={getUnansweredEmails} />
+        )}
+        {emails.length === 0 && (
+          <div className="p-12 text-center">
+            <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Unanswered emails yet.</p>
+          </div>
+        )}
       </div>
     </>
   );

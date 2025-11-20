@@ -34,6 +34,7 @@ import { ForwardedPage } from "./components/pages/ForwardedPage";
 import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
+import { MarkBulkPage } from "./components/pages/MarkBulkPage";
 const router = createBrowserRouter([
   {
     path: "",
@@ -111,6 +112,10 @@ const router = createBrowserRouter([
       {
         path: "favourite-emails",
         element: <FavouritePage />,
+      },
+      {
+        path: "mark-bulk",
+        element: <MarkBulkPage />,
       },
 
       {

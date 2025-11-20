@@ -5,6 +5,7 @@ import {
   FileText,
   AlertTriangle,
   BarChart,
+  Shield,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
@@ -88,7 +89,15 @@ export function SpamDetectionPage() {
             </tbody>
           </table>
         </div>
-        <Pagination slice={"detection"} fn={getDetection} />
+        {detection?.length > 0 && (
+          <Pagination slice={"detection"} fn={getDetection} />
+        )}
+        {detection.length === 0 && (
+          <div className="p-12 text-center">
+            <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Credits yet.</p>
+          </div>
+        )}
       </div>
     </>
   );

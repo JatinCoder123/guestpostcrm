@@ -7,7 +7,7 @@ const ladgerSlice = createSlice({
     email: null,
     ladger: [],
     ip: null,
-    ipMails: [],
+    ipMails: null,
     mailersSummary: null,
     pageCount: 1,
     pageIndex: 1,
@@ -43,7 +43,7 @@ const ladgerSlice = createSlice({
     getIpWithEmailRequest(state, action) {
       state.loading = true;
       state.ip = null;
-      state.ipMails = [];
+      state.ipMails = null;
       state.error = null;
     },
     getIpWithEmailSuccess(state, action) {
@@ -133,24 +133,32 @@ export const getLadgerEmail = (email) => {
 export const getIpWithEmail = () => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.getIpWithEmailRequest());
+    const crmDomain = getState()
+      .user.crmEndpoint?.replace("https://", "")
+      ?.replace("http://", "")
+      ?.split("/")[0];
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger&filter=${
-          getState().ladger.timeline
-        }&email=${email}&page=1&page_size=50`,
+      const { ip } = await axios.get(
+        `https://${crmDomain}/index.php?entryPoint=tracker&email=${
+          getState().ladger.email
+        }`,
         {
           withCredentials: false,
         }
       );
-      console.log("Ladger Of Email", data);
+      console.log("IP OF EMAIL", ip);
+      ip = ip.records[0].ip;
+      const { data } = await axios.get(
+        `https://${crmDomain}index.php?entryPoint=tracker&ip=${ip}`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("EMAIL OF IP", data);
       dispatch(
         ladgerSlice.actions.getIpWithEmailSuccess({
-          duplicate: data.duplicate_threads_count,
-          ladger: data.data,
-          mailersSummary: data.mailers_summary,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-          email: email,
+          ip,
+          ipWithMails: data,
         })
       );
       dispatch(ladgerSlice.actions.clearAllErrors());

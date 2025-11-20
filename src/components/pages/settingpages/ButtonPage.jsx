@@ -8,11 +8,12 @@ import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditWebSite from "./EditWebSite";
+import EditBtn from "./EditBtn";
 
 export default function ButtonPage() {
   const [editItem, setEditItem] = useState(null);
 
-  const { loading, data, error, refetch } = useModule({
+  const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
     method: "POST",
     body: {
@@ -23,11 +24,55 @@ export default function ButtonPage() {
       "Content-Type": "application/json",
     },
   });
-
+  const handleCreate = (updatedItem) => {
+    setData((prev) => [{ id: Math.random(), ...updatedItem }, ...prev]);
+    add({
+      url: `${MODULE_URL}&action_type=post_data`,
+      method: "POST",
+      body: {
+        parent_bean: {
+          module: "outr_btn_manager",
+          ...updatedItem,
+        },
+      },
+      headers: {
+        "x-api-key": `${CREATE_DEAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+  };
+  const handleUpdate = (updatedItem) => {
+    setData((prev) =>
+      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
+    );
+    update({
+      url: `${MODULE_URL}&action_type=post_data`,
+      method: "POST",
+      body: {
+        parent_bean: {
+          module: "outr_btn_manager",
+          ...updatedItem,
+        },
+      },
+      headers: {
+        "x-api-key": `${CREATE_DEAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+  };
   return (
     <div className="p-8">
       {/* Header */}
-      <Header text={"Button Manager"} />
+      <Header
+        text={"Button Manager"}
+        handleCreate={() =>
+          setEditItem(() => {
+            return {
+              type: "new",
+            };
+          })
+        }
+      />
       {/* Loading Skeleton */}
       {loading && <Loading text={"Button"} />}
 
@@ -111,7 +156,12 @@ export default function ButtonPage() {
       )}
 
       {/* Edit Modal */}
-      <EditWebSite item={editItem} onClose={() => setEditItem(null)} />
+      <EditBtn
+        item={editItem}
+        onClose={() => setEditItem(null)}
+        handleUpdate={handleUpdate}
+        handleCreate={handleCreate}
+      />
     </div>
   );
 }

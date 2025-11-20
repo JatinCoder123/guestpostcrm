@@ -108,7 +108,9 @@ export function MachineLearningPage() {
                     </span>
                   </td>
                   <td className="p-4 text-gray-700 max-w-[300px]">
-                    <p className="line-clamp-2">{item.description}</p>
+                    <p className="line-clamp-2 " title={item.description}>
+                      {item.description}
+                    </p>
                   </td>
 
                   <td className="p-4 text-right">

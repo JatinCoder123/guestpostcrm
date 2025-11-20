@@ -7,6 +7,7 @@ import {
   LeafyGreen,
   BarChart,
   Repeat,
+  Heart,
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
@@ -14,6 +15,7 @@ import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
+import { getFavEmails } from "../../store/Slices/favEmailSlice";
 export function FavouritePage() {
   const { count, emails } = useSelector((state) => state.fav);
   const [
@@ -100,7 +102,14 @@ export function FavouritePage() {
             </tbody>
           </table>
         </div>
-        <Pagination slice={"unreplied"} fn={getUnrepliedEmail} />
+        {emails.length > 0 && <Pagination slice={"fav"} fn={getFavEmails} />}
+
+        {emails.length === 0 && (
+          <div className="p-12 text-center">
+            <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Favourite emails yet.</p>
+          </div>
+        )}
       </div>
     </>
   );
