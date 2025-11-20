@@ -85,7 +85,7 @@ const RootLayout = () => {
               <div className="p-6">
                 <WelcomeHeader />
                 <Outlet />
-                {showAvatar && <Avatar />}
+                {showAvatar &&<Avatar setShowAvatar={setShowAvatar}/>}
               </div>
               <Footer />
             </main>
