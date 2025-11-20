@@ -118,10 +118,12 @@ const router = createBrowserRouter([
       {
         path: "mark-bulk",
         element: <MarkBulkPage />,
+      },
+      {
         path: "default-report",
         element: <DefaulterPage />,
       },
-       {
+      {
         path: "more-report",
         element: <MorePage />,
       },

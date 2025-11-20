@@ -63,31 +63,6 @@ const WelcomeHeader = () => {
           </div>
         </div>
 
-<<<<<<< HEAD
-        {/* BUSINESS EMAIL BADGE */}
-        {businessEmail && (
-          <div
-            className="
-              flex items-center gap-3 px-5 py-2.5
-              bg-white/20 backdrop-blur-xl
-              border border-white/30 rounded-full
-              shadow-[0_4px_12px_rgba(255,255,255,0.2)]
-              select-none
-            "
-          >
-            <Mail className="w-4 h-4 text-white" />
-            <span
-              className="
-                bg-white text-gray-800 shadow-sm
-                text-sm font-semibold tracking-wide
-                px-3 py-1 rounded-full
-              "
-            >
-              {businessEmail}
-            </span>
-          </div>
-        )}
-=======
         {/* Right: Big Wolf - perfectly sized for h-20 card */}
         <div className="flex-shrink-0 pr-2">
           <img
@@ -96,7 +71,6 @@ const WelcomeHeader = () => {
             className="h-14 w-auto object-contain drop-shadow-md"
           />
         </div>
->>>>>>> f635d4f14897bff9f512b1e3a3d34786134e4ffa
       </div>
     </div>
   );
