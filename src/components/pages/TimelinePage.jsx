@@ -34,6 +34,7 @@ import {
 } from "../../assets/assets";
 import LoadingSkeleton from "../LoadingSkeleton";
 import Pagination from "../Pagination";
+import MoveToDropdown from "../MoveToDropdown";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -43,6 +44,7 @@ export function TimelinePage() {
   const [showIP, setShowIP] = useState(false);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
+  const [showMoveModal, setShowMoveModal] = useState(false);
 
   const { ladger, email, duplicate, mailersSummary, loading, error } =
     useSelector((state) => state.ladger);
@@ -51,6 +53,8 @@ export function TimelinePage() {
     error: sendError,
     message,
   } = useSelector((state) => state.viewEmail);
+
+  const currentThreadId = mailersSummary?.thread_id_c || ladger[1]?.thread_id_c || ladger[0]?.thread_id_c || '';
 
   /** Disable body scroll when modals open */
   useEffect(() => {
@@ -94,6 +98,11 @@ export function TimelinePage() {
       dispatch(viewEmailAction.clearAllMessage());
     }
   }, [dispatch, sendError, sendLoading, message]);
+
+  
+  const handleMoveSuccess = () => {
+    dispatch(getLadgerEmail(email));
+  };
 
   // Stage progress for header chip
   const stageProgress = getStageProgress(mailersSummary?.stage);
@@ -451,16 +460,16 @@ export function TimelinePage() {
                         label: "Forward",
                         action: () => console.log("Open FORWARD"),
                       },
-                      {
-                        icon: (
-                          <img
-                            src="https://img.icons8.com/color/48/resize-four-directions.png"
-                            className="w-6 h-6"
-                          />
-                        ),
-                        label: "Move To",
-                        action: () => console.log("Open MOVE TO"),
-                      },
+                      // {
+                      //   icon: (
+                      //     <img
+                      //       src="https://img.icons8.com/color/48/resize-four-directions.png"
+                      //       className="w-6 h-6"
+                      //     />
+                      //   ),
+                      //   label: "Move To",
+                      //   action: () => setShowMoveModal(true),
+                      // },
                       {
                         icon: (
                           <img
@@ -505,6 +514,11 @@ export function TimelinePage() {
                         </span>
                       </button>
                     ))}
+                    {/* Move To Dropdown Component */}
+                <MoveToDropdown 
+                  currentThreadId={currentThreadId}
+                  onMoveSuccess={handleMoveSuccess}
+                />
                   </div>
                 </>
               )}
@@ -520,65 +534,75 @@ export function TimelinePage() {
                 <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
                 <div className="space-y-6">
-                  {ladger.length > 0 &&
-                    ladger.map((event) => (
-                      <div
-                        key={event.id}
-                        className="relative flex items-center gap-4"
-                      >
-                        {/* Dot */}
-                        <div className="relative z-10 w-16 flex-shrink-0 mt-3   flex items-center justify-center">
-                          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                            <img
-                              width="100"
-                              height="100"
-                              src="https://img.icons8.com/bubbles/100/new-post.png"
-                              alt="new-post"
-                            />
-                          </div>
+  {ladger.length > 0 &&
+    ladger.map((event, index) => {
+      
+      return (
+        <div
+          key={event.id}
+          className="relative flex items-center gap-4"
+        >
+          {/* Dot */}
+          <div className="relative z-10 w-16 flex-shrink-0 mt-3 flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+              <img
+                width="100"
+                height="100"
+                src="https://img.icons8.com/bubbles/100/new-post.png"
+                alt="new-post"
+              />
+            </div>
 
-                          <div
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 
-                                          absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
-                          ></div>
-                        </div>
+            <div
+              className="bg-gradient-to-r from-purple-600 to-blue-600 
+                            absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
+            ></div>
+          </div>
 
-                        {/* Card */}
-                        <div className="flex-1 border-2 rounded-xl p-4 mt-3">
-                          <div className="flex items-center gap-2 justify-between mb-2">
-                            <span className="text-gray-700">
-                              {event.type_c?.charAt(0).toUpperCase() +
-                                event.type_c?.slice(1)}
-                            </span>
+          {/* Card */}
+          <div className="flex-1 border-2 rounded-xl p-4 mt-3">
+            <div className="flex items-center gap-2 justify-between mb-2">
+              <span className="text-gray-700">
+                {event.type_c?.charAt(0).toUpperCase() +
+                  event.type_c?.slice(1)}
+              </span>
 
-                            <span className="text-gray-500 text-sm">
-                              {formatTime(event.date_entered)}
-                            </span>
-                          </div>
-                          {/* optionally add event message preview */}
-                          {event.subject && (
-                            <div className="text-sm text-gray-600">
-                              {event.subject}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+              <span className="text-gray-500 text-sm">
+                {formatTime(event.date_entered)}
+              </span>
+            </div>
+            {/* optionally add event message preview */}
+            {event.subject && (
+              <div className="text-sm text-gray-600">
+                {event.subject}
+              </div>
+            )}
+            
+            {/* Debug Info - Optional: UI में भी show कर सकते हैं */}
+            <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+              <div>ID: {event.id}</div>
+              {event.threadId && <div>Thread: {event.threadId}</div>}
+            </div>
+          </div>
+        </div>
+      );
+    })}
 
-                  {/* END ICON */}
-                  {ladger.length > 0 && (
-                    <div className="relative flex gap-4">
-                      <div className="relative z-10 w-16 flex-shrink-0">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <img
-                            src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
-                            alt=""
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+
+  {/* END ICON */}
+  {ladger.length > 0 && (
+    <div className="relative flex gap-4">
+      <div className="relative z-10 w-16 flex-shrink-0">
+        <div className="w-12 h-12 flex items-center justify-center">
+          <img
+            src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
+            alt=""
+          />
+        </div>
+      </div>
+    </div>
+  )}
+</div>
               </div>
             </div>
             <Pagination slice={"ladger"} fn={getLadgerEmail} />
