@@ -35,6 +35,8 @@ import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
 import { MarkBulkPage } from "./components/pages/MarkBulkPage";
+import { MorePage } from "./components/pages/MorePage";
+import { DefaulterPage } from "./components/pages/Defaulterpage";
 const router = createBrowserRouter([
   {
     path: "",
@@ -116,6 +118,12 @@ const router = createBrowserRouter([
       {
         path: "mark-bulk",
         element: <MarkBulkPage />,
+        path: "default-report",
+        element: <DefaulterPage />,
+      },
+       {
+        path: "more-report",
+        element: <MorePage />,
       },
 
       {

@@ -164,26 +164,43 @@ export function TimelinePage() {
                               </div>
                             </div>
                           </div>
+      <div className="text-gray-800 font-medium">
+        {mailersSummary?.type ?? "N/A"}
+      </div>
+    </div>
+  </div>
 
                           {/* Vertical Divider */}
                           <div className="w-px h-10 bg-gray-200"></div>
 
-                          {/* STATUS */}
-                          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                            <div className="text-sm">
-                              <div className="text-gray-500 text-xs">
-                                Status
-                              </div>
-                              <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+  {/* STATUS */}
+  <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+    <div className="text-sm">
+      <div className="text-gray-500 text-xs">Status</div>
+      <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
 
-                              <div className="text-gray-800 font-medium">
-                                {mailersSummary?.status ?? "N/A"}
-                              </div>
-                            </div>
-                          </div>
+      <div className="text-gray-800 font-medium">
+        {mailersSummary?.status ?? "N/A"}
+      </div>
+    </div>
+  </div>
 
-                          {/* Vertical Divider */}
-                          <div className="w-px h-10 bg-gray-200"></div>
+  {/* Vertical Divider */}
+  <div className="w-px h-10 bg-gray-200"></div>
+
+  {/* STAGE */}
+  <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+    <div className="text-sm">
+      <div className="text-gray-500 text-xs">Stage</div>
+      <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+
+      <div className="text-gray-800 font-medium">
+        {mailersSummary?.stage ?? "N/A"}
+      </div>
+    </div>
+  </div>
+
+</div>
 
                           {/* STAGE */}
                           <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-3 py-2 rounded-md">
@@ -385,6 +402,16 @@ export function TimelinePage() {
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {mailersSummary?.summary ?? "No AI summary available."}
                       </p>
+                      <div>
+                        <motion.button
+  whileHover={{ scale: 1.1 }}
+  whileTap={{ scale: 0.9 }}
+  transition={{ type: "spring", stiffness: 300 }}
+  className="p-2 rounded-full"
+>
+  <img width="40" height="40" src="https://img.icons8.com/office/40/circled-play.png" alt="circled-play"/>
+</motion.button>
+                      </div>
                     </div>
                     {/* Latest Message */}
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
