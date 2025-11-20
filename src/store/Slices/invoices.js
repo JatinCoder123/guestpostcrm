@@ -74,7 +74,7 @@ export const getInvoices = (filter, email) => {
       console.log(`invoices`, data);
       dispatch(
         invoicesSlice.actions.getInvoicesSucess({
-          count: data.data_count ?? 0,
+          count: data.data.length ?? 0,
           invoices: data.data,
         })
       );
@@ -142,13 +142,6 @@ export const createInvoice = (formData) => {
           
           window.open(invoiceUrl, '_blank');
           
-          
-          if (data.includes('alert')) {
-            const alertMatch = data.match(/alert\('([^']+)'/);
-            if (alertMatch && alertMatch[1]) {
-              alert(alertMatch[1]);
-            }
-          }
         }
       }
       
