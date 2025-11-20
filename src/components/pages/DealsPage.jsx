@@ -7,22 +7,27 @@ import {
   User,
 } from "lucide-react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import CreateDeal from "../CreateDeal";
 import { websiteListForDeal } from "../../assets/assets";
 import { getDeals } from "../../store/Slices/deals";
 import Pagination from "../Pagination";
+import { toast } from "react-toastify";
 
 export function DealsPage() {
   const { count, deals, loading, error } = useSelector((state) => state.deals);
   const [validWebsites, setValidWebsites] = useState([]);
-
+  const dispatch = useDispatch();
+  const { timeline, email } = useSelector((state) => state.ladger);
   useEffect(() => {
     const web = websiteListForDeal.filter((web) => {
       return deals.every((deal) => deal.website_c !== web);
     });
     setValidWebsites(web);
+  }, []);
+  useEffect(() => {
+    dispatch(getDeals(timeline, email));
   }, []);
 
   const [showDeal, setShowDeal] = useState(false);
@@ -37,7 +42,7 @@ export function DealsPage() {
       document.body.style.overflow = "auto"; // Cleanup
     };
   }, [showDeal]);
-  if (showDeal) {
+  if (showDeal && validWebsites.length > 0) {
     return (
       <CreateDeal
         validWebsites={validWebsites}
@@ -46,6 +51,9 @@ export function DealsPage() {
         }}
       />
     );
+  }
+  if (showDeal && validWebsites.length == 0) {
+    toast.info("No more deal can be made!");
   }
   return (
     <>

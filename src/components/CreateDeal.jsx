@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import { createDeal, dealsAction, getDeals } from "../store/Slices/deals";
-import { useNavigate } from "react-router-dom";
 
 const LOCAL_KEY = "create_deals_draft_v1";
 const AUTOFILL_AMOUNTS = [1000, 2500, 5000, 10000];
@@ -14,41 +13,104 @@ const AUTOFILL_AMOUNTS = [1000, 2500, 5000, 10000];
 export default function CreateDeal({ onClose, validWebsites }) {
   const { email, timeline } = useSelector((state) => state.ladger);
   const { creating, error, message } = useSelector((state) => state.deals);
+  const dispatch = useDispatch();
+
+  // Helper: create an empty deal (website left empty for now)
+  function createEmptyDeal(seed = Date.now()) {
+    return {
+      id: String(seed) + Math.random().toString(36).slice(2, 7),
+      dealamount: "",
+      website_c: "", // will be auto-filled later
+      email: email,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  // Load initial deals from localStorage, or one empty deal
   const [deals, setDeals] = useState(() => {
     try {
       const raw = localStorage.getItem(LOCAL_KEY);
-      return raw ? JSON.parse(raw) : [createEmptyDeal(0)];
+      if (raw) return JSON.parse(raw);
+      return [createEmptyDeal(0)];
     } catch (e) {
       return [createEmptyDeal(0)];
     }
   });
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const dispatch = useDispatch();
 
+  // Utility: produce a set of currently used websites
+  const usedWebsites = (arr) =>
+    new Set(arr.map((d) => d.website_c).filter(Boolean));
+
+  // Utility: fill empty website_c values in order using available websites
+  const fillEmptyWebsites = (arr) => {
+    const used = new Set();
+    const result = arr.map((d) => ({ ...d })); // shallow clone
+
+    // first mark already assigned ones (respect existing choices)
+    for (const r of result) {
+      if (r.website_c) used.add(r.website_c);
+    }
+
+    // then fill empty slots with the first unused websites (in order)
+    let siteIdx = 0;
+    for (let i = 0; i < result.length; i++) {
+      if (!result[i].website_c) {
+        // find next available site
+        while (
+          siteIdx < validWebsites.length &&
+          used.has(validWebsites[siteIdx])
+        ) {
+          siteIdx++;
+        }
+        if (siteIdx < validWebsites.length) {
+          result[i].website_c = validWebsites[siteIdx];
+          used.add(validWebsites[siteIdx]);
+          siteIdx++;
+        } else {
+          // no more available websites -> leave blank
+          result[i].website_c = "";
+        }
+      }
+    }
+    return result;
+  };
+
+  // After component mounts / whenever validWebsites or deals change,
+  // ensure empty website slots get auto-assigned (only when possible).
+  // This will also fix the initial state case.
   useEffect(() => {
-    // persist drafts
+    setDeals((prev) => {
+      // If there are any empty website slots AND there are available websites,
+      // perform filling; otherwise keep prev as-is to avoid unnecessary re-renders.
+      const hasEmpty = prev.some((d) => !d.website_c);
+      if (!hasEmpty) return prev;
+
+      const filled = fillEmptyWebsites(prev);
+      // If nothing changed, return prev to avoid state update
+      const changed = JSON.stringify(filled) !== JSON.stringify(prev);
+      return changed ? filled : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validWebsites]); // run when available websites change
+
+  // Persist drafts whenever deals change
+  useEffect(() => {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(deals));
   }, [deals]);
 
   useEffect(() => {
-    // ensure active index is valid
     if (activeIndex >= deals.length)
       setActiveIndex(Math.max(0, deals.length - 1));
   }, [deals.length, activeIndex]);
 
-  function createEmptyDeal(seed = Date.now()) {
-    return {
-      id: String(seed) + Math.random().toString(36).slice(2, 7),
-      dealamount: "",
-      website_c: validWebsites[0],
-      email: email,
-      createdAt: new Date().toISOString(),
-    };
-  }
-
+  // Add a new deal and auto-fill websites afterwards
   const addDeal = () => {
-    setDeals((d) => [createEmptyDeal(), ...d]);
+    setDeals((prev) => {
+      const next = [createEmptyDeal(), ...prev];
+      return fillEmptyWebsites(next);
+    });
     setActiveIndex(deals.length);
   };
 
@@ -57,14 +119,23 @@ export default function CreateDeal({ onClose, validWebsites }) {
       toast.warn("At least one deal is required");
       return;
     }
-    const next = deals.filter((_, i) => i !== idx);
-    setDeals(next);
+    setDeals((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      // After removal, refill empty slots (frees up a website)
+      return fillEmptyWebsites(next);
+    });
   };
 
   const updateDeal = (idx, patch) => {
-    setDeals((prev) =>
-      prev.map((d, i) => (i === idx ? { ...d, ...patch } : d))
-    );
+    setDeals((prev) => {
+      const next = prev.map((d, i) => (i === idx ? { ...d, ...patch } : d));
+      // If user cleared website (set to ""), attempt to refill automatic website for that slot
+      if (patch.website_c === "") {
+        return fillEmptyWebsites(next);
+      }
+      // If user set a new website, ensure no duplicates by leaving choices and letting dropdown logic restrict choices.
+      return next;
+    });
   };
 
   const valid = useMemo(
@@ -87,12 +158,12 @@ export default function CreateDeal({ onClose, validWebsites }) {
     }
     dispatch(createDeal(deals));
   };
+
   useEffect(() => {
     if (message) {
       toast.success(message);
       setDeals([createEmptyDeal(0)]);
       localStorage.removeItem(LOCAL_KEY);
-      dispatch(getDeals(timeline, email));
       onClose();
       dispatch(dealsAction.clearAllMessages());
     }
@@ -100,7 +171,8 @@ export default function CreateDeal({ onClose, validWebsites }) {
       toast.error(error);
       dispatch(dealsAction.clearAllErrors());
     }
-  }, [dispatch, creating, error, message]);
+  }, [dispatch, creating, error, message, timeline, email, onClose]);
+
   // Drag & Drop
   const onDragEnd = (result) => {
     if (!result.destination) return;
@@ -110,15 +182,14 @@ export default function CreateDeal({ onClose, validWebsites }) {
     const arr = Array.from(deals);
     const [moved] = arr.splice(src, 1);
     arr.splice(dst, 0, moved);
-    setDeals(arr);
+    // after reorder, re-fill websites to keep uniqueness
+    setDeals(fillEmptyWebsites(arr));
     setActiveIndex(dst);
   };
 
   // Autofill helper
   const applyAutofill = (idx, amount) =>
     updateDeal(idx, { dealamount: amount });
-
-  // Draft save / load handled by localStorage already
 
   return (
     <div className="w-full min-h-[80vh] p-6 bg-gray-50 flex justify-center">
@@ -283,18 +354,38 @@ export default function CreateDeal({ onClose, validWebsites }) {
 
                                   <select
                                     value={deal.website_c}
-                                    onChange={(e) =>
-                                      updateDeal(idx, {
-                                        website_c: e.target.value,
-                                      })
-                                    }
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "") {
+                                        // if user explicitly selects blank, try to auto-fill
+                                        setDeals((prev) => {
+                                          const next = prev.map((d, i) =>
+                                            i === idx
+                                              ? { ...d, website_c: "" }
+                                              : d
+                                          );
+                                          return fillEmptyWebsites(next);
+                                        });
+                                      } else {
+                                        updateDeal(idx, { website_c: val });
+                                      }
+                                    }}
                                     className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
                                   >
-                                    {validWebsites.map((site, i) => (
-                                      <option key={i} value={site}>
-                                        {site}
-                                      </option>
-                                    ))}
+                                    {validWebsites
+                                      .filter(
+                                        (site) =>
+                                          site === deal.website_c || // allow currently selected
+                                          !deals.some(
+                                            (d, i) =>
+                                              d.website_c === site && i !== idx
+                                          ) // hide if selected elsewhere
+                                      )
+                                      .map((site, i) => (
+                                        <option key={i} value={site}>
+                                          {site}
+                                        </option>
+                                      ))}
                                   </select>
                                 </div>
 
@@ -464,9 +555,4 @@ export default function CreateDeal({ onClose, validWebsites }) {
       </div>
     </div>
   );
-}
-
-// Fake submit helper
-function fakeNetworkSubmit(items) {
-  return new Promise((res) => setTimeout(res, 900));
 }
