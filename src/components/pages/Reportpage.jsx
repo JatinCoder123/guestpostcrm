@@ -9,6 +9,7 @@ const ReportPage = () => {
   const [currentEndpoint, setCurrentEndpoint] = useState("");
   const [analyticsData, setAnalyticsData] = useState({});
   const [email] = useState("kartikey@outrightsystems.org");
+  const [showTableDetail, setShowTableDetail] = useState(false);
 
   // API Base URL
   const API_BASE = "https://errika.guestpostcrm.com/index.php";
@@ -66,7 +67,6 @@ const ReportPage = () => {
 
   // Get correct API filter for endpoint
   const getApiFilter = (endpointType, currentFilter) => {
-    // Special filter mapping for specific endpoints
     const specialFilters = {
       unreplied: {
         "today": "today",
@@ -105,7 +105,6 @@ const ReportPage = () => {
       const apiFilter = getApiFilter(endpointType, currentFilter);
       let url = `${API_BASE}?entryPoint=fetch_gpc&type=${endpointType}&filter=${apiFilter}&page=1&page_size=10`;
       
-      // Add parameters based on endpoint requirements
       const allEndpoints = [...endpointsConfig.email, ...endpointsConfig.dashboard];
       const endpointConfig = allEndpoints.find(e => e.key === endpointType);
       
@@ -113,7 +112,6 @@ const ReportPage = () => {
         url += `&email=${encodeURIComponent(email)}`;
       }
 
-      // Special parameters for specific endpoints
       if (endpointType === "view_thread") {
         url += `&thread_id=19a5385c1b1eae73`;
       }
@@ -123,8 +121,6 @@ const ReportPage = () => {
       if (endpointType === "get_post_all") {
         url = `${API_BASE}?entryPoint=get_post_all&show_structure=1&module=Leads`;
       }
-
-      console.log(`🔗 Calling: ${endpointType}`);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -167,7 +163,6 @@ const ReportPage = () => {
           _timestamp: new Date().toISOString()
         };
       } catch (parseError) {
-        console.warn(`JSON parse failed for ${endpointType}`);
         return {
           success: true,
           data_count: "0",
@@ -179,7 +174,6 @@ const ReportPage = () => {
       }
 
     } catch (error) {
-      console.warn(`API call failed for ${endpointType}:`, error.message);
       return {
         success: false,
         data_count: "0",
@@ -201,7 +195,6 @@ const ReportPage = () => {
       let totalCount = 0;
       let successfulEndpoints = 0;
 
-      // Process endpoints in batches to avoid overwhelming
       for (let i = 0; i < endpoints.length; i++) {
         const endpoint = endpoints[i];
         const response = await fetchApiData(endpoint.key, filter);
@@ -225,7 +218,6 @@ const ReportPage = () => {
           successfulEndpoints++;
         }
 
-        // Delay between requests
         if (i < endpoints.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
@@ -233,7 +225,6 @@ const ReportPage = () => {
 
       setEndpointStats(stats);
 
-      // Calculate analytics
       const successRate = endpoints.length > 0 ? (successfulEndpoints / endpoints.length) * 100 : 0;
       
       setAnalyticsData({
@@ -262,6 +253,7 @@ const ReportPage = () => {
     } else {
       setTableData([]);
     }
+    setShowTableDetail(true);
   };
 
   // Handle card click
@@ -270,7 +262,14 @@ const ReportPage = () => {
     setFilter("7days");
     setTableData([]);
     setCurrentEndpoint("");
+    setShowTableDetail(false);
     await loadAllEndpointStats(card);
+  };
+
+  // Handle back button click
+  const handleBackClick = () => {
+    setShowTableDetail(false);
+    setCurrentEndpoint("");
   };
 
   // Effect to reload when filter changes
@@ -299,15 +298,14 @@ const ReportPage = () => {
                   const stat = endpointStats[endpoint.key] || {};
                   return (
                     <div
-                      key={endpoint.key}
-                      className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                      key={endpoint.key} 
+                      className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                         currentEndpoint === endpoint.key
                           ? "border-blue-500 bg-blue-50"
                           : stat.error 
                             ? "border-red-200 bg-red-25" 
                             : "border-gray-200 hover:border-blue-300 hover:bg-blue-25"
                       }`}
-                      onClick={() => loadTableData(endpoint.key)}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -345,6 +343,13 @@ const ReportPage = () => {
                       <div className="text-xs text-gray-500 mt-2">
                         Filter: {stat.apiFilter || getApiFilter(endpoint.key, filter)}
                       </div>
+
+                      <button 
+                        className="w-full mt-3 px-3 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 transition-colors"
+                        onClick={() => loadTableData(endpoint.key)}
+                      >
+                        View Data Table
+                      </button>
                     </div>
                   );
                 })}
@@ -365,25 +370,25 @@ const ReportPage = () => {
         </h3>
         
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
+          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
             <div className="text-2xl font-bold text-blue-600">{analyticsData.totalCount?.toLocaleString() || 0}</div>
-            <div className="text-sm text-blue-700">Total Records</div>
+            <div className="text-sm text-blue-700 font-medium">Total Records</div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
+          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
             <div className="text-2xl font-bold text-green-600">{analyticsData.successfulEndpoints || 0}/{analyticsData.totalEndpoints || 0}</div>
-            <div className="text-sm text-green-700">Active Endpoints</div>
+            <div className="text-sm text-green-700 font-medium">Active Endpoints</div>
           </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
+          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
             <div className="text-2xl font-bold text-purple-600">{analyticsData.successRate || '0'}%</div>
-            <div className="text-sm text-purple-700">Success Rate</div>
+            <div className="text-sm text-purple-700 font-medium">Success Rate</div>
           </div>
-          <div className="text-center p-4 bg-orange-50 rounded-lg">
+          <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
             <div className="text-2xl font-bold text-orange-600">{analyticsData.growth || '+0%'}</div>
-            <div className="text-sm text-orange-700">Growth</div>
+            <div className="text-sm text-orange-700 font-medium">Growth</div>
           </div>
-          <div className="text-center p-4 bg-indigo-50 rounded-lg">
+          <div className="text-center p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200">
             <div className="text-2xl font-bold text-indigo-600">{analyticsData.averagePerEndpoint || 0}</div>
-            <div className="text-sm text-indigo-700">Avg/Endpoint</div>
+            <div className="text-sm text-indigo-700 font-medium">Avg/Endpoint</div>
           </div>
         </div>
 
@@ -394,35 +399,81 @@ const ReportPage = () => {
     );
   };
 
-  // Render data table
+  // Render data table in the same section
   const renderDataTable = () => {
-    if (!currentEndpoint) {
-      return (
-        <div className="bg-white rounded-xl p-8 text-center">
-          <div className="text-gray-400 text-6xl mb-4">📊</div>
-          <h3 className="text-lg font-semibold text-gray-600 mb-2">No Endpoint Selected</h3>
-          <p className="text-gray-500">Click on an endpoint card above to view its data</p>
-        </div>
-      );
-    }
+    if (!currentEndpoint) return null;
 
     const stat = endpointStats[currentEndpoint];
     
     if (!stat || tableData.length === 0) {
       return (
-        <div className="bg-white rounded-xl p-8 text-center">
-          <div className="text-gray-400 text-6xl mb-4">📭</div>
-          <h3 className="text-lg font-semibold text-gray-600 mb-2">
-            {stat?.name || currentEndpoint}
-          </h3>
-          <p className="text-gray-500">
-            {stat?.error ? `Error: ${stat.error}` : "No data available for this endpoint"}
-          </p>
-          {stat && (
-            <div className="mt-4 text-sm text-gray-500">
-              Count: {stat.count} • Filter: {stat.apiFilter} • Status: {stat.success ? 'Success' : 'Failed'}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Header with Back Button - Always shown even when no data */}
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleBackClick}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/20 text-white rounded-lg border border-white/30 hover:bg-white/30 transition-colors shadow-sm backdrop-blur-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Back to Endpoints
+                </button>
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                    <span className="text-2xl">{stat?.icon || '📊'}</span>
+                    {stat?.name || currentEndpoint}
+                  </h3>
+                  <p className="text-sm text-blue-100 mt-1">
+                    No data available • Filter: {stat?.apiFilter || getApiFilter(currentEndpoint, filter)}
+                  </p>
+                </div>
+              </div>
+              <span className={`px-4 py-2 rounded-full text-sm font-medium border backdrop-blur-sm ${
+                stat?.success 
+                  ? 'bg-green-500/20 text-green-100 border-green-300/50' 
+                  : 'bg-red-500/20 text-red-100 border-red-300/50'
+              }`}>
+                {stat?.success ? 'Active' : 'Failed'}
+              </span>
             </div>
-          )}
+          </div>
+          
+          {/* No Data Message */}
+          <div className="p-12 text-center">
+            <div className="text-gray-400 text-6xl mb-4">📭</div>
+            <h3 className="text-2xl font-bold text-gray-600 mb-4">No Data Available</h3>
+            <p className="text-gray-500 text-lg mb-6 max-w-2xl mx-auto">
+              {stat?.error 
+                ? `There was an error loading data for this endpoint: ${stat.error}`
+                : "This endpoint doesn't have any data available for the current filter."
+              }
+            </p>
+            <div className="bg-gray-50 rounded-lg p-6 max-w-2xl mx-auto">
+              <h4 className="font-semibold text-gray-800 mb-3">Endpoint Details:</h4>
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                <div className="text-left">
+                  <span className="font-medium">Endpoint:</span> {currentEndpoint}
+                </div>
+                <div className="text-left">
+                  <span className="font-medium">Category:</span> {stat?.category || 'Unknown'}
+                </div>
+                <div className="text-left">
+                  <span className="font-medium">Filter:</span> {stat?.apiFilter || getApiFilter(currentEndpoint, filter)}
+                </div>
+                <div className="text-left">
+                  <span className="font-medium">Status:</span> 
+                  <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                    stat?.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {stat?.success ? 'Active' : 'Failed'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -431,22 +482,36 @@ const ReportPage = () => {
 
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+        {/* Header with Back Button */}
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                {stat.name}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {tableData.length} records • Filter: {stat.apiFilter}
-              </p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleBackClick}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 text-white rounded-lg border border-white/30 hover:bg-white/30 transition-colors shadow-sm backdrop-blur-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Endpoints
+              </button>
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                  <span className="text-2xl">{stat.icon}</span>
+                  {stat.name}
+                </h3>
+                <p className="text-sm text-blue-100 mt-1">
+                  {tableData.length} records • Filter: {stat.apiFilter} • Total: {stat.count} records
+                </p>
+              </div>
             </div>
-            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+            <span className="px-4 py-2 bg-white/20 text-white rounded-full text-sm font-medium border border-white/30 backdrop-blur-sm">
               {stat.count} total records
             </span>
           </div>
         </div>
         
+        {/* Table */}
         <div className="overflow-x-auto max-h-96">
           <table className="w-full">
             <thead className="bg-gray-50 sticky top-0">
@@ -454,7 +519,7 @@ const ReportPage = () => {
                 {columns.map((column) => (
                   <th 
                     key={column} 
-                    className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200"
+                    className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200"
                   >
                     {column.replace(/_/g, ' ')}
                   </th>
@@ -467,7 +532,7 @@ const ReportPage = () => {
                   {columns.map((column) => (
                     <td 
                       key={column} 
-                      className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 border-b border-gray-200"
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-200"
                     >
                       {typeof row[column] === 'object' 
                         ? JSON.stringify(row[column])
@@ -479,13 +544,21 @@ const ReportPage = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <span>Showing {tableData.length} records</span>
+            <span>Endpoint: {currentEndpoint}</span>
+          </div>
+        </div>
       </div>
     );
   };
 
   // Render filter buttons
   const renderFilters = () => (
-    <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-full overflow-x-auto">
+    <div className="flex gap-2 p-1 bg-white/20 rounded-lg w-full overflow-x-auto backdrop-blur-sm">
       {filterOptions.map((f) => (
         <button
           key={f.key}
@@ -493,7 +566,7 @@ const ReportPage = () => {
           className={`px-4 py-3 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
             filter === f.key 
               ? "bg-white text-blue-600 shadow-sm" 
-              : "text-gray-600 hover:text-gray-900"
+              : "text-white hover:bg-white/20"
           } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={() => setFilter(f.key)}
         >
@@ -507,14 +580,14 @@ const ReportPage = () => {
   const renderDetails = () => {
     return (
       <div className="w-full space-y-6">
-        {/* Header */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        {/* Header with Blue Gradient */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 shadow-lg border border-blue-400">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-white">
                 {selectedCard === 'email' ? "📧 Email Management" : "📊 Business Dashboard"}
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-blue-100 mt-2">
                 {selectedCard === 'email' 
                   ? "Manage email communications, automation, and monitoring" 
                   : "Overview of sales, analytics, and business performance"
@@ -522,10 +595,10 @@ const ReportPage = () => {
               </p>
             </div>
             <div className="text-right">
-              <div className="text-4xl font-bold text-gray-900">
+              <div className="text-4xl font-bold text-white">
                 {loading ? "..." : analyticsData.totalCount?.toLocaleString() || 0}
               </div>
-              <div className="text-green-600 font-medium text-lg">
+              <div className="text-green-300 font-medium text-lg">
                 {analyticsData.growth || "+0%"} growth
               </div>
             </div>
@@ -538,7 +611,7 @@ const ReportPage = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="bg-white rounded-xl p-8 text-center">
+          <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="text-gray-600 mt-4">
               Loading {selectedCard === 'email' ? 'email' : 'dashboard'} endpoints...
@@ -546,14 +619,19 @@ const ReportPage = () => {
           </div>
         )}
 
-        {/* Analytics Overview */}
-        {!loading && renderAnalytics()}
+        {/* Show either Analytics & Endpoints OR Data Table */}
+        {!loading && !showTableDetail && (
+          <>
+            {/* Analytics Overview */}
+            {renderAnalytics()}
 
-        {/* Endpoint Statistics */}
-        {!loading && renderEndpointStats()}
+            {/* Endpoint Statistics */}
+            {renderEndpointStats()}
+          </>
+        )}
 
-        {/* Data Table */}
-        {!loading && renderDataTable()}
+        {/* Show Data Table when View Data Table is clicked */}
+        {!loading && showTableDetail && renderDataTable()}
       </div>
     );
   };
@@ -565,7 +643,7 @@ const ReportPage = () => {
       onClick={() => handleCardClick(cardKey)}
     >
       <div className="flex items-center justify-between mb-6">
-        <div className="p-4 rounded-2xl bg-blue-50 text-blue-600 text-2xl">
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white text-2xl shadow-lg">
           {icon}
         </div>
         <span className="text-base font-medium text-gray-500">Reports</span>
@@ -604,7 +682,10 @@ const ReportPage = () => {
         ) : (
           <button
             className="mb-6 px-6 py-3 rounded-lg bg-white shadow-sm hover:shadow-md transition-all border border-gray-200 text-gray-700 hover:text-gray-900 font-medium flex items-center gap-2"
-            onClick={() => setSelectedCard(null)}
+            onClick={() => {
+              setSelectedCard(null);
+              setShowTableDetail(false);
+            }}
           >
             ← Back to Dashboard Selection
           </button>
