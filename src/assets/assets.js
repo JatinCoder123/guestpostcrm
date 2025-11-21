@@ -43,7 +43,6 @@ export function getDifference(dateString) {
   if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
   if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
   if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
-  if (minutes > 0) parts.push(`${minutes} min${minutes > 1 ? "s" : ""}`);
 
   const formattedDifference = parts.length > 0 ? `(${parts.join(" , ")})` : "";
 

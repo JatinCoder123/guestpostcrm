@@ -34,8 +34,9 @@ import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
 import { MarkBulkPage } from "./components/pages/MarkBulkPage";
-import { MorePage } from "./components/pages/MorePage";
+
 import { DefaulterPage } from "./components/pages/Defaulterpage";
+import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
 import CreateDeal from "./components/CreateDeal";
 const router = createBrowserRouter([
@@ -137,8 +138,8 @@ const router = createBrowserRouter([
         element: <DefaulterPage />,
       },
       {
-        path: "more-report",
-        element: <MorePage />,
+        path: "other",
+        element: <OtherPage />,
       },
 
       {

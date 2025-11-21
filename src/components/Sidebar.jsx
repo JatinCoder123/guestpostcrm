@@ -142,17 +142,6 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
     {
-      id: "mark-bulk",
-      label: "Mark Bulk",
-      icon: Layers,
-      loading: bulkLoading,
-      count: bulkCount,
-      color: "text-yellow-600",
-      hover: "hover:bg-yellow-50",
-      countBg: "bg-yellow-500 text-white",
-    },
-
-    {
       id: "deals",
       label: "Deals",
       icon: Handshake,
@@ -233,29 +222,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-red-50",
       countBg: "bg-red-500 text-white",
     },
-
     {
-      id: "all-report",
-      label: "Report",
-      icon: MessageSquare,
-      loading: paymentRemLoading,
-      count: paymentRemCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
-      id: "default-report",
-      label: "Defaulter",
-      icon: Cog,
-      loading: paymentRemLoading,
-      count: paymentRemCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
-      id: "more-report",
+      id: "other",
       label: "other",
       icon: RectangleEllipsis,
       loading: paymentRemLoading,
