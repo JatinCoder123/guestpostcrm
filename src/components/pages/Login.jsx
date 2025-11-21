@@ -82,7 +82,7 @@ export default function Login() {
         transition={{ duration: 0.6 }}
         className="hidden lg:flex flex-1 items-center justify-center p-6"
       >
-        <div className="w-full h-[88vh] rounded-[30px] overflow-hidden shadow-xl">
+        <div className="w-[35vw] h-[88vh] rounded-[30px] overflow-hidden shadow-xl">
           <video
             className="w-full h-full object-cover"
             autoPlay
