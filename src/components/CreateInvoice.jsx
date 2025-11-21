@@ -19,7 +19,7 @@ export function CreateInvoice({ onClose }) {
   const [formData, setFormData] = useState({
     module: "outr_invoice_fetch",
     name: getFirstNameFromEmail(email), 
-    email: email || 'aditya@outrightsystems.org', 
+    email: email, 
     quantity: "1", 
     value: "70", 
     from_url: "", 
