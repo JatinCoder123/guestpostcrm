@@ -7,6 +7,8 @@ import {
   GamepadIcon,
   Globe,
   Inbox,
+  LucideForkKnifeCrossed,
+  Option,
   Phone,
   Settings2Icon,
   TruckIcon,
@@ -14,7 +16,7 @@ import {
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
-export function MorePage() {
+export function OtherPage() {
   const menuItems = [
     {
       title: "INBOX-2",
@@ -27,6 +29,13 @@ export function MorePage() {
       title: "Spam-2",
       subtitle: "Spam-2 content shown here",
       icon: <TruckIcon className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "paypal-credentials",
+    },
+    {
+      title: "All BackLinks",
+      subtitle: "All BackLinks content shown here",
+      icon: <Option className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "paypal-credentials",
     }

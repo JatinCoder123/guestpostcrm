@@ -255,7 +255,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-blue-500 text-white",
     },
     {
-      id: "more-report",
+      id: "other",
       label: "other",
       icon: RectangleEllipsis,
       loading: paymentRemLoading,

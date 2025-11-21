@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
-import { useState } from "react";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
 

@@ -374,18 +374,16 @@ export function TimelinePage() {
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* AI Summary */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
+                      <div className="flex">
                       <h3 className="text-blue-700 font-semibold mb-2">
                         AI Summary
                       </h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {mailersSummary?.summary ?? "No AI summary available."}
-                      </p>
-                      <div>
+       
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           transition={{ type: "spring", stiffness: 300 }}
-                          className="p-2 rounded-full"
+                          className="pl-2 rounded-full"
                         >
                           <img
                             width="40"
@@ -394,7 +392,11 @@ export function TimelinePage() {
                             alt="circled-play"
                           />
                         </motion.button>
-                      </div>
+                        </div>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {mailersSummary?.summary ?? "No AI summary available."}
+                      </p>
+                      
                     </div>
                     {/* Latest Message */}
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
@@ -415,7 +417,7 @@ export function TimelinePage() {
 
                       {/* Message Content */}
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                        {mailersSummary?.latest_message ??
+                        {mailersSummary?.description ??
                           "No recent message found."}
                       </p>
                     </div>
