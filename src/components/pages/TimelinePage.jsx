@@ -35,6 +35,14 @@ import {
 import LoadingSkeleton from "../LoadingSkeleton";
 import Pagination from "../Pagination";
 import MoveToDropdown from "../MoveToDropdown";
+import {
+  forwardEmail,
+  forwardedAction,
+} from "../../store/Slices/forwardedEmailSlice";
+import Loading, { LoadingChase, LoadingSpin } from "../Loading";
+import LoadingPage from "./LoadingPage";
+import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
+import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -44,6 +52,23 @@ export function TimelinePage() {
   const [showIP, setShowIP] = useState(false);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
+  const { threadId } = useSelector((s) => s.viewEmail);
+  const {
+    forward,
+    error: forwardError,
+    message: forwardMessage,
+  } = useSelector((s) => s.forwarded);
+  const {
+    favourite,
+    error: favouriteError,
+    message: favouriteMessage,
+  } = useSelector((s) => s.fav);
+  const {
+    marking,
+    error: markingError,
+    message: markingMessage,
+  } = useSelector((s) => s.bulk);
+
   const [showMoveModal, setShowMoveModal] = useState(false);
 
   const { ladger, email, duplicate, mailersSummary, loading, error } =
@@ -102,6 +127,37 @@ export function TimelinePage() {
       dispatch(viewEmailAction.clearAllMessage());
     }
   }, [dispatch, sendError, sendLoading, message]);
+
+  useEffect(() => {
+    if (forwardError) {
+      toast.error(forwardError);
+      dispatch(forwardedAction.clearAllErrors());
+    }
+    if (forwardMessage) {
+      toast.success(forwardMessage);
+      dispatch(forwardedAction.clearAllMessages());
+    }
+  }, [dispatch, forwardError, forward, forwardMessage]);
+  useEffect(() => {
+    if (favouriteError) {
+      toast.error(favouriteError);
+      dispatch(favAction.clearAllErrors());
+    }
+    if (favouriteMessage) {
+      toast.success(favouriteMessage);
+      dispatch(favAction.clearAllMessages());
+    }
+  }, [dispatch, favouriteError, favourite, favouriteMessage]);
+  useEffect(() => {
+    if (markingError) {
+      toast.error(markingError);
+      dispatch(bulkAction.clearAllErrors());
+    }
+    if (markingMessage) {
+      toast.success(markingMessage);
+      dispatch(bulkAction.clearAllMessages());
+    }
+  }, [dispatch, markingError, marking, markingMessage]);
 
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
@@ -448,44 +504,40 @@ export function TimelinePage() {
                         action: () => setShowIP(true),
                       },
                       {
-                        icon: (
+                        icon: favourite ? (
+                          <LoadingChase />
+                        ) : (
                           <img
                             src="https://img.icons8.com/color/48/filled-like.png"
                             className="w-6 h-6"
                           />
                         ),
                         label: "Favourite",
-                        action: () => console.log("Open FAVOURITE"),
+                        action: () => dispatch(favEmail(threadId)),
                       },
                       {
-                        icon: (
+                        icon: forward ? (
+                          <LoadingChase />
+                        ) : (
                           <img
                             src="https://img.icons8.com/color/48/redo.png"
                             className="w-6 h-6"
                           />
                         ),
                         label: "Forward",
-                        action: () => console.log("Open FORWARD"),
+                        action: () => dispatch(forwardEmail(threadId)),
                       },
-                      // {
-                      //   icon: (
-                      //     <img
-                      //       src="https://img.icons8.com/color/48/resize-four-directions.png"
-                      //       className="w-6 h-6"
-                      //     />
-                      //   ),
-                      //   label: "Move To",
-                      //   action: () => setShowMoveModal(true),
-                      // },
                       {
-                        icon: (
+                        icon: marking ? (
+                          <LoadingChase />
+                        ) : (
                           <img
                             src="https://img.icons8.com/color/48/bursts.png"
                             className="w-6 h-6"
                           />
                         ),
                         label: "Mark Bulk",
-                        action: () => console.log("Open MARK BULK"),
+                        action: () => dispatch(markingEmail(threadId)),
                       },
                     ].map((btn, i) => (
                       <button

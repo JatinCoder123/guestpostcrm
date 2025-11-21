@@ -29,7 +29,6 @@ import WebsitesPage from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
 import ReportPage from "./components/pages/Reportpage";
-
 import { ForwardedPage } from "./components/pages/ForwardedPage";
 import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -38,10 +37,19 @@ import { MarkBulkPage } from "./components/pages/MarkBulkPage";
 
 import { DefaulterPage } from "./components/pages/Defaulterpage";
 import { OtherPage } from "./components/pages/OtherPage";
+import NotFoundPage from "./components/pages/NotFoundPage";
 const router = createBrowserRouter([
   {
+    path: "*",
+    element: <NotFoundPage />,
+  },
+  {
     path: "",
-    element: <RootLayout />,
+    element: (
+      <ErrorBoundary>
+        <RootLayout />
+      </ErrorBoundary>
+    ),
     children: [
       {
         index: true,
@@ -186,11 +194,11 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <ErrorBoundary>
-          <PageContextProvider>
+        <PageContextProvider>
+          <ErrorBoundary>
             <RouterProvider router={router} />
-          </PageContextProvider>
-        </ErrorBoundary>
+          </ErrorBoundary>
+        </PageContextProvider>
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}

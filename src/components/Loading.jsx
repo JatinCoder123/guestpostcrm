@@ -1,6 +1,8 @@
-import { Mirage, Tailspin } from "ldrs/react";
+import { Mirage, Tailspin, TailChase } from "ldrs/react";
 import "ldrs/react/Mirage.css";
 import "ldrs/react/Tailspin.css";
+import "ldrs/react/NewtonsCradle.css";
+import "ldrs/react/TailChase.css";
 
 export default function Loading({ text }) {
   return (
@@ -18,3 +20,7 @@ export function LoadingSpin() {
     </>
   );
 }
+export function LoadingChase() {
+  return <TailChase size="40" speed="1" color="green" />;
+}
+// Default values shown

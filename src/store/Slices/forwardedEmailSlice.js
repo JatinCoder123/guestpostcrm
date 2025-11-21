@@ -1,15 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { act } from "react";
+import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
 
 const forwardedSlice = createSlice({
   name: "forwarded",
   initialState: {
     loading: false,
+    forward: false,
     emails: [],
     count: 0,
     pageCount: 1,
     pageIndex: 1,
     error: null,
+    message: null,
   },
   reducers: {
     getEmailRequest(state) {
@@ -29,8 +33,26 @@ const forwardedSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    forwardEmailRequest(state) {
+      state.forward = true;
+      state.error = null;
+      state.message = null;
+    },
+    forwardEmailSucess(state, action) {
+      state.forward = false;
+      state.error = null;
+      state.message = action.payload;
+    },
+    forwardEmailFailed(state, action) {
+      state.forward = false;
+      state.error = action.payload;
+      state.message = null;
+    },
     clearAllErrors(state) {
       state.error = null;
+    },
+    clearAllMessages(state) {
+      state.message = null;
     },
   },
 });
@@ -72,6 +94,61 @@ export const getForwardedEmails = (filter, email) => {
           "Fetching Forwarded Emails Failed"
         )
       );
+    }
+  };
+};
+export const forwardEmail = (id) => {
+  return async (dispatch, getState) => {
+    dispatch(forwardedSlice.actions.forwardEmailRequest());
+
+    try {
+      const response = await axios.post(
+        `${MODULE_URL}&action_type=get_data`,
+        {
+          module: "outr_self_test",
+          where: {
+            thread_id: id,
+            name: "forwarded",
+          },
+        },
+        {
+          headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(`Forwarding Check in forwardging`, response.data);
+      const data = response.data;
+      if (!data.success) {
+        throw Error("Already Forwarded ");
+      } else {
+        const response = await axios.post(
+          `${MODULE_URL}&action_type=post_data`,
+          {
+            parent_bean: {
+              module: "outr_self_test",
+              thread_id: id,
+              name: "forwarded",
+            },
+          },
+          {
+            headers: {
+              "x-api-key": `${CREATE_DEAL_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("Response while sendig ", response.data);
+        dispatch(
+          forwardedSlice.actions.forwardEmailSucess(
+            "Email Forwarded Successfully"
+          )
+        );
+        dispatch(forwardedSlice.actions.clearAllErrors());
+      }
+    } catch (error) {
+      dispatch(forwardedSlice.actions.forwardEmailFailed(error.message));
     }
   };
 };
