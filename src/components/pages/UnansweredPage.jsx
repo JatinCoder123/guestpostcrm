@@ -23,13 +23,16 @@ export function UnansweredPage() {
     setShowEmails,
     currentThreadId,
     setCurrentThreadId,
+    email,
+    setEmail,
   ] = useThread();
-  if (showEmail && currentThreadId) {
+  if (showEmail && currentThreadId && email) {
     return (
       <EmailBox
         onClose={() => setShowEmails(false)}
         view={false}
         threadId={currentThreadId}
+        email={email}
       />
     );
   }
@@ -96,6 +99,7 @@ export function UnansweredPage() {
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
+                      setEmail(email.from.split("<")[1].split(">")[0]);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >

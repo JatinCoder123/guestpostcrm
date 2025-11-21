@@ -25,6 +25,7 @@ const useModule = ({
         data: body,
         headers,
       });
+      console.log("IN MODULE", response.data);
       console.log(`${Object.entries(body)} : `, response);
       setData(response.data);
     } catch (err) {

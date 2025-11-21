@@ -26,14 +26,17 @@ export function UnrepliedEmailsPage() {
     setShowEmails,
     currentThreadId,
     setCurrentThreadId,
+    email,
+    setEmail,
   ] = useThread();
   const navigateTo = useNavigate();
-  if (showEmail && currentThreadId) {
+  if (showEmail && currentThreadId && email) {
     return (
       <EmailBox
         onClose={() => setShowEmails(false)}
         view={false}
         threadId={currentThreadId}
+        email={email}
       />
     );
   }
@@ -111,7 +114,7 @@ export function UnrepliedEmailsPage() {
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
-                      na;
+                      setEmail(email.from.split("<")[1].split(">")[0]);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >

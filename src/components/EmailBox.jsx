@@ -1,76 +1,208 @@
-import { Mail, User, Globe, Handshake, Send, Brain, X } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Mail,
+  User,
+  Globe,
+  Handshake,
+  Send,
+  Brain,
+  X,
+  Sparkles,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
-import { TINY_EDITOR_API_KEY } from "../store/constants";
+import {
+  CREATE_DEAL_API_KEY,
+  MODULE_URL,
+  TINY_EDITOR_API_KEY,
+} from "../store/constants";
+import { LoadingChase } from "./Loading";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function EmailBox({ onClose, view, threadId }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
 
-  const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
-  const { threadEmail } = useSelector((s) => s.threadEmail);
-  const { aiReply, loading } = useSelector((s) => s.aiReply);
-  const { email } = useSelector((s) => s.ladger);
-
-  const emails = view ? viewEmail : threadEmail;
   const dispatch = useDispatch();
 
-  // NEW STATES
-  const [messageLimit, setMessageLimit] = useState(3); // initially 3
-  const [showEditorScreen, setShowEditorScreen] = useState(false); // editor hidden
+  const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const { threadEmail } = useSelector((s) => s.threadEmail);
+  const { aiReply } = useSelector((s) => s.aiReply);
+  const { email } = useSelector((s) => s.ladger);
+  const [templateId, setTemplateId] = useState(null);
+  const emails = view ? viewEmail : threadEmail;
+
+  const [messageLimit, setMessageLimit] = useState(3);
+  const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
 
-  // Load AI reply
+  // Negotiation Buttons
+  const [buttons, setButtons] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showNegoButtons, setShowNegoButtons] = useState(false);
+
+  // Template
+  const [template, setTemplate] = useState(null);
+  const [templateLoading, setTemplateLoading] = useState(false);
+
+  // Fetch Negotiation Buttons
   useEffect(() => {
-    if (threadId) {
-      dispatch(getAiReply(threadId));
-    } else if (viewThreadId && view) {
-      dispatch(getAiReply(viewThreadId));
+    setLoading(true);
+    const fetchBtn = async () => {
+      try {
+        const res = await axios.get(
+          `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=offer&email=${email}`
+        );
+        console.log("BUTTON  ", res);
+
+        setButtons(res.data);
+      } catch (e) {
+        toast.error("Failed to load negotiation buttons");
+      }
+      setLoading(false);
+    };
+    fetchBtn();
+  }, [email]);
+
+  // Fetch Template
+  useEffect(() => {
+    setTemplateLoading(true);
+
+    const fetchTemplate = async () => {
+      try {
+        // Get template ID
+        let res = await axios.get(
+          `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=regular&email=${email}`
+        );
+        console.log("TEMPLATE ID ", res);
+        const id = res.data[0].email_template_id;
+
+        // Fetch template body
+        res = await axios.post(
+          `${MODULE_URL}&action_type=get_data`,
+          {
+            module: "EmailTemplates",
+            where: { id },
+          },
+          {
+            headers: {
+              "x-api-key": `${CREATE_DEAL_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("TEMPLATE ", res);
+
+        setTemplate(res.data[0].body_html);
+      } catch (error) {
+        toast.error("Error fetching email template");
+      }
+
+      setTemplateLoading(false);
+    };
+
+    fetchTemplate();
+  }, [email]);
+  // Fetch Template
+  useEffect(() => {
+    setTemplateLoading(true);
+
+    const fetchTemplate = async (templateId) => {
+      try {
+        // Fetch template body
+        const res = await axios.post(
+          `${MODULE_URL}&action_type=get_data`,
+          {
+            module: "EmailTemplates",
+            where: { id: templateId },
+          },
+          {
+            headers: {
+              "x-api-key": `${CREATE_DEAL_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("TEMPLATE WITH ID", res);
+
+        setTemplate(res.data[0].body_html);
+      } catch (error) {
+        toast.error("Error fetching email template");
+      }
+
+      setTemplateLoading(false);
+    };
+    if (templateId) {
+      fetchTemplate();
     }
+  }, [templateId]);
+
+  // Load Template into Editor when ready
+  useEffect(() => {
+    if (template && editorRef.current) {
+      editorRef.current.setContent(template);
+      setInput(template);
+    }
+  }, [template]);
+
+  // AI reply fetch
+  useEffect(() => {
+    if (threadId) dispatch(getAiReply(threadId));
+    else if (viewThreadId && view) dispatch(getAiReply(viewThreadId));
   }, [threadId, viewThreadId]);
 
-  // Insert AI reply into editor
-  useEffect(() => {
-    if (aiReply) {
-      const isHTML = /<[a-z][\s\S]*>/i.test(aiReply);
-      const formatted = isHTML ? aiReply : aiReply.replace(/\n/g, "<br>");
-
-      setInput(formatted);
+  // Function to insert AI reply manually
+  const insertAiReply = () => {
+    if (!aiReply) {
+      toast.error("AI reply not ready yet.");
+      return;
     }
-  }, [aiReply]);
 
+    const isHTML = /<[a-z][\s\S]*>/i.test(aiReply);
+    const formatted = isHTML ? aiReply : aiReply.replace(/\n/g, "<br>");
+
+    setInput(formatted);
+    editorRef.current?.setContent(formatted);
+  };
+
+  // Extract plain text if needed
   const htmlToPlainText = (html) => {
     const temp = document.createElement("div");
     temp.innerHTML = html || "";
     return temp.textContent || temp.innerText || "";
   };
 
-  // FIRST CLICK = show editor
-  // SECOND CLICK = send message
+  // Send Email Logic
   const handleSendClick = () => {
     if (!showEditorScreen) {
       setShowEditorScreen(true);
+
+      // On first open → load template inside editor
+      if (template && editorRef.current) {
+        editorRef.current.setContent(template);
+        setInput(template);
+      }
+
       return;
     }
 
-    let contentToSend =
+    const contentToSend =
       editorRef.current?.getContent({ format: "text" }) ||
       htmlToPlainText(input);
 
     if (view) dispatch(sendEmail(contentToSend));
     else dispatch(sendEmailToThread(threadId, contentToSend));
 
-    setInput("");
     onClose();
+    setInput("");
     editorRef.current?.setContent("");
   };
 
-  // Show only latest messages
   const visibleMessages = emails.slice(-messageLimit);
 
   return (
@@ -91,12 +223,10 @@ export default function EmailBox({ onClose, view, threadId }) {
           </button>
         </div>
 
-        {/* ================================================= */}
-        {/* ============= EDITOR SCREEN ====================== */}
-        {/* ================================================= */}
+        {/* ===================== EDITOR MODE ===================== */}
         {showEditorScreen ? (
           <div className="flex flex-col h-full">
-            {/* BACK BUTTON */}
+            {/* BACK */}
             <button
               onClick={() => setShowEditorScreen(false)}
               className="px-4 py-2 bg-gray-200 text-gray-700 m-4 rounded-lg w-28"
@@ -122,40 +252,71 @@ export default function EmailBox({ onClose, view, threadId }) {
               />
             </div>
 
-            {/* FOOTER WITH ALL BUTTONS */}
+            {/* BUTTON ROW */}
             <div className="p-4 border-t bg-white flex items-start gap-4">
-              {/* BUTTON GRID */}
-              <div className="w-1/5">
-                <div className="grid grid-cols-3 gap-2">
-                  {/* AI Reply */}
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center"
-                  >
-                    <Brain className="w-4 h-4" />
-                  </motion.button>
+              <motion.div
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="relative flex items-center gap-3"
+              >
+                {/* AI Reply */}
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-lg flex items-center justify-center"
+                  onClick={insertAiReply}
+                >
+                  <Brain className="w-4 h-4" />
+                </motion.button>
 
-                  {/* View Mail */}
-                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
-                    <Mail className="w-4 h-4" />
-                  </motion.button>
+                {/* Offer */}
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-3 rounded-lg flex items-center justify-center"
+                >
+                  <Sparkles className="w-4 h-4" />
+                </motion.button>
 
-                  {/* View Contact */}
-                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
-                    <User className="w-4 h-4" />
-                  </motion.button>
+                {/* Negotiation */}
+                <motion.button
+                  onClick={() => setShowNegoButtons((prev) => !prev)}
+                  whileHover={{ scale: 1.08 }}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-lg flex items-center justify-center"
+                >
+                  <Handshake className="w-4 h-4" />
+                </motion.button>
 
-                  {/* View IP */}
-                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
-                    <Globe className="w-4 h-4" />
-                  </motion.button>
-
-                  {/* Create Deal */}
-                  <motion.button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg flex items-center justify-center">
-                    <Handshake className="w-4 h-4" />
-                  </motion.button>
-                </div>
-              </div>
+                {/* Negotiation Dropdown */}
+                <AnimatePresence>
+                  {showNegoButtons && (
+                    <motion.div
+                      initial={{ x: -40, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -40, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="flex gap-3"
+                    >
+                      {loading ? (
+                        <LoadingChase />
+                      ) : (
+                        buttons?.map((b, i) => (
+                          <motion.button
+                            key={i}
+                            whileHover={{ scale: 1.03 }}
+                            onClick={() => {
+                              setTemplateId(b.email_template_id);
+                              setShowNegoButtons(false);
+                            }}
+                            className="w-full p-2 bg-gray-100 rounded-lg border text-left shadow-sm"
+                          >
+                            {b.button_label}
+                          </motion.button>
+                        ))
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
 
               {/* SEND BUTTON */}
               <div className="flex-1 flex justify-end">
@@ -169,11 +330,9 @@ export default function EmailBox({ onClose, view, threadId }) {
             </div>
           </div>
         ) : (
-          /* ================================================= */
-          /* ============= CHAT SCREEN ======================== */
-          /* ================================================= */
+          /* ================= CHAT SCREEN ================= */
           <>
-            {/* LOAD MORE BUTTONS AT TOP */}
+            {/* LOAD MORE */}
             <div className="px-4 pt-4 pb-2 bg-gray-100 flex gap-3">
               {messageLimit < emails.length && (
                 <>
@@ -183,7 +342,6 @@ export default function EmailBox({ onClose, view, threadId }) {
                   >
                     Load More
                   </button>
-
                   <button
                     onClick={() => setMessageLimit(emails.length)}
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg"
@@ -194,7 +352,7 @@ export default function EmailBox({ onClose, view, threadId }) {
               )}
             </div>
 
-            {/* CHAT MESSAGES */}
+            {/* CHAT LIST */}
             <div
               ref={scrollRef}
               className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-6"
@@ -225,7 +383,7 @@ export default function EmailBox({ onClose, view, threadId }) {
               })}
             </div>
 
-            {/* FOOTER - ONLY SEND BUTTON */}
+            {/* CHAT FOOTER */}
             <div className="p-4 border-t bg-white flex justify-end">
               <button
                 onClick={handleSendClick}

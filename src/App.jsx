@@ -37,6 +37,7 @@ import { MarkBulkPage } from "./components/pages/MarkBulkPage";
 import { MorePage } from "./components/pages/MorePage";
 import { DefaulterPage } from "./components/pages/Defaulterpage";
 import NotFoundPage from "./components/pages/NotFoundPage";
+import CreateDeal from "./components/CreateDeal";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -73,6 +74,10 @@ const router = createBrowserRouter([
       {
         path: "deals",
         element: <DealsPage />,
+      },
+      {
+        path: "deals/create",
+        element: <CreateDeal />,
       },
       {
         path: "offers",

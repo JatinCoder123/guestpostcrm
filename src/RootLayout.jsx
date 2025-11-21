@@ -27,6 +27,7 @@ import { getPaymentRem } from "./store/Slices/paymentRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
+
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(false);
@@ -85,7 +86,7 @@ const RootLayout = () => {
               <div className="p-6">
                 <WelcomeHeader />
                 <Outlet />
-                {showAvatar &&<Avatar setShowAvatar={setShowAvatar}/>}
+                {showAvatar && <Avatar setShowAvatar={setShowAvatar} />}
               </div>
               <Footer />
             </main>
