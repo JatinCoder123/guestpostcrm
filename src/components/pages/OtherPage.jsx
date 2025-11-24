@@ -16,6 +16,7 @@ import {
   Settings,
   Settings2Icon,
   Shield,
+  TagIcon,
   TruckIcon,
   Users,
 } from "lucide-react";
@@ -39,7 +40,7 @@ export function OtherPage() {
       link: "paypal-credentials",
     },
     {
-      title: "Defaulter",
+      title: "Defaulters",
       subtitle: "All the defaulters are Listed here",
       icon: <Settings className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
@@ -53,20 +54,26 @@ export function OtherPage() {
       link: "/mark-bulk",
     },
     {
-      title: "Report",
+      title: "Reports",
       subtitle: "Report will be shown here",
       icon: <MessageCircle className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "/all-report",
     },
-     {
+    {
       title: "Spam Detection",
       subtitle: "Spam Emails will be shown here",
       icon: <Shield className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "/spam-detection",
-    }
-
+    },
+    {
+      title: "Tag Manager",
+      subtitle: "Tag manager will be shown here",
+      icon: <TagIcon className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "/spam-detection",
+    },
   ];
 
   return (

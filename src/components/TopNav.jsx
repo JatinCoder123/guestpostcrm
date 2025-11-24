@@ -136,8 +136,6 @@ export function TopNav() {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
-<<<<<<< HEAD
-=======
         {/*WOLF SECTION */}
         {/* <div>
           <img
@@ -155,7 +153,6 @@ export function TopNav() {
         </button>
 
         {/* Notification Button */}
->>>>>>> 3ab28ac581530289708925a60895b923e0539af6
         <button
           onClick={() => {
             navigateTo("avatars");
