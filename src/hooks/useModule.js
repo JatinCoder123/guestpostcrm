@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { base64ToUtf8 } from "../assets/assets";
 
 const useModule = ({
   url,
@@ -7,6 +8,7 @@ const useModule = ({
   body = null,
   headers = {},
   enabled = true,
+  name = null,
   dependencies = [],
 }) => {
   const [loading, setLoading] = useState(false);
@@ -25,9 +27,9 @@ const useModule = ({
         data: body,
         headers,
       });
-      console.log("IN MODULE", response.data);
-      console.log(`${Object.entries(body)} : `, response);
-      setData(response.data);
+      console.log(name, response);
+      let data = response.data;
+      setData(data);
     } catch (err) {
       setError(err);
     } finally {

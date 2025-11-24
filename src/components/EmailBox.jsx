@@ -23,171 +23,104 @@ import {
 import { LoadingChase } from "./Loading";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+import { base64ToUtf8 } from "../assets/assets";
+import useModule from "../hooks/useModule";
 export default function EmailBox({ onClose, view, threadId }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
-
   const dispatch = useDispatch();
-
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
   const { email } = useSelector((s) => s.ladger);
-  const [templateId, setTemplateId] = useState(null);
   const emails = view ? viewEmail : threadEmail;
-
   const [messageLimit, setMessageLimit] = useState(3);
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
-
-  // Negotiation Buttons
-  const [buttons, setButtons] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [showNegoButtons, setShowNegoButtons] = useState(false);
 
-  // Template
-  const [template, setTemplate] = useState(null);
-  const [templateLoading, setTemplateLoading] = useState(false);
+  // template
+  const [templateId, setTemplateId] = useState(null);
+  // FIX: Track if editor is initialized
+  const [editorReady, setEditorReady] = useState(false);
+  const { loading, data: buttons } = useModule({
+    url: `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=offer&email=${email}`,
+    name: "BUTTONS",
+    dependencies: [email],
+  });
+  const { loading: defTemplateLoading, data: defaultTemplate } = useModule({
+    url: `https://errika.guestpostcrm.com/?entryPoint=updateOffer&email=${email}`,
+    name: "DEFAULT TEMPLATE",
+    dependencies: [email],
+  });
+  const { loading: templateLoading, data: template } = useModule({
+    url: `${MODULE_URL}&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: { id: templateId },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: `TEMPLATE WITH ID ${templateId}`,
+    dependencies: [templateId],
+    enabled: templateId,
+  });
 
-  // Fetch Negotiation Buttons
   useEffect(() => {
-    setLoading(true);
-    const fetchBtn = async () => {
-      try {
-        const res = await axios.get(
-          `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=offer&email=${email}`
-        );
-        console.log("BUTTON  ", res);
-
-        setButtons(res.data);
-      } catch (e) {
-        toast.error("Failed to load negotiation buttons");
-      }
-      setLoading(false);
-    };
-    fetchBtn();
-  }, [email]);
-
-  // Fetch Template
-  useEffect(() => {
-    setTemplateLoading(true);
-
-    const fetchTemplate = async () => {
-      try {
-        // Get template ID
-        let res = await axios.get(
-          `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=regular&email=${email}`
-        );
-        console.log("TEMPLATE ID ", res);
-        const id = res.data[0].email_template_id;
-
-        // Fetch template body
-        res = await axios.post(
-          `${MODULE_URL}&action_type=get_data`,
-          {
-            module: "EmailTemplates",
-            where: { id },
-          },
-          {
-            headers: {
-              "x-api-key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("TEMPLATE ", res);
-
-        setTemplate(res.data[0].body_html);
-      } catch (error) {
-        toast.error("Error fetching email template");
-      }
-
-      setTemplateLoading(false);
-    };
-
-    fetchTemplate();
-  }, [email]);
-  // Fetch Template
-  useEffect(() => {
-    setTemplateLoading(true);
-
-    const fetchTemplate = async (templateId) => {
-      try {
-        // Fetch template body
-        const res = await axios.post(
-          `${MODULE_URL}&action_type=get_data`,
-          {
-            module: "EmailTemplates",
-            where: { id: templateId },
-          },
-          {
-            headers: {
-              "x-api-key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("TEMPLATE WITH ID", res);
-
-        setTemplate(res.data[0].body_html);
-      } catch (error) {
-        toast.error("Error fetching email template");
-      }
-
-      setTemplateLoading(false);
-    };
-    if (templateId) {
-      fetchTemplate();
+    if (template && editorReady && editorRef.current) {
+      editorRef.current.setContent(template[0].body_html);
+      setInput(template[0].body_html);
+    } else if (defaultTemplate && editorReady && editorRef.current) {
+      editorRef.current.setContent(base64ToUtf8(defaultTemplate.html_base64));
+      setInput(base64ToUtf8(defaultTemplate.html_base64));
     }
-  }, [templateId]);
+  }, [template, defaultTemplate, editorReady]);
 
-  // Load Template into Editor when ready
-  useEffect(() => {
-    if (template && editorRef.current) {
-      editorRef.current.setContent(template);
-      setInput(template);
-    }
-  }, [template]);
-
-  // AI reply fetch
+  /* ----------------------------
+        AI Reply Logic
+  ----------------------------- */
   useEffect(() => {
     if (threadId) dispatch(getAiReply(threadId));
     else if (viewThreadId && view) dispatch(getAiReply(viewThreadId));
   }, [threadId, viewThreadId]);
 
-  // Function to insert AI reply manually
   const insertAiReply = () => {
     if (!aiReply) {
       toast.error("AI reply not ready yet.");
       return;
     }
-
-    const isHTML = /<[a-z][\s\S]*>/i.test(aiReply);
-    const formatted = isHTML ? aiReply : aiReply.replace(/\n/g, "<br>");
-
+    const formatted = /<[a-z][\s\S]*>/i.test(aiReply)
+      ? aiReply
+      : aiReply.replace(/\n/g, "<br>");
+    setTemplateId(null);
     setInput(formatted);
     editorRef.current?.setContent(formatted);
   };
 
-  // Extract plain text if needed
+  /* ----------------------------
+        SEND EMAIL
+  ----------------------------- */
   const htmlToPlainText = (html) => {
     const temp = document.createElement("div");
     temp.innerHTML = html || "";
     return temp.textContent || temp.innerText || "";
   };
 
-  // Send Email Logic
   const handleSendClick = () => {
     if (!showEditorScreen) {
       setShowEditorScreen(true);
 
-      // On first open → load template inside editor
       if (template && editorRef.current) {
-        editorRef.current.setContent(template);
-        setInput(template);
+        editorRef.current.setContent(template[0].body_html);
+        setInput(template[0].body_html);
       }
-
+      if (defaultTemplate && editorRef.current) {
+        editorRef.current.setContent(base64ToUtf8(defaultTemplate.html_base64));
+        setInput(base64ToUtf8(defaultTemplate.html_base64));
+      }
       return;
     }
 
@@ -223,10 +156,10 @@ export default function EmailBox({ onClose, view, threadId }) {
           </button>
         </div>
 
-        {/* ===================== EDITOR MODE ===================== */}
+        {/* ===================== EDITOR SCREEN ===================== */}
         {showEditorScreen ? (
           <div className="flex flex-col h-full">
-            {/* BACK */}
+            {/* BACK BTN */}
             <button
               onClick={() => setShowEditorScreen(false)}
               className="px-4 py-2 bg-gray-200 text-gray-700 m-4 rounded-lg w-28"
@@ -239,10 +172,13 @@ export default function EmailBox({ onClose, view, threadId }) {
               <Editor
                 apiKey={TINY_EDITOR_API_KEY}
                 value={input}
-                onInit={(e, editor) => (editorRef.current = editor)}
+                onInit={(e, editor) => {
+                  editorRef.current = editor;
+                  setEditorReady(true); // FIX
+                }}
                 onEditorChange={setInput}
                 init={{
-                  height: 350,
+                  height: 400,
                   menubar: false,
                   toolbar:
                     "undo redo | bold italic underline | bullist numlist | removeformat",
@@ -252,41 +188,49 @@ export default function EmailBox({ onClose, view, threadId }) {
               />
             </div>
 
-            {/* BUTTON ROW */}
+            {/* ACTION ROW */}
             <div className="p-4 border-t bg-white flex items-start gap-4">
               <motion.div
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.3 }}
                 className="relative flex items-center gap-3"
               >
-                {/* AI Reply */}
+                {/* AI REPLY */}
                 <motion.button
                   whileHover={{ scale: 1.08 }}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-lg flex items-center justify-center"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-lg"
                   onClick={insertAiReply}
                 >
                   <Brain className="w-4 h-4" />
                 </motion.button>
-
-                {/* Offer */}
+                {/* DEFAULT TEMPLATE */}
                 <motion.button
                   whileHover={{ scale: 1.08 }}
-                  className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-3 rounded-lg flex items-center justify-center"
+                  className="bg-gradient-to-r from-gray-600 to-gray-800 text-white p-3 rounded-lg"
+                  onClick={() => {
+                    setTemplateId(null);
+                    setShowNegoButtons(false);
+                    if (defaultTemplate && editorRef.current) {
+                      editorRef.current.setContent(
+                        base64ToUtf8(defaultTemplate.html_base64)
+                      );
+                      setInput(base64ToUtf8(defaultTemplate.html_base64));
+                    }
+                  }}
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Mail className="w-4 h-4" />
                 </motion.button>
-
-                {/* Negotiation */}
+                {/* NEGOTIATION */}
                 <motion.button
-                  onClick={() => setShowNegoButtons((prev) => !prev)}
+                  onClick={() => setShowNegoButtons((p) => !p)}
                   whileHover={{ scale: 1.08 }}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-lg flex items-center justify-center"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-lg"
                 >
                   <Handshake className="w-4 h-4" />
                 </motion.button>
 
-                {/* Negotiation Dropdown */}
+                {/* NEGOTIATION BUTTON LIST */}
                 <AnimatePresence>
                   {showNegoButtons && (
                     <motion.div
@@ -330,7 +274,7 @@ export default function EmailBox({ onClose, view, threadId }) {
             </div>
           </div>
         ) : (
-          /* ================= CHAT SCREEN ================= */
+          /* ===================== CHAT SCREEN ===================== */
           <>
             {/* LOAD MORE */}
             <div className="px-4 pt-4 pb-2 bg-gray-100 flex gap-3">
@@ -352,7 +296,7 @@ export default function EmailBox({ onClose, view, threadId }) {
               )}
             </div>
 
-            {/* CHAT LIST */}
+            {/* MESSAGES */}
             <div
               ref={scrollRef}
               className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-6"
@@ -383,7 +327,7 @@ export default function EmailBox({ onClose, view, threadId }) {
               })}
             </div>
 
-            {/* CHAT FOOTER */}
+            {/* FOOTER */}
             <div className="p-4 border-t bg-white flex justify-end">
               <button
                 onClick={handleSendClick}
