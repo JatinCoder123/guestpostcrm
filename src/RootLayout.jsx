@@ -29,6 +29,8 @@ import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
 import { getAllAvatar } from "./store/Slices/avatarSlice";
 
+import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
+import { getmovedEmails } from "./store/Slices/movedEmails";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
@@ -58,6 +60,8 @@ const RootLayout = () => {
     dispatch(getOrderRem(timeline, enteredEmail));
     dispatch(getLinkRem(timeline, enteredEmail));
     dispatch(getPaymentRem(timeline, enteredEmail));
+    dispatch(getdefaulterEmails(timeline, enteredEmail));
+    dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getViewEmail());
     dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);

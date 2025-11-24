@@ -40,6 +40,7 @@ import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
 import CreateDeal from "./components/CreateDeal";
 import AvatarPage from "./components/pages/AvatarPage";
+import { MovedPage } from "./components/pages/MovedEmails";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -137,6 +138,10 @@ const router = createBrowserRouter([
       {
         path: "default-report",
         element: <DefaulterPage />,
+      },
+       {
+        path: "moved-emails",
+        element: <MovedPage />,
       },
       {
         path: "other",

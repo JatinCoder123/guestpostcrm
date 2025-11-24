@@ -1,52 +1,131 @@
 import {
-  Clock9Icon,
-  Cpu,
-  CreditCard,
-  FileCog,
-  Gamepad2,
-  GamepadIcon,
-  Globe,
-  LucideMagnet,
-  Phone,
-  Settings2Icon,
-  Users,
+  Mail,
+  Calendar,
+  User,
+  FileText,
+  MessageSquare,
+  LeafyGreen,
+  BarChart,
+  Repeat,
+  EqualApproximatelyIcon,
 } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
 
+import { useDispatch, useSelector } from "react-redux";
+import EmailBox from "../EmailBox";
+import useThread from "../../hooks/useThread";
+import Pagination from "../Pagination";
+import { getdefaulterEmails } from "../../store/Slices/defaulterEmails";
+import { useEffect } from "react";
 export function DefaulterPage() {
-  const menuItems = [
-    {
-      title: "Defaulter Management content will show here",
-      icon: <LucideMagnet className="w-8 h-8 text-blue-600" />,
-      bg: "bg-blue-50"
-     
-    },
-   
-  ];
+  const { count, emails } = useSelector((state) => state.defaulter);
+  
+  const dispatch = useDispatch();
+  const [
+    handleThreadClick,
+    showEmail,
+    setShowEmails,
+    currentThreadId,
+    setCurrentThreadId,
+  ] = useThread();
+  if (showEmail && currentThreadId) {
+    return (
+      <EmailBox
+        onClose={() => setShowEmails(false)}
+        view={false}
+        threadId={currentThreadId}
+      />
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-6">Defaulter</h2>
+    <>
+      {/* defaulter Section */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <MessageSquare className="w-6 h-6 text-purple-600" />
+            <h2 className="text-xl text-gray-900">Defaulter EMAILS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
+          </div>
+          <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
+            {count} defaulter
+          </span>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {menuItems.map((item, index) => (
-          <Link
-            to={item.link}
-            key={index}
-            className={`${item.bg} p-6 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition block`}
-          >
-            <div>{item.icon}</div>
-
-            <h3 className="mt-4 text-xl font-semibold">{item.title}</h3>
-            <p className="text-gray-600 text-sm mt-1">{item.subtitle}</p>
-          </Link>
-        ))}
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>DATE</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>Name</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span>SUBJECT</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <BarChart className="w-4 h-4" />
+                    <span>THREAD SIZE</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {emails.map((email, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{email.date_entered}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
+                  <td
+                    onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                    }}
+                    className="px-6 py-4 text-purple-600"
+                  >
+                    {email.subject}
+                  </td>
+                  <td className="px-6 py-4 text-purple-600">
+                    {email.thread_count}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {emails?.length > 0 && (
+          <Pagination slice={"defaulter"} fn={getdefaulterEmails} />
+        )}
+        {emails.length === 0 && (
+          <div className="p-12 text-center">
+            <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No defaulter emails yet.</p>
+          </div>
+        )}
       </div>
-
-      {/* Child pages will load here */}
-      <div className="mt-10">
-        <Outlet />
-      </div>
-    </div>
+    </>
   );
 }

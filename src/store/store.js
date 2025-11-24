@@ -20,12 +20,15 @@ import paymetnRemReducer from "./Slices/paymentRem.js";
 import dealRemReducer from "./Slices/dealRem.js";
 import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
+import defaulterReducer from "./Slices/defaulterEmails.js";
+import movederReducer from "./Slices/movedEmails.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
     unreplied: unrepliedReducer,
     unanswered: unansweredReducer,
     fav: favReducer,
+    moved: movederReducer,
     forwarded: forwarededReducer,
     deals: dealsReducer,
     orders: orderReducer,
@@ -43,5 +46,6 @@ export const store = configureStore({
     user: userReducer,
     bulk: bulkReducer,
     avatar: avatarReducer,
+    defaulter: defaulterReducer,
   },
 });

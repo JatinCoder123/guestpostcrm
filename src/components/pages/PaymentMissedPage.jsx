@@ -23,6 +23,7 @@ export function PaymentMissedPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Payments Reminder</p>
+              
               <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -75,6 +76,9 @@ export function PaymentMissedPage() {
           <div className="flex items-center gap-3">
             <CreditCard className="w-6 h-6 text-red-600" />
             <h2 className="text-xl text-gray-900">PAYMENT REMINDERS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
             Send Reminders

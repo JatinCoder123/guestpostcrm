@@ -6,6 +6,7 @@ import {
   X,
   User2Icon,
   ChevronDown,
+  Flame,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -135,6 +136,26 @@ export function TopNav() {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
+<<<<<<< HEAD
+=======
+        {/*WOLF SECTION */}
+        {/* <div>
+          <img
+            src="https://errika.guestpostcrm.com/images/image%20(8).jpg"
+            alt="wolf"
+            className="w-10 h-10"
+          />
+        </div> */}
+         {/* Hot Button */}
+        <button
+          onClick={() => setShowAvatar((prev) => !prev)}
+          className="flex cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
+          <Flame className="w-4 h-4" />
+        </button>
+
+        {/* Notification Button */}
+>>>>>>> 3ab28ac581530289708925a60895b923e0539af6
         <button
           onClick={() => {
             navigateTo("avatars");

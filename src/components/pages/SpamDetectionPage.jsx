@@ -23,6 +23,9 @@ export function SpamDetectionPage() {
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl text-gray-900">SPAM DETECTION</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <span className="px-4 py-1.5 bg-orange-100 text-orange-700 rounded-full">
             {count} Spam Detected
