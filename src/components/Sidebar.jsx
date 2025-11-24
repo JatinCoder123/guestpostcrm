@@ -185,7 +185,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
     {
-      id: "link-removal",
+      id: "link-exchange",
       label: "Link Exchange",
       icon: Link,
       loading: linkRemLoading,
