@@ -353,7 +353,6 @@ export function TimelinePage() {
                       { icon: <Globe className="w-5 h-5" />, label: "IP", action: () => setShowIP(true) },
                       { icon: favourite ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/filled-like.png" className="w-6 h-6" alt="fav" />, label: "Favourite", action: () => dispatch(favEmail(threadId)) },
                       { icon: forward ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/redo.png" className="w-6 h-6" alt="forward" />, label: "Forward", action: () => dispatch(forwardEmail(threadId)) },
-                      { icon: <Link className="w-5 h-5" />, label: "Backlink-report", action: () => console.log("Backlink Report") },
                       { icon: marking ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/bursts.png" className="w-6 h-6" alt="bulk" />, label: "Mark Bulk", action: () => dispatch(markingEmail(threadId)) },
                     ].map((btn, i) => (
                       <button

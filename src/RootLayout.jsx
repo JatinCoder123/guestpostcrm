@@ -27,6 +27,7 @@ import { getPaymentRem } from "./store/Slices/paymentRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
+import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(false);
@@ -56,6 +57,7 @@ const RootLayout = () => {
     dispatch(getOrderRem(timeline, enteredEmail));
     dispatch(getLinkRem(timeline, enteredEmail));
     dispatch(getPaymentRem(timeline, enteredEmail));
+    dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getViewEmail());
   }, [enteredEmail, timeline]);
 

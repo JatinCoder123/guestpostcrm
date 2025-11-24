@@ -102,16 +102,6 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-red-500 text-white",
     },
     {
-      id: "spam-detection",
-      label: "Spam Detection",
-      icon: Shield,
-      loading: detectionLoading,
-      count: detectionCount,
-      color: "text-orange-600",
-      hover: "hover:bg-orange-50",
-      countBg: "bg-orange-500 text-white",
-    },
-    {
       id: "unanswered",
       label: "Unanswered",
       icon: MessageSquare,
@@ -224,7 +214,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "other",
-      label: "other",
+      label: "Others",
       icon: RectangleEllipsis,
       loading: paymentRemLoading,
       count: paymentRemCount,

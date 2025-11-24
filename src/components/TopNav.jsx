@@ -6,6 +6,7 @@ import {
   X,
   User2Icon,
   ChevronDown,
+  Flame,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -143,6 +144,14 @@ export function TopNav({ setShowAvatar }) {
             className="w-10 h-10"
           />
         </div> */}
+         {/* Hot Button */}
+        <button
+          onClick={() => setShowAvatar((prev) => !prev)}
+          className="flex cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
+          <Flame className="w-4 h-4" />
+        </button>
+
         {/* Notification Button */}
         <button
           onClick={() => setShowAvatar((prev) => !prev)}

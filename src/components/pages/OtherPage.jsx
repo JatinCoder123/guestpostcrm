@@ -14,6 +14,7 @@ import {
   Phone,
   Settings,
   Settings2Icon,
+  Shield,
   TruckIcon,
   Users,
 } from "lucide-react";
@@ -56,7 +57,15 @@ export function OtherPage() {
       icon: <MessageCircle className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "/all-report",
+    },
+     {
+      title: "Spam Detection",
+      subtitle: "Spam Emails will be shown here",
+      icon: <Shield className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "/spam-detection",
     }
+
   ];
 
   return (
