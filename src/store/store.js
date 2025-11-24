@@ -19,6 +19,7 @@ import orderRemReducer from "./Slices/orderRem.js";
 import paymetnRemReducer from "./Slices/paymentRem.js";
 import dealRemReducer from "./Slices/dealRem.js";
 import userReducer from "./Slices/userSlice.js";
+import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
 import movederReducer from "./Slices/movedEmails.js";
 export const store = configureStore({
@@ -44,6 +45,7 @@ export const store = configureStore({
     linkRem: linkRemReducer,
     user: userReducer,
     bulk: bulkReducer,
+    avatar: avatarReducer,
     defaulter: defaulterReducer,
   },
 });

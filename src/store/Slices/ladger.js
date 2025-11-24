@@ -133,26 +133,15 @@ export const getLadgerEmail = (email) => {
 export const getIpWithEmail = () => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.getIpWithEmailRequest());
-    const crmDomain = getState()
-      .user.crmEndpoint?.replace("https://", "")
-      ?.replace("http://", "")
-      ?.split("/")[0];
+    const crmDomain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const { ip } = await axios.get(
-        `https://${crmDomain}/index.php?entryPoint=tracker&email=${
-          getState().ladger.email
-        }`,
-        {
-          withCredentials: false,
-        }
+      const response = await axios.get(
+        `${crmDomain}?entryPoint=tracker&email=${getState().ladger.email}`
       );
-      console.log("IP OF EMAIL", ip);
+      console.log("IP OF EMAIL", response);
       ip = ip.records[0].ip;
       const { data } = await axios.get(
-        `https://${crmDomain}index.php?entryPoint=tracker&ip=${ip}`,
-        {
-          withCredentials: false,
-        }
+        `${crmDomain}index.php?entryPoint=tracker&ip=${ip}`
       );
       console.log("EMAIL OF IP", data);
       dispatch(

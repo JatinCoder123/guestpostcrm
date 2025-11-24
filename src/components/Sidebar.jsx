@@ -22,6 +22,8 @@ import {
   Cog,
   Layers,
   RectangleEllipsis,
+  Link2Off,
+  Link,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -183,6 +185,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
 
+    {
+      id: "link-removal",
+      label: "Link Exchange",
+      icon: Link,
+      loading: linkRemLoading,
+      count: linkRemCount,
+      color: "text-pink-600",
+      hover: "hover:bg-pink-50",
+      countBg: "bg-pink-500 text-white",
+    },
     {
       id: "deal-reminders",
       label: "Deal Reminders",

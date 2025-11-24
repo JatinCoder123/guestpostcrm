@@ -53,6 +53,9 @@ const dealsSlice = createSlice({
     clearAllMessages(state) {
       state.message = null;
     },
+    UpdateDeals(state, action) {
+      state.deals = action.payload;
+    },
   },
 });
 

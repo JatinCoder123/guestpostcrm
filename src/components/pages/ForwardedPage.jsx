@@ -92,7 +92,7 @@ export function ForwardedPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{email.date_entered}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-900">{email.from}</td>
