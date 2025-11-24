@@ -10,6 +10,7 @@ import {
   Layers,
   LucideForkKnifeCrossed,
   MessageCircle,
+  Move,
   Option,
   Phone,
   Settings,
@@ -27,7 +28,7 @@ export function OtherPage() {
       subtitle: "inside it Inbox-2 and Spam-2 will be shown",
       icon: <Inbox className="w-8 h-8 text-blue-600" />,
       bg: "bg-blue-50",
-      link: null,
+      link: "/moved-emails",
     },
 
     {

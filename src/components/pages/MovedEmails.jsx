@@ -14,9 +14,9 @@ import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
-import { getUnansweredEmails } from "../../store/Slices/unansweredEmails";
-export function UnansweredPage() {
-  const { count, emails } = useSelector((state) => state.unanswered);
+import { getmovedEmails } from "../../store/Slices/movedEmails";
+export function MovedPage() {
+  const { count, emails } = useSelector((state) => state.moved);
   const [
     handleThreadClick,
     showEmail,
@@ -35,19 +35,19 @@ export function UnansweredPage() {
   }
   return (
     <>
-      {/* Unanswered Section */}
+      {/* Moved Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl text-gray-900">UNANSWERED EMAILS</h2>
+            <h2 className="text-xl text-gray-900">MOVED EMAILS</h2>
              <a href="">
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
-            {count} Unanswered
+            {count} Moved
           </span>
         </div>
 
@@ -91,10 +91,10 @@ export function UnansweredPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{email.date_entered}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
+                  <td className="px-6 py-4 text-gray-900">{email.email}</td>
                   <td
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
@@ -113,12 +113,12 @@ export function UnansweredPage() {
           </table>
         </div>
         {emails?.length > 0 && (
-          <Pagination slice={"unanswered"} fn={getUnansweredEmails} />
+          <Pagination slice={"moved"} fn={getmovedEmails} />
         )}
         {emails.length === 0 && (
           <div className="p-12 text-center">
             <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No Unanswered emails yet.</p>
+            <p className="text-gray-500">No Moved emails yet.</p>
           </div>
         )}
       </div>

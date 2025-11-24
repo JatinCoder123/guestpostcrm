@@ -20,12 +20,14 @@ import paymetnRemReducer from "./Slices/paymentRem.js";
 import dealRemReducer from "./Slices/dealRem.js";
 import userReducer from "./Slices/userSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
+import movederReducer from "./Slices/movedEmails.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
     unreplied: unrepliedReducer,
     unanswered: unansweredReducer,
     fav: favReducer,
+    moved: movederReducer,
     forwarded: forwarededReducer,
     deals: dealsReducer,
     orders: orderReducer,

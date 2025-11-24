@@ -371,9 +371,12 @@ export function TimelinePage() {
 
                   {/* TIMELINE */}
                   <div className="py-[2%] px-[30%]">
+                    
                     <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-4xl text-center text-white">
                       TIMELINE
+                      
                     </h1>
+                    
                     <div className="relative">
                       <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
                       <div className="space-y-6">

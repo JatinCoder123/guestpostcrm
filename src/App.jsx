@@ -38,6 +38,7 @@ import { MarkBulkPage } from "./components/pages/MarkBulkPage";
 import { DefaulterPage } from "./components/pages/Defaulterpage";
 import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
+import { MovedPage } from "./components/pages/MovedEmails";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -131,6 +132,10 @@ const router = createBrowserRouter([
       {
         path: "default-report",
         element: <DefaulterPage />,
+      },
+       {
+        path: "moved-emails",
+        element: <MovedPage />,
       },
       {
         path: "other",
