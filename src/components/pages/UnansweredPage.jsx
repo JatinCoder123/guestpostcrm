@@ -32,7 +32,7 @@ export function UnansweredPage() {
         onClose={() => setShowEmails(false)}
         view={false}
         threadId={currentThreadId}
-        email={email}
+        tempEmail={email}
       />
     );
   }

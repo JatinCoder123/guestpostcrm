@@ -1,11 +1,4 @@
-import {
-  Mail,
-  RefreshCw,
-  User,
-  Globe,
-  Reply,
-  Link,
-} from "lucide-react";
+import { Mail, RefreshCw, User, Globe, Reply, Link } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -31,10 +24,14 @@ import {
 import LoadingSkeleton from "../LoadingSkeleton";
 import Pagination from "../Pagination";
 import MoveToDropdown from "../MoveToDropdown";
-import { forwardEmail, forwardedAction } from "../../store/Slices/forwardedEmailSlice";
+import {
+  forwardEmail,
+  forwardedAction,
+} from "../../store/Slices/forwardedEmailSlice";
 import { LoadingChase } from "../Loading";
 import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
 import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
+import Ip from "../Ip";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -50,12 +47,29 @@ export function TimelinePage() {
   const dispatch = useDispatch();
 
   const { threadId } = useSelector((s) => s.viewEmail);
-  const { forward, error: forwardError, message: forwardMessage } = useSelector((s) => s.forwarded);
-  const { favourite, error: favouriteError, message: favouriteMessage } = useSelector((s) => s.fav);
-  const { marking, error: markingError, message: markingMessage } = useSelector((s) => s.bulk);
+  const {
+    forward,
+    error: forwardError,
+    message: forwardMessage,
+  } = useSelector((s) => s.forwarded);
+  const {
+    favourite,
+    error: favouriteError,
+    message: favouriteMessage,
+  } = useSelector((s) => s.fav);
+  const {
+    marking,
+    error: markingError,
+    message: markingMessage,
+  } = useSelector((s) => s.bulk);
 
-  const { ladger, email, duplicate, mailersSummary, loading, error } = useSelector((state) => state.ladger);
-  const { loading: sendLoading, error: sendError, message } = useSelector((state) => state.viewEmail);
+  const { ladger, email, duplicate, mailersSummary, loading, error } =
+    useSelector((state) => state.ladger);
+  const {
+    loading: sendLoading,
+    error: sendError,
+    message,
+  } = useSelector((state) => state.viewEmail);
 
   const currentThreadId =
     mailersSummary?.thread_id_c ||
@@ -146,7 +160,7 @@ export function TimelinePage() {
         <EmailBox
           onClose={() => setShowEmails(false)}
           view={true}
-          email={email}
+          tempEmail={email}
         />
       </>
     );
@@ -160,6 +174,9 @@ export function TimelinePage() {
   }
   if (showDeal) {
     return <CreateDeal onClose={() => setShowDeal(false)} />;
+  }
+  if (showIP) {
+    return <Ip onClose={() => setShowIP(false)} />;
   }
 
   return (
@@ -234,13 +251,28 @@ export function TimelinePage() {
                   {/* Social Buttons */}
                   <div className="flex gap-3 ml-6">
                     <button className="cursor-pointer hover:scale-105">
-                      <img width="48" height="48" src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="whatsapp" />
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
+                        alt="whatsapp"
+                      />
                     </button>
                     <button className="cursor-pointer hover:scale-105">
-                      <img width="48" height="48" src="https://img.icons8.com/color/48/apple-phone.png" alt="call" />
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/color/48/apple-phone.png"
+                        alt="call"
+                      />
                     </button>
                     <button className="cursor-pointer hover:scale-105">
-                      <img width="48" height="48" src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png" alt="sms" />
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
+                        alt="sms"
+                      />
                     </button>
                   </div>
                 </div>
@@ -248,7 +280,9 @@ export function TimelinePage() {
                 {/* Refresh & Duplicates */}
                 <div className="flex items-center gap-4">
                   <span className="text-gray-600 text-sm">
-                    {duplicate > 1 ? `${duplicate} Duplicates` : `${duplicate} Duplicate`}
+                    {duplicate > 1
+                      ? `${duplicate} Duplicates`
+                      : `${duplicate} Duplicate`}
                   </span>
                   <button
                     onClick={() => dispatch(getLadgerEmail(email))}
@@ -257,7 +291,12 @@ export function TimelinePage() {
                     <RefreshCw className="w-4 h-4" />
                   </button>
                   <div>
-                    <img width="36" height="36" src="https://img.icons8.com/pulsar-gradient/48/replay-5.png" alt="replay" />
+                    <img
+                      width="36"
+                      height="36"
+                      src="https://img.icons8.com/pulsar-gradient/48/replay-5.png"
+                      alt="replay"
+                    />
                   </div>
                 </div>
               </div>
@@ -265,9 +304,17 @@ export function TimelinePage() {
               {/* NO RESULTS */}
               {!mailersSummary || Object.keys(mailersSummary).length === 0 ? (
                 <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-10 text-center">
-                  <img src="https://cdn-icons-png.flaticon.com/512/7486/7486780.png" className="w-20 mx-auto mb-4 opacity-70" alt="no-result" />
-                  <h2 className="text-xl font-semibold text-gray-700">No Result Found</h2>
-                  <p className="text-gray-500 mt-1">We couldn’t find any summary or recent email activity.</p>
+                  <img
+                    src="https://cdn-icons-png.flaticon.com/512/7486/7486780.png"
+                    className="w-20 mx-auto mb-4 opacity-70"
+                    alt="no-result"
+                  />
+                  <h2 className="text-xl font-semibold text-gray-700">
+                    No Result Found
+                  </h2>
+                  <p className="text-gray-500 mt-1">
+                    We couldn’t find any summary or recent email activity.
+                  </p>
                 </div>
               ) : (
                 <>
@@ -277,18 +324,32 @@ export function TimelinePage() {
                       <table className="min-w-full border border-blue-400 rounded-xl overflow-hidden text-sm">
                         <thead className="bg-blue-50">
                           <tr>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">DATE</th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">SUBJECT</th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">MOTIVE</th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">DEAL EXPIRY</th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">DEAL</th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              DATE
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              SUBJECT
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              MOTIVE
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              DEAL EXPIRY
+                            </th>
+                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                              DEAL
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr className="text-center">
                             <td className="border border-blue-400 px-4 py-3">
-                              <div className="font-semibold text-gray-900">{formatTime(mailersSummary?.date_entered)}</div>
-                              <div className="text-xs text-gray-600">{getDifference(mailersSummary?.date_entered)}</div>
+                              <div className="font-semibold text-gray-900">
+                                {formatTime(mailersSummary?.date_entered)}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {getDifference(mailersSummary?.date_entered)}
+                              </div>
                             </td>
                             <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
                               {mailersSummary?.subject ?? "No Subject"}
@@ -297,7 +358,13 @@ export function TimelinePage() {
                               {mailersSummary?.motive ?? "N/A"}
                             </td>
                             <td className="border border-blue-400 px-4 py-3">
-                              <div className={`font-semibold ${daysUntil(2) <= 3 ? "text-rose-600" : "text-gray-900"}`}>
+                              <div
+                                className={`font-semibold ${
+                                  daysUntil(2) <= 3
+                                    ? "text-rose-600"
+                                    : "text-gray-900"
+                                }`}
+                              >
                                 {formatExpiryLabel(mailersSummary.deal_expiry)}
                               </div>
                               {mailersSummary?.deal_expiry && (
@@ -320,7 +387,9 @@ export function TimelinePage() {
                     {/* AI Summary Card */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
                       <div className="flex items-center mb-2">
-                        <h3 className="text-blue-700 font-semibold">AI Summary</h3>
+                        <h3 className="text-blue-700 font-semibold">
+                          AI Summary
+                        </h3>
 
                         {/* ←←← PLAY BUTTON THAT OPENS AVATAR ←←← */}
                         <motion.button
@@ -328,7 +397,7 @@ export function TimelinePage() {
                           whileTap={{ scale: 0.95 }}
                           transition={{ type: "spring", stiffness: 400 }}
                           className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
-                          onClick={() => setShowAvatar(true)}   // ← This triggers the avatar!
+                          onClick={() => setShowAvatar(true)} // ← This triggers the avatar!
                         >
                           <img
                             width="40"
@@ -346,7 +415,9 @@ export function TimelinePage() {
                     {/* Latest Message Card */}
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-yellow-700 font-semibold">Latest Message</h3>
+                        <h3 className="text-yellow-700 font-semibold">
+                          Latest Message
+                        </h3>
                         <button
                           className="flex items-center gap-1 text-sm text-yellow-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 rounded-md"
                           onClick={() => setShowEmails(true)}
@@ -356,7 +427,8 @@ export function TimelinePage() {
                         </button>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                        {mailersSummary?.description ?? "No recent message found."}
+                        {mailersSummary?.description ??
+                          "No recent message found."}
                       </p>
                     </div>
                   </div>
@@ -364,13 +436,68 @@ export function TimelinePage() {
                   {/* ACTION BUTTONS */}
                   <div className="mt-4 flex flex-wrap gap-3">
                     {[
-                      { icon: <Mail className="w-5 h-5" />, label: "Email", action: () => setShowEmails(true) },
-                      { icon: <User className="w-5 h-5" />, label: "Contact", action: () => { dispatch(getContact(email)); navigateTo("/contacts"); } },
-                      { icon: <Globe className="w-5 h-5" />, label: "IP", action: () => setShowIP(true) },
-                      { icon: favourite ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/filled-like.png" className="w-6 h-6" alt="fav" />, label: "Favourite", action: () => dispatch(favEmail(threadId)) },
-                      { icon: forward ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/redo.png" className="w-6 h-6" alt="forward" />, label: "Forward", action: () => dispatch(forwardEmail(threadId)) },
-                      { icon: <Link className="w-5 h-5" />, label: "Backlink-report", action: () => console.log("Backlink Report") },
-                      { icon: marking ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/bursts.png" className="w-6 h-6" alt="bulk" />, label: "Mark Bulk", action: () => dispatch(markingEmail(threadId)) },
+                      {
+                        icon: <Mail className="w-5 h-5" />,
+                        label: "Email",
+                        action: () => setShowEmails(true),
+                      },
+                      {
+                        icon: <User className="w-5 h-5" />,
+                        label: "Contact",
+                        action: () => {
+                          dispatch(getContact(email));
+                          navigateTo("/contacts");
+                        },
+                      },
+                      {
+                        icon: <Globe className="w-5 h-5" />,
+                        label: "IP",
+                        action: () => setShowIP(true),
+                      },
+                      {
+                        icon: favourite ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/filled-like.png"
+                            className="w-6 h-6"
+                            alt="fav"
+                          />
+                        ),
+                        label: "Favourite",
+                        action: () => dispatch(favEmail(threadId)),
+                      },
+                      {
+                        icon: forward ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/redo.png"
+                            className="w-6 h-6"
+                            alt="forward"
+                          />
+                        ),
+                        label: "Forward",
+                        action: () => dispatch(forwardEmail(threadId)),
+                      },
+                      {
+                        icon: <Link className="w-5 h-5" />,
+                        label: "Backlink-report",
+                        action: () => console.log("Backlink Report"),
+                      },
+                      {
+                        icon: marking ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/bursts.png"
+                            className="w-6 h-6"
+                            alt="bulk"
+                          />
+                        ),
+                        label: "Mark Bulk",
+                        action: () => dispatch(markingEmail(threadId)),
+                      },
                     ].map((btn, i) => (
                       <button
                         key={i}
@@ -383,39 +510,10 @@ export function TimelinePage() {
                         </span>
                       </button>
                     ))}
-                    <MoveToDropdown currentThreadId={currentThreadId} onMoveSuccess={handleMoveSuccess} />
-                  </div>
-
-                  {/* TIMELINE */}
-                  <div className="py-[2%] px-[30%]">
-                    <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-4xl text-center text-white">
-                      TIMELINE
-                    </h1>
-                    <div className="relative">
-                      <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
-                      <div className="space-y-6">
-                        {ladger.length > 0 &&
-                          ladger.map((event) => (
-                            <div key={event.id} className="relative flex items-center gap-4">
-                              <div className="relative z-10 w-16 flex-shrink-0 mt-3 flex items-center justify-center">
-                                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                                  <img width="100" height="100" src="https://img.icons8.com/bubbles/100/new-post.png" alt="new-post" />
-                                </div>
-                                <div className="bg-gradient-to-r from-purple-600 to-blue-600 absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"></div>
-                              </div>
-                              <div className="flex-1 border-2 rounded-xl p-4 mt-3">
-                                <div className="flex items-center gap-2 justify-between mb-2">
-                                  <span className="text-gray-700">
-                                    {event.type_c?.charAt(0).toUpperCase() + event.type_c?.slice(1)}
-                                  </span>
-                                  <span className="text-gray-500 text-sm">{formatTime(event.date_entered)}</span>
-                                </div>
-                                {event.subject && <div className="text-sm text-gray-600">{event.subject}</div>}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
+                    <MoveToDropdown
+                      currentThreadId={currentThreadId}
+                      onMoveSuccess={handleMoveSuccess}
+                    />
                   </div>
                 </>
               )}
@@ -433,50 +531,49 @@ export function TimelinePage() {
                     <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
                     <div className="space-y-6">
-                      {ladger.length > 0 &&
-                        ladger.map((event) => (
-                          <div
-                            key={event.id}
-                            className="relative flex items-center gap-4"
-                          >
-                            {/* Dot */}
-                            <div className="relative z-10 w-16 flex-shrink-0 mt-3   flex items-center justify-center">
-                              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                                <img
-                                  width="100"
-                                  height="100"
-                                  src="https://img.icons8.com/bubbles/100/new-post.png"
-                                  alt="new-post"
-                                />
-                              </div>
+                      {ladger.map((event) => (
+                        <div
+                          key={event.id}
+                          className="relative flex items-center gap-4"
+                        >
+                          {/* Dot */}
+                          <div className="relative z-10 w-16 flex-shrink-0 mt-3   flex items-center justify-center">
+                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                              <img
+                                width="100"
+                                height="100"
+                                src="https://img.icons8.com/bubbles/100/new-post.png"
+                                alt="new-post"
+                              />
+                            </div>
 
-                              <div
-                                className="bg-gradient-to-r from-purple-600 to-blue-600 
+                            <div
+                              className="bg-gradient-to-r from-purple-600 to-blue-600 
                                           absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
-                              ></div>
-                            </div>
-
-                            {/* Card */}
-                            <div className="flex-1 border-2 rounded-xl p-4 mt-3">
-                              <div className="flex items-center gap-2 justify-between mb-2">
-                                <span className="text-gray-700">
-                                  {event.type_c?.charAt(0).toUpperCase() +
-                                    event.type_c?.slice(1)}
-                                </span>
-
-                                <span className="text-gray-500 text-sm">
-                                  {formatTime(event.date_entered)}
-                                </span>
-                              </div>
-                              {/* optionally add event message preview */}
-                              {event.subject && (
-                                <div className="text-sm text-gray-600">
-                                  {event.subject}
-                                </div>
-                              )}
-                            </div>
+                            ></div>
                           </div>
-                        ))}
+
+                          {/* Card */}
+                          <div className="flex-1 border-2 rounded-xl p-4 mt-3">
+                            <div className="flex items-center gap-2 justify-between mb-2">
+                              <span className="text-gray-700">
+                                {event.type_c?.charAt(0).toUpperCase() +
+                                  event.type_c?.slice(1)}
+                              </span>
+
+                              <span className="text-gray-500 text-sm">
+                                {formatTime(event.date_entered)}
+                              </span>
+                            </div>
+                            {/* optionally add event message preview */}
+                            {event.subject && (
+                              <div className="text-sm text-gray-600">
+                                {event.subject}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
 
                       {/* END ICON */}
                       {ladger.length > 0 && (

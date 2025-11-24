@@ -36,7 +36,7 @@ export function UnrepliedEmailsPage() {
         onClose={() => setShowEmails(false)}
         view={false}
         threadId={currentThreadId}
-        email={email}
+        tempEmail={email}
       />
     );
   }

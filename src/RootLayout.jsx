@@ -27,10 +27,11 @@ import { getPaymentRem } from "./store/Slices/paymentRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
+import { getAllAvatar } from "./store/Slices/avatarSlice";
 
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showAvatar, setShowAvatar] = useState(false);
+  const [showAvatar, setShowAvatar] = useState(true);
   const { timeline } = useSelector((state) => state.ladger);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const location = useLocation().pathname.split("/")[2];
@@ -58,6 +59,7 @@ const RootLayout = () => {
     dispatch(getLinkRem(timeline, enteredEmail));
     dispatch(getPaymentRem(timeline, enteredEmail));
     dispatch(getViewEmail());
+    dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);
 
   return (

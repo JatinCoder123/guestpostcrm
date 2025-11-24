@@ -184,41 +184,6 @@ const ReportPage = () => {
     ],
   };
 
-  // Get correct API filter for endpoint
-  const getApiFilter = (endpointType, currentFilter) => {
-    // Special filter mapping for specific endpoints
-    const specialFilters = {
-      unreplied: {
-        today: "today",
-        "7days": "this_week",
-        "14days": "this_week",
-        "30days": "this_month",
-        "90days": "this_month",
-      },
-      unanswered: {
-        today: "today",
-        "7days": "this_week",
-        "14days": "this_week",
-        "30days": "this_month",
-        "90days": "this_month",
-      },
-      spam_detection: {
-        today: "today",
-        "7days": "this_week",
-        "14days": "this_week",
-        "30days": "this_month",
-        "90days": "this_month",
-      },
-    };
-
-    if (specialFilters[endpointType]) {
-      return specialFilters[endpointType][currentFilter] || "this_week";
-    }
-
-    const filterOption = filterOptions.find((f) => f.key === currentFilter);
-    return filterOption ? filterOption.apiFilter : "last_7_days";
-  };
-
   // Enhanced fetch function with better error handling
   const fetchApiData = async (endpointType, currentFilter) => {
     try {
@@ -642,26 +607,6 @@ const ReportPage = () => {
     );
   };
 
-  // Render filter buttons
-  const renderFilters = () => (
-    <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-full overflow-x-auto">
-      {filterOptions.map((f) => (
-        <button
-          key={f.key}
-          disabled={loading}
-          className={`px-4 py-3 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-            filter === f.key
-              ? "bg-white text-blue-600 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
-          } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={() => setFilter(f.key)}
-        >
-          {f.label}
-        </button>
-      ))}
-    </div>
-  );
-
   // Render detailed view
   const renderDetails = () => {
     return (
@@ -692,8 +637,6 @@ const ReportPage = () => {
               </div>
             </div>
           </div>
-
-          <div className="mt-6">{renderFilters()}</div>
         </div>
 
         {/* Loading State */}

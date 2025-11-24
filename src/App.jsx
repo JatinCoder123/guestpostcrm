@@ -39,6 +39,7 @@ import { DefaulterPage } from "./components/pages/Defaulterpage";
 import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
 import CreateDeal from "./components/CreateDeal";
+import AvatarPage from "./components/pages/AvatarPage";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -140,6 +141,10 @@ const router = createBrowserRouter([
       {
         path: "other",
         element: <OtherPage />,
+      },
+      {
+        path: "avatars",
+        element: <AvatarPage />,
       },
 
       {

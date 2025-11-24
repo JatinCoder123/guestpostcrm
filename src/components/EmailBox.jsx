@@ -25,7 +25,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { base64ToUtf8 } from "../assets/assets";
 import useModule from "../hooks/useModule";
-export default function EmailBox({ onClose, view, threadId }) {
+export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
   const dispatch = useDispatch();
@@ -44,14 +44,14 @@ export default function EmailBox({ onClose, view, threadId }) {
   // FIX: Track if editor is initialized
   const [editorReady, setEditorReady] = useState(false);
   const { loading, data: buttons } = useModule({
-    url: `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=offer&email=${email}`,
+    url: `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=offer&email=${tempEmail}`,
     name: "BUTTONS",
-    dependencies: [email],
+    dependencies: [tempEmail],
   });
   const { loading: defTemplateLoading, data: defaultTemplate } = useModule({
-    url: `https://errika.guestpostcrm.com/?entryPoint=updateOffer&email=${email}`,
+    url: `https://errika.guestpostcrm.com/?entryPoint=updateOffer&email=${tempEmail}`,
     name: "DEFAULT TEMPLATE",
-    dependencies: [email],
+    dependencies: [tempEmail],
   });
   const { loading: templateLoading, data: template } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
@@ -144,7 +144,7 @@ export default function EmailBox({ onClose, view, threadId }) {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl w-full h-[100vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full h-screen flex flex-col overflow-hidden"
       >
         {/* HEADER */}
         <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
@@ -178,7 +178,7 @@ export default function EmailBox({ onClose, view, threadId }) {
                 }}
                 onEditorChange={setInput}
                 init={{
-                  height: 400,
+                  height: "70vh",
                   menubar: false,
                   toolbar:
                     "undo redo | bold italic underline | bullist numlist | removeformat",

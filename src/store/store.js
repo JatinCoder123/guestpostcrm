@@ -19,6 +19,7 @@ import orderRemReducer from "./Slices/orderRem.js";
 import paymetnRemReducer from "./Slices/paymentRem.js";
 import dealRemReducer from "./Slices/dealRem.js";
 import userReducer from "./Slices/userSlice.js";
+import avatarReducer from "./Slices/avatarSlice.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -41,5 +42,6 @@ export const store = configureStore({
     linkRem: linkRemReducer,
     user: userReducer,
     bulk: bulkReducer,
+    avatar: avatarReducer,
   },
 });

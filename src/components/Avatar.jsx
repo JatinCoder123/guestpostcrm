@@ -14,7 +14,11 @@ const Avatar = ({ setShowAvatar }) => {
   // Close avatar when clicking outside only when NOT enlarged
   useEffect(() => {
     const handleOutside = (e) => {
-      if (!enlarged && containerRef.current && !containerRef.current.contains(e.target)) {
+      if (
+        !enlarged &&
+        containerRef.current &&
+        !containerRef.current.contains(e.target)
+      ) {
         setShowAvatar(false);
       }
     };
@@ -45,7 +49,10 @@ const Avatar = ({ setShowAvatar }) => {
     <>
       {/* SMALL BUBBLE (Hidden when enlarged) */}
       {!enlarged && (
-        <div className="fixed bottom-10 right-5 z-50 transition-all duration-300" ref={containerRef}>
+        <div
+          className="fixed bottom-10 right-5 z-50 transition-all duration-300"
+          ref={containerRef}
+        >
           <div
             className="relative inline-block"
             onMouseEnter={() => setHover(true)}
@@ -56,7 +63,6 @@ const Avatar = ({ setShowAvatar }) => {
               ref={videoRef}
               src={avatar_url}
               autoPlay
-              loop
               playsInline
               muted={muted}
               className="w-52 h-52 rounded-full object-cover shadow-xl border-4 border-white transition-all duration-300"
@@ -112,7 +118,6 @@ const Avatar = ({ setShowAvatar }) => {
 
             {/* BUTTON GROUP (Top Right) */}
             <div className="absolute -top-4 -right-4 flex gap-3">
-              {/* Mute / Unmute */}
               <button
                 onClick={toggleMute}
                 className="bg-white text-gray-700 rounded-full p-3 shadow-lg hover:bg-gray-200 transition"
@@ -120,7 +125,6 @@ const Avatar = ({ setShowAvatar }) => {
                 {muted ? <VolumeX size={22} /> : <Volume2 size={22} />}
               </button>
 
-              {/* Minimize */}
               <button
                 onClick={toggleEnlarge}
                 className="bg-white text-gray-700 rounded-full p-3 shadow-lg hover:bg-gray-200 transition"
@@ -128,7 +132,6 @@ const Avatar = ({ setShowAvatar }) => {
                 <Minimize2 size={22} />
               </button>
 
-              {/* Close Fullscreen */}
               <button
                 onClick={() => setShowAvatar(false)}
                 className="bg-red-500 text-white rounded-full p-3 shadow-lg hover:bg-red-600 transition"

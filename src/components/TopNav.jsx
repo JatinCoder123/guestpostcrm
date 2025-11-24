@@ -18,7 +18,7 @@ import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
 
-export function TopNav({ setShowAvatar }) {
+export function TopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
   const { setEnteredEmail, search, setSearch } = useContext(PageContext);
@@ -135,17 +135,10 @@ export function TopNav({ setShowAvatar }) {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
-        {/*WOLF SECTION */}
-        {/* <div>
-          <img
-            src="https://errika.guestpostcrm.com/images/image%20(8).jpg"
-            alt="wolf"
-            className="w-10 h-10"
-          />
-        </div> */}
-        {/* Notification Button */}
         <button
-          onClick={() => setShowAvatar((prev) => !prev)}
+          onClick={() => {
+            navigateTo("avatars");
+          }}
           className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors"
         >
           <User2Icon className="w-4 h-4" />
