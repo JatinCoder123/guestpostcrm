@@ -182,6 +182,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-pink-50",
       countBg: "bg-pink-500 text-white",
     },
+
     {
       id: "deal-reminders",
       label: "Deal Reminders",
