@@ -1,4 +1,4 @@
-import { Mail, RefreshCw, User, Globe, Reply, Link } from "lucide-react";
+import { Mail, RefreshCw, User, Globe, Reply} from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,8 +8,10 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { LoadingAll, LoadingSpin } from "../Loading";
+
 
 // ←←← YOUR AVATAR COMPONENT ←←←
 import Avatar from "../Avatar";
@@ -32,6 +34,7 @@ import { LoadingChase } from "../Loading";
 import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
 import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
 import Ip from "../Ip";
+import { getAvatar } from "../../store/Slices/avatarSlice";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -42,6 +45,7 @@ export function TimelinePage() {
 
   // ←←← STATE TO CONTROL AVATAR VISIBILITY ←←←
   const [showAvatar, setShowAvatar] = useState(false);
+  const { contactInfo, accountInfo } = useSelector((state) => state.viewEmail);
 
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
@@ -67,6 +71,7 @@ export function TimelinePage() {
     useSelector((state) => state.ladger);
   const {
     loading: sendLoading,
+    contactLoading,
     error: sendError,
     message,
   } = useSelector((state) => state.viewEmail);
@@ -196,9 +201,15 @@ export function TimelinePage() {
                         <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                           <Mail className="w-5 h-5 text-gray-600" />
                         </div>
-                        <span className="text-gray-800 text-lg font-semibold">
-                          {ladger[0].name}
-                        </span>
+                        {contactLoading ? (
+                          <LoadingAll size="30" color="blue" />
+                        ) : (
+                   
+                          <Link to={"/contacts"} className="text-gray-800 text-lg font-semibold">
+                            {contactInfo?.first_name=='' ?email:contactInfo?.first_name}
+                          </Link>
+                        )}
+
                         <img
                           width="50"
                           height="50"
@@ -397,7 +408,9 @@ export function TimelinePage() {
                           whileTap={{ scale: 0.95 }}
                           transition={{ type: "spring", stiffness: 400 }}
                           className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
-                          onClick={() => setShowAvatar(true)} // ← This triggers the avatar!
+                          onClick={() => {
+                            dispatch(getAvatar())
+                            setShowAvatar(true)}} // ← This triggers the avatar!
                         >
                           <img
                             width="40"
@@ -405,6 +418,17 @@ export function TimelinePage() {
                             src="https://img.icons8.com/office/40/circled-play.png"
                             alt="Play AI Avatar"
                           />
+                        </motion.button>
+
+                        {/* ←←← Quick AI Reply ←←← */}
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
+                          onClick={() => setShowEmails(true)} // ← This triggers the avatar!
+                        >
+                         <img width="40" height="40" src="https://img.icons8.com/ultraviolet/40/bot.png" alt="bot"/>
                         </motion.button>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed">
@@ -436,12 +460,56 @@ export function TimelinePage() {
                   {/* ACTION BUTTONS */}
                   <div className="mt-4 flex flex-wrap gap-3">
                     {[
-                      { icon: <Mail className="w-5 h-5" />, label: "Email", action: () => setShowEmails(true) },
-                      { icon: <User className="w-5 h-5" />, label: "Contact", action: () => { dispatch(getContact(email)); navigateTo("/contacts"); } },
-                      { icon: <Globe className="w-5 h-5" />, label: "IP", action: () => setShowIP(true) },
-                      { icon: favourite ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/filled-like.png" className="w-6 h-6" alt="fav" />, label: "Favourite", action: () => dispatch(favEmail(threadId)) },
-                      { icon: forward ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/redo.png" className="w-6 h-6" alt="forward" />, label: "Forward", action: () => dispatch(forwardEmail(threadId)) },
-                      { icon: marking ? <LoadingChase /> : <img src="https://img.icons8.com/color/48/bursts.png" className="w-6 h-6" alt="bulk" />, label: "Mark Bulk", action: () => dispatch(markingEmail(threadId)) },
+                      {
+                        icon: <Mail className="w-5 h-5" />,
+                        label: "Email",
+                        action: () => setShowEmails(true),
+                      },
+                      
+                      {
+                        icon: <Globe className="w-5 h-5" />,
+                        label: "IP",
+                        action: () => setShowIP(true),
+                      },
+                      {
+                        icon: favourite ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/filled-like.png"
+                            className="w-6 h-6"
+                            alt="fav"
+                          />
+                        ),
+                        label: "Favourite",
+                        action: () => dispatch(favEmail(threadId)),
+                      },
+                      {
+                        icon: forward ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/redo.png"
+                            className="w-6 h-6"
+                            alt="forward"
+                          />
+                        ),
+                        label: "Forward",
+                        action: () => dispatch(forwardEmail(threadId)),
+                      },
+                      {
+                        icon: marking ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/bursts.png"
+                            className="w-6 h-6"
+                            alt="bulk"
+                          />
+                        ),
+                        label: "Mark Bulk",
+                        action: () => dispatch(markingEmail(threadId)),
+                      },
                     ].map((btn, i) => (
                       <button
                         key={i}
@@ -454,42 +522,10 @@ export function TimelinePage() {
                         </span>
                       </button>
                     ))}
-                    <MoveToDropdown currentThreadId={currentThreadId} onMoveSuccess={handleMoveSuccess} />
-                  </div>
-
-                  {/* TIMELINE */}
-                  <div className="py-[2%] px-[30%]">
-                    
-                    <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-4xl text-center text-white">
-                      TIMELINE
-                      
-                    </h1>
-                    
-                    <div className="relative">
-                      <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
-                      <div className="space-y-6">
-                        {ladger.length > 0 &&
-                          ladger.map((event) => (
-                            <div key={event.id} className="relative flex items-center gap-4">
-                              <div className="relative z-10 w-16 flex-shrink-0 mt-3 flex items-center justify-center">
-                                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                                  <img width="100" height="100" src="https://img.icons8.com/bubbles/100/new-post.png" alt="new-post" />
-                                </div>
-                                <div className="bg-gradient-to-r from-purple-600 to-blue-600 absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"></div>
-                              </div>
-                              <div className="flex-1 border-2 rounded-xl p-4 mt-3">
-                                <div className="flex items-center gap-2 justify-between mb-2">
-                                  <span className="text-gray-700">
-                                    {event.type_c?.charAt(0).toUpperCase() + event.type_c?.slice(1)}
-                                  </span>
-                                  <span className="text-gray-500 text-sm">{formatTime(event.date_entered)}</span>
-                                </div>
-                                {event.subject && <div className="text-sm text-gray-600">{event.subject}</div>}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
+                    <MoveToDropdown
+                      currentThreadId={currentThreadId}
+                      onMoveSuccess={handleMoveSuccess}
+                    />
                   </div>
                 </>
               )}
@@ -507,7 +543,7 @@ export function TimelinePage() {
                     <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
                     <div className="space-y-6">
-                      {ladger.map((event) => (
+                      {ladger.map((event,index) => (
                         <div
                           key={event.id}
                           className="relative flex items-center gap-4"
@@ -530,7 +566,7 @@ export function TimelinePage() {
                           </div>
 
                           {/* Card */}
-                          <div className="flex-1 border-2 rounded-xl p-4 mt-3">
+                          <div className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${index==0 ?"bg-gradient-to-r from-[#FFFF00] to-white":""}`}>
                             <div className="flex items-center gap-2 justify-between mb-2">
                               <span className="text-gray-700">
                                 {event.type_c?.charAt(0).toUpperCase() +
@@ -575,7 +611,7 @@ export function TimelinePage() {
       </div>
 
       {/* ←←← RENDER THE AVATAR WHEN TRIGGERED ←←← */}
-      {showAvatar && <Avatar setShowAvatar={setShowAvatar} />}
+      {showAvatar && <Avatar setShowAvatar={setShowAvatar} onPlay={true} />}
     </>
   );
 }

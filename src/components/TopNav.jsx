@@ -144,7 +144,7 @@ export function TopNav() {
             className="w-10 h-10"
           />
         </div> */}
-         {/* Hot Button */}
+        {/* Hot Button */}
         <button
           onClick={() => setShowAvatar((prev) => !prev)}
           className="flex cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
@@ -209,6 +209,7 @@ export function TopNav() {
                       {user?.email || "user@example.com"}
                     </p>
                   </div>
+                  
 
                   {/* Logout Button */}
                   <motion.button
@@ -235,7 +236,13 @@ export function TopNav() {
                       alt="exit"
                     />
                   </motion.button>
+                  
                 </div>
+                <div className="ml-4">
+                    <p className="font-semibold text-gray-900 text-lg truncate">
+                      {user?.timeline || "UTC +05:30 (IST)"}
+                    </p>
+                  </div>
               </motion.div>
             )}
           </AnimatePresence>
