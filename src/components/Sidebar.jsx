@@ -186,7 +186,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
 
     {
-      id: "link-removal",
+      id: "link-exchange",
       label: "Link Exchange",
       icon: Link,
       loading: linkRemLoading,
