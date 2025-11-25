@@ -1,15 +1,19 @@
 import { X, Maximize2, Minimize2, Volume2, VolumeX } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { LoadingAll, LoadingChase } from "./Loading";
 
-const Avatar = ({ setShowAvatar }) => {
+const Avatar = ({ setShowAvatar, onPlay = false }) => {
   const [hover, setHover] = useState(false);
   const [enlarged, setEnlarged] = useState(false);
   const [muted, setMuted] = useState(false);
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+  const { avatar } = useSelector((state) => state.avatar);
 
-  const avatar_url =
-    "https://errika.guestpostcrm.com/custom/outright_products/Rightee/LogicHooks/avatar_cache/guestpostcrm.mp4";
+  const avatar_url = onPlay
+    ? `https://${avatar}`
+    : "https://errika.guestpostcrm.com/custom/outright_products/Rightee/LogicHooks/avatar_cache/guestpostcrm.mp4";
 
   // Close avatar when clicking outside only when NOT enlarged
   useEffect(() => {
@@ -59,14 +63,18 @@ const Avatar = ({ setShowAvatar }) => {
             onMouseLeave={() => setHover(false)}
           >
             {/* VIDEO */}
-            <video
-              ref={videoRef}
-              src={avatar_url}
-              autoPlay
-              playsInline
-              muted={muted}
-              className="w-52 h-52 rounded-full object-cover shadow-xl border-4 border-white transition-all duration-300"
-            />
+            {onPlay && !avatar ? (
+              <LoadingAll type="hourglass" />
+            ) : (
+              <video
+                ref={videoRef}
+                src={avatar_url}
+                autoPlay
+                playsInline
+                muted={muted}
+                className="w-52 h-52 rounded-full object-cover shadow-xl border-4 border-white transition-all duration-300"
+              />
+            )}
 
             {/* BUTTONS */}
             <div

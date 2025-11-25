@@ -11,7 +11,7 @@ import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
 import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
-import { getViewEmail } from "./store/Slices/viewEmail";
+import { getContact, getViewEmail } from "./store/Slices/viewEmail";
 import { getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
@@ -34,12 +34,17 @@ import { getmovedEmails } from "./store/Slices/movedEmails";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
-  const { timeline } = useSelector((state) => state.ladger);
+  const { timeline, email } = useSelector((state) => state.ladger);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
     setActivePage(location);
   }, [location]);
+  useEffect(() => {
+    if (email) {
+      dispatch(getContact(email));
+    }
+  }, [email]);
   const dispatch = useDispatch();
   useEffect(() => {
     enteredEmail

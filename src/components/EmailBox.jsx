@@ -7,6 +7,7 @@ import {
   Brain,
   X,
   Sparkles,
+  ChevronLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -137,37 +138,55 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
     editorRef.current?.setContent("");
   };
 
+  const handleBackClick = () => {
+    if (showEditorScreen) {
+      setShowEditorScreen(false);
+    } else {
+      onClose();
+    }
+  };
+
   const visibleMessages = emails.slice(-messageLimit);
 
   return (
-    <div className="flex items-center justify-center">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl w-full h-screen flex flex-col overflow-hidden"
-      >
-        {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-          <h2 className="text-lg font-semibold">
-            {showEditorScreen ? "Write Email" : "Email Conversation"}
-          </h2>
-          <button onClick={onClose} className="text-white">
-            <X className="w-6 h-6" />
-          </button>
+    <motion.div
+      initial={{ scale: 0.95, opacity: 0, y: 20 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      exit={{ scale: 0.95, opacity: 0, y: 20 }}
+      transition={{ type: "spring", damping: 25, stiffness: 500 }}
+      className="bg-white rounded-3xl shadow-2xl w-full h-screen flex flex-col overflow-hidden"
+    >
+      {/* HEADER */}
+      <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+        <div className="flex items-center gap-3">
+          <motion.button 
+            whileHover={{ scale: 1.05 }} 
+            whileTap={{ scale: 0.95 }}
+            onClick={handleBackClick} 
+            className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </motion.button>
+          <div className="flex items-center gap-3">
+            <Send className="w-5 h-5" />
+            <h2 className="text-xl font-bold tracking-tight">
+              {showEditorScreen ? "Compose Email" : "Email Thread"}
+            </h2>
+          </div>
         </div>
+        
+      </div>
 
-        {/* ========================= EDITOR SCREEN ========================= */}
-        {showEditorScreen ? (
-          <div className="flex flex-col h-full">
-            <button
-              onClick={() => setShowEditorScreen(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-700 m-4 rounded-lg w-28"
+      {/* ========================= EDITOR SCREEN ========================= */}
+      {showEditorScreen ? (
+        <div className="flex flex-col h-full">
+          <div className="flex-1 px-6 pb-4 overflow-hidden">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="h-full"
             >
-              ← Back
-            </button>
-
-            <div className="flex-1 px-4">
               <Editor
                 apiKey={TINY_EDITOR_API_KEY}
                 value={input}
@@ -177,172 +196,193 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                 }}
                 onEditorChange={setInput}
                 init={{
-                  height: "70vh",
+                  height: "100%",
                   menubar: false,
                   toolbar:
                     "undo redo | bold italic underline | bullist numlist | removeformat",
                   branding: false,
                   statusbar: false,
+                  content_style: "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.6; }",
                 }}
               />
-            </div>
-
-            {/* ACTION ROW */}
-            <div className=" relative p-4 border-t bg-white flex items-start gap-4">
-              <div className=" flex items-center gap-3">
-                {/* AI REPLY BUTTON */}
-                <motion.button
-                  whileHover={{ scale: 1.08 }}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-lg"
-                  onClick={insertAiReply}
-                >
-                  <Brain className="w-4 h-4" />
-                </motion.button>
-
-                {/* DEFAULT TEMPLATE */}
-                <motion.button
-                  whileHover={{ scale: 1.08 }}
-                  className="bg-gradient-to-r from-gray-600 to-gray-800 text-white p-3 rounded-lg"
-                  onClick={() => {
-                    setTemplateId(null);
-                    if (defaultTemplate && editorRef.current) {
-                      const html = base64ToUtf8(defaultTemplate.html_base64);
-                      editorRef.current.setContent(html);
-                      setInput(html);
-                    }
-                  }}
-                >
-                  <Mail className="w-4 h-4" />
-                </motion.button>
-
-                {/* PARENT + CHILD BUTTONS */}
-                {loading ? (
-                  <LoadingChase />
-                ) : (
-                  buttons?.map((btnGroup, i) => {
-                    const parent = btnGroup.parent_btn;
-                    const children = btnGroup.child_btn;
-                    const isOpen = openParent === parent.id;
-
-                    return (
-                      <div key={i} className="relative">
-                        {/* PARENT BUTTON */}
-                        <motion.button
-                          whileHover={{ scale: 1.08 }}
-                          className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg shadow"
-                          onClick={() =>
-                            setOpenParent(isOpen ? null : parent.id)
-                          }
-                        >
-                          {parent.button_label}
-                        </motion.button>
-
-                        {/* CHILDREN LIST */}
-                        <AnimatePresence>
-                          {isOpen && children && (
-                            <motion.div
-                              initial={{ x: -40, opacity: 0 }}
-                              animate={{ x: 0, opacity: 1 }}
-                              exit={{ x: -40, opacity: 0 }}
-                              transition={{ duration: 0.25 }}
-                              className="absolute top-[-16px] left-90 z-50  flex gap-2 bg-white p-2 rounded-xl shadow-lg border z-50"
-                            >
-                              {children.map((child, j) => (
-                                <motion.button
-                                  key={j}
-                                  whileHover={{ scale: 1.05 }}
-                                  onClick={() => {
-                                    setTemplateId(child.email_template_id);
-                                    setOpenParent(null);
-                                  }}
-                                  className="bg-gray-100 px-3 py-2 rounded-lg border text-sm shadow-sm"
-                                >
-                                  {child.button_label}
-                                </motion.button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* SEND BUTTON */}
-              <div className="flex-1 flex justify-end">
-                <button
-                  onClick={handleSendClick}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"
-                >
-                  Send
-                </button>
-              </div>
-            </div>
+            </motion.div>
           </div>
-        ) : (
-          /* ========================= CHAT SCREEN ========================= */
-          <>
-            <div className="px-4 pt-4 pb-2 bg-gray-100 flex gap-3">
-              {messageLimit < emails.length && (
-                <>
-                  <button
-                    onClick={() => setMessageLimit((p) => p + 3)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-                  >
-                    Load More
-                  </button>
-                  <button
-                    onClick={() => setMessageLimit(emails.length)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg"
-                  >
-                    Show All
-                  </button>
-                </>
+
+          {/* ACTION ROW */}
+          <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* AI REPLY BUTTON */}
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                onClick={insertAiReply}
+              >
+                <Brain className="w-4 h-4" />
+                <span className="text-sm font-medium hidden sm:inline">AI Reply</span>
+              </motion.button>
+
+              {/* DEFAULT TEMPLATE */}
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                onClick={() => {
+                  setTemplateId(null);
+                  if (defaultTemplate && editorRef.current) {
+                    const html = base64ToUtf8(defaultTemplate.html_base64);
+                    editorRef.current.setContent(html);
+                    setInput(html);
+                  }
+                }}
+              >
+                <Mail className="w-4 h-4" />
+                <span className="text-sm font-medium hidden sm:inline">Template</span>
+              </motion.button>
+
+              {/* PARENT + CHILD BUTTONS */}
+              {loading ? (
+                <LoadingChase className="p-4" />
+              ) : (
+                buttons?.map((btnGroup, i) => {
+                  const parent = btnGroup.parent_btn;
+                  const children = btnGroup.child_btn;
+                  const isOpen = openParent === parent.id;
+
+                  return (
+                    <div key={i} className="relative">
+                      {/* PARENT BUTTON */}
+                      <motion.button
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                        onClick={() =>
+                          setOpenParent(isOpen ? null : parent.id)
+                        }
+                      >
+                        {parent.button_label}
+                      </motion.button>
+
+                      {/* CHILDREN LIST */}
+                      <AnimatePresence>
+                        {isOpen && children && (
+                          <motion.div
+                            initial={{ x: -20, opacity: 0, scale: 0.95 }}
+                            animate={{ x: 0, opacity: 1, scale: 1 }}
+                            exit={{ x: -20, opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2, type: "spring" }}
+                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2 bg-white p-3 rounded-2xl shadow-2xl border border-gray-200"
+                          >
+                            {children.map((child, j) => (
+                              <motion.button
+                                key={j}
+                                whileHover={{ scale: 1.03, y: -1 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => {
+                                  setTemplateId(child.email_template_id);
+                                  setOpenParent(null);
+                                }}
+                                className="bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap"
+                              >
+                                {child.button_label}
+                              </motion.button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })
               )}
             </div>
 
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-6"
+            {/* SEND BUTTON */}
+            <motion.button
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSendClick}
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
             >
-              {visibleMessages.map((mail, idx) => {
-                const isUser = mail.from_email.includes(email);
-                return (
+              <Send className="w-5 h-5" />
+              <span>Send Email</span>
+            </motion.button>
+          </div>
+        </div>
+      ) : (
+        /* ========================= CHAT SCREEN ========================= */
+        <>
+          <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">
+            {messageLimit < emails.length && (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setMessageLimit((p) => p + 3)}
+                  className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  Load More
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setMessageLimit(emails.length)}
+                  className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  Show All
+                </motion.button>
+              </>
+            )}
+          </div>
+
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
+          >
+            {visibleMessages.map((mail, idx) => {
+              const isUser = mail.from_email.includes(email);
+              return (
+                <motion.div
+                  key={mail.message_id || idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+                >
                   <div
-                    key={mail.message_id || idx}
-                    className={`flex ${
-                      isUser ? "justify-end" : "justify-start"
+                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${
+                      isUser
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
                     }`}
                   >
-                    <div
-                      className={`max-w-[75%] p-4 rounded-xl shadow ${
-                        isUser
-                          ? "bg-blue-600 text-white rounded-br-none"
-                          : "bg-white border text-gray-800 rounded-bl-none"
-                      }`}
-                    >
-                      <p className="text-xs opacity-75 mb-1">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`text-xs font-medium ${
+                        isUser ? "opacity-90" : "text-gray-500"
+                      }`}>
+                        {isUser ? "You" : mail.from_name || "Sender"}
+                      </span>
+                      <span className="text-xs opacity-70">
                         {new Date(mail.date_created).toLocaleString()}
-                      </p>
-                      <p className="whitespace-pre-line text-sm">{mail.body}</p>
+                      </span>
                     </div>
+                    <p className="whitespace-pre-line text-sm leading-relaxed">{mail.body}</p>
                   </div>
-                );
-              })}
-            </div>
+                </motion.div>
+              );
+            })}
+          </div>
 
-            <div className="p-4 border-t bg-white flex justify-end">
-              <button
-                onClick={handleSendClick}
-                className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"
-              >
-                Send
-              </button>
-            </div>
-          </>
-        )}
-      </motion.div>
-    </div>
+          <div className="p-6 border-t bg-white shadow-2xl">
+            <motion.button
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSendClick}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <Send className="w-5 h-5" />
+              <span>Reply</span>
+            </motion.button>
+          </div>
+        </>
+      )}
+    </motion.div>
   );
 }
