@@ -31,11 +31,16 @@ import { getAllAvatar } from "./store/Slices/avatarSlice";
 
 import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 import { getmovedEmails } from "./store/Slices/movedEmails";
+import { SocketContext } from "./context/SocketContext";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
+  const { currentAvatar } = useContext(SocketContext);
+  useEffect(() => {
+    setShowAvatar(true);
+  }, [currentAvatar]);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
     setActivePage(location);
@@ -97,7 +102,12 @@ const RootLayout = () => {
               <div className="p-6">
                 <WelcomeHeader />
                 <Outlet />
-                {showAvatar && <Avatar setShowAvatar={setShowAvatar} />}
+                {showAvatar && currentAvatar && (
+                  <Avatar
+                    setShowAvatar={setShowAvatar}
+                    avatarUrl={currentAvatar}
+                  />
+                )}
               </div>
               <Footer />
             </main>

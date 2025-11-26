@@ -34,6 +34,7 @@ export function TopNav() {
 
   const handleSearch = () => {
     if (search.trim()) {
+      localStorage.setItem("email", search);
       navigateTo("");
       setEnteredEmail(search);
     }
@@ -41,6 +42,7 @@ export function TopNav() {
 
   const handleClear = () => {
     if (search.trim()) {
+      localStorage.removeItem("email");
       setSearch("");
       navigateTo("");
       setEnteredEmail(null);
@@ -75,6 +77,7 @@ export function TopNav() {
   }, []);
 
   const handleSelectPeriod = (option) => {
+    localStorage.setItem("timeline", option);
     dispatch(ladgerAction.setTimeline(option));
   };
 
@@ -136,14 +139,6 @@ export function TopNav() {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
-        {/*WOLF SECTION */}
-        {/* <div>
-          <img
-            src="https://errika.guestpostcrm.com/images/image%20(8).jpg"
-            alt="wolf"
-            className="w-10 h-10"
-          />
-        </div> */}
         {/* Hot Button */}
         <button
           onClick={() => setShowAvatar((prev) => !prev)}
@@ -209,7 +204,6 @@ export function TopNav() {
                       {user?.email || "user@example.com"}
                     </p>
                   </div>
-                  
 
                   {/* Logout Button */}
                   <motion.button
@@ -236,13 +230,12 @@ export function TopNav() {
                       alt="exit"
                     />
                   </motion.button>
-                  
                 </div>
                 <div className="ml-4">
-                    <p className="font-semibold text-gray-900 text-lg truncate">
-                      {user?.timeline || "UTC +05:30 (IST)"}
-                    </p>
-                  </div>
+                  <p className="font-semibold text-gray-900 text-lg truncate">
+                    {user?.timeline || "UTC +05:30 (IST)"}
+                  </p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

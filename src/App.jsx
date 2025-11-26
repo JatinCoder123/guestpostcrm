@@ -41,6 +41,7 @@ import NotFoundPage from "./components/pages/NotFoundPage";
 import CreateDeal from "./components/CreateDeal";
 import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
+import { SocketContextProvider } from "./context/SocketContext";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -139,7 +140,7 @@ const router = createBrowserRouter([
         path: "default-report",
         element: <DefaulterPage />,
       },
-       {
+      {
         path: "moved-emails",
         element: <MovedPage />,
       },
@@ -209,11 +210,13 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <PageContextProvider>
-          <ErrorBoundary>
-            <RouterProvider router={router} />
-          </ErrorBoundary>
-        </PageContextProvider>
+        <SocketContextProvider>
+          <PageContextProvider>
+            <ErrorBoundary>
+              <RouterProvider router={router} />
+            </ErrorBoundary>
+          </PageContextProvider>
+        </SocketContextProvider>
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}

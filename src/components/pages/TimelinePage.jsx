@@ -156,6 +156,9 @@ export function TimelinePage() {
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
+  const { avatar, loading: avatarLoading } = useSelector(
+    (state) => state.avatar
+  );
 
   const stageProgress = getStageProgress(mailersSummary?.stage);
   if (showEmail) {
@@ -634,7 +637,14 @@ export function TimelinePage() {
       </div>
 
       {/* ←←← RENDER THE AVATAR WHEN TRIGGERED ←←← */}
-      {showAvatar && <Avatar setShowAvatar={setShowAvatar} onPlay={true} />}
+      {showAvatar && !avatarLoading && (
+        <Avatar setShowAvatar={setShowAvatar} avatarUrl={avatar} />
+      )}
+      {showAvatar && avatarLoading && (
+        <div className="fixed bottom-10 right-10 z-50">
+          <LoadingAll type="hourglass" />
+        </div>
+      )}
     </>
   );
 }
