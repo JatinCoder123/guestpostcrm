@@ -292,6 +292,14 @@ export function TimelinePage() {
                         alt="sms"
                       />
                     </button>
+                    <button className="cursor-pointer hover:scale-105">
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/external-those-icons-flat-those-icons/48/external-Hangout-Logo-social-media-those-icons-flat-those-icons.png"
+                        alt="external-Hangout-Logo-social-media-those-icons-flat-those-icons"
+                      />
+                    </button>
                   </div>
                 </div>
 
@@ -494,7 +502,7 @@ export function TimelinePage() {
                           />
                         ),
                         label: "Favourite",
-                        action: () => dispatch(favEmail(threadId)),
+                        action: () => dispatch(favEmail()),
                       },
                       {
                         icon: forward ? (
@@ -520,7 +528,7 @@ export function TimelinePage() {
                           />
                         ),
                         label: "Mark Bulk",
-                        action: () => dispatch(markingEmail(threadId)),
+                        action: () => dispatch(markingEmail()),
                       },
                     ].map((btn, i) => (
                       <button
