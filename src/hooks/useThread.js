@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 
 function useThread() {
   const [showEmail, setShowEmails] = useState(false);
+  const [email, setEmail] = useState(null);
   const {
     message,
     error: sendError,
@@ -43,6 +44,8 @@ function useThread() {
     setShowEmails,
     currentThreadId,
     setCurrentThreadId,
+    email,
+    setEmail,
   ];
 }
 

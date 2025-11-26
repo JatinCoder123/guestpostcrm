@@ -8,13 +8,13 @@ import { useEffect, useState } from "react";
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
-import EditModal from "../../EditModal";
+import EditModal from "./EditModal";
 import { useSelector } from "react-redux";
 
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
   const { email } = useSelector((state) => state.ladger);
-  const { loading, data, error, refetch, fetch, update } = useModule({
+  const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `${MODULE_URL}&action_type=get_data`,
     method: "POST",
     body: {
@@ -27,34 +27,18 @@ export function MachineLearningPage() {
   });
 
   const rows = Array.isArray(data) ? data : [];
-  const handleCreate = () => {
-    fetch({
-      url: `${MODULE_URL}&action_type=post_data`,
-      method: "POST",
-      body: {
-        parent_bean: {
-          module: "outr_machine_learning",
-          email: "verm.jatin@gmail.com",
-        },
-      },
-      headers: {
-        "x-api-key": `${CREATE_DEAL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-    });
-  };
+
   const handleUpdate = (updatedItem) => {
-    fetch({
+    setData((prev) =>
+      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
+    );
+    update({
       url: `${MODULE_URL}&action_type=post_data`,
       method: "POST",
       body: {
         parent_bean: {
           module: "outr_machine_learning",
-          id: updatedItem.id,
-          name: updatedItem.name,
-          type: updatedItem.type,
-          description: updatedItem.description,
-          motive: updatedItem.motive,
+          ...updatedItem,
         },
       },
       headers: {
@@ -62,13 +46,12 @@ export function MachineLearningPage() {
         "Content-Type": "application/json",
       },
     });
-    refetch();
   };
 
   return (
     <div className="p-8">
       {/* Header */}
-      <Header text={"Machine Learning Manager"} handleCreate={handleCreate} />
+      <Header text={"Machine Learning Manager"} />
 
       {/* Loading */}
       {loading && <Loading text="Machine Learning" />}
@@ -125,7 +108,9 @@ export function MachineLearningPage() {
                     </span>
                   </td>
                   <td className="p-4 text-gray-700 max-w-[300px]">
-                    <p className="line-clamp-2">{item.description}</p>
+                    <p className="line-clamp-2 " title={item.description}>
+                      {item.description}
+                    </p>
                   </td>
 
                   <td className="p-4 text-right">

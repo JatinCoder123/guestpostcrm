@@ -11,7 +11,7 @@ import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
 import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
-import { getViewEmail } from "./store/Slices/viewEmail";
+import { getContact, getViewEmail } from "./store/Slices/viewEmail";
 import { getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
@@ -24,15 +24,27 @@ import { getDealRem } from "./store/Slices/dealRem";
 import { getOrderRem } from "./store/Slices/orderRem";
 import { getLinkRem } from "./store/Slices/linkRem";
 import { getPaymentRem } from "./store/Slices/paymentRem";
+import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
+import { getFavEmails } from "./store/Slices/favEmailSlice";
+import { getBulkEmails } from "./store/Slices/markBulkSlice";
+import { getAllAvatar } from "./store/Slices/avatarSlice";
+
+import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
+import { getmovedEmails } from "./store/Slices/movedEmails";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showAvatar, setShowAvatar] = useState(false);
-  const { timeline } = useSelector((state) => state.ladger);
+  const [showAvatar, setShowAvatar] = useState(true);
+  const { timeline, email } = useSelector((state) => state.ladger);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
     setActivePage(location);
   }, [location]);
+  useEffect(() => {
+    if (email) {
+      dispatch(getContact(email));
+    }
+  }, [email]);
   const dispatch = useDispatch();
   useEffect(() => {
     enteredEmail
@@ -41,6 +53,9 @@ const RootLayout = () => {
     dispatch(getAiCredits(timeline));
     dispatch(getUnansweredEmails(timeline, enteredEmail));
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
+    dispatch(getForwardedEmails(timeline, enteredEmail));
+    dispatch(getFavEmails(timeline, enteredEmail));
+    dispatch(getBulkEmails(timeline, enteredEmail));
     dispatch(getOrders(timeline, enteredEmail));
     dispatch(getDeals(timeline, enteredEmail));
     dispatch(getInvoices(timeline, enteredEmail));
@@ -50,7 +65,10 @@ const RootLayout = () => {
     dispatch(getOrderRem(timeline, enteredEmail));
     dispatch(getLinkRem(timeline, enteredEmail));
     dispatch(getPaymentRem(timeline, enteredEmail));
-    dispatch(getViewEmail(enteredEmail));
+    dispatch(getdefaulterEmails(timeline, enteredEmail));
+    dispatch(getmovedEmails(timeline, enteredEmail));
+    dispatch(getViewEmail());
+    dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);
 
   return (
@@ -65,6 +83,7 @@ const RootLayout = () => {
             <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
               <Sidebar
                 collapsed={sidebarCollapsed}
+                setSidebarCollapsed={setSidebarCollapsed}
                 onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
               />
             </div>
@@ -78,7 +97,7 @@ const RootLayout = () => {
               <div className="p-6">
                 <WelcomeHeader />
                 <Outlet />
-                {showAvatar && <Avatar />}
+                {showAvatar && <Avatar setShowAvatar={setShowAvatar} />}
               </div>
               <Footer />
             </main>

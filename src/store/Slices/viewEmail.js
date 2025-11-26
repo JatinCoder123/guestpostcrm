@@ -5,6 +5,7 @@ const viewEmailSlice = createSlice({
   name: "viewEmail",
   initialState: {
     loading: false,
+    contactLoading:false,
     viewEmail: [],
     contactInfo: null,
     accountInfo: null,
@@ -31,20 +32,20 @@ const viewEmailSlice = createSlice({
       state.error = action.payload;
     },
     getContactRequest(state) {
-      state.loading = true;
+      state.contactLoading = true;
       state.contactInfo = null;
       state.accountInfo = null;
       state.error = null;
     },
     getContactSucess(state, action) {
       const { contactInfo, accountInfo } = action.payload;
-      state.loading = false;
+      state.contactLoading = false;
       state.contactInfo = contactInfo;
       state.accountInfo = accountInfo;
       state.error = null;
     },
     getContactFailed(state, action) {
-      state.loading = false;
+      state.contactLoading = false;
       state.contactInfo = null;
       state.accountInfo = null;
       state.error = action.payload;
@@ -79,7 +80,9 @@ export const getViewEmail = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email}`
+        `${getState().user.crmEndpoint}&type=view_email&email=${
+          getState().ladger.email
+        }`
       );
       console.log(`viewEmail`, data);
       dispatch(
@@ -91,7 +94,9 @@ export const getViewEmail = (email) => {
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getViewEmailFailed("Fetching Deals  Failed")
+        viewEmailSlice.actions.getViewEmailFailed(
+          "Fetching View Emails  Failed"
+        )
       );
     }
   };

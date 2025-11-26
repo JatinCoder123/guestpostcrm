@@ -1,101 +1,103 @@
 import { Mail, Link2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
-
+import { useNavigate } from "react-router-dom";
+const LOCAL_KEY = "create_deals_draft_v1";
 const WelcomeHeader = () => {
   const { email, timeline } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
 
-  // Extract CRM domain
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
 
-  const time = periodOptions.find((option) => option.period == timeline)?.title;
+  const time = periodOptions.find((o) => o.period == timeline)?.title;
 
-  const finalEmail = email;
-
+  // 🔥 NEW: Get pending deals count from localStorage
+  let pendingDeals = null;
+  const raw = localStorage.getItem(LOCAL_KEY);
+  if (raw) {
+    const deals = JSON.parse(raw);
+    if (Array.isArray(deals) && deals.length > 0) {
+      pendingDeals = deals.length;
+    }
+  }
+  const naviageTo = useNavigate();
   return (
-    <div
-      className="
-      bg-gradient-to-br from-indigo-700 via-purple-700 to-blue-700
-      rounded-3xl p-5 mb-3 text-white shadow-[0_8px_30px_rgb(0,0,0,0.2)]
-      relative overflow-hidden
-      font-inter
-    "
-    >
-      {/* Glow Aura */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.35),transparent)] opacity-40 pointer-events-none"></div>
+    <div className="h-20 w-full relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
+      {/* Soft Background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-50/80 via-purple-50/60 to-pink-50/80" />
 
-      <div className="relative z-10 flex justify-between items-center flex-wrap gap-6">
-        {/* LEFT BLOCK */}
-        <div className="space-y-3">
-          {/* Timeline + Email */}
-          <p className="text-sm text-white/80 tracking-wide">
-            Showing results of{" "}
-            <span className="font-semibold text-white">
-              {time?.replace("_", " ")}
-            </span>{" "}
-            {finalEmail && (
+      {/* Light Orbs */}
+      <div className="absolute top-0 left-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-30" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-30" />
+
+      <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
+        {/* LEFT SIDE */}
+        <div className="flex items-center gap-5">
+          {/* Title */}
+          <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
+            Results for{" "}
+            <span className="font-bold text-gray-900">
+              {time?.replace(/_/g, " ")}
+            </span>
+            {email && (
               <>
-                for{" "}
-                <span className="font-semibold text-white">{finalEmail}</span>
+                {" • "}
+                <span className="font-bold text-blue-600">{email}</span>
+              </>
+            )}
+            {/* 🔥 NEW: Pending Deals Badge */}
+            {pendingDeals !== null && pendingDeals != 0 && (
+              <>
+                {" • "}
+                <button
+                  onClick={() => naviageTo("deals/create")}
+                  className="font-bold text-orange-600 cursor-pointer"
+                >
+                  {pendingDeals} Pending Deals
+                </button>
               </>
             )}
           </p>
 
-          {/* CRM CONNECTED BADGE */}
-          {crmDomain && (
-            <div
-              className="
-                group flex items-center gap-2
-                px-4 py-2 bg-white/10 rounded-xl
-                border border-white/20 backdrop-blur-xl
-                w-fit shadow-md cursor-pointer
-                hover:bg-white/20 transition-all duration-300
-              "
-            >
-              <Link2 className="w-4 h-4 text-white group-hover:scale-110 transition" />
+          {/* Hover Badges */}
+          <div className="flex items-center gap-3">
+            {/* CRM Badge */}
+            {crmDomain && (
+              <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-400 cursor-pointer">
+                <Link2 className="w-4 h-4 text-purple-600 group-hover:scale-125 transition-transform duration-300" />
+                <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-64 transition-all duration-600 ease-out">
+                  CRM:{" "}
+                  <span className="font-bold text-purple-700">{crmDomain}</span>
+                </span>
+              </div>
+            )}
 
-              <span
-                className="
-                  text-white text-sm tracking-wide font-medium
-                  max-w-0 overflow-hidden whitespace-nowrap
-                  group-hover:max-w-[500px]
-                  transition-all duration-500
-                "
-              >
-                Connected CRM:{" "}
-                <span className="font-semibold">{crmDomain}</span>
-              </span>
-            </div>
-          )}
+            {/* Business Email Badge */}
+            {businessEmail && (
+              <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
+                <Mail className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
+                <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-80 transition-all duration-600 ease-out">
+                  Email:{" "}
+                  <span className="font-bold text-blue-700">
+                    {businessEmail}
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* BUSINESS EMAIL BADGE */}
-        {businessEmail && (
-          <div
-            className="
-              flex items-center gap-3 px-5 py-2.5
-              bg-white/20 backdrop-blur-xl
-              border border-white/30 rounded-full
-              shadow-[0_4px_12px_rgba(255,255,255,0.2)]
-              select-none
-            "
-          >
-            <Mail className="w-4 h-4 text-white" />
-            <span
-              className="
-                bg-white text-gray-800 shadow-sm
-                text-sm font-semibold tracking-wide
-                px-3 py-1 rounded-full
-              "
-            >
-              {businessEmail}
-            </span>
-          </div>
-        )}
+        {/* Wolf GIF */}
+        <div className="flex-shrink-0 pr-2">
+          <img
+            src="https://errika.guestpostcrm.com/images/wolf-5.gif"
+            alt="Wolf"
+            className="h-14 w-auto object-contain drop-shadow-md"
+          />
+        </div>
       </div>
     </div>
   );

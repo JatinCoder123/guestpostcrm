@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const forwardedSlice = createSlice({
-  name: "forwarded",
+const defaulterSlice = createSlice({
+  name: "defaulter",
   initialState: {
     loading: false,
     emails: [],
     count: 0,
+    pageCount: 1,
+    pageIndex: 1,
     error: null,
   },
   reducers: {
@@ -15,10 +17,12 @@ const forwardedSlice = createSlice({
       state.error = null;
     },
     getEmailSucess(state, action) {
-      const { count, emails } = action.payload;
+      const { count, emails, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.emails = emails;
       state.count = count;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
       state.error = null;
     },
     getEmailFailed(state, action) {
@@ -31,9 +35,9 @@ const forwardedSlice = createSlice({
   },
 });
 
-export const getforwardedEmails = (filter, email) => {
+export const getdefaulterEmails = (filter, email) => {
   return async (dispatch, getState) => {
-    dispatch(forwardedSlice.actions.getEmailRequest());
+    dispatch(defaulterSlice.actions.getEmailRequest());
 
     try {
       let response;
@@ -41,28 +45,30 @@ export const getforwardedEmails = (filter, email) => {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=get_defaulters&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&page=1&page_size=50`
+          }&type=get_defaulters&filter=${filter}&page=1&page_size=50`
         );
       }
 
-      console.log(`forwarded emails`, response.data);
+      console.log(`defaulter emails`, response.data);
       const data = response.data;
       dispatch(
-        forwardedSlice.actions.getEmailSucess({
+        defaulterSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
-      dispatch(forwardedSlice.actions.clearAllErrors());
+      dispatch(defaulterSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        forwardedSlice.actions.getEmailFailed(
+        defaulterSlice.actions.getEmailFailed(
           "Fetching Unreplied Emails Failed"
         )
       );
@@ -70,5 +76,5 @@ export const getforwardedEmails = (filter, email) => {
   };
 };
 
-export const forwardedAction = forwardedSlice.actions;
-export default forwardedSlice.reducer;
+export const defaulterAction = defaulterSlice.actions;
+export default defaulterSlice.reducer;

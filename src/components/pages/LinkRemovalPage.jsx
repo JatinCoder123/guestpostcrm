@@ -7,6 +7,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import Pagination from "../Pagination";
+import { getLinkRem } from "../../store/Slices/linkRem";
 
 export function LinkRemovalPage() {
   const { linkRem: linkRemovals, count } = useSelector(
@@ -88,6 +90,9 @@ export function LinkRemovalPage() {
           <div className="flex items-center gap-3">
             <Link2 className="w-6 h-6 text-pink-600" />
             <h2 className="text-xl text-gray-900">LINK REMOVAL REQUESTS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <button className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors">
             + New Request
@@ -167,7 +172,9 @@ export function LinkRemovalPage() {
             </tbody>
           </table>
         </div>
-
+        {linkRemovals?.length > 0 && (
+          <Pagination slice={"linkRem"} fn={getLinkRem} />
+        )}
         {linkRemovals.length === 0 && (
           <div className="p-12 text-center">
             <Link2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />

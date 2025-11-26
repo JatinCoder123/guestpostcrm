@@ -6,6 +6,7 @@ import {
   X,
   User2Icon,
   ChevronDown,
+  Flame,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -18,11 +19,10 @@ import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
 
-export function TopNav({ setShowAvatar }) {
-  const [input, setInput] = useState("");
+export function TopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
-  const { setEnteredEmail } = useContext(PageContext);
+  const { setEnteredEmail, search, setSearch } = useContext(PageContext);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const profileMenuRef = useRef(null);
@@ -33,15 +33,15 @@ export function TopNav({ setShowAvatar }) {
   };
 
   const handleSearch = () => {
-    if (input.trim()) {
+    if (search.trim()) {
       navigateTo("");
-      setEnteredEmail(input);
+      setEnteredEmail(search);
     }
   };
 
   const handleClear = () => {
-    if (input.trim()) {
-      setInput("");
+    if (search.trim()) {
+      setSearch("");
       navigateTo("");
       setEnteredEmail(null);
     }
@@ -102,10 +102,10 @@ export function TopNav({ setShowAvatar }) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              value={input}
+              value={search}
               placeholder="Input Email to Search"
               onKeyDown={handleKeyPress}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg 
                          focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
             />
@@ -136,7 +136,6 @@ export function TopNav({ setShowAvatar }) {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 relative">
-
         {/*WOLF SECTION */}
         {/* <div>
           <img
@@ -145,9 +144,19 @@ export function TopNav({ setShowAvatar }) {
             className="w-10 h-10"
           />
         </div> */}
-        {/* Notification Button */}
+        {/* Hot Button */}
         <button
           onClick={() => setShowAvatar((prev) => !prev)}
+          className="flex cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
+          <Flame className="w-4 h-4" />
+        </button>
+
+        {/* Notification Button */}
+        <button
+          onClick={() => {
+            navigateTo("avatars");
+          }}
           className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors"
         >
           <User2Icon className="w-4 h-4" />
@@ -200,6 +209,7 @@ export function TopNav({ setShowAvatar }) {
                       {user?.email || "user@example.com"}
                     </p>
                   </div>
+                  
 
                   {/* Logout Button */}
                   <motion.button
@@ -226,12 +236,17 @@ export function TopNav({ setShowAvatar }) {
                       alt="exit"
                     />
                   </motion.button>
+                  
                 </div>
+                <div className="ml-4">
+                    <p className="font-semibold text-gray-900 text-lg truncate">
+                      {user?.timeline || "UTC +05:30 (IST)"}
+                    </p>
+                  </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-
       </div>
     </div>
   );

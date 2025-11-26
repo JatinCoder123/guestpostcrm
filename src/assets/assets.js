@@ -43,7 +43,6 @@ export function getDifference(dateString) {
   if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
   if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
   if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
-  if (minutes > 0) parts.push(`${minutes} min${minutes > 1 ? "s" : ""}`);
 
   const formattedDifference = parts.length > 0 ? `(${parts.join(" , ")})` : "";
 
@@ -94,4 +93,25 @@ export function getStageProgress(stageText) {
   if (s.includes("contacted") || s.includes("follow")) return 45;
   if (s.includes("lead") || s.includes("new")) return 20;
   return 40; // default
+}
+// Helper: decode Base64 → UTF-8 string
+export function base64ToUtf8(base64) {
+  try {
+    // atob gives binary string; decodeURIComponent + escape handle UTF-8 chars
+    return decodeURIComponent(
+      Array.prototype.map
+        .call(
+          atob(base64),
+          (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+        )
+        .join("")
+    );
+  } catch (e) {
+    // fallback to plain atob (may break for multi-byte chars)
+    try {
+      return atob(base64);
+    } catch {
+      return "";
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { base64ToUtf8 } from "../assets/assets";
 
 const useModule = ({
   url,
@@ -7,6 +8,7 @@ const useModule = ({
   body = null,
   headers = {},
   enabled = true,
+  name = null,
   dependencies = [],
 }) => {
   const [loading, setLoading] = useState(false);
@@ -25,15 +27,16 @@ const useModule = ({
         data: body,
         headers,
       });
-      console.log(`${Object.entries(body)} : `, response);
-      setData(response.data);
+      console.log(name, response);
+      let data = response.data;
+      setData(data);
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
     }
   }, [url, method, body, headers]);
-  const fetch = async ({ url, method, body, headers }) => {
+  const add = async ({ url, method, body, headers }) => {
     setCreating(true);
     setError(null);
 
@@ -74,7 +77,7 @@ const useModule = ({
     if (enabled) run();
   }, [...dependencies, enabled]);
 
-  return { loading, error, data, refetch: run, fetch, update };
+  return { loading, error, data, setData, refetch: run, add, update };
 };
 
 export default useModule;
