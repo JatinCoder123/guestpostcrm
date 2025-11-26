@@ -36,6 +36,7 @@ const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
+  const { emails } = useSelector((state) => state.unreplied);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
   const { currentAvatar } = useContext(SocketContext);
   useEffect(() => {
@@ -52,9 +53,7 @@ const RootLayout = () => {
   }, [email]);
   const dispatch = useDispatch();
   useEffect(() => {
-    enteredEmail
-      ? dispatch(getLadgerEmail(enteredEmail))
-      : dispatch(getLadger());
+    enteredEmail && dispatch(getLadgerEmail(enteredEmail));
     dispatch(getAiCredits(timeline));
     dispatch(getUnansweredEmails(timeline, enteredEmail));
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
@@ -75,6 +74,11 @@ const RootLayout = () => {
     dispatch(getViewEmail());
     dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);
+  useEffect(() => {
+    if (emails.length > 0) {
+      dispatch(getLadgerEmail(emails[0].from.match(/[\w.-]+@[\w.-]+\.\w+/)[0]));
+    }
+  }, [emails]);
 
   return (
     <AnimatePresence mode="wait">

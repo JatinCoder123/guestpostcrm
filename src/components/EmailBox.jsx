@@ -32,6 +32,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const { businessEmail } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
   const { email } = useSelector((s) => s.ladger);
@@ -343,7 +344,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
             className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
           >
             {visibleMessages.map((mail, idx) => {
-              const isUser = mail.from_email.includes(email);
+              const isUser = mail.from_email.includes(businessEmail);
               return (
                 <motion.div
                   key={mail.message_id || idx}

@@ -45,6 +45,7 @@ export function TimelinePage() {
   // ←←← STATE TO CONTROL AVATAR VISIBILITY ←←←
   const [showAvatar, setShowAvatar] = useState(false);
   const { contactInfo, accountInfo } = useSelector((state) => state.viewEmail);
+  const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
 
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
@@ -190,8 +191,8 @@ export function TimelinePage() {
     <>
       {/* ===================== MAIN PAGE CONTENT ===================== */}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {loading && <LoadingSkeleton />}
-        {!loading && (
+        {(loading || unrepliedLoading) && <LoadingSkeleton />}
+        {!loading && !unrepliedLoading && (
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
               {/* TOP HEADER */}
@@ -463,8 +464,7 @@ export function TimelinePage() {
                         </button>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                        {mailersSummary?.description ??
-                          "No recent message found."}
+                        {mailersSummary?.subject ?? "No recent message found."}
                       </p>
                     </div>
                   </div>
