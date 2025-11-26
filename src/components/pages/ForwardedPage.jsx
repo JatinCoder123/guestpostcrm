@@ -43,6 +43,9 @@ export function ForwardedPage() {
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl text-gray-900">FORWARDED EMAILS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
             {count} Unanswered
@@ -89,7 +92,7 @@ export function ForwardedPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{email.date_entered}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-900">{email.from}</td>

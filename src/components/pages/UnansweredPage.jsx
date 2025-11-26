@@ -23,13 +23,16 @@ export function UnansweredPage() {
     setShowEmails,
     currentThreadId,
     setCurrentThreadId,
+    email,
+    setEmail,
   ] = useThread();
-  if (showEmail && currentThreadId) {
+  if (showEmail && currentThreadId && email) {
     return (
       <EmailBox
         onClose={() => setShowEmails(false)}
         view={false}
         threadId={currentThreadId}
+        tempEmail={email}
       />
     );
   }
@@ -42,6 +45,9 @@ export function UnansweredPage() {
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl text-gray-900">UNANSWERED EMAILS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
             {count} Unanswered
@@ -96,6 +102,7 @@ export function UnansweredPage() {
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
+                      setEmail(email.from.split("<")[1].split(">")[0]);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >

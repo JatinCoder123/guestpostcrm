@@ -73,6 +73,9 @@ export function OrderReminderPage() {
           <div className="flex items-center gap-3">
             <CreditCard className="w-6 h-6 text-red-600" />
             <h2 className="text-xl text-gray-900">PAYMENT MISSED</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
             Send Reminders

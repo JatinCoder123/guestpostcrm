@@ -93,8 +93,14 @@ export function OffersPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           
           <div className="flex items-center gap-3">
-            <Gift className="w-6 h-6 text-green-600" />
-            <h2 className="text-lg font-semibold text-gray-800">OFFERS</h2>
+            <Gift className="w-6 h-6 text-yellow-600" />
+            <h2 className="text-xl text-gray-900 font-semibold">OFFERS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
+          </div>
+          <div className="px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+            {offers.length} Active Offers
           </div>
 
           <button

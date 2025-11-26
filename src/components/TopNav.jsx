@@ -6,6 +6,7 @@ import {
   X,
   User2Icon,
   ChevronDown,
+  Flame,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -18,7 +19,7 @@ import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
 
-export function TopNav({ setShowAvatar }) {
+export function TopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
   const { setEnteredEmail, search, setSearch } = useContext(PageContext);
@@ -143,9 +144,19 @@ export function TopNav({ setShowAvatar }) {
             className="w-10 h-10"
           />
         </div> */}
-        {/* Notification Button */}
+        {/* Hot Button */}
         <button
           onClick={() => setShowAvatar((prev) => !prev)}
+          className="flex cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
+          <Flame className="w-4 h-4" />
+        </button>
+
+        {/* Notification Button */}
+        <button
+          onClick={() => {
+            navigateTo("avatars");
+          }}
           className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors"
         >
           <User2Icon className="w-4 h-4" />
@@ -198,6 +209,7 @@ export function TopNav({ setShowAvatar }) {
                       {user?.email || "user@example.com"}
                     </p>
                   </div>
+                  
 
                   {/* Logout Button */}
                   <motion.button
@@ -224,7 +236,13 @@ export function TopNav({ setShowAvatar }) {
                       alt="exit"
                     />
                   </motion.button>
+                  
                 </div>
+                <div className="ml-4">
+                    <p className="font-semibold text-gray-900 text-lg truncate">
+                      {user?.timeline || "UTC +05:30 (IST)"}
+                    </p>
+                  </div>
               </motion.div>
             )}
           </AnimatePresence>

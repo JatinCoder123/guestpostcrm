@@ -114,6 +114,9 @@ export function InvoicesPage() {
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6 text-yellow-600" />
             <h2 className="text-xl text-gray-900">INVOICES</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <button
             className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"

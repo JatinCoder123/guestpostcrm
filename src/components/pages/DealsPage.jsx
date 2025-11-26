@@ -6,47 +6,17 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-
-import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import CreateDeal from "../CreateDeal";
-import { websiteListForDeal } from "../../assets/assets";
+import { useDispatch, useSelector } from "react-redux";
 import { getDeals } from "../../store/Slices/deals";
 import Pagination from "../Pagination";
+import { useNavigate } from "react-router-dom";
 
 export function DealsPage() {
   const { count, deals, loading, error } = useSelector((state) => state.deals);
-  const [validWebsites, setValidWebsites] = useState([]);
+  const dispatch = useDispatch();
+  const navigateTo = useNavigate();
+  const { timeline, email } = useSelector((state) => state.ladger);
 
-  useEffect(() => {
-    const web = websiteListForDeal.filter((web) => {
-      return deals.every((deal) => deal.website_c !== web);
-    });
-    setValidWebsites(web);
-  }, []);
-
-  const [showDeal, setShowDeal] = useState(false);
-  useEffect(() => {
-    if (showDeal) {
-      document.body.style.overflow = "hidden"; // Disable background scroll
-    } else {
-      document.body.style.overflow = "auto"; // Restore when closed
-    }
-
-    return () => {
-      document.body.style.overflow = "auto"; // Cleanup
-    };
-  }, [showDeal]);
-  if (showDeal) {
-    return (
-      <CreateDeal
-        validWebsites={validWebsites}
-        onClose={() => {
-          setShowDeal(false);
-        }}
-      />
-    );
-  }
   return (
     <>
       {showDeal && (
@@ -116,9 +86,12 @@ export function DealsPage() {
           <div className="flex items-center gap-3">
             <Handshake className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <button
-            onClick={() => setShowDeal(true)}
+            onClick={() => navigateTo("create")}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             + New Deal
@@ -167,7 +140,7 @@ export function DealsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                      {deal.status}
+                      {deal.status ?? "Active"}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">{deal.deal_date}</td>

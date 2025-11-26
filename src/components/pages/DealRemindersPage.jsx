@@ -1,6 +1,7 @@
 import { Mail, Bell, Handshake, Calendar, User, Clock } from "lucide-react";
 import { useSelector } from "react-redux";
 import { getDealRem } from "../../store/Slices/dealRem";
+import Pagination from "../Pagination";
 
 export function DealRemindersPage() {
   const { dealRem: reminders, count } = useSelector((state) => state.dealRem);
@@ -65,6 +66,9 @@ export function DealRemindersPage() {
           <div className="flex items-center gap-3">
             <Bell className="w-6 h-6 text-cyan-600" />
             <h2 className="text-xl text-gray-900">DEAL REMINDERS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
           <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors">
             + New Reminder

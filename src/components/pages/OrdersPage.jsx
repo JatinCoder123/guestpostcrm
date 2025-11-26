@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 
 import { useSelector } from "react-redux";
-import { useState } from "react";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
 
@@ -92,6 +91,9 @@ export function OrdersPage() {
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6 text-green-600" />
             <h2 className="text-lg font-semibold text-gray-800">ORDERS</h2>
+             <a href="">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
           </div>
         </div>
 
