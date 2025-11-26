@@ -66,7 +66,8 @@ export function DealRemindersPage() {
           <div className="flex items-center gap-3">
             <Bell className="w-6 h-6 text-cyan-600" />
             <h2 className="text-xl text-gray-900">DEAL REMINDERS</h2>
-             <a href="">
+             <a href="https://www.guestpostcrm.com/blog/deal-reminders-in-guestpostcrm/"   target="_blank" 
+  rel="noopener noreferrer">
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>
           </div>

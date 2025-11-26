@@ -285,6 +285,14 @@ export function TimelinePage() {
                         alt="sms"
                       />
                     </button>
+
+                      <button className="cursor-pointer hover:scale-105">
+<a href="https://www.guestpostcrm.com/blog/timeline-in-guestpostcrm/"   target="_blank" 
+  rel="noopener noreferrer">
+         <img width="40" height="40" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
+                    </button>
+                    
                   </div>
                 </div>
 

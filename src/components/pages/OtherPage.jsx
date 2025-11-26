@@ -74,6 +74,14 @@ export function OtherPage() {
       bg: "bg-green-50",
       link: "/spam-detection",
     },
+
+       {
+      title: "System Suggestions",
+      subtitle: "Tag manager will be shown here",
+      icon: <img width="40" height="40" src="https://img.icons8.com/office/40/system-information.png" alt="system-information"/>,
+      bg: "bg-green-50",
+      link: "/spam-detection",
+    },
   ];
 
   return (
