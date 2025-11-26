@@ -1,4 +1,4 @@
-import { Mail, RefreshCw, User, Globe, Reply} from "lucide-react";
+import { Mail, RefreshCw, User, Globe, Reply } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,10 +8,9 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LoadingAll, LoadingSpin } from "../Loading";
-
 
 // ←←← YOUR AVATAR COMPONENT ←←←
 import Avatar from "../Avatar";
@@ -204,9 +203,13 @@ export function TimelinePage() {
                         {contactLoading ? (
                           <LoadingAll size="30" color="blue" />
                         ) : (
-                   
-                          <Link to={"/contacts"} className="text-gray-800 text-lg font-semibold">
-                            {contactInfo?.first_name=='' ?email:contactInfo?.first_name}
+                          <Link
+                            to={"/contacts"}
+                            className="text-gray-800 text-lg font-semibold"
+                          >
+                            {contactInfo?.first_name == ""
+                              ? email
+                              : contactInfo?.first_name}
                           </Link>
                         )}
 
@@ -283,6 +286,14 @@ export function TimelinePage() {
                         height="48"
                         src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
                         alt="sms"
+                      />
+                    </button>
+                    <button className="cursor-pointer hover:scale-105">
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/external-those-icons-flat-those-icons/48/external-Hangout-Logo-social-media-those-icons-flat-those-icons.png"
+                        alt="external-Hangout-Logo-social-media-those-icons-flat-those-icons"
                       />
                     </button>
                   </div>
@@ -409,8 +420,9 @@ export function TimelinePage() {
                           transition={{ type: "spring", stiffness: 400 }}
                           className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
                           onClick={() => {
-                            dispatch(getAvatar())
-                            setShowAvatar(true)}} // ← This triggers the avatar!
+                            dispatch(getAvatar());
+                            setShowAvatar(true);
+                          }} // ← This triggers the avatar!
                         >
                           <img
                             width="40"
@@ -428,7 +440,12 @@ export function TimelinePage() {
                           className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
                           onClick={() => setShowEmails(true)} // ← This triggers the avatar!
                         >
-                         <img width="40" height="40" src="https://img.icons8.com/ultraviolet/40/bot.png" alt="bot"/>
+                          <img
+                            width="40"
+                            height="40"
+                            src="https://img.icons8.com/ultraviolet/40/bot.png"
+                            alt="bot"
+                          />
                         </motion.button>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed">
@@ -465,7 +482,7 @@ export function TimelinePage() {
                         label: "Email",
                         action: () => setShowEmails(true),
                       },
-                      
+
                       {
                         icon: <Globe className="w-5 h-5" />,
                         label: "IP",
@@ -482,7 +499,7 @@ export function TimelinePage() {
                           />
                         ),
                         label: "Favourite",
-                        action: () => dispatch(favEmail(threadId)),
+                        action: () => dispatch(favEmail()),
                       },
                       {
                         icon: forward ? (
@@ -508,7 +525,7 @@ export function TimelinePage() {
                           />
                         ),
                         label: "Mark Bulk",
-                        action: () => dispatch(markingEmail(threadId)),
+                        action: () => dispatch(markingEmail()),
                       },
                     ].map((btn, i) => (
                       <button
@@ -543,7 +560,7 @@ export function TimelinePage() {
                     <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
                     <div className="space-y-6">
-                      {ladger.map((event,index) => (
+                      {ladger.map((event, index) => (
                         <div
                           key={event.id}
                           className="relative flex items-center gap-4"
@@ -566,7 +583,13 @@ export function TimelinePage() {
                           </div>
 
                           {/* Card */}
-                          <div className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${index==0 ?"bg-gradient-to-r from-[#FFFF00] to-white":""}`}>
+                          <div
+                            className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${
+                              index == 0
+                                ? "bg-gradient-to-r from-[#FFFF00] to-white"
+                                : ""
+                            }`}
+                          >
                             <div className="flex items-center gap-2 justify-between mb-2">
                               <span className="text-gray-700">
                                 {event.type_c?.charAt(0).toUpperCase() +
