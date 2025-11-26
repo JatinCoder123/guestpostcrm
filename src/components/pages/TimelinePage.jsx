@@ -37,9 +37,11 @@ import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
 import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
 import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
+import { set } from "react-hook-form";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
@@ -196,6 +198,7 @@ export function TimelinePage() {
   }
 
   const handleAiAutoReply = async () => {
+    setAiReplySentLoading(true);
     try {
       console.log("🔄 AI Auto Reply Process Started...");
       console.log("📧 Current Thread ID:", threadId);
@@ -217,15 +220,19 @@ export function TimelinePage() {
           dispatch(sendEmailToThread(threadId, aiReply));
 
           console.log("🎉 AI Reply Sent Successfully!");
+
           toast.success("AI reply sent successfully!");
+          setAiReplySentLoading(false);
         } else {
           console.error("❌ AI Reply not generated");
           toast.error("AI reply generation failed");
+          setAiReplySentLoading(false);
         }
       }, 2000);
     } catch (error) {
       console.error("❌ Error in AI Auto Reply:", error);
       toast.error("Failed to send AI reply");
+      setAiReplySentLoading(false);
     }
   };
 
@@ -479,22 +486,27 @@ export function TimelinePage() {
                         </motion.button>
 
                         {/* ←←← Quick AI Reply ←←← */}
-
-                        <motion.button
-                          whileHover={{ scale: 1.15 }}
-                          whileTap={{ scale: 0.95 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                          className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
-                          onClick={handleAiAutoReply}
-                          title="Fast Reply"
-                        >
-                          <img
-                            width="40"
-                            height="40"
-                            src="https://img.icons8.com/ultraviolet/40/bot.png"
-                            alt="AI Auto Reply"
-                          />
-                        </motion.button>
+                        {aiReplySentLoading ? (
+                          <div className="ml-2">
+                            <LoadingAll size="30" color="blue" type="ping" />
+                          </div>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                            className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
+                            onClick={handleAiAutoReply}
+                            title="Fast Reply"
+                          >
+                            <img
+                              width="40"
+                              height="40"
+                              src="https://img.icons8.com/ultraviolet/40/bot.png"
+                              alt="AI Auto Reply"
+                            />
+                          </motion.button>
+                        )}
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {mailersSummary?.summary ?? "No AI summary available."}
