@@ -17,6 +17,9 @@ export const SocketContextProvider = (props) => {
 
     socket.on("new_avatar", newAvatarHandler);
     socket.on("latest_avatar", latestAvatarHandler);
+    socket.on("greet", (data) => {
+      console.log("GREET", data);
+    });
 
     return () => {
       socket.off("new_avatar", newAvatarHandler);
