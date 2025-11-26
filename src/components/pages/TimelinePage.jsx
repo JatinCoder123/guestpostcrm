@@ -1,4 +1,4 @@
-import { Mail, RefreshCw, User, Globe, Reply} from "lucide-react";
+import { Mail, RefreshCw, User, Globe, Reply } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,10 +8,9 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LoadingAll, LoadingSpin } from "../Loading";
-
 
 // ←←← YOUR AVATAR COMPONENT ←←←
 import Avatar from "../Avatar";
@@ -157,6 +156,9 @@ export function TimelinePage() {
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
+  const { avatar, loading: avatarLoading } = useSelector(
+    (state) => state.avatar
+  );
 
   const stageProgress = getStageProgress(mailersSummary?.stage);
   if (showEmail) {
@@ -204,9 +206,13 @@ export function TimelinePage() {
                         {contactLoading ? (
                           <LoadingAll size="30" color="blue" />
                         ) : (
-                   
-                          <Link to={"/contacts"} className="text-gray-800 text-lg font-semibold">
-                            {contactInfo?.first_name=='' ?email:contactInfo?.first_name}
+                          <Link
+                            to={"/contacts"}
+                            className="text-gray-800 text-lg font-semibold"
+                          >
+                            {contactInfo?.first_name == ""
+                              ? email
+                              : contactInfo?.first_name}
                           </Link>
                         )}
 
@@ -409,8 +415,9 @@ export function TimelinePage() {
                           transition={{ type: "spring", stiffness: 400 }}
                           className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
                           onClick={() => {
-                            dispatch(getAvatar())
-                            setShowAvatar(true)}} // ← This triggers the avatar!
+                            dispatch(getAvatar());
+                            setShowAvatar(true);
+                          }} // ← This triggers the avatar!
                         >
                           <img
                             width="40"
@@ -428,7 +435,12 @@ export function TimelinePage() {
                           className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
                           onClick={() => setShowEmails(true)} // ← This triggers the avatar!
                         >
-                         <img width="40" height="40" src="https://img.icons8.com/ultraviolet/40/bot.png" alt="bot"/>
+                          <img
+                            width="40"
+                            height="40"
+                            src="https://img.icons8.com/ultraviolet/40/bot.png"
+                            alt="bot"
+                          />
                         </motion.button>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed">
@@ -465,7 +477,7 @@ export function TimelinePage() {
                         label: "Email",
                         action: () => setShowEmails(true),
                       },
-                      
+
                       {
                         icon: <Globe className="w-5 h-5" />,
                         label: "IP",
@@ -543,7 +555,7 @@ export function TimelinePage() {
                     <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
                     <div className="space-y-6">
-                      {ladger.map((event,index) => (
+                      {ladger.map((event, index) => (
                         <div
                           key={event.id}
                           className="relative flex items-center gap-4"
@@ -566,7 +578,13 @@ export function TimelinePage() {
                           </div>
 
                           {/* Card */}
-                          <div className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${index==0 ?"bg-gradient-to-r from-[#FFFF00] to-white":""}`}>
+                          <div
+                            className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${
+                              index == 0
+                                ? "bg-gradient-to-r from-[#FFFF00] to-white"
+                                : ""
+                            }`}
+                          >
                             <div className="flex items-center gap-2 justify-between mb-2">
                               <span className="text-gray-700">
                                 {event.type_c?.charAt(0).toUpperCase() +
@@ -611,7 +629,14 @@ export function TimelinePage() {
       </div>
 
       {/* ←←← RENDER THE AVATAR WHEN TRIGGERED ←←← */}
-      {showAvatar && <Avatar setShowAvatar={setShowAvatar} onPlay={true} />}
+      {showAvatar && !avatarLoading && (
+        <Avatar setShowAvatar={setShowAvatar} avatarUrl={avatar} />
+      )}
+      {showAvatar && avatarLoading && (
+        <div className="fixed bottom-10 right-10 z-50">
+          <LoadingAll type="hourglass" />
+        </div>
+      )}
     </>
   );
 }

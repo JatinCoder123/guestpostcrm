@@ -1,21 +1,13 @@
 import { X, Maximize2, Minimize2, Volume2, VolumeX } from "lucide-react";
-import React, { useState, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { LoadingAll, LoadingChase } from "./Loading";
+import { useState, useRef, useEffect } from "react";
 
-const Avatar = ({ setShowAvatar, onPlay = false }) => {
+const Avatar = ({ setShowAvatar, avatarUrl }) => {
   const [hover, setHover] = useState(false);
   const [enlarged, setEnlarged] = useState(false);
   const [muted, setMuted] = useState(false);
   const videoRef = useRef(null);
   const containerRef = useRef(null);
-  const { avatar } = useSelector((state) => state.avatar);
 
-  const avatar_url = onPlay
-    ? `https://${avatar}`
-    : "https://errika.guestpostcrm.com/custom/outright_products/Rightee/LogicHooks/avatar_cache/guestpostcrm.mp4";
-
-  // Close avatar when clicking outside only when NOT enlarged
   useEffect(() => {
     const handleOutside = (e) => {
       if (
@@ -62,20 +54,14 @@ const Avatar = ({ setShowAvatar, onPlay = false }) => {
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
           >
-            {/* VIDEO */}
-            {onPlay && !avatar ? (
-              <LoadingAll type="hourglass" />
-            ) : (
-              <video
-                ref={videoRef}
-                src={avatar_url}
-                autoPlay
-                playsInline
-                muted={muted}
-                className="w-52 h-52 rounded-full object-cover shadow-xl border-4 border-white transition-all duration-300"
-              />
-            )}
-
+            <video
+              ref={videoRef}
+              src={`https://${avatarUrl}`}
+              autoPlay
+              playsInline
+              muted={muted}
+              className="w-52 h-52 rounded-full object-cover shadow-xl border-4 border-white transition-all duration-300"
+            />
             {/* BUTTONS */}
             <div
               className={`absolute top-2 right-2 flex gap-2 transition-opacity duration-200 ${
@@ -116,7 +102,7 @@ const Avatar = ({ setShowAvatar, onPlay = false }) => {
           <div className="relative w-[90%] max-w-4xl">
             <video
               ref={videoRef}
-              src={avatar_url}
+              src={`https://${avatarUrl}`}
               autoPlay
               loop
               controls
