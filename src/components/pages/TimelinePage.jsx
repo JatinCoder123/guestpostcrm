@@ -12,13 +12,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LoadingAll, LoadingSpin } from "../Loading";
 
-<<<<<<< HEAD
-=======
 import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread } from "../../store/Slices/threadEmail";
 
-
->>>>>>> 2d0213fc7e23a9f191b8c4eba37196ebb5d79905
 // ←←← YOUR AVATAR COMPONENT ←←←
 import Avatar from "../Avatar";
 
@@ -41,9 +37,11 @@ import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
 import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
 import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
+import { set } from "react-hook-form";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
@@ -52,11 +50,12 @@ export function TimelinePage() {
   // ←←← STATE TO CONTROL AVATAR VISIBILITY ←←←
   const [showAvatar, setShowAvatar] = useState(false);
   const { contactInfo, accountInfo } = useSelector((state) => state.viewEmail);
-<<<<<<< HEAD
   const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
-=======
-  const { aiReply, loading: aiLoading, error: aiError } = useSelector((s) => s.aiReply);
->>>>>>> 2d0213fc7e23a9f191b8c4eba37196ebb5d79905
+  const {
+    aiReply,
+    loading: aiLoading,
+    error: aiError,
+  } = useSelector((s) => s.aiReply);
 
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
@@ -198,42 +197,44 @@ export function TimelinePage() {
     return <Ip onClose={() => setShowIP(false)} />;
   }
 
-  
-const handleAiAutoReply = async () => {
-  try {
-    console.log("🔄 AI Auto Reply Process Started...");
-    console.log("📧 Current Thread ID:", threadId);
-    
-    if (!threadId) {
-      console.error("❌ Error: No Thread ID found");
-      toast.error("No email thread found for AI reply");
-      return;
-    }
+  const handleAiAutoReply = async () => {
+    setAiReplySentLoading(true);
+    try {
+      console.log("🔄 AI Auto Reply Process Started...");
+      console.log("📧 Current Thread ID:", threadId);
 
-    console.log("🤖 Generating AI Reply...");
-    await dispatch(getAiReply(threadId));
-    
-    setTimeout(() => {
-      if (aiReply) {
-        console.log("✅ AI Reply Generated:", aiReply);
-        
-        console.log("📤 Sending AI Reply to Thread...");
-        dispatch(sendEmailToThread(threadId, aiReply));
-        
-        console.log("🎉 AI Reply Sent Successfully!");
-        toast.success("AI reply sent successfully!");
-        
-      } else {
-        console.error("❌ AI Reply not generated");
-        toast.error("AI reply generation failed");
+      if (!threadId) {
+        console.error("❌ Error: No Thread ID found");
+        toast.error("No email thread found for AI reply");
+        return;
       }
-    }, 2000); 
-    
-  } catch (error) {
-    console.error("❌ Error in AI Auto Reply:", error);
-    toast.error("Failed to send AI reply");
-  }
-};
+
+      console.log("🤖 Generating AI Reply...");
+      await dispatch(getAiReply(threadId));
+
+      setTimeout(() => {
+        if (aiReply) {
+          console.log("✅ AI Reply Generated:", aiReply);
+
+          console.log("📤 Sending AI Reply to Thread...");
+          dispatch(sendEmailToThread(threadId, aiReply));
+
+          console.log("🎉 AI Reply Sent Successfully!");
+
+          toast.success("AI reply sent successfully!");
+          setAiReplySentLoading(false);
+        } else {
+          console.error("❌ AI Reply not generated");
+          toast.error("AI reply generation failed");
+          setAiReplySentLoading(false);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error("❌ Error in AI Auto Reply:", error);
+      toast.error("Failed to send AI reply");
+      setAiReplySentLoading(false);
+    } 
+  };
 
   return (
     <>
@@ -485,18 +486,27 @@ const handleAiAutoReply = async () => {
                         </motion.button>
 
                         {/* ←←← Quick AI Reply ←←← */}
-
-                            <motion.button
-                              whileHover={{ scale: 1.15 }}
-                              whileTap={{ scale: 0.95 }}
-                              transition={{ type: "spring", stiffness: 400 }}
-                              className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
-                              onClick={handleAiAutoReply}
-                              title="Fast Reply"
-                            >
-                              <img width="40" height="40" src="https://img.icons8.com/ultraviolet/40/bot.png" alt="AI Auto Reply"/>
-                            </motion.button>
-
+                        {aiReplySentLoading ? (
+                          <div className="ml-2">
+                            <LoadingAll size="30" color="blue" type="ping" />
+                          </div>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                            className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
+                            onClick={handleAiAutoReply}
+                            title="Fast Reply"
+                          >
+                            <img
+                              width="40"
+                              height="40"
+                              src="https://img.icons8.com/ultraviolet/40/bot.png"
+                              alt="AI Auto Reply"
+                            />
+                          </motion.button>
+                        )}
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {mailersSummary?.summary ?? "No AI summary available."}
