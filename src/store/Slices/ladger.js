@@ -4,7 +4,7 @@ const ladgerSlice = createSlice({
   name: "ladger",
   initialState: {
     loading: false,
-    email: null,
+    email: localStorage.getItem("email") || null,
     ladger: [],
     ip: null,
     ipMails: null,
@@ -12,7 +12,7 @@ const ladgerSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
-    timeline: "last_7_days",
+    timeline: localStorage.getItem("timeline") || "last_7_days",
     message: null,
     duplicate: 0,
   },

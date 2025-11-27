@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
 
 const favSlice = createSlice({
   name: "fav",
@@ -59,7 +58,6 @@ const favSlice = createSlice({
 export const getFavEmails = (filter, email) => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.getEmailRequest());
-
     try {
       let response;
       if (email) {
@@ -75,7 +73,6 @@ export const getFavEmails = (filter, email) => {
           }&type=favourite&filter=${filter}&page=1&page_size=50`
         );
       }
-
       console.log(`favorite emails`, response.data);
       const data = response.data;
       dispatch(
@@ -92,54 +89,25 @@ export const getFavEmails = (filter, email) => {
     }
   };
 };
-export const favEmail = (id) => {
+
+export const favEmail = () => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.favouriteEmailRequest());
-
     try {
-      const response = await axios.post(
-        `${MODULE_URL}&action_type=get_data`,
-        {
-          module: "outr_self_test",
-          where: {
-            thread_id: id,
-            name: "favourite",
-          },
-        },
-        {
-          headers: {
-            "x-api-key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await axios.get(
+        `https://errika.guestpostcrm.com/?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
+        {}
       );
-      console.log(`Favourite Check in fav`, response.data);
+      console.log(`Favourite Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
-        throw Error("Already Favourite ");
-      } else {
-        const response = await axios.post(
-          `${MODULE_URL}&action_type=post_data`,
-          {
-            parent_bean: {
-              module: "outr_self_test",
-              thread_id: id,
-              name: "favourite",
-            },
-          },
-          {
-            headers: {
-              "x-api-key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("Response while sendig fav ", response.data);
-        dispatch(
-          favSlice.actions.favouriteEmailSucess("Email Favourite Successfully")
-        );
-        dispatch(favSlice.actions.clearAllErrors());
+        throw new Error("Toggle failed");
       }
+      const message = data.new_value === 1 ? "Email Favorited Successfully" : "Email Unfavorited Successfully";
+      dispatch(
+        favSlice.actions.favouriteEmailSucess(message)
+      );
+      dispatch(favSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(favSlice.actions.favouriteEmailFailed(error.message));
     }
