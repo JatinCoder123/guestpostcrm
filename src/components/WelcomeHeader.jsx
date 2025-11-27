@@ -1,4 +1,4 @@
-import { Mail, Link2 } from "lucide-react";
+import { Mail, Link2, List } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
@@ -87,6 +87,11 @@ const WelcomeHeader = () => {
                 </span>
               </div>
             )}
+
+             {/* Business Email Badge */}
+            <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
+                <List className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
+            </div>
           </div>
         </div>
 
