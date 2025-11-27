@@ -1,0 +1,224 @@
+
+
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  Calendar,
+  User,
+  ExternalLink,
+  Shield,
+  TrendingUp,
+  Clock,
+  EqualApproximatelyIcon,
+  Plus,
+} from "lucide-react";
+import { BacklinkDetailBox } from "../../components/pages/BacklinkDetailBox";
+import { getBacklinks, getBacklinkDetail } from "../../store/Slices/backlinks";
+
+export function Allbacklinkspage() {
+  const dispatch = useDispatch();
+  const { loading, backlinks, error } = useSelector((state) => state.backlinks);
+  
+  const [showDetail, setShowDetail] = useState(false);
+  const [currentBacklinkId, setCurrentBacklinkId] = useState(null);
+
+  
+  useEffect(() => {
+    dispatch(getBacklinks());
+  }, [dispatch]);
+
+  
+  const handleBacklinkClick = (backlinkId) => {
+    setCurrentBacklinkId(backlinkId);
+    dispatch(getBacklinkDetail(backlinkId));
+    setShowDetail(true);
+  };
+
+  
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'removed':
+        return 'bg-red-100 text-red-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  
+  if (showDetail && currentBacklinkId) {
+    return (
+      <BacklinkDetailBox
+        onClose={() => setShowDetail(false)}
+        backlinkId={currentBacklinkId}
+      />
+    );
+  }
+
+  if (loading && backlinks.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm p-8">
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        </div>
+        <p className="text-center mt-4 text-gray-600">Loading backlinks...</p>
+      </div>
+    );
+  }
+
+  if (error && backlinks.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm p-8">
+        <div className="text-center text-red-600">
+          <Shield className="w-16 h-16 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold">Error Loading Backlinks</h3>
+          <p className="text-gray-600 mt-2">{error}</p>
+          <button
+            onClick={() => dispatch(getBacklinks())}
+            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      
+      
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <ExternalLink className="w-6 h-6 text-green-600" />
+          <h2 className="text-xl text-gray-900">ALL BACKLINKS</h2>
+          <a href="#" title="Backlinks Information">
+            <img 
+              width="30" 
+              height="30" 
+              src="https://img.icons8.com/offices/30/info.png" 
+              alt="info"
+            />
+          </a>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="px-4 py-1.5 bg-green-100 text-green-700 rounded-full">
+            {backlinks.length} Backlinks
+          </span>
+        </div>
+      </div>
+
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>DATE ADDED</span>
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span>AUTHOR</span>
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  <span>TARGET URL</span>
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>ANCHOR TEXT</span>
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>EXPIRY DATE</span>
+                </div>
+              </th>
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  <span>STATUS</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {backlinks.map((backlink, index) => (
+              <tr
+                key={backlink.id || index}
+                className="border-b border-gray-100 hover:bg-green-50 transition-colors cursor-pointer"
+              >
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span>{formatDate(backlink.date_entered)}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="text-gray-900">
+                    <div className="font-medium">{backlink.post_author_name_c}</div>
+                    <div className="text-sm text-gray-500">{backlink.post_author_email_c}</div>
+                  </div>
+                </td>
+                <td 
+                  onClick={() => handleBacklinkClick(backlink.id)}
+                  className="px-6 py-4 text-blue-600 hover:text-blue-800"
+                >
+                  <div className="flex items-center gap-1">
+                    {backlink.target_url_c?.substring(0, 40)}...
+                    <ExternalLink className="w-3 h-3" />
+                  </div>
+                </td>
+                <td 
+                  onClick={() => handleBacklinkClick(backlink.id)}
+                  className="px-6 py-4 text-gray-900 hover:text-green-700"
+                >
+                  {backlink.anchor_text_c || "N/A"}
+                </td>
+                <td className="px-6 py-4 text-gray-600">
+                  {formatDate(backlink.expiry_date_c)}
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(backlink.status_c)}`}>
+                    {backlink.status_c?.toUpperCase() || "UNKNOWN"}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+
+      {backlinks.length === 0 && !loading && (
+        <div className="p-12 text-center">
+          <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500">No backlinks found.</p>
+        </div>
+      )}
+    </div>
+  );
+}

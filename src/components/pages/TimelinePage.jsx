@@ -203,38 +203,43 @@ export function TimelinePage() {
       console.log("🔄 AI Auto Reply Process Started...");
       console.log("📧 Current Thread ID:", threadId);
 
-      if (!threadId) {
-        console.error("❌ Error: No Thread ID found");
-        toast.error("No email thread found for AI reply");
-        return;
+    console.log("🤖 Generating AI Reply...");
+    await dispatch(getAiReply(threadId));
+    
+    setTimeout(() => {
+      let replyContent = null;
+      let isSuccess = false;
+
+      
+      if (typeof aiReply === 'string') {
+        replyContent = aiReply;
+        isSuccess = true;
+      } else if (aiReply && typeof aiReply === 'object') {
+        isSuccess = aiReply.success;
+        replyContent = aiReply.reply_suggestion;
       }
 
-      console.log("🤖 Generating AI Reply...");
-      await dispatch(getAiReply(threadId));
-
-      setTimeout(() => {
-        if (aiReply) {
-          console.log("✅ AI Reply Generated:", aiReply);
-
-          console.log("📤 Sending AI Reply to Thread...");
-          dispatch(sendEmailToThread(threadId, aiReply));
-
-          console.log("🎉 AI Reply Sent Successfully!");
-
-          toast.success("AI reply sent successfully!");
-          setAiReplySentLoading(false);
-        } else {
-          console.error("❌ AI Reply not generated");
-          toast.error("AI reply generation failed");
-          setAiReplySentLoading(false);
-        }
-      }, 2000);
-    } catch (error) {
-      console.error("❌ Error in AI Auto Reply:", error);
-      toast.error("Failed to send AI reply");
-      setAiReplySentLoading(false);
-    }
-  };
+      if (isSuccess && replyContent) {
+        console.log("✅ AI Reply Generated:", replyContent);
+        
+        console.log("📤 Sending AI Reply to Thread...");
+        dispatch(sendEmailToThread(threadId, replyContent));
+        
+        console.log("🎉 AI Reply Sent Successfully!");
+        toast.success("AI reply sent successfully!");
+      } else {
+        console.error("❌ AI Reply not generated successfully");
+        console.log("AI Reply type:", typeof aiReply);
+        console.log("AI Reply value:", aiReply);
+        toast.error("AI reply generation failed");
+      }
+    }, 5000); 
+    
+  } catch (error) {
+    console.error("❌ Error in AI Auto Reply:", error);
+    toast.error("Failed to send AI reply");
+  }
+};
 
   return (
     <>
