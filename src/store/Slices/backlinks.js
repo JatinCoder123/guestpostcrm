@@ -2,6 +2,7 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import {CREATE_DEAL_API_KEY} from "../../store/constants.js"
 
 const backlinksSlice = createSlice({
   name: "backlinks",
@@ -76,7 +77,7 @@ export const getBacklinks = () => {
         {
           headers: { 
             "Content-Type": "application/json",
-            "x-api-key": "FldBjAIfoBo2UTcBAezvTOQg9"
+            "x-api-key": CREATE_DEAL_API_KEY
           },
         }
       );
