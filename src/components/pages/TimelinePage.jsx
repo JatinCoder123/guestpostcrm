@@ -1,4 +1,4 @@
-import { Mail, RefreshCw, User, Globe, Reply} from "lucide-react";
+import { Mail, RefreshCw, User, Globe, Reply } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,13 +8,12 @@ import EmailBox from "../EmailBox";
 import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LoadingAll, LoadingSpin } from "../Loading";
 
 import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread } from "../../store/Slices/threadEmail";
-
 
 // ←←← YOUR AVATAR COMPONENT ←←←
 import Avatar from "../Avatar";
@@ -38,9 +37,11 @@ import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
 import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
 import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
+import { set } from "react-hook-form";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
@@ -49,7 +50,12 @@ export function TimelinePage() {
   // ←←← STATE TO CONTROL AVATAR VISIBILITY ←←←
   const [showAvatar, setShowAvatar] = useState(false);
   const { contactInfo, accountInfo } = useSelector((state) => state.viewEmail);
-  const { aiReply, loading: aiLoading, error: aiError } = useSelector((s) => s.aiReply);
+  const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
+  const {
+    aiReply,
+    loading: aiLoading,
+    error: aiError,
+  } = useSelector((s) => s.aiReply);
 
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
@@ -161,6 +167,9 @@ export function TimelinePage() {
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
+  const { avatar, loading: avatarLoading } = useSelector(
+    (state) => state.avatar
+  );
 
   const stageProgress = getStageProgress(mailersSummary?.stage);
   if (showEmail) {
@@ -188,17 +197,11 @@ export function TimelinePage() {
     return <Ip onClose={() => setShowIP(false)} />;
   }
 
-  
-const handleAiAutoReply = async () => {
-  try {
-    console.log("🔄 AI Auto Reply Process Started...");
-    console.log("📧 Current Thread ID:", threadId);
-    
-    if (!threadId) {
-      console.error("❌ Error: No Thread ID found");
-      toast.error("No email thread found for AI reply");
-      return;
-    }
+  const handleAiAutoReply = async () => {
+    setAiReplySentLoading(true);
+    try {
+      console.log("🔄 AI Auto Reply Process Started...");
+      console.log("📧 Current Thread ID:", threadId);
 
     console.log("🤖 Generating AI Reply...");
     await dispatch(getAiReply(threadId));
@@ -242,8 +245,8 @@ const handleAiAutoReply = async () => {
     <>
       {/* ===================== MAIN PAGE CONTENT ===================== */}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {loading && <LoadingSkeleton />}
-        {!loading && (
+        {(loading || unrepliedLoading) && <LoadingSkeleton />}
+        {!loading && !unrepliedLoading && (
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
               {/* TOP HEADER */}
@@ -258,9 +261,13 @@ const handleAiAutoReply = async () => {
                         {contactLoading ? (
                           <LoadingAll size="30" color="blue" />
                         ) : (
-                   
-                          <Link to={"/contacts"} className="text-gray-800 text-lg font-semibold">
-                            {contactInfo?.first_name=='' ?email:contactInfo?.first_name}
+                          <Link
+                            to={"/contacts"}
+                            className="text-gray-800 text-lg font-semibold"
+                          >
+                            {contactInfo?.first_name == ""
+                              ? email
+                              : contactInfo?.first_name}
                           </Link>
                         )}
 
@@ -337,6 +344,14 @@ const handleAiAutoReply = async () => {
                         height="48"
                         src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
                         alt="sms"
+                      />
+                    </button>
+                    <button className="cursor-pointer hover:scale-105">
+                      <img
+                        width="48"
+                        height="48"
+                        src="https://img.icons8.com/external-those-icons-flat-those-icons/48/external-Hangout-Logo-social-media-those-icons-flat-those-icons.png"
+                        alt="external-Hangout-Logo-social-media-those-icons-flat-those-icons"
                       />
                     </button>
                   </div>
@@ -463,8 +478,9 @@ const handleAiAutoReply = async () => {
                           transition={{ type: "spring", stiffness: 400 }}
                           className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
                           onClick={() => {
-                            dispatch(getAvatar())
-                            setShowAvatar(true)}} // ← This triggers the avatar!
+                            dispatch(getAvatar());
+                            setShowAvatar(true);
+                          }} // ← This triggers the avatar!
                         >
                           <img
                             width="40"
@@ -475,18 +491,27 @@ const handleAiAutoReply = async () => {
                         </motion.button>
 
                         {/* ←←← Quick AI Reply ←←← */}
-
-                            <motion.button
-                              whileHover={{ scale: 1.15 }}
-                              whileTap={{ scale: 0.95 }}
-                              transition={{ type: "spring", stiffness: 400 }}
-                              className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
-                              onClick={handleAiAutoReply}
-                              title="Fast Reply"
-                            >
-                              <img width="40" height="40" src="https://img.icons8.com/ultraviolet/40/bot.png" alt="AI Auto Reply"/>
-                            </motion.button>
-
+                        {aiReplySentLoading ? (
+                          <div className="ml-2">
+                            <LoadingAll size="30" color="blue" type="ping" />
+                          </div>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                            className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
+                            onClick={handleAiAutoReply}
+                            title="Fast Reply"
+                          >
+                            <img
+                              width="40"
+                              height="40"
+                              src="https://img.icons8.com/ultraviolet/40/bot.png"
+                              alt="AI Auto Reply"
+                            />
+                          </motion.button>
+                        )}
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {mailersSummary?.summary ?? "No AI summary available."}
@@ -508,8 +533,7 @@ const handleAiAutoReply = async () => {
                         </button>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                        {mailersSummary?.description ??
-                          "No recent message found."}
+                        {mailersSummary?.subject ?? "No recent message found."}
                       </p>
                     </div>
                   </div>
@@ -522,7 +546,7 @@ const handleAiAutoReply = async () => {
                         label: "Email",
                         action: () => setShowEmails(true),
                       },
-                      
+
                       {
                         icon: <Globe className="w-5 h-5" />,
                         label: "IP",
@@ -539,7 +563,7 @@ const handleAiAutoReply = async () => {
                           />
                         ),
                         label: "Favourite",
-                        action: () => dispatch(favEmail(threadId)),
+                        action: () => dispatch(favEmail()),
                       },
                       {
                         icon: forward ? (
@@ -565,7 +589,7 @@ const handleAiAutoReply = async () => {
                           />
                         ),
                         label: "Mark Bulk",
-                        action: () => dispatch(markingEmail(threadId)),
+                        action: () => dispatch(markingEmail()),
                       },
                     ].map((btn, i) => (
                       <button
@@ -600,7 +624,7 @@ const handleAiAutoReply = async () => {
                     <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
 
                     <div className="space-y-6">
-                      {ladger.map((event,index) => (
+                      {ladger.map((event, index) => (
                         <div
                           key={event.id}
                           className="relative flex items-center gap-4"
@@ -623,7 +647,13 @@ const handleAiAutoReply = async () => {
                           </div>
 
                           {/* Card */}
-                          <div className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${index==0 ?"bg-gradient-to-r from-[#FFFF00] to-white":""}`}>
+                          <div
+                            className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${
+                              index == 0
+                                ? "bg-gradient-to-r from-[#FFFF00] to-white"
+                                : ""
+                            }`}
+                          >
                             <div className="flex items-center gap-2 justify-between mb-2">
                               <span className="text-gray-700">
                                 {event.type_c?.charAt(0).toUpperCase() +
@@ -668,7 +698,14 @@ const handleAiAutoReply = async () => {
       </div>
 
       {/* ←←← RENDER THE AVATAR WHEN TRIGGERED ←←← */}
-      {showAvatar && <Avatar setShowAvatar={setShowAvatar} onPlay={true} />}
+      {showAvatar && !avatarLoading && (
+        <Avatar setShowAvatar={setShowAvatar} avatarUrl={avatar} />
+      )}
+      {showAvatar && avatarLoading && (
+        <div className="fixed bottom-10 right-10 z-50">
+          <LoadingAll type="hourglass" />
+        </div>
+      )}
     </>
   );
 }

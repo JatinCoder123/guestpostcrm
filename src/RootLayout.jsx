@@ -31,11 +31,17 @@ import { getAllAvatar } from "./store/Slices/avatarSlice";
 
 import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 import { getmovedEmails } from "./store/Slices/movedEmails";
+import { SocketContext } from "./context/SocketContext";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
+  const { emails } = useSelector((state) => state.unreplied);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
+  const { currentAvatar } = useContext(SocketContext);
+  useEffect(() => {
+    setShowAvatar(true);
+  }, [currentAvatar]);
   const location = useLocation().pathname.split("/")[2];
   useEffect(() => {
     setActivePage(location);
@@ -47,9 +53,7 @@ const RootLayout = () => {
   }, [email]);
   const dispatch = useDispatch();
   useEffect(() => {
-    enteredEmail
-      ? dispatch(getLadgerEmail(enteredEmail))
-      : dispatch(getLadger());
+    enteredEmail && dispatch(getLadgerEmail(enteredEmail));
     dispatch(getAiCredits(timeline));
     dispatch(getUnansweredEmails(timeline, enteredEmail));
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
@@ -70,6 +74,11 @@ const RootLayout = () => {
     dispatch(getViewEmail());
     dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);
+  useEffect(() => {
+    if (emails.length > 0) {
+      dispatch(getLadgerEmail(emails[0].from.match(/[\w.-]+@[\w.-]+\.\w+/)[0]));
+    }
+  }, [emails]);
 
   return (
     <AnimatePresence mode="wait">
@@ -97,7 +106,13 @@ const RootLayout = () => {
               <div className="p-6">
                 <WelcomeHeader />
                 <Outlet />
-                {showAvatar && <Avatar setShowAvatar={setShowAvatar} />}
+                {showAvatar && currentAvatar && (
+                  <Avatar
+                    setShowAvatar={setShowAvatar}
+                    avatarUrl={currentAvatar?.url}
+                    mute={currentAvatar?.mute}
+                  />
+                )}
               </div>
               <Footer />
             </main>

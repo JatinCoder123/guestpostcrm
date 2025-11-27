@@ -1,15 +1,7 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  User,
-  Calendar,
-  Mail,
-  Download,
-  PlayCircle,
-  PauseCircle,
-  ArrowLeft,
-} from "lucide-react";
+import { User, Mail, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const AvatarPage = () => {

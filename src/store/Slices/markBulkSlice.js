@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
 
 const bulkSlice = createSlice({
   name: "bulk",
@@ -13,6 +12,7 @@ const bulkSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
+    marked: {}, // threadId: boolean (true if marked, false if unmarked)
   },
   reducers: {
     getEmailRequest(state) {
@@ -23,6 +23,10 @@ const bulkSlice = createSlice({
       const { count, emails, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.emails = emails;
+      // Update marked map for fetched marked emails
+      emails.forEach((email) => {
+        state.marked[email.thread_id || email.id] = true;
+      });
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
@@ -47,6 +51,10 @@ const bulkSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
+    setMarkedStatus(state, action) {
+      const { id, status } = action.payload;
+      state.marked[id] = status;
+    },
     clearAllErrors(state) {
       state.error = null;
     },
@@ -59,7 +67,6 @@ const bulkSlice = createSlice({
 export const getBulkEmails = (filter, email) => {
   return async (dispatch, getState) => {
     dispatch(bulkSlice.actions.getEmailRequest());
-
     try {
       let response;
       if (email) {
@@ -75,7 +82,6 @@ export const getBulkEmails = (filter, email) => {
           }&type=mark_bulk&filter=${filter}&page=1&page_size=50`
         );
       }
-
       console.log(`Bulk emails`, response.data);
       const data = response.data;
       dispatch(
@@ -92,58 +98,32 @@ export const getBulkEmails = (filter, email) => {
     }
   };
 };
-export const markingEmail = (id) => {
+
+export const markingEmail = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(bulkSlice.actions.markingRequest());
-
     try {
-      const response = await axios.post(
-        `${MODULE_URL}&action_type=get_data`,
-        {
-          module: "outr_self_test",
-          where: {
-            thread_id: id,
-            name: "mark_bulk",
-          },
-        },
-        {
-          headers: {
-            "x-api-key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await axios.get(
+        `https://errika.guestpostcrm.com/?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
+        {}
       );
-      console.log(`Bulk Cheking `, response.data);
+      console.log(`Mark Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
-        throw Error("Already Marked! ");
-      } else {
-        const response = await axios.post(
-          `${MODULE_URL}&action_type=post_data`,
-          {
-            parent_bean: {
-              module: "outr_self_test",
-              thread_id: id,
-              name: "mark_bulk",
-            },
-          },
-          {
-            headers: {
-              "x-api-key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("Response While Marking ", response.data);
-        dispatch(
-          bulkSlice.actions.markingSucess("Email Mark Bulk Successfully")
-        );
-        dispatch(bulkSlice.actions.clearAllErrors());
+        throw new Error("Toggle failed");
       }
+      // Determine message based on new_value
+      const message = data.new_value === 1 ? "Email Marked Successfully" : "Email Unmarked Successfully";
+      dispatch(
+        bulkSlice.actions.markingSucess(message)
+      );
+      
+      dispatch(bulkSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(bulkSlice.actions.markingFailed(error.message));
     }
   };
 };
+
 export const bulkAction = bulkSlice.actions;
 export default bulkSlice.reducer;

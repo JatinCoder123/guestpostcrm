@@ -32,6 +32,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const { businessEmail } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
   const { email } = useSelector((s) => s.ladger);
@@ -99,7 +100,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
     const formatted = /<[a-z][\s\S]*>/i.test(aiReply)
       ? aiReply
       : aiReply.replace(/\n/g, "<br>");
-
+    setOpenParent(null);
     setTemplateId(null);
     setInput(formatted);
     editorRef.current?.setContent(formatted);
@@ -159,10 +160,10 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
       {/* HEADER */}
       <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
         <div className="flex items-center gap-3">
-          <motion.button 
-            whileHover={{ scale: 1.05 }} 
+          <motion.button
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={handleBackClick} 
+            onClick={handleBackClick}
             className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -174,14 +175,13 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
             </h2>
           </div>
         </div>
-        
       </div>
 
       {/* ========================= EDITOR SCREEN ========================= */}
       {showEditorScreen ? (
         <div className="flex flex-col h-full">
           <div className="flex-1 px-6 pb-4 overflow-hidden">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -202,7 +202,8 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                     "undo redo | bold italic underline | bullist numlist | removeformat",
                   branding: false,
                   statusbar: false,
-                  content_style: "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.6; }",
+                  content_style:
+                    "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.6; }",
                 }}
               />
             </motion.div>
@@ -219,7 +220,9 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                 onClick={insertAiReply}
               >
                 <Brain className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:inline">AI Reply</span>
+                <span className="text-sm font-medium hidden sm:inline">
+                  AI Reply
+                </span>
               </motion.button>
 
               {/* DEFAULT TEMPLATE */}
@@ -233,11 +236,14 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                     const html = base64ToUtf8(defaultTemplate.html_base64);
                     editorRef.current.setContent(html);
                     setInput(html);
+                    setOpenParent(null);
                   }
                 }}
               >
                 <Mail className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:inline">Template</span>
+                <span className="text-sm font-medium hidden sm:inline">
+                  Template
+                </span>
               </motion.button>
 
               {/* PARENT + CHILD BUTTONS */}
@@ -256,9 +262,10 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-                        onClick={() =>
-                          setOpenParent(isOpen ? null : parent.id)
-                        }
+                        onClick={() => {
+                          setTemplateId(parent.email_template_id);
+                          setOpenParent(isOpen ? null : parent.id);
+                        }}
                       >
                         {parent.button_label}
                       </motion.button>
@@ -337,7 +344,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
             className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
           >
             {visibleMessages.map((mail, idx) => {
-              const isUser = mail.from_email.includes(email);
+              const isUser = mail.from_email.includes(businessEmail);
               return (
                 <motion.div
                   key={mail.message_id || idx}
@@ -354,16 +361,20 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <span className={`text-xs font-medium ${
-                        isUser ? "opacity-90" : "text-gray-500"
-                      }`}>
+                      <span
+                        className={`text-xs font-medium ${
+                          isUser ? "opacity-90" : "text-gray-500"
+                        }`}
+                      >
                         {isUser ? "You" : mail.from_name || "Sender"}
                       </span>
                       <span className="text-xs opacity-70">
                         {new Date(mail.date_created).toLocaleString()}
                       </span>
                     </div>
-                    <p className="whitespace-pre-line text-sm leading-relaxed">{mail.body}</p>
+                    <p className="whitespace-pre-line text-sm leading-relaxed">
+                      {mail.body}
+                    </p>
                   </div>
                 </motion.div>
               );

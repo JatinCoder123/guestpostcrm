@@ -38,7 +38,6 @@ const unrepliedSlice = createSlice({
 export const getUnrepliedEmail = (filter, email) => {
   return async (dispatch, getState) => {
     dispatch(unrepliedSlice.actions.getEmailRequest());
-    console.log(email);
     try {
       let response;
       if (email) {
