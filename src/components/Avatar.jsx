@@ -1,10 +1,10 @@
 import { X, Maximize2, Minimize2, Volume2, VolumeX } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-const Avatar = ({ setShowAvatar, avatarUrl }) => {
+const Avatar = ({ setShowAvatar, avatarUrl, mute = false }) => {
   const [hover, setHover] = useState(false);
   const [enlarged, setEnlarged] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(mute);
   const videoRef = useRef(null);
   const containerRef = useRef(null);
 

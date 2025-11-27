@@ -109,7 +109,8 @@ const RootLayout = () => {
                 {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}
-                    avatarUrl={currentAvatar}
+                    avatarUrl={currentAvatar?.url}
+                    mute={currentAvatar?.mute}
                   />
                 )}
               </div>
