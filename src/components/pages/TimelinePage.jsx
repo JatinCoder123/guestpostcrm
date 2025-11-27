@@ -233,7 +233,7 @@ export function TimelinePage() {
       console.error("❌ Error in AI Auto Reply:", error);
       toast.error("Failed to send AI reply");
       setAiReplySentLoading(false);
-    } 
+    }
   };
 
   return (
