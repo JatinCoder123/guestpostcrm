@@ -105,7 +105,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "unanswered",
-      label: "Unanswered",
+      label: "Replied",
       icon: MessageSquare,
       loading: unansweredLoading,
       count: unansweredCount,

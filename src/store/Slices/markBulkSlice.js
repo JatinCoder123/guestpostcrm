@@ -73,13 +73,13 @@ export const getBulkEmails = (filter, email) => {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=mark_bulk&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=bulk&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=mark_bulk&filter=${filter}&page=1&page_size=50`
+          }&type=bulk&filter=${filter}&page=1&page_size=50`
         );
       }
       console.log(`Bulk emails`, response.data);

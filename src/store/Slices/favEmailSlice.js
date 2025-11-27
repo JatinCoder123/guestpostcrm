@@ -64,13 +64,13 @@ export const getFavEmails = (filter, email) => {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=favourite&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=favorite&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=favourite&filter=${filter}&page=1&page_size=50`
+          }&type=favorite&filter=${filter}&page=1&page_size=50`
         );
       }
       console.log(`favorite emails`, response.data);
