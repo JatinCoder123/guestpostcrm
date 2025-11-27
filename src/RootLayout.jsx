@@ -53,7 +53,6 @@ const RootLayout = () => {
   }, [email]);
   const dispatch = useDispatch();
   useEffect(() => {
-    enteredEmail && dispatch(getLadgerEmail(enteredEmail));
     dispatch(getAiCredits(timeline));
     dispatch(getUnansweredEmails(timeline, enteredEmail));
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
@@ -71,7 +70,6 @@ const RootLayout = () => {
     dispatch(getPaymentRem(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
-
     dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);
   useEffect(() => {

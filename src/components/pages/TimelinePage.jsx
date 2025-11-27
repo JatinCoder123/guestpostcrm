@@ -23,10 +23,8 @@ import {
   formatExpiryLabel,
   formatTime,
   getDifference,
-  getStageProgress,
 } from "../../assets/assets";
 import LoadingSkeleton from "../LoadingSkeleton";
-import Pagination from "../Pagination";
 import MoveToDropdown from "../MoveToDropdown";
 import {
   forwardEmail,
@@ -37,6 +35,8 @@ import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
 import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
 import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
+import TimelineEvent from "../TimelineEvent";
+import UserDropdown from "../UserDropDown";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -44,6 +44,7 @@ export function TimelinePage() {
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
 
   // ←←← STATE TO CONTROL AVATAR VISIBILITY ←←←
   const [showAvatar, setShowAvatar] = useState(false);
@@ -160,12 +161,13 @@ export function TimelinePage() {
     markingError,
     markingMessage,
   ]);
-
+  const handleForward = (to) => {
+    dispatch(forwardEmail(to, threadId));
+  };
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
 
-  const stageProgress = getStageProgress(mailersSummary?.stage);
   if (showEmail) {
     return (
       <>
@@ -561,7 +563,7 @@ export function TimelinePage() {
                           />
                         ),
                         label: "Forward",
-                        action: () => dispatch(forwardEmail(threadId)),
+                        action: () => setShowUsers((p) => !p),
                       },
                       {
                         icon: marking ? (
@@ -586,8 +588,15 @@ export function TimelinePage() {
                         <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
                           {btn.label}
                         </span>
+                        {showUsers && btn.label === "Forward" && (
+                          <UserDropdown
+                            forwardHandler={handleForward}
+                            onClose={() => setShowUsers(false)}
+                          />
+                        )}
                       </button>
                     ))}
+
                     <MoveToDropdown
                       currentThreadId={currentThreadId}
                       onMoveSuccess={handleMoveSuccess}
@@ -597,87 +606,7 @@ export function TimelinePage() {
               )}
             </div>
 
-            {ladger?.length > 0 && (
-              <>
-                {/* TIMELINE EVENTS */}
-                <div className="py-[2%] px-[30%]">
-                  <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600  p-2 rounded-4xl  text-center text-white">
-                    TIMELINE
-                  </h1>
-                  <div className="relative">
-                    {/* Vertical Line */}
-                    <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300"></div>
-
-                    <div className="space-y-6">
-                      {ladger.map((event, index) => (
-                        <div
-                          key={event.id}
-                          className="relative flex items-center gap-4"
-                        >
-                          {/* Dot */}
-                          <div className="relative z-10 w-16 flex-shrink-0 mt-3   flex items-center justify-center">
-                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
-                              <img
-                                width="100"
-                                height="100"
-                                src="https://img.icons8.com/bubbles/100/new-post.png"
-                                alt="new-post"
-                              />
-                            </div>
-
-                            <div
-                              className="bg-gradient-to-r from-purple-600 to-blue-600 
-                                          absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
-                            ></div>
-                          </div>
-
-                          {/* Card */}
-                          <div
-                            className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${
-                              index == 0
-                                ? "bg-gradient-to-r from-[#FFFF00] to-white"
-                                : ""
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 justify-between mb-2">
-                              <span className="text-gray-700">
-                                {event.type_c?.charAt(0).toUpperCase() +
-                                  event.type_c?.slice(1)}
-                              </span>
-
-                              <span className="text-gray-500 text-sm">
-                                {formatTime(event.date_entered)}
-                              </span>
-                            </div>
-                            {/* optionally add event message preview */}
-                            {event.subject && (
-                              <div className="text-sm text-gray-600">
-                                {event.subject}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* END ICON */}
-                      {ladger.length > 0 && (
-                        <div className="relative flex gap-4">
-                          <div className="relative z-10 w-16 flex-shrink-0">
-                            <div className="w-12 h-12 flex items-center justify-center">
-                              <img
-                                src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
-                                alt=""
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <Pagination slice={"ladger"} fn={getLadgerEmail} />
-              </>
-            )}
+            {ladger?.length > 0 && <TimelineEvent />}
           </>
         )}
       </div>

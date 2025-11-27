@@ -97,7 +97,7 @@ export const getForwardedEmails = (filter, email) => {
     }
   };
 };
-export const forwardEmail = (id) => {
+export const forwardEmail = (to, id) => {
   return async (dispatch, getState) => {
     dispatch(forwardedSlice.actions.forwardEmailRequest());
 

@@ -1,7 +1,6 @@
-
-
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const backlinksSlice = createSlice({
   name: "backlinks",
@@ -13,7 +12,6 @@ const backlinksSlice = createSlice({
     message: null,
   },
   reducers: {
-    
     getBacklinksRequest(state) {
       state.loading = true;
       state.backlinks = [];
@@ -30,7 +28,6 @@ const backlinksSlice = createSlice({
       state.error = action.payload;
     },
 
-    
     getBacklinkDetailRequest(state) {
       state.loading = true;
       state.backlinkDetail = null;
@@ -47,7 +44,6 @@ const backlinksSlice = createSlice({
       state.error = action.payload;
     },
 
-    
     clearAllErrors(state) {
       state.error = null;
     },
@@ -60,9 +56,6 @@ const backlinksSlice = createSlice({
   },
 });
 
-
-
-
 export const getBacklinks = () => {
   return async (dispatch, getState) => {
     dispatch(backlinksSlice.actions.getBacklinksRequest());
@@ -71,16 +64,16 @@ export const getBacklinks = () => {
       const { data } = await axios.post(
         "https://errika.guestpostcrm.com/index.php?entryPoint=get_post_all&action_type=get_data",
         {
-          module: "outr_seo_backlinks"
+          module: "outr_seo_backlinks",
         },
         {
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "x-api-key": "FldBjAIfoBo2UTcBAezvTOQg9"
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
           },
         }
       );
-      
+
       console.log("Backlinks Data:", data);
       dispatch(
         backlinksSlice.actions.getBacklinksSuccess({
@@ -99,17 +92,14 @@ export const getBacklinks = () => {
   };
 };
 
-
 export const getBacklinkDetail = (backlinkId) => {
   return async (dispatch, getState) => {
     dispatch(backlinksSlice.actions.getBacklinkDetailRequest());
 
     try {
-      
-
       const { backlinks } = getState().backlinks;
-      const backlinkDetail = backlinks.find(bl => bl.id === backlinkId);
-      
+      const backlinkDetail = backlinks.find((bl) => bl.id === backlinkId);
+
       if (backlinkDetail) {
         dispatch(
           backlinksSlice.actions.getBacklinkDetailSuccess({
@@ -117,10 +107,9 @@ export const getBacklinkDetail = (backlinkId) => {
           })
         );
       } else {
-        
         throw new Error("Backlink not found");
       }
-      
+
       dispatch(backlinksSlice.actions.clearAllErrors());
     } catch (error) {
       console.error("Error fetching backlink detail:", error);
@@ -132,7 +121,6 @@ export const getBacklinkDetail = (backlinkId) => {
     }
   };
 };
-
 
 export const clearBacklinkMessages = () => {
   return (dispatch) => {
