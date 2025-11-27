@@ -579,22 +579,23 @@ export function TimelinePage() {
                         action: () => dispatch(markingEmail(threadId)),
                       },
                     ].map((btn, i) => (
-                      <button
-                        key={i}
-                        onClick={btn.action}
-                        className="relative group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer"
-                      >
-                        {btn.icon}
-                        <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
-                          {btn.label}
-                        </span>
+                      <div className="relative" key={i}>
+                        <button
+                          onClick={btn.action}
+                          className=" group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer"
+                        >
+                          {btn.icon}
+                          <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
+                            {btn.label}
+                          </span>
+                        </button>
                         {showUsers && btn.label === "Forward" && (
                           <UserDropdown
                             forwardHandler={handleForward}
                             onClose={() => setShowUsers(false)}
                           />
                         )}
-                      </button>
+                      </div>
                     ))}
 
                     <MoveToDropdown

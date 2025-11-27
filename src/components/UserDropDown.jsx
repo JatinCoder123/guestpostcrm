@@ -1,38 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
+import useModule from "../hooks/useModule";
+import Loading, { LoadingChase } from "./Loading";
 
-const UserDropdown = ({
-  users = [
-    {
-      name: "ABC",
-      email: "verm.jatin2004@gmail.com",
-    },
-    {
-      name: "ashish",
-      email: "ashish@outrightcrm.com",
-    },
-    {
-      name: "Sales",
-      email: "sales@outrightcrm.com",
-    },
-    {
-      name: "Promotion",
-      email: "promotion@outrightcrm.com",
-    },
-    {
-      name: "OutrightCRM 7",
-      email: "outrightcrm7@gmail.com",
-    },
-    {
-      name: "Vikas",
-      email: "vikas@outrightcrm.com",
-    },
-  ],
-  forwardHandler,
-  onClose,
-}) => {
+const UserDropdown = ({ forwardHandler, onClose }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const dropdownRef = useRef(null);
-
+  const { loading, data: users } = useModule({
+    url: `https://crm.outrightsystems.org/index.php?entryPoint=get_users&email=quietfluence@gmail.com`,
+    name: "USERS",
+  });
   // Close dropdown on outside click
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -47,49 +23,56 @@ const UserDropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className="absolute top-14 -right-8 w-72 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50"
+      onClick={(e) => e.stopPropagation()}
+      className="absolute top-14 -right-8 w-72 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-[999]"
     >
       <h3 className="font-semibold text-gray-700 mb-2">Forward To</h3>
 
       {/* User List */}
-      <div className="max-h-52 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-gray-300">
-        {users.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center">
-            No users available
-          </p>
-        ) : (
-          users.map((user, index) => (
-            <div
-              key={index}
-              onClick={() => setSelectedUser(user)}
-              className={`p-2 rounded-lg cursor-pointer border transition-all
+      {loading ? (
+        <LoadingChase />
+      ) : (
+        <>
+          {" "}
+          <div className="max-h-52 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-gray-300">
+            {users?.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center">
+                No users available
+              </p>
+            ) : (
+              users?.map((user, index) => (
+                <div
+                  key={index}
+                  onClick={() => setSelectedUser(user)}
+                  className={`p-2 rounded-lg cursor-pointer border transition-all
               ${
                 selectedUser?.email === user.email
                   ? "bg-blue-100 border-blue-400"
                   : "hover:bg-gray-100 border-transparent"
               }`}
-            >
-              <p className="font-medium text-gray-700">{user.name}</p>
-              <p className="text-xs text-gray-500">{user.email}</p>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Forward Button */}
-      <button
-        onClick={() => selectedUser && forwardHandler(selectedUser)}
-        disabled={!selectedUser}
-        className={`w-full mt-3 py-2 rounded-lg text-sm text-white transition-all
+                >
+                  <p className="font-medium text-gray-700">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+              ))
+            )}
+          </div>
+          {/* Forward Button */}
+          <button
+            onClick={() => selectedUser && forwardHandler(selectedUser)}
+            disabled={!selectedUser}
+            className={`w-full mt-3 py-2 rounded-lg text-sm text-white transition-all
           ${
             selectedUser
               ? "bg-blue-600 hover:bg-blue-700 active:scale-95"
               : "bg-gray-400 cursor-not-allowed"
           }
         `}
-      >
-        Forward Email
-      </button>
+          >
+            Forward Email
+          </button>
+        </>
+      )}
     </div>
   );
 };
