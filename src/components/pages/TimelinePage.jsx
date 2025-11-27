@@ -23,6 +23,7 @@ import {
   formatExpiryLabel,
   formatTime,
   getDifference,
+  images,
 } from "../../assets/assets";
 import LoadingSkeleton from "../LoadingSkeleton";
 import MoveToDropdown from "../MoveToDropdown";
@@ -45,10 +46,16 @@ export function TimelinePage() {
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
   const [showUsers, setShowUsers] = useState(false);
-
-  // ←←← STATE TO CONTROL AVATAR VISIBILITY ←←←
   const [showAvatar, setShowAvatar] = useState(false);
-  const { contactInfo, accountInfo } = useSelector((state) => state.viewEmail);
+  const {
+    contactInfo,
+    accountInfo,
+    loading: sendLoading,
+    contactLoading,
+    error: sendError,
+    message,
+    threadId,
+  } = useSelector((state) => state.viewEmail);
   const {
     aiReply,
     loading: aiLoading,
@@ -58,7 +65,6 @@ export function TimelinePage() {
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
 
-  const { threadId } = useSelector((s) => s.viewEmail);
   const {
     forward,
     error: forwardError,
@@ -75,22 +81,13 @@ export function TimelinePage() {
     message: markingMessage,
   } = useSelector((s) => s.bulk);
 
-  const { ladger, email, duplicate, mailersSummary, loading, error } =
-    useSelector((state) => state.ladger);
-  const {
-    loading: sendLoading,
-    contactLoading,
-    error: sendError,
-    message,
-  } = useSelector((state) => state.viewEmail);
+  const { ladger, email, mailersSummary, loading, error } = useSelector(
+    (state) => state.ladger
+  );
+  const { emails, loading: unrepliedLoading } = useSelector(
+    (state) => state.unreplied
+  );
 
-  const currentThreadId =
-    mailersSummary?.thread_id_c ||
-    ladger[1]?.thread_id_c ||
-    ladger[0]?.thread_id_c ||
-    "";
-
-  /** Disable body scroll when modals open */
   useEffect(() => {
     if (showEmail || showContact || showDeal || showIP || showAvatar) {
       document.body.style.overflow = "hidden";
@@ -102,16 +99,6 @@ export function TimelinePage() {
     };
   }, [showEmail, showContact, showDeal, showIP, showAvatar]);
 
-  /** Auto Refresh */
-  useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(() => {
-      dispatch(getLadgerEmail(email));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, dispatch, email]);
-
-  /** Error & Success Toasts */
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -167,18 +154,15 @@ export function TimelinePage() {
 
   /** Fetch AI Reply on page load */
   useEffect(() => {
-    if (threadId) {
-      console.log("🔄 Fetching AI Reply on page load...", threadId);
-      dispatch(getAiReply(threadId));
+    if (emails.length > 0) {
+      console.log("🔄 Fetching AI Reply on page load...", emails[0].thread_id);
+      dispatch(getAiReply(emails[0].thread_id));
     }
-  }, [threadId, dispatch]);
+  }, [emails, dispatch]);
 
-  /** AI Error Handling */
   useEffect(() => {
     if (aiError) {
       toast.error(aiError);
-      // Clear error if needed
-      // dispatch(aiReplyAction.clearError());
     }
   }, [aiError]);
 
@@ -223,7 +207,7 @@ export function TimelinePage() {
         typeof aiReply === "string" ? aiReply : aiReply?.reply_suggestion;
 
       if (replyContent) {
-        await dispatch(sendEmailToThread(threadId, replyContent));
+        await dispatch(sendEmailToThread(emails[0].thread_id, replyContent));
         toast.success("AI reply sent successfully!");
       } else {
         toast.error("No valid reply content found");
@@ -240,8 +224,8 @@ export function TimelinePage() {
     <>
       {/* ===================== MAIN PAGE CONTENT ===================== */}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {loading && <LoadingSkeleton />}
-        {!loading && (
+        {(loading || unrepliedLoading) && <LoadingSkeleton />}
+        {!loading && !unrepliedLoading && (
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
               {/* TOP HEADER */}
@@ -350,29 +334,14 @@ export function TimelinePage() {
                         alt="external-Hangout-Logo-social-media-those-icons-flat-those-icons"
                       />
                     </button>
-                  </div>
-                </div>
-
-                {/* Refresh & Duplicates */}
-                <div className="flex items-center gap-4">
-                  <span className="text-gray-600 text-sm">
-                    {duplicate > 1
-                      ? `${duplicate} Duplicates`
-                      : `${duplicate} Duplicate`}
-                  </span>
-                  <button
-                    onClick={() => dispatch(getLadgerEmail(email))}
-                    className="flex items-center cursor-pointer text-blue-500 border rounded-3xl p-2 border-blue-600"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
-                  <div>
-                    <img
-                      width="36"
-                      height="36"
-                      src="https://img.icons8.com/pulsar-gradient/48/replay-5.png"
-                      alt="replay"
-                    />
+                    <button className="cursor-pointer hover:scale-105 rounded-full p-2">
+                      <img
+                        width="48"
+                        height="48"
+                        src={images.duplicateImg}
+                        alt="duplicate count"
+                      />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -628,11 +597,11 @@ export function TimelinePage() {
                         )}
                       </div>
                     ))}
-
+                    {/* 
                     <MoveToDropdown
                       currentThreadId={currentThreadId}
                       onMoveSuccess={handleMoveSuccess}
-                    />
+                    /> */}
                   </div>
                 </>
               )}
