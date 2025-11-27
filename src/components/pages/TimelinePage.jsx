@@ -54,7 +54,7 @@ export function TimelinePage() {
     loading: aiLoading,
     error: aiError,
   } = useSelector((s) => s.aiReply);
-
+  const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
 
@@ -161,30 +161,27 @@ export function TimelinePage() {
     markingError,
     markingMessage,
   ]);
-<<<<<<< HEAD
   const handleForward = (to) => {
     dispatch(forwardEmail(to, threadId));
   };
-=======
 
   /** Fetch AI Reply on page load */
-useEffect(() => {
-  if (threadId) {
-    console.log("🔄 Fetching AI Reply on page load...", threadId);
-    dispatch(getAiReply(threadId));
-  }
-}, [threadId, dispatch]);
+  useEffect(() => {
+    if (threadId) {
+      console.log("🔄 Fetching AI Reply on page load...", threadId);
+      dispatch(getAiReply(threadId));
+    }
+  }, [threadId, dispatch]);
 
-/** AI Error Handling */
-useEffect(() => {
-  if (aiError) {
-    toast.error(aiError);
-    // Clear error if needed
-    // dispatch(aiReplyAction.clearError());
-  }
-}, [aiError]);
+  /** AI Error Handling */
+  useEffect(() => {
+    if (aiError) {
+      toast.error(aiError);
+      // Clear error if needed
+      // dispatch(aiReplyAction.clearError());
+    }
+  }, [aiError]);
 
->>>>>>> ca9c024a80bfa75136a97f4184f4a5c279469209
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
@@ -215,78 +212,29 @@ useEffect(() => {
   }
 
   const handleAiAutoReply = async () => {
-<<<<<<< HEAD
+    if (!aiReply) {
+      toast.error("No AI reply content available");
+      return;
+    }
+
+    setAiReplySentLoading(true);
     try {
-      console.log("🔄 AI Auto Reply Process Started...");
-      console.log("📧 Current Thread ID:", threadId);
+      const replyContent =
+        typeof aiReply === "string" ? aiReply : aiReply?.reply_suggestion;
 
-      if (!threadId) {
-        console.error("❌ Error: No Thread ID found");
-        toast.error("No email thread found for AI reply");
-        return;
+      if (replyContent) {
+        await dispatch(sendEmailToThread(threadId, replyContent));
+        toast.success("AI reply sent successfully!");
+      } else {
+        toast.error("No valid reply content found");
       }
-
-      console.log("🤖 Generating AI Reply...");
-      await dispatch(getAiReply(threadId));
-
-      setTimeout(() => {
-        let replyContent = null;
-        let isSuccess = false;
-
-        if (typeof aiReply === "string") {
-          replyContent = aiReply;
-          isSuccess = true;
-        } else if (aiReply && typeof aiReply === "object") {
-          isSuccess = aiReply.success;
-          replyContent = aiReply.reply_suggestion;
-        }
-
-        if (isSuccess && replyContent) {
-          console.log("✅ AI Reply Generated:", replyContent);
-
-          console.log("📤 Sending AI Reply to Thread...");
-          dispatch(sendEmailToThread(threadId, replyContent));
-
-          console.log("🎉 AI Reply Sent Successfully!");
-          toast.success("AI reply sent successfully!");
-        } else {
-          console.error("❌ AI Reply not generated successfully");
-          console.log("AI Reply type:", typeof aiReply);
-          console.log("AI Reply value:", aiReply);
-          toast.error("AI reply generation failed");
-        }
-      }, 5000);
     } catch (error) {
-      console.error("❌ Error in AI Auto Reply:", error);
+      console.error("❌ Error sending AI reply:", error);
       toast.error("Failed to send AI reply");
+    } finally {
+      setAiReplySentLoading(false);
     }
   };
-=======
-  if (!aiReply) {
-    toast.error("No AI reply content available");
-    return;
-  }
-
-  setAiReplySentLoading(true);
-  try {
-    const replyContent = typeof aiReply === 'string' 
-      ? aiReply 
-      : aiReply?.reply_suggestion;
-
-    if (replyContent) {
-      await dispatch(sendEmailToThread(threadId, replyContent));
-      toast.success("AI reply sent successfully!");
-    } else {
-      toast.error("No valid reply content found");
-    }
-  } catch (error) {
-    console.error("❌ Error sending AI reply:", error);
-    toast.error("Failed to send AI reply");
-  } finally {
-    setAiReplySentLoading(false);
-  }
-};
->>>>>>> ca9c024a80bfa75136a97f4184f4a5c279469209
 
   return (
     <>
@@ -502,8 +450,7 @@ useEffect(() => {
                   </div>
 
                   {/* AI SUMMARY + LATEST MESSAGE */}
-                  
-                  
+
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* AI Summary Card */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
@@ -530,48 +477,30 @@ useEffect(() => {
                             alt="Play AI Avatar"
                           />
                         </motion.button>
-<<<<<<< HEAD
-
-                        {/* ←←← Quick AI Reply ←←← */}
-
-                        <motion.button
-                          whileHover={{ scale: 1.15 }}
-                          whileTap={{ scale: 0.95 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                          className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
-                          onClick={handleAiAutoReply}
-                          title="Fast Reply"
-                        >
-                          <img
-                            width="40"
-                            height="40"
-                            src="https://img.icons8.com/ultraviolet/40/bot.png"
-                            alt="AI Auto Reply"
-                          />
-                        </motion.button>
-=======
                       </div>
-                      
+
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {mailersSummary?.summary ?? "No AI summary available."}
                       </p>
-                      
+
                       <hr className="my-3 border-gray-300" />
-                      
+
                       {/* AI Reply Section - HR ke niche */}
                       <div className="mt-3">
                         {/* AI Reply Content - Pehle show hoga */}
                         {aiReply && (
                           <div className="mb-3 p-3 bg-white border border-green-200 rounded-lg">
-                            <h4 className="text-green-700 font-semibold text-sm mb-2">AI Reply:</h4>
+                            <h4 className="text-green-700 font-semibold text-sm mb-2">
+                              AI Reply:
+                            </h4>
                             <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                              {typeof aiReply === 'string' 
-                                ? aiReply 
+                              {typeof aiReply === "string"
+                                ? aiReply
                                 : aiReply?.reply_suggestion || aiReply}
                             </p>
                           </div>
                         )}
-                        
+
                         {/* AI Reply Button - Content ke niche */}
                         {aiReplySentLoading ? (
                           <div className="flex justify-center">
@@ -594,7 +523,6 @@ useEffect(() => {
                             <span>Send AI Reply</span>
                           </motion.button>
                         )}
->>>>>>> ca9c024a80bfa75136a97f4184f4a5c279469209
                       </div>
                     </div>
 
