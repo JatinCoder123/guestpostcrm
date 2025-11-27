@@ -37,7 +37,7 @@ export function OtherPage() {
       subtitle: "All BackLinks content shown here",
       icon: <Option className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
-      link: "paypal-credentials",
+      link: "/all-backlinks",
     },
     {
       title: "Defaulters",

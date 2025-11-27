@@ -22,6 +22,7 @@ import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
 import movederReducer from "./Slices/movedEmails.js";
+import backlinksReducer from "./Slices/backlinks.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -47,5 +48,6 @@ export const store = configureStore({
     bulk: bulkReducer,
     avatar: avatarReducer,
     defaulter: defaulterReducer,
+    backlinks: backlinksReducer,
   },
 });

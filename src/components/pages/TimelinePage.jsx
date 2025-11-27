@@ -204,20 +204,33 @@ const handleAiAutoReply = async () => {
     await dispatch(getAiReply(threadId));
     
     setTimeout(() => {
-      if (aiReply) {
-        console.log("✅ AI Reply Generated:", aiReply);
+      let replyContent = null;
+      let isSuccess = false;
+
+      
+      if (typeof aiReply === 'string') {
+        replyContent = aiReply;
+        isSuccess = true;
+      } else if (aiReply && typeof aiReply === 'object') {
+        isSuccess = aiReply.success;
+        replyContent = aiReply.reply_suggestion;
+      }
+
+      if (isSuccess && replyContent) {
+        console.log("✅ AI Reply Generated:", replyContent);
         
         console.log("📤 Sending AI Reply to Thread...");
-        dispatch(sendEmailToThread(threadId, aiReply));
+        dispatch(sendEmailToThread(threadId, replyContent));
         
         console.log("🎉 AI Reply Sent Successfully!");
         toast.success("AI reply sent successfully!");
-        
       } else {
-        console.error("❌ AI Reply not generated");
+        console.error("❌ AI Reply not generated successfully");
+        console.log("AI Reply type:", typeof aiReply);
+        console.log("AI Reply value:", aiReply);
         toast.error("AI reply generation failed");
       }
-    }, 2000); 
+    }, 5000); 
     
   } catch (error) {
     console.error("❌ Error in AI Auto Reply:", error);

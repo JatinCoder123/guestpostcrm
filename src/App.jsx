@@ -41,6 +41,7 @@ import NotFoundPage from "./components/pages/NotFoundPage";
 import CreateDeal from "./components/CreateDeal";
 import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
+import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -142,6 +143,10 @@ const router = createBrowserRouter([
        {
         path: "moved-emails",
         element: <MovedPage />,
+      },
+       {
+        path: "all-backlinks",
+        element: <Allbacklinkspage />,
       },
       {
         path: "other",
