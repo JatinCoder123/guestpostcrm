@@ -74,11 +74,26 @@ export function OtherPage() {
       bg: "bg-green-50",
       link: "/spam-detection",
     },
+
+       {
+      title: "System Suggestions",
+      subtitle: "Tag manager will be shown here",
+      icon: <img width="40" height="40" src="https://img.icons8.com/office/40/system-information.png" alt="system-information"/>,
+      bg: "bg-green-50",
+      link: "/spam-detection",
+    },
   ];
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-6">Others</h2>
+      <div className="flex gap-5">
+        <h2 className="text-2xl font-semibold mb-6">Others</h2>
+
+       <a href="https://www.guestpostcrm.com/blog/other-section-in-guestpostcrm/"  target="_blank" 
+  rel="noopener noreferrer">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {menuItems.map((item, index) => (

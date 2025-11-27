@@ -72,7 +72,7 @@ export function OrderReminderPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <CreditCard className="w-6 h-6 text-red-600" />
-            <h2 className="text-xl text-gray-900">ORDER REMINDER</h2>
+            <h2 className="text-xl text-gray-900">Order Reminders</h2>
              <a href="">
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>

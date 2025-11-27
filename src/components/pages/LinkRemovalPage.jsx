@@ -90,7 +90,8 @@ export function LinkRemovalPage() {
           <div className="flex items-center gap-3">
             <Link2 className="w-6 h-6 text-pink-600" />
             <h2 className="text-xl text-gray-900">LINK REMOVAL REQUESTS</h2>
-             <a href="">
+             <a href="https://www.guestpostcrm.com/blog/how-guestpostcrm-automates-link-removal/"  target="_blank" 
+  rel="noopener noreferrer">
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>
           </div>
