@@ -69,7 +69,7 @@ export const getBacklinks = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "x-api-key": CREATE_DEAL_API_KEY,
           },
         }
       );
