@@ -19,16 +19,6 @@ export function DealsPage() {
 
   return (
     <>
-      {showDeal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <CreateDeal
-            onClose={() => {
-              setShowDeal(false);
-            }}
-          />
-        </div>
-      )}
-
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
@@ -86,7 +76,8 @@ export function DealsPage() {
           <div className="flex items-center gap-3">
             <Handshake className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
-             <a href="">
+             <a href="https://www.guestpostcrm.com/blog/deal-expiry-renewal-reminders/"  target="_blank" 
+  rel="noopener noreferrer">
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>
           </div>

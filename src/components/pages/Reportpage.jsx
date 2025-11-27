@@ -699,10 +699,16 @@ const ReportPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
       <div className="w-full max-w-[95rem] mx-auto">
         {!selectedCard ? (
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-10 m-auto ">
+         <div className="flex text-center m-auto justify-center">
+             <h1 className="text-4xl font-bold text-gray-900 mb-0 px-5">
               Business Intelligence Dashboard
             </h1>
+               <a href="https://www.guestpostcrm.com/blog/daily-reports-in-guestpostcrm/"  target="_blank" 
+  rel="noopener noreferrer">
+         <img width="40" height="40" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
+         </div>
             <p className="text-gray-600 text-lg">
               Monitor and manage your business operations
             </p>

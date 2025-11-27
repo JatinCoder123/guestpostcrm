@@ -342,12 +342,7 @@ export function TimelinePage() {
                       />
                     </button>
 
-                      <button className="cursor-pointer hover:scale-105">
-<a href="https://www.guestpostcrm.com/blog/timeline-in-guestpostcrm/"   target="_blank" 
-  rel="noopener noreferrer">
-         <img width="40" height="40" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
-                    </button>
+                   
                     
                     <button className="cursor-pointer hover:scale-105">
                       <img
@@ -356,6 +351,13 @@ export function TimelinePage() {
                         src="https://img.icons8.com/external-those-icons-flat-those-icons/48/external-Hangout-Logo-social-media-those-icons-flat-those-icons.png"
                         alt="external-Hangout-Logo-social-media-those-icons-flat-those-icons"
                       />
+                    </button>
+
+                       <button className="cursor-pointer hover:scale-105">
+<a href="https://www.guestpostcrm.com/blog/timeline-in-guestpostcrm/"   target="_blank" 
+  rel="noopener noreferrer">
+         <img width="43" height="43" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
                     </button>
                   </div>
                 </div>
@@ -399,6 +401,8 @@ export function TimelinePage() {
                     We couldn’t find any summary or recent email activity.
                   </p>
                 </div>
+
+                
               ) : (
                 <>
                   {/* TIMELINE TABLE */}
