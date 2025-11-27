@@ -71,15 +71,21 @@ const RootLayout = () => {
     dispatch(getPaymentRem(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
-    dispatch(getViewEmail());
+
     dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);
   useEffect(() => {
-    if (emails.length > 0) {
+    if (enteredEmail) {
+      dispatch(getLadgerEmail(enteredEmail));
+    } else if (emails.length > 0) {
       dispatch(getLadgerEmail(emails[0].from.match(/[\w.-]+@[\w.-]+\.\w+/)[0]));
     }
-  }, [emails]);
-
+  }, [emails, enteredEmail]);
+  useEffect(() => {
+    if (email) {
+      dispatch(getViewEmail());
+    }
+  }, [email]);
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (
@@ -110,7 +116,7 @@ const RootLayout = () => {
                   <Avatar
                     setShowAvatar={setShowAvatar}
                     avatarUrl={currentAvatar?.url}
-                    mute={currentAvatar?.mute}
+                    mute={currentAvatar}
                   />
                 )}
               </div>

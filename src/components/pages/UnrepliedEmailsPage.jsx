@@ -51,8 +51,13 @@ export function UnrepliedEmailsPage() {
             <Mail className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl text-gray-900">UNREPLIED EMAILS</h2>
             <a href="">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
+            </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
             {count} Unreplied
@@ -105,6 +110,7 @@ export function UnrepliedEmailsPage() {
                   <td
                     onClick={() => {
                       const input = email.from.split("<")[1].split(">")[0];
+                      localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
                       navigateTo("/");
