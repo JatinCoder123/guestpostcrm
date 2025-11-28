@@ -38,6 +38,7 @@ import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
 import TimelineEvent from "../TimelineEvent";
 import UserDropdown from "../UserDropDown";
+import SocialButtons from "../SocialButtons";
 
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -300,49 +301,7 @@ export function TimelinePage() {
                   </div>
 
                   {/* Social Buttons */}
-                  <div className="flex gap-3 ml-6">
-                    <button className="cursor-pointer hover:scale-105">
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/whatsapp--v1.png"
-                        alt="whatsapp"
-                      />
-                    </button>
-                    <button className="cursor-pointer hover:scale-105">
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/color/48/apple-phone.png"
-                        alt="call"
-                      />
-                    </button>
-                    <button className="cursor-pointer hover:scale-105">
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/stickers/100/speech-bubble-with-dots.png"
-                        alt="sms"
-                      />
-                    </button>
-
-                    <button className="cursor-pointer hover:scale-105">
-                      <img
-                        width="48"
-                        height="48"
-                        src="https://img.icons8.com/external-those-icons-flat-those-icons/48/external-Hangout-Logo-social-media-those-icons-flat-those-icons.png"
-                        alt="external-Hangout-Logo-social-media-those-icons-flat-those-icons"
-                      />
-                    </button>
-                    <button className="cursor-pointer hover:scale-105 rounded-full p-2">
-                      <img
-                        width="48"
-                        height="48"
-                        src={images.duplicateImg}
-                        alt="duplicate count"
-                      />
-                    </button>
-                  </div>
+                  <SocialButtons />
                 </div>
               </div>
 
@@ -581,7 +540,10 @@ export function TimelinePage() {
                     ].map((btn, i) => (
                       <div className="relative" key={i}>
                         <button
-                          onClick={btn.action}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            btn.action();
+                          }}
                           className=" group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer"
                         >
                           {btn.icon}

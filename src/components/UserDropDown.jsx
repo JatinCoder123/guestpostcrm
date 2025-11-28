@@ -42,7 +42,7 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
             ) : (
               users?.map((user, index) => (
                 <div
-                  key={index}
+                  key={index} 
                   onClick={() => setSelectedUser(user)}
                   className={`p-2 rounded-lg cursor-pointer border transition-all
               ${
