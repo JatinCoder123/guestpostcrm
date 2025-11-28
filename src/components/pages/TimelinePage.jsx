@@ -1,14 +1,12 @@
-import { Mail, RefreshCw, User, Globe, Reply } from "lucide-react";
-
+import { Mail, Globe, Reply } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getLadgerEmail, ladgerAction } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
-import { getContact, viewEmailAction } from "../../store/Slices/viewEmail";
+import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
-import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LoadingAll, LoadingSpin } from "../Loading";
 
@@ -17,14 +15,6 @@ import { sendEmailToThread } from "../../store/Slices/threadEmail";
 
 // ←←← YOUR AVATAR COMPONENT ←←←
 import Avatar from "../Avatar";
-
-import {
-  daysUntil,
-  formatExpiryLabel,
-  formatTime,
-  getDifference,
-  images,
-} from "../../assets/assets";
 import LoadingSkeleton from "../LoadingSkeleton";
 import MoveToDropdown from "../MoveToDropdown";
 import {
@@ -38,10 +28,11 @@ import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
 import TimelineEvent from "../TimelineEvent";
 import UserDropdown from "../UserDropDown";
-import SocialButtons from "../SocialButtons";
+import MailerSummaryHeader from "../MailerSummaryHeader";
+import NoResult from "../NoResult";
+import ContactHeader from "../ContactHeader";
 
 export function TimelinePage() {
-  const [autoRefresh, setAutoRefresh] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
   const [showThread, setShowThread] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -50,10 +41,7 @@ export function TimelinePage() {
   const [showUsers, setShowUsers] = useState(false);
   const [showAvatar, setShowAvatar] = useState(false);
   const {
-    contactInfo,
-    accountInfo,
     loading: sendLoading,
-    contactLoading,
     error: sendError,
     message,
     threadId,
@@ -64,7 +52,6 @@ export function TimelinePage() {
     error: aiError,
   } = useSelector((s) => s.aiReply);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
 
   const {
@@ -89,17 +76,6 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading } = useSelector(
     (state) => state.unreplied
   );
-
-  useEffect(() => {
-    if (showEmail || showContact || showDeal || showIP || showAvatar) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [showEmail, showContact, showDeal, showIP, showAvatar]);
 
   useEffect(() => {
     if (error) {
@@ -188,7 +164,7 @@ export function TimelinePage() {
       <>
         <EmailBox
           onClose={() => setShowThread(false)}
-          threadId={threadId}
+          threadId={emails[0].thread_id}
           tempEmail={email}
         />
       </>
@@ -242,163 +218,17 @@ export function TimelinePage() {
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
               {/* TOP HEADER */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex items-center gap-3">
-                    {ladger.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-gray-600" />
-                        </div>
-                        {contactLoading ? (
-                          <LoadingAll size="30" color="blue" />
-                        ) : (
-                          <Link
-                            to={"/contacts"}
-                            className="text-gray-800 text-lg font-semibold"
-                          >
-                            {contactInfo?.first_name == ""
-                              ? email
-                              : contactInfo?.first_name}
-                          </Link>
-                        )}
-
-                        <img
-                          width="50"
-                          height="50"
-                          src="https://img.icons8.com/bubbles/100/verified-account.png"
-                          alt="verified-account"
-                        />
-                      </div>
-                    )}
-
-                    <div className="ml-4 flex items-center gap-4">
-                      {/* TYPE */}
-                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
-                        <div className="text-sm">
-                          <div className="text-gray-500 text-xs">Type</div>
-                          <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                          <div className="text-gray-800 font-medium">
-                            {mailersSummary?.type ?? "N/A"}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="w-px h-10 bg-gray-200"></div>
-
-                      {/* STATUS */}
-                      <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                        <div className="text-sm">
-                          <div className="text-gray-500 text-xs">Status</div>
-                          <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                          <div className="text-gray-800 font-medium">
-                            {mailersSummary?.status ?? "N/A"}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="w-px h-10 bg-gray-200"></div>
-
-                      {/* STAGE */}
-                      <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                        <div className="text-sm">
-                          <div className="text-gray-500 text-xs">Stage</div>
-                          <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                          <div className="text-gray-800 font-medium">
-                            {mailersSummary?.stage ?? "N/A"}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Social Buttons */}
-                  <SocialButtons />
-                </div>
-              </div>
+              <ContactHeader />
 
               {/* NO RESULTS */}
               {!mailersSummary || Object.keys(mailersSummary).length === 0 ? (
-                <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-10 text-center">
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/7486/7486780.png"
-                    className="w-20 mx-auto mb-4 opacity-70"
-                    alt="no-result"
-                  />
-                  <h2 className="text-xl font-semibold text-gray-700">
-                    No Result Found
-                  </h2>
-                  <p className="text-gray-500 mt-1">
-                    We couldn’t find any summary or recent email activity.
-                  </p>
-                </div>
+                <NoResult />
               ) : (
                 <>
-                  {/* TIMELINE TABLE */}
-                  <div className="mt-4 p-6 bg-cyan-50 rounded-3xl shadow-xl border border-white/40">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border border-blue-400 rounded-xl overflow-hidden text-sm">
-                        <thead className="bg-blue-50">
-                          <tr>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                              DATE
-                            </th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                              SUBJECT
-                            </th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                              MOTIVE
-                            </th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                              DEAL EXPIRY
-                            </th>
-                            <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                              DEAL
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="text-center">
-                            <td className="border border-blue-400 px-4 py-3">
-                              <div className="font-semibold text-gray-900">
-                                {formatTime(mailersSummary?.date_entered)}
-                              </div>
-                              <div className="text-xs text-gray-600">
-                                {getDifference(mailersSummary?.date_entered)}
-                              </div>
-                            </td>
-                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                              {mailersSummary?.subject ?? "No Subject"}
-                            </td>
-                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                              {mailersSummary?.motive ?? "N/A"}
-                            </td>
-                            <td className="border border-blue-400 px-4 py-3">
-                              <div
-                                className={`font-semibold ${daysUntil(2) <= 3
-                                  ? "text-rose-600"
-                                  : "text-gray-900"
-                                  }`}
-                              >
-                                {formatExpiryLabel(mailersSummary.deal_expiry)}
-                              </div>
-                              {mailersSummary?.deal_expiry && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  ({formatTime(mailersSummary.deal_expiry)})
-                                </div>
-                              )}
-                            </td>
-                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                              {mailersSummary?.deal ?? "No Deal"}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  {/* Mailer Summary Header */}
+                  <MailerSummaryHeader />
 
                   {/* AI SUMMARY + LATEST MESSAGE */}
-
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* AI Summary Card */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
