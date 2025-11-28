@@ -87,6 +87,11 @@ export function FavouritePage() {
               {emails.map((email, index) => (
                 <tr
                   key={index}
+                  onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                      setEmail(email.from.split("<")[1].split(">")[0]);
+                    }}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
