@@ -336,9 +336,9 @@ export function TimelinePage() {
                     </button>
                     <button className="cursor-pointer hover:scale-105 rounded-full p-2">
                       <img
-                        width="48"
-                        height="48"
-                        src={images.duplicateImg}
+                        width="55"
+                        height="55"
+                        src="http://www.guestpostcrm.com/wp-content/uploads/2025/11/background-removed-3.png"
                         alt="duplicate count"
                       />
                     </button>
