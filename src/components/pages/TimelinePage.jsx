@@ -43,6 +43,7 @@ import SocialButtons from "../SocialButtons";
 export function TimelinePage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [showEmail, setShowEmails] = useState(false);
+  const [showThread, setShowThread] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
@@ -177,6 +178,17 @@ export function TimelinePage() {
         <EmailBox
           onClose={() => setShowEmails(false)}
           view={true}
+          tempEmail={email}
+        />
+      </>
+    );
+  }
+  if (showThread) {
+    return (
+      <>
+        <EmailBox
+          onClose={() => setShowThread(false)}
+          threadId={threadId}
           tempEmail={email}
         />
       </>
@@ -363,11 +375,10 @@ export function TimelinePage() {
                             </td>
                             <td className="border border-blue-400 px-4 py-3">
                               <div
-                                className={`font-semibold ${
-                                  daysUntil(2) <= 3
-                                    ? "text-rose-600"
-                                    : "text-gray-900"
-                                }`}
+                                className={`font-semibold ${daysUntil(2) <= 3
+                                  ? "text-rose-600"
+                                  : "text-gray-900"
+                                  }`}
                               >
                                 {formatExpiryLabel(mailersSummary.deal_expiry)}
                               </div>
@@ -471,15 +482,15 @@ export function TimelinePage() {
                         </h3>
                         <button
                           className="flex items-center gap-1 text-sm text-yellow-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 rounded-md"
-                          onClick={() => setShowEmails(true)}
+                          onClick={() => setShowThread(true)}
                         >
                           <Reply className="w-4 h-4" />
                           Reply
                         </button>
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                        {mailersSummary?.description ??
-                          "No recent message found."}
+                        {emails.length > 0 &&
+                          emails[0].subject}
                       </p>
                     </div>
                   </div>
@@ -559,11 +570,11 @@ export function TimelinePage() {
                         )}
                       </div>
                     ))}
-                    {/* 
+
                     <MoveToDropdown
-                      currentThreadId={currentThreadId}
+                      currentThreadId={threadId}
                       onMoveSuccess={handleMoveSuccess}
-                    /> */}
+                    />
                   </div>
                 </>
               )}
