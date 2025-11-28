@@ -386,17 +386,62 @@ export function TimelinePage() {
                     </div>
                   </div>
 
-                  {/* AI SUMMARY + LATEST MESSAGE */}
+                  {/* AI REPLY + AI SUMMARY + LATEST MESSAGE */}
 
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* AI Summary Card */}
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
+                      <div className="flex items-center mb-2">
+                        <h3 className="text-green-700 font-semibold">
+                          Quick Reply
+                        </h3>
+                      </div>
+
+
+                      {aiReply ? (
+                        <div className="mb-3">
+                          <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                            {typeof aiReply === "string"
+                              ? aiReply
+                              : aiReply?.reply_suggestion || aiReply}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-sm">No AI reply generated.</p>
+                      )}
+
+
+                      {aiReplySentLoading ? (
+                        <div className="flex justify-center mt-3">
+                          <LoadingAll size="30" color="blue" type="ping" />
+                        </div>
+                      ) : (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-3"
+                          onClick={handleAiAutoReply}
+                          disabled={!aiReply}
+                        >
+                          <img
+                            width="20"
+                            height="20"
+                            src="https://img.icons8.com/ultraviolet/40/bot.png"
+                            alt="AI Reply"
+                          />
+                          <span>Send AI Reply</span>
+                        </motion.button>
+                      )}
+                    </div>
+
+
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
                       <div className="flex items-center mb-2">
                         <h3 className="text-blue-700 font-semibold">
                           AI Summary
                         </h3>
 
-                        {/* ←←← PLAY BUTTON THAT OPENS AVATAR ←←← */}
+
                         <motion.button
                           whileHover={{ scale: 1.15 }}
                           whileTap={{ scale: 0.95 }}
@@ -419,51 +464,9 @@ export function TimelinePage() {
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {mailersSummary?.summary ?? "No AI summary available."}
                       </p>
-
-                      <hr className="my-3 border-gray-300" />
-
-                      {/* AI Reply Section - HR ke niche */}
-                      <div className="mt-3">
-                        {/* AI Reply Content - Pehle show hoga */}
-                        {aiReply && (
-                          <div className="mb-3 p-3 bg-white border border-green-200 rounded-lg">
-                            <h4 className="text-green-700 font-semibold text-sm mb-2">
-                              AI Reply:
-                            </h4>
-                            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                              {typeof aiReply === "string"
-                                ? aiReply
-                                : aiReply?.reply_suggestion || aiReply}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* AI Reply Button - Content ke niche */}
-                        {aiReplySentLoading ? (
-                          <div className="flex justify-center">
-                            <LoadingAll size="30" color="blue" type="ping" />
-                          </div>
-                        ) : (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={handleAiAutoReply}
-                            disabled={!aiReply}
-                          >
-                            <img
-                              width="20"
-                              height="20"
-                              src="https://img.icons8.com/ultraviolet/40/bot.png"
-                              alt="AI Reply"
-                            />
-                            <span>Send AI Reply</span>
-                          </motion.button>
-                        )}
-                      </div>
                     </div>
 
-                    {/* Latest Message Card (unchanged) */}
+
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-yellow-700 font-semibold">
@@ -484,7 +487,7 @@ export function TimelinePage() {
                     </div>
                   </div>
 
-                  {/* ACTION BUTTONS */}
+
                   <div className="mt-4 flex flex-wrap gap-3">
                     {[
                       {
