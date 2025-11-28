@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { daysUntil, formatExpiryLabel, formatTime, getDifference } from "../assets/assets";
+import { Titletooltip } from "./TitleTooltip";
 
 
 const MailerSummaryHeader = () => {
@@ -38,11 +39,24 @@ const MailerSummaryHeader = () => {
                                 </div>
                             </td>
                             <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                                {mailersSummary?.subject ?? "No Subject"}
+                                <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+                                    <div className="hover:text-blue-600 transition-colors">
+                                        {mailersSummary?.subject ?
+                                            mailersSummary.subject.split(' ').slice(0, 6).join(' ') + (mailersSummary.subject.split(' ').length > 6 ? '...' : '')
+                                            : "No Subject"
+                                        }
+                                    </div>
+                                </Titletooltip>
                             </td>
                             <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                                {mailersSummary?.motive ?? "N/A"}
-                            </td>
+                                <Titletooltip content={mailersSummary?.motive || "N/A"}>
+                                    <div className="hover:text-purple-600 transition-colors">
+                                        {mailersSummary?.motive ?
+                                            mailersSummary.motive.split(' ').slice(0, 6).join(' ') + (mailersSummary.motive.split(' ').length > 6 ? '...' : '')
+                                            : "N/A"
+                                        }
+                                    </div>
+                                </Titletooltip>                            </td>
                             <td className="border border-blue-400 px-4 py-3">
                                 <div
                                     className={`font-semibold ${daysUntil(2) <= 3

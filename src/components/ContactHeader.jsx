@@ -4,9 +4,10 @@ import { Mail, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import SocialButtons from './SocialButtons'
 
-const ContactHeader = ({ onPrev, onNext }) => {
+const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
     const { ladger, email } = useSelector((state) => state.ladger)
     const { contactInfo, contactLoading } = useSelector((state) => state.viewEmail)
+    const { emails } = useSelector((state) => state.unreplied)
 
     return (
         <div className="flex items-start justify-between w-full">
@@ -90,16 +91,25 @@ const ContactHeader = ({ onPrev, onNext }) => {
 
             {/* 🔘 PREV + NEXT BUTTONS */}
             <div className="flex items-center gap-3">
+
+                {/* PREV BUTTON (Disable if index is 0) */}
                 <button
                     onClick={onPrev}
-                    className="p-2 rounded-lg border bg-white hover:bg-gray-100 shadow-sm active:scale-95 transition"
+                    disabled={currentIndex === 0}
+                    className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
+                        ${currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}
+                    `}
                 >
                     <ChevronLeft className="w-5 h-5 text-gray-700" />
                 </button>
 
+                {/* NEXT BUTTON (Disable if last email) */}
                 <button
                     onClick={onNext}
-                    className="p-2 rounded-lg border bg-white hover:bg-gray-100 shadow-sm active:scale-95 transition"
+                    disabled={currentIndex === emails.length - 1}
+                    className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
+                        ${currentIndex === emails.length - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}
+                    `}
                 >
                     <ChevronRight className="w-5 h-5 text-gray-700" />
                 </button>
