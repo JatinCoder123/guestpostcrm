@@ -11,6 +11,7 @@ import CreateDeal from "../CreateDeal";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LoadingAll, LoadingSpin } from "../Loading";
+import {Titletooltip} from "../pages/Titletooltip"
 
 import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread } from "../../store/Slices/threadEmail";
@@ -355,11 +356,25 @@ export function TimelinePage() {
                                 {getDifference(mailersSummary?.date_entered)}
                               </div>
                             </td>
-                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                              {mailersSummary?.subject ?? "No Subject"}
+                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900 relative">
+                              <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+                                <div className="hover:text-blue-600 transition-colors">
+                                  {mailersSummary?.subject ? 
+                                    mailersSummary.subject.split(' ').slice(0, 6).join(' ') + (mailersSummary.subject.split(' ').length > 6 ? '...' : '') 
+                                    : "No Subject"
+                                  }
+                                </div>
+                              </Titletooltip>
                             </td>
-                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                              {mailersSummary?.motive ?? "N/A"}
+                            <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900 relative">
+                              <Titletooltip content={mailersSummary?.motive || "N/A"}>
+                                <div className="hover:text-purple-600 transition-colors">
+                                  {mailersSummary?.motive ? 
+                                    mailersSummary.motive.split(' ').slice(0, 6).join(' ') + (mailersSummary.motive.split(' ').length > 6 ? '...' : '') 
+                                    : "N/A"
+                                  }
+                                </div>
+                              </Titletooltip>
                             </td>
                             <td className="border border-blue-400 px-4 py-3">
                               <div
@@ -391,12 +406,34 @@ export function TimelinePage() {
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                     
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
-                      <div className="flex items-center mb-2">
+                      <div className="flex items-center justify-start gap-3 mb-2">
                         <h3 className="text-green-700 font-semibold">
                           Quick Reply
                         </h3>
+                        
+                        {/* Send AI Reply Button - Moved to top right */}
+                        {aiReplySentLoading ? (
+                          <div className="flex justify-center">
+                            <LoadingAll size="25" color="blue" type="ping" />
+                          </div>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                            className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            onClick={handleAiAutoReply}
+                            disabled={!aiReply}
+                          >
+                            <img
+                              width="33"
+                              height="33"
+                              src="https://img.icons8.com/ultraviolet/40/bot.png"
+                              alt="AI Reply"
+                            />
+                          </motion.button>
+                        )}
                       </div>
-
 
                       {aiReply ? (
                         <div className="mb-3">
@@ -408,29 +445,6 @@ export function TimelinePage() {
                         </div>
                       ) : (
                         <p className="text-gray-500 text-sm">No AI reply generated.</p>
-                      )}
-
-
-                      {aiReplySentLoading ? (
-                        <div className="flex justify-center mt-3">
-                          <LoadingAll size="30" color="blue" type="ping" />
-                        </div>
-                      ) : (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-3"
-                          onClick={handleAiAutoReply}
-                          disabled={!aiReply}
-                        >
-                          <img
-                            width="20"
-                            height="20"
-                            src="https://img.icons8.com/ultraviolet/40/bot.png"
-                            alt="AI Reply"
-                          />
-                          <span>Send AI Reply</span>
-                        </motion.button>
                       )}
                     </div>
 
@@ -446,7 +460,7 @@ export function TimelinePage() {
                           whileHover={{ scale: 1.15 }}
                           whileTap={{ scale: 0.95 }}
                           transition={{ type: "spring", stiffness: 400 }}
-                          className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2"
+                          className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2 cursor-pointer"
                           onClick={() => {
                             dispatch(getAvatar());
                             setShowAvatar(true);
@@ -473,7 +487,7 @@ export function TimelinePage() {
                           Latest Message
                         </h3>
                         <button
-                          className="flex items-center gap-1 text-sm text-yellow-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 rounded-md"
+                          className="flex items-center gap-1 text-sm text-yellow-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 rounded-md cursor-pointer"
                           onClick={() => setShowEmails(true)}
                         >
                           <Reply className="w-4 h-4" />
