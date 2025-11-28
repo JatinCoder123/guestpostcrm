@@ -1,33 +1,34 @@
 import { LoadingAll } from './Loading'
 import { useSelector } from 'react-redux'
-import { Mail } from 'lucide-react'
+import { Mail, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import SocialButtons from './SocialButtons'
 
-const ContactHeader = () => {
+const ContactHeader = ({ onPrev, onNext }) => {
     const { ladger, email } = useSelector((state) => state.ladger)
-    const {
-        contactInfo,
-        contactLoading,
-    } = useSelector((state) => state.viewEmail);
+    const { contactInfo, contactLoading } = useSelector((state) => state.viewEmail)
 
     return (
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between w-full">
+
+            {/* LEFT SIDE CONTENT */}
             <div className="flex items-start gap-4">
                 <div className="flex items-center gap-3">
+                    {/* EMAIL / NAME SECTION */}
                     {ladger.length > 0 && (
                         <div className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                                 <Mail className="w-5 h-5 text-gray-600" />
                             </div>
+
                             {contactLoading ? (
                                 <LoadingAll size="30" color="blue" />
                             ) : (
                                 <Link
-                                    to={"/contacts"}
+                                    to="/contacts"
                                     className="text-gray-800 text-lg font-semibold"
                                 >
-                                    {contactInfo?.first_name == ""
+                                    {contactInfo?.first_name === ""
                                         ? email
                                         : contactInfo?.first_name}
                                 </Link>
@@ -37,11 +38,12 @@ const ContactHeader = () => {
                                 width="50"
                                 height="50"
                                 src="https://img.icons8.com/bubbles/100/verified-account.png"
-                                alt="verified-account"
+                                alt="verified"
                             />
                         </div>
                     )}
 
+                    {/* TYPE, STATUS, STAGE */}
                     <div className="ml-4 flex items-center gap-4">
                         {/* TYPE */}
                         <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
@@ -84,6 +86,23 @@ const ContactHeader = () => {
 
                 {/* Social Buttons */}
                 <SocialButtons />
+            </div>
+
+            {/* 🔘 PREV + NEXT BUTTONS */}
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={onPrev}
+                    className="p-2 rounded-lg border bg-white hover:bg-gray-100 shadow-sm active:scale-95 transition"
+                >
+                    <ChevronLeft className="w-5 h-5 text-gray-700" />
+                </button>
+
+                <button
+                    onClick={onNext}
+                    className="p-2 rounded-lg border bg-white hover:bg-gray-100 shadow-sm active:scale-95 transition"
+                >
+                    <ChevronRight className="w-5 h-5 text-gray-700" />
+                </button>
             </div>
         </div>
     )

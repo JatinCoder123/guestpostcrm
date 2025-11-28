@@ -19,7 +19,7 @@ import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 export function UnrepliedEmailsPage() {
   const { count, emails } = useSelector((state) => state.unreplied);
-  const { setEnteredEmail, setSearch } = useContext(PageContext);
+  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
   const [
     handleThreadClick,
     showEmail,
@@ -51,8 +51,8 @@ export function UnrepliedEmailsPage() {
             <Mail className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl text-gray-900">UNREPLIED EMAILS</h2>
             <a href="https://www.guestpostcrm.com/blog/unreplied-and-unanswered-emails-in-guestpostcrm/" target="_blank">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
             {count} Unreplied
@@ -73,7 +73,7 @@ export function UnrepliedEmailsPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>SENDER</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -85,7 +85,7 @@ export function UnrepliedEmailsPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <BarChart2 className="w-4 h-4" />
-                    <span>THREAD SIZE</span>
+                    <span>COUNT</span>
                   </div>
                 </th>
               </tr>
@@ -108,6 +108,7 @@ export function UnrepliedEmailsPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
                       navigateTo("/");
                     }}
                     className="px-6 py-4 text-gray-900"
