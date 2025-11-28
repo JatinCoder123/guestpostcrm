@@ -1,4 +1,4 @@
-import { Mail, Globe, Reply } from "lucide-react";
+import { Reply } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -8,27 +8,19 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
-import { LoadingAll, LoadingSpin } from "../Loading";
+import { LoadingAll } from "../Loading";
 import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread } from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
-import MoveToDropdown from "../MoveToDropdown";
-import {
-  forwardEmail,
-  forwardedAction,
-} from "../../store/Slices/forwardedEmailSlice";
-import { LoadingChase } from "../Loading";
-import { favAction, favEmail } from "../../store/Slices/favEmailSlice";
-import { bulkAction, markingEmail } from "../../store/Slices/markBulkSlice";
 import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
 import TimelineEvent from "../TimelineEvent";
-import UserDropdown from "../UserDropDown";
 import MailerSummaryHeader from "../MailerSummaryHeader";
 import NoResult from "../NoResult";
 import ContactHeader from "../ContactHeader";
 import { extractEmail } from "../../assets/assets";
+import ActionButton from "../ActionButton";
 
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
@@ -36,13 +28,11 @@ export function TimelinePage() {
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
-  const [showUsers, setShowUsers] = useState(false);
   const [currentEmailIndex, setCurrentEmailIndex] = useState(0);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
 
   const {
-    loading: sendLoading,
     error: sendError,
     message,
     threadId,
@@ -50,29 +40,12 @@ export function TimelinePage() {
 
   const {
     aiReply,
-    loading: aiLoading,
     error: aiError,
   } = useSelector((s) => s.aiReply);
 
   const dispatch = useDispatch();
 
-  const {
-    forward,
-    error: forwardError,
-    message: forwardMessage,
-  } = useSelector((s) => s.forwarded);
 
-  const {
-    favourite,
-    error: favouriteError,
-    message: favouriteMessage,
-  } = useSelector((s) => s.fav);
-
-  const {
-    marking,
-    error: markingError,
-    message: markingMessage,
-  } = useSelector((s) => s.bulk);
 
   const { ladger, email, mailersSummary, loading, error } = useSelector(
     (state) => state.ladger
@@ -81,11 +54,6 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading } = useSelector(
     (state) => state.unreplied
   );
-
-  // ----------------------------------------------------
-  // ✔ ALL HOOKS ABOVE CONDITIONAL RETURNS
-  // ----------------------------------------------------
-
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -99,46 +67,14 @@ export function TimelinePage() {
       toast.success(message);
       dispatch(viewEmailAction.clearAllMessage());
     }
-    if (forwardError) {
-      toast.error(forwardError);
-      dispatch(forwardedAction.clearAllErrors());
-    }
-    if (forwardMessage) {
-      toast.success(forwardMessage);
-      dispatch(forwardedAction.clearAllMessages());
-    }
-    if (favouriteError) {
-      toast.error(favouriteError);
-      dispatch(favAction.clearAllErrors());
-    }
-    if (favouriteMessage) {
-      toast.success(favouriteMessage);
-      dispatch(favAction.clearAllMessages());
-    }
-    if (markingError) {
-      toast.error(markingError);
-      dispatch(bulkAction.clearAllErrors());
-    }
-    if (markingMessage) {
-      toast.success(markingMessage);
-      dispatch(bulkAction.clearAllMessages());
-    }
   }, [
     dispatch,
     error,
     sendError,
     message,
-    forwardError,
-    forwardMessage,
-    favouriteError,
-    favouriteMessage,
-    markingError,
-    markingMessage,
   ]);
 
-  const handleForward = (to) => {
-    dispatch(forwardEmail(to, threadId));
-  };
+
 
   useEffect(() => {
     if (aiError) {
@@ -162,7 +98,7 @@ export function TimelinePage() {
         typeof aiReply === "string" ? aiReply : aiReply?.reply_suggestion;
 
       if (replyContent) {
-        await dispatch(sendEmailToThread(emails[0].thread_id, replyContent));
+        dispatch(sendEmailToThread(emails[currentEmailIndex].thread_id, replyContent));
         toast.success("AI reply sent successfully!");
       } else {
         toast.error("No valid reply content found");
@@ -177,7 +113,9 @@ export function TimelinePage() {
 
   useEffect(() => {
     if (emails.length > 0) {
-      dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
+      if (extractEmail(emails[currentEmailIndex].from) !== email) {
+        dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
+      }
       dispatch(getAiReply(emails[currentEmailIndex].thread_id));
     }
   }, [currentEmailIndex]);
@@ -193,10 +131,6 @@ export function TimelinePage() {
       setCurrentEmailIndex((p) => p - 1);
     }
   };
-
-  // ----------------------------------------------------
-  // ✔ CONDITIONAL RETURNS AFTER ALL HOOKS
-  // ----------------------------------------------------
 
   if (showEmail) {
     return (
@@ -237,10 +171,6 @@ export function TimelinePage() {
   if (showIP) {
     return <Ip onClose={() => setShowIP(false)} />;
   }
-
-  // ----------------------------------------------------
-  // NORMAL RENDER BELOW
-  // ----------------------------------------------------
 
   return (
     <>
@@ -360,85 +290,7 @@ export function TimelinePage() {
                   )}
 
                   {/* ACTION BUTTONS */}
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    {[
-                      {
-                        icon: <Mail className="w-5 h-5" />,
-                        label: "Email",
-                        action: () => setShowEmails(true),
-                      },
-                      {
-                        icon: <Globe className="w-5 h-5" />,
-                        label: "IP",
-                        action: () => setShowIP(true),
-                      },
-                      {
-                        icon: favourite ? (
-                          <LoadingChase />
-                        ) : (
-                          <img
-                            src="https://img.icons8.com/color/48/filled-like.png"
-                            className="w-6 h-6"
-                            alt="fav"
-                          />
-                        ),
-                        label: "Favourite",
-                        action: () => dispatch(favEmail(threadId)),
-                      },
-                      {
-                        icon: forward ? (
-                          <LoadingChase />
-                        ) : (
-                          <img
-                            src="https://img.icons8.com/color/48/redo.png"
-                            className="w-6 h-6"
-                            alt="forward"
-                          />
-                        ),
-                        label: "Forward",
-                        action: () => setShowUsers((p) => !p),
-                      },
-                      {
-                        icon: marking ? (
-                          <LoadingChase />
-                        ) : (
-                          <img
-                            src="https://img.icons8.com/color/48/bursts.png"
-                            className="w-6 h-6"
-                            alt="bulk"
-                          />
-                        ),
-                        label: "Mark Bulk",
-                        action: () => dispatch(markingEmail(threadId)),
-                      },
-                    ].map((btn, i) => (
-                      <div className="relative" key={i}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            btn.action();
-                          }}
-                          className=" group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer"
-                        >
-                          {btn.icon}
-                          <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
-                            {btn.label}
-                          </span>
-                        </button>
-                        {showUsers && btn.label === "Forward" && (
-                          <UserDropdown
-                            forwardHandler={handleForward}
-                            onClose={() => setShowUsers(false)}
-                          />
-                        )}
-                      </div>
-                    ))}
-
-                    <MoveToDropdown
-                      currentThreadId={threadId}
-                      onMoveSuccess={handleMoveSuccess}
-                    />
-                  </div>
+                  <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={threadId} />
                 </>
               )}
             </div>
