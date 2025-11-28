@@ -1,5 +1,7 @@
 import logo from "./logo.png";
+import duplicateImg from "./duplicate.png";
 export default logo;
+export const images = { duplicateImg };
 
 export const websiteListForDeal = [
   "https://www.wp-1click.com/",
