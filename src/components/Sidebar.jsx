@@ -24,6 +24,7 @@ import {
   RectangleEllipsis,
   Link2Off,
   Link,
+  PlayIcon,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -95,7 +96,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const menuItems = [
     {
       id: "unreplied-emails",
-      label: "Unreplied Emails",
+      label: "Unreplied",
       icon: Mail,
       loading: unrepliedLoading,
       count: unrepliedCount,
@@ -115,7 +116,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "forwarded-emails",
-      label: "Forwarded Emails",
+      label: "Forwarded",
       icon: Forward,
       loading: forwardLoading,
       count: forwardCount,
@@ -125,23 +126,13 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "favourite-emails",
-      label: "Favourite Emails",
+      label: "Favourite",
       icon: Heart,
       loading: favLoading,
       count: favCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-pink-500 text-white",
-    },
-    {
-      id: "deals",
-      label: "Deals",
-      icon: Handshake,
-      loading: dealsLoading,
-      count: dealCount,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
     },
     {
       id: "offers",
@@ -152,6 +143,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       color: "text-green-600",
       hover: "hover:bg-green-50",
       countBg: "bg-green-500 text-white",
+    },
+    {
+      id: "deals",
+      label: "Deals",
+      icon: Handshake,
+      loading: dealsLoading,
+      count: dealCount,
+      color: "text-blue-600",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "orders",

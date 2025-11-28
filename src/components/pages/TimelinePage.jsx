@@ -267,7 +267,7 @@ export function TimelinePage() {
                           <div className="text-gray-500 text-xs">Type</div>
                           <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
                           <div className="text-gray-800 font-medium">
-                            {mailersSummary?.type ?? "N/A"}
+                            {contactInfo?.type ?? "N/A"}
                           </div>
                         </div>
                       </div>
@@ -280,7 +280,7 @@ export function TimelinePage() {
                           <div className="text-gray-500 text-xs">Status</div>
                           <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
                           <div className="text-gray-800 font-medium">
-                            {mailersSummary?.status ?? "N/A"}
+                            {contactInfo?.status ?? "N/A"}
                           </div>
                         </div>
                       </div>
@@ -293,7 +293,7 @@ export function TimelinePage() {
                           <div className="text-gray-500 text-xs">Stage</div>
                           <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
                           <div className="text-gray-800 font-medium">
-                            {mailersSummary?.stage ?? "N/A"}
+                            {contactInfo?.stage ?? "N/A"}
                           </div>
                         </div>
                       </div>

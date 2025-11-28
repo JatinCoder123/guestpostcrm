@@ -53,13 +53,19 @@ export function getDifference(dateString) {
 export function formatTime(dateString) {
   const inputDate = new Date(dateString);
 
-  // --- SHORT MONTH NAME ---
   const shortMonth = inputDate.toLocaleString("en-US", { month: "short" });
-
   const day = inputDate.getDate();
   const year = inputDate.getFullYear();
 
-  return `${day} ${shortMonth} ${year}`;
+  // Format time (24hr format)
+  const time = inputDate.toLocaleString("en-US", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+});
+
+
+  return `${day} ${shortMonth} ${year}, ${time}`;
 }
 
 export function daysUntil(dateString) {
