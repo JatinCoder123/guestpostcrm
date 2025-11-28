@@ -8,7 +8,13 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
+<<<<<<< HEAD
 import { LoadingAll } from "../Loading";
+=======
+import { LoadingAll, LoadingSpin } from "../Loading";
+import {Titletooltip} from "../pages/Titletooltip"
+
+>>>>>>> 5059cb103a38d6217f2afb9034dc853bbddfbe2a
 import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread } from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
@@ -289,8 +295,91 @@ export function TimelinePage() {
                     </div>
                   )}
 
+<<<<<<< HEAD
                   {/* ACTION BUTTONS */}
                   <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={threadId} />
+=======
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {[
+                      {
+                        icon: <Mail className="w-5 h-5" />,
+                        label: "Email",
+                        action: () => setShowEmails(true),
+                      },
+                      {
+                        icon: <Globe className="w-5 h-5" />,
+                        label: "IP",
+                        action: () => setShowIP(true),
+                      },
+                      {
+                        icon: favourite ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/filled-like.png"
+                            className="w-6 h-6"
+                            alt="fav"
+                          />
+                        ),
+                        label: "Favourite",
+                        action: () => dispatch(favEmail(threadId)),
+                      },
+                      {
+                        icon: forward ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/redo.png"
+                            className="w-6 h-6"
+                            alt="forward"
+                          />
+                        ),
+                        label: "Forward",
+                        action: () => setShowUsers((p) => !p),
+                      },
+                      {
+                        icon: marking ? (
+                          <LoadingChase />
+                        ) : (
+                          <img
+                            src="https://img.icons8.com/color/48/bursts.png"
+                            className="w-6 h-6"
+                            alt="bulk"
+                          />
+                        ),
+                        label: "Mark Bulk",
+                        action: () => dispatch(markingEmail(threadId)),
+                      },
+                    ].map((btn, i) => (
+                      <div className="relative" key={i}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            btn.action();
+                          }}
+                          className=" group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer"
+                        >
+                          {btn.icon}
+                          <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
+                            {btn.label}
+                          </span>
+                        </button>
+                        {showUsers && btn.label === "Forward" && (
+                          <UserDropdown
+                            forwardHandler={handleForward}
+                            onClose={() => setShowUsers(false)}
+                          />
+                        )}
+                      </div>
+                    ))}
+
+                    <MoveToDropdown
+                      currentThreadId={threadId}
+                      onMoveSuccess={handleMoveSuccess}
+                    />
+                  </div>
+>>>>>>> 5059cb103a38d6217f2afb9034dc853bbddfbe2a
                 </>
               )}
             </div>

@@ -96,7 +96,13 @@ export function UnrepliedEmailsPage() {
                   key={Math.random()}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4"
+                  onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                      setEmail(email.from.split("<")[1].split(">")[0]);
+                    }}
+                  >
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>{email.date}</span>
@@ -125,7 +131,14 @@ export function UnrepliedEmailsPage() {
                   >
                     {email.subject}
                   </td>
-                  <td className="px-6 py-4 text-purple-600">
+                  <td 
+                  className="px-6 py-4 text-purple-600"
+                  onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                      setEmail(email.from.split("<")[1].split(">")[0]);
+                    }}
+                  >
                     {email.thread_count}
                   </td>
                 </tr>

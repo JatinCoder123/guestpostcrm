@@ -87,6 +87,10 @@ export function ForwardedPage() {
               {emails.map((email, index) => (
                 <tr
                   key={index}
+                  onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                    }}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
@@ -97,10 +101,6 @@ export function ForwardedPage() {
                   </td>
                   <td className="px-6 py-4 text-gray-900">{email.from}</td>
                   <td
-                    onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                    }}
                     className="px-6 py-4 text-purple-600"
                   >
                     {email.subject}

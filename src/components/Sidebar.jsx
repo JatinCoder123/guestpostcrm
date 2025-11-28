@@ -24,6 +24,7 @@ import {
   RectangleEllipsis,
   Link2Off,
   Link,
+  PlayIcon,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -134,16 +135,6 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
     {
-      id: "deals",
-      label: "Deals",
-      icon: Handshake,
-      loading: dealsLoading,
-      count: dealCount,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
       id: "offers",
       label: "Offers",
       icon: Gift,
@@ -152,6 +143,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       color: "text-green-600",
       hover: "hover:bg-green-50",
       countBg: "bg-green-500 text-white",
+    },
+    {
+      id: "deals",
+      label: "Deals",
+      icon: Handshake,
+      loading: dealsLoading,
+      count: dealCount,
+      color: "text-blue-600",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "orders",
