@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
-import { sendEmailToThread } from "../store/Slices/threadEmail";
+import { getThreadEmail, sendEmailToThread } from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
 import {
@@ -38,7 +38,11 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const { email } = useSelector((s) => s.ladger);
 
   const emails = view ? viewEmail : threadEmail;
-
+  useEffect(() => {
+    if (!view && threadId) {
+      dispatch(getThreadEmail(tempEmail, threadId))
+    }
+  }, [threadId, view]);
   const [messageLimit, setMessageLimit] = useState(3);
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
@@ -150,7 +154,7 @@ useEffect(() => {
     }
   };
 
-  const visibleMessages = emails.slice(-messageLimit);
+  const visibleMessages = emails?.slice(-messageLimit);
 
   return (
     <motion.div
@@ -357,17 +361,15 @@ useEffect(() => {
                   className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${
-                      isUser
-                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                    }`}
+                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${isUser
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span
-                        className={`text-xs font-medium ${
-                          isUser ? "opacity-90" : "text-gray-500"
-                        }`}
+                        className={`text-xs font-medium ${isUser ? "opacity-90" : "text-gray-500"
+                          }`}
                       >
                         {isUser ? "You" : mail.from_name || "Sender"}
                       </span>

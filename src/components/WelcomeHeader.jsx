@@ -2,10 +2,13 @@ import { Mail, Link2, List } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { PageContext } from "../context/pageContext";
 const LOCAL_KEY = "create_deals_draft_v1";
 const WelcomeHeader = () => {
   const { email, timeline } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
+  const { welcomeHeaderContent } = useContext(PageContext)
 
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
@@ -38,7 +41,9 @@ const WelcomeHeader = () => {
         <div className="flex items-center gap-5">
           {/* Title */}
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
-            Results for{" "}
+            Results
+            {welcomeHeaderContent && <span> from <span className="font-bold text-gray-900">{welcomeHeaderContent}</span> email </span>}
+            for{" "}
             <span className="font-bold text-gray-900">
               {time?.replace(/_/g, " ")}
             </span>
@@ -88,9 +93,9 @@ const WelcomeHeader = () => {
               </div>
             )}
 
-             {/* Business Email Badge */}
+            {/* Business Email Badge */}
             <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
-                <List className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
+              <List className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
             </div>
           </div>
         </div>
