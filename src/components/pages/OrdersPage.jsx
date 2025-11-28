@@ -2,6 +2,7 @@ import {
   Mail,
   ShoppingCart,
   Package,
+  Pen,
   DollarSign,
   Calendar,
   User,
@@ -123,6 +124,7 @@ export function OrdersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">DELIVERY DATE</th>
+                <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
             <tbody>
@@ -152,6 +154,17 @@ export function OrdersPage() {
                   </td>
                   <td className="px-6 py-4 text-gray-600">
                     {order.complete_data}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      {/* Update Button */}
+                      <button
+                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Update"
+                      >
+                        <Pen className="w-4 h-4 text-blue-600" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

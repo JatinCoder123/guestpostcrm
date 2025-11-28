@@ -1,6 +1,7 @@
 import {
   Mail,
   Handshake,
+  Pen,
   TrendingUp,
   DollarSign,
   Calendar,
@@ -114,6 +115,7 @@ export function DealsPage() {
                     <span>CLOSE DATE</span>
                   </div>
                 </th>
+                <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
             <tbody>
@@ -135,6 +137,17 @@ export function DealsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">{deal.deal_date}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      {/* Update Button */}
+                      <button
+                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Update"
+                      >
+                        <Pen className="w-4 h-4 text-blue-600" />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
