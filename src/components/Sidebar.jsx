@@ -96,11 +96,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const menuItems = [
     {
       id: "unreplied-emails",
-<<<<<<< HEAD
-      label: "Unreplied",
-=======
       label: "Unreplied ",
->>>>>>> 2308097c15428ce2b7ee86e168f6f0efd3132d4c
       icon: Mail,
       loading: unrepliedLoading,
       count: unrepliedCount,
@@ -120,11 +116,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "forwarded-emails",
-<<<<<<< HEAD
-      label: "Forwarded",
-=======
       label: "Forwarded ",
->>>>>>> 2308097c15428ce2b7ee86e168f6f0efd3132d4c
       icon: Forward,
       loading: forwardLoading,
       count: forwardCount,
@@ -134,11 +126,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "favourite-emails",
-<<<<<<< HEAD
-      label: "Favourite",
-=======
       label: "Favourite ",
->>>>>>> 2308097c15428ce2b7ee86e168f6f0efd3132d4c
       icon: Heart,
       loading: favLoading,
       count: favCount,
