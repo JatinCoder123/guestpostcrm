@@ -21,6 +21,7 @@ import NoResult from "../NoResult";
 import ContactHeader from "../ContactHeader";
 import { extractEmail } from "../../assets/assets";
 import ActionButton from "../ActionButton";
+import { addEvent } from "../../store/Slices/eventSlice";
 
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
@@ -99,6 +100,11 @@ export function TimelinePage() {
 
       if (replyContent) {
         dispatch(sendEmailToThread(emails[currentEmailIndex].thread_id, replyContent));
+        dispatch(addEvent({
+          email: email,
+          thread_id: emails[currentEmailIndex].thread_id,
+          recent_activity: "AI reply sent",
+        }));
         toast.success("AI reply sent successfully!");
       } else {
         toast.error("No valid reply content found");
@@ -149,7 +155,7 @@ export function TimelinePage() {
       <>
         <EmailBox
           onClose={() => setShowThread(false)}
-          threadId={emails[0].thread_id}
+          threadId={emails[currentEmailIndex].thread_id}
           tempEmail={email}
         />
       </>
@@ -290,7 +296,7 @@ export function TimelinePage() {
                   )}
 
                   {/* ACTION BUTTONS */}
-                  <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={threadId} />
+                  <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={emails[currentEmailIndex].thread_id} />
                 </>
               )}
             </div>

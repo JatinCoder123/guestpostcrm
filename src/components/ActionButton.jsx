@@ -9,9 +9,11 @@ import { forwardEmail } from '../store/Slices/forwardedEmailSlice';
 import { forwardedAction } from '../store/Slices/forwardedEmailSlice';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
+import { addEvent } from '../store/Slices/eventSlice';
 
 const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId }) => {
     const [showUsers, setShowUsers] = useState(false);
+    const { email } = useSelector((s) => s.ladger);
     const handleForward = (to) => {
         dispatch(forwardEmail(to, threadId));
     };
@@ -40,6 +42,11 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
         }
         if (forwardMessage) {
             toast.success(forwardMessage);
+            dispatch(addEvent({
+                email,
+                thread_id: threadId,
+                recent_activity: "forwarded",
+            }))
             dispatch(forwardedAction.clearAllMessages());
         }
         if (favouriteError) {
@@ -48,6 +55,11 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
         }
         if (favouriteMessage) {
             toast.success(favouriteMessage);
+            dispatch(addEvent({
+                email,
+                thread_id: threadId,
+                recent_activity: "favourite",
+            }))
             dispatch(favAction.clearAllMessages());
         }
         if (markingError) {
@@ -56,6 +68,11 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
         }
         if (markingMessage) {
             toast.success(markingMessage);
+            dispatch(addEvent({
+                email,
+                thread_id: threadId,
+                recent_activity: "bulk marked",
+            }))
             dispatch(bulkAction.clearAllMessages());
         }
     }, [
