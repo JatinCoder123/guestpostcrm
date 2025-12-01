@@ -114,7 +114,7 @@ export function UnansweredPage() {
                       setSearch(input);
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Replied");
-                      navigateTo("/");
+                      navigateTo("/contacts");
                     }}>{email.from}</td>
                   <td
                     className="px-6 py-4 text-purple-600"
