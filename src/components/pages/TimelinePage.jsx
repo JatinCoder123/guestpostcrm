@@ -354,17 +354,19 @@ useEffect(() => {
 
                       {/* Latest Message */}
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-start mb-2">
                           <h3 className="text-yellow-700 font-semibold">
                             Latest Message
                           </h3>
-                          <button
-                            className="flex items-center gap-1 text-sm text-yellow-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 rounded-md"
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                            className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
                             onClick={() => setShowThread(true)}
                           >
-                            <Reply className="w-4 h-4" />
-                            Reply
-                          </button>
+                            <Reply className="w-8 h-8 text-yellow-700" />
+                          </motion.button>
                         </div>
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                           {emails.length > 0 &&
