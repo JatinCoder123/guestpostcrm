@@ -4,7 +4,7 @@ export default function PreviewDeals({
     deals = [],
     totalAmount = 0,
     onSubmit,
-    userEmail = "",
+    userEmail
 }) {
     return (
         <>
@@ -17,38 +17,32 @@ export default function PreviewDeals({
                     border="0"
                     cellSpacing="0"
                     cellPadding="0"
-                    bgcolor="#f4f4f4"
+                    bgcolor="#eef4ff"
                 >
                     <tbody>
                         <tr>
                             <td style={{ padding: "30px" }} width="100%">
                                 <table style={{ width: "100%" }} cellSpacing="0" cellPadding="0">
                                     <tbody>
+
                                         {/* ========================= HEADER ========================= */}
                                         <tr>
-                                            <td style={{ padding: "10px" }} bgcolor="#808080" width="100%">
-                                                <h2
-                                                    style={{
-                                                        padding: "10px 20px",
-                                                        color: "#fff",
-                                                        textAlign: "center",
-                                                    }}
-                                                >
-                                                    Our Deal is Confirmed
-                                                </h2>
+                                            <td
+                                                style={{
+                                                    padding: "10px",
+                                                }}
+                                            >
 
-                                                {/* =========================
-                                                    PREVIEW CARD (MOVED OUTSIDE TABLE)
-                                                ========================== */}
+
+                                                {/* ========================= PREVIEW CARD ========================= */}
                                                 <div
                                                     style={{
                                                         fontFamily: "Arial, sans-serif",
-                                                        background: "#eef2f7",
+                                                        background: "#eef4ff",
                                                         padding: "30px",
                                                         borderRadius: "12px",
                                                         maxWidth: "650px",
                                                         margin: "0 auto",
-                                                        border: "1px solid #d6d9de",
                                                         boxShadow: "0px 6px 18px rgba(0,0,0,0.08)",
                                                         marginTop: "15px",
                                                     }}
@@ -80,7 +74,7 @@ export default function PreviewDeals({
                                                             <p
                                                                 style={{
                                                                     marginTop: "8px",
-                                                                    opacity: 0.9,
+                                                                    opacity: 0.95,
                                                                     fontSize: "14px",
                                                                 }}
                                                             >
@@ -92,10 +86,10 @@ export default function PreviewDeals({
                                                     {/* DEALS CARD */}
                                                     <div
                                                         style={{
-                                                            background: "white",
+                                                            background: "#ffffff",
                                                             padding: "20px",
                                                             borderRadius: "10px",
-                                                            border: "1px solid #e2e5ea",
+                                                            border: "1px solid #d0ddff",
                                                             boxShadow: "0px 4px 10px rgba(0,0,0,0.05)",
                                                         }}
                                                     >
@@ -107,16 +101,15 @@ export default function PreviewDeals({
                                                             }}
                                                         >
                                                             <thead>
-                                                                <tr style={{ backgroundColor: "#f1f5fb" }}>
+                                                                <tr style={{ backgroundColor: "#e8efff" }}>
                                                                     <th
                                                                         style={{
                                                                             textAlign: "left",
                                                                             padding: "12px",
                                                                             fontSize: "15px",
                                                                             fontWeight: "700",
-                                                                            color: "#333",
-                                                                            borderBottom:
-                                                                                "2px solid #e0e6ed",
+                                                                            color: "#1a2b6b",
+                                                                            borderBottom: "2px solid #d0ddff",
                                                                         }}
                                                                     >
                                                                         Website
@@ -127,9 +120,8 @@ export default function PreviewDeals({
                                                                             padding: "12px",
                                                                             fontSize: "15px",
                                                                             fontWeight: "700",
-                                                                            color: "#333",
-                                                                            borderBottom:
-                                                                                "2px solid #e0e6ed",
+                                                                            color: "#1a2b6b",
+                                                                            borderBottom: "2px solid #d0ddff",
                                                                         }}
                                                                     >
                                                                         Amount
@@ -143,33 +135,27 @@ export default function PreviewDeals({
                                                                         key={i}
                                                                         style={{
                                                                             backgroundColor:
-                                                                                i % 2 === 0
-                                                                                    ? "#fafbfc"
-                                                                                    : "#ffffff",
-                                                                            transition: "background 0.2s",
+                                                                                i % 2 === 0 ? "#f7f9ff" : "#ffffff",
                                                                         }}
                                                                     >
                                                                         <td
                                                                             style={{
                                                                                 padding: "12px",
-                                                                                borderBottom:
-                                                                                    "1px solid #eef2f7",
+                                                                                borderBottom: "1px solid #e1e7ff",
                                                                                 fontSize: "14px",
-                                                                                color: "#444",
-                                                                                fontWeight: "500",
+                                                                                color: "#263238",
                                                                             }}
                                                                         >
-                                                                            {d.website_c ||
-                                                                                "(no website)"}
+                                                                            {d.website_c || "(no website)"}
                                                                         </td>
+
                                                                         <td
                                                                             style={{
                                                                                 padding: "12px",
-                                                                                borderBottom:
-                                                                                    "1px solid #eef2f7",
+                                                                                borderBottom: "1px solid #e1e7ff",
                                                                                 textAlign: "right",
                                                                                 fontSize: "14px",
-                                                                                color: "#222",
+                                                                                color: "#1a2b6b",
                                                                                 fontWeight: "600",
                                                                             }}
                                                                         >
@@ -188,22 +174,21 @@ export default function PreviewDeals({
                                                                             padding: "14px",
                                                                             fontSize: "16px",
                                                                             fontWeight: "700",
-                                                                            color: "#1a202c",
+                                                                            color: "#1a2b6b",
                                                                             borderTop: "3px solid #4e79ff",
                                                                         }}
                                                                     >
                                                                         Total Amount
                                                                     </td>
+
                                                                     <td
                                                                         style={{
                                                                             padding: "14px",
                                                                             textAlign: "right",
                                                                             fontSize: "18px",
                                                                             fontWeight: "800",
-                                                                            color: "#1a202c",
+                                                                            color: "#1a2b6b",
                                                                             borderTop: "3px solid #4e79ff",
-                                                                            textShadow:
-                                                                                "0px 1px 2px rgba(0,0,0,0.1)",
                                                                         }}
                                                                     >
                                                                         ${totalAmount.toLocaleString()}
@@ -214,12 +199,7 @@ export default function PreviewDeals({
 
                                                         {/* SUBMIT BUTTON */}
                                                         {onSubmit && (
-                                                            <div
-                                                                style={{
-                                                                    textAlign: "center",
-                                                                    marginTop: "20px",
-                                                                }}
-                                                            >
+                                                            <div style={{ textAlign: "center", marginTop: "20px" }}>
                                                                 <button
                                                                     onClick={onSubmit}
                                                                     style={{
@@ -234,7 +214,6 @@ export default function PreviewDeals({
                                                                         fontWeight: "700",
                                                                         boxShadow:
                                                                             "0px 4px 12px rgba(0,0,0,0.15)",
-                                                                        transition: "opacity 0.2s",
                                                                     }}
                                                                 >
                                                                     Submit Deals
@@ -246,57 +225,161 @@ export default function PreviewDeals({
                                             </td>
                                         </tr>
 
-                                        {/* ========================= FOOTER (UNCHANGED) ========================= */}
-                                        <tr>
-                                            <td style={{ padding: "5px" }}>&nbsp;</td>
-                                        </tr>
+                                        {/* ========================= GUIDELINES ========================= */}
+                                        <tr><td style={{ padding: "5px" }}>&nbsp;</td></tr>
 
                                         <tr>
                                             <td style={{ padding: "10px" }}>&nbsp;</td>
                                         </tr>
 
                                         <tr>
-                                            <td width="100%">
+                                            <td>
                                                 <p
                                                     style={{
                                                         paddingLeft: "20px",
-                                                        color: "#595959",
+                                                        color: "#1a2b6b",
+                                                        fontWeight: 600,
                                                     }}
                                                 >
-                                                    Please review the following important guidelines
-                                                    before we proceed:
+                                                    Please review the following important guidelines before we proceed:
                                                 </p>
                                             </td>
                                         </tr>
 
-                                        {/* ... footer content SAME as your version ... */}
                                         <tr>
-                                            <td
-                                                style={{
-                                                    padding: "10px 20px",
-                                                    borderLeft: "3px solid #51609B",
-                                                    background: "#f1d1d1",
-                                                }}
-                                            >
+                                            <td style={{ padding: "10px 20px", background: "#e8efff", borderLeft: "3px solid #4e79ff" }}>
                                                 <p>DF Link Spam Must Be Under 7%</p>
                                             </td>
                                         </tr>
 
                                         <tr>
-                                            <td
-                                                style={{
-                                                    padding: "10px 20px",
-                                                    borderLeft: "3px solid #51609B",
-                                                    background: "#fff",
-                                                }}
-                                            >
+                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
+                                                <p><strong>Article Duration:</strong> 1 year.</p>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
+                                                <p>Content will undergo <strong>AI detection; editorial fees</strong> apply if flagged.</p>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
                                                 <p>
-                                                    <strong>Article Duration :</strong> 1 year.
+                                                    Please review the{" "}
+                                                    <a
+                                                        style={{
+                                                            padding: "5px 10px",
+                                                            background: "#d4ddff",
+                                                            color: "#1a2b6b",
+                                                            textDecoration: "none",
+                                                            borderRadius: "4px",
+                                                        }}
+                                                        href="https://www.outrightcrm.com/blog/elead-crm/"
+                                                    >
+                                                        Sample Post
+                                                    </a>
                                                 </p>
                                             </td>
                                         </tr>
 
-                                        {/* (KEEP ALL OTHER FOOTER ROWS EXACTLY SAME) */}
+                                        <tr>
+                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
+                                                <p>Articles must contain a minimum of 900 words.</p>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
+                                                <p>We will add 2-3 internal links within a Guest Post for SEO purposes.</p>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
+                                                <p>Most link insertions are done instantly; guest posts are completed within 1-3 business days.</p>
+                                            </td>
+                                        </tr>
+
+                                        {/* ========================= PAYMENT SECTION ========================= */}
+
+                                        <tr>
+                                            <td
+                                                style={{
+                                                    background: "#ffffff",
+                                                    padding: "20px",
+                                                    borderLeft: "3px solid #4e79ff",
+                                                }}
+                                            >
+                                                <h3 style={{ color: "#1a2b6b" }}>Payment Methods</h3>
+
+                                                <table style={{ width: "100%" }}>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <img
+                                                                    src="http://img.mailinblue.com/6590752/images/682ef211e6090_1747907089.png"
+                                                                    alt=""
+                                                                    width="13"
+                                                                    height="17"
+                                                                />{" "}
+                                                                PayPal: <strong>pay@outrightcrm.com</strong>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>
+                                                                <img
+                                                                    src="http://img.mailinblue.com/6590752/images/682ef2a81908d_1747907240.png"
+                                                                    alt=""
+                                                                    width="15"
+                                                                    height="15"
+                                                                />{" "}
+                                                                Payoneer: <strong>ashish@outrightcrm.com</strong>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+
+                                        {/* ========================= POLICY LINKS ========================= */}
+                                        <tr>
+                                            <td>
+                                                <table style={{ width: "100%" }} cellSpacing="0" cellPadding="0">
+                                                    <tbody>
+                                                        <tr>
+                                                            {[
+                                                                ["URL Policy", "https://www.outrightcrm.com/anchor-url-policy-2/"],
+                                                                ["Anchor Text Policy", "https://www.outrightcrm.com/anchor-text-policy/"],
+                                                                ["Content Policy", "https://www.outrightcrm.com/policy-for-blog-submissions/"],
+                                                            ].map(([label, link]) => (
+                                                                <td key={label} align="center">
+                                                                    <a
+                                                                        style={{
+                                                                            padding: "10px 15px",
+                                                                            border: "1px solid #4e79ff",
+                                                                            fontSize: "14px",
+                                                                            color: "#1a2b6b",
+                                                                            textDecoration: "none",
+                                                                            display: "inline-block",
+                                                                            margin: "5px",
+                                                                            background: "#eef4ff",
+                                                                            borderRadius: "6px",
+                                                                        }}
+                                                                        href={link}
+                                                                    >
+                                                                        {label}
+                                                                    </a>
+                                                                </td>
+                                                            ))}
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+
                                     </tbody>
                                 </table>
                             </td>

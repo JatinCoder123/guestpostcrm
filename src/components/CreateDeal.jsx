@@ -287,7 +287,7 @@ export default function CreateDeal() {
                                 </button>
                               </div>
 
-                              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {/* Amount */}
                                 <div>
                                   <label className="block text-xs text-gray-600">
@@ -350,18 +350,6 @@ export default function CreateDeal() {
                                         </option>
                                       ))}
                                   </select>
-                                </div>
-
-                                {/* Email */}
-                                <div>
-                                  <label className="block text-xs text-gray-600">
-                                    Email
-                                  </label>
-                                  <input
-                                    value={deal.email}
-                                    disabled
-                                    className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
-                                  />
                                 </div>
                               </div>
                             </motion.div>
@@ -460,10 +448,10 @@ export default function CreateDeal() {
 
       {/* PREVIEW MODAL */}
       {showPreview && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-2">
 
           {/* OUTER WRAPPER (WIDER + ROUNDED) */}
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden relative">
+          <div className="bg-white w-full max-w-[800px] rounded-2xl shadow-2xl overflow-hidden relative">
 
             {/* SCROLLABLE CONTENT */}
             <div className="max-h-[80vh] overflow-y-auto p-6">
