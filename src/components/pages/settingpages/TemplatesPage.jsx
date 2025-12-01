@@ -164,7 +164,6 @@ export default function TemplatesPage() {
                     </>
                   ) : (
                     <>
-                      <Save size={18} />
                       Save
                     </>
                   )}
@@ -177,7 +176,6 @@ export default function TemplatesPage() {
                   disabled={isSaving}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-all active:scale-95"
                 >
-                  <RotateCcw size={18} />
                   Cancel
                 </button>
               )}
