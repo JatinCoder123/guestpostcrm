@@ -10,7 +10,7 @@ import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
 import { LoadingAll } from "../Loading";
 import { getAiReply } from "../../store/Slices/aiReply";
-import { sendEmailToThread } from "../../store/Slices/threadEmail";
+import { sendEmailToThread, threadEmailAction } from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
 import Ip from "../Ip";
@@ -40,6 +40,11 @@ export function TimelinePage() {
   } = useSelector((state) => state.viewEmail);
 
   const {
+    error: threadError,
+    message: threadMessage,
+  } = useSelector((state) => state.threadEmail);
+
+  const {
     aiReply,
     error: aiError,
   } = useSelector((s) => s.aiReply);
@@ -55,6 +60,7 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading } = useSelector(
     (state) => state.unreplied
   );
+  const currentThreadId = emails.length > 0 ? emails[currentEmailIndex].thread_id : null;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -68,11 +74,26 @@ export function TimelinePage() {
       toast.success(message);
       dispatch(viewEmailAction.clearAllMessage());
     }
+    if (threadError) {
+      toast.error(threadError);
+      dispatch(threadEmailAction.clearAllErrors());
+    }
+    if (threadMessage) {
+      toast.success(threadMessage);
+      dispatch(addEvent({
+        email: email,
+        thread_id: currentThreadId,
+        recent_activity: threadMessage,
+      }));
+      dispatch(threadEmailAction.clearAllMessage());
+    }
   }, [
     dispatch,
     error,
     sendError,
     message,
+    threadError,
+    threadMessage,
   ]);
 
 
@@ -122,7 +143,7 @@ export function TimelinePage() {
       if (extractEmail(emails[currentEmailIndex].from) !== email) {
         dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
       }
-      dispatch(getAiReply(emails[currentEmailIndex].thread_id));
+      dispatch(getAiReply(currentThreadId));
     }
   }, [currentEmailIndex]);
 
@@ -155,7 +176,7 @@ export function TimelinePage() {
       <>
         <EmailBox
           onClose={() => setShowThread(false)}
-          threadId={emails[currentEmailIndex].thread_id}
+          threadId={currentThreadId}
           tempEmail={email}
         />
       </>
@@ -202,7 +223,6 @@ export function TimelinePage() {
                           <h3 className="text-green-700 font-semibold">
                             Quick Reply
                           </h3>
-
                           {/* Send AI Reply Button - Moved to top right */}
                           {aiReplySentLoading ? (
                             <div className="flex justify-center">
@@ -296,7 +316,7 @@ export function TimelinePage() {
                   )}
 
                   {/* ACTION BUTTONS */}
-                  <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={emails[currentEmailIndex].thread_id} />
+                  <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={currentThreadId} />
                 </>
               )}
             </div>
