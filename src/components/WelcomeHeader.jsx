@@ -2,10 +2,14 @@ import { Mail, Link2, List } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+
 const LOCAL_KEY = "create_deals_draft_v1";
+
 const WelcomeHeader = () => {
   const { email, timeline } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
+
+  const navigate = useNavigate();
 
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
@@ -14,7 +18,7 @@ const WelcomeHeader = () => {
 
   const time = periodOptions.find((o) => o.period == timeline)?.title;
 
-  // 🔥 NEW: Get pending deals count from localStorage
+  // NEW: Pending Deals
   let pendingDeals = null;
   const raw = localStorage.getItem(LOCAL_KEY);
   if (raw) {
@@ -23,37 +27,37 @@ const WelcomeHeader = () => {
       pendingDeals = deals.length;
     }
   }
-  const naviageTo = useNavigate();
+
   return (
     <div className="h-20 w-full relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
-      {/* Soft Background */}
+      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-50/80 via-purple-50/60 to-pink-50/80" />
-
-      {/* Light Orbs */}
       <div className="absolute top-0 left-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-30" />
       <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-30" />
 
       <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
-        {/* LEFT SIDE */}
+        
+        {/* LEFT */}
         <div className="flex items-center gap-5">
-          {/* Title */}
+
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
             Results for{" "}
             <span className="font-bold text-gray-900">
               {time?.replace(/_/g, " ")}
             </span>
+
             {email && (
               <>
                 {" • "}
                 <span className="font-bold text-blue-600">{email}</span>
               </>
             )}
-            {/* 🔥 NEW: Pending Deals Badge */}
-            {pendingDeals !== null && pendingDeals != 0 && (
+
+            {pendingDeals !== null && pendingDeals > 0 && (
               <>
                 {" • "}
                 <button
-                  onClick={() => naviageTo("deals/create")}
+                  onClick={() => navigate("/deals/create")}
                   className="font-bold text-orange-600 cursor-pointer"
                 >
                   {pendingDeals} Pending Deals
@@ -62,36 +66,37 @@ const WelcomeHeader = () => {
             )}
           </p>
 
-          {/* Hover Badges */}
+          {/* BADGES */}
           <div className="flex items-center gap-3">
-            {/* CRM Badge */}
+
+            {/* CRM */}
             {crmDomain && (
               <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-400 cursor-pointer">
                 <Link2 className="w-4 h-4 text-purple-600 group-hover:scale-125 transition-transform duration-300" />
-                <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-64 transition-all duration-600 ease-out">
-                  CRM:{" "}
-                  <span className="font-bold text-purple-700">{crmDomain}</span>
+                <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-64 transition-all duration-600">
+                  CRM: <span className="font-bold text-purple-700">{crmDomain}</span>
                 </span>
               </div>
             )}
 
-            {/* Business Email Badge */}
+            {/* Business Email */}
             {businessEmail && (
               <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
                 <Mail className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
-                <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-80 transition-all duration-600 ease-out">
-                  Email:{" "}
-                  <span className="font-bold text-blue-700">
-                    {businessEmail}
-                  </span>
+                <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-80 transition-all duration-600">
+                  Email: <span className="font-bold text-blue-700">{businessEmail}</span>
                 </span>
               </div>
             )}
 
-             {/* Business Email Badge */}
-            <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
-                <List className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
+            {/* Marketplace Button */}
+            <div
+              onClick={() => navigate("/RecentEntry")}
+              className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer"
+            >
+              <List className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
             </div>
+
           </div>
         </div>
 
@@ -103,6 +108,7 @@ const WelcomeHeader = () => {
             className="h-14 w-auto object-contain drop-shadow-md"
           />
         </div>
+
       </div>
     </div>
   );
