@@ -11,11 +11,13 @@ import {
 import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
+import { useNavigate } from "react-router-dom";
 
 export function OrdersPage() {
   const { orders, count, loading, error } = useSelector(
     (state) => state.orders
   );
+  const navigateTo = useNavigate()
   const getStatusColor = (status) => {
     switch (status) {
       case "Completed":
@@ -92,10 +94,16 @@ export function OrdersPage() {
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6 text-green-600" />
             <h2 className="text-lg font-semibold text-gray-800">ORDERS</h2>
-             <a href="">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <a href="">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
+          <button
+            onClick={() => navigateTo("create")}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            + New Order
+          </button>
         </div>
 
         {/* Table */}

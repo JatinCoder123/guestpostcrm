@@ -48,12 +48,12 @@ const MailerSummaryHeader = () => {
                   <div className="hover:text-blue-600 transition-colors">
                     {mailersSummary?.subject
                       ? mailersSummary.subject
-                          .split(" ")
-                          .slice(0, 6)
-                          .join(" ") +
-                        (mailersSummary.subject.split(" ").length > 6
-                          ? "..."
-                          : "")
+                        .split(" ")
+                        .slice(0, 6)
+                        .join(" ") +
+                      (mailersSummary.subject.split(" ").length > 6
+                        ? "..."
+                        : "")
                       : "No Subject"}
                   </div>
                 </Titletooltip>
@@ -63,24 +63,24 @@ const MailerSummaryHeader = () => {
                   <div className="hover:text-purple-600 transition-colors">
                     {mailersSummary?.motive
                       ? mailersSummary.motive.split(" ").slice(0, 6).join(" ") +
-                        (mailersSummary.motive.split(" ").length > 6
-                          ? "..."
-                          : "")
+                      (mailersSummary.motive.split(" ").length > 6
+                        ? "..."
+                        : "")
                       : "N/A"}
                   </div>
                 </Titletooltip>{" "}
               </td>
               <td className="border border-blue-400 px-4 py-3">
-               
-              <span className="borderpx-4 py-3 font-semibold text-gray-900 flex align-items-center justify-center">
-                    {mailersSummary?.deal ?? "No Order"}
-                    <Link to={"/deals/create"}>
-                  <img className="ml-2"
-                    width="20"
-                    height="20"
-                    src="https://img.icons8.com/stickers/100/add.png"
-                    alt="add"
-                  />
+
+                <span className="borderpx-4 py-3 font-semibold text-gray-900 flex align-items-center justify-center">
+                  {mailersSummary?.deal ?? "No Order"}
+                  <Link to={"/orders/create"}>
+                    <img className="ml-2"
+                      width="20"
+                      height="20"
+                      src="https://img.icons8.com/stickers/100/add.png"
+                      alt="add"
+                    />
                   </Link>
                 </span>
               </td>
@@ -88,13 +88,13 @@ const MailerSummaryHeader = () => {
               <td className="borderpx-4 py-3 mt-4 font-semibold text-gray-900 flex align-items-center justify-center">
                 {mailersSummary?.deal ?? "No Deal"}
                 <span className="checking align-items-center justify-center">
-                    <Link to={"/deals/create"}>
-                  <img className="ml-2"
-                    width="20"
-                    height="20"
-                    src="https://img.icons8.com/stickers/100/add.png"
-                    alt="add"
-                  />
+                  <Link to={"/deals/create"}>
+                    <img className="ml-2"
+                      width="20"
+                      height="20"
+                      src="https://img.icons8.com/stickers/100/add.png"
+                      alt="add"
+                    />
                   </Link>
                 </span>
               </td>

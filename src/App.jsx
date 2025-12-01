@@ -45,6 +45,7 @@ import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
 import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
+import CreateOrder from "./components/CreateOrder";
 
 const router = createBrowserRouter([
   {
@@ -80,7 +81,7 @@ const router = createBrowserRouter([
         element: <UnansweredPage />,
       },
 
-       {
+      {
         path: "Marketplace",
         element: <Marketplace />,
       },
@@ -105,6 +106,10 @@ const router = createBrowserRouter([
       {
         path: "orders",
         element: <OrdersPage />,
+      },
+      {
+        path: "orders/create",
+        element: <CreateOrder />,
       },
       {
         path: "invoices",
