@@ -3,6 +3,7 @@ import { TimelinePage } from "./components/pages/TimelinePage";
 import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { UnansweredPage } from "./components/pages/UnansweredPage";
 import { Marketplace } from "./components/pages/Marketplace";
+import { RecentEntry } from "./components/pages/RecentEntry";
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
@@ -83,6 +84,11 @@ const router = createBrowserRouter([
       {
         path: "Marketplace",
         element: <Marketplace />,
+      },
+
+             {
+        path: "RecentEntry",
+        element: <RecentEntry />,
       },
 
       {
