@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   User,
@@ -10,7 +10,8 @@ import {
   X,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { editContact } from "../../store/Slices/viewEmail";
+import { editContact, viewEmailAction } from "../../store/Slices/viewEmail";
+import { toast } from "react-toastify";
 
 // Framer motion variants for stagger animations
 const containerVariants = {
@@ -26,7 +27,7 @@ const itemVariants = {
 };
 
 export default function Contactpage() {
-  const { contactInfo, accountInfo } = useSelector(
+  const { contactInfo, accountInfo,message,error,loading} = useSelector(
     (state) => state.viewEmail
   );
   const [isEditing, setIsEditing] = useState(false);
@@ -58,6 +59,16 @@ const dispatch = useDispatch();
   const handleCancel = () => {
     setIsEditing(false);
   };
+  useEffect(() => {
+   if(message){
+    toast.success(message);
+    dispatch(viewEmailAction.clearAllMessage())
+   }
+   if(error){
+    toast.success(error);
+    dispatch(viewEmailAction.clearAllErrors())
+   }
+  }, [message, error, dispatch]);
 
   return (
     <div className="w-full min-h-screen from-purple-50 via-blue-50 to-pink-50 py-12 px-4">
@@ -218,11 +229,21 @@ const dispatch = useDispatch();
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Name</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">First Name</label>
                     <input
                       type="text"
-                      name="full_name"
-                      value={formData.contact.full_name || ''}
+                      name="first_name"
+                      value={formData.contact.first_name || ''}
+                      onChange={(e) => handleChange(e, 'contact')}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">Last Name</label>
+                    <input
+                      type="text"
+                      name="last_name"
+                      value={formData.contact.last_name || ''}
                       onChange={(e) => handleChange(e, 'contact')}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />

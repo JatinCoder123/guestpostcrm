@@ -286,7 +286,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                             transition={{ duration: 0.2, type: "spring" }}
                             className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2 bg-white p-3 rounded-2xl shadow-2xl border border-gray-200"
                           >
-                            {children.map((child, j) => (
+                            {children?.map((child, j) => (
                               <motion.button
                                 key={j}
                                 whileHover={{ scale: 1.03, y: -1 }}
@@ -325,7 +325,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
         /* ========================= CHAT SCREEN ========================= */
         <>
           <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">
-            {messageLimit < emails.length && (
+            {messageLimit < emails?.length && (
               <>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -336,7 +336,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
-                  onClick={() => setMessageLimit(emails.length)}
+                  onClick={() => setMessageLimit(emails?.length)}
                   className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   Show All
@@ -349,7 +349,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
             ref={scrollRef}
             className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
           >
-            {visibleMessages.map((mail, idx) => {
+            {visibleMessages?.map((mail, idx) => {
               const isUser = mail.from_email.includes(businessEmail);
               return (
                 <motion.div
