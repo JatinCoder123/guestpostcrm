@@ -54,8 +54,7 @@ export const getThreadEmail = (email, threadId) => {
 
     try {
       const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
+        `${getState().user.crmEndpoint
         }&type=view_thread&thread_id=${threadId}&email=${email}&page=1&page_size=50`
       );
       console.log(`threadEmail`, data);
@@ -92,7 +91,7 @@ export const sendEmailToThread = (threadId, reply) => {
       console.log(`Reply Data`, data);
       dispatch(
         threadEmailSlice.actions.sendEmailSucess({
-          message: data.message,
+          message: "Reply To Thread Sent Successfully",
         })
       );
       dispatch(threadEmailSlice.actions.clearAllErrors());

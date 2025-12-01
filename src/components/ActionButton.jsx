@@ -99,7 +99,7 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
                 },
                 {
                     icon: favourite ? (
-                        <Loading />
+                        <LoadingChase />
                     ) : (
                         <img
                             src="https://img.icons8.com/color/48/filled-like.png"

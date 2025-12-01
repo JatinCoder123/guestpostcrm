@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { createDeal, dealsAction } from "../store/Slices/deals";
 import { websiteListForDeal } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import PreviewDeals from "./PreviewDeals";
 
 const LOCAL_KEY = "create_deals_draft_v1";
 
@@ -48,6 +49,7 @@ export default function CreateDeal() {
 
   const [validWebsites, setValidWebsites] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
 
   // ────────────────────────────────────────────────
   // Create a Set of used websites
@@ -333,27 +335,20 @@ export default function CreateDeal() {
                                     }}
                                     className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
                                   >
-                                    {validWebsites.length === 0 ? (
-                                      <option value="">
-                                        No Websites Available
-                                      </option>
-                                    ) : (
-                                      validWebsites
-                                        .filter(
-                                          (site) =>
-                                            site === deal.website_c ||
-                                            !deals.some(
-                                              (d, i) =>
-                                                d.website_c === site &&
-                                                i !== idx
-                                            )
-                                        )
-                                        .map((site) => (
-                                          <option key={site} value={site}>
-                                            {site}
-                                          </option>
-                                        ))
-                                    )}
+                                    {websiteListForDeal
+                                      .filter(
+                                        (site) =>
+                                          site === deal.website_c ||
+                                          !deals.some(
+                                            (d, i) =>
+                                              d.website_c === site && i !== idx
+                                          )
+                                      )
+                                      .map((site) => (
+                                        <option key={site} value={site}>
+                                          {site}
+                                        </option>
+                                      ))}
                                   </select>
                                 </div>
 
@@ -412,55 +407,90 @@ export default function CreateDeal() {
                   <strong>{deals.length}</strong>
                 </div>
 
-                <div className="flex justify-between mt-2">
-                  <span>Total Amount</span>
-                  <strong>${totalAmount.toLocaleString()}</strong>
-                </div>
-
-                <div className="mt-2">
+                {/* Website breakdown */}
+                <div className="mt-3">
                   <strong className="block mb-1">Websites</strong>
 
                   {deals.length === 0 ? (
-                    <p className="text-gray-400 text-sm">
-                      No websites selected
-                    </p>
+                    <p className="text-gray-400">No websites selected</p>
                   ) : (
-                    <ul className="list-disc list-inside text-gray-700">
-                      {[...new Set(deals.map((d) => d.website_c))]
-                        .filter(Boolean)
-                        .map((site, i) => (
-                          <li key={i}>{site}</li>
-                        ))}
+                    <ul className="list-none space-y-1">
+                      {deals.map((d, i) => (
+                        <li key={i}>
+                          {d.website_c || "(no site)"} —{" "}
+                          <strong>${Number(d.dealamount || 0)}</strong>
+                        </li>
+                      ))}
                     </ul>
                   )}
+
+                  <hr className="my-3 border-gray-300" />
+
+                  <div className="flex justify-between text-lg">
+                    <strong>Total Amount</strong>
+                    <strong>${totalAmount.toLocaleString()}</strong>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4">
+              <div className="mt-4 flex gap-3">
                 <button
                   disabled={deals.length === 0 || !valid || creating}
                   onClick={submitAll}
-                  className={`w-full px-3 py-2 rounded-lg text-white ${
-                    deals.length === 0 || !valid
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700"
-                  }`}
+                  className={`w-full px-3 py-2 rounded-lg text-white ${deals.length === 0 || !valid
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                    }`}
                 >
                   {creating ? "Submitting..." : "Submit All Deals"}
                 </button>
-              </div>
-            </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-sm">
-              <h4 className="font-semibold">Tips</h4>
-              <ul className="mt-2 list-disc list-inside text-gray-600">
-                <li>Use autofill for quick amounts.</li>
-                <li>Save draft to continue later.</li>
-              </ul>
+                {/* PREVIEW BUTTON */}
+                <button
+                  onClick={() => setShowPreview(true)}
+                  className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
+                >
+                  Preview
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* PREVIEW MODAL */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+
+          {/* OUTER WRAPPER (WIDER + ROUNDED) */}
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden relative">
+
+            {/* SCROLLABLE CONTENT */}
+            <div className="max-h-[80vh] overflow-y-auto p-6">
+
+              <PreviewDeals
+                deals={deals}
+                totalAmount={totalAmount}
+                onSubmit={submitAll}
+                userEmail={email}
+              />
+
+            </div>
+
+            {/* FOOTER BUTTONS */}
+            <div className="p-4 border-t flex justify-end bg-white">
+              <button
+                className="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition"
+                onClick={() => setShowPreview(false)}
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -83,17 +83,17 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   });
 
   // LOAD TEMPLATE INTO EDITOR
-useEffect(() => {
-  if ((template || defaultTemplate) && editorReady && editorRef.current) {
-    const htmlContent = template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
-    if (htmlContent && htmlContent.trim()) {
-      editorRef.current.setContent(htmlContent);
-      setInput(htmlContent);
-    } else {
-      toast.warn("Template is empty—starting with blank editor.");
+  useEffect(() => {
+    if ((template || defaultTemplate) && editorReady && editorRef.current) {
+      const htmlContent = template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
+      if (htmlContent && htmlContent.trim()) {
+        editorRef.current.setContent(htmlContent);
+        setInput(htmlContent);
+      } else {
+        toast.warn("Template is empty—starting with blank editor.");
+      }
     }
-  }
-}, [template, defaultTemplate, editorReady]);
+  }, [template, defaultTemplate, editorReady]);
 
   // AI REPLY
   useEffect(() => {
@@ -119,32 +119,31 @@ useEffect(() => {
   };
 
   const handleSendClick = () => {
-  if (!showEditorScreen) {
-    setShowEditorScreen(true);
+    if (!showEditorScreen) {
+      setShowEditorScreen(true);
 
-    if (template && editorRef.current) {
-      editorRef.current.setContent(template[0]?.body_html);
-      setInput(template[0]?.body_html);
+      if (template && editorRef.current) {
+        editorRef.current.setContent(template[0]?.body_html);
+        setInput(template[0]?.body_html);
+      }
+      if (defaultTemplate && editorRef.current) {
+        editorRef.current.setContent(base64ToUtf8(defaultTemplate.html_base64));
+        setInput(base64ToUtf8(defaultTemplate.html_base64));
+      }
+      return;
     }
-    if (defaultTemplate && editorRef.current) {
-      editorRef.current.setContent(base64ToUtf8(defaultTemplate.html_base64));
-      setInput(base64ToUtf8(defaultTemplate.html_base64));
-    }
-    return;
-  }
 
-  // FIXED: Get HTML content instead of plain text to preserve formatting
-  const contentToSend =
-    editorRef.current?.getContent() ||  // Returns full HTML
-    input;  // Fallback to raw input (which should be HTML from templates)
+    const contentToSend =
+      editorRef.current?.getContent() ||
+      input;
 
-  if (view) dispatch(sendEmail(contentToSend));
-  else dispatch(sendEmailToThread(threadId, contentToSend));
+    if (view) dispatch(sendEmail(contentToSend));
+    else dispatch(sendEmailToThread(threadId, contentToSend));
 
-  onClose();
-  setInput("");
-  editorRef.current?.setContent("");
-};
+    onClose();
+    setInput("");
+    editorRef.current?.setContent("");
+  };
 
   const handleBackClick = () => {
     if (showEditorScreen) {
