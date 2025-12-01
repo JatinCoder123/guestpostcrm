@@ -55,37 +55,44 @@ const eventSlice = createSlice({
     },
 });
 
-export const getEvents = (filter, email) => {
-    return async (dispatch, getState) => {
+
+export const getEvents = () => {
+    return async (dispatch) => {
         dispatch(eventSlice.actions.getEventsRequest());
 
         try {
-            let response;
-            if (email) {
-                response = await axios.get(
-                    `${getState().user.crmEndpoint
-                    }&type=get_deals&filter=${filter}&email=${email}&page=1&page_size=50`
-                );
-            } else {
-                response = await axios.get(
-                    `${getState().user.crmEndpoint
-                    }&type=get_deals&filter=${filter}&page=1&page_size=50`
-                );
-            }
+            const url =
+                "https://errika.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=recent_activities&user_id=61969816-f675-6711-080f-692d30ad2e1c&filter=last_90_days&page=1&page_size=50";
+
+            console.log("📡 Fetching From URL:", url);
+
+            const response = await axios.get(url);
+
+            console.log("🟢 Full API Response:", response);
+            console.log("🟢 Response Data:", response.data);
+
             const data = response.data;
-            console.log(`Deals`, data);
+
+            console.log("📌 Data Count:", data.data_count);
+            console.log("📌 Events:", data.data);
+
             dispatch(
                 eventSlice.actions.getEventsSucess({
                     count: data.data_count ?? 0,
-                    events: data.data,
+                    events: data.data ?? [],
                 })
             );
+
             dispatch(eventSlice.actions.clearAllErrors());
         } catch (error) {
-            dispatch(eventSlice.actions.getEventsFailed("Fetching Event  Failed"));
+            console.error("❌ Fetch Error:", error);
+            dispatch(eventSlice.actions.getEventsFailed("Fetching Event Failed"));
         }
     };
 };
+
+
+
 export const addEvent = (event) => {
     return async (dispatch, getState) => {
         dispatch(eventSlice.actions.addEventRequest());
