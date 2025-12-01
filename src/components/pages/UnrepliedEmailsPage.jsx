@@ -115,7 +115,8 @@ export function UnrepliedEmailsPage() {
                       setSearch(input);
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/");
+                      
+                      navigateTo("/contacts");
                     }}
                     className="px-6 py-4 text-gray-900"
                   >

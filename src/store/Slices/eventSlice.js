@@ -61,6 +61,7 @@ export const getEvents = () => {
         dispatch(eventSlice.actions.getEventsRequest());
 
         try {
+<<<<<<< HEAD
             const url =
                 "https://errika.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=recent_activities&user_id=61969816-f675-6711-080f-692d30ad2e1c&filter=last_90_days&page=1&page_size=50";
 
@@ -71,6 +72,20 @@ export const getEvents = () => {
             console.log("🟢 Full API Response:", response);
             console.log("🟢 Response Data:", response.data);
 
+=======
+            let response;
+            if (email) {
+                response = await axios.get(
+                    `${getState().user.crmEndpoint
+                    }&id=${getState().user.id}=${filter}&email=${email}&page=1&page_size=50`
+                );
+            } else {
+                response = await axios.get(
+                    `${getState().user.crmEndpoint
+                    }&type=get_deals&filter=${filter}&page=1&page_size=50`
+                );
+            }
+>>>>>>> 02cbb21587c2967fb20f961055883b2ff0dbdad2
             const data = response.data;
 
             console.log("📌 Data Count:", data.data_count);

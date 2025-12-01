@@ -66,7 +66,7 @@ export function ForwardedPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>SENDER</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -78,7 +78,7 @@ export function ForwardedPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <BarChart className="w-4 h-4" />
-                    <span>THREAD SIZE</span>
+                    <span>COUNT</span>
                   </div>
                 </th>
               </tr>
