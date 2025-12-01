@@ -96,7 +96,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const menuItems = [
     {
       id: "unreplied-emails",
-      label: "Unreplied Emails",
+      label: "Unreplied ",
       icon: Mail,
       loading: unrepliedLoading,
       count: unrepliedCount,
@@ -116,7 +116,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "forwarded-emails",
-      label: "Forwarded Emails",
+      label: "Forwarded ",
       icon: Forward,
       loading: forwardLoading,
       count: forwardCount,
@@ -126,7 +126,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "favourite-emails",
-      label: "Favourite Emails",
+      label: "Favourite ",
       icon: Heart,
       loading: favLoading,
       count: favCount,
@@ -135,7 +135,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
 
-     {
+    {
       id: "Marketplace",
       label: "Marketplace",
       icon: Store,
@@ -146,16 +146,6 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
     {
-      id: "deals",
-      label: "Deals",
-      icon: Handshake,
-      loading: dealsLoading,
-      count: dealCount,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
-    },
-    {
       id: "offers",
       label: "Offers",
       icon: Gift,
@@ -164,6 +154,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       color: "text-green-600",
       hover: "hover:bg-green-50",
       countBg: "bg-green-500 text-white",
+    },
+    {
+      id: "deals",
+      label: "Deals",
+      icon: Handshake,
+      loading: dealsLoading,
+      count: dealCount,
+      color: "text-blue-600",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "orders",
@@ -261,9 +261,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
         {/* COLLAPSE BUTTON */}
         <button
           onClick={onToggleCollapse}
-          className={`fixed ${
-            collapsed ? "left-23" : "left-62"
-          } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
+          className={`fixed ${collapsed ? "left-23" : "left-62"
+            } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
                      rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}
@@ -276,10 +275,9 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
             navigateTo("");
           }}
           className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-            ${
-              activePage === ""
-                ? "bg-green-500 text-white"
-                : "bg-green-50 text-green-700"
+            ${activePage === ""
+              ? "bg-green-500 text-white"
+              : "bg-green-50 text-green-700"
             }`}
         >
           <Radio className="w-5 h-5 animate-pulse" />
@@ -298,17 +296,15 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
               }}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all cursor-pointer 
                          ${collapsed ? "justify-center" : ""}
-                         ${
-                           activePage === item.id
-                             ? `bg-gray-100 ${item.color}`
-                             : `${item.hover} text-gray-700`
-                         }`}
+                         ${activePage === item.id
+                  ? `bg-gray-100 ${item.color}`
+                  : `${item.hover} text-gray-700`
+                }`}
             >
               {/* FIXED ICON SIZE ALWAYS */}
               <item.icon
-                className={`w-5 h-5 ${
-                  activePage === item.id ? item.color : "text-gray-500"
-                }`}
+                className={`w-5 h-5 ${activePage === item.id ? item.color : "text-gray-500"
+                  }`}
               />
 
               {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}

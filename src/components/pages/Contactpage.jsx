@@ -69,7 +69,7 @@ export default function Contactpage() {
                 transition={{ delay: 0.3 }}
                 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
               >
-                {contactInfo?.first_name || "No Name"}
+                {contactInfo?.full_name || "No Name"}
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0, x: -20 }}
@@ -102,7 +102,7 @@ export default function Contactpage() {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <GlassInfo icon={<User />} label="Name" value={contactInfo?.first_name} />
+              <GlassInfo icon={<User />} label="Name" value={contactInfo?.full_name} />
               <GlassInfo icon={<User />} label="Stage" value={contactInfo?.stage} />
               <GlassInfo icon={<Phone />} label="Phone" value={contactInfo?.phone_mobile} />
               <GlassInfo icon={<Mail />} label="Email" value={contactInfo?.email1} />

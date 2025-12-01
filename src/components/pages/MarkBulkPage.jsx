@@ -45,9 +45,9 @@ export function MarkBulkPage() {
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl text-gray-900">BULK EMAILS</h2>
-             <a href="">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <a href="">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
             {count} Bulk
@@ -68,7 +68,7 @@ export function MarkBulkPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>SENDER</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">

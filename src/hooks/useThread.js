@@ -18,17 +18,6 @@ function useThread() {
     setShowEmails(true);
   };
   useEffect(() => {
-    if (showEmail) {
-      document.body.style.overflow = "hidden"; // Disable background scroll
-    } else {
-      document.body.style.overflow = "auto"; // Restore when closed
-    }
-
-    return () => {
-      document.body.style.overflow = "auto"; // Cleanup
-    };
-  }, [showEmail]);
-  useEffect(() => {
     if (sendError) {
       toast.error(sendError);
       dispatch(threadEmailAction.clearAllErrors());

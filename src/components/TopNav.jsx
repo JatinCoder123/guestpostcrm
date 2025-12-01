@@ -22,7 +22,7 @@ import { periodOptions } from "../assets/assets";
 export function TopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
-  const { setEnteredEmail, search, setSearch } = useContext(PageContext);
+  const { setEnteredEmail, search, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const profileMenuRef = useRef(null);
@@ -36,6 +36,7 @@ export function TopNav() {
     if (search.trim()) {
       localStorage.setItem("email", search);
       navigateTo("");
+      setWelcomeHeaderContent("Search");
       setEnteredEmail(search);
     }
   };
@@ -214,11 +215,10 @@ export function TopNav() {
                     className={`
       flex items-center justify-center cursor-pointer
       p-2 rounded-full transition-all duration-300 shadow-sm
-      ${
-        loading
-          ? "opacity-50 cursor-not-allowed bg-gray-200"
-          : "hover:bg-red-200"
-      }
+      ${loading
+                        ? "opacity-50 cursor-not-allowed bg-gray-200"
+                        : "hover:bg-red-200"
+                      }
     `}
                   >
                     <img

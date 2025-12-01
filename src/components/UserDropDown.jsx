@@ -10,15 +10,15 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
     name: "USERS",
   });
   // Close dropdown on outside click
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        onClose?.();
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
+  // useEffect(() => {
+  //   const handleOutsideClick = (e) => {
+  //     if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+  //       onClose?.();
+  //     }
+  //   };
+  //   document.addEventListener("mousedown", handleOutsideClick);
+  //   return () => document.removeEventListener("mousedown", handleOutsideClick);
+  // }, []);
 
   return (
     <div
@@ -59,7 +59,10 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
           </div>
           {/* Forward Button */}
           <button
-            onClick={() => selectedUser && forwardHandler(selectedUser)}
+            onClick={() => {
+              onClose();
+              selectedUser && forwardHandler(selectedUser);
+            }}
             disabled={!selectedUser}
             className={`w-full mt-3 py-2 rounded-lg text-sm text-white transition-all
           ${

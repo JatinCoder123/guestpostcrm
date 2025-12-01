@@ -62,6 +62,7 @@
 
                     // Build CRM endpoint using domain description
                      $businessEmail = $verifyJson['email'] ?? null;
+                     $id=$verifyJson['current_user']['id'] ?? null;
                     $description = $verifyJson['domain'] ?? null;
 
                     if (!$description) {
@@ -76,7 +77,8 @@
                     echo json_encode([
                         "user" => $decoded->data,
                         "businessEmail" => $businessEmail,
-                        "crmEndpoint" => $crmEndpoint
+                        "crmEndpoint" => $crmEndpoint,
+                        "id" => $id
                     ]);
                     return;
                 }

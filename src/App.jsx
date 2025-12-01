@@ -218,9 +218,6 @@ export default function App() {
     dispatch(getUser());
   }, []);
   useEffect(() => {
-    if (isAuthenticated) dispatch(getLadger());
-  }, [isAuthenticated]);
-  useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(userAction.clearAllErrors());
