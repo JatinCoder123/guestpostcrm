@@ -64,7 +64,7 @@ export const getEvents = (filter, email) => {
             if (email) {
                 response = await axios.get(
                     `${getState().user.crmEndpoint
-                    }&type=get_deals&filter=${filter}&email=${email}&page=1&page_size=50`
+                    }&id=${getState().user.id}=${filter}&email=${email}&page=1&page_size=50`
                 );
             } else {
                 response = await axios.get(
