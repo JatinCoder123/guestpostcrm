@@ -42,6 +42,8 @@ export function TimelinePage() {
   const [currentEmailIndex, setCurrentEmailIndex] = useState(0);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+
 
   const {
     loading: sendLoading,
@@ -177,12 +179,23 @@ export function TimelinePage() {
     }
   };
 
-  useEffect(() => {
-    if (emails.length > 0) {
-      dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
+  
+useEffect(() => {
+  if (emails.length > 0) {
+    dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
+    
+    
+    if (initialLoad) {
+      console.log("🚀 Generating AI reply on page load...");
+      dispatch(getAiReply(emails[0].thread_id));
+      setInitialLoad(false);
+    } 
+    
+    else {
       dispatch(getAiReply(emails[currentEmailIndex].thread_id));
     }
-  }, [currentEmailIndex]);
+  }
+}, [currentEmailIndex, emails, dispatch, initialLoad]);
 
   const handleNext = () => {
     if (currentEmailIndex < emails.length - 1) {
