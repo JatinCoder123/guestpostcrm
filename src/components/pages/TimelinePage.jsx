@@ -8,7 +8,13 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
+<<<<<<< HEAD
 import { LoadingAll } from "../Loading";
+=======
+import { LoadingAll, LoadingSpin } from "../Loading";
+import {Titletooltip} from "../pages/Titletooltip"
+
+>>>>>>> e5078879d7924206ffbc1d132f19b604689d07a3
 import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread, threadEmailAction } from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
@@ -32,6 +38,8 @@ export function TimelinePage() {
   const [currentEmailIndex, setCurrentEmailIndex] = useState(0);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+
 
   const {
     error: sendError,
@@ -138,14 +146,32 @@ export function TimelinePage() {
     }
   };
 
+<<<<<<< HEAD
   useEffect(() => {
     if (emails.length > 0) {
       if (extractEmail(emails[currentEmailIndex].from) !== email) {
         dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
       }
       dispatch(getAiReply(currentThreadId));
+=======
+  
+useEffect(() => {
+  if (emails.length > 0) {
+    dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
+    
+    
+    if (initialLoad) {
+      console.log("🚀 Generating AI reply on page load...");
+      dispatch(getAiReply(emails[0].thread_id));
+      setInitialLoad(false);
+    } 
+    
+    else {
+      dispatch(getAiReply(emails[currentEmailIndex].thread_id));
+>>>>>>> e5078879d7924206ffbc1d132f19b604689d07a3
     }
-  }, [currentEmailIndex]);
+  }
+}, [currentEmailIndex, emails, dispatch, initialLoad]);
 
   const handleNext = () => {
     if (currentEmailIndex < emails.length - 1) {
@@ -297,17 +323,19 @@ export function TimelinePage() {
 
                       {/* Latest Message */}
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-start mb-2">
                           <h3 className="text-yellow-700 font-semibold">
                             Latest Message
                           </h3>
-                          <button
-                            className="flex items-center gap-1 text-sm text-yellow-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 px-3 py-1 rounded-md"
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                            className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
                             onClick={() => setShowThread(true)}
                           >
-                            <Reply className="w-4 h-4" />
-                            Reply
-                          </button>
+                            <Reply className="w-8 h-8 text-yellow-700" />
+                          </motion.button>
                         </div>
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                           {emails.length > 0 &&
