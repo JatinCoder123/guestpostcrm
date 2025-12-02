@@ -32,7 +32,7 @@ export function OffersPage() {
     <>
       {/* ⭐ Stats Cards (Top Section) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        
+
         {/* Total Offers */}
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
           <div className="flex items-center justify-between">
@@ -91,14 +91,13 @@ export function OffersPage() {
       {/* ⭐ Offers Section (Header + Table) */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          
+
           <div className="flex items-center gap-3">
             <Gift className="w-6 h-6 text-yellow-600" />
             <h2 className="text-xl text-gray-900 font-semibold">OFFERS</h2>
-             <a href="https://www.guestpostcrm.com/blog/offers-in-guestpostcrm/" target="_blank" 
-  rel="noopener noreferrer">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <a href="https://www.guestpostcrm.com/blog/offers-in-guestpostcrm/" target="_blank" rel="noopener noreferrer">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
           <div className="px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
             {offers.length} Active Offers
@@ -129,45 +128,45 @@ export function OffersPage() {
                 </th>
                 <th className="px-6 py-4 text-left">DISCOUNT</th>
                 <th className="px-6 py-4 text-left">EXPIRES</th>
-                <th  className="px-6 py-4 text-left" >
+                <th className="px-6 py-4 text-left" >
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <samp>
-                    Date
+                      Date
                     </samp>
                   </div>
-                  </th>
-                 <th className="px-6 py-4 text-left">ACTIONS</th>
+                </th>
+                <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
             </thead>
 
-           <tbody>
-  {offers.map((offer, index) => (
-    <tr
-      key={index}
-      className="border-b border-gray-100 hover:bg-pink-50 transition"
-    >
-      <td className="px-6 py-4 text-blue-600">{offer.name}</td>
-      <td className="px-6 py-4">{offer.amount}</td>
-      <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
-      <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
-      <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
+            <tbody>
+              {offers.map((offer, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-gray-100 hover:bg-pink-50 transition"
+                >
+                  <td className="px-6 py-4 text-blue-600">{offer.name}</td>
+                  <td className="px-6 py-4">{offer.amount}</td>
+                  <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
+                  <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
+                  <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
 
-      <td className="px-6 py-4">
-        <button
-          className="text-blue-600 hover:underline"
-          onClick={() => {
-            setEditData(offer);
-            setShowOffer(true);
-          }}
-        >
-          <Pencil className="w-7 h-7 text-blue-600 cursor-pointer" />
+                  <td className="px-6 py-4">
+                    <button
+                      className="text-blue-600 hover:underline"
+                      onClick={() => {
+                        setEditData(offer);
+                        setShowOffer(true);
+                      }}
+                    >
+                      <Pencil className="w-7 h-7 text-blue-600 cursor-pointer" />
 
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
 
           </table>
         </div>
