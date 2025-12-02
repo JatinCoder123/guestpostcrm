@@ -452,18 +452,12 @@ export default function TemplatesPage() {
   
   return (
     <div className="p-8 min-h-screen bg-gray-50">
-      <Header text="Template Manager" />
+      <Header text="Template Manager" 
+        handleCreate={() => setShowNewTemplateModal(true)}
+        showCreateButton={true}
+      
+      />
 
-
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={() => setShowNewTemplateModal(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all"
-        >
-          <Plus size={20} />
-          Create New Template
-        </button>
-      </div>
 
       {loading && <Loading text="Loading templates" />}
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
