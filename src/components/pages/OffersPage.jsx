@@ -120,6 +120,17 @@ export function OffersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+
+                <th  className="px-6 py-4 text-left" >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                   
+                    Date
+                   
+                  </div>
+                  </th>
+
+
                 <th className="px-6 py-4 text-left">OFFER ID</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -129,14 +140,7 @@ export function OffersPage() {
                 </th>
                 <th className="px-6 py-4 text-left">DISCOUNT</th>
                 <th className="px-6 py-4 text-left">EXPIRES</th>
-                <th  className="px-6 py-4 text-left" >
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <samp>
-                    Date
-                    </samp>
-                  </div>
-                  </th>
+                
                  <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
             </thead>
@@ -147,11 +151,12 @@ export function OffersPage() {
       key={index}
       className="border-b border-gray-100 hover:bg-pink-50 transition"
     >
+      <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
       <td className="px-6 py-4 text-blue-600">{offer.name}</td>
       <td className="px-6 py-4">{offer.amount}</td>
       <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
       <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
-      <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
+      
 
       <td className="px-6 py-4">
         <button

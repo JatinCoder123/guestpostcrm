@@ -57,14 +57,14 @@ const eventSlice = createSlice({
 
 
 export const getEvents = () => {
-    return async (dispatch) => {
+    return async (dispatch,getState) => {
         dispatch(eventSlice.actions.getEventsRequest());
 
         try {
             const url =
-                "https://errika.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=recent_activities&user_id=61969816-f675-6711-080f-692d30ad2e1c&filter=last_90_days&page=1&page_size=50";
+                `https://errika.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=recent_activities&user_id=${getState().user.id}&filter=last_90_days&page=1&page_size=50`;
 
-            console.log("📡 Fetching From URL:", url);
+          
 
             const response = await axios.get(url);
 

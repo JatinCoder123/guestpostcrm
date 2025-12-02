@@ -111,7 +111,12 @@ export function OrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                <th className="px-6 py-4 text-left">ORDER ID</th>
+                 <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>ORDER DATE</span>
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
@@ -125,14 +130,11 @@ export function OrdersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>ORDER DATE</span>
-                  </div>
-                </th>
+              
                 <th className="px-6 py-4 text-left">DELIVERY DATE</th>
+                <th className="px-6 py-4 text-left">ORDER ID</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
+                 
               </tr>
             </thead>
             <tbody>
@@ -141,7 +143,7 @@ export function OrdersPage() {
                   key={order.id}
                   className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-indigo-600">{order.id_C}</td>
+                  <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
                   <td className="px-6 py-4 text-gray-900">
                     {order.client_email}
                   </td>
@@ -158,7 +160,7 @@ export function OrdersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {order.order_date}
+                    {order.id_C}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
                     {order.complete_data}
