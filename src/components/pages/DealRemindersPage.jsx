@@ -81,6 +81,8 @@ export function DealRemindersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white">
+
+                 <th className="px-6 py-4 text-left">DATE CREATED</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Handshake className="w-4 h-4" />
@@ -100,7 +102,8 @@ export function DealRemindersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
-                <th className="px-6 py-4 text-left">DATE CREATED</th>
+               
+                 <th className="px-6 py-4 text-left">STATUS</th>
               </tr>
             </thead>
             <tbody>
@@ -109,6 +112,9 @@ export function DealRemindersPage() {
                   key={index}
                   className="border-b border-gray-100 hover:bg-cyan-50 transition-colors cursor-pointer"
                 >
+                    <td className="px-6 py-4 text-gray-600">
+                    {reminder.date_entered}
+                  </td>
                   <td className="px-6 py-4 text-cyan-600">
                     {reminder.recipient}
                   </td>
@@ -117,9 +123,7 @@ export function DealRemindersPage() {
                     {reminder.scheduled_time}
                   </td>
                   <td className="px-6 py-4 text-gray-600">{reminder.status}</td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {reminder.date_entered}
-                  </td>
+                
                   <td className="px-6 py-4">
                     <button className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
                       Complete

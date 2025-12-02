@@ -95,6 +95,12 @@ export function DealsPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                  <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span> DATE</span>
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-left">DEAL NAME</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -109,12 +115,7 @@ export function DealsPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STAGE</th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>CLOSE DATE</span>
-                  </div>
-                </th>
+              
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
@@ -124,6 +125,7 @@ export function DealsPage() {
                   key={index}
                   className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
                 >
+                  <td className="px-6 py-4 text-gray-600">{deal.date_entered}</td>
                   <td className="px-6 py-4 text-blue-600">{deal.email}</td>
                   <td className="px-6 py-4 text-gray-900">
                     {deal.website_c == "" ? "No Name" : deal.website_c}
@@ -136,7 +138,7 @@ export function DealsPage() {
                       {deal.status ?? "Active"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{deal.deal_date}</td>
+                  
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       {/* Update Button */}

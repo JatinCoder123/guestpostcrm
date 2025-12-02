@@ -119,6 +119,17 @@ export function OffersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+
+                <th  className="px-6 py-4 text-left" >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                   
+                    Date
+                   
+                  </div>
+                  </th>
+
+
                 <th className="px-6 py-4 text-left">OFFER ID</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -128,6 +139,7 @@ export function OffersPage() {
                 </th>
                 <th className="px-6 py-4 text-left">DISCOUNT</th>
                 <th className="px-6 py-4 text-left">EXPIRES</th>
+<<<<<<< HEAD
                 <th className="px-6 py-4 text-left" >
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
@@ -151,6 +163,25 @@ export function OffersPage() {
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
+=======
+                
+                 <th className="px-6 py-4 text-left">ACTIONS</th>
+              </tr>
+            </thead>
+
+           <tbody>
+  {offers.map((offer, index) => (
+    <tr
+      key={index}
+      className="border-b border-gray-100 hover:bg-pink-50 transition"
+    >
+      <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
+      <td className="px-6 py-4 text-blue-600">{offer.name}</td>
+      <td className="px-6 py-4">{offer.amount}</td>
+      <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
+      <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
+      
+>>>>>>> e50b5b0fd023387fb24adea39a38f9665eb25d78
 
                   <td className="px-6 py-4">
                     <button

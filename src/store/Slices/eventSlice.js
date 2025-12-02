@@ -62,7 +62,7 @@ export const getEvents = () => {
 
         try {
             const url =
-                `https://errika.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=recent_activities&user_id=${getState().user.id}&filter=last_90_days&page=1&page_size=50`;
+                `${MODULE_URL}&type=recent_activities&user_id=${getState().user.id}&filter=last_90_days&page=1&page_size=50`;
 
 
 
