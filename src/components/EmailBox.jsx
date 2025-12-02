@@ -86,7 +86,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   useEffect(() => {
     if ((template || defaultTemplate) && editorReady && editorRef.current) {
       const htmlContent = template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
-      if (htmlContent && htmlContent.trim()) {
+      if (htmlContent) {
         editorRef.current.setContent(htmlContent);
         setInput(htmlContent);
       } else {
