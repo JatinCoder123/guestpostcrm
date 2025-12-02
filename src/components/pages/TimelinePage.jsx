@@ -8,13 +8,9 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
-<<<<<<< HEAD
-import { LoadingAll } from "../Loading";
-=======
 import { LoadingAll, LoadingSpin } from "../Loading";
-import {Titletooltip} from "../pages/Titletooltip"
+import { Titletooltip } from "../pages/Titletooltip"
 
->>>>>>> e5078879d7924206ffbc1d132f19b604689d07a3
 import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread, threadEmailAction } from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
@@ -146,32 +142,23 @@ export function TimelinePage() {
     }
   };
 
-<<<<<<< HEAD
+
   useEffect(() => {
     if (emails.length > 0) {
-      if (extractEmail(emails[currentEmailIndex].from) !== email) {
-        dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
+      dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
+
+
+      if (initialLoad) {
+        console.log("🚀 Generating AI reply on page load...");
+        dispatch(getAiReply(emails[0].thread_id));
+        setInitialLoad(false);
       }
-      dispatch(getAiReply(currentThreadId));
-=======
-  
-useEffect(() => {
-  if (emails.length > 0) {
-    dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
-    
-    
-    if (initialLoad) {
-      console.log("🚀 Generating AI reply on page load...");
-      dispatch(getAiReply(emails[0].thread_id));
-      setInitialLoad(false);
-    } 
-    
-    else {
-      dispatch(getAiReply(emails[currentEmailIndex].thread_id));
->>>>>>> e5078879d7924206ffbc1d132f19b604689d07a3
+
+      else {
+        dispatch(getAiReply(emails[currentEmailIndex].thread_id));
+      }
     }
-  }
-}, [currentEmailIndex, emails, dispatch, initialLoad]);
+  }, [currentEmailIndex, emails, dispatch, initialLoad]);
 
   const handleNext = () => {
     if (currentEmailIndex < emails.length - 1) {
@@ -334,7 +321,7 @@ useEffect(() => {
                             className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
                             onClick={() => setShowThread(true)}
                           >
-                            <Reply className="w-8 h-8 text-yellow-700" />
+                            <Reply className="w-6 h-6 text-yellow-700" />
                           </motion.button>
                         </div>
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">

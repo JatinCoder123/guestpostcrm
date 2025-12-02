@@ -9,11 +9,14 @@ import { createDeal, dealsAction } from "../store/Slices/deals";
 import { websiteListForDeal } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import PreviewDeals from "./PreviewDeals";
+import { sendEmailToThread } from "../store/Slices/threadEmail";
+import { renderToStaticMarkup } from "react-dom/server";
 
 const LOCAL_KEY = "create_deals_draft_v1";
 
 export default function CreateDeal() {
   const { email } = useSelector((state) => state.ladger);
+  const { contactInfo } = useSelector((state) => state.viewEmail);
   const {
     creating,
     deals: prevDeals,
@@ -171,6 +174,15 @@ export default function CreateDeal() {
 
     dispatch(dealsAction.UpdateDeals([...deals, ...prevDeals]));
     dispatch(createDeal(deals));
+    if (contactInfo.thread_id) {
+      dispatch(sendEmailToThread(contactInfo.thread_id, renderToStaticMarkup(
+        <PreviewDeals
+          deals={deals}
+          totalAmount={totalAmount}
+          userEmail={email}
+        />
+      )))
+    }
   };
 
   // ────────────────────────────────────────────────
