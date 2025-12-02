@@ -35,7 +35,7 @@ const orderRemSlice = createSlice({
   },
 });
 
-export const getOrderRem = (filter, email) => {
+export const getOrderRem = (email,page) => {
   return async (dispatch, getState) => {
     dispatch(orderRemSlice.actions.getOrderRemRequest());
 
@@ -43,7 +43,7 @@ export const getOrderRem = (filter, email) => {
       const { data } = await axios.get(
         `${
           getState().user.crmEndpoint
-        }&type=order_reminder&filter=${filter}&email=${email}&page=1&page_size=50`
+        }&type=all_reminders&filter=${getState().ladger.timeline}${email ? `&email=${email}`:""}&page=${page}&page_size=50`
       );
       console.log(`Orders Rem`, data);
       dispatch(
