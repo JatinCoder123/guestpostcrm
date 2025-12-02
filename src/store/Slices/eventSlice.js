@@ -62,7 +62,7 @@ export const getEvents = () => {
 
         try {
             const url =
-                `${MODULE_URL}&type=recent_activities&user_id=${getState().user.id}&filter=last_90_days&page=1&page_size=50`;
+                `${getState().user.crmEndpoint}&type=recent_activities&user_id=${getState().user.id}&filter=last_90_days&page=1&page_size=50`;
 
 
 
