@@ -161,25 +161,27 @@ export function TimelinePage() {
 
   if (showEmail) {
     return (
-      <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+
         <EmailBox
           onClose={() => setShowEmails(false)}
           view={true}
           tempEmail={email}
         />
-      </>
+      </div>
     );
   }
 
   if (showThread) {
     return (
-      <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+
         <EmailBox
           onClose={() => setShowThread(false)}
           threadId={currentThreadId}
           tempEmail={email}
         />
-      </>
+      </div>
     );
   }
 

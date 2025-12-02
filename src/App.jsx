@@ -86,7 +86,7 @@ const router = createBrowserRouter([
         element: <Marketplace />,
       },
 
-             {
+      {
         path: "RecentEntry",
         element: <RecentEntry />,
       },
@@ -129,6 +129,10 @@ const router = createBrowserRouter([
       },
       {
         path: "order-reminders",
+        element: <OrderReminderPage />,
+      },
+      {
+        path: "reminders",
         element: <OrderReminderPage />,
       },
       {
