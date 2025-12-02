@@ -46,6 +46,7 @@ import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
 import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
 import CreateOrder from "./components/CreateOrder";
+import { ReminderPage } from "./components/pages/Reminder";
 
 const router = createBrowserRouter([
   {
@@ -133,7 +134,7 @@ const router = createBrowserRouter([
       },
       {
         path: "reminders",
-        element: <OrderReminderPage />,
+        element: <ReminderPage/>,
       },
       {
         path: "timeline",
