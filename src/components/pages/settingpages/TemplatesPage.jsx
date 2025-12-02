@@ -268,35 +268,35 @@ export default function TemplatesPage() {
 
           {/* Template Name Input */}
           <div className="px-6 py-4 bg-gray-50 border-b">
-            <div className="max-w-2xl">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Template Name *
-              </label>
-              <input
-                type="text"
-                value={newTemplateName}
-                onChange={(e) => setNewTemplateName(e.target.value)}
-                placeholder="Enter template name"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                autoFocus
-              />
-            </div>
-          </div>
-          
-          {/* Description Input */}
-          <div className="px-6 py-4 bg-gray-50 border-b">
-            <div className="max-w-2xl">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <input
-                type="text"
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                placeholder="Enter Description"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                autoFocus
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Template Name *
+                </label>
+                <input
+                  type="text"
+                  value={newTemplateName}
+                  onChange={(e) => setNewTemplateName(e.target.value)}
+                  placeholder="Enter template name"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  autoFocus
+                />
+              </div>
+              
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
+                <input
+                  type="text"
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Enter Description"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                />
+              </div>
             </div>
           </div>
 
