@@ -10,14 +10,15 @@ import { forwardedAction } from '../store/Slices/forwardedEmailSlice';
 import { toast } from 'react-toastify';
 import { useContext, useEffect, useState } from 'react';
 import { addEvent } from '../store/Slices/eventSlice';
-import { PageContext } from '../context/PageContext';
+import { PageContext } from '../context/pageContext';
 
 const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId }) => {
     const [showUsers, setShowUsers] = useState(false);
     const { enteredEmail } = useContext(PageContext);
+    const { contactInfo } = useSelector(state => state.viewEmail)
     const { email } = useSelector((s) => s.ladger);
     const handleForward = (to) => {
-        dispatch(forwardEmail(to, threadId));
+        dispatch(forwardEmail(contactInfo.id, to, threadId));
     };
     const {
         forward,

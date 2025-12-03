@@ -52,12 +52,12 @@ export const getUnrepliedEmail = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=unreplied&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}&page=1&page_size=50`
+          }&type=unreplied&filter=${filter}`
         );
       }
 
@@ -67,8 +67,6 @@ export const getUnrepliedEmail = (filter, email) => {
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
         })
       );
       dispatch(unrepliedSlice.actions.clearAllErrors());
@@ -88,12 +86,12 @@ export const getUnrepliedEmailWithOutLoading = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=unreplied&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}&page=1&page_size=50`
+          }&type=unreplied&filter=${filter}`
         );
       }
 
@@ -103,8 +101,6 @@ export const getUnrepliedEmailWithOutLoading = (filter, email) => {
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
         })
       );
       dispatch(unrepliedSlice.actions.clearAllErrors());
@@ -124,8 +120,7 @@ export const updateUnrepliedEmails = (threadId) => {
     dispatch(unrepliedSlice.actions.updateUnreplied({
       count: getState().unreplied.count - 1,
       emails: updatedEmails,
-      pageCount: getState().unreplied.pageCount,
-      pageIndex: getState().unreplied.pageIndex,
+
     }))
   }
 };
