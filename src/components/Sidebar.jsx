@@ -88,6 +88,9 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const { count: dealRemCount, loading: dealRemLoading } = useSelector(
     (s) => s.dealRem
   );
+  const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
+    (s) => s.marketplace
+  );
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
   const { count: bulkCount, loading: bulkLoading } = useSelector((s) => s.bulk);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
@@ -141,8 +144,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       id: "Marketplace",
       label: "Marketplace",
       icon: Store,
-      loading: favLoading,
-      count: "6",
+      loading: marketPlaceLoading,
+      count: marketPlaceCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-pink-500 text-white",

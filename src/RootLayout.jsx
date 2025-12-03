@@ -4,8 +4,8 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
-import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
-import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
+import { getUnansweredEmails, getUnansweredEmailWithOutLoading } from "./store/Slices/unansweredEmails";
+import { getUnrepliedEmail, getUnrepliedEmailWithOutLoading } from "./store/Slices/unrepliedEmails";
 import { getOrders } from "./store/Slices/orders";
 import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
@@ -72,18 +72,29 @@ const RootLayout = () => {
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
   }, [enteredEmail, timeline]);
+  const firstEmail = emails?.[0]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+
   useEffect(() => {
     if (enteredEmail) {
       dispatch(getLadgerEmail(enteredEmail));
-    } else if (emails.length > 0) {
-      dispatch(getLadgerEmail(emails[0].from.match(/[\w.-]+@[\w.-]+\.\w+/)[0]));
+    } else if (firstEmail) {
+      dispatch(getLadgerEmail(firstEmail));
     }
-  }, [emails, enteredEmail]);
+  }, [enteredEmail, firstEmail]);
   useEffect(() => {
     if (email) {
       dispatch(getViewEmail());
     }
   }, [email]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+    }
+  }, [timeline, enteredEmail])
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (
@@ -103,9 +114,8 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${
-                sidebarCollapsed ? "ml-4" : "ml-0"
-              }`}
+              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
+                }`}
             >
               <div className="p-6">
                 <WelcomeHeader />

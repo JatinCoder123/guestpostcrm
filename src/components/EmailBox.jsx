@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
-import { getThreadEmail, sendEmailToThread } from "../store/Slices/threadEmail";
+import { getThreadEmail, sendEmailToThread, threadEmailAction } from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
 import {
@@ -35,7 +35,6 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const { businessEmail } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
-  const { email } = useSelector((s) => s.ladger);
 
   const emails = view ? viewEmail : threadEmail;
   useEffect(() => {
@@ -86,7 +85,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   useEffect(() => {
     if ((template || defaultTemplate) && editorReady && editorRef.current) {
       const htmlContent = template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
-      if (htmlContent && htmlContent.trim()) {
+      if (htmlContent) {
         editorRef.current.setContent(htmlContent);
         setInput(htmlContent);
       } else {
@@ -152,7 +151,6 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
       onClose();
     }
   };
-
   const visibleMessages = emails?.slice(-messageLimit);
 
   return (

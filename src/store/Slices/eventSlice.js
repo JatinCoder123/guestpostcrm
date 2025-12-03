@@ -62,10 +62,7 @@ export const getEvents = () => {
 
         try {
             const url =
-                `https://errika.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=recent_activities&user_id=${getState().user.id}&filter=last_90_days&page=1&page_size=50`;
-
-
-
+                `${getState().user.crmEndpoint}&type=recent_activities&user_id=${getState().user.id}&filter=${getState().ladger.timeline}&page=1&page_size=50`;
             const response = await axios.get(url);
 
             console.log("🟢 Full API Response:", response);
@@ -99,8 +96,9 @@ export const addEvent = (event) => {
         dispatch(eventSlice.actions.addEventRequest());
         try {
             console.log(event);
+            const domain = getState().user.crmEndpoint.split("?")[0];
             const { data } = await axios.post(
-                `${MODULE_URL}&action_type=post_data`,
+                `${domain}?entryPoint=get_post_all&action_type=post_data`,
 
                 {
                     parent_bean: {

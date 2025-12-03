@@ -32,6 +32,15 @@ const unrepliedSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
+    updateUnreplied(state, action) {
+      const { count, emails, pageCount, pageIndex } = action.payload;
+      state.loading = false;
+      state.emails = emails;
+      state.count = count;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
+      state.error = null;
+    }
   },
 });
 
@@ -42,14 +51,12 @@ export const getUnrepliedEmail = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=unreplied&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=unreplied&filter=${filter}&page=1&page_size=50`
         );
       }
@@ -73,6 +80,54 @@ export const getUnrepliedEmail = (filter, email) => {
       );
     }
   };
+};
+export const getUnrepliedEmailWithOutLoading = (filter, email) => {
+  return async (dispatch, getState) => {
+    try {
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=unreplied&filter=${filter}&email=${email}&page=1&page_size=50`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=unreplied&filter=${filter}&page=1&page_size=50`
+        );
+      }
+
+      console.log(`Unreplied emails`, response.data);
+      const data = response.data;
+      dispatch(
+        unrepliedSlice.actions.getEmailSucess({
+          count: data.data_count ?? 0,
+          emails: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
+        })
+      );
+      dispatch(unrepliedSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        unrepliedSlice.actions.getEmailFailed(
+          "Fetching Unreplied Emails Failed"
+        )
+      );
+    }
+  };
+};
+export const updateUnrepliedEmails = (threadId) => {
+  return (dispatch, getState) => {
+    console.log("1", getState().unreplied.emails.filter((email) => email.thread_id == threadId))
+    const updatedEmails = getState().unreplied.emails.filter((email) => email.thread_id !== threadId);
+    dispatch(unrepliedSlice.actions.updateUnreplied({
+      count: getState().unreplied.count - 1,
+      emails: updatedEmails,
+      pageCount: getState().unreplied.pageCount,
+      pageIndex: getState().unreplied.pageIndex,
+    }))
+  }
 };
 
 export const unrepliedAction = unrepliedSlice.actions;

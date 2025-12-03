@@ -18,6 +18,7 @@ import { getUnansweredEmails } from "../../store/Slices/unansweredEmails";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
+import { extractEmail } from "../../assets/assets";
 export function UnansweredPage() {
   const { count, emails } = useSelector((state) => state.unanswered);
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
@@ -30,15 +31,18 @@ export function UnansweredPage() {
     setCurrentThreadId,
     email,
     setEmail,
-  ] = useThread();
+  ] = useThread("unanswered");
   if (showEmail && currentThreadId && email) {
     return (
-      <EmailBox
-        onClose={() => setShowEmails(false)}
-        view={false}
-        threadId={currentThreadId}
-        tempEmail={email}
-      />
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+        <EmailBox
+          onClose={() => setShowEmails(false)}
+          view={false}
+          threadId={currentThreadId}
+          tempEmail={email}
+        />
+      </div>
+
     );
   }
   return (
@@ -94,14 +98,18 @@ export function UnansweredPage() {
               {emails.map((email, index) => (
                 <tr
                   key={index}
-                  onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                      setEmail(email.from.split("<")[1].split(">")[0]);
-                    }}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4">
+                  <td
+                    onClick={() => {
+                      const input = extractEmail(email.from);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Replied");
+                      navigateTo("/");
+                    }}
+                    className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>{email.date}</span>
@@ -109,7 +117,7 @@ export function UnansweredPage() {
                   </td>
                   <td className="px-6 py-4 text-gray-900"
                     onClick={() => {
-                      const input = email.from.split("<")[1].split(">")[0];
+                      const input = extractEmail(email.from);
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
@@ -117,11 +125,25 @@ export function UnansweredPage() {
                       navigateTo("/contacts");
                     }}>{email.from.split("<")[0].trim()}</td>
                   <td
+                    onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                      setEmail(extractEmail(email.from));
+                    }}
                     className="px-6 py-4 text-purple-600"
                   >
                     {email.subject}
                   </td>
-                  <td className="px-6 py-4 text-purple-600">
+                  <td
+                    onClick={() => {
+                      const input = extractEmail(email.from);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Replied");
+                      navigateTo("/");
+                    }}
+                    className="px-6 py-4 text-purple-600">
                     {email.thread_count}
                   </td>
                 </tr>

@@ -32,6 +32,14 @@ const unansweredSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
+    updateUnanswered(state, action) {
+      const { count, emails, pageCount, pageIndex } = action.payload;
+      state.count = count;
+      state.emails = emails;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
+      state.error = null;
+    },
   },
 });
 
@@ -43,14 +51,12 @@ export const getUnansweredEmails = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=unanswered&filter=${filter}&page=1&page_size=50`
         );
       }
@@ -74,6 +80,53 @@ export const getUnansweredEmails = (filter, email) => {
       );
     }
   };
+};
+export const getUnansweredEmailWithOutLoading = (filter, email) => {
+  return async (dispatch, getState) => {
+    try {
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=unanswered&filter=${filter}&page=1&page_size=50`
+        );
+      }
+
+      console.log(`Unanswered emails`, response.data);
+      const data = response.data;
+      dispatch(
+        unansweredSlice.actions.getEmailSucess({
+          count: data.data_count ?? 0,
+          emails: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
+        })
+      );
+      dispatch(unansweredSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        unansweredSlice.actions.getEmailFailed(
+          "Fetching Unreplied Emails Failed"
+        )
+      );
+    }
+  };
+};
+export const updateUnansweredEmails = (email) => {
+  return (dispatch, getState) => {
+    const updatedEmails = [email, ...getState().unanswered.emails];
+    dispatch(unansweredSlice.actions.updateUnanswered({
+      count: getState().unanswered.count + 1,
+      emails: updatedEmails,
+      pageCount: getState().unanswered.pageCount,
+      pageIndex: getState().unanswered.pageIndex,
+    }))
+  }
 };
 
 export const unansweredAction = unansweredSlice.actions;

@@ -1,84 +1,89 @@
-import {
-  Mail,
-  Handshake,
-  TrendingUp,
-  DollarSign,
-  Calendar,
-  User,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import {Store, Gift, User, Calendar,Pencil } from "lucide-react";
+import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
 
 export function Marketplace() {
+  const dispatch = useDispatch();
+  const { items, count, loading } = useSelector((state) => state.marketplace);
+
+  const [showOffer, setShowOffer] = useState(false);
+  const [editData, setEditData] = useState(null);
+
+  useEffect(() => {
+    dispatch(getMarketplace());
+  }, [dispatch]);
+
   return (
-    <div className="p-6 space-y-8">
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <Store className="w-6 h-6 text-yellow-600" />
+          <h2 className="text-xl text-gray-900 font-semibold">Marketplace</h2>
 
-      {/* Page Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Marketplace</h1>
-        <p className="text-gray-500 mt-1">Find deals, connect, and grow your network.</p>
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1 */}
-        <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 hover:shadow-lg transition">
-          <div className="bg-blue-100 text-blue-600 p-3 rounded-lg">
-            <TrendingUp size={28} />
-          </div>
-          <div>
-            <p className="text-gray-500">Total Deals</p>
-            <h2 className="text-2xl font-bold">124</h2>
-          </div>
+          <a
+            href="https://www.guestpostcrm.com/blog/offers-in-guestpostcrm/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              width="30"
+              height="30"
+              src="https://img.icons8.com/offices/30/info.png"
+              alt="info"
+            />
+          </a>
         </div>
-
-        {/* Card 2 */}
-        <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 hover:shadow-lg transition">
-          <div className="bg-green-100 text-green-600 p-3 rounded-lg">
-            <Handshake size={28} />
-          </div>
-          <div>
-            <p className="text-gray-500">Active Partners</p>
-            <h2 className="text-2xl font-bold">58</h2>
-          </div>
-        </div>
-
-        {/* Card 3 */}
-        <div className="bg-white rounded-xl shadow-md p-6 flex items-center gap-4 hover:shadow-lg transition">
-          <div className="bg-yellow-100 text-yellow-600 p-3 rounded-lg">
-            <DollarSign size={28} />
-          </div>
-          <div>
-            <p className="text-gray-500">Monthly Revenue</p>
-            <h2 className="text-2xl font-bold">$12,400</h2>
-          </div>
+        <div className="px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+          {items.length} Active
         </div>
       </div>
 
-      {/* Deals List */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">
-          Featured Deals
-        </h2>
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Date
+                </div>
+              </th>
 
-        <div className="space-y-4">
-          {/* Deal Item */}
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="border p-4 rounded-lg flex justify-between items-center hover:shadow-md transition"
-            >
-              <div>
-                <h3 className="font-semibold text-lg">Deal #{i}</h3>
-                <p className="text-gray-500 text-sm">A great business opportunity.</p>
-              </div>
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Name
+                </div>
+              </th>
 
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                View
-              </button>
-            </div>
-          ))}
-        </div>
+              <th className="px-6 py-4 text-left">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {items.map((row, index) => (
+              <tr
+                key={index}
+                className="border-b border-gray-100 hover:bg-pink-50 transition"
+              >
+                <td className="px-6 py-4 text-gray-600">{row.date_entered}</td>
+                <td className="px-6 py-4 text-blue-600">{row.name}</td>
+                <td className="px-6 py-4">{/* Actions placeholder */} <Pencil className="w-7 h-7 text-blue-600 cursor-pointer" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
+      {!loading && items.length === 0 && (
+        <div className="p-12 text-center">
+          <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500">No marketplace data found.</p>
+        </div>
+      )}
     </div>
   );
 }
