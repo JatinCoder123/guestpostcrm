@@ -82,12 +82,28 @@ export function DealsPage() {
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>
           </div>
-          <button
+          
+           <div className="relative group ">
+<button
             onClick={() => navigateTo("create")}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            + New Deal
-          </button>
+    className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
+  >
+    <img
+      width="40"
+      height="40"
+      src="https://img.icons8.com/arcade/64/plus.png"
+      alt="plus"
+    />
+  </button>
+
+  {/* Tooltip */}
+  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
+                   opacity-0 group-hover:opacity-100 transition 
+                   pointer-events-none whitespace-nowrap shadow-md">
+     Create Deal
+  </span>
+</div>
         </div>
 
         {/* Table */}
@@ -146,7 +162,7 @@ export function DealsPage() {
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
-                        <Pen className="w-4 h-4 text-blue-600" />
+                        <Pen className="w-5 h-5 text-blue-600" />
                       </button>
                     </div>
                   </td>

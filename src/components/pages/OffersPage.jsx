@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { useSelector } from "react-redux";
 import CreateOffer from "../CreateOffer";
-import { Gift, User, Calendar, DollarSign, Tag, Pencil } from "lucide-react";
+import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus ,Pen} from "lucide-react";
 import { getOffers } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 
@@ -103,15 +103,31 @@ export function OffersPage() {
             {offers.length} Active Offers
           </div>
 
-          <button
-            onClick={() => {
-              setEditData(null);
-              setShowOffer(true);
-            }}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-cyan-700 transition cursor-pointer"
-          >
-            + New Offer
-          </button>
+        <div className="relative group">
+  <button
+    onClick={() => {
+      setEditData(null);
+      setShowOffer(true);
+    }}
+    className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center transition"
+  >
+    <img
+      width="40"
+      height="40"
+      src="https://img.icons8.com/arcade/64/plus.png"
+      alt="plus"
+    />
+  </button>
+
+  {/* Tooltip */}
+  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
+                   opacity-0 group-hover:opacity-100 transition 
+                   pointer-events-none whitespace-nowrap shadow-md">
+     Create Offer
+  </span>
+</div>
+
         </div>
 
         {/* Table */}
@@ -124,7 +140,7 @@ export function OffersPage() {
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
 
-                    Date
+                    DATE
 
                   </div>
                 </th>
@@ -157,17 +173,22 @@ export function OffersPage() {
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
 
 
-                  <td className="px-6 py-4">
-                    <button
-                      className="text-blue-600 hover:underline"
-                      onClick={() => {
+                  <td className="pl-9 py-4">
+                   
+                     
+                    <div className="flex gap-2">
+                      {/* Update Button */}
+                      <button
+                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Update"
+                         onClick={() => {
                         setEditData(offer);
                         setShowOffer(true);
                       }}
-                    >
-                      <Pencil className="w-7 h-7 text-blue-600 cursor-pointer" />
-
-                    </button>
+                      >
+                        <Pen className="w-5 h-5 text-blue-600" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
