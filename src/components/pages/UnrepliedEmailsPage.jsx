@@ -51,7 +51,7 @@ export function UnrepliedEmailsPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Mail className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl text-gray-900">UNREPLIED EMAILS</h2>
+            <h2 className="text-xl font-semibold text-gray-900">UNREPLIED EMAILS</h2>
             <a href="https://www.guestpostcrm.com/blog/unreplied-and-unanswered-emails-in-guestpostcrm/" target="_blank">
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
