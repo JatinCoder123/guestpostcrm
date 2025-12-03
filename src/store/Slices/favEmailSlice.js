@@ -93,9 +93,10 @@ export const getFavEmails = (filter, email) => {
 export const favEmail = () => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.favouriteEmailRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const response = await axios.get(
-        `https://errika.guestpostcrm.com/?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
+        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
         {}
       );
       console.log(`Favourite Toggle Response`, response.data);
