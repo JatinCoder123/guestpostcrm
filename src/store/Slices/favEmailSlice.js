@@ -58,19 +58,50 @@ const favSlice = createSlice({
 export const getFavEmails = (filter, email) => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.getEmailRequest());
+    console.log("email", email)
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=favorite&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=favorite&filter=${filter}&page=1&page_size=50`
+        );
+      }
+      console.log(`favorite emails`, response.data);
+      const data = response.data;
+      dispatch(
+        favSlice.actions.getEmailSucess({
+          count: data.data_count ?? 0,
+          emails: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
+        })
+      );
+      dispatch(favSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(favSlice.actions.getEmailFailed("Fetching Fav Emails Failed"));
+    }
+  };
+};
+export const getFavEmailsWithOutLoading = (email) => {
+  return async (dispatch, getState) => {
+    console.log("email", email)
+    try {
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=favorite&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=favorite&filter=${getState().ladger.timeline}&page=1&page_size=50`
         );
       }
       console.log(`favorite emails`, response.data);
@@ -94,8 +125,9 @@ export const favEmail = () => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.favouriteEmailRequest());
     try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
       const response = await axios.get(
-        `https://errika.guestpostcrm.com/?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
+        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
         {}
       );
       console.log(`Favourite Toggle Response`, response.data);
