@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, CREATE_DEAL_URL, MODULE_URL } from "../constants";
+import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -67,14 +67,12 @@ export const getDeals = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_deals&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_deals&filter=${filter}&page=1&page_size=50`
         );
       }

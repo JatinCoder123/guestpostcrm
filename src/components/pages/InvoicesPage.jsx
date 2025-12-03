@@ -217,6 +217,14 @@ export function InvoicesPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+                                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>ISSUE DATE</span>
+                  </div>
+                </th>
+
+
                 <th className="px-6 py-4 text-left">INVOICE ID</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -231,12 +239,7 @@ export function InvoicesPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>ISSUE DATE</span>
-                  </div>
-                </th>
+
                 <th className="px-6 py-4 text-left">DUE DATE</th>
                 <th className="px-6 py-4 text-left">PAID DATE</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
@@ -248,6 +251,9 @@ export function InvoicesPage() {
                   key={invoice.id}
                   className="border-b border-gray-100 hover:bg-yellow-50 transition-colors cursor-pointer"
                 >
+                    <td className="px-6 py-4 text-gray-600">
+                    {invoice.date_entered}
+                  </td>
                   <td className="px-6 py-4 text-yellow-600">
                     {invoice.invoice_id?.slice(0, 4)}
                   </td>
@@ -264,9 +270,7 @@ export function InvoicesPage() {
                       {invoice.status_c}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {invoice.date_entered}
-                  </td>
+                
                   <td className="px-6 py-4 text-gray-600">
                     {invoice.due_date ?? "PENDING"}
                   </td>

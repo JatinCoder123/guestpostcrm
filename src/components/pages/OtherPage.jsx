@@ -1,5 +1,6 @@
 import {
   Clock9Icon,
+  Contact,
   Cpu,
   CreditCard,
   FileCog,
@@ -82,6 +83,13 @@ export function OtherPage() {
       bg: "bg-green-50",
       link: "/spam-detection",
     },
+    {
+      title: "Contacts",
+      subtitle: "Contact tag will be shown here",
+      icon: <Contact className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "",
+    }
   ];
 
   return (

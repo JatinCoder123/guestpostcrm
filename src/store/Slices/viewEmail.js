@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
   initialState: {
     loading: false,
-    contactLoading:false,
+    contactLoading: false,
     viewEmail: [],
     contactInfo: null,
     accountInfo: null,
@@ -48,6 +49,21 @@ const viewEmailSlice = createSlice({
       state.contactLoading = false;
       state.contactInfo = null;
       state.accountInfo = null;
+      state.error = action.payload;
+    },
+    editContactRequest(state) {
+      state.contactLoading = true;
+      state.message = null;
+      state.error = null;
+    },
+    editContactSucess(state, action) {
+      state.contactLoading = false;
+      state.message = "Contact updated successfully";
+      state.error = null;
+    },
+    editContactFailed(state, action) {
+      state.contactLoading = false;
+      state.message = null;
       state.error = action.payload;
     },
     sendEmailRequest(state) {
@@ -122,6 +138,42 @@ export const getContact = (email) => {
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.getContactFailed("Fetching View Details failed")
+      );
+    }
+  };
+};
+export const editContact = (contactData) => {
+  return async (dispatch) => {
+    dispatch(viewEmailSlice.actions.editContactRequest());
+    console.log("contactData", contactData);
+
+    try {
+      const data = await axios.post(
+        `${MODULE_URL}&action_type=post_data`,
+
+        {
+          parent_bean: {
+            module: "Contacts",
+            ...contactData["contact"],
+          },
+          child_bean: {
+            module: "Accounts",
+            ...contactData["account"],
+          },
+        },
+        {
+          headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "aplication/json",
+          },
+        }
+      );
+      console.log(`contact`, data);
+      dispatch(viewEmailSlice.actions.editContactSucess());
+      dispatch(viewEmailSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        viewEmailSlice.actions.editContactFailed("Update Contact failed")
       );
     }
   };

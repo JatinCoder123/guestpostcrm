@@ -39,8 +39,8 @@ const SocialButtons = () => {
       </button>
       <button className="cursor-pointer hover:scale-105 rounded-full p-2">
         <img
-          width="48"
-          height="48"
+          width="55"
+          height="55"
           src={images.duplicateImg}
           alt="duplicate count"
         />

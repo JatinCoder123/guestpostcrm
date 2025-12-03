@@ -2,12 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMoveOptions, moveData } from '../services/moveService';
 import { toast } from 'react-toastify';
+import { addEvent } from '../store/Slices/eventSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [labels, setLabels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [moveLoading, setMoveLoading] = useState(null);
+  const dispatch = useDispatch();
+  const { email } = useSelector((state) => state.ladger);
   const dropdownRef = useRef(null);
 
   // Click outside to close
@@ -48,8 +52,8 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   };
 
   const handleMoveClick = async (labelId, labelName) => {
-   
-    
+
+
     if (!currentThreadId) {
       toast.error('No thread selected');
       console.error('❌ ERROR: No thread ID available');
@@ -58,10 +62,15 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
 
     setMoveLoading(labelId);
     try {
-      
+
       await moveData(currentThreadId, labelId);
-      
+
       toast.success(`Moved to ${labelName} successfully!`);
+      dispatch(addEvent({
+        email,
+        thread_id: currentThreadId,
+        recent_activity: "moved",
+      }))
       onMoveSuccess?.();
       setIsOpen(false);
     } catch (error) {
@@ -88,7 +97,7 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   // Label type के according icon determine करें
   const getLabelIcon = (labelName) => {
     const iconBaseUrl = "https://img.icons8.com/color/48";
-    
+
     switch (labelName) {
       case 'INBOX':
         return `${iconBaseUrl}/inbox.png`;
@@ -121,7 +130,7 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
           className="w-6 h-6"
           alt="move to"
         />
-        
+
         {/* Tooltip */}
         <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
           Move To
@@ -173,17 +182,17 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
                           alt={label.name}
                         />
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-800 truncate">
                             {label.name}
                           </span>
-                          
+
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex-shrink-0 ml-2">
                       {moveLoading === label.id ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -208,7 +217,7 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
             {/* Footer - Updated with better thread ID display */}
             <div className="border-t border-gray-200 p-3 bg-gray-50">
               <div className="flex justify-between items-center text-xs text-gray-500">
-                
+
                 <button
                   onClick={() => setIsOpen(false)}
                   className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer px-3 py-1 bg-white border border-gray-300 rounded-lg"

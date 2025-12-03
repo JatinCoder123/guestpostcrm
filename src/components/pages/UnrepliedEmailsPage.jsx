@@ -33,16 +33,18 @@ export function UnrepliedEmailsPage() {
     setCurrentThreadId,
     email,
     setEmail,
-  ] = useThread();
+  ] = useThread("unreplied");
   const navigateTo = useNavigate();
   if (showEmail && currentThreadId && email) {
     return (
-      <EmailBox
-        onClose={() => setShowEmails(false)}
-        view={false}
-        threadId={currentThreadId}
-        tempEmail={email}
-      />
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+        <EmailBox
+          onClose={() => setShowEmails(false)}
+          view={false}
+          threadId={currentThreadId}
+          tempEmail={email}
+        />
+      </div>
     );
   }
 
@@ -182,13 +184,14 @@ export function UnrepliedEmailsPage() {
                   key={Math.random()}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4"
-                  onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                      setEmail(email.from.split("<")[1].split(">")[0]);
-                    }}
-                  >
+                  <td onClick={() => {
+                    const input = email.from.split("<")[1].split(">")[0];
+                    localStorage.setItem("email", input);
+                    setSearch(input);
+                    setEnteredEmail(input);
+                    setWelcomeHeaderContent("Unreplied");
+                    navigateTo("/");
+                  }} className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>{email.date}</span>
@@ -201,11 +204,12 @@ export function UnrepliedEmailsPage() {
                       setSearch(input);
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/");
+
+                      navigateTo("/contacts");
                     }}
                     className="px-6 py-4 text-gray-900"
                   >
-                    {email.from}
+                    {email.from.split("<")[0].trim()}
                   </td>
                   <td
                     onClick={() => {
@@ -217,13 +221,16 @@ export function UnrepliedEmailsPage() {
                   >
                     {email.subject}
                   </td>
-                  <td 
-                  className="px-6 py-4 text-purple-600"
-                  onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                      setEmail(email.from.split("<")[1].split(">")[0]);
+                  <td
+                    onClick={() => {
+                      const input = email.from.split("<")[1].split(">")[0];
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
+                      navigateTo("/");
                     }}
+                    className="px-6 py-4 text-purple-600"
                   >
                     {email.thread_count}
                   </td>

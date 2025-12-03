@@ -11,8 +11,7 @@ import {
 import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
-import { useState } from "react";
-import SearchComponent from "./SearchComponent";
+import { useNavigate } from "react-router-dom";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
@@ -21,6 +20,7 @@ export function OrdersPage() {
   const { orders, count, loading, error } = useSelector(
     (state) => state.orders
   );
+  const navigateTo = useNavigate()
   const getStatusColor = (status) => {
     switch (status) {
       case "Completed":
@@ -181,10 +181,16 @@ export function OrdersPage() {
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6 text-green-600" />
             <h2 className="text-lg font-semibold text-gray-800">ORDERS</h2>
-             <a href="">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <a href="">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
+          <button
+            onClick={() => navigateTo("create")}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            + New Order
+          </button>
         </div>
 
         {/* Table */}
@@ -192,7 +198,12 @@ export function OrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                <th className="px-6 py-4 text-left">ORDER ID</th>
+                 <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>ORDER DATE</span>
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
@@ -206,14 +217,11 @@ export function OrdersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>ORDER DATE</span>
-                  </div>
-                </th>
+              
                 <th className="px-6 py-4 text-left">DELIVERY DATE</th>
+                <th className="px-6 py-4 text-left">ORDER ID</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
+                 
               </tr>
             </thead>
             <tbody>
@@ -222,7 +230,7 @@ export function OrdersPage() {
                   key={order.id}
                   className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-indigo-600">{order.id_C}</td>
+                  <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
                   <td className="px-6 py-4 text-gray-900">
                     {order.client_email}
                   </td>
@@ -239,7 +247,7 @@ export function OrdersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {order.order_date}
+                    {order.id_C}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
                     {order.complete_data}

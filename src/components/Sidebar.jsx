@@ -24,6 +24,9 @@ import {
   RectangleEllipsis,
   Link2Off,
   Link,
+  Store,
+  ClipboardEdit,
+  BellRing,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -85,6 +88,9 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const { count: dealRemCount, loading: dealRemLoading } = useSelector(
     (s) => s.dealRem
   );
+  const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
+    (s) => s.marketplace
+  );
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
   const { count: bulkCount, loading: bulkLoading } = useSelector((s) => s.bulk);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
@@ -133,15 +139,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-red-50",
       countBg: "bg-pink-500 text-white",
     },
+
     {
-      id: "deals",
-      label: "Deals",
-      icon: Handshake,
-      loading: dealsLoading,
-      count: dealCount,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
+      id: "Marketplace",
+      label: "Marketplace",
+      icon: Store,
+      loading: marketPlaceLoading,
+      count: marketPlaceCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-pink-500 text-white",
     },
     {
       id: "offers",
@@ -152,6 +159,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       color: "text-green-600",
       hover: "hover:bg-green-50",
       countBg: "bg-green-500 text-white",
+    },
+    {
+      id: "deals",
+      label: "Deals",
+      icon: Handshake,
+      loading: dealsLoading,
+      count: dealCount,
+      color: "text-blue-600",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "orders",
@@ -173,18 +190,6 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-yellow-50",
       countBg: "bg-yellow-500 text-white",
     },
-
-    {
-      id: "link-removal",
-      label: "Link Removal",
-      icon: Link2,
-      loading: linkRemLoading,
-      count: linkRemCount,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
-    },
-
     {
       id: "link-exchange",
       label: "Link Exchange",
@@ -196,34 +201,14 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
     {
-      id: "deal-reminders",
-      label: "Deal Reminders",
-      icon: Bell,
+      id: "reminders",
+      label: "Reminders",
+      icon: BellRing,
       loading: dealRemLoading,
       count: dealRemCount,
       color: "text-cyan-600",
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",
-    },
-    {
-      id: "order-reminders",
-      label: "Order Reminders",
-      icon: ShoppingBag,
-      loading: ordersLoading,
-      count: orderRemCount,
-      color: "text-teal-600",
-      hover: "hover:bg-teal-50",
-      countBg: "bg-teal-500 text-white",
-    },
-    {
-      id: "payment-missed",
-      label: "Payment Reminders",
-      icon: CreditCard,
-      loading: paymentRemLoading,
-      count: paymentRemCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-red-500 text-white",
     },
     {
       id: "other",

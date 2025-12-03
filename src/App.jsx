@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { TimelinePage } from "./components/pages/TimelinePage";
 import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { UnansweredPage } from "./components/pages/UnansweredPage";
+import { Marketplace } from "./components/pages/Marketplace";
+import { RecentEntry } from "./components/pages/RecentEntry";
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
@@ -43,6 +45,9 @@ import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
 import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
+import CreateOrder from "./components/CreateOrder";
+import { ReminderPage } from "./components/pages/Reminder";
+
 const router = createBrowserRouter([
   {
     path: "*",
@@ -76,6 +81,17 @@ const router = createBrowserRouter([
         path: "unanswered",
         element: <UnansweredPage />,
       },
+
+      {
+        path: "Marketplace",
+        element: <Marketplace />,
+      },
+
+      {
+        path: "RecentEntry",
+        element: <RecentEntry />,
+      },
+
       {
         path: "deals",
         element: <DealsPage />,
@@ -91,6 +107,10 @@ const router = createBrowserRouter([
       {
         path: "orders",
         element: <OrdersPage />,
+      },
+      {
+        path: "orders/create",
+        element: <CreateOrder />,
       },
       {
         path: "invoices",
@@ -111,6 +131,10 @@ const router = createBrowserRouter([
       {
         path: "order-reminders",
         element: <OrderReminderPage />,
+      },
+      {
+        path: "reminders",
+        element: <ReminderPage/>,
       },
       {
         path: "timeline",

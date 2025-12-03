@@ -29,9 +29,9 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                                     to="/contacts"
                                     className="text-gray-800 text-lg font-semibold"
                                 >
-                                    {contactInfo?.first_name === ""
+                                    {contactInfo?.full_name === ""
                                         ? email
-                                        : contactInfo?.first_name}
+                                        : contactInfo?.full_name}
                                 </Link>
                             )}
 

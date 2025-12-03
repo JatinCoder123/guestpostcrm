@@ -190,6 +190,12 @@ export function LinkRemovalPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-pink-600 to-rose-600 text-white">
+                    <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>REQUEST DATE</span>
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-left">WEBSITE</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -220,6 +226,9 @@ export function LinkRemovalPage() {
                   key={index}
                   className="border-b border-gray-100 hover:bg-pink-50 transition-colors cursor-pointer"
                 >
+                   <td className="px-6 py-4 text-gray-600">
+                    {removal.requestDate}
+                  </td>
                   <td className="px-6 py-4 text-pink-600">{removal.website}</td>
                   <td className="px-6 py-4">
                     <a
@@ -235,9 +244,7 @@ export function LinkRemovalPage() {
                     </a>
                   </td>
                   <td className="px-6 py-4 text-gray-900">{removal.client}</td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {removal.requestDate}
-                  </td>
+                 
                   <td className="px-6 py-4 text-gray-600">{removal.reason}</td>
                   <td className="px-6 py-4">
                     <span

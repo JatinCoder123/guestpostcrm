@@ -176,7 +176,7 @@ export function FavouritePage() {
                   onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
-                      setEmail(email.from.split("<")[1].split(">")[0]);
+                      // setEmail(email.from.split("<")[1].split(">")[0]);
                     }}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
