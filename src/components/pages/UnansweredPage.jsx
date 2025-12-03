@@ -31,7 +31,7 @@ export function UnansweredPage() {
     setCurrentThreadId,
     email,
     setEmail,
-  ] = useThread();
+  ] = useThread("unanswered");
   if (showEmail && currentThreadId && email) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">

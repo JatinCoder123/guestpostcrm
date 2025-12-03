@@ -6,6 +6,7 @@ const threadEmailSlice = createSlice({
   initialState: {
     loading: false,
     threadEmail: [],
+    message: null,
     error: null,
   },
   reducers: {
@@ -19,10 +20,12 @@ const threadEmailSlice = createSlice({
       state.loading = false;
       state.threadEmail = threadEmail;
       state.error = null;
+      state.message = null;
     },
     getThreadEmailFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
+      state.message = null;
     },
     sendEmailRequest(state) {
       state.loading = true;
@@ -37,6 +40,7 @@ const threadEmailSlice = createSlice({
     },
     sendEmailFailed(state, action) {
       state.loading = false;
+      state.message = null;
       state.error = action.payload;
     },
     clearAllErrors(state) {

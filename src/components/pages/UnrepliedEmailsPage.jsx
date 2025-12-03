@@ -28,7 +28,7 @@ export function UnrepliedEmailsPage() {
     setCurrentThreadId,
     email,
     setEmail,
-  ] = useThread();
+  ] = useThread("unreplied");
   const navigateTo = useNavigate();
   if (showEmail && currentThreadId && email) {
     return (

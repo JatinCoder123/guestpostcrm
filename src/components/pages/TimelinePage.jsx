@@ -150,7 +150,7 @@ export function TimelinePage() {
 
       if (initialLoad) {
         console.log("🚀 Generating AI reply on page load...");
-        dispatch(getAiReply(emails[0].thread_id));
+        dispatch(getAiReply(emails[currentEmailIndex].thread_id));
         setInitialLoad(false);
       }
 
@@ -158,7 +158,7 @@ export function TimelinePage() {
         dispatch(getAiReply(emails[currentEmailIndex].thread_id));
       }
     }
-  }, [currentEmailIndex, emails, dispatch, initialLoad]);
+  }, [currentEmailIndex, dispatch, initialLoad]);
 
   const handleNext = () => {
     if (currentEmailIndex < emails.length - 1) {
