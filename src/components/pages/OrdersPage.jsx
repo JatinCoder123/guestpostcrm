@@ -12,8 +12,13 @@ import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import SearchComponent from "./SearchComponent";
 
 export function OrdersPage() {
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedSort, setSelectedSort] = useState('');
   const { orders, count, loading, error } = useSelector(
     (state) => state.orders
   );
@@ -33,8 +38,92 @@ export function OrdersPage() {
     }
   };
 
+
+
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+   
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
   return (
     <>
+
+
+      <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by Status"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
+
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
@@ -137,7 +226,7 @@ export function OrdersPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>CLIENT</span>
+                    <span>NAME</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -162,7 +251,7 @@ export function OrdersPage() {
                 >
                   <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
                   <td className="px-6 py-4 text-gray-900">
-                    {order.client_email}
+                    {order.real_name}
                   </td>
                   <td className="px-6 py-4 text-green-600">
                     {order.total_amount_c}

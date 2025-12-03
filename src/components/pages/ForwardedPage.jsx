@@ -16,7 +16,12 @@ import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { getForwardedEmails } from "../../store/Slices/forwardedEmailSlice";
+import { useState } from "react";
+import SearchComponent from "./SearchComponent";
 export function ForwardedPage() {
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.forwarded);
   const [
     handleThreadClick,
@@ -25,8 +30,93 @@ export function ForwardedPage() {
     currentThreadId,
     setCurrentThreadId,
   ] = useThread();
+
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+   
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
+
   return (
     <>
+
+
+    <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by Status"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
+
+
+
       {showEmail && currentThreadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
           <EmailBox
@@ -42,7 +132,7 @@ export function ForwardedPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900">FORWARDED EMAILS</h2>
+            <h2 className="text-xl text-gray-900">ASSIGNED EMAILS</h2>
             <a href="">
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
@@ -99,7 +189,7 @@ export function ForwardedPage() {
                       <span>{email.date_entered}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
+                  <td className="px-6 py-4 text-gray-900">{email.from?.split("<")[0].trim()}</td>
                   <td
                     className="px-6 py-4 text-purple-600"
                   >

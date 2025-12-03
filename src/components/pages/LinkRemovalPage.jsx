@@ -9,8 +9,13 @@ import {
 import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getLinkRem } from "../../store/Slices/linkRem";
+import { useState } from "react";
+import SearchComponent from "./SearchComponent";
 
 export function LinkRemovalPage() {
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedSort, setSelectedSort] = useState('');
   const { linkRem: linkRemovals, count } = useSelector(
     (state) => state.linkRem
   );
@@ -30,8 +35,88 @@ export function LinkRemovalPage() {
     }
   };
 
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+   
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
   return (
     <>
+
+    <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by Status"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-pink-500">

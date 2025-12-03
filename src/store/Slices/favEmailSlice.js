@@ -124,6 +124,7 @@ export const getFavEmailsWithOutLoading = (email) => {
 export const favEmail = () => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.favouriteEmailRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       const response = await axios.get(

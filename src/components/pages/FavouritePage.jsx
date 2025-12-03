@@ -16,6 +16,8 @@ import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { getFavEmails } from "../../store/Slices/favEmailSlice";
+import { useState } from "react";
+import SearchComponent from "./SearchComponent";
 export function FavouritePage() {
   const { count, emails } = useSelector((state) => state.fav);
   const [
@@ -25,8 +27,92 @@ export function FavouritePage() {
     currentThreadId,
     setCurrentThreadId,
   ] = useThread();
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedSort, setSelectedSort] = useState('');
+
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+   
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
   return (
     <>
+
+      <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by Status"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
+
       {showEmail && currentThreadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
           <EmailBox
@@ -90,7 +176,7 @@ export function FavouritePage() {
                   onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
-                      // setEmail(email.from.split("<")[1].split(">")[0]);
+                      setEmail(email.from?.split("<")[1].split(">")[0]);
                     }}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
@@ -100,7 +186,7 @@ export function FavouritePage() {
                       <span>{email.date_entered}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.sender}</td>
+                  <td className="px-6 py-4 text-gray-900">{email.from?.split("<")[0].trim()}</td>
                   <td className="px-6 py-4 text-purple-600">{email.subject}</td>
                   <td className="px-6 py-4 text-purple-600">
                     {email.description}

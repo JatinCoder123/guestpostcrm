@@ -5,11 +5,15 @@ import CreateOffer from "../CreateOffer";
 import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus ,Pen} from "lucide-react";
 import { getOffers } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
+import SearchComponent from "./SearchComponent";
 
 export function OffersPage() {
   const { offers, count, loading } = useSelector((state) => state.offers);
   const [showOffer, setShowOffer] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedSort, setSelectedSort] = useState('');
 
   // Show popup only
   if (showOffer) {
@@ -28,8 +32,89 @@ export function OffersPage() {
   const pending = offers.filter((o) => o.status === "Pending").length;
   const accepted = offers.filter((o) => o.status === "Accepted").length;
 
+
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+   
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
   return (
     <>
+
+    <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by Status"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
+
       {/* ⭐ Stats Cards (Top Section) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
@@ -145,6 +230,13 @@ export function OffersPage() {
                   </div>
                 </th>
 
+                  <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>NAME</span>
+                  </div>
+                </th>
+
 
                 <th className="px-6 py-4 text-left">OFFER ID</th>
                 <th className="px-6 py-4 text-left">
@@ -167,8 +259,9 @@ export function OffersPage() {
                   className="border-b border-gray-100 hover:bg-pink-50 transition"
                 >
                   <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
+                   <td className="px-6 py-4">{offer.real_name}</td>
                   <td className="px-6 py-4 text-blue-600">{offer.name}</td>
-                  <td className="px-6 py-4">{offer.amount}</td>
+                 
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
 

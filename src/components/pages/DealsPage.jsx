@@ -8,18 +8,103 @@ import {
   User,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import SearchComponent from "./SearchComponent";
 import { getDeals } from "../../store/Slices/deals";
 import Pagination from "../Pagination";
 import { useNavigate } from "react-router-dom";
 
 export function DealsPage() {
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedSort, setSelectedSort] = useState('');
   const { count, deals, loading, error } = useSelector((state) => state.deals);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const { timeline, email } = useSelector((state) => state.ladger);
 
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+   
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
   return (
     <>
+
+      <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by Status"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
@@ -117,12 +202,14 @@ export function DealsPage() {
                     <span> DATE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">DEAL NAME</th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
+                <th className="px-6 py-4 text-left"> 
+                                    <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>COMPANY</span>
+                    <span>NAME</span>
                   </div>
+                  </th>
+                <th className="px-6 py-4 text-left">
+                  WEBSITES
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -142,7 +229,7 @@ export function DealsPage() {
                   className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4 text-gray-600">{deal.date_entered}</td>
-                  <td className="px-6 py-4 text-blue-600">{deal.email}</td>
+                  <td className="px-6 py-4 text-blue-600">{deal.real_name}</td>
                   <td className="px-6 py-4 text-gray-900">
                     {deal.website_c == "" ? "No Name" : deal.website_c}
                   </td>
