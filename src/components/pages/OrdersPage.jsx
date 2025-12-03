@@ -137,7 +137,7 @@ export function OrdersPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>CLIENT</span>
+                    <span>NAME</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -162,7 +162,7 @@ export function OrdersPage() {
                 >
                   <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
                   <td className="px-6 py-4 text-gray-900">
-                    {order.client_email}
+                    {order.real_name}
                   </td>
                   <td className="px-6 py-4 text-green-600">
                     {order.total_amount_c}
