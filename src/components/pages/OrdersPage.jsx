@@ -12,6 +12,8 @@ import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import SearchComponent from "./SearchComponent";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');

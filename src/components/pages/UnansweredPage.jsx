@@ -20,6 +20,8 @@ import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
+import SearchComponent from "./SearchComponent";
+
 export function UnansweredPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(''); 
