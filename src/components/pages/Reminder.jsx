@@ -10,36 +10,40 @@ import { useSelector, useDispatch } from "react-redux";
 import Pagination from "../Pagination";
 import { useState, useEffect, useCallback } from "react";
 import { getOrderRem } from "../../store/Slices/orderRem";
+import SearchComponent from "./SearchComponent";
 
 export function ReminderPage() {
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('order_reminder'); 
+  const [selectedSort, setSelectedSort] = useState('');
   const dispatch = useDispatch();
-  const [selectedType, setSelectedType] = useState("order_reminder");
-   const { orderRem, count, loading, error } = useSelector(
+  
+  const { orderRem, count, loading, error } = useSelector(
     (state) => state.orderRem
   );
-  const [reminders,setReminders]=useState(orderRem) // Default to order_reminder
+  const [reminders, setReminders] = useState(orderRem);
  
   const { email } = useSelector((state) => state.ladger);
 
   useEffect(() => {
-    dispatch(getOrderRem( email, 1));
-  }, [ email, dispatch]);
- 
+    dispatch(getOrderRem(email, 1));
+  }, [email, dispatch]);
 
- useEffect(() => {
+  
+  useEffect(() => {
     const filteredReminders = orderRem.filter((reminder) => {
-      if (selectedType === "all_reminders") {
-        return true; // Include all reminders
-        }
-        return reminder.reminder_type === selectedType;
+      if (selectedCategory === 'all') {
+        return true; 
+      }
+      return reminder.reminder_type === selectedCategory;
     });
     setReminders(filteredReminders);
-  }, [selectedType, orderRem]);
+  }, [selectedCategory, orderRem]);
 
-  // Mapping for display labels
+  
   const getDisplayLabel = (type) => {
     const labels = {
-      all_reminders: "All Reminders",
+      all: "All Reminders",
       order_reminder: "Order Reminder",
       deal_reminder: "Deal Reminder",
       payment_reminder: "Payment Reminder",
@@ -48,8 +52,83 @@ export function ReminderPage() {
     return labels[type] || type;
   };
 
+  const dropdownOptions = [
+    { value: 'all', label: 'All Reminders' },
+    { value: 'order_reminder', label: 'Order Reminder' },
+    { value: 'deal_reminder', label: 'Deal Reminder' },
+    { value: 'payment_reminder', label: 'Payment Reminder' },
+    { value: 'link_removal', label: 'Link Removal' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
   return (
     <>
+      <SearchComponent
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange} 
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by Type"
+        
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search reminders..."
+        
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+        
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Reminders' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+        
+        onDownloadClick={handleDownload}
+        showDownload={true}
+        
+        className="mb-6"
+      />
+
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
@@ -97,30 +176,14 @@ export function ReminderPage() {
           </div>
         </div>
       </div>
-      {/* Filter Section */}
-      <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Filter by Type
-        </label>
-        <select
-          value={selectedType}
-          onChange={(e)=>setSelectedType(e.target.value)}
-          className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all_reminders">ALL</option>
-          <option value="order_reminder">Order Reminder</option>
-          <option value="deal_reminder">Deal Reminder</option>
-          <option value="payment_reminder">Payment Reminder</option>
-          <option value="link_removal">Link Removal</option>
-        </select>
-      </div>
+
       {/* Payment Missed Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
+        {/* Header - Use selectedCategory for display */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <CreditCard className="w-6 h-6 text-red-600" />
-            <h2 className="text-xl text-gray-900">{getDisplayLabel(selectedType)}</h2>
+            <h2 className="text-xl text-gray-900">{getDisplayLabel(selectedCategory)}</h2>
             <a href="">
               <img
                 width="30"
@@ -214,7 +277,7 @@ export function ReminderPage() {
           <div className="p-12 text-center">
             <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">
-              No missed {getDisplayLabel(selectedType).toLowerCase()}.
+              No missed {getDisplayLabel(selectedCategory).toLowerCase()}.
             </p>
           </div>
         )}
