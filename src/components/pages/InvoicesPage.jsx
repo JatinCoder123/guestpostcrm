@@ -110,21 +110,38 @@ export function InvoicesPage() {
       {/* Invoices Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 ">
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6 text-yellow-600" />
-            <h2 className="text-xl text-gray-900">INVOICES</h2>
+            <h2 className="text-xl font-semibold text-gray-900">INVOICES</h2>
              <a href="https://www.guestpostcrm.com/blog/one-click-paypal-invoice-creation/"  target="_blank" 
   rel="noopener noreferrer">
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>
           </div>
-          <button
-            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-            onClick={() => setShowCreateInvoice(true)}
-          >
-            + New Invoice
-          </button>
+        
+             <div className="relative group ">
+  <button
+   
+    className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
+     onClick={() => setShowCreateInvoice(true)}
+  >
+    <img
+      width="40"
+      height="40"
+      src="https://img.icons8.com/arcade/64/plus.png"
+      alt="plus"
+    />
+  </button>
+
+  {/* Tooltip */}
+  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
+                   opacity-0 group-hover:opacity-100 transition 
+                   pointer-events-none whitespace-nowrap shadow-md">
+     Create Invoices
+  </span>
+</div>
         </div>
 
         {/* Table */}

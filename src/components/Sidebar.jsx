@@ -142,7 +142,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
 
     {
       id: "Marketplace",
-      label: "Marketplace",
+      label: "Marketplaces",
       icon: Store,
       loading: marketPlaceLoading,
       count: marketPlaceCount,

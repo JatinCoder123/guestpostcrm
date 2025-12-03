@@ -65,15 +65,49 @@ export const getForwardedEmails = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=forwarded&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=forwarded&filter=${filter}&page=1&page_size=50`
+        );
+      }
+
+      console.log(`forwarded emails`, response.data);
+      const data = response.data;
+      dispatch(
+        forwardedSlice.actions.getEmailSucess({
+          count: data.data_count ?? 0,
+          emails: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
+        })
+      );
+      dispatch(forwardedSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        forwardedSlice.actions.getEmailFailed(
+          "Fetching Forwarded Emails Failed"
+        )
+      );
+    }
+  };
+};
+export const getForwardedEmailsWithOutLoading = (email) => {
+  return async (dispatch, getState) => {
+    try {
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=forwarded&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=forwarded&filter=${getState().ladger.timeline}&page=1&page_size=50`
         );
       }
 

@@ -47,6 +47,8 @@ import { SocketContextProvider } from "./context/SocketContext";
 import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
 import CreateOrder from "./components/CreateOrder";
 import { ReminderPage } from "./components/pages/Reminder";
+import { LinkExchangePage } from "./components/pages/LinkExchangePage";
+
 
 const router = createBrowserRouter([
   {
@@ -116,6 +118,12 @@ const router = createBrowserRouter([
         path: "invoices",
         element: <InvoicesPage />,
       },
+
+       {
+        path: "link-exchange",
+        element: <LinkExchangePage />,
+      },
+
       {
         path: "payment-missed",
         element: <PaymentMissedPage />,
