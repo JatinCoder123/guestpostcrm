@@ -118,7 +118,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "forwarded-emails",
-      label: "Forwarded ",
+      label: "Assigned",
       icon: Forward,
       loading: forwardLoading,
       count: forwardCount,
