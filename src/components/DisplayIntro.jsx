@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { PageContext } from "../context/pageContext.jsx";
-import { introVideo } from "../assets/assets.js";
+
 
 const DisplayIntro = () => {
   const { setDisplayIntro } = useContext(PageContext);
@@ -15,7 +15,7 @@ const DisplayIntro = () => {
   return (
     <div className="h-screen w-screen overflow-hidden m-0 p-0">
       <video
-        src={introVideo}
+        src="/introVideo.mp4"
         autoPlay
         loop
         muted
