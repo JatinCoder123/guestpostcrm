@@ -233,20 +233,21 @@ export function OffersPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>NAME</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
 
 
-                <th className="px-6 py-4 text-left">OFFER ID</th>
+                <th className="px-6 py-4 text-left">EMAIL</th>
                 <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>CLIENT</span>
-                  </div>
+                 CLIENT OFFER
                 </th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
+<<<<<<< HEAD
                 <th className="px-6 py-4 text-left">EXPIRES</th>
+=======
+                {/* <th className="px-6 py-4 text-left">EXPIRES</th> */}
+>>>>>>> 35b0d00110ccb0fdba8ae70e974851a167d28769
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
@@ -259,7 +260,11 @@ export function OffersPage() {
                   className="border-b border-gray-100 hover:bg-pink-50 transition"
                 >
                   <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
+<<<<<<< HEAD
                   <td className="px-6 py-4">{offer.real_name}</td>
+=======
+                   <td className="px-6 py-4">{offer.real_name?.split("<")[0].trim()}</td>
+>>>>>>> 35b0d00110ccb0fdba8ae70e974851a167d28769
                   <td className="px-6 py-4 text-blue-600">{offer.name}</td>
 
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>

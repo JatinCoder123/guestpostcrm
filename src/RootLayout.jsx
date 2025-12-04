@@ -18,12 +18,8 @@ import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
-import Pagination from "./components/Pagination";
 import Avatar from "./components/Avatar";
-import { getDealRem } from "./store/Slices/dealRem";
 import { getOrderRem } from "./store/Slices/orderRem";
-import { getLinkRem } from "./store/Slices/linkRem";
-import { getPaymentRem } from "./store/Slices/paymentRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
@@ -64,10 +60,7 @@ const RootLayout = () => {
     dispatch(getInvoices(timeline, enteredEmail));
     dispatch(getOffers(timeline, enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
-    dispatch(getDealRem(timeline, enteredEmail));
     dispatch(getOrderRem(timeline, enteredEmail));
-    dispatch(getLinkRem(timeline, enteredEmail));
-    dispatch(getPaymentRem(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
@@ -87,15 +80,8 @@ const RootLayout = () => {
     }
   }, [email]);
   useEffect(() => {
-    if (currentMail) {
-      const timer = setTimeout(() => {
-        dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
-        dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      }, 5000);
-      return () => {
-        clearTimeout(timer);
-      }
-    }
+    dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
+    dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
   }, [currentMail])
   return (
     <AnimatePresence mode="wait">

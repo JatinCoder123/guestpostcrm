@@ -67,32 +67,21 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const { count: offersCount, loading: offersLoading } = useSelector(
     (s) => s.offers
   );
-  const { count: detectionCount, loading: detectionLoading } = useSelector(
-    (s) => s.detection
-  );
+
   const { count: invoiceCount, loading: invoicesLoading } = useSelector(
     (s) => s.invoices
   );
   const { count: orderCount, loading: ordersLoading } = useSelector(
     (s) => s.orders
   );
-  const { count: linkRemCount, loading: linkRemLoading } = useSelector(
-    (s) => s.linkRem
-  );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
     (s) => s.orderRem
   );
-  const { count: paymentRemCount, loading: paymentRemLoading } = useSelector(
-    (s) => s.paymentRem
-  );
-  const { count: dealRemCount, loading: dealRemLoading } = useSelector(
-    (s) => s.dealRem
-  );
+
   const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
     (s) => s.marketplace
   );
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
-  const { count: bulkCount, loading: bulkLoading } = useSelector((s) => s.bulk);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
     (s) => s.forwarded
   );
@@ -194,8 +183,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       id: "link-exchange",
       label: "Link Exchange",
       icon: Link,
-      loading: linkRemLoading,
-      count: linkRemCount,
+      loading: orderRemLoading,
+      count: orderRemCount,
       color: "text-pink-600",
       hover: "hover:bg-pink-50",
       countBg: "bg-pink-500 text-white",
@@ -204,8 +193,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       id: "reminders",
       label: "Reminders",
       icon: BellRing,
-      loading: dealRemLoading,
-      count: dealRemCount,
+      loading: orderRemLoading,
+      count: orderRemCount,
       color: "text-cyan-600",
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",
@@ -214,8 +203,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       id: "other",
       label: "Others",
       icon: RectangleEllipsis,
-      loading: paymentRemLoading,
-      count: paymentRemCount,
+      loading: orderRemLoading,
+      count: orderRemCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",

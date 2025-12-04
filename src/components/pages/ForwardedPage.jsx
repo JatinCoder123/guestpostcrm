@@ -189,7 +189,7 @@ export function ForwardedPage() {
                       <span>{email.date_entered}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from?.split("<")[0].trim()}</td>
+                  <td className="px-6 py-4 text-gray-900">{email.first_name}</td>
                   <td
                     className="px-6 py-4 text-purple-600"
                   >

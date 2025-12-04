@@ -9,17 +9,12 @@ import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
-import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
-import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
-import { DealRemindersPage } from "./components/pages/DealRemindersPage";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadger } from "./store/Slices/ladger";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
 import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";
-import { OrderReminderPage } from "./components/pages/OrderReminderPage";
 import { getUser, userAction } from "./store/Slices/userSlice";
 import Login from "./components/pages/Login";
 import LoadingPage from "./components/pages/LoadingPage";
@@ -119,30 +114,15 @@ const router = createBrowserRouter([
         element: <InvoicesPage />,
       },
 
-       {
+      {
         path: "link-exchange",
         element: <LinkExchangePage />,
       },
 
-      {
-        path: "payment-missed",
-        element: <PaymentMissedPage />,
-      },
-      {
-        path: "link-removal",
-        element: <LinkRemovalPage />,
-      },
-      {
-        path: "deal-reminders",
-        element: <DealRemindersPage />,
-      },
-      {
-        path: "order-reminders",
-        element: <OrderReminderPage />,
-      },
+
       {
         path: "reminders",
-        element: <ReminderPage/>,
+        element: <ReminderPage />,
       },
       {
         path: "timeline",
