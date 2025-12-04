@@ -256,7 +256,7 @@ export function OffersPage() {
                   className="border-b border-gray-100 hover:bg-pink-50 transition"
                 >
                   <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
-                   <td className="px-6 py-4">{offer.real_name}</td>
+                   <td className="px-6 py-4">{offer.real_name?.split("<")[0].trim()}</td>
                   <td className="px-6 py-4 text-blue-600">{offer.name}</td>
                  
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>

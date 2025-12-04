@@ -237,7 +237,7 @@ export function InvoicesPage() {
                                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>ISSUE DATE</span>
+                    <span> DATE</span>
                   </div>
                 </th>
 
