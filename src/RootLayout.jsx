@@ -90,7 +90,7 @@ const RootLayout = () => {
     const interval = setInterval(() => {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-    }, 10000);
+    }, 1000 * 60 * 30);
     return () => {
       clearInterval(interval);
     }
