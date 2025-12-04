@@ -233,20 +233,20 @@ export function OffersPage() {
                   <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>NAME</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
 
 
-                <th className="px-6 py-4 text-left">OFFER ID</th>
+                <th className="px-6 py-4 text-left">EMAIL</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>CLIENT</span>
+                    <span>CLIENT OFFER</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">DISCOUNT</th>
-                <th className="px-6 py-4 text-left">EXPIRES</th>
+                <th className="px-6 py-4 text-left">OUR OFFER</th>
+                {/* <th className="px-6 py-4 text-left">EXPIRES</th> */}
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
