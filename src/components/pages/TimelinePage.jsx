@@ -130,7 +130,6 @@ export function TimelinePage() {
           thread_id: emails[currentEmailIndex].thread_id,
           recent_activity: "AI reply sent",
         }));
-        toast.success("AI reply sent successfully!");
       } else {
         toast.error("No valid reply content found");
       }

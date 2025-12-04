@@ -19,7 +19,7 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
       onClick={(e) => e.stopPropagation()}
       className="absolute top-14 -right-8 w-72 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-[999]"
     >
-      <h3 className="font-semibold text-gray-700 mb-2">Forward To</h3>
+      <h3 className="font-semibold text-gray-700 mb-2">Assign To</h3>
 
       {/* User List */}
       {loading ? (

@@ -243,7 +243,7 @@ export function OffersPage() {
                   CLIENT OFFER
                 </th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
-                {/* <th className="px-6 py-4 text-left">EXPIRES</th> */}
+                <th className="px-6 py-4 text-left">EXPIRES</th>
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
