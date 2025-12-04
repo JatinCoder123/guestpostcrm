@@ -38,7 +38,7 @@ const RootLayout = () => {
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
   const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
-  const { currentAvatar } = useContext(SocketContext);
+  const { currentAvatar, currentMail } = useContext(SocketContext);
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
@@ -87,14 +87,16 @@ const RootLayout = () => {
     }
   }, [email]);
   useEffect(() => {
-    const interval = setInterval(() => {
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-    }, 1000 * 60 * 30);
-    return () => {
-      clearInterval(interval);
+    if (currentMail) {
+      const timer = setTimeout(() => {
+        dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
+        dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      }, 5000);
+      return () => {
+        clearTimeout(timer);
+      }
     }
-  }, [timeline, enteredEmail])
+  }, [currentMail])
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (
