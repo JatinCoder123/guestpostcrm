@@ -125,7 +125,7 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
                             alt="forward"
                         />
                     ),
-                    label: "Forward",
+                    label: "Assign",
                     action: () => setShowUsers((p) => !p),
                 },
                 {

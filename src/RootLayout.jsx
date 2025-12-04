@@ -60,7 +60,7 @@ const RootLayout = () => {
     dispatch(getInvoices(timeline, enteredEmail));
     dispatch(getOffers(timeline, enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
-    dispatch(getOrderRem(timeline, enteredEmail));
+    // dispatch(getOrderRem(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());

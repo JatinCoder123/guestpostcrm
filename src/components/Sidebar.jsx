@@ -140,6 +140,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-pink-500 text-white",
     },
     {
+      id: "link-exchange",
+      label: "Link Exchange",
+      icon: Link,
+      loading: orderRemLoading,
+      count: orderRemCount,
+      color: "text-pink-600",
+      hover: "hover:bg-pink-50",
+      countBg: "bg-pink-500 text-white",
+    },
+    {
       id: "offers",
       label: "Offers",
       icon: Gift,
@@ -180,26 +190,6 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-yellow-500 text-white",
     },
     {
-      id: "link-exchange",
-      label: "Link Exchange",
-      icon: Link,
-      loading: orderRemLoading,
-      count: orderRemCount,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
-    },
-    {
-      id: "reminders",
-      label: "Reminders",
-      icon: BellRing,
-      loading: orderRemLoading,
-      count: orderRemCount,
-      color: "text-cyan-600",
-      hover: "hover:bg-cyan-50",
-      countBg: "bg-cyan-500 text-white",
-    },
-    {
       id: "other",
       label: "Others",
       icon: RectangleEllipsis,
@@ -209,6 +199,17 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",
     },
+    {
+      id: "reminders",
+      label: "Reminders",
+      icon: BellRing,
+      loading: orderRemLoading,
+      count: null,
+      color: "text-cyan-600",
+      hover: "hover:bg-cyan-50",
+      countBg: "bg-cyan-500 text-white",
+    },
+
   ];
 
   return (
@@ -273,11 +274,13 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
               {!collapsed && (
                 <>
                   <span className="flex-1 text-left">{item.label}</span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
-                  >
-                    {item.loading ? <LoadingSpin /> : <>{item.count}</>}
-                  </span>
+                  {item.count != null && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
+                    >
+                      {item.loading ? <LoadingSpin /> : <>{item.count}</>}
+                    </span>
+                  )}
                 </>
               )}
             </button>

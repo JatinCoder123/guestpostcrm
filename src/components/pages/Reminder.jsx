@@ -26,8 +26,14 @@ export function ReminderPage() {
   const { email } = useSelector((state) => state.ladger);
 
   useEffect(() => {
-    dispatch(getOrderRem(email, 1));
-  }, [email, dispatch]);
+    if (selectedCategory === 'all') {
+      dispatch(getOrderRem(null, 1));
+    }
+    else {
+      dispatch(getOrderRem(email, 1));
+    }
+
+  }, [email, selectedCategory, dispatch]);
 
 
   useEffect(() => {
