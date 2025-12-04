@@ -240,10 +240,7 @@ export function OffersPage() {
 
                 <th className="px-6 py-4 text-left">EMAIL</th>
                 <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>CLIENT OFFER</span>
-                  </div>
+                 CLIENT OFFER
                 </th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
                 {/* <th className="px-6 py-4 text-left">EXPIRES</th> */}
