@@ -18,7 +18,7 @@ export function ReminderPage() {
   const [selectedSort, setSelectedSort] = useState('');
   const dispatch = useDispatch();
 
-  const { orderRem, count, loading, error } = useSelector(
+  const { orderRem, dropdownOptions, count, loading, error } = useSelector(
     (state) => state.orderRem
   );
   const [reminders, setReminders] = useState(orderRem);
@@ -48,23 +48,9 @@ export function ReminderPage() {
 
 
   const getDisplayLabel = (type) => {
-    const labels = {
-      all: "All Reminders",
-      order_reminder: "Order Reminder",
-      deal_reminder: "Deal Reminder",
-      payment_reminder: "Payment Reminder",
-      link_removal: "Link Removal",
-    };
-    return labels[type] || type;
+    return dropdownOptions.find((option) => option.value === type)?.label;
   };
 
-  const dropdownOptions = [
-    { value: 'all', label: 'All Reminders' },
-    { value: 'order_reminder', label: 'Order Reminder' },
-    { value: 'deal_reminder', label: 'Deal Reminder' },
-    { value: 'payment_reminder', label: 'Payment Reminder' },
-    { value: 'link_removal', label: 'Link Removal' },
-  ];
 
   const filterOptions = [
     { value: 'asc', label: 'A to Z' },
@@ -79,17 +65,14 @@ export function ReminderPage() {
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    console.log('Sort selected:', value);
   };
 
   const handleDownload = () => {
@@ -283,7 +266,7 @@ export function ReminderPage() {
           <div className="p-12 text-center">
             <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">
-              No missed {getDisplayLabel(selectedCategory).toLowerCase()}.
+              No missed {getDisplayLabel(selectedCategory)}.
             </p>
           </div>
         )}
