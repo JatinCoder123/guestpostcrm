@@ -33,7 +33,7 @@ const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
-  const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
+  const { displayIntro, setActivePage, enteredEmail, currentIndex, setCurrentIndex } = useContext(PageContext);
   const { currentAvatar, currentMail } = useContext(SocketContext);
   useEffect(() => {
     setShowAvatar(true);
@@ -42,11 +42,6 @@ const RootLayout = () => {
   useEffect(() => {
     setActivePage(location);
   }, [location]);
-  useEffect(() => {
-    if (email) {
-      dispatch(getContact(email));
-    }
-  }, [email]);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getAiCredits(timeline));
@@ -60,23 +55,26 @@ const RootLayout = () => {
     dispatch(getInvoices(timeline, enteredEmail));
     dispatch(getOffers(timeline, enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
-    // dispatch(getOrderRem(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
+    setCurrentIndex(0)
   }, [enteredEmail, timeline]);
-  const firstEmail = emails?.[0]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+  const firstEmail = emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
 
   useEffect(() => {
     if (enteredEmail) {
       dispatch(getLadgerEmail(enteredEmail));
+
     } else if (firstEmail) {
       dispatch(getLadgerEmail(firstEmail));
     }
   }, [enteredEmail, firstEmail]);
+
   useEffect(() => {
     if (email) {
       dispatch(getViewEmail());
+      dispatch(getContact());
     }
   }, [email]);
   useEffect(() => {

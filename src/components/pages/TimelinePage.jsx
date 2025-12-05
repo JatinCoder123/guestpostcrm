@@ -24,19 +24,18 @@ import ContactHeader from "../ContactHeader";
 import { extractEmail } from "../../assets/assets";
 import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
-
+import { useContext } from "react";
+import { PageContext } from "../../context/pageContext";
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
   const [showThread, setShowThread] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
-  const [currentEmailIndex, setCurrentEmailIndex] = useState(0);
+  const { currentIndex, setCurrentIndex } = useContext(PageContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
-
-
   const {
     error: sendError,
     message,
@@ -67,7 +66,7 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading } = useSelector(
     (state) => state.unreplied
   );
-  const currentThreadId = emails.length > 0 ? emails[currentEmailIndex].thread_id : null;
+  const currentThreadId = emails.length > 0 ? emails[currentIndex].thread_id : null;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -127,10 +126,10 @@ export function TimelinePage() {
         typeof aiReply === "string" ? aiReply : aiReply?.reply_suggestion;
 
       if (replyContent) {
-        dispatch(sendEmailToThread(emails[currentEmailIndex].thread_id, replyContent));
+        dispatch(sendEmailToThread(emails[currentIndex].thread_id, replyContent));
         dispatch(addEvent({
           email: email,
-          thread_id: emails[currentEmailIndex].thread_id,
+          thread_id: emails[currentIndex].thread_id,
           recent_activity: "AI reply sent",
         }));
       } else {
@@ -147,30 +146,27 @@ export function TimelinePage() {
 
   useEffect(() => {
     if (emails.length > 0) {
-      dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
-
-
       if (initialLoad) {
         console.log("🚀 Generating AI reply on page load...");
-        dispatch(getAiReply(emails[currentEmailIndex].thread_id));
+        dispatch(getAiReply(emails[currentIndex].thread_id));
         setInitialLoad(false);
       }
 
       else {
-        dispatch(getAiReply(emails[currentEmailIndex].thread_id));
+        dispatch(getAiReply(emails[currentIndex].thread_id));
       }
     }
-  }, [currentEmailIndex, dispatch, initialLoad]);
+  }, [currentIndex, dispatch, initialLoad]);
 
   const handleNext = () => {
-    if (currentEmailIndex < emails.length - 1) {
-      setCurrentEmailIndex((p) => p + 1);
+    if (currentIndex < emails.length - 1) {
+      setCurrentIndex((p) => p + 1);
     }
   };
 
   const handlePrev = () => {
-    if (currentEmailIndex > 0) {
-      setCurrentEmailIndex((p) => p - 1);
+    if (currentIndex > 0) {
+      setCurrentIndex((p) => p - 1);
     }
   };
 
@@ -224,7 +220,7 @@ export function TimelinePage() {
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
 
-              <ContactHeader onNext={handleNext} onPrev={handlePrev} currentIndex={currentEmailIndex} />
+              <ContactHeader onNext={handleNext} onPrev={handlePrev} currentIndex={currentIndex} />
 
               {!mailersSummary || Object.keys(mailersSummary).length === 0 ? (
                 <NoResult />
@@ -338,7 +334,7 @@ export function TimelinePage() {
                         </div>
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                           {emails.length > 0 &&
-                            emails[currentEmailIndex].subject}
+                            emails[currentIndex].subject}
                         </p>
                       </div>
                     </div>
