@@ -14,7 +14,7 @@ import SearchComponent from "./SearchComponent";
 
 export function ReminderPage() {
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('order_reminder');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSort, setSelectedSort] = useState('');
   const dispatch = useDispatch();
 
