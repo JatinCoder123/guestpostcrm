@@ -374,9 +374,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                         {new Date(mail.date_created).toLocaleString()}
                       </span>
                     </div>
-                    <p className="whitespace-pre-line text-sm leading-relaxed">
-                      {mail.body}
-                    </p>
+                    <div dangerouslySetInnerHTML={{ __html: mail.body }} className="whitespace-pre-line text-sm leading-relaxed" />
                   </div>
                 </motion.div>
               );
