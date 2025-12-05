@@ -209,24 +209,21 @@ export function ReminderPage() {
             <thead>
 
               <tr className="bg-gradient-to-r from-red-600 to-pink-600 text-white">
-                <th className="px-6 py-4 text-left">DATE CREATED</th>
+                <th className="px-6 py-4 text-left">DATE</th>
 
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
                     <span>CONTACT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">NAME</th>
+                <th className="px-6 py-4 text-left">TYPE</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    <span>AMOUNT</span>
+                    <span>SCHEDULED TIME</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
                     <span>STATUS</span>
                   </div>
                 </th>
@@ -259,13 +256,13 @@ export function ReminderPage() {
                     className="border-b border-gray-100 hover:bg-red-50 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-4 text-gray-600">
-                      {order.scheduled_time}
+                      {order.date_entered}
                     </td>
                     <td className="px-6 py-4 text-gray-900">
                       {order.recipient}
                     </td>
-                    <td className="px-6 py-4 text-red-600">{order.name}</td>
-                    <td className="px-6 py-4 text-green-600">{order.time}</td>
+                    <td className="px-6 py-4 text-red-600">{order.reminder_type}</td>
+                    <td className="px-6 py-4 text-green-600">{order.scheduled_time}</td>
                     <td className="px-6 py-4 text-gray-600">{order.status}</td>
 
                     <td className="px-6 py-4">

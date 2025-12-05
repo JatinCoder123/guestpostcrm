@@ -8,7 +8,7 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
-import { LoadingAll, LoadingSpin } from "../Loading";
+import { LoadingAll, LoadingChase, LoadingSpin } from "../Loading";
 import { Titletooltip } from "../pages/Titletooltip"
 
 import { getAiReply } from "../../store/Slices/aiReply";
@@ -43,13 +43,16 @@ export function TimelinePage() {
     threadId,
   } = useSelector((state) => state.viewEmail);
 
+
   const {
     error: threadError,
     message: threadMessage,
+    sending,
   } = useSelector((state) => state.threadEmail);
 
   const {
     aiReply,
+    loading: aiReplyLoading,
     error: aiError,
   } = useSelector((s) => s.aiReply);
 
@@ -238,30 +241,40 @@ export function TimelinePage() {
                             Quick Reply
                           </h3>
                           {/* Send AI Reply Button - Moved to top right */}
-                          {aiReplySentLoading ? (
+                          {sending ? (
                             <div className="flex justify-center">
-                              <LoadingAll size="25" color="blue" type="ping" />
+                              <LoadingChase size="25" color="blue" type="ping" />
                             </div>
                           ) : (
-                            <motion.button
-                              whileHover={{ scale: 1.15 }}
-                              whileTap={{ scale: 0.95 }}
-                              transition={{ type: "spring", stiffness: 400 }}
-                              className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                              onClick={handleAiAutoReply}
-                              disabled={!aiReply}
-                            >
-                              <img
-                                width="33"
-                                height="33"
-                                src="https://img.icons8.com/ultraviolet/40/bot.png"
-                                alt="AI Reply"
-                              />
-                            </motion.button>
+                            <>
+                              {aiReplyLoading ? (
+                                <div className="flex justify-center">
+                                  <LoadingAll size="25" color="blue" type="ping" />
+                                </div>
+                              ) : (
+                                <motion.button
+                                  whileHover={{ scale: 1.15 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  transition={{ type: "spring", stiffness: 400 }}
+                                  className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                  onClick={handleAiAutoReply}
+                                  disabled={!aiReply}
+                                >
+                                  <img
+                                    width="33"
+                                    height="33"
+                                    src="https://img.icons8.com/ultraviolet/40/bot.png"
+                                    alt="AI Reply"
+                                  />
+                                </motion.button>
+                              )}
+                            </>
+
+
                           )}
                         </div>
 
-                        {aiReply ? (
+                        {aiReply && !sending ? (
                           <div className="mb-3">
                             <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                               {typeof aiReply === "string"

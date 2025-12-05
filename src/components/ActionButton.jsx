@@ -155,7 +155,7 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
                             {btn.label}
                         </span>
                     </button>
-                    {showUsers && btn.label === "Forward" && (
+                    {showUsers && btn.label === "Assign" && (
                         <UserDropdown
                             forwardHandler={handleForward}
                             onClose={() => setShowUsers(false)}
