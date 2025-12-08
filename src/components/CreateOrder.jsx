@@ -11,6 +11,7 @@ import { createOrder, orderAction } from "../store/Slices/orders";
 import PreviewOrders from "./PreviewOrders";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { renderToStaticMarkup } from "react-dom/server";
+import { viewEmailAction } from "../store/Slices/viewEmail";
 const LOCAL_KEY = "create_order_draft_v1";
 
 export default function CreateOrder() {
@@ -18,14 +19,13 @@ export default function CreateOrder() {
   const {
     creating,
     orders: prevOrders,
-    error,
-    message,
   } = useSelector((state) => state.orders);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { contactInfo } = useSelector((state) => state.viewEmail);
+  const { loading, message, error } = useSelector((state) => state.threadEmail);
 
 
   const [orders, setOrders] = useState([]);
@@ -113,21 +113,13 @@ export default function CreateOrder() {
 
   };
 
-  // ────────────────────────────────────────────────
-  // Handle message or error
+
   useEffect(() => {
     if (message) {
-      toast.success(message);
-      setOrders([]);
       localStorage.removeItem(LOCAL_KEY);
-      navigate("/orders");
-      dispatch(orderAction.clearAllMessages());
+      navigate(-1);
     }
-    if (error) {
-      toast.error(error);
-      dispatch(orderAction.clearAllErrors());
-    }
-  }, [message, error]);
+  }, [message]);
 
   // ────────────────────────────────────────────────
   // Drag & Drop
@@ -385,7 +377,7 @@ export default function CreateOrder() {
                       : "bg-green-600 hover:bg-green-700"
                       }`}
                   >
-                    {creating ? "Submitting..." : "Submit All Orders"}
+                    {loading ? "Submitting..." : "Submit All Orders"}
                   </button>
 
                   {/* PREVIEW BUTTON */}
@@ -437,7 +429,7 @@ export default function CreateOrder() {
                       "0px 4px 12px rgba(0,0,0,0.15)",
                   }}
                 >
-                  Submit Orders
+                  {loading ? "Submitting..." : "Submit Orders"}
                 </button>
 
                 <button
