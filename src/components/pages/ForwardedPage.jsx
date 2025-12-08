@@ -9,7 +9,7 @@ import {
   Repeat,
   MoveRight,
 } from "lucide-react";
-
+import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
@@ -31,10 +31,58 @@ export function ForwardedPage() {
     setCurrentThreadId,
   ] = useThread();
 
-  const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+
+
+  const filteredEmails = emails
+  .filter((item) => {
+    const searchValue = topsearch.toLowerCase();
+    if (!searchValue) return true;
+
+    // SAFELY HANDLE "from"
+    const fromField = item?.first_name ?? "";
+    const contact = fromField.includes("<")
+      ? fromField.split("<")[0].trim().toLowerCase()
+      : fromField.trim().toLowerCase();
+
+    // SAFE subject
+    const subject = item?.subject?.toLowerCase() ?? "";
+
+    const date = item?.date_entered?.toLowerCase() ?? "";
+
+    if (selectedCategory === "contect" || selectedCategory === "contact") {
+      return contact.includes(searchValue);
+    }
+    if (selectedCategory === "subject") {
+      return subject.includes(searchValue);
+    }
+
+    return contact.includes(searchValue);
+  })
+  .sort((a, b) => {
+    if (!selectedSort) return 0;
+
+    const aFrom = a?.from ?? "";
+    const bFrom = b?.from ?? "";
+
+    if (selectedSort === "asc") {
+      return aFrom.localeCompare(bFrom);
+    }
+    if (selectedSort === "desc") {
+      return bFrom.localeCompare(aFrom);
+    }
+    if (selectedSort === "oldest") {
+      return new Date(a.date_entered) - new Date(b.date_entered);
+    }
+
+    return 0;
+  });
+
+
+
+   const dropdownOptions = [
+    
+    { value: 'contect', label: 'contact' },
+    { value: 'subject', label: 'subject' },
   ];
 
   const filterOptions = [
@@ -64,9 +112,40 @@ export function ForwardedPage() {
     console.log('Sort selected:', value);
   };
 
+  
   const handleDownload = () => {
-    console.log('Download clicked');
-  };
+ if (!filteredEmails || filteredEmails.length === 0) {
+  toast.error("No data available to download");
+  return;
+}
+
+  // Convert Objects → CSV rows
+  const headers = ["Date", "Contact", "Subject", "Count"];
+  
+  const rows = filteredEmails.map((email) => [
+    email.date_entered,
+    email.first_name.split("<")[0].trim(),
+    email.subject,
+    email.thread_count
+  ]);
+
+  // Convert to CSV string
+  const csvContent =
+    headers.join(",") +
+    "\n" +
+    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+  // Create and auto-download file
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "unreplied-emails.csv";
+  a.click();
+};
+
+
 
 
   return (
@@ -78,7 +157,7 @@ export function ForwardedPage() {
       dropdownOptions={dropdownOptions}
       onDropdownChange={handleCategoryChange} 
       selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by Status"
+      dropdownPlaceholder="Filter by contact"
       
       
       onSearchChange={handleSearchChange}
@@ -174,7 +253,7 @@ export function ForwardedPage() {
               </tr>
             </thead>
             <tbody>
-              {emails.map((email, index) => (
+              {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
                   onClick={() => {
@@ -203,7 +282,7 @@ export function ForwardedPage() {
             </tbody>
           </table>
         </div>
-        {emails.length > 0 && (
+        {filteredEmails.length > 0 && (
           <Pagination slice={"forwarded"} fn={getForwardedEmails} />
         )}
 

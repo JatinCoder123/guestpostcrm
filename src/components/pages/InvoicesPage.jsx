@@ -7,8 +7,13 @@ import {
   Download,
   Pen,
 } from "lucide-react";
+<<<<<<< HEAD
 
 import { useDispatch, useSelector } from "react-redux";
+=======
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+>>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
 import { useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
 import Pagination from "../Pagination";
@@ -62,10 +67,57 @@ export function InvoicesPage() {
     );
   }
 
+
+  const filteredinvoices = invoices
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.name.split("<")[0].trim().toLowerCase();
+      // const subject = item.order_id?.toLowerCase() || "";
+      // const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      // if (selectedCategory === "subject") {
+      //   return subject.includes(searchValue);
+      // }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      // if (selectedSort === "oldest") {
+      //   return new Date(a.date_entered) - new Date(b.date_entered);
+      // }
+
+      return 0;
+    });
+
+
+
+
   const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'contect', label: 'contact' }
   ];
 
   const filterOptions = [
@@ -95,9 +147,43 @@ export function InvoicesPage() {
     console.log('Sort selected:', value);
   };
 
+
   const handleDownload = () => {
-    console.log('Download clicked');
+    if (!filteredinvoices || filteredinvoices.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    // Convert Objects → CSV rows
+    const headers = ["DATE", "INVOICE ID", "CLIENT", "AMOUNT", "STATUS", "DUE DATE", "	PAID DATE"];
+
+    const rows = filteredinvoices.map((email) => [
+      email.date_entered,
+      email.invoice_id?.slice(0, 4),
+      email.name,
+      email.amount_c,
+      email.status_c,
+      email.due_date,
+      email.payment_data
+
+    ]);
+
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
   };
+
 
   const updateInvoiceHandler = (invoice, data) => {
     const updatedInvoice = {
@@ -178,6 +264,47 @@ export function InvoicesPage() {
         className="mb-6"
       />
 
+      <SearchComponent
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by contact"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -301,7 +428,7 @@ export function InvoicesPage() {
               </tr>
             </thead>
             <tbody>
-              {invoices.map((invoice) => (
+              {filteredinvoices.map((invoice) => (
                 <tr
                   key={invoice.id}
                   className="border-b border-gray-100 hover:bg-yellow-50 transition-colors cursor-pointer"
@@ -317,13 +444,7 @@ export function InvoicesPage() {
                     {invoice.amount_c ?? "NOT PAID"}
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                        invoice.status_c
-                      )}`}
-                    >
-                      {invoice.status_c}
-                    </span>
+                    {invoice.status_c}
                   </td>
 
                   <td className="px-6 py-4 text-gray-600">
@@ -334,6 +455,8 @@ export function InvoicesPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
+                      {/* Download Button */}
+
 
                       {/* Update Button */}
                       <button
@@ -353,7 +476,7 @@ export function InvoicesPage() {
         {invoices.length > 0 && (
           <Pagination slice={"invoices"} fn={getInvoices} />
         )}
-        {invoices.length === 0 && (
+        {filteredinvoices.length === 0 && (
           <div className="p-12 text-center">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">

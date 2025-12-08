@@ -7,24 +7,30 @@ import {
   BarChart2,
   MessageCircleDashed,
 } from "lucide-react";
-
+import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
-import { BarChart } from "recharts";
 import Pagination from "../Pagination";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
-import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import SearchComponent from "./SearchComponent";
+
+
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
   const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.unreplied);
+
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
+
   const [
     handleThreadClick,
     showEmail,
@@ -34,7 +40,9 @@ export function UnrepliedEmailsPage() {
     email,
     setEmail,
   ] = useThread("unreplied");
+
   const navigateTo = useNavigate();
+
   if (showEmail && currentThreadId && email) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
@@ -48,11 +56,62 @@ export function UnrepliedEmailsPage() {
     );
   }
 
+  // ------------------------------------------------------------------
+  // ✅ SEARCH + FILTER + SORT LOGIC (ONLY NEW CODE ADDED HERE)
+  // ------------------------------------------------------------------
+
+  const filteredEmails = emails
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.from.split("<")[0].trim().toLowerCase();
+      const subject = item.subject?.toLowerCase() || "";
+      const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      if (selectedCategory === "subject") {
+        return subject.includes(searchValue);
+      }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      if (selectedSort === "oldest") {
+        return new Date(a.date_entered) - new Date(b.date_entered);
+      }
+
+      return 0;
+    });
+
+  // ------------------------------------------------------------------
+
 
   const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+    
+    { value: 'contect', label: 'contact' },
+    { value: 'subject', label: 'subject' },
   ];
 
   const filterOptions = [
@@ -60,6 +119,7 @@ export function UnrepliedEmailsPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
+<<<<<<< HEAD
 
   ];
 
@@ -80,16 +140,54 @@ export function UnrepliedEmailsPage() {
   const handleSortChange = (value) => {
     setSelectedSort(value);
     console.log('Sort selected:', value);
+=======
+  ];
+
+  const handleFilterApply = (filters) => {
+    setSelectedSort(filters.sort || ''); 
+>>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
   };
 
+  const handleSearchChange = (value) => setTopsearch(value);
+  const handleCategoryChange = (value) => setSelectedCategory(value);
+  const handleSortChange = (value) => setSelectedSort(value);
   const handleDownload = () => {
-    console.log('Download clicked');
-  };
+ if (!filteredEmails || filteredEmails.length === 0) {
+  toast.error("No data available to download");
+  return;
+}
+
+  // Convert Objects → CSV rows
+  const headers = ["Date", "Contact", "Subject", "Count"];
+  
+  const rows = filteredEmails.map((email) => [
+    email.date_entered,
+    email.from.split("<")[0].trim(),
+    email.subject,
+    email.thread_count
+  ]);
+
+  // Convert to CSV string
+  const csvContent =
+    headers.join(",") +
+    "\n" +
+    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+  // Create and auto-download file
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "unreplied-emails.csv";
+  a.click();
+};
+
 
   return (
     <>
-
       <SearchComponent
+<<<<<<< HEAD
 
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
@@ -128,12 +226,25 @@ export function UnrepliedEmailsPage() {
         showDownload={true}
 
 
+=======
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by contact"
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+        onSortChange={handleSortChange}
+        sortValue={selectedSort}
+        sortOptions={filterOptions}
+        onDownloadClick={handleDownload}
+        showDownload={true}
+>>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
         className="mb-6"
       />
 
-      {/* Unreplied Emails Section */}
+      {/* SECTION */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Mail className="w-6 h-6 text-purple-600" />
@@ -147,7 +258,7 @@ export function UnrepliedEmailsPage() {
           </span>
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -178,25 +289,14 @@ export function UnrepliedEmailsPage() {
                 </th>
               </tr>
             </thead>
+
             <tbody>
-              {emails.map((email) => (
+              {/* 🟣 USING filteredEmails NOW (NOT emails) */}
+              {filteredEmails.map((email) => (
                 <tr
-                  key={Math.random()}
+                  key={email.thread_id}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
-                  <td onClick={() => {
-                    const input = email.from.split("<")[1].split(">")[0];
-                    localStorage.setItem("email", input);
-                    setSearch(input);
-                    setEnteredEmail(input);
-                    setWelcomeHeaderContent("Unreplied");
-                    navigateTo("/");
-                  }} className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_entered}</span>
-                    </div>
-                  </td>
                   <td
                     onClick={() => {
                       const input = email.from.split("<")[1].split(">")[0];
@@ -204,12 +304,33 @@ export function UnrepliedEmailsPage() {
                       setSearch(input);
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Unreplied");
+<<<<<<< HEAD
+=======
+                      navigateTo("/");
+                    }}
+                    className="px-6 py-4"
+                  >
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{email.date_entered}</span>
+                    </div>
+                  </td>
+
+                  <td
+                    onClick={() => {
+                      const input = email.from.split("<")[1].split(">")[0];
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
+>>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
                       navigateTo("/contacts");
                     }}
                     className="px-6 py-4 text-gray-900"
                   >
                     {email.from.split("<")[0].trim()}
                   </td>
+
                   <td
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
@@ -220,6 +341,7 @@ export function UnrepliedEmailsPage() {
                   >
                     {email.subject}
                   </td>
+
                   <td
                     onClick={() => {
                       const input = email.from.split("<")[1].split(">")[0];
@@ -238,13 +360,15 @@ export function UnrepliedEmailsPage() {
             </tbody>
           </table>
         </div>
+
         {emails?.length > 0 && (
           <Pagination slice={"unreplied"} fn={getUnrepliedEmail} />
         )}
-        {emails.length === 0 && (
+
+        {filteredEmails.length === 0 && (
           <div className="p-12 text-center">
             <MessageCircleDashed className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No Unreplied emails yet.</p>
+            <p className="text-gray-500">No matching emails found.</p>
           </div>
         )}
       </div>
