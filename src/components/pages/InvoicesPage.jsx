@@ -334,13 +334,6 @@ export function InvoicesPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      {/* Download Button */}
-                      <button
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Download"
-                      >
-                        <Download className="w-4 h-4 text-gray-600" />
-                      </button>
 
                       {/* Update Button */}
                       <button

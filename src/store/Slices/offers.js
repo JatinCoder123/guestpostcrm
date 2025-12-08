@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -119,6 +120,7 @@ export const updateOffer = (offer) => {
 
       dispatch(offersSlice.actions.clearAllErrors());
     } catch (error) {
+      console.log(`Update Offer Error`, error);
       dispatch(
         offersSlice.actions.updateOfferFailed("Updating Offer Failed")
       );

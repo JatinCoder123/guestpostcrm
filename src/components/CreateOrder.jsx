@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createOrder, orderAction } from "../store/Slices/orders";
 import PreviewOrders from "./PreviewOrders";
+import { sendEmailToThread } from "../store/Slices/threadEmail";
+import { renderToStaticMarkup } from "react-dom/server";
 const LOCAL_KEY = "create_order_draft_v1";
 
 export default function CreateOrder() {
@@ -23,23 +25,22 @@ export default function CreateOrder() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const { contactInfo } = useSelector((state) => state.viewEmail);
 
 
-  const [orders, setOrders] = useState(() => {
-    try {
-      const raw = localStorage.getItem(LOCAL_KEY);
-      if (raw) return JSON.parse(raw);
-      return [...prevOrders];
-    } catch (e) {
-      toast.error(e);
-      return [...prevOrders];
-    }
-  });
+  const [orders, setOrders] = useState([]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
 
 
+  useEffect(() => {
+    if (prevOrders.length > 0) {
+      setOrders(
+        prevOrders.filter((d) => d.client_email === email)
+      );
+    }
+  }, [prevOrders, email]);
 
   // Save to localStorage
   useEffect(() => {
@@ -78,13 +79,13 @@ export default function CreateOrder() {
     () =>
       orders.length > 0 &&
       orders.every(
-        (d) => String(d.orderamount).trim() !== "" && Number(d.orderamount) > 0
+        (d) => String(d.total_amount_c).trim() !== "" && Number(d.total_amount_c) > 0
       ),
     [orders]
   );
 
   const totalAmount = useMemo(
-    () => orders.reduce((s, d) => s + Number(d.orderamount || 0), 0),
+    () => orders.reduce((s, d) => s + Number(d.total_amount_c || 0), 0),
     [orders]
   );
 
@@ -100,9 +101,16 @@ export default function CreateOrder() {
       toast.error("Please validate all orders before submitting.");
       return;
     }
+    if (contactInfo.thread_id) {
+      dispatch(sendEmailToThread(contactInfo.thread_id, renderToStaticMarkup(
+        <PreviewOrders
+          orders={orders}
+          totalAmount={totalAmount}
+          userEmail={email}
+        />
+      )))
+    }
 
-    dispatch(orderAction.UpdateOrders([...orders, ...prevOrders]));
-    dispatch(createOrder(orders));
   };
 
   // ────────────────────────────────────────────────
@@ -131,8 +139,7 @@ export default function CreateOrder() {
     setOrders(arr);
   };
 
-  // ────────────────────────────────────────────────
-  // UI
+
   return (
     <>
 
@@ -178,7 +185,7 @@ export default function CreateOrder() {
                       className="space-y-4"
                     >
                       <AnimatePresence>
-                        {prevOrders.map((order, idx) => (
+                        {orders.length > 0 && orders.map((order, idx) => (
                           <Draggable
                             key={order.id}
                             draggableId={order.id}
@@ -202,7 +209,7 @@ export default function CreateOrder() {
                                     </div>
 
                                     <h4 className="text-lg font-medium">
-                                      Order for {order.name}
+                                      Order for {order.real_name?.split("<")[0]}
                                     </h4>
                                   </div>
 
@@ -214,7 +221,21 @@ export default function CreateOrder() {
                                   </button>
                                 </div>
 
-                                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {/* Amount */}
+                                  <div>
+                                    <label className="block text-xs text-gray-600">
+                                      Order Id
+                                    </label>
+                                    <div className="relative mt-1">
+                                      <input
+                                        value={order.order_id || ""}
+                                        disabled
+                                        inputMode="numeric"
+                                        className="w-full rounded-xl border px-3 py-2 bg-white"
+                                      />
+                                    </div>
+                                  </div>
                                   {/* Amount */}
                                   <div>
                                     <label className="block text-xs text-gray-600">
@@ -225,10 +246,10 @@ export default function CreateOrder() {
                                         $
                                       </span>
                                       <input
-                                        value={order.our_price_c}
+                                        value={order.total_amount_c || ""}
                                         onChange={(e) =>
                                           updateOrder(idx, {
-                                            our_price_c: e.target.value,
+                                            total_amount_c: e.target.value,
                                           })
                                         }
                                         inputMode="numeric"
@@ -244,7 +265,12 @@ export default function CreateOrder() {
                                       Website
                                     </label>
                                     <input
-                                      value={order.website_c}
+                                      value={order.website_c || ""}
+                                      onChange={(e) =>
+                                        updateOrder(idx, {
+                                          website_c: e.target.value,
+                                        })
+                                      }
                                       className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
                                     />
                                   </div>
@@ -255,8 +281,38 @@ export default function CreateOrder() {
                                       Email
                                     </label>
                                     <input
-                                      value={order.client_email}
+                                      value={order.client_email || ""}
                                       disabled
+                                      className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
+                                    />
+                                  </div>
+                                  {/* Website */}
+                                  <div>
+                                    <label className="block text-xs text-gray-600">
+                                      Invoice Link
+                                    </label>
+                                    <input
+                                      value={order.invoice_link_c || ""}
+                                      onChange={(e) =>
+                                        updateOrder(idx, {
+                                          invoice_link_c: e.target.value,
+                                        })
+                                      }
+                                      className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
+                                    />
+                                  </div>
+                                  {/* Website */}
+                                  <div>
+                                    <label className="block text-xs text-gray-600">
+                                      Their Link
+                                    </label>
+                                    <input
+                                      value={order.their_links || ""}
+                                      onChange={(e) =>
+                                        updateOrder(idx, {
+                                          their_links: e.target.value,
+                                        })
+                                      }
                                       className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
                                     />
                                   </div>
@@ -276,7 +332,7 @@ export default function CreateOrder() {
               {/* Footer */}
               <div className="mt-6 flex items-center justify-between">
                 <p className="text-sm text-gray-600">
-                  Total Orders: {prevOrders.length}
+                  Total Orders: {orders.length}
                 </p>
               </div>
             </div>
@@ -291,18 +347,18 @@ export default function CreateOrder() {
                 <div className="mt-3 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Orders</span>
-                    <strong>{prevOrders.length}</strong>
+                    <strong>{orders.length}</strong>
                   </div>
 
                   {/* Website breakdown */}
                   <div className="mt-3">
                     <strong className="block mb-1">Websites</strong>
 
-                    {prevOrders.length === 0 ? (
+                    {orders.length === 0 ? (
                       <p className="text-gray-400">No websites selected</p>
                     ) : (
                       <ul className="list-none space-y-1">
-                        {prevOrders.map((d, i) => (
+                        {orders.map((d, i) => (
                           <li key={i}>
                             {d.website_c || "(no site)"} —{" "}
                             <strong>${Number(d.dealamount || 0)}</strong>
@@ -322,9 +378,9 @@ export default function CreateOrder() {
 
                 <div className="mt-4 flex gap-3">
                   <button
-                    disabled={prevOrders.length === 0 || !valid || creating}
+                    disabled={orders.length === 0 || !valid || creating}
                     onClick={submitAll}
-                    className={`w-full px-3 py-2 rounded-lg text-white ${prevOrders.length === 0 || !valid
+                    className={`w-full px-3 py-2 rounded-lg text-white ${orders.length === 0 || !valid
                       ? "bg-gray-300 cursor-not-allowed"
                       : "bg-green-600 hover:bg-green-700"
                       }`}
@@ -355,7 +411,7 @@ export default function CreateOrder() {
               <div className="max-h-[80vh] overflow-y-auto p-6">
 
                 <PreviewOrders
-                  orders={prevOrders}
+                  orders={orders}
                   totalAmount={totalAmount}
                   userEmail={email}
                 />
@@ -366,6 +422,7 @@ export default function CreateOrder() {
               <div className="p-4 border-t flex items-center justify-between bg-white">
 
                 <button
+                  onClick={submitAll}
                   style={{
                     padding: "12px 26px",
                     background:

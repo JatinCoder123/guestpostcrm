@@ -225,19 +225,6 @@ export function OrdersPage() {
           </div>
 
           <div className="relative group ">
-            <button
-              onClick={() => navigateTo("create")}
-
-              className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-            >
-              <img
-                width="40"
-                height="40"
-                src="https://img.icons8.com/arcade/64/plus.png"
-                alt="plus"
-              />
-            </button>
-
             {/* Tooltip */}
             <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
                    bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
@@ -287,7 +274,7 @@ export function OrdersPage() {
                 >
                   <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
                   <td className="px-6 py-4 text-gray-900">
-                    {order.name?.split("<")[0].trim()}
+                    {order.real_name.split("<")[0].trim()}
                   </td>
                   <td className="px-6 py-4 text-green-600">
                     {order.total_amount_c}

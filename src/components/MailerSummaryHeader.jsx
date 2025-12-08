@@ -8,7 +8,7 @@ import {
 import { Titletooltip } from "./TitleTooltip";
 import { Link } from "react-router-dom";
 
-const MailerSummaryHeader = () => {
+const MailerSummaryHeader = ({ email }) => {
   const { mailersSummary } = useSelector((state) => state.ladger);
   return (
     <div className="mt-4 p-6 bg-cyan-50 rounded-3xl shadow-xl border border-white/40">

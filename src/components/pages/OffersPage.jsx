@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CreateOffer from "../CreateOffer";
 import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus, Pen } from "lucide-react";
-import { getOffers } from "../../store/Slices/offers";
+import { getOffers, offersAction, updateOffer } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
 import UpdatePopup from "../UpdatePopup";
+import { toast } from "react-toastify";
 
 export function OffersPage() {
-  const { offers, count, loading } = useSelector((state) => state.offers);
+  const { offers, count, loading, updating, error, message } = useSelector((state) => state.offers);
   const [showOffer, setShowOffer] = useState(false);
   const [editData, setEditData] = useState(null);
   const [topsearch, setTopsearch] = useState('');
@@ -34,7 +35,7 @@ export function OffersPage() {
   const pending = offers.filter((o) => o.status === "Pending").length;
   const accepted = offers.filter((o) => o.status === "Accepted").length;
 
-
+  const dispatch = useDispatch();
   const dropdownOptions = [
     { value: 'all', label: 'All' },
     { value: 'pending', label: 'Pending' },
@@ -73,9 +74,20 @@ export function OffersPage() {
   };
 
   const updateOfferHandler = (offer, data) => {
-    console.log('Updating offer:', offer, data);
-    setCurrentUpdateOffer(null);
+    const updatedOffer = { ...offer, ...data };
+    dispatch(updateOffer(updatedOffer));
   };
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(offersAction.clearAllErrors())
+    }
+    if (message) {
+      toast.success(message);
+      setCurrentUpdateOffer(null);
+      dispatch(offersAction.clearAllMessages())
+    }
+  }, [dispatch, message, error]);
 
   return (
     <>
@@ -85,9 +97,10 @@ export function OffersPage() {
             open={!!currentUpdateOffer}
             title="Update Offer"
             fields={[
-              { name: "offer_name", label: "Offer Name", type: "text", value: currentUpdateOffer.offer_name },
-              { name: "offer_description", label: "Offer Description", type: "text", value: currentUpdateOffer.offer_description },
-              { name: "offer_amount", label: "Offer Amount", type: "number", value: currentUpdateOffer.offer_amount },
+              { name: "offer_name", label: "Offer Email", type: "text", value: currentUpdateOffer.name, disabled: true },
+              { name: "client_offer_c", label: "Client Offer", type: "text", value: currentUpdateOffer.client_offer_c },
+              { name: "our_offer_c", label: "Our Offer", type: "text", value: currentUpdateOffer.our_offer_c },
+              { name: "website", label: "Website", type: "text", value: currentUpdateOffer.website },
             ]}
             loading={updating}
             onUpdate={(data) => updateOfferHandler(currentUpdateOffer, data)}
