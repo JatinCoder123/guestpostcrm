@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const invoicesSlice = createSlice({
   name: "invoices",
@@ -46,6 +47,22 @@ const invoicesSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
+    updateInvoiceRequest(state) {
+      state.updating = true;
+      state.message = null;
+      state.error = null;
+    },
+    updateInvoiceSuccess(state, action) {
+      state.updating = false;
+      state.message = action.payload.message;
+      state.invoices = action.payload.invoices;
+      state.error = null;
+    },
+    updateInvoiceFailed(state, action) {
+      state.updating = false;
+      state.error = action.payload;
+      state.message = null;
+    },
     clearAllErrors(state) {
       state.error = null;
     },
@@ -63,14 +80,12 @@ export const getInvoices = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_invoices&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_invoices&filter=${filter}&page=1&page_size=50`
         );
       }
@@ -149,9 +164,9 @@ export const createInvoice = (formData) => {
         if (urlMatch && urlMatch[1]) {
           const invoiceUrl = urlMatch[1];
 
-          
+
           window.open(invoiceUrl, '_blank');
-          
+
         }
       }
 
@@ -166,6 +181,48 @@ export const createInvoice = (formData) => {
         invoicesSlice.actions.createInvoiceFailed(
           "Network error: Failed to create invoice"
         )
+      );
+    }
+  };
+};
+
+export const updateInvoice = (invoice) => {
+  return async (dispatch, getState) => {
+    dispatch(invoicesSlice.actions.updateInvoiceRequest());
+
+    try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          parent_bean: {
+            module: "outr_paypal_invoice_links",
+            ...invoice,
+          },
+        },
+        {
+          headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "aplication/json",
+          },
+        }
+      );
+      console.log(`Update Invoice`, data);
+      const updatedInvoices = getState().invoices.invoices.map((i) => {
+        if (i.id === invoice.id) {
+          return invoice;
+        }
+        return i;
+      });
+      dispatch(
+        invoicesSlice.actions.updateInvoiceSuccess({ invoices: updatedInvoices, message: "Invoice Updated Successfully" })
+      );
+
+      dispatch(invoicesSlice.actions.clearAllErrors());
+    } catch (error) {
+      console.error("❌ Error:", error);
+      dispatch(
+        invoicesSlice.actions.updateInvoiceFailed("Updating Invoice Failed")
       );
     }
   };

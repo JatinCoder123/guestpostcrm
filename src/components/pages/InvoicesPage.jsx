@@ -8,19 +8,23 @@ import {
   Pen,
 } from "lucide-react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
 import Pagination from "../Pagination";
-import { getInvoices } from "../../store/Slices/invoices";
+import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices";
 import SearchComponent from "./SearchComponent";
+import UpdatePopup from "../UpdatePopup";
+import { toast } from "react-toastify";
 
 export function InvoicesPage() {
-  const { invoices, count } = useSelector((state) => state.invoices);
+  const { invoices, count, message, error, updating } = useSelector((state) => state.invoices);
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
+  const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
+  const dispatch = useDispatch();
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -69,7 +73,7 @@ export function InvoicesPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-   
+
   ];
 
   const handleFilterApply = (filters) => {
@@ -87,7 +91,7 @@ export function InvoicesPage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
+    setSelectedSort(value);
     console.log('Sort selected:', value);
   };
 
@@ -95,52 +99,86 @@ export function InvoicesPage() {
     console.log('Download clicked');
   };
 
+  const updateInvoiceHandler = (invoice, data) => {
+    const updatedInvoice = {
+      ...invoice,
+      ...data,
+    };
+    dispatch(updateInvoice(updatedInvoice));
+  };
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+      dispatch(invoicesAction.clearAllErrors())
+    }
+    if (message) {
+      toast.success(message)
+      setCurrentUpdateInvoice(null)
+      dispatch(invoicesAction.clearAllMessages())
+    }
+  }, [dispatch, message, error]);
+
   return (
     <>
+      {
+        currentUpdateInvoice && (
+          <UpdatePopup
+            open={!!currentUpdateInvoice}
+            title="Update Invoice"
+            fields={[
+              { name: "name", label: "Name", type: "text", value: currentUpdateInvoice.name },
+              { name: "email_c", label: "Email", type: "text", value: currentUpdateInvoice.email_c },
+              { name: "amount_c", label: "Amount", type: "number", value: currentUpdateInvoice.amount_c },
+            ]}
+            loading={updating}
+            onUpdate={(data) => updateInvoiceHandler(currentUpdateInvoice, data)}
+            onClose={() => setCurrentUpdateInvoice(null)}
+          />
+        )
+      }
+      <SearchComponent
 
-    <SearchComponent
-      
-      dropdownOptions={dropdownOptions}
-      onDropdownChange={handleCategoryChange} 
-      selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by Status"
-      
-      
-      onSearchChange={handleSearchChange}
-      searchValue={topsearch}
-      searchPlaceholder="Search emails..."
-      
-      
-      onFilterApply={handleFilterApply}
-      filterPlaceholder="Filters"
-      showFilter={true}
-      
-      
-      archiveOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ]}
-      transactionTypeOptions={[
-        { value: 'all', label: 'All Emails' },
-        { value: 'incoming', label: 'Incoming' },
-        { value: 'outgoing', label: 'Outgoing' },
-      ]}
-      currencyOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]}
-      
-      
-      onDownloadClick={handleDownload}
-      showDownload={true}
-      
-      
-      className="mb-6"
-    />
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by Status"
 
-    
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
+
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
@@ -199,34 +237,34 @@ export function InvoicesPage() {
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6 text-yellow-600" />
             <h2 className="text-xl font-semibold text-gray-900">INVOICES</h2>
-             <a href="https://www.guestpostcrm.com/blog/one-click-paypal-invoice-creation/"  target="_blank" 
-  rel="noopener noreferrer">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <a href="https://www.guestpostcrm.com/blog/one-click-paypal-invoice-creation/" target="_blank"
+              rel="noopener noreferrer">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
-        
-             <div className="relative group ">
-  <button
-   
-    className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-     onClick={() => setShowCreateInvoice(true)}
-  >
-    <img
-      width="40"
-      height="40"
-      src="https://img.icons8.com/arcade/64/plus.png"
-      alt="plus"
-    />
-  </button>
 
-  {/* Tooltip */}
-  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+          <div className="relative group ">
+            <button
+
+              className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
+              onClick={() => setShowCreateInvoice(true)}
+            >
+              <img
+                width="40"
+                height="40"
+                src="https://img.icons8.com/arcade/64/plus.png"
+                alt="plus"
+              />
+            </button>
+
+            {/* Tooltip */}
+            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
                    bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
                    opacity-0 group-hover:opacity-100 transition 
                    pointer-events-none whitespace-nowrap shadow-md">
-     Create Invoices
-  </span>
-</div>
+              Create Invoices
+            </span>
+          </div>
         </div>
 
         {/* Table */}
@@ -234,7 +272,7 @@ export function InvoicesPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                                <th className="px-6 py-4 text-left">
+                <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span> DATE</span>
@@ -268,7 +306,7 @@ export function InvoicesPage() {
                   key={invoice.id}
                   className="border-b border-gray-100 hover:bg-yellow-50 transition-colors cursor-pointer"
                 >
-                    <td className="px-6 py-4 text-gray-600">
+                  <td className="px-6 py-4 text-gray-600">
                     {invoice.date_entered}
                   </td>
                   <td className="px-6 py-4 text-yellow-600">
@@ -287,7 +325,7 @@ export function InvoicesPage() {
                       {invoice.status_c}
                     </span>
                   </td>
-                
+
                   <td className="px-6 py-4 text-gray-600">
                     {invoice.due_date ?? "PENDING"}
                   </td>
@@ -306,6 +344,7 @@ export function InvoicesPage() {
 
                       {/* Update Button */}
                       <button
+                        onClick={() => setCurrentUpdateInvoice(invoice)}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >

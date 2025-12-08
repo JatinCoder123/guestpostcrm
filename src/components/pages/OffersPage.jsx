@@ -6,6 +6,7 @@ import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus, Pen } from "lucide
 import { getOffers } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
+import UpdatePopup from "../UpdatePopup";
 
 export function OffersPage() {
   const { offers, count, loading } = useSelector((state) => state.offers);
@@ -14,6 +15,7 @@ export function OffersPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
+  const [currentUpdateOffer, setCurrentUpdateOffer] = useState(null);
 
   // Show popup only
   if (showOffer) {
@@ -70,9 +72,29 @@ export function OffersPage() {
     console.log('Download clicked');
   };
 
+  const updateOfferHandler = (offer, data) => {
+    console.log('Updating offer:', offer, data);
+    setCurrentUpdateOffer(null);
+  };
+
   return (
     <>
-
+      {
+        currentUpdateOffer && (
+          <UpdatePopup
+            open={!!currentUpdateOffer}
+            title="Update Offer"
+            fields={[
+              { name: "offer_name", label: "Offer Name", type: "text", value: currentUpdateOffer.offer_name },
+              { name: "offer_description", label: "Offer Description", type: "text", value: currentUpdateOffer.offer_description },
+              { name: "offer_amount", label: "Offer Amount", type: "number", value: currentUpdateOffer.offer_amount },
+            ]}
+            loading={updating}
+            onUpdate={(data) => updateOfferHandler(currentUpdateOffer, data)}
+            onClose={() => setCurrentUpdateOffer(null)}
+          />
+        )
+      }
       <SearchComponent
 
         dropdownOptions={dropdownOptions}
@@ -273,8 +295,7 @@ export function OffersPage() {
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                         onClick={() => {
-                          setEditData(offer);
-                          setShowOffer(true);
+                          setCurrentUpdateOffer(offer);
                         }}
                       >
                         <Pen className="w-5 h-5 text-blue-600" />

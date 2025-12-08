@@ -8,21 +8,25 @@ import {
   User,
 } from "lucide-react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../Pagination";
-import { getOrders } from "../../store/Slices/orders";
+import { getOrders, orderAction, updateOrder } from "../../store/Slices/orders";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
+import UpdatePopup from "../UpdatePopup";
+import { toast } from "react-toastify";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { orders, count, loading, error } = useSelector(
+  const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null)
+  const { orders, count, loading, error, message, updating } = useSelector(
     (state) => state.orders
   );
   const navigateTo = useNavigate()
+  const dispatch = useDispatch()
   const getStatusColor = (status) => {
     switch (status) {
       case "Completed":
@@ -51,7 +55,7 @@ export function OrdersPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-   
+
   ];
 
   const handleFilterApply = (filters) => {
@@ -69,59 +73,91 @@ export function OrdersPage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
+    setSelectedSort(value);
     console.log('Sort selected:', value);
   };
 
   const handleDownload = () => {
     console.log('Download clicked');
   };
+  const updateOrderHandler = (currentOrder, data) => {
+    const updateOrderData = {
+      ...currentOrder,
+      ...data
+    }
+    dispatch(updateOrder(updateOrderData))
+  }
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+      dispatch(orderAction.clearAllErrors())
+    }
+    if (message) {
+      toast.success(message)
+      setCurrentUpdateOrder(null)
+      dispatch(orderAction.clearAllMessages())
+    }
+  }, [dispatch, error, message])
 
   return (
     <>
 
-
+      {
+        currentUpdateOrder && (
+          <UpdatePopup
+            open={!!currentUpdateOrder}
+            title="Update Order"
+            fields={[
+              { name: "total_amount_c", label: "Order Amount", type: "number", value: currentUpdateOrder.total_amount_c },
+              { name: "website_c", label: "Website", type: "text", value: currentUpdateOrder.website_c },
+              { name: "client_email", label: "Client Email", type: "email", value: currentUpdateOrder.client_email },
+            ]}
+            loading={updating}
+            onUpdate={(data) => updateOrderHandler(currentUpdateOrder, data)}
+            onClose={() => setCurrentUpdateOrder(null)}
+          />
+        )
+      }
       <SearchComponent
-      
-      dropdownOptions={dropdownOptions}
-      onDropdownChange={handleCategoryChange} 
-      selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by Status"
-      
-      
-      onSearchChange={handleSearchChange}
-      searchValue={topsearch}
-      searchPlaceholder="Search emails..."
-      
-      
-      onFilterApply={handleFilterApply}
-      filterPlaceholder="Filters"
-      showFilter={true}
-      
-      
-      archiveOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ]}
-      transactionTypeOptions={[
-        { value: 'all', label: 'All Emails' },
-        { value: 'incoming', label: 'Incoming' },
-        { value: 'outgoing', label: 'Outgoing' },
-      ]}
-      currencyOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]}
-      
-      
-      onDownloadClick={handleDownload}
-      showDownload={true}
-      
-      
-      className="mb-6"
-    />
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by Status"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
 
 
       {/* Stats Cards */}
@@ -187,29 +223,29 @@ export function OrdersPage() {
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
           </div>
-         
-      <div className="relative group ">
-   <button
-            onClick={() => navigateTo("create")}
-   
-    className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-  >
-    <img
-      width="40"
-      height="40"
-      src="https://img.icons8.com/arcade/64/plus.png"
-      alt="plus"
-    />
-  </button>
 
-  {/* Tooltip */}
-  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+          <div className="relative group ">
+            <button
+              onClick={() => navigateTo("create")}
+
+              className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
+            >
+              <img
+                width="40"
+                height="40"
+                src="https://img.icons8.com/arcade/64/plus.png"
+                alt="plus"
+              />
+            </button>
+
+            {/* Tooltip */}
+            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
                    bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
                    opacity-0 group-hover:opacity-100 transition 
                    pointer-events-none whitespace-nowrap shadow-md">
-     Create Order
-  </span>
-</div>
+              Create Order
+            </span>
+          </div>
         </div>
 
         {/* Table */}
@@ -217,7 +253,7 @@ export function OrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                 <th className="px-6 py-4 text-left">
+                <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span>DATE</span>
@@ -236,11 +272,11 @@ export function OrdersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
-              
+
                 <th className="px-6 py-4 text-left">DELIVERY DATE</th>
                 <th className="px-6 py-4 text-left">ORDER ID</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
-                 
+
               </tr>
             </thead>
             <tbody>
@@ -275,6 +311,7 @@ export function OrdersPage() {
                     <div className="flex gap-2">
                       {/* Update Button */}
                       <button
+                        onClick={() => setCurrentUpdateOrder(order)}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
