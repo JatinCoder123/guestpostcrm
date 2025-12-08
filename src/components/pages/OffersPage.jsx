@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import CreateOffer from "../CreateOffer";
 import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus, Pen } from "lucide-react";
@@ -28,15 +28,67 @@ export function OffersPage() {
     );
   }
 
+
+
+
+  const filteredoffers =offers
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.real_name?.split("<")[0].trim().toLowerCase();
+      // const subject = item.order_id?.toLowerCase() || "";
+      // const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      // if (selectedCategory === "subject") {
+      //   return subject.includes(searchValue);
+      // }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      // if (selectedSort === "oldest") {
+      //   return new Date(a.date_entered) - new Date(b.date_entered);
+      // }
+
+      return 0;
+    });
+
+
+
+
+
+
+
   // Calculate stats
   const pending = offers.filter((o) => o.status === "Pending").length;
   const accepted = offers.filter((o) => o.status === "Accepted").length;
 
 
   const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+ { value: 'contect', label: 'contact' }
   ];
 
   const filterOptions = [
@@ -66,9 +118,43 @@ export function OffersPage() {
     console.log('Sort selected:', value);
   };
 
-  const handleDownload = () => {
-    console.log('Download clicked');
-  };
+ 
+   const handleDownload = () => {
+  if (!filteredoffers || filteredoffers.length === 0) {
+   toast.error("No data available to download");
+   return;
+ }
+ 
+   // Convert Objects → CSV rows
+   const headers = ["DATE", "CONTACT", "EMAIL", "CLIENT OFFER", "OUR OFFER"];
+   
+   const rows = filteredoffers.map((email) => [
+     email.date_entered,
+     email.real_name?.split("<")[0].trim(),
+     email.name,
+     email.client_offer_c,
+     email.our_offer_c
+    
+     
+   ]);
+ 
+   // Convert to CSV string
+   const csvContent =
+     headers.join(",") +
+     "\n" +
+     rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+ 
+   // Create and auto-download file
+   const blob = new Blob([csvContent], { type: "text/csv" });
+   const url = URL.createObjectURL(blob);
+ 
+   const a = document.createElement("a");
+   a.href = url;
+   a.download = "unreplied-emails.csv";
+   a.click();
+ };
+ 
+
 
   return (
     <>
@@ -78,7 +164,7 @@ export function OffersPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by Status"
+        dropdownPlaceholder="Filter by contact"
 
 
         onSearchChange={handleSearchChange}
@@ -243,14 +329,14 @@ export function OffersPage() {
                   CLIENT OFFER
                 </th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
-                <th className="px-6 py-4 text-left">EXPIRES</th>
+              
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
             </thead>
 
             <tbody>
-              {offers.map((offer, index) => (
+              {filteredoffers.map((offer, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-pink-50 transition"
@@ -261,7 +347,7 @@ export function OffersPage() {
 
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
-                  <td className="px-6 py-4 text-gray-600">{"N/A"}</td>
+                  
 
 
                   <td className="pl-9 py-4">
@@ -289,7 +375,7 @@ export function OffersPage() {
         </div>
         {offers.length > 0 && <Pagination slice={"offers"} fn={getOffers} />}
 
-        {!loading && offers.length === 0 && (
+        {!loading && filteredoffers.length === 0 && (
           <div className="p-12 text-center">
             <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No offers yet. Create your first offer to get started.</p>

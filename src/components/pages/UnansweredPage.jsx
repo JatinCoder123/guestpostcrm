@@ -9,7 +9,7 @@ import {
   Repeat,
   EqualApproximatelyIcon,
 } from "lucide-react";
-
+import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import EmailBox from "../EmailBox";
@@ -38,6 +38,9 @@ export function UnansweredPage() {
     email,
     setEmail,
   ] = useThread("unanswered");
+
+
+
   if (showEmail && currentThreadId && email) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
@@ -52,10 +55,60 @@ export function UnansweredPage() {
     );
   }
 
-  const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+
+  // ------------------------------------------------------------------
+  // ✅ SEARCH + FILTER + SORT LOGIC (ONLY NEW CODE ADDED HERE)
+  // ------------------------------------------------------------------
+
+  const filteredEmails = emails
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.from.split("<")[0].trim().toLowerCase();
+      const subject = item.subject?.toLowerCase() || "";
+      const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      if (selectedCategory === "subject") {
+        return subject.includes(searchValue);
+      }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      if (selectedSort === "oldest") {
+        return new Date(a.date_entered) - new Date(b.date_entered);
+      }
+
+      return 0;
+    });
+
+   const dropdownOptions = [
+    
+    { value: 'contect', label: 'contact' },
+    { value: 'subject', label: 'subject' },
   ];
 
   const filterOptions = [
@@ -86,8 +139,37 @@ export function UnansweredPage() {
   };
 
   const handleDownload = () => {
-    console.log('Download clicked');
-  };
+ if (!filteredEmails || filteredEmails.length === 0) {
+  toast.error("No data available to download");
+  return;
+}
+
+  // Convert Objects → CSV rows
+  const headers = ["Date", "Contact", "Subject", "Count"];
+  
+  const rows = filteredEmails.map((email) => [
+    email.date_entered,
+    email.from.split("<")[0].trim(),
+    email.subject,
+    email.thread_count
+  ]);
+
+  // Convert to CSV string
+  const csvContent =
+    headers.join(",") +
+    "\n" +
+    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+  // Create and auto-download file
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "unreplied-emails.csv";
+  a.click();
+};
+
 
   return (
     <>
@@ -97,7 +179,7 @@ export function UnansweredPage() {
       dropdownOptions={dropdownOptions}
       onDropdownChange={handleCategoryChange} 
       selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by Status"
+      dropdownPlaceholder="Filter by contact"
       
       
       onSearchChange={handleSearchChange}
@@ -182,7 +264,7 @@ export function UnansweredPage() {
               </tr>
             </thead>
             <tbody>
-              {emails.map((email, index) => (
+              {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
@@ -241,7 +323,7 @@ export function UnansweredPage() {
         {emails?.length > 0 && (
           <Pagination slice={"unanswered"} fn={getUnansweredEmails} />
         )}
-        {emails.length === 0 && (
+        {filteredEmails.length === 0 && (
           <div className="p-12 text-center">
             <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No Replied emails yet.</p>
