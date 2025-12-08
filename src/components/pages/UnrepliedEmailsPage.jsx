@@ -22,10 +22,7 @@ import SearchComponent from "./SearchComponent";
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-<<<<<<< HEAD
-=======
-  
->>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
+
   const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.unreplied);
 
@@ -109,7 +106,7 @@ export function UnrepliedEmailsPage() {
 
 
   const dropdownOptions = [
-    
+
     { value: 'contect', label: 'contact' },
     { value: 'subject', label: 'subject' },
   ];
@@ -119,75 +116,51 @@ export function UnrepliedEmailsPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-<<<<<<< HEAD
-
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
-  };
-
-  const handleSearchChange = (value) => {
-    setTopsearch(value);
-    console.log('Searching for:', value);
-  };
-
-  const handleCategoryChange = (value) => {
-    setSelectedCategory(value);
-    console.log('Category selected:', value);
-  };
-
-  const handleSortChange = (value) => {
-    setSelectedSort(value);
-    console.log('Sort selected:', value);
-=======
-  ];
-
-  const handleFilterApply = (filters) => {
-    setSelectedSort(filters.sort || ''); 
->>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
+    setSelectedSort(filters.sort || '');
   };
 
   const handleSearchChange = (value) => setTopsearch(value);
   const handleCategoryChange = (value) => setSelectedCategory(value);
   const handleSortChange = (value) => setSelectedSort(value);
   const handleDownload = () => {
- if (!filteredEmails || filteredEmails.length === 0) {
-  toast.error("No data available to download");
-  return;
-}
+    if (!filteredEmails || filteredEmails.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
 
-  // Convert Objects → CSV rows
-  const headers = ["Date", "Contact", "Subject", "Count"];
-  
-  const rows = filteredEmails.map((email) => [
-    email.date_entered,
-    email.from.split("<")[0].trim(),
-    email.subject,
-    email.thread_count
-  ]);
+    // Convert Objects → CSV rows
+    const headers = ["Date", "Contact", "Subject", "Count"];
 
-  // Convert to CSV string
-  const csvContent =
-    headers.join(",") +
-    "\n" +
-    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    const rows = filteredEmails.map((email) => [
+      email.date_entered,
+      email.from.split("<")[0].trim(),
+      email.subject,
+      email.thread_count
+    ]);
 
-  // Create and auto-download file
-  const blob = new Blob([csvContent], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "unreplied-emails.csv";
-  a.click();
-};
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
+  };
 
 
   return (
     <>
       <SearchComponent
-<<<<<<< HEAD
 
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
@@ -226,20 +199,6 @@ export function UnrepliedEmailsPage() {
         showDownload={true}
 
 
-=======
-        dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
-        onSearchChange={handleSearchChange}
-        searchValue={topsearch}
-        searchPlaceholder="Search emails..."
-        onSortChange={handleSortChange}
-        sortValue={selectedSort}
-        sortOptions={filterOptions}
-        onDownloadClick={handleDownload}
-        showDownload={true}
->>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
         className="mb-6"
       />
 
@@ -304,8 +263,6 @@ export function UnrepliedEmailsPage() {
                       setSearch(input);
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Unreplied");
-<<<<<<< HEAD
-=======
                       navigateTo("/");
                     }}
                     className="px-6 py-4"
@@ -323,7 +280,6 @@ export function UnrepliedEmailsPage() {
                       setSearch(input);
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Unreplied");
->>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
                       navigateTo("/contacts");
                     }}
                     className="px-6 py-4 text-gray-900"

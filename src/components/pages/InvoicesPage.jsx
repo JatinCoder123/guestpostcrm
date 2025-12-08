@@ -7,13 +7,8 @@ import {
   Download,
   Pen,
 } from "lucide-react";
-<<<<<<< HEAD
 
 import { useDispatch, useSelector } from "react-redux";
-=======
-import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
->>>>>>> 7d387b0a8f99538b39eb4e59350afe2782a1bd9f
 import { useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
 import Pagination from "../Pagination";
