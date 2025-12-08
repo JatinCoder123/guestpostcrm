@@ -287,7 +287,7 @@ export function OrdersPage() {
                 >
                   <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
                   <td className="px-6 py-4 text-gray-900">
-                    {order.real_name?.split("<")[0].trim()}
+                    {order.name?.split("<")[0].trim()}
                   </td>
                   <td className="px-6 py-4 text-green-600">
                     {order.total_amount_c}
@@ -302,10 +302,12 @@ export function OrdersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {order.id_C}
+                    {order.complete_date}
+
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {order.complete_data}
+                    {order.order_id}
+
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
