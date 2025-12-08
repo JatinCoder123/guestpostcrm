@@ -15,7 +15,7 @@ const DisplayIntro = () => {
   return (
     <div className="h-screen w-screen overflow-hidden m-0 p-0">
       <video
-        src="/introVideo.mp4"
+        src="/video.mp4"
         autoPlay
         loop
         muted
