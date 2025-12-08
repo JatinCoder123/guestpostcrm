@@ -8,7 +8,7 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
-import { LoadingAll, LoadingSpin } from "../Loading";
+import { LoadingAll, LoadingChase, LoadingSpin } from "../Loading";
 import { Titletooltip } from "../pages/Titletooltip"
 
 import { getAiReply } from "../../store/Slices/aiReply";
@@ -24,32 +24,34 @@ import ContactHeader from "../ContactHeader";
 import { extractEmail } from "../../assets/assets";
 import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
-
+import { useContext } from "react";
+import { PageContext } from "../../context/pageContext";
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
   const [showThread, setShowThread] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
-  const [currentEmailIndex, setCurrentEmailIndex] = useState(0);
+  const { currentIndex, setCurrentIndex } = useContext(PageContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
-
-
   const {
     error: sendError,
     message,
     threadId,
   } = useSelector((state) => state.viewEmail);
 
+
   const {
     error: threadError,
     message: threadMessage,
+    sending,
   } = useSelector((state) => state.threadEmail);
 
   const {
     aiReply,
+    loading: aiReplyLoading,
     error: aiError,
   } = useSelector((s) => s.aiReply);
 
@@ -64,7 +66,7 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading } = useSelector(
     (state) => state.unreplied
   );
-  const currentThreadId = emails.length > 0 ? emails[currentEmailIndex].thread_id : null;
+  const currentThreadId = emails.length > 0 ? emails[currentIndex].thread_id : null;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -124,13 +126,12 @@ export function TimelinePage() {
         typeof aiReply === "string" ? aiReply : aiReply?.reply_suggestion;
 
       if (replyContent) {
-        dispatch(sendEmailToThread(emails[currentEmailIndex].thread_id, replyContent));
+        dispatch(sendEmailToThread(emails[currentIndex].thread_id, replyContent));
         dispatch(addEvent({
           email: email,
-          thread_id: emails[currentEmailIndex].thread_id,
+          thread_id: emails[currentIndex].thread_id,
           recent_activity: "AI reply sent",
         }));
-        toast.success("AI reply sent successfully!");
       } else {
         toast.error("No valid reply content found");
       }
@@ -145,30 +146,27 @@ export function TimelinePage() {
 
   useEffect(() => {
     if (emails.length > 0) {
-      dispatch(getLadgerEmail(extractEmail(emails[currentEmailIndex].from)));
-
-
       if (initialLoad) {
         console.log("🚀 Generating AI reply on page load...");
-        dispatch(getAiReply(emails[currentEmailIndex].thread_id));
+        dispatch(getAiReply(emails[currentIndex].thread_id));
         setInitialLoad(false);
       }
 
       else {
-        dispatch(getAiReply(emails[currentEmailIndex].thread_id));
+        dispatch(getAiReply(emails[currentIndex].thread_id));
       }
     }
-  }, [currentEmailIndex, dispatch, initialLoad]);
+  }, [currentIndex, dispatch, initialLoad]);
 
   const handleNext = () => {
-    if (currentEmailIndex < emails.length - 1) {
-      setCurrentEmailIndex((p) => p + 1);
+    if (currentIndex < emails.length - 1) {
+      setCurrentIndex((p) => p + 1);
     }
   };
 
   const handlePrev = () => {
-    if (currentEmailIndex > 0) {
-      setCurrentEmailIndex((p) => p - 1);
+    if (currentIndex > 0) {
+      setCurrentIndex((p) => p - 1);
     }
   };
 
@@ -222,24 +220,29 @@ export function TimelinePage() {
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
 
-              <ContactHeader onNext={handleNext} onPrev={handlePrev} currentIndex={currentEmailIndex} />
+              <ContactHeader onNext={handleNext} onPrev={handlePrev} currentIndex={currentIndex} />
 
               {!mailersSummary || Object.keys(mailersSummary).length === 0 ? (
                 <NoResult />
               ) : (
-                <>
-                  <MailerSummaryHeader />
-
-                  {emails.length > 0 && (
-                    <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* AI SUMMARY */}
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
-                        <div className="flex items-center justify-start gap-3 mb-2">
-                          <h3 className="text-green-700 font-semibold">
-                            Quick Reply
-                          </h3>
-                          {/* Send AI Reply Button - Moved to top right */}
-                          {aiReplySentLoading ? (
+                <MailerSummaryHeader />
+              )}
+              {emails.length > 0 && (
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* AI SUMMARY */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
+                    <div className="flex items-center justify-start gap-3 mb-2">
+                      <h3 className="text-green-700 font-semibold">
+                        Quick Reply
+                      </h3>
+                      {/* Send AI Reply Button - Moved to top right */}
+                      {sending ? (
+                        <div className="flex justify-center">
+                          <LoadingChase size="25" color="blue" type="ping" />
+                        </div>
+                      ) : (
+                        <>
+                          {aiReplyLoading ? (
                             <div className="flex justify-center">
                               <LoadingAll size="25" color="blue" type="ping" />
                             </div>
@@ -260,81 +263,83 @@ export function TimelinePage() {
                               />
                             </motion.button>
                           )}
-                        </div>
-
-                        {aiReply ? (
-                          <div className="mb-3">
-                            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                              {typeof aiReply === "string"
-                                ? aiReply
-                                : aiReply?.reply_suggestion || aiReply}
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 text-sm">No AI reply generated.</p>
-                        )}
-                      </div>
+                        </>
 
 
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
-                        <div className="flex items-center mb-2">
-                          <h3 className="text-blue-700 font-semibold">
-                            AI Summary
-                          </h3>
-
-
-                          <motion.button
-                            whileHover={{ scale: 1.15 }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{ type: "spring", stiffness: 400 }}
-                            className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2 cursor-pointer"
-                            onClick={() => {
-                              dispatch(getAvatar());
-                              setShowAvatar(true);
-                            }}
-                          >
-                            <img
-                              width="40"
-                              height="40"
-                              src="https://img.icons8.com/office/40/circled-play.png"
-                              alt="Play AI Avatar"
-                            />
-                          </motion.button>
-                        </div>
-
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {mailersSummary?.summary ?? "No AI summary available."}
-                        </p>
-                      </div>
-
-
-                      {/* Latest Message */}
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
-                        <div className="flex items-center justify-start mb-2">
-                          <h3 className="text-yellow-700 font-semibold">
-                            Latest Message
-                          </h3>
-                          <motion.button
-                            whileHover={{ scale: 1.15 }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{ type: "spring", stiffness: 400 }}
-                            className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
-                            onClick={() => setShowThread(true)}
-                          >
-                            <Reply className="w-6 h-6 text-yellow-700" />
-                          </motion.button>
-                        </div>
-                        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                          {emails.length > 0 &&
-                            emails[currentEmailIndex].subject}
-                        </p>
-                      </div>
+                      )}
                     </div>
-                  )}
 
-                  {/* ACTION BUTTONS */}
-                  <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={currentThreadId} />
-                </>
+                    {aiReply && !sending ? (
+                      <div className="mb-3">
+                        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                          {typeof aiReply === "string"
+                            ? aiReply
+                            : aiReply?.reply_suggestion || aiReply}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-sm">No AI reply generated.</p>
+                    )}
+                  </div>
+
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
+                    <div className="flex items-center mb-2">
+                      <h3 className="text-blue-700 font-semibold">
+                        AI Summary
+                      </h3>
+
+
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                        className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2 cursor-pointer"
+                        onClick={() => {
+                          dispatch(getAvatar());
+                          setShowAvatar(true);
+                        }}
+                      >
+                        <img
+                          width="40"
+                          height="40"
+                          src="https://img.icons8.com/office/40/circled-play.png"
+                          alt="Play AI Avatar"
+                        />
+                      </motion.button>
+                    </div>
+
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {mailersSummary?.summary ?? "No AI summary available."}
+                    </p>
+                  </div>
+
+
+                  {/* Latest Message */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
+                    <div className="flex items-center justify-start mb-2">
+                      <h3 className="text-yellow-700 font-semibold">
+                        Latest Message
+                      </h3>
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                        className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
+                        onClick={() => setShowThread(true)}
+                      >
+                        <Reply className="w-6 h-6 text-yellow-700" />
+                      </motion.button>
+                    </div>
+                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                      {emails.length > 0 &&
+                        emails[currentIndex].subject}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {!(!mailersSummary || Object.keys(mailersSummary).length === 0) && (
+                <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={currentThreadId} />
               )}
             </div>
 

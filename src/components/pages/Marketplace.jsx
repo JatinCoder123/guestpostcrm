@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import {Store, Gift, User, Calendar,Pencil,Pen } from "lucide-react";
+import {Store, Gift, User, Calendar,Pencil,Pen, LinkIcon, ActivityIcon } from "lucide-react";
 import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
 
 export function Marketplace() {
@@ -72,12 +72,17 @@ export function Marketplace() {
 
               <th className="px-6 py-4 text-left">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  NAME
+                  <LinkIcon className="w-4 h-4" />
+                  WEBSITES
                 </div>
               </th>
 
-              <th className="px-6 py-4 text-left">ACTIONS</th>
+              <th className="px-6 py-4 text-left">
+                 <div className="flex items-center gap-2">
+                  <ActivityIcon className="w-4 h-4" />
+                  ACTIONS
+                </div>
+              </th>
             </tr>
           </thead>
 

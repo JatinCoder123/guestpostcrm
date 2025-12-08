@@ -14,51 +14,43 @@ import SearchComponent from "./SearchComponent";
 
 export function ReminderPage() {
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('order_reminder'); 
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSort, setSelectedSort] = useState('');
   const dispatch = useDispatch();
-  
-  const { orderRem, count, loading, error } = useSelector(
+
+  const { orderRem, dropdownOptions, count, loading, error } = useSelector(
     (state) => state.orderRem
   );
   const [reminders, setReminders] = useState(orderRem);
- 
+
   const { email } = useSelector((state) => state.ladger);
 
   useEffect(() => {
-    dispatch(getOrderRem(email, 1));
-  }, [email, dispatch]);
+    if (selectedCategory === 'all') {
+      dispatch(getOrderRem(null, 1));
+    }
+    else {
+      dispatch(getOrderRem(email, 1));
+    }
 
-  
+  }, [email, selectedCategory, dispatch]);
+
+
   useEffect(() => {
     const filteredReminders = orderRem.filter((reminder) => {
       if (selectedCategory === 'all') {
-        return true; 
+        return true;
       }
       return reminder.reminder_type === selectedCategory;
     });
     setReminders(filteredReminders);
   }, [selectedCategory, orderRem]);
 
-  
+
   const getDisplayLabel = (type) => {
-    const labels = {
-      all: "All Reminders",
-      order_reminder: "Order Reminder",
-      deal_reminder: "Deal Reminder",
-      payment_reminder: "Payment Reminder",
-      link_removal: "Link Removal",
-    };
-    return labels[type] || type;
+    return dropdownOptions.find((option) => option.value === type)?.label;
   };
 
-  const dropdownOptions = [
-    { value: 'all', label: 'All Reminders' },
-    { value: 'order_reminder', label: 'Order Reminder' },
-    { value: 'deal_reminder', label: 'Deal Reminder' },
-    { value: 'payment_reminder', label: 'Payment Reminder' },
-    { value: 'link_removal', label: 'Link Removal' },
-  ];
 
   const filterOptions = [
     { value: 'asc', label: 'A to Z' },
@@ -73,17 +65,14 @@ export function ReminderPage() {
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
-    console.log('Sort selected:', value);
+    setSelectedSort(value);
   };
 
   const handleDownload = () => {
@@ -94,18 +83,18 @@ export function ReminderPage() {
     <>
       <SearchComponent
         dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange} 
+        onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         dropdownPlaceholder="Filter by Type"
-        
+
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
         searchPlaceholder="Search reminders..."
-        
+
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-        
+
         archiveOptions={[
           { value: 'all', label: 'All' },
           { value: 'active', label: 'Active' },
@@ -121,10 +110,10 @@ export function ReminderPage() {
           { value: 'usd', label: 'USD' },
           { value: 'eur', label: 'EUR' },
         ]}
-        
+
         onDownloadClick={handleDownload}
         showDownload={true}
-        
+
         className="mb-6"
       />
 
@@ -201,27 +190,26 @@ export function ReminderPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
+
               <tr className="bg-gradient-to-r from-red-600 to-pink-600 text-white">
+                <th className="px-6 py-4 text-left">DATE</th>
+
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>RECIPIENT</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">NAME</th>
+                <th className="px-6 py-4 text-left">TYPE</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    <span>TIME</span>
+                    <span>SCHEDULED TIME</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
                     <span>STATUS</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">DATE CREATED</th>
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
             </thead>
@@ -250,15 +238,16 @@ export function ReminderPage() {
                     key={index}
                     className="border-b border-gray-100 hover:bg-red-50 transition-colors cursor-pointer"
                   >
+                    <td className="px-6 py-4 text-gray-600">
+                      {order.date_entered}
+                    </td>
                     <td className="px-6 py-4 text-gray-900">
                       {order.recipient}
                     </td>
-                    <td className="px-6 py-4 text-red-600">{order.name}</td>
-                    <td className="px-6 py-4 text-green-600">{order.time}</td>
+                    <td className="px-6 py-4 text-red-600">{order.reminder_type}</td>
+                    <td className="px-6 py-4 text-green-600">{order.scheduled_time}</td>
                     <td className="px-6 py-4 text-gray-600">{order.status}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {order.scheduled_time}
-                    </td>
+
                     <td className="px-6 py-4">
                       <button className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
                         Send Reminder
@@ -277,7 +266,7 @@ export function ReminderPage() {
           <div className="p-12 text-center">
             <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">
-              No missed {getDisplayLabel(selectedCategory).toLowerCase()}.
+              No missed {getDisplayLabel(selectedCategory)}.
             </p>
           </div>
         )}
