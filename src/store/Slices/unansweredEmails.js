@@ -52,12 +52,12 @@ export const getUnansweredEmails = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=replied&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&page=1&page_size=50`
+          }&type=replied&filter=${filter}`
         );
       }
 
@@ -67,8 +67,7 @@ export const getUnansweredEmails = (filter, email) => {
         unansweredSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
+
         })
       );
       dispatch(unansweredSlice.actions.clearAllErrors());
@@ -88,12 +87,12 @@ export const getUnansweredEmailWithOutLoading = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=replied&filter=${filter}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unanswered&filter=${filter}&page=1&page_size=50`
+          }&type=replied&filter=${filter}`
         );
       }
 
@@ -103,8 +102,6 @@ export const getUnansweredEmailWithOutLoading = (filter, email) => {
         unansweredSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
         })
       );
       dispatch(unansweredSlice.actions.clearAllErrors());
@@ -123,8 +120,6 @@ export const updateUnansweredEmails = (email) => {
     dispatch(unansweredSlice.actions.updateUnanswered({
       count: getState().unanswered.count + 1,
       emails: updatedEmails,
-      pageCount: getState().unanswered.pageCount,
-      pageIndex: getState().unanswered.pageIndex,
     }))
   }
 };

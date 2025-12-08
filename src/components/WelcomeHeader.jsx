@@ -2,11 +2,12 @@ import { Mail, Link2, List } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { LoadingAll, LoadingChase } from "./Loading";
 
 const LOCAL_KEY = "create_deals_draft_v1";
 
 const WelcomeHeader = () => {
-  const { email, timeline } = useSelector((state) => state.ladger);
+  const { email, timeline, loading } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
 
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const WelcomeHeader = () => {
       <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-30" />
 
       <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
-        
+
         {/* LEFT */}
         <div className="flex items-center gap-5">
 
@@ -45,8 +46,7 @@ const WelcomeHeader = () => {
             <span className="font-bold text-gray-900">
               {time?.replace(/_/g, " ")}
             </span>
-
-            {email && (
+            {email && !loading && (
               <>
                 {" • "}
                 <span className="font-bold text-blue-600">{email}</span>

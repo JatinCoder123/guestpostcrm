@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { useSelector } from "react-redux";
 import CreateOffer from "../CreateOffer";
-import { Gift, User, Calendar, DollarSign, Tag, Pencil } from "lucide-react";
+import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus, Pen } from "lucide-react";
 import { getOffers } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
@@ -12,7 +12,7 @@ export function OffersPage() {
   const [showOffer, setShowOffer] = useState(false);
   const [editData, setEditData] = useState(null);
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
 
   // Show popup only
@@ -44,7 +44,7 @@ export function OffersPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-   
+
   ];
 
   const handleFilterApply = (filters) => {
@@ -62,7 +62,7 @@ export function OffersPage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
+    setSelectedSort(value);
     console.log('Sort selected:', value);
   };
 
@@ -73,47 +73,47 @@ export function OffersPage() {
   return (
     <>
 
-    <SearchComponent
-      
-      dropdownOptions={dropdownOptions}
-      onDropdownChange={handleCategoryChange} 
-      selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by Status"
-      
-      
-      onSearchChange={handleSearchChange}
-      searchValue={topsearch}
-      searchPlaceholder="Search emails..."
-      
-      
-      onFilterApply={handleFilterApply}
-      filterPlaceholder="Filters"
-      showFilter={true}
-      
-      
-      archiveOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ]}
-      transactionTypeOptions={[
-        { value: 'all', label: 'All Emails' },
-        { value: 'incoming', label: 'Incoming' },
-        { value: 'outgoing', label: 'Outgoing' },
-      ]}
-      currencyOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]}
-      
-      
-      onDownloadClick={handleDownload}
-      showDownload={true}
-      
-      
-      className="mb-6"
-    />
+      <SearchComponent
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by Status"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
 
       {/* ⭐ Stats Cards (Top Section) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -188,15 +188,31 @@ export function OffersPage() {
             {offers.length} Active Offers
           </div>
 
-          <button
-            onClick={() => {
-              setEditData(null);
-              setShowOffer(true);
-            }}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-cyan-700 transition cursor-pointer"
-          >
-            + New Offer
-          </button>
+          <div className="relative group">
+            <button
+              onClick={() => {
+                setEditData(null);
+                setShowOffer(true);
+              }}
+              className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center transition"
+            >
+              <img
+                width="40"
+                height="40"
+                src="https://img.icons8.com/arcade/64/plus.png"
+                alt="plus"
+              />
+            </button>
+
+            {/* Tooltip */}
+            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
+                   opacity-0 group-hover:opacity-100 transition 
+                   pointer-events-none whitespace-nowrap shadow-md">
+              Create Offer
+            </span>
+          </div>
+
         </div>
 
         {/* Table */}
@@ -209,20 +225,24 @@ export function OffersPage() {
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
 
-                    Date
+                    DATE
 
                   </div>
                 </th>
 
-
-                <th className="px-6 py-4 text-left">OFFER ID</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>CLIENT</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">DISCOUNT</th>
+
+
+                <th className="px-6 py-4 text-left">EMAIL</th>
+                <th className="px-6 py-4 text-left">
+                  CLIENT OFFER
+                </th>
+                <th className="px-6 py-4 text-left">OUR OFFER</th>
                 <th className="px-6 py-4 text-left">EXPIRES</th>
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
@@ -236,23 +256,30 @@ export function OffersPage() {
                   className="border-b border-gray-100 hover:bg-pink-50 transition"
                 >
                   <td className="px-6 py-4 text-gray-600">{offer.date_entered}</td>
+                  <td className="px-6 py-4">{offer.real_name?.split("<")[0].trim()}</td>
                   <td className="px-6 py-4 text-blue-600">{offer.name}</td>
-                  <td className="px-6 py-4">{offer.amount}</td>
+
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
+                  <td className="px-6 py-4 text-gray-600">{"N/A"}</td>
 
 
-                  <td className="px-6 py-4">
-                    <button
-                      className="text-blue-600 hover:underline"
-                      onClick={() => {
-                        setEditData(offer);
-                        setShowOffer(true);
-                      }}
-                    >
-                      <Pencil className="w-7 h-7 text-blue-600 cursor-pointer" />
+                  <td className="pl-9 py-4">
 
-                    </button>
+
+                    <div className="flex gap-2">
+                      {/* Update Button */}
+                      <button
+                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Update"
+                        onClick={() => {
+                          setEditData(offer);
+                          setShowOffer(true);
+                        }}
+                      >
+                        <Pen className="w-5 h-5 text-blue-600" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

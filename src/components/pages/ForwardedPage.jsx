@@ -132,7 +132,7 @@ export function ForwardedPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl text-gray-900">FORWARDED EMAILS</h2>
+            <h2 className="text-xl text-gray-900">ASSIGNED EMAILS</h2>
             <a href="">
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
@@ -189,7 +189,7 @@ export function ForwardedPage() {
                       <span>{email.date_entered}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
+                  <td className="px-6 py-4 text-gray-900">{email.first_name}</td>
                   <td
                     className="px-6 py-4 text-purple-600"
                   >

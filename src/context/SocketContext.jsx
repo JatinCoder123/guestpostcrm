@@ -4,6 +4,7 @@ const socket = io("https://server.guestpostcrm.com");
 export const SocketContext = createContext();
 export const SocketContextProvider = (props) => {
   const [currentAvatar, setCurrentAvatar] = useState();
+  const [currentMail, setCurrentMail] = useState(null);
   useEffect(() => {
     const newAvatarHandler = (data) => {
       console.log("new avatar", data);
@@ -18,18 +19,27 @@ export const SocketContextProvider = (props) => {
       });
     };
 
+    const newMailHandler = (data) => {
+      console.log("new mail", data);
+      setCurrentMail(Date.now());
+    };
+
     socket.on("new_avatar", newAvatarHandler);
     socket.on("latest_avatar", latestAvatarHandler);
+    socket.on("new-mail", newMailHandler);
 
     return () => {
       socket.off("new_avatar", newAvatarHandler);
       socket.off("latest_avatar", latestAvatarHandler);
+      socket.off("new-mail", newMailHandler);
     };
   }, []);
 
   const value = {
     currentAvatar,
     setCurrentAvatar,
+    currentMail,
+    setCurrentMail,
   };
 
   return (

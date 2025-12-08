@@ -14,10 +14,7 @@ import viewEmailReducer from "./Slices/viewEmail.js";
 import threadEmailReducer from "./Slices/threadEmail.js";
 import aiCreditsReducer from "./Slices/aiCredits.js";
 import aiReplyReducer from "./Slices/aiReply.js";
-import linkRemReducer from "./Slices/linkRem.js";
 import orderRemReducer from "./Slices/orderRem.js";
-import paymetnRemReducer from "./Slices/paymentRem.js";
-import dealRemReducer from "./Slices/dealRem.js";
 import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
@@ -44,16 +41,13 @@ export const store = configureStore({
     aiCredits: aiCreditsReducer,
     aiReply: aiReplyReducer,
     orderRem: orderRemReducer,
-    dealRem: dealRemReducer,
-    paymentRem: paymetnRemReducer,
-    linkRem: linkRemReducer,
     user: userReducer,
     bulk: bulkReducer,
     avatar: avatarReducer,
     defaulter: defaulterReducer,
     backlinks: backlinksReducer,
     events: eventReducer,
-    marketplace:marketplaceReducer
+    marketplace: marketplaceReducer
 
   },
 });

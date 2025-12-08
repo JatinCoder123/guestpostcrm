@@ -67,32 +67,21 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const { count: offersCount, loading: offersLoading } = useSelector(
     (s) => s.offers
   );
-  const { count: detectionCount, loading: detectionLoading } = useSelector(
-    (s) => s.detection
-  );
+
   const { count: invoiceCount, loading: invoicesLoading } = useSelector(
     (s) => s.invoices
   );
   const { count: orderCount, loading: ordersLoading } = useSelector(
     (s) => s.orders
   );
-  const { count: linkRemCount, loading: linkRemLoading } = useSelector(
-    (s) => s.linkRem
-  );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
     (s) => s.orderRem
   );
-  const { count: paymentRemCount, loading: paymentRemLoading } = useSelector(
-    (s) => s.paymentRem
-  );
-  const { count: dealRemCount, loading: dealRemLoading } = useSelector(
-    (s) => s.dealRem
-  );
+
   const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
     (s) => s.marketplace
   );
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
-  const { count: bulkCount, loading: bulkLoading } = useSelector((s) => s.bulk);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
     (s) => s.forwarded
   );
@@ -121,7 +110,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "forwarded-emails",
-      label: "Forwarded ",
+      label: "Assigned",
       icon: Forward,
       loading: forwardLoading,
       count: forwardCount,
@@ -142,12 +131,22 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
 
     {
       id: "Marketplace",
-      label: "Marketplace",
+      label: "Marketplaces",
       icon: Store,
       loading: marketPlaceLoading,
       count: marketPlaceCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
+      countBg: "bg-pink-500 text-white",
+    },
+    {
+      id: "link-exchange",
+      label: "Link Exchange",
+      icon: Link,
+      loading: orderRemLoading,
+      count: orderRemCount,
+      color: "text-pink-600",
+      hover: "hover:bg-pink-50",
       countBg: "bg-pink-500 text-white",
     },
     {
@@ -191,35 +190,26 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       countBg: "bg-yellow-500 text-white",
     },
     {
-      id: "link-exchange",
-      label: "Link Exchange",
-      icon: Link,
-      loading: linkRemLoading,
-      count: linkRemCount,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
+      id: "other",
+      label: "Others",
+      icon: RectangleEllipsis,
+      loading: orderRemLoading,
+      count: orderRemCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "reminders",
       label: "Reminders",
       icon: BellRing,
-      loading: dealRemLoading,
-      count: dealRemCount,
+      loading: orderRemLoading,
+      count: null,
       color: "text-cyan-600",
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",
     },
-    {
-      id: "other",
-      label: "Others",
-      icon: RectangleEllipsis,
-      loading: paymentRemLoading,
-      count: paymentRemCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-blue-500 text-white",
-    },
+
   ];
 
   return (
@@ -284,11 +274,13 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
               {!collapsed && (
                 <>
                   <span className="flex-1 text-left">{item.label}</span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
-                  >
-                    {item.loading ? <LoadingSpin /> : <>{item.count}</>}
-                  </span>
+                  {item.count != null && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
+                    >
+                      {item.loading ? <LoadingSpin /> : <>{item.count}</>}
+                    </span>
+                  )}
                 </>
               )}
             </button>

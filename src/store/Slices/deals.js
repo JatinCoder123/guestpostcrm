@@ -93,13 +93,14 @@ export const getDeals = (filter, email) => {
   };
 };
 export const createDeal = (deals = []) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     try {
       deals.map(async (deal) => {
         console.log(deal);
+        const domain = getState().user.crmEndpoint.split("?")[0];
         const { data } = await axios.post(
-          `${MODULE_URL}&action_type=post_data`,
+          `${domain}?entryPoint=get_post_all&action_type=post_data`,
 
           {
             parent_bean: {

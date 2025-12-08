@@ -3,19 +3,22 @@ import Loading, { LoadingChase } from './Loading';
 import UserDropdown from './UserDropDown';
 import MoveToDropdown from './MoveToDropdown';
 import { useDispatch, useSelector } from 'react-redux';
-import { favAction, favEmail } from '../store/Slices/favEmailSlice';
+import { favAction, favEmail, getFavEmailsWithOutLoading } from '../store/Slices/favEmailSlice';
 import { bulkAction, markingEmail } from '../store/Slices/markBulkSlice';
-import { forwardEmail } from '../store/Slices/forwardedEmailSlice';
+import { forwardEmail, getForwardedEmailsWithOutLoading } from '../store/Slices/forwardedEmailSlice';
 import { forwardedAction } from '../store/Slices/forwardedEmailSlice';
 import { toast } from 'react-toastify';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { addEvent } from '../store/Slices/eventSlice';
+import { PageContext } from '../context/pageContext';
 
 const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId }) => {
     const [showUsers, setShowUsers] = useState(false);
+    const { enteredEmail } = useContext(PageContext);
+    const { contactInfo } = useSelector(state => state.viewEmail)
     const { email } = useSelector((s) => s.ladger);
     const handleForward = (to) => {
-        dispatch(forwardEmail(to, threadId));
+        dispatch(forwardEmail(contactInfo.id, to, threadId));
     };
     const {
         forward,
@@ -48,6 +51,7 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
                 recent_activity: "forwarded",
             }))
             dispatch(forwardedAction.clearAllMessages());
+            dispatch(getForwardedEmailsWithOutLoading(enteredEmail));
         }
         if (favouriteError) {
             toast.error(favouriteError);
@@ -61,6 +65,7 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
                 recent_activity: "favourite",
             }))
             dispatch(favAction.clearAllMessages());
+            dispatch(getFavEmailsWithOutLoading(enteredEmail));
         }
         if (markingError) {
             toast.error(markingError);
@@ -120,7 +125,7 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
                             alt="forward"
                         />
                     ),
-                    label: "Forward",
+                    label: "Assign",
                     action: () => setShowUsers((p) => !p),
                 },
                 {
@@ -150,7 +155,7 @@ const ActionButton = ({ handleMoveSuccess, setShowEmails, setShowIP, threadId })
                             {btn.label}
                         </span>
                     </button>
-                    {showUsers && btn.label === "Forward" && (
+                    {showUsers && btn.label === "Assign" && (
                         <UserDropdown
                             forwardHandler={handleForward}
                             onClose={() => setShowUsers(false)}

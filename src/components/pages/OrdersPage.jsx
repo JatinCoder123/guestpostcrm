@@ -12,6 +12,8 @@ import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getOrders } from "../../store/Slices/orders";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import SearchComponent from "./SearchComponent";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
@@ -180,17 +182,34 @@ export function OrdersPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Package className="w-6 h-6 text-green-600" />
-            <h2 className="text-lg font-semibold text-gray-800">ORDERS</h2>
+            <h2 className="text-xl font-semibold text-gray-800">ORDERS</h2>
             <a href="">
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
           </div>
-          <button
+         
+      <div className="relative group ">
+   <button
             onClick={() => navigateTo("create")}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            + New Order
-          </button>
+   
+    className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
+  >
+    <img
+      width="40"
+      height="40"
+      src="https://img.icons8.com/arcade/64/plus.png"
+      alt="plus"
+    />
+  </button>
+
+  {/* Tooltip */}
+  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
+                   opacity-0 group-hover:opacity-100 transition 
+                   pointer-events-none whitespace-nowrap shadow-md">
+     Create Order
+  </span>
+</div>
         </div>
 
         {/* Table */}
@@ -201,13 +220,13 @@ export function OrdersPage() {
                  <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>ORDER DATE</span>
+                    <span>DATE</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>CLIENT</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -232,7 +251,7 @@ export function OrdersPage() {
                 >
                   <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
                   <td className="px-6 py-4 text-gray-900">
-                    {order.client_email}
+                    {order.real_name?.split("<")[0].trim()}
                   </td>
                   <td className="px-6 py-4 text-green-600">
                     {order.total_amount_c}
@@ -259,7 +278,7 @@ export function OrdersPage() {
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
-                        <Pen className="w-4 h-4 text-blue-600" />
+                        <Pen className="w-5 h-5 text-blue-600" />
                       </button>
                     </div>
                   </td>

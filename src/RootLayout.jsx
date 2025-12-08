@@ -18,12 +18,8 @@ import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
-import Pagination from "./components/Pagination";
 import Avatar from "./components/Avatar";
-import { getDealRem } from "./store/Slices/dealRem";
 import { getOrderRem } from "./store/Slices/orderRem";
-import { getLinkRem } from "./store/Slices/linkRem";
-import { getPaymentRem } from "./store/Slices/paymentRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
@@ -37,8 +33,8 @@ const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
-  const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
-  const { currentAvatar } = useContext(SocketContext);
+  const { displayIntro, setActivePage, enteredEmail, currentIndex, setCurrentIndex } = useContext(PageContext);
+  const { currentAvatar, currentMail } = useContext(SocketContext);
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
@@ -46,11 +42,6 @@ const RootLayout = () => {
   useEffect(() => {
     setActivePage(location);
   }, [location]);
-  useEffect(() => {
-    if (email) {
-      dispatch(getContact(email));
-    }
-  }, [email]);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getAiCredits(timeline));
@@ -64,37 +55,32 @@ const RootLayout = () => {
     dispatch(getInvoices(timeline, enteredEmail));
     dispatch(getOffers(timeline, enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
-    dispatch(getDealRem(timeline, enteredEmail));
-    dispatch(getOrderRem(timeline, enteredEmail));
-    dispatch(getLinkRem(timeline, enteredEmail));
-    dispatch(getPaymentRem(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
+    setCurrentIndex(0)
   }, [enteredEmail, timeline]);
-  const firstEmail = emails?.[0]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+  const firstEmail = emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
 
   useEffect(() => {
     if (enteredEmail) {
       dispatch(getLadgerEmail(enteredEmail));
+
     } else if (firstEmail) {
       dispatch(getLadgerEmail(firstEmail));
     }
   }, [enteredEmail, firstEmail]);
+
   useEffect(() => {
     if (email) {
       dispatch(getViewEmail());
+      dispatch(getContact());
     }
   }, [email]);
   useEffect(() => {
-    const interval = setInterval(() => {
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-    }, 5000);
-    return () => {
-      clearInterval(interval);
-    }
-  }, [timeline, enteredEmail])
+    dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
+    dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+  }, [currentMail])
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (

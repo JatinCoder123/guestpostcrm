@@ -20,6 +20,8 @@ import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
+import SearchComponent from "./SearchComponent";
+
 export function UnansweredPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(''); 
@@ -138,7 +140,7 @@ export function UnansweredPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl text-gray-900">REPLIED EMAILS</h2>
+            <h2 className="text-xl font-semibold text-gray-900">REPLIED EMAILS</h2>
             <a href="https://www.guestpostcrm.com/blog/unreplied-and-unanswered-emails-in-guestpostcrm/" target="_blank">
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
@@ -197,7 +199,7 @@ export function UnansweredPage() {
                     className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date}</span>
+                      <span>{email.date_entered}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-900"
@@ -208,7 +210,7 @@ export function UnansweredPage() {
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Replied");
                       navigateTo("/contacts");
-                    }}>{email.from}</td>
+                    }}>{email.from.split("<")[0].trim()}</td>
                   <td
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);

@@ -65,14 +65,12 @@ export const getForwardedEmails = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=forwarded&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=forwarded&filter=${filter}&page=1&page_size=50`
         );
       }
@@ -97,18 +95,57 @@ export const getForwardedEmails = (filter, email) => {
     }
   };
 };
-export const forwardEmail = (to, id) => {
+export const getForwardedEmailsWithOutLoading = (email) => {
+  return async (dispatch, getState) => {
+    try {
+      let response;
+      if (email) {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=forwarded&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+        );
+      } else {
+        response = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=forwarded&filter=${getState().ladger.timeline}&page=1&page_size=50`
+        );
+      }
+
+      console.log(`forwarded emails`, response.data);
+      const data = response.data;
+      dispatch(
+        forwardedSlice.actions.getEmailSucess({
+          count: data.data_count ?? 0,
+          emails: data.data,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
+        })
+      );
+      dispatch(forwardedSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        forwardedSlice.actions.getEmailFailed(
+          "Fetching Forwarded Emails Failed"
+        )
+      );
+    }
+  };
+};
+export const forwardEmail = (contactId, to, id) => {
   return async (dispatch, getState) => {
     dispatch(forwardedSlice.actions.forwardEmailRequest());
 
     try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
       const response = await axios.post(
-        `${MODULE_URL}&action_type=get_data`,
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
-          module: "outr_self_test",
-          where: {
+          parent_bean: {
+            id: contactId,
+            module: "Contacts",
             thread_id: id,
-            name: "forwarded",
+            assigned_user_id: to,
+            forwarded: 1
           },
         },
         {
@@ -118,35 +155,14 @@ export const forwardEmail = (to, id) => {
           },
         }
       );
-      console.log(`Forwarding Check in forwardging`, response.data);
-      const data = response.data;
-      if (!data.success) {
-        throw Error("Already Forwarded ");
-      } else {
-        const response = await axios.post(
-          `${MODULE_URL}&action_type=post_data`,
-          {
-            parent_bean: {
-              module: "outr_self_test",
-              thread_id: id,
-              name: "forwarded",
-            },
-          },
-          {
-            headers: {
-              "x-api-key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("Response while sendig ", response.data);
-        dispatch(
-          forwardedSlice.actions.forwardEmailSucess(
-            "Email Forwarded Successfully"
-          )
-        );
-        dispatch(forwardedSlice.actions.clearAllErrors());
-      }
+      console.log("Response while sendig ", response.data);
+      dispatch(
+        forwardedSlice.actions.forwardEmailSucess(
+          "Email Forwarded Successfully"
+        )
+      );
+      dispatch(forwardedSlice.actions.clearAllErrors());
+
     } catch (error) {
       dispatch(forwardedSlice.actions.forwardEmailFailed(error.message));
     }
