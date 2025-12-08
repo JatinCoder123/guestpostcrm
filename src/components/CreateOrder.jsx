@@ -25,7 +25,7 @@ export default function CreateOrder() {
   const navigate = useNavigate();
 
   const { contactInfo } = useSelector((state) => state.viewEmail);
-  const { loading, message, error } = useSelector((state) => state.threadEmail);
+  const { loading, message } = useSelector((state) => state.threadEmail);
 
 
   const [orders, setOrders] = useState([]);
