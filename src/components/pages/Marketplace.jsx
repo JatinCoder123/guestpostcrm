@@ -132,7 +132,7 @@ export function Marketplace() {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+            <tr className="bg-gradient-to-from-green-600 to-emerald-600 text-white">
               <th className="px-6 py-4 text-left">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
