@@ -27,10 +27,63 @@ export function DealsPage() {
   const [currentDealUpdate, setCurrentDealUpdate] = useState(null)
 
 
+
+
+
+  
+  const filtereddeals = deals
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.real_name?.split("<")[0].trim().toLowerCase();
+      // const subject = item.order_id?.toLowerCase() || "";
+      // const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      // if (selectedCategory === "subject") {
+      //   return subject.includes(searchValue);
+      // }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      // if (selectedSort === "oldest") {
+      //   return new Date(a.date_entered) - new Date(b.date_entered);
+      // }
+
+      return 0;
+    });
+
+
+  
+
+
+
+
   const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'contect', label: 'contact' }
   ];
 
   const filterOptions = [
@@ -60,9 +113,45 @@ export function DealsPage() {
     console.log('Sort selected:', value);
   };
 
+
+
+  
   const handleDownload = () => {
-    console.log('Download clicked');
+    if (!filtereddeals || filtereddeals.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    // Convert Objects → CSV rows
+    const headers = ["DATE", "CONTACT", "	WEBSITES", "VALUE", "STAGE"];
+
+    const rows = filtereddeals.map((email) => [
+      email.date_entered,
+      email.real_name?.split("<")[0].trim(),
+      email.website_c,
+      email.dealamount,
+      email.status
+      
+
+    ]);
+
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
   };
+
+
   const updateDealHandler = (currentDeal, data) => {
     const updateDealData = {
       ...currentDeal,
@@ -105,7 +194,7 @@ export function DealsPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by Status"
+        dropdownPlaceholder="Filter by contact"
 
 
         onSearchChange={handleSearchChange}
@@ -260,7 +349,7 @@ export function DealsPage() {
               </tr>
             </thead>
             <tbody>
-              {deals.map((deal, index) => (
+              {filtereddeals.map((deal, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
@@ -298,7 +387,7 @@ export function DealsPage() {
         </div>
         {deals?.length > 0 && <Pagination slice={"deals"} fn={getDeals} />}
 
-        {!loading && !error && deals.length === 0 && (
+        {!loading && !error && filtereddeals.length === 0 && (
           <div className="p-12 text-center">
             <Handshake className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">

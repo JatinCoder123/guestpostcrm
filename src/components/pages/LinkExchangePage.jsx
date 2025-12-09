@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Gift, User, Calendar, DollarSign, Tag, Pen } from "lucide-react";
-
+import SearchComponent from "./SearchComponent";
 export function LinkExchangePage() {
   const [showPopup, setShowPopup] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -33,6 +33,78 @@ export function LinkExchangePage() {
     },
   ];
 
+
+   const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSort, setSelectedSort] = useState('');
+  // const { count, deals, loading, error, updating, message } = useSelector((state) => state.deals);
+  // const dispatch = useDispatch();
+  // const navigateTo = useNavigate();
+  // const { timeline, email } = useSelector((state) => state.ladger);
+  const [currentDealUpdate, setCurrentDealUpdate] = useState(null)
+
+
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value);
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+  const updateDealHandler = (currentDeal, data) => {
+    const updateDealData = {
+      ...currentDeal,
+      ...data
+    }
+    dispatch(updateDeal(updateDealData))
+  }
+  // useEffect(() => {
+  //   if (message) {
+  //     toast.success(message);
+  //     setCurrentDealUpdate(null)
+  //     dispatch(dealsAction.clearAllMessages())
+  //   }
+  //   if (error) {
+  //     toast.error(error);
+  //     dispatch(dealsAction.clearAllErrors())
+  //   }
+  // }, [message, error, dispatch]);
+
+
+
+
+
+
+
   const total = links.length;
   const pending = links.filter((l) => l.status === "Pending").length;
   const accepted = links.filter((l) => l.status === "Accepted").length;
@@ -61,6 +133,54 @@ export function LinkExchangePage() {
   return (
     <>
       {/* ⭐ Stats Section */}
+
+
+       <SearchComponent
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by Status"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
+
+
+
+
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         
         {/* Total Exchanges */}
@@ -115,6 +235,10 @@ export function LinkExchangePage() {
           </div>
         </div>
       </div>
+
+
+
+
 
       {/* ⭐ Header + Create Button */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
