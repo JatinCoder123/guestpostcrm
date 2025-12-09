@@ -124,22 +124,22 @@ export function InvoicesPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
+    
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
+   
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
+    
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    console.log('Sort selected:', value);
+    
   };
 
 
@@ -223,48 +223,6 @@ export function InvoicesPage() {
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         dropdownPlaceholder="Filter by Status"
-
-
-        onSearchChange={handleSearchChange}
-        searchValue={topsearch}
-        searchPlaceholder="Search emails..."
-
-
-        onFilterApply={handleFilterApply}
-        filterPlaceholder="Filters"
-        showFilter={true}
-
-
-        archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
-        ]}
-        transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
-        ]}
-        currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
-        ]}
-
-
-        onDownloadClick={handleDownload}
-        showDownload={true}
-
-
-        className="mb-6"
-      />
-
-      <SearchComponent
-
-        dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
 
 
         onSearchChange={handleSearchChange}
