@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -10,6 +11,10 @@ const ordersSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
+    creating: false,
+    updating: false,
+    deleting: false,
+    message: null,
   },
   reducers: {
     getOrdersRequest(state) {
@@ -29,8 +34,30 @@ const ordersSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    updateOrderRequest(state) {
+      state.updating = true;
+      state.message = null;
+      state.error = null;
+    },
+    updateOrderSuccess(state, action) {
+      state.updating = false;
+      state.message = action.payload.message;
+      state.orders = action.payload.orders;
+      state.error = null;
+    },
+    updateOrderFailed(state, action) {
+      state.updating = false;
+      state.error = action.payload;
+      state.message = null;
+    },
     clearAllErrors(state) {
       state.error = null;
+    },
+    clearAllMessages(state) {
+      state.message = null;
+    },
+    setUpdateOrder(state, action) {
+      state.orders = action.payload;
     },
   },
 });
@@ -94,6 +121,47 @@ export const createOrder = (order) => {
     } catch (error) {
       dispatch(
         ordersSlice.actions.getOrdersFailed("Fetching Orders orders Failed")
+      );
+    }
+  };
+};
+export const updateOrder = (order) => {
+  return async (dispatch, getState) => {
+    dispatch(ordersSlice.actions.updateOrderRequest());
+
+    try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          parent_bean: {
+            module: "outr_order_gp_li",
+            ...order,
+          },
+        },
+        {
+          headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "aplication/json",
+          },
+        }
+      );
+      console.log(`Update Order`, data);
+      const updatedOrders = getState().orders.orders.map((o) => {
+        if (o.id === order.id) {
+          return order;
+        }
+        return o;
+      });
+      dispatch(
+        ordersSlice.actions.updateOrderSuccess({ orders: updatedOrders, message: "Order Updated Successfully" })
+      );
+
+      dispatch(ordersSlice.actions.clearAllErrors());
+    } catch (error) {
+      console.log(error);
+      dispatch(
+        ordersSlice.actions.updateOrderFailed("Updating Order Failed")
       );
     }
   };

@@ -8,21 +8,25 @@ import {
   User,
 } from "lucide-react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../Pagination";
-import { getOrders } from "../../store/Slices/orders";
+import { getOrders, orderAction, updateOrder } from "../../store/Slices/orders";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
+import UpdatePopup from "../UpdatePopup";
+import { toast } from "react-toastify";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { orders, count, loading, error } = useSelector(
+  const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null)
+  const { orders, count, loading, error, message, updating } = useSelector(
     (state) => state.orders
   );
   const navigateTo = useNavigate()
+  const dispatch = useDispatch()
   const getStatusColor = (status) => {
     switch (status) {
       case "Completed":
@@ -40,10 +44,59 @@ export function OrdersPage() {
 
 
 
+
+
+
+  const filteredorders = orders
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.real_name.split("<")[0].trim().toLowerCase();
+      const subject = item.order_id?.toLowerCase() || "";
+      const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      if (selectedCategory === "subject") {
+        return subject.includes(searchValue);
+      }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      if (selectedSort === "oldest") {
+        return new Date(a.date_entered) - new Date(b.date_entered);
+      }
+
+      return 0;
+    });
+
+
+
   const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'contect', label: 'contact' },
+    { value: 'subject', label: 'order id' },
   ];
 
   const filterOptions = [
@@ -51,7 +104,7 @@ export function OrdersPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-   
+
   ];
 
   const handleFilterApply = (filters) => {
@@ -69,59 +122,125 @@ export function OrdersPage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
+    setSelectedSort(value);
     console.log('Sort selected:', value);
   };
 
+  const updateOrderHandler = (currentOrder, data) => {
+    const updateOrderData = {
+      ...currentOrder,
+      ...data
+    }
+    dispatch(updateOrder(updateOrderData))
+  }
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+      dispatch(orderAction.clearAllErrors())
+    }
+    if (message) {
+      toast.success(message)
+      setCurrentUpdateOrder(null)
+      dispatch(orderAction.clearAllMessages())
+    }
+  }, [dispatch, error, message])
+
   const handleDownload = () => {
-    console.log('Download clicked');
+    if (!filteredorders || filteredorders.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    // Convert Objects → CSV rows
+    const headers = ["DATE", "CONTACT", "AMOUNT", "STATUS", "DELIVERY DATE", "ORDER ID"];
+
+    const rows = filteredorders.map((email) => [
+      email.date_entered,
+      email.real_name.split("<")[0].trim(),
+      email.total_amount_c,
+      email.order_status,
+      email.complete_date,
+      email.order_id
+
+    ]);
+
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
   };
+
 
   return (
     <>
 
-
+      {
+        currentUpdateOrder && (
+          <UpdatePopup
+            open={!!currentUpdateOrder}
+            title="Update Order"
+            fields={[
+              { name: "total_amount_c", label: "Order Amount", type: "number", value: currentUpdateOrder.total_amount_c },
+              { name: "website_c", label: "Website", type: "text", value: currentUpdateOrder.website_c },
+              { name: "client_email", label: "Client Email", type: "email", value: currentUpdateOrder.client_email },
+            ]}
+            loading={updating}
+            onUpdate={(data) => updateOrderHandler(currentUpdateOrder, data)}
+            onClose={() => setCurrentUpdateOrder(null)}
+          />
+        )
+      }
       <SearchComponent
-      
-      dropdownOptions={dropdownOptions}
-      onDropdownChange={handleCategoryChange} 
-      selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by Status"
-      
-      
-      onSearchChange={handleSearchChange}
-      searchValue={topsearch}
-      searchPlaceholder="Search emails..."
-      
-      
-      onFilterApply={handleFilterApply}
-      filterPlaceholder="Filters"
-      showFilter={true}
-      
-      
-      archiveOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ]}
-      transactionTypeOptions={[
-        { value: 'all', label: 'All Emails' },
-        { value: 'incoming', label: 'Incoming' },
-        { value: 'outgoing', label: 'Outgoing' },
-      ]}
-      currencyOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]}
-      
-      
-      onDownloadClick={handleDownload}
-      showDownload={true}
-      
-      
-      className="mb-6"
-    />
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by contact"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
 
 
       {/* Stats Cards */}
@@ -187,29 +306,16 @@ export function OrdersPage() {
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
           </div>
-         
-      <div className="relative group ">
-   <button
-            onClick={() => navigateTo("create")}
-   
-    className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-  >
-    <img
-      width="40"
-      height="40"
-      src="https://img.icons8.com/arcade/64/plus.png"
-      alt="plus"
-    />
-  </button>
 
-  {/* Tooltip */}
-  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+          <div className="relative group ">
+            {/* Tooltip */}
+            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
                    bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
                    opacity-0 group-hover:opacity-100 transition 
                    pointer-events-none whitespace-nowrap shadow-md">
-     Create Order
-  </span>
-</div>
+              Create Order
+            </span>
+          </div>
         </div>
 
         {/* Table */}
@@ -217,7 +323,7 @@ export function OrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                 <th className="px-6 py-4 text-left">
+                <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span>DATE</span>
@@ -236,22 +342,22 @@ export function OrdersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
-              
+
                 <th className="px-6 py-4 text-left">DELIVERY DATE</th>
                 <th className="px-6 py-4 text-left">ORDER ID</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
-                 
+
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {filteredorders.map((order) => (
                 <tr
                   key={order.id}
                   className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-indigo-600">{order.order_date}</td>
+                  <td className="px-6 py-4 text-indigo-600">{order.date_entered}</td>
                   <td className="px-6 py-4 text-gray-900">
-                    {order.real_name?.split("<")[0].trim()}
+                    {order.real_name.split("<")[0].trim()}
                   </td>
                   <td className="px-6 py-4 text-green-600">
                     {order.total_amount_c}
@@ -266,15 +372,16 @@ export function OrdersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {order.id_C}
+                    {order.complete_date}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {order.complete_data}
+                    {order.order_id}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       {/* Update Button */}
                       <button
+                        onClick={() => setCurrentUpdateOrder(order)}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
@@ -282,19 +389,22 @@ export function OrdersPage() {
                       </button>
                     </div>
                   </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                </tr >
+              ))
+              }
+            </tbody >
+          </table >
+        </div >
         <Pagination slice={"orders"} fn={getOrders} />
 
-        {!loading && orders.length === 0 && (
-          <div className="p-12 text-center text-gray-500">
-            No orders found for this week.
-          </div>
-        )}
-      </div>
+        {
+          !loading && filteredorders.length === 0 && (
+            <div className="p-12 text-center text-gray-500">
+              No orders found for this week.
+            </div>
+          )
+        }
+      </div >
     </>
   );
 }

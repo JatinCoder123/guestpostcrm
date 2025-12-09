@@ -13,6 +13,7 @@ const dealsSlice = createSlice({
     pageIndex: 1,
     error: null,
     message: null,
+    updating: false,
   },
   reducers: {
     getDealsRequest(state) {
@@ -44,6 +45,22 @@ const dealsSlice = createSlice({
     },
     createDealFailed(state, action) {
       state.creating = false;
+      state.message = null;
+      state.error = action.payload;
+    },
+    updateDealRequest(state) {
+      state.updating = true;
+      state.message = null;
+      state.error = null;
+    },
+    updateDealSucess(state, action) {
+      state.updating = false;
+      state.deals = action.payload.deals;
+      state.message = action.payload.message;
+      state.error = null;
+    },
+    updateDealFailed(state, action) {
+      state.updating = false;
       state.message = null;
       state.error = action.payload;
     },
@@ -126,6 +143,42 @@ export const createDeal = (deals = []) => {
       dispatch(dealsSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(dealsSlice.actions.createDealFailed("Deal Creation Failed"));
+    }
+  };
+};
+export const updateDeal = (deal) => {
+  return async (dispatch, getState) => {
+    dispatch(dealsSlice.actions.updateDealRequest());
+    try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          parent_bean: {
+            module: "outr_deal_fetch",
+            ...deal,
+          },
+        },
+        {
+          headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "aplication/json",
+          },
+        }
+      );
+      console.log(`Update Deal`, data);
+      const updatedDeals = getState().deals.deals.map((d) => {
+        if (d.id === deal.id) {
+          return {
+            ...deal,
+          };
+        }
+        return d;
+      });
+      dispatch(dealsSlice.actions.updateDealSucess({ message: "Deal Updated Successfully", deals: updatedDeals }));
+      dispatch(dealsSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(dealsSlice.actions.updateDealFailed("Deal Update Failed"));
     }
   };
 };
