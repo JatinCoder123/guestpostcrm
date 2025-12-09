@@ -3,7 +3,6 @@ import React from "react";
 export default function PreviewDeals({
     deals = [],
     totalAmount = 0,
-    onSubmit,
     userEmail
 }) {
     return (
@@ -197,29 +196,7 @@ export default function PreviewDeals({
                                                             </tbody>
                                                         </table>
 
-                                                        {/* SUBMIT BUTTON */}
-                                                        {onSubmit && (
-                                                            <div style={{ textAlign: "center", marginTop: "20px" }}>
-                                                                <button
-                                                                    onClick={onSubmit}
-                                                                    style={{
-                                                                        padding: "12px 26px",
-                                                                        background:
-                                                                            "linear-gradient(135deg, #4e79ff, #6db6ff)",
-                                                                        color: "white",
-                                                                        borderRadius: "8px",
-                                                                        border: "none",
-                                                                        cursor: "pointer",
-                                                                        fontSize: "16px",
-                                                                        fontWeight: "700",
-                                                                        boxShadow:
-                                                                            "0px 4px 12px rgba(0,0,0,0.15)",
-                                                                    }}
-                                                                >
-                                                                    Submit Deals
-                                                                </button>
-                                                            </div>
-                                                        )}
+
                                                     </div>
                                                 </div>
                                             </td>

@@ -26,32 +26,15 @@ export function DealsPage() {
   const { timeline, email } = useSelector((state) => state.ladger);
   const [currentDealUpdate, setCurrentDealUpdate] = useState(null)
 
-
-
-
-
-  
   const filtereddeals = deals
     .filter((item) => {
       const searchValue = topsearch.toLowerCase();
       if (!searchValue) return true; // no search → show all
 
       const contact = item.real_name?.split("<")[0].trim().toLowerCase();
-      // const subject = item.order_id?.toLowerCase() || "";
-      // const date = item.date_entered?.toLowerCase() || "";
-
-      // 🟢 If category selected
       if (selectedCategory === "contect" || selectedCategory === "contact") {
         return contact.includes(searchValue);
       }
-      // if (selectedCategory === "subject") {
-      //   return subject.includes(searchValue);
-      // }
-      // if (selectedCategory === "date") {
-      //   return date.includes(searchValue);
-      // }
-
-      // 🟢 Default search → CONTACT
       return contact.includes(searchValue);
     })
     .sort((a, b) => {
@@ -64,24 +47,8 @@ export function DealsPage() {
       if (selectedSort === "desc") {
         return b.from.localeCompare(a.from);
       }
-
-      // if (selectedSort === "newest") {
-      //   return new Date(b.date_entered) - new Date(a.date_entered);
-      // }
-
-      // if (selectedSort === "oldest") {
-      //   return new Date(a.date_entered) - new Date(b.date_entered);
-      // }
-
       return 0;
     });
-
-
-  
-
-
-
-
   const dropdownOptions = [
     { value: 'contect', label: 'contact' }
   ];
@@ -115,7 +82,7 @@ export function DealsPage() {
 
 
 
-  
+
   const handleDownload = () => {
     if (!filtereddeals || filtereddeals.length === 0) {
       toast.error("No data available to download");
@@ -131,7 +98,7 @@ export function DealsPage() {
       email.website_c,
       email.dealamount,
       email.status
-      
+
 
     ]);
 
@@ -292,28 +259,6 @@ export function DealsPage() {
               rel="noopener noreferrer">
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
-          </div>
-
-          <div className="relative group ">
-            <button
-              onClick={() => navigateTo("create")}
-              className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-            >
-              <img
-                width="40"
-                height="40"
-                src="https://img.icons8.com/arcade/64/plus.png"
-                alt="plus"
-              />
-            </button>
-
-            {/* Tooltip */}
-            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
-                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
-                   opacity-0 group-hover:opacity-100 transition 
-                   pointer-events-none whitespace-nowrap shadow-md">
-              Create Deal
-            </span>
           </div>
         </div>
 

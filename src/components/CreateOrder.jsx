@@ -5,14 +5,10 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
-
 import { useNavigate } from "react-router-dom";
-import { createOrder, orderAction } from "../store/Slices/orders";
 import PreviewOrders from "./PreviewOrders";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { renderToStaticMarkup } from "react-dom/server";
-import { viewEmailAction } from "../store/Slices/viewEmail";
-const LOCAL_KEY = "create_order_draft_v1";
 
 export default function CreateOrder() {
   const { email } = useSelector((state) => state.ladger);
@@ -42,10 +38,6 @@ export default function CreateOrder() {
     }
   }, [prevOrders, email]);
 
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(orders));
-  }, [orders]);
 
   // ────────────────────────────────────────────────
   // Auto adjust active index
@@ -116,7 +108,6 @@ export default function CreateOrder() {
 
   useEffect(() => {
     if (message) {
-      localStorage.removeItem(LOCAL_KEY);
       navigate(-1);
     }
   }, [message]);
@@ -150,20 +141,7 @@ export default function CreateOrder() {
                     <MoveLeft size={16} />
                     Back
                   </button>
-
                   <h3 className="text-2xl font-semibold">Create Order</h3>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => {
-                      localStorage.setItem(LOCAL_KEY, JSON.stringify(orders));
-                      toast.success("Draft saved locally");
-                    }}
-                    className="px-3 py-2 bg-gray-100 rounded-lg text-sm"
-                  >
-                    Save Draft
-                  </button>
                 </div>
               </div>
 
@@ -194,24 +172,7 @@ export default function CreateOrder() {
                                 {...dp.dragHandleProps}
                                 className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm"
                               >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-gray-100 rounded-lg cursor-grab">
-                                      <GripVertical size={18} />
-                                    </div>
 
-                                    <h4 className="text-lg font-medium">
-                                      Order for {order.real_name?.split("<")[0]}
-                                    </h4>
-                                  </div>
-
-                                  <button
-                                    onClick={() => removeOrder(idx)}
-                                    className="text-red-500 p-2 rounded-lg hover:bg-red-50"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </div>
 
                                 <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
                                   {/* Amount */}
@@ -309,6 +270,16 @@ export default function CreateOrder() {
                                     />
                                   </div>
                                 </div>
+                                <div className="flex items-start justify-end gap-3">
+
+
+                                  <button
+                                    onClick={() => removeOrder(idx)}
+                                    className="text-red-500 p-2 rounded-lg hover:bg-red-50"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
                               </motion.div>
                             )}
                           </Draggable>
@@ -334,7 +305,9 @@ export default function CreateOrder() {
           <div className="col-span-12 lg:col-span-4">
             <div className="sticky top-6 space-y-4">
               <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                <h4 className="font-semibold">Summary</h4>
+                <h4 className="font-semibold">
+                  Orders for {email}
+                </h4>
 
                 <div className="mt-3 text-sm text-gray-600">
                   <div className="flex justify-between">

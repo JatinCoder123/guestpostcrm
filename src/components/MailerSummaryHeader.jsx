@@ -29,6 +29,9 @@ const MailerSummaryHeader = ({ email }) => {
                 ORDER
               </th>
               <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+                OFFER
+              </th>
+              <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
                 DEAL
               </th>
             </tr>
@@ -75,6 +78,20 @@ const MailerSummaryHeader = ({ email }) => {
                 <span className="borderpx-4 py-3 font-semibold text-gray-900 flex align-items-center justify-center">
                   {mailersSummary?.deal ?? "No Order"}
                   <Link to={"/orders/create"}>
+                    <img className="ml-2"
+                      width="20"
+                      height="20"
+                      src="https://img.icons8.com/stickers/100/add.png"
+                      alt="add"
+                    />
+                  </Link>
+                </span>
+              </td>
+              <td className="border border-blue-400 px-4 py-3">
+
+                <span className="borderpx-4 py-3 font-semibold text-gray-900 flex align-items-center justify-center">
+                  {mailersSummary?.offer ?? "No Offer"}
+                  <Link to={"/offers/create"}>
                     <img className="ml-2"
                       width="20"
                       height="20"

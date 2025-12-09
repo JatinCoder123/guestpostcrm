@@ -68,22 +68,10 @@ export function InvoicesPage() {
       const searchValue = topsearch.toLowerCase();
       if (!searchValue) return true; // no search → show all
 
-      const contact = item.name.split("<")[0].trim().toLowerCase();
-      // const subject = item.order_id?.toLowerCase() || "";
-      // const date = item.date_entered?.toLowerCase() || "";
-
-      // 🟢 If category selected
+      const contact = item.name.split("<")[0].trim().toLowerCase(); d
       if (selectedCategory === "contect" || selectedCategory === "contact") {
         return contact.includes(searchValue);
       }
-      // if (selectedCategory === "subject") {
-      //   return subject.includes(searchValue);
-      // }
-      // if (selectedCategory === "date") {
-      //   return date.includes(searchValue);
-      // }
-
-      // 🟢 Default search → CONTACT
       return contact.includes(searchValue);
     })
     .sort((a, b) => {
@@ -96,14 +84,6 @@ export function InvoicesPage() {
       if (selectedSort === "desc") {
         return b.from.localeCompare(a.from);
       }
-
-      // if (selectedSort === "newest") {
-      //   return new Date(b.date_entered) - new Date(a.date_entered);
-      // }
-
-      // if (selectedSort === "oldest") {
-      //   return new Date(a.date_entered) - new Date(b.date_entered);
-      // }
 
       return 0;
     });
@@ -217,47 +197,6 @@ export function InvoicesPage() {
           />
         )
       }
-      <SearchComponent
-
-        dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by Status"
-
-
-        onSearchChange={handleSearchChange}
-        searchValue={topsearch}
-        searchPlaceholder="Search emails..."
-
-
-        onFilterApply={handleFilterApply}
-        filterPlaceholder="Filters"
-        showFilter={true}
-
-
-        archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
-        ]}
-        transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
-        ]}
-        currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
-        ]}
-
-
-        onDownloadClick={handleDownload}
-        showDownload={true}
-
-
-        className="mb-6"
-      />
 
       <SearchComponent
 
@@ -369,7 +308,7 @@ export function InvoicesPage() {
             <button
 
               className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-              onClick={() => setShowCreateInvoice(true)}
+              onClick={() => alert("Work in progress")}
             >
               <img
                 width="40"
