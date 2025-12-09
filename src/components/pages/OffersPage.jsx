@@ -1,19 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import CreateOffer from "../CreateOffer";
 import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus, Pen } from "lucide-react";
-import { getOffers } from "../../store/Slices/offers";
+import { getOffers, offersAction, updateOffer } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
+import UpdatePopup from "../UpdatePopup";
 
 export function OffersPage() {
-  const { offers, count, loading } = useSelector((state) => state.offers);
+  const { offers, count, loading, updating, error, message } = useSelector((state) => state.offers);
   const [showOffer, setShowOffer] = useState(false);
   const [editData, setEditData] = useState(null);
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
+  const [currentUpdateOffer, setCurrentUpdateOffer] = useState(null);
 
   // Show popup only
   if (showOffer) {
@@ -31,7 +33,7 @@ export function OffersPage() {
 
 
 
-  const filteredoffers =offers
+  const filteredoffers = offers
     .filter((item) => {
       const searchValue = topsearch.toLowerCase();
       if (!searchValue) return true; // no search → show all
@@ -86,9 +88,9 @@ export function OffersPage() {
   const pending = offers.filter((o) => o.status === "Pending").length;
   const accepted = offers.filter((o) => o.status === "Accepted").length;
 
-
+  const dispatch = useDispatch();
   const dropdownOptions = [
- { value: 'contect', label: 'contact' }
+    { value: 'contect', label: 'contact' }
   ];
 
   const filterOptions = [
@@ -118,47 +120,79 @@ export function OffersPage() {
     console.log('Sort selected:', value);
   };
 
- 
-   const handleDownload = () => {
-  if (!filteredoffers || filteredoffers.length === 0) {
-   toast.error("No data available to download");
-   return;
- }
- 
-   // Convert Objects → CSV rows
-   const headers = ["DATE", "CONTACT", "EMAIL", "CLIENT OFFER", "OUR OFFER"];
-   
-   const rows = filteredoffers.map((email) => [
-     email.date_entered,
-     email.real_name?.split("<")[0].trim(),
-     email.name,
-     email.client_offer_c,
-     email.our_offer_c
-    
-     
-   ]);
- 
-   // Convert to CSV string
-   const csvContent =
-     headers.join(",") +
-     "\n" +
-     rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
- 
-   // Create and auto-download file
-   const blob = new Blob([csvContent], { type: "text/csv" });
-   const url = URL.createObjectURL(blob);
- 
-   const a = document.createElement("a");
-   a.href = url;
-   a.download = "unreplied-emails.csv";
-   a.click();
- };
- 
 
+  const handleDownload = () => {
+    if (!filteredoffers || filteredoffers.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    // Convert Objects → CSV rows
+    const headers = ["DATE", "CONTACT", "EMAIL", "CLIENT OFFER", "OUR OFFER"];
+
+    const rows = filteredoffers.map((email) => [
+      email.date_entered,
+      email.real_name?.split("<")[0].trim(),
+      email.name,
+      email.client_offer_c,
+      email.our_offer_c
+
+
+    ]);
+
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
+  };
+
+
+
+  const updateOfferHandler = (offer, data) => {
+    const updatedOffer = { ...offer, ...data };
+    dispatch(updateOffer(updatedOffer));
+  };
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(offersAction.clearAllErrors())
+    }
+    if (message) {
+      toast.success(message);
+      setCurrentUpdateOffer(null);
+      dispatch(offersAction.clearAllMessages())
+    }
+  }, [dispatch, message, error]);
 
   return (
     <>
-
+      {
+        currentUpdateOffer && (
+          <UpdatePopup
+            open={!!currentUpdateOffer}
+            title="Update Offer"
+            fields={[
+              { name: "offer_name", label: "Offer Email", type: "text", value: currentUpdateOffer.name, disabled: true },
+              { name: "client_offer_c", label: "Client Offer", type: "text", value: currentUpdateOffer.client_offer_c },
+              { name: "our_offer_c", label: "Our Offer", type: "text", value: currentUpdateOffer.our_offer_c },
+              { name: "website", label: "Website", type: "text", value: currentUpdateOffer.website },
+            ]}
+            loading={updating}
+            onUpdate={(data) => updateOfferHandler(currentUpdateOffer, data)}
+            onClose={() => setCurrentUpdateOffer(null)}
+          />
+        )
+      }
       <SearchComponent
 
         dropdownOptions={dropdownOptions}
@@ -329,7 +363,7 @@ export function OffersPage() {
                   CLIENT OFFER
                 </th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
-              
+
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
@@ -347,7 +381,7 @@ export function OffersPage() {
 
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
-                  
+
 
 
                   <td className="pl-9 py-4">
@@ -359,8 +393,7 @@ export function OffersPage() {
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                         onClick={() => {
-                          setEditData(offer);
-                          setShowOffer(true);
+                          setCurrentUpdateOffer(offer);
                         }}
                       >
                         <Pen className="w-5 h-5 text-blue-600" />

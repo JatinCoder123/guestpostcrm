@@ -8,25 +8,82 @@ import {
   User,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
-import { getDeals } from "../../store/Slices/deals";
+import { dealsAction, getDeals, updateDeal } from "../../store/Slices/deals";
 import Pagination from "../Pagination";
 import { useNavigate } from "react-router-dom";
+import UpdatePopup from "../UpdatePopup";
+import { toast } from "react-toastify";
 
 export function DealsPage() {
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { count, deals, loading, error } = useSelector((state) => state.deals);
+  const { count, deals, loading, error, updating, message } = useSelector((state) => state.deals);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const { timeline, email } = useSelector((state) => state.ladger);
+  const [currentDealUpdate, setCurrentDealUpdate] = useState(null)
+
+
+
+
+
+  
+  const filtereddeals = deals
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.real_name?.split("<")[0].trim().toLowerCase();
+      // const subject = item.order_id?.toLowerCase() || "";
+      // const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      // if (selectedCategory === "subject") {
+      //   return subject.includes(searchValue);
+      // }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      // if (selectedSort === "oldest") {
+      //   return new Date(a.date_entered) - new Date(b.date_entered);
+      // }
+
+      return 0;
+    });
+
+
+  
+
+
+
 
   const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'contect', label: 'contact' }
   ];
 
   const filterOptions = [
@@ -34,7 +91,7 @@ export function DealsPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-   
+
   ];
 
   const handleFilterApply = (filters) => {
@@ -52,58 +109,127 @@ export function DealsPage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
+    setSelectedSort(value);
     console.log('Sort selected:', value);
   };
 
+
+
+  
   const handleDownload = () => {
-    console.log('Download clicked');
+    if (!filtereddeals || filtereddeals.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    // Convert Objects → CSV rows
+    const headers = ["DATE", "CONTACT", "	WEBSITES", "VALUE", "STAGE"];
+
+    const rows = filtereddeals.map((email) => [
+      email.date_entered,
+      email.real_name?.split("<")[0].trim(),
+      email.website_c,
+      email.dealamount,
+      email.status
+      
+
+    ]);
+
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
   };
+
+
+  const updateDealHandler = (currentDeal, data) => {
+    const updateDealData = {
+      ...currentDeal,
+      ...data
+    }
+    dispatch(updateDeal(updateDealData))
+  }
+  useEffect(() => {
+    if (message) {
+      toast.success(message);
+      setCurrentDealUpdate(null)
+      dispatch(dealsAction.clearAllMessages())
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(dealsAction.clearAllErrors())
+    }
+  }, [message, error, dispatch]);
 
   return (
     <>
-
+      {
+        currentDealUpdate && (
+          <UpdatePopup
+            open={!!currentDealUpdate}
+            title="Update Deal"
+            fields={[
+              { name: "dealamount", label: "Deal Amount", type: "number", value: currentDealUpdate.dealamount },
+              { name: "website_c", label: "Website", type: "text", value: currentDealUpdate.website_c },
+              { name: "email", label: "Email", type: "email", value: currentDealUpdate.email, disabled: true },
+            ]}
+            loading={updating}
+            onUpdate={(data) => updateDealHandler(currentDealUpdate, data)}
+            onClose={() => setCurrentDealUpdate(null)}
+          />
+        )
+      }
       <SearchComponent
-      
-      dropdownOptions={dropdownOptions}
-      onDropdownChange={handleCategoryChange} 
-      selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by Status"
-      
-      
-      onSearchChange={handleSearchChange}
-      searchValue={topsearch}
-      searchPlaceholder="Search emails..."
-      
-      
-      onFilterApply={handleFilterApply}
-      filterPlaceholder="Filters"
-      showFilter={true}
-      
-      
-      archiveOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ]}
-      transactionTypeOptions={[
-        { value: 'all', label: 'All Emails' },
-        { value: 'incoming', label: 'Incoming' },
-        { value: 'outgoing', label: 'Outgoing' },
-      ]}
-      currencyOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]}
-      
-      
-      onDownloadClick={handleDownload}
-      showDownload={true}
-      
-      
-      className="mb-6"
-    />
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by contact"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -162,33 +288,33 @@ export function DealsPage() {
           <div className="flex items-center gap-3">
             <Handshake className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
-             <a href="https://www.guestpostcrm.com/blog/deal-expiry-renewal-reminders/"  target="_blank" 
-  rel="noopener noreferrer">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <a href="https://www.guestpostcrm.com/blog/deal-expiry-renewal-reminders/" target="_blank"
+              rel="noopener noreferrer">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
-          
-           <div className="relative group ">
-<button
-            onClick={() => navigateTo("create")}
-    className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-  >
-    <img
-      width="40"
-      height="40"
-      src="https://img.icons8.com/arcade/64/plus.png"
-      alt="plus"
-    />
-  </button>
 
-  {/* Tooltip */}
-  <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+          <div className="relative group ">
+            <button
+              onClick={() => navigateTo("create")}
+              className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
+            >
+              <img
+                width="40"
+                height="40"
+                src="https://img.icons8.com/arcade/64/plus.png"
+                alt="plus"
+              />
+            </button>
+
+            {/* Tooltip */}
+            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
                    bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
                    opacity-0 group-hover:opacity-100 transition 
                    pointer-events-none whitespace-nowrap shadow-md">
-     Create Deal
-  </span>
-</div>
+              Create Deal
+            </span>
+          </div>
         </div>
 
         {/* Table */}
@@ -196,18 +322,18 @@ export function DealsPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
-                  <th className="px-6 py-4 text-left">
+                <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span> DATE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left"> 
-                                    <div className="flex items-center gap-2">
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
                     <span>CONTACT</span>
                   </div>
-                  </th>
+                </th>
                 <th className="px-6 py-4 text-left">
                   WEBSITES
                 </th>
@@ -218,12 +344,12 @@ export function DealsPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STAGE</th>
-              
+
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
             <tbody>
-              {deals.map((deal, index) => (
+              {filtereddeals.map((deal, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
@@ -241,11 +367,12 @@ export function DealsPage() {
                       {deal.status ?? "Active"}
                     </span>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       {/* Update Button */}
                       <button
+                        onClick={() => setCurrentDealUpdate(deal)}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
@@ -260,7 +387,7 @@ export function DealsPage() {
         </div>
         {deals?.length > 0 && <Pagination slice={"deals"} fn={getDeals} />}
 
-        {!loading && !error && deals.length === 0 && (
+        {!loading && !error && filtereddeals.length === 0 && (
           <div className="p-12 text-center">
             <Handshake className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">

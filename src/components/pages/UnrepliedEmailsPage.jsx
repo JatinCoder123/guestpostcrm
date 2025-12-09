@@ -22,7 +22,11 @@ import SearchComponent from "./SearchComponent";
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> d8a38f9b94378f519fe7244b3038807d816e921a
   const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.unreplied);
 
@@ -106,7 +110,7 @@ export function UnrepliedEmailsPage() {
 
 
   const dropdownOptions = [
-    
+
     { value: 'contect', label: 'contact' },
     { value: 'subject', label: 'subject' },
   ];
@@ -119,48 +123,53 @@ export function UnrepliedEmailsPage() {
   ];
 
   const handleFilterApply = (filters) => {
+<<<<<<< HEAD
     setSelectedSort(filters.sort || ''); 
+=======
+    setSelectedSort(filters.sort || '');
+>>>>>>> d8a38f9b94378f519fe7244b3038807d816e921a
   };
 
   const handleSearchChange = (value) => setTopsearch(value);
   const handleCategoryChange = (value) => setSelectedCategory(value);
   const handleSortChange = (value) => setSelectedSort(value);
   const handleDownload = () => {
- if (!filteredEmails || filteredEmails.length === 0) {
-  toast.error("No data available to download");
-  return;
-}
+    if (!filteredEmails || filteredEmails.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
 
-  // Convert Objects → CSV rows
-  const headers = ["Date", "Contact", "Subject", "Count"];
-  
-  const rows = filteredEmails.map((email) => [
-    email.date_entered,
-    email.from.split("<")[0].trim(),
-    email.subject,
-    email.thread_count
-  ]);
+    // Convert Objects → CSV rows
+    const headers = ["Date", "Contact", "Subject", "Count"];
 
-  // Convert to CSV string
-  const csvContent =
-    headers.join(",") +
-    "\n" +
-    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    const rows = filteredEmails.map((email) => [
+      email.date_entered,
+      email.from.split("<")[0].trim(),
+      email.subject,
+      email.thread_count
+    ]);
 
-  // Create and auto-download file
-  const blob = new Blob([csvContent], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "unreplied-emails.csv";
-  a.click();
-};
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
+  };
 
 
   return (
     <>
       <SearchComponent
+<<<<<<< HEAD
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
@@ -173,6 +182,46 @@ export function UnrepliedEmailsPage() {
         sortOptions={filterOptions}
         onDownloadClick={handleDownload}
         showDownload={true}
+=======
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by Status"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+>>>>>>> d8a38f9b94378f519fe7244b3038807d816e921a
         className="mb-6"
       />
 

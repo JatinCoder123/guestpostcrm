@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
+
+import SearchComponent from "./SearchComponent";
+
 
 import {Store, Gift, User, Calendar,Pencil,Pen, LinkIcon, ActivityIcon } from "lucide-react";
 import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
@@ -7,15 +11,156 @@ import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
 export function Marketplace() {
   const dispatch = useDispatch();
   const { items, count, loading } = useSelector((state) => state.marketplace);
+  const [selectedSort, setSelectedSort] = useState('');
 
-  const [showOffer, setShowOffer] = useState(false);
-  const [editData, setEditData] = useState(null);
+
+const [topsearch, setTopsearch] = useState('');
+const [selectedCategory, setSelectedCategory] = useState('');
+
+
+
+
+  
+  const filtereditems = items
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true; // no search → show all
+
+      const contact = item.name.toLowerCase();
+      // const subject = item.order_id?.toLowerCase() || "";
+      // const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      // if (selectedCategory === "subject") {
+      //   return subject.includes(searchValue);
+      // }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
+      return contact.includes(searchValue);
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
+
+      if (selectedSort === "asc") {
+        return a.from.localeCompare(b.from);
+      }
+
+      if (selectedSort === "desc") {
+        return b.from.localeCompare(a.from);
+      }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      // if (selectedSort === "oldest") {
+      //   return new Date(a.date_entered) - new Date(b.date_entered);
+      // }
+
+      return 0;
+    });
+
+
+  
+
+
+
+
+
+
+const handleSearchChange = (value) => {
+  setTopsearch(value);
+  console.log("Searching for:", value);
+};
+
+const handleCategoryChange = (value) => {
+  setSelectedCategory(value);
+  console.log("Filter selected:", value);
+};
+
+const handleFilterApply = (filters) => {
+  console.log("Applied filters:", filters);
+};
+
+
+  const handleDownload = () => {
+    if (!filtereditems || filtereditems.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    // Convert Objects → CSV rows
+    const headers = ["DATE", "WEBSITES"];
+
+    const rows = filtereditems.map((email) => [
+      email.date_entered,
+      email.name
+     
+      
+
+    ]);
+
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
+  };
+
+
+
+
+
 
   useEffect(() => {
     dispatch(getMarketplace());
   }, [dispatch]);
 
   return (
+<>
+<SearchComponent
+  dropdownOptions={[
+    { value: "all", label: "websites" },
+  
+  ]}
+  selectedDropdownValue={selectedCategory}
+  onDropdownChange={handleCategoryChange}
+  dropdownPlaceholder="Filter by websites"
+
+  searchValue={topsearch}
+  onSearchChange={handleSearchChange}
+  searchPlaceholder="Search marketplace items..."
+
+  onFilterApply={handleFilterApply}
+  filterPlaceholder="Filters"
+  showFilter={true}
+
+  onDownloadClick={handleDownload}
+  showDownload={true}
+
+  className="mb-6"
+/>
+
+    
+
+
+
+
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       <div className="flex items-center justify-between p-6 border-b border-gray-200 mr-5">
         <div className="flex items-center gap-3">
@@ -87,7 +232,7 @@ export function Marketplace() {
           </thead>
 
           <tbody>
-            {items.map((row, index) => (
+            {filtereditems.map((row, index) => (
               <tr
                 key={index}
                 className="border-b border-gray-100 hover:bg-pink-50 transition"
@@ -111,12 +256,13 @@ export function Marketplace() {
         </table>
       </div>
 
-      {!loading && items.length === 0 && (
+      {!loading && filtereditems.length === 0 && (
         <div className="p-12 text-center">
           <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">No marketplace data found.</p>
         </div>
       )}
     </div>
+    </>
   );
 }
