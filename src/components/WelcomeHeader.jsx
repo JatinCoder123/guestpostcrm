@@ -2,6 +2,8 @@ import { Mail, Link2, List } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+
+
 const WelcomeHeader = () => {
   const { email, timeline, loading } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
@@ -14,6 +16,8 @@ const WelcomeHeader = () => {
     ?.split("/")[0];
 
   const time = periodOptions.find((o) => o.period == timeline)?.title;
+
+
 
   return (
     <div className="h-20 w-full relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
@@ -38,6 +42,8 @@ const WelcomeHeader = () => {
                 <span className="font-bold text-blue-600">{email}</span>
               </>
             )}
+
+
           </p>
 
           {/* BADGES */}

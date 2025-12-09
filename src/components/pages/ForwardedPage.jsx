@@ -16,11 +16,14 @@ import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { getForwardedEmails } from "../../store/Slices/forwardedEmailSlice";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
+import { PageContext } from "../../context/pageContext";
+import { useNavigate } from "react-router-dom";
+import { extractEmail } from "../../assets/assets";
 export function ForwardedPage() {
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.forwarded);
   const [
@@ -31,56 +34,57 @@ export function ForwardedPage() {
     setCurrentThreadId,
   ] = useThread();
 
-
+  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
+  const navigateTo = useNavigate()
 
   const filteredEmails = emails
-  .filter((item) => {
-    const searchValue = topsearch.toLowerCase();
-    if (!searchValue) return true;
+    .filter((item) => {
+      const searchValue = topsearch.toLowerCase();
+      if (!searchValue) return true;
 
-    // SAFELY HANDLE "from"
-    const fromField = item?.first_name ?? "";
-    const contact = fromField.includes("<")
-      ? fromField.split("<")[0].trim().toLowerCase()
-      : fromField.trim().toLowerCase();
+      // SAFELY HANDLE "from"
+      const fromField = item?.first_name ?? "";
+      const contact = fromField.includes("<")
+        ? fromField.split("<")[0].trim().toLowerCase()
+        : fromField.trim().toLowerCase();
 
-    // SAFE subject
-    const subject = item?.subject?.toLowerCase() ?? "";
+      // SAFE subject
+      const subject = item?.subject?.toLowerCase() ?? "";
 
-    const date = item?.date_entered?.toLowerCase() ?? "";
+      const date = item?.date_entered?.toLowerCase() ?? "";
 
-    if (selectedCategory === "contect" || selectedCategory === "contact") {
+      if (selectedCategory === "contect" || selectedCategory === "contact") {
+        return contact.includes(searchValue);
+      }
+      if (selectedCategory === "subject") {
+        return subject.includes(searchValue);
+      }
+
       return contact.includes(searchValue);
-    }
-    if (selectedCategory === "subject") {
-      return subject.includes(searchValue);
-    }
+    })
+    .sort((a, b) => {
+      if (!selectedSort) return 0;
 
-    return contact.includes(searchValue);
-  })
-  .sort((a, b) => {
-    if (!selectedSort) return 0;
+      const aFrom = a?.from ?? "";
+      const bFrom = b?.from ?? "";
 
-    const aFrom = a?.from ?? "";
-    const bFrom = b?.from ?? "";
+      if (selectedSort === "asc") {
+        return aFrom.localeCompare(bFrom);
+      }
+      if (selectedSort === "desc") {
+        return bFrom.localeCompare(aFrom);
+      }
+      if (selectedSort === "oldest") {
+        return new Date(a.date_entered) - new Date(b.date_entered);
+      }
 
-    if (selectedSort === "asc") {
-      return aFrom.localeCompare(bFrom);
-    }
-    if (selectedSort === "desc") {
-      return bFrom.localeCompare(aFrom);
-    }
-    if (selectedSort === "oldest") {
-      return new Date(a.date_entered) - new Date(b.date_entered);
-    }
-
-    return 0;
-  });
+      return 0;
+    });
 
 
 
-   const dropdownOptions = [
-    
+  const dropdownOptions = [
+
     { value: 'contect', label: 'contact' },
     { value: 'subject', label: 'subject' },
   ];
@@ -90,7 +94,7 @@ export function ForwardedPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-   
+
   ];
 
   const handleFilterApply = (filters) => {
@@ -108,42 +112,42 @@ export function ForwardedPage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
+    setSelectedSort(value);
     console.log('Sort selected:', value);
   };
 
-  
+
   const handleDownload = () => {
- if (!filteredEmails || filteredEmails.length === 0) {
-  toast.error("No data available to download");
-  return;
-}
+    if (!filteredEmails || filteredEmails.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
 
-  // Convert Objects → CSV rows
-  const headers = ["Date", "Contact", "Subject", "Count"];
-  
-  const rows = filteredEmails.map((email) => [
-    email.date_entered,
-    email.first_name.split("<")[0].trim(),
-    email.subject,
-    email.thread_count
-  ]);
+    // Convert Objects → CSV rows
+    const headers = ["Date", "Contact", "Subject", "Count"];
 
-  // Convert to CSV string
-  const csvContent =
-    headers.join(",") +
-    "\n" +
-    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    const rows = filteredEmails.map((email) => [
+      email.date_entered,
+      email.first_name.split("<")[0].trim(),
+      email.subject,
+      email.thread_count
+    ]);
 
-  // Create and auto-download file
-  const blob = new Blob([csvContent], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "unreplied-emails.csv";
-  a.click();
-};
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
+  };
 
 
 
@@ -152,47 +156,47 @@ export function ForwardedPage() {
     <>
 
 
-    <SearchComponent
-      
-      dropdownOptions={dropdownOptions}
-      onDropdownChange={handleCategoryChange} 
-      selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by contact"
-      
-      
-      onSearchChange={handleSearchChange}
-      searchValue={topsearch}
-      searchPlaceholder="Search emails..."
-      
-      
-      onFilterApply={handleFilterApply}
-      filterPlaceholder="Filters"
-      showFilter={true}
-      
-      
-      archiveOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ]}
-      transactionTypeOptions={[
-        { value: 'all', label: 'All Emails' },
-        { value: 'incoming', label: 'Incoming' },
-        { value: 'outgoing', label: 'Outgoing' },
-      ]}
-      currencyOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]}
-      
-      
-      onDownloadClick={handleDownload}
-      showDownload={true}
-      
-      
-      className="mb-6"
-    />
+      <SearchComponent
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        dropdownPlaceholder="Filter by contact"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search emails..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
 
 
 
@@ -256,25 +260,47 @@ export function ForwardedPage() {
               {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
-                  onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                    }}
+
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4">
+                  <td onClick={() => {
+                    const input = extractEmail(email.email_address);
+                    localStorage.setItem("email", input);
+                    setSearch(input);
+                    setEnteredEmail(input);
+                    setWelcomeHeaderContent("Assigned");
+                    navigateTo("/");
+                  }} className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>{email.date_entered}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.first_name}</td>
+                  <td onClick={() => {
+                    const input = extractEmail(email.email_address);
+                    localStorage.setItem("email", input);
+                    setSearch(input);
+                    setEnteredEmail(input);
+                    setWelcomeHeaderContent("Assigned");
+                    navigateTo("/contacts");
+                  }} className="px-6 py-4 text-gray-900">{email.first_name}</td>
                   <td
+                    onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                    }}
                     className="px-6 py-4 text-purple-600"
                   >
                     {email.subject}
                   </td>
-                  <td className="px-6 py-4 text-purple-600">
+                  <td onClick={() => {
+                    const input = extractEmail(email.email_address);
+                    localStorage.setItem("email", input);
+                    setSearch(input);
+                    setEnteredEmail(input);
+                    setWelcomeHeaderContent("Assigned");
+                    navigateTo("/");
+                  }} className="px-6 py-4 text-purple-600">
                     {email.thread_count}
                   </td>
                 </tr>
