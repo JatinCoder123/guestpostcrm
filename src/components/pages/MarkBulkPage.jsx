@@ -97,7 +97,7 @@ export function MarkBulkPage() {
 
                   {/* SENDER */}
                   <td className="px-6 py-4 text-gray-900">
-                    {email.sender || "—"}
+                    {email.first_name || "—"}
                   </td>
 
                   {/* SUBJECT */}

@@ -194,7 +194,7 @@ export function DealsPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
+        dropdownPlaceholder="Filter by"
 
 
         onSearchChange={handleSearchChange}
