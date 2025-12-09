@@ -102,9 +102,10 @@ export const getBulkEmails = (filter, email) => {
 export const markingEmail = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(bulkSlice.actions.markingRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const response = await axios.get(
-        `https://errika.guestpostcrm.com/?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
+        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
         {}
       );
       console.log(`Mark Toggle Response`, response.data);

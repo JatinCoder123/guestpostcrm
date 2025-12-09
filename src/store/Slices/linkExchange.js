@@ -102,9 +102,10 @@ export const getLinkExchange = (filter, email) => {
 export const linkExchange = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.exchangingRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const response = await axios.get(
-        `https://errika.guestpostcrm.com/?entryPoint=contactAction&email=${getState().ladger.email}&field=exchange`,
+        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=exchange`,
         {}
       );
       console.log(`Exchange Toggle Response`, response.data);

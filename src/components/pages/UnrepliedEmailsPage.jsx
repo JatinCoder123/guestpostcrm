@@ -22,11 +22,7 @@ import SearchComponent from "./SearchComponent";
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-<<<<<<< HEAD
   
-=======
-
->>>>>>> d8a38f9b94378f519fe7244b3038807d816e921a
   const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.unreplied);
 
@@ -123,11 +119,7 @@ export function UnrepliedEmailsPage() {
   ];
 
   const handleFilterApply = (filters) => {
-<<<<<<< HEAD
-    setSelectedSort(filters.sort || ''); 
-=======
     setSelectedSort(filters.sort || '');
->>>>>>> d8a38f9b94378f519fe7244b3038807d816e921a
   };
 
   const handleSearchChange = (value) => setTopsearch(value);
@@ -169,20 +161,6 @@ export function UnrepliedEmailsPage() {
   return (
     <>
       <SearchComponent
-<<<<<<< HEAD
-        dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
-        onSearchChange={handleSearchChange}
-        searchValue={topsearch}
-        searchPlaceholder="Search emails..."
-        onSortChange={handleSortChange}
-        sortValue={selectedSort}
-        sortOptions={filterOptions}
-        onDownloadClick={handleDownload}
-        showDownload={true}
-=======
 
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
@@ -221,7 +199,6 @@ export function UnrepliedEmailsPage() {
         showDownload={true}
 
 
->>>>>>> d8a38f9b94378f519fe7244b3038807d816e921a
         className="mb-6"
       />
 
