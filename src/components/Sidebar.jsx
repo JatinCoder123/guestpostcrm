@@ -81,6 +81,9 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
     (s) => s.marketplace
   );
+  const { count: linkExchangeCount, loading: linkExchangeLoading } = useSelector(
+    (s) => s.linkExchange
+  );
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
     (s) => s.forwarded
@@ -143,8 +146,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       id: "link-exchange",
       label: "Link Exchange",
       icon: Link,
-      loading: orderRemLoading,
-      count: orderRemCount,
+      loading: linkExchangeLoading,
+      count: linkExchangeCount,
       color: "text-pink-600",
       hover: "hover:bg-pink-50",
       countBg: "bg-pink-500 text-white",

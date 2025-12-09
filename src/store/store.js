@@ -22,6 +22,7 @@ import movederReducer from "./Slices/movedEmails.js";
 import backlinksReducer from "./Slices/backlinks.js";
 import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
+import linkExchangeReducer from "./Slices/linkExchange.js";
 
 export const store = configureStore({
   reducer: {
@@ -47,7 +48,9 @@ export const store = configureStore({
     defaulter: defaulterReducer,
     backlinks: backlinksReducer,
     events: eventReducer,
-    marketplace: marketplaceReducer
+    marketplace: marketplaceReducer,
+    linkExchange: linkExchangeReducer,
+
 
   },
 });

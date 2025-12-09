@@ -22,6 +22,7 @@ import Avatar from "./components/Avatar";
 import { getOrderRem } from "./store/Slices/orderRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
+import { getLinkExchange } from "./store/Slices/linkExchange";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
 import { getAllAvatar } from "./store/Slices/avatarSlice";
 
@@ -49,6 +50,7 @@ const RootLayout = () => {
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
     dispatch(getForwardedEmails(timeline, enteredEmail));
     dispatch(getFavEmails(timeline, enteredEmail));
+    dispatch(getLinkExchange(timeline, enteredEmail));
     dispatch(getBulkEmails(timeline, enteredEmail));
     dispatch(getOrders(timeline, enteredEmail));
     dispatch(getDeals(timeline, enteredEmail));
