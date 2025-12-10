@@ -8,14 +8,78 @@ import {
   Shield,
 } from "lucide-react";
 
+import SearchComponent from "./SearchComponent";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getDetection } from "../../store/Slices/detection";
 
 export function SpamDetectionPage() {
   const { detection, count } = useSelector((state) => state.detection);
+
+
+
+  
+    const [topsearch, setTopsearch] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+  
+  
+   
+  
+    
+        const handleSearchChange = (value) => {
+          setTopsearch(value);
+          
+        };
+      
+        const handleCategoryChange = (value) => {
+          setSelectedCategory(value);
+          
+        };
+      
+        const handleFilterApply = (filters) => {
+         
+        };
+      
+      
+        const handleDownload = () => {
+         console.log("download handeler");
+        };
+  
+
+
+
+
   return (
     <>
+
+
+
+     <SearchComponent
+        dropdownOptions={[
+          { value: "all", label: "websites" },
+
+        ]}
+        selectedDropdownValue={selectedCategory}
+        onDropdownChange={handleCategoryChange}
+        // dropdownPlaceholder="Filter by websites"
+
+        searchValue={topsearch}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search  items..."
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+        className="mb-6"
+      />
+
+
+
       {/* Spam Detection Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}

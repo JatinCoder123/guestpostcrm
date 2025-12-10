@@ -9,6 +9,7 @@ import {
   Repeat,
   EqualApproximatelyIcon,
 } from "lucide-react";
+import { toast } from "react-toastify";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
@@ -26,6 +27,53 @@ export function MovedPage() {
   
     const [topsearch, setTopsearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSort, setSelectedSort] = useState('');
+
+
+
+    
+  const filteredEmails = emails
+  .filter((item) => {
+    const searchValue = topsearch.toLowerCase();
+    if (!searchValue) return true;
+
+    // SAFELY HANDLE "from"
+    const fromField = item?.email ?? "";
+    const contact = fromField.toLowerCase();
+  
+    // SAFE subject
+    const subject = item?.subject?.toLowerCase() ?? "";
+
+    const date = item?.date_entered?.toLowerCase() ?? "";
+
+    if (selectedCategory === "contect" || selectedCategory === "contact") {
+      return contact.includes(searchValue);
+    }
+    if (selectedCategory === "subject") {
+      return subject.includes(searchValue);
+    }
+
+    return contact.includes(searchValue);
+  })
+  .sort((a, b) => {
+    if (!selectedSort) return 0;
+
+    const aFrom = a?.from ?? "";
+    const bFrom = b?.from ?? "";
+
+    if (selectedSort === "asc") {
+      return aFrom.localeCompare(bFrom);
+    }
+    if (selectedSort === "desc") {
+      return bFrom.localeCompare(aFrom);
+    }
+    if (selectedSort === "oldest") {
+      return new Date(a.date_entered) - new Date(b.date_entered);
+    }
+
+    return 0;
+  });
+
 
 
 
@@ -48,17 +96,18 @@ export function MovedPage() {
     
     
       const handleDownload = () => {
-        if (!filtereditems || filtereditems.length === 0) {
+        if (!filteredEmails || filteredEmails.length === 0) {
           toast.error("No data available to download");
           return;
         }
     
         // Convert Objects → CSV rows
-        const headers = ["DATE", "WEBSITES"];
+        const headers = ["DATE", "SENDER","SUBJECT"];
     
-        const rows = filtereditems.map((email) => [
+        const rows = filteredEmails.map((email) => [
           email.date_entered,
-          email.name
+          email.email,
+          email.subject
     
     
     
@@ -106,16 +155,17 @@ export function MovedPage() {
 
      <SearchComponent
         dropdownOptions={[
-          { value: "all", label: "websites" },
+  { value: 'contect', label: 'cender' },
+    { value: 'subject', label: 'subject' },
 
         ]}
         selectedDropdownValue={selectedCategory}
         onDropdownChange={handleCategoryChange}
-        dropdownPlaceholder="Filter by websites"
+        // dropdownPlaceholder="Filter by websites"
 
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search marketplace items..."
+        searchPlaceholder="Search  items..."
 
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
@@ -178,7 +228,7 @@ export function MovedPage() {
               </tr>
             </thead>
             <tbody>
-              {emails.map((email, index) => (
+              {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
@@ -210,7 +260,7 @@ export function MovedPage() {
         {emails?.length > 0 && (
           <Pagination slice={"moved"} fn={getmovedEmails} />
         )}
-        {emails.length === 0 && (
+        {filteredEmails.length === 0 && (
           <div className="p-12 text-center">
             <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No Moved emails yet.</p>

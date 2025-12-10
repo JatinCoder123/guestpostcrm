@@ -8,6 +8,8 @@ import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
+import { TagManagerpage } from "./components/pages/TagManagerpage";
+
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { useDispatch, useSelector } from "react-redux";
@@ -74,6 +76,10 @@ const router = createBrowserRouter([
       {
         path: "spam-detection",
         element: <SpamDetectionPage />,
+      },
+       {
+        path: "tag-manager",
+        element: <TagManagerpage />,
       },
       {
         path: "unanswered",

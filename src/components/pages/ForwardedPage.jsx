@@ -112,13 +112,8 @@ export function ForwardedPage() {
   };
 
   const handleSortChange = (value) => {
-<<<<<<< HEAD
-    setSelectedSort(value); 
-    
-=======
     setSelectedSort(value);
-    console.log('Sort selected:', value);
->>>>>>> c988729be35acae1636ca00ac25945eecc9843f5
+   
   };
 
 

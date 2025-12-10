@@ -26,6 +26,56 @@ export function Allbacklinkspage() {
 
     const [topsearch, setTopsearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSort, setSelectedSort] = useState('');
+
+
+
+
+     
+  const filteredbacklinks = backlinks
+  .filter((item) => {
+    const searchValue = topsearch.toLowerCase();
+    if (!searchValue) return true;
+
+    // SAFELY HANDLE "from"
+    const fromField = item?.post_author_name_c ?? "";
+    const contact = fromField.toLowerCase();
+  
+    // SAFE subject
+    const subject = item?.target_url_c?.toLowerCase() ?? "";
+
+    const date = item?.date_entered?.toLowerCase() ?? "";
+
+    if (selectedCategory === "contect" || selectedCategory === "contact") {
+      return contact.includes(searchValue);
+    }
+    if (selectedCategory === "subject") {
+      return subject.includes(searchValue);
+    }
+
+    return contact.includes(searchValue);
+  })
+  .sort((a, b) => {
+    if (!selectedSort) return 0;
+
+    const aFrom = a?.from ?? "";
+    const bFrom = b?.from ?? "";
+
+    if (selectedSort === "asc") {
+      return aFrom.localeCompare(bFrom);
+    }
+    if (selectedSort === "desc") {
+      return bFrom.localeCompare(aFrom);
+    }
+    if (selectedSort === "oldest") {
+      return new Date(a.date_entered) - new Date(b.date_entered);
+    }
+
+    return 0;
+  });
+
+
+
 
 
 
@@ -165,8 +215,8 @@ export function Allbacklinkspage() {
 
      <SearchComponent
         dropdownOptions={[
-          { value: "all", label: "target url" },
-          { value: "all", label: "author" }
+          { value: "subject", label: "target url" },
+          { value: "contact", label: "author" }
 
         ]}
         selectedDropdownValue={selectedCategory}
@@ -175,7 +225,7 @@ export function Allbacklinkspage() {
 
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search marketplace items..."
+        searchPlaceholder="Search  items..."
 
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
@@ -253,7 +303,7 @@ export function Allbacklinkspage() {
             </tr>
           </thead>
           <tbody>
-            {backlinks.map((backlink, index) => (
+            {filteredbacklinks.map((backlink, index) => (
               <tr
                 key={backlink.id || index}
                 className="border-b border-gray-100 hover:bg-green-50 transition-colors cursor-pointer"

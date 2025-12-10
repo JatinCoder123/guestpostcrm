@@ -3,27 +3,24 @@ import {
   Calendar,
   User,
   FileText,
-  MessageSquare,
-  LeafyGreen,
+  AlertTriangle,
   BarChart,
-  Repeat,
-  EqualApproximatelyIcon,
+  Shield,
+  TagIcon
 } from "lucide-react";
-
 
 import SearchComponent from "./SearchComponent";
 import { useState } from "react";
-
-import { useDispatch, useSelector } from "react-redux";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
+import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
-import { getdefaulterEmails } from "../../store/Slices/defaulterEmails";
-import { useEffect } from "react";
-export function DefaulterPage() {
-  const { count, emails } = useSelector((state) => state.defaulter);
+import { getDetection } from "../../store/Slices/detection";
+
+export function TagManagerpage() {
+  const { detection, count } = useSelector((state) => state.detection);
 
 
+
+  
     const [topsearch, setTopsearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
   
@@ -54,31 +51,11 @@ export function DefaulterPage() {
 
 
 
-
-
-  
-  const dispatch = useDispatch();
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-  ] = useThread();
-  if (showEmail && currentThreadId) {
-    return (
-      <EmailBox
-        onClose={() => setShowEmails(false)}
-        view={false}
-        threadId={currentThreadId}
-      />
-    );
-  }
-
   return (
     <>
 
-    
+
+
      <SearchComponent
         dropdownOptions={[
           { value: "all", label: "websites" },
@@ -101,19 +78,23 @@ export function DefaulterPage() {
 
         className="mb-6"
       />
-      {/* defaulter Section */}
+
+
+
+      {/* Spam Detection Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl text-gray-900">Defaulter EMAILS</h2>
-             <a href="">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <TagIcon className="w-6 h-6 text-green-600" />
+            <h2 className="text-xl text-gray-900">Tag Manager</h2>
+            <a href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/" target="_blank"
+              rel="noopener noreferrer">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
-          <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
-            {count} defaulter
+          <span className="px-4 py-1.5 bg-orange-100 text-orange-700 rounded-full">
+            {count} Tag Manager
           </span>
         </div>
 
@@ -121,7 +102,7 @@ export function DefaulterPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+              <tr className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white">
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
@@ -131,60 +112,59 @@ export function DefaulterPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>Name</span>
+                    <span>CONTACT</span>
                   </div>
                 </th>
+
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
-                    <span>SUBJECT</span>
+                    <span>Tag Manager</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <BarChart className="w-4 h-4" />
-                    <span>THREAD SIZE</span>
+                    <span>COUNT</span>
                   </div>
                 </th>
               </tr>
             </thead>
             <tbody>
-              {emails.map((email, index) => (
+              {detection?.length > 0 && detection.map((spam) => (
                 <tr
-                  key={index}
-                  className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
+                  key={spam.thread_id}
+                  className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_entered}</span>
+                      <span>{spam.date}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.from}</td>
-                  <td
-                    onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                    }}
-                    className="px-6 py-4 text-purple-600"
-                  >
-                    {email.subject}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <span>{spam.from}</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-purple-600">
-                    {email.thread_count}
+                  <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <span>{spam.thread_count}</span>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {emails?.length > 0 && (
-          <Pagination slice={"defaulter"} fn={getdefaulterEmails} />
+        {detection?.length > 0 && (
+          <Pagination slice={"detection"} fn={getDetection} />
         )}
-        {emails.length === 0 && (
+        {detection.length === 0 && (
           <div className="p-12 text-center">
-            <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No defaulter emails yet.</p>
+            <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Credits yet.</p>
           </div>
         )}
       </div>
