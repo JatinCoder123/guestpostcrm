@@ -11,7 +11,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
-import Pagination from "../Pagination";
+import Pagination from "../Pagination"; 
 import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices";
 import SearchComponent from "./SearchComponent";
 import UpdatePopup from "../UpdatePopup";

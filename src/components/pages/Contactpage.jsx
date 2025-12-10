@@ -8,6 +8,10 @@ import {
   Building2,
   CreditCard,
   X,
+  ChartSpline,
+  Target,
+  DollarSign,
+  Clock,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { editContact, viewEmailAction } from "../../store/Slices/viewEmail";
@@ -27,13 +31,14 @@ const itemVariants = {
 };
 
 export default function Contactpage() {
-  const { contactInfo, accountInfo,message,error,loading} = useSelector(
+  const { contactInfo, accountInfo,dealInfo,message,error,loading} = useSelector(
     (state) => state.viewEmail
   );
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     contact: contactInfo || {},
-    account: accountInfo || {}
+    account: accountInfo || {},
+    deal: dealInfo || {}
   });
 const dispatch = useDispatch();
   const handleEditClick = () => {
@@ -69,6 +74,11 @@ const dispatch = useDispatch();
     dispatch(viewEmailAction.clearAllErrors())
    }
   }, [message, error, dispatch]);
+
+
+  useEffect(() => {
+  console.log('formData:', formData);
+}, []);
 
   return (
     <div className="w-full min-h-screen from-purple-50 via-blue-50 to-pink-50 py-12 px-4">
@@ -152,6 +162,10 @@ const dispatch = useDispatch();
               <GlassInfo icon={<Mail />} label="Email" value={contactInfo?.email1} />
               <GlassInfo icon={<MapPin />} label="Date Entered" value={contactInfo?.date_entered} />
               <GlassInfo icon={<User />} label="Customer Type" value={contactInfo?.customer_type} />
+              <GlassInfo icon={<ChartSpline />} label="Status" value={contactInfo?.status} />
+              <GlassInfo icon={<Target />} label="Last Activity" value={contactInfo?.date_modified} />
+              <GlassInfo icon={<DollarSign />} label="Deal Amount" value={formData?.deal?.[0]?.dealamount || "N/A"} />
+              <GlassInfo icon={<Clock />} label="Deal Date" value={formData?.deal?.[0]?.date_entered || "N/A"} />
             </div>
           </div>
           {/* Addresses Section */}

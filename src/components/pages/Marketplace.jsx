@@ -7,6 +7,7 @@ import SearchComponent from "./SearchComponent";
 
 import { Store, Gift, User, Calendar, Pencil, Pen, LinkIcon, ActivityIcon } from "lucide-react";
 import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
+import SearchComponent from "./SearchComponent";
 
 export function Marketplace() {
   const dispatch = useDispatch();
@@ -98,16 +99,116 @@ export function Marketplace() {
 
 
 
+<<<<<<< HEAD
+=======
+  const [showOffer, setShowOffer] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedSort, setSelectedSort] = useState('');
+>>>>>>> 50ab54fcfaf1379bfc9ade7a08bb610824b76644
 
   useEffect(() => {
     dispatch(getMarketplace());
   }, [dispatch]);
 
+
+  const dropdownOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+  ];
+
+  const filterOptions = [
+    { value: 'asc', label: 'A to Z' },
+    { value: 'desc', label: 'Z to A' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+   
+  ];
+
+  const handleFilterApply = (filters) => {
+    console.log('Applied filters from popup:', filters);
+  };
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+    console.log('Searching for:', value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log('Category selected:', value);
+  };
+
+  const handleSortChange = (value) => {
+    setSelectedSort(value); 
+    console.log('Sort selected:', value);
+  };
+
+  const handleDownload = () => {
+    console.log('Download clicked');
+  };
+
   return (
+<<<<<<< HEAD
     <>
       <SearchComponent
         dropdownOptions={[
           { value: "all", label: "websites" },
+=======
+
+    <>
+
+    <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by Status"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
+
+
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between p-6 border-b border-gray-200 mr-5">
+        <div className="flex items-center gap-3">
+          <Store className="w-6 h-6 text-yellow-600" />
+          <h2 className="text-xl text-gray-900 font-semibold"> MARKETPLACE</h2>
+>>>>>>> 50ab54fcfaf1379bfc9ade7a08bb610824b76644
 
         ]}
         selectedDropdownValue={selectedCategory}
@@ -175,6 +276,7 @@ export function Marketplace() {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -186,6 +288,19 @@ export function Marketplace() {
                     DATE
                   </div>
                 </th>
+=======
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gradient-to-from-green-600 to-emerald-600 text-white">
+              <th className="px-6 py-4 text-left">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  DATE
+                </div>
+              </th>
+>>>>>>> 50ab54fcfaf1379bfc9ade7a08bb610824b76644
 
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -227,6 +342,7 @@ export function Marketplace() {
             </tbody>
           </table>
         </div>
+<<<<<<< HEAD
 
         {!loading && filtereditems.length === 0 && (
           <div className="p-12 text-center">
@@ -235,6 +351,11 @@ export function Marketplace() {
           </div>
         )}
       </div>
+=======
+      )}
+    </div>
+
+>>>>>>> 50ab54fcfaf1379bfc9ade7a08bb610824b76644
     </>
   );
 }
