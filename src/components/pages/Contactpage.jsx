@@ -11,6 +11,7 @@ import {
   ChartSpline,
   Target,
   DollarSign,
+  Clock,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { editContact, viewEmailAction } from "../../store/Slices/viewEmail";
@@ -164,6 +165,7 @@ const dispatch = useDispatch();
               <GlassInfo icon={<ChartSpline />} label="Status" value={contactInfo?.status} />
               <GlassInfo icon={<Target />} label="Last Activity" value={contactInfo?.date_modified} />
               <GlassInfo icon={<DollarSign />} label="Deal Amount" value={formData?.deal?.[0]?.dealamount || "N/A"} />
+              <GlassInfo icon={<Clock />} label="Deal Date" value={formData?.deal?.[0]?.date_entered || "N/A"} />
             </div>
           </div>
           {/* Addresses Section */}
