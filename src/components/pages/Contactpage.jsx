@@ -93,8 +93,8 @@ const dispatch = useDispatch();
               }}
               className="relative"
             >
-              <div className="w-32 h-32 rounded-full backdrop-blur-xl bg-gradient-to-br from-purple-400/30 to-blue-400/30 border border-white/50 flex items-center justify-center shadow-xl">
-                <User size={60} className="text-purple-600" />
+              <div className="w-12 h-12 rounded-full backdrop-blur-xl bg-gradient-to-br from-purple-400/30 to-blue-400/30 border border-white/50 flex items-center justify-center shadow-xl">
+                <User size={30} className="text-purple-600" />
               </div>
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
@@ -118,7 +118,7 @@ const dispatch = useDispatch();
                 transition={{ delay: 0.4 }}
                 className="text-lg text-gray-600 mt-2"
               >
-                Personal Contact • {contactInfo?.customer_type || "Standard"}
+                {contactInfo?.type} {contactInfo?.title}
               </motion.p>
              
             </div>
