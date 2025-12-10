@@ -1,5 +1,5 @@
 
-
+import SearchComponent from "./SearchComponent";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -21,6 +21,118 @@ export function Allbacklinkspage() {
   
   const [showDetail, setShowDetail] = useState(false);
   const [currentBacklinkId, setCurrentBacklinkId] = useState(null);
+
+
+
+    const [topsearch, setTopsearch] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSort, setSelectedSort] = useState('');
+
+
+
+
+     
+  const filteredbacklinks = backlinks
+  .filter((item) => {
+    const searchValue = topsearch.toLowerCase();
+    if (!searchValue) return true;
+
+    // SAFELY HANDLE "from"
+    const fromField = item?.post_author_name_c ?? "";
+    const contact = fromField.toLowerCase();
+  
+    // SAFE subject
+    const subject = item?.target_url_c?.toLowerCase() ?? "";
+
+    const date = item?.date_entered?.toLowerCase() ?? "";
+
+    if (selectedCategory === "contect" || selectedCategory === "contact") {
+      return contact.includes(searchValue);
+    }
+    if (selectedCategory === "subject") {
+      return subject.includes(searchValue);
+    }
+
+    return contact.includes(searchValue);
+  })
+  .sort((a, b) => {
+    if (!selectedSort) return 0;
+
+    const aFrom = a?.from ?? "";
+    const bFrom = b?.from ?? "";
+
+    if (selectedSort === "asc") {
+      return aFrom.localeCompare(bFrom);
+    }
+    if (selectedSort === "desc") {
+      return bFrom.localeCompare(aFrom);
+    }
+    if (selectedSort === "oldest") {
+      return new Date(a.date_entered) - new Date(b.date_entered);
+    }
+
+    return 0;
+  });
+
+
+
+
+
+
+    
+      const handleSearchChange = (value) => {
+        setTopsearch(value);
+        
+      };
+    
+      const handleCategoryChange = (value) => {
+        setSelectedCategory(value);
+        
+      };
+    
+      const handleFilterApply = (filters) => {
+       
+      };
+    
+    
+      const handleDownload = () => {
+        if (!filtereditems || filtereditems.length === 0) {
+          toast.error("No data available to download");
+          return;
+        }
+    
+        // Convert Objects → CSV rows
+        const headers = ["DATE", "WEBSITES"];
+    
+        const rows = filtereditems.map((email) => [
+          email.date_entered,
+          email.name
+    
+    
+    
+        ]);
+    
+        // Convert to CSV string
+        const csvContent =
+          headers.join(",") +
+          "\n" +
+          rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    
+        // Create and auto-download file
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+    
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "unreplied-emails.csv";
+        a.click();
+      };
+    
+    
+
+
+
+
 
   
   useEffect(() => {
@@ -99,6 +211,31 @@ export function Allbacklinkspage() {
   }
 
   return (
+    <>
+
+     <SearchComponent
+        dropdownOptions={[
+          { value: "subject", label: "target url" },
+          { value: "contact", label: "author" }
+
+        ]}
+        selectedDropdownValue={selectedCategory}
+        onDropdownChange={handleCategoryChange}
+        // dropdownPlaceholder="Filter by target url "
+
+        searchValue={topsearch}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search  items..."
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+        className="mb-6"
+      />
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       
       
@@ -166,7 +303,7 @@ export function Allbacklinkspage() {
             </tr>
           </thead>
           <tbody>
-            {backlinks.map((backlink, index) => (
+            {filteredbacklinks.map((backlink, index) => (
               <tr
                 key={backlink.id || index}
                 className="border-b border-gray-100 hover:bg-green-50 transition-colors cursor-pointer"
@@ -220,5 +357,6 @@ export function Allbacklinkspage() {
         </div>
       )}
     </div>
+    </>
   );
 }

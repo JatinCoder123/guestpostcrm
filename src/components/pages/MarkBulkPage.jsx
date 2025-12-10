@@ -1,3 +1,6 @@
+
+
+
 import {
   Mail,
   Calendar,
@@ -14,8 +17,38 @@ import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getBulkEmails } from "../../store/Slices/markBulkSlice";
 
+import SearchComponent from "./SearchComponent";
+import { useState } from "react";
+
 export function MarkBulkPage() {
   const { count, emails } = useSelector((state) => state.bulk);
+
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+
+ 
+
+  
+      const handleSearchChange = (value) => {
+        setTopsearch(value);
+        
+      };
+    
+      const handleCategoryChange = (value) => {
+        setSelectedCategory(value);
+        
+      };
+    
+      const handleFilterApply = (filters) => {
+       
+      };
+    
+    
+      const handleDownload = () => {
+       console.log("download handeler");
+      };
+
 
   const [
     handleThreadClick,
@@ -27,6 +60,32 @@ export function MarkBulkPage() {
 
   return (
     <>
+
+    <SearchComponent
+        dropdownOptions={[
+          { value: "all", label: "contact" },
+
+        ]}
+        selectedDropdownValue={selectedCategory}
+        onDropdownChange={handleCategoryChange}
+        // dropdownPlaceholder="Filter by websites"
+
+        searchValue={topsearch}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search  items..."
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+        className="mb-6"
+      />
+
+
+
       {/* OPEN EMAIL BOX */}
       {showEmail && currentThreadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">

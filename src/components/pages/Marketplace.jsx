@@ -48,16 +48,16 @@ export function Marketplace() {
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log("Searching for:", value);
+    
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log("Filter selected:", value);
+    
   };
 
   const handleFilterApply = (filters) => {
-    console.log("Applied filters:", filters);
+   
   };
 
 

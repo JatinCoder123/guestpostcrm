@@ -68,10 +68,22 @@ export function InvoicesPage() {
       const searchValue = topsearch.toLowerCase();
       if (!searchValue) return true; // no search → show all
 
-      const contact = item.name.split("<")[0].trim().toLowerCase(); d
+      const contact = item.name.split("<")[0].trim().toLowerCase();
+      // const subject = item.order_id?.toLowerCase() || "";
+      // const date = item.date_entered?.toLowerCase() || "";
+
+      // 🟢 If category selected
       if (selectedCategory === "contect" || selectedCategory === "contact") {
         return contact.includes(searchValue);
       }
+      // if (selectedCategory === "subject") {
+      //   return subject.includes(searchValue);
+      // }
+      // if (selectedCategory === "date") {
+      //   return date.includes(searchValue);
+      // }
+
+      // 🟢 Default search → CONTACT
       return contact.includes(searchValue);
     })
     .sort((a, b) => {
@@ -84,6 +96,14 @@ export function InvoicesPage() {
       if (selectedSort === "desc") {
         return b.from.localeCompare(a.from);
       }
+
+      // if (selectedSort === "newest") {
+      //   return new Date(b.date_entered) - new Date(a.date_entered);
+      // }
+
+      // if (selectedSort === "oldest") {
+      //   return new Date(a.date_entered) - new Date(b.date_entered);
+      // }
 
       return 0;
     });
@@ -104,22 +124,22 @@ export function InvoicesPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
+    
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
+   
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
+    
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    console.log('Sort selected:', value);
+    
   };
 
 
@@ -197,13 +217,12 @@ export function InvoicesPage() {
           />
         )
       }
-
       <SearchComponent
 
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
+        dropdownPlaceholder="Filter by Status"
 
 
         onSearchChange={handleSearchChange}
@@ -308,7 +327,7 @@ export function InvoicesPage() {
             <button
 
               className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-              onClick={() => alert("Work in progress")}
+              onClick={() => setShowCreateInvoice(true)}
             >
               <img
                 width="40"
