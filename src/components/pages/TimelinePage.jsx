@@ -26,6 +26,8 @@ import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
+import { updateUnrepliedEmails } from "../../store/Slices/unrepliedEmails";
+import { updateUnansweredEmails } from "../../store/Slices/unansweredEmails";
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
   const [showThread, setShowThread] = useState(false);
@@ -35,7 +37,6 @@ export function TimelinePage() {
   const { currentIndex, setCurrentIndex } = useContext(PageContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(true);
   const {
     error: sendError,
     message,
@@ -86,6 +87,9 @@ export function TimelinePage() {
     }
     if (threadMessage) {
       toast.success(threadMessage);
+      const newEmail = emails.find((email) => email.thread_id == currentThreadId);
+      dispatch(updateUnrepliedEmails(currentThreadId));
+      dispatch(updateUnansweredEmails(newEmail));
       dispatch(addEvent({
         email: email,
         thread_id: currentThreadId,
@@ -104,37 +108,20 @@ export function TimelinePage() {
 
 
 
-  useEffect(() => {
-    if (aiError) {
-      toast.error(aiError);
-    }
-  }, [aiError]);
 
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
 
   const handleAiAutoReply = async () => {
-    if (!aiReply) {
-      toast.error("No AI reply content available");
-      return;
-    }
-
     setAiReplySentLoading(true);
     try {
-      const replyContent =
-        typeof aiReply === "string" ? aiReply : aiReply?.reply_suggestion;
-
-      if (replyContent) {
-        dispatch(sendEmailToThread(emails[currentIndex].thread_id, replyContent));
-        dispatch(addEvent({
-          email: email,
-          thread_id: emails[currentIndex].thread_id,
-          recent_activity: "AI reply sent",
-        }));
-      } else {
-        toast.error("No valid reply content found");
-      }
+      dispatch(sendEmailToThread(emails[currentIndex].thread_id, mailersSummary?.ai_response));
+      dispatch(addEvent({
+        email: email,
+        thread_id: emails[currentIndex].thread_id,
+        recent_activity: "AI reply sent",
+      }));
     } catch (error) {
       console.error("❌ Error sending AI reply:", error);
       toast.error("Failed to send AI reply");
@@ -143,20 +130,9 @@ export function TimelinePage() {
     }
   };
 
-
   useEffect(() => {
-    if (emails.length > 0) {
-      if (initialLoad) {
-        console.log("🚀 Generating AI reply on page load...");
-        dispatch(getAiReply(emails[currentIndex].thread_id));
-        setInitialLoad(false);
-      }
-
-      else {
-        dispatch(getAiReply(emails[currentIndex].thread_id));
-      }
-    }
-  }, [currentIndex, dispatch, initialLoad]);
+    setCurrentIndex(0);
+  }, [emails]);
 
   const handleNext = () => {
     if (currentIndex < emails.length - 1) {
@@ -236,49 +212,35 @@ export function TimelinePage() {
                         Quick Reply
                       </h3>
                       {/* Send AI Reply Button - Moved to top right */}
-                      {sending ? (
+                      {aiReplySentLoading ? (
                         <div className="flex justify-center">
                           <LoadingChase size="25" color="blue" type="ping" />
                         </div>
                       ) : (
-                        <>
-                          {aiReplyLoading ? (
-                            <div className="flex justify-center">
-                              <LoadingAll size="25" color="blue" type="ping" />
-                            </div>
-                          ) : (
-                            <motion.button
-                              whileHover={{ scale: 1.15 }}
-                              whileTap={{ scale: 0.95 }}
-                              transition={{ type: "spring", stiffness: 400 }}
-                              className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                              onClick={handleAiAutoReply}
-                              disabled={!aiReply}
-                            >
-                              <img
-                                width="33"
-                                height="33"
-                                src="https://img.icons8.com/ultraviolet/40/bot.png"
-                                alt="AI Reply"
-                              />
-                            </motion.button>
-                          )}
-                        </>
-
-
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          onClick={handleAiAutoReply}
+                          disabled={sending || mailersSummary == null || mailersSummary?.ai_response.trim() === ""}
+                        >
+                          <img
+                            width="33"
+                            height="33"
+                            src="https://img.icons8.com/ultraviolet/40/bot.png"
+                            alt="AI Reply"
+                          />
+                        </motion.button>
                       )}
                     </div>
 
-                    {aiReply && !sending ? (
+                    {!sending && (
                       <div className="mb-3">
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                          {typeof aiReply === "string"
-                            ? aiReply
-                            : aiReply?.reply_suggestion || aiReply}
+                          {mailersSummary == null || mailersSummary?.ai_response == "" ? "No AI reply generated." : mailersSummary?.ai_response}
                         </p>
                       </div>
-                    ) : (
-                      <p className="text-gray-500 text-sm">No AI reply generated.</p>
                     )}
                   </div>
 

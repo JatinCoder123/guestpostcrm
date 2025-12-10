@@ -45,15 +45,14 @@
 
 
                 $verifyResponse = $this->user->verifyUser($email);
-
-
-                // Decode JSON (may return string error)
                 $verifyJson = json_decode($verifyResponse, true);
 
-                // If API did not return valid JSON → treat as failure
-                if (!is_array($verifyJson)) {
-                    http_response_code(401);
-                    echo json_encode(["error" => "User verification failed", "details" => $verifyResponse]);
+                if (!$verifyJson || isset($verifyJson['error'])) {
+                    http_response_code(503);
+                    echo json_encode([
+                        "error" => "CRM verification failed",
+                        "details" => $verifyJson
+                    ]);
                     return;
                 }
 

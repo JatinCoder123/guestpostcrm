@@ -43,6 +43,7 @@ import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
 import CreateOrder from "./components/CreateOrder";
 import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
+import CreateOffer from "./components/CreateOffer";
 
 
 const router = createBrowserRouter([
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
       {
         path: "offers",
         element: <OffersPage />,
+      },
+      {
+        path: "offers/create",
+        element: <CreateOffer />,
       },
       {
         path: "orders",

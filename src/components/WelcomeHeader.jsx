@@ -2,9 +2,7 @@ import { Mail, Link2, List } from "lucide-react";
 import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-import { LoadingAll, LoadingChase } from "./Loading";
 
-const LOCAL_KEY = "create_deals_draft_v1";
 
 const WelcomeHeader = () => {
   const { email, timeline, loading } = useSelector((state) => state.ladger);
@@ -19,15 +17,7 @@ const WelcomeHeader = () => {
 
   const time = periodOptions.find((o) => o.period == timeline)?.title;
 
-  // NEW: Pending Deals
-  let pendingDeals = null;
-  const raw = localStorage.getItem(LOCAL_KEY);
-  if (raw) {
-    const deals = JSON.parse(raw);
-    if (Array.isArray(deals) && deals.length > 0) {
-      pendingDeals = deals.length;
-    }
-  }
+
 
   return (
     <div className="h-20 w-full relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
@@ -53,17 +43,7 @@ const WelcomeHeader = () => {
               </>
             )}
 
-            {pendingDeals !== null && pendingDeals > 0 && (
-              <>
-                {" • "}
-                <button
-                  onClick={() => navigate("/deals/create")}
-                  className="font-bold text-orange-600 cursor-pointer"
-                >
-                  {pendingDeals} Pending Deals
-                </button>
-              </>
-            )}
+
           </p>
 
           {/* BADGES */}

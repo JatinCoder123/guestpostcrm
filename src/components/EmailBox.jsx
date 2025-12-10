@@ -152,6 +152,11 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
     }
   };
   const visibleMessages = emails?.slice(-messageLimit);
+  useEffect(() => {
+    if (scrollRef.current && visibleMessages?.length <= 3) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [visibleMessages]);
 
   return (
     <motion.div

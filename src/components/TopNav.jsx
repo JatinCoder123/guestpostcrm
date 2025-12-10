@@ -198,7 +198,7 @@ export function TopNav() {
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                   {/* User Info */}
                   <div className="flex flex-col overflow-hidden">
-                    <p className="font-semibold text-gray-900 text-lg truncate">
+                    <p className="font-semibold text-gray-900  truncate">
                       {user?.name || "User"}
                     </p>
                     <p className="text-sm text-gray-500 truncate">
@@ -210,7 +210,7 @@ export function TopNav() {
                   <motion.button
                     onClick={handleLogout}
                     disabled={loading}
-                    whileHover={!loading ? { scale: 1.1, x: 5 } : {}}
+                    whileHover={!loading ? { scale: 1.1 } : {}}
                     whileTap={{ scale: 0.95 }}
                     className={`
       flex items-center justify-center cursor-pointer
@@ -223,18 +223,13 @@ export function TopNav() {
                   >
                     <img
                       className={`
-        w-10 h-10 transition-all duration-300 
+        w-8 h-8 transition-all duration-300 
         ${loading ? "opacity-40" : "opacity-100"}
       `}
                       src="https://img.icons8.com/arcade/64/exit.png"
                       alt="exit"
                     />
                   </motion.button>
-                </div>
-                <div className="ml-4">
-                  <p className="font-semibold text-gray-900 text-lg truncate">
-                    {user?.timeline || "UTC +05:30 (IST)"}
-                  </p>
                 </div>
               </motion.div>
             )}

@@ -76,15 +76,15 @@ const SearchComponent = ({
   };
 
   return (
-    <div className={`flex flex-wrap items-center justify-between gap-4 p-4 bg-blue-100 border border-blue-100 rounded-lg shadow-sm ${className}`}>
-      
+    <div className={`flex flex-wrap items-center justify-between gap-4 p-4  ${className}`}>
+
       {/* Left side: Dropdown + Search */}
       <div className="flex flex-wrap items-center gap-4 flex-1">
         {/* Main Dropdown */}
         {dropdownOptions.length > 0 && (
           <div className="relative min-w-[150px]">
             <select
-              className="block w-full px-4 py-4 pr-8 text-sm border border-gray-300 rounded-full focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white"
+              className="block w-full px-4 py-4 pr-8 text-sm border border-gray-300 rounded-full  outline-none appearance-none bg-white"
               value={selectedDropdownValue || ""}
               onChange={(e) => onDropdownChange && onDropdownChange(e.target.value)}
             >
@@ -160,7 +160,7 @@ const SearchComponent = ({
                       <select
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         value={localFilters.archive}
-                        onChange={(e) => setLocalFilters({...localFilters, archive: e.target.value})}
+                        onChange={(e) => setLocalFilters({ ...localFilters, archive: e.target.value })}
                       >
                         {archiveOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -176,7 +176,7 @@ const SearchComponent = ({
                       <select
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         value={localFilters.transactionType}
-                        onChange={(e) => setLocalFilters({...localFilters, transactionType: e.target.value})}
+                        onChange={(e) => setLocalFilters({ ...localFilters, transactionType: e.target.value })}
                       >
                         {transactionTypeOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -195,7 +195,7 @@ const SearchComponent = ({
                       <select
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         value={localFilters.dateRange}
-                        onChange={(e) => setLocalFilters({...localFilters, dateRange: e.target.value})}
+                        onChange={(e) => setLocalFilters({ ...localFilters, dateRange: e.target.value })}
                       >
                         <option value="7">Past 7 days</option>
                         <option value="30">Past 30 days</option>
@@ -211,7 +211,7 @@ const SearchComponent = ({
                       <select
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         value={localFilters.currency}
-                        onChange={(e) => setLocalFilters({...localFilters, currency: e.target.value})}
+                        onChange={(e) => setLocalFilters({ ...localFilters, currency: e.target.value })}
                       >
                         {currencyOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -232,7 +232,7 @@ const SearchComponent = ({
                           type="number"
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           value={localFilters.minAmount}
-                          onChange={(e) => setLocalFilters({...localFilters, minAmount: parseFloat(e.target.value) || 0})}
+                          onChange={(e) => setLocalFilters({ ...localFilters, minAmount: parseFloat(e.target.value) || 0 })}
                         />
                       </div>
                       <div>
@@ -241,7 +241,7 @@ const SearchComponent = ({
                           type="number"
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           value={localFilters.maxAmount}
-                          onChange={(e) => setLocalFilters({...localFilters, maxAmount: parseFloat(e.target.value) || 0})}
+                          onChange={(e) => setLocalFilters({ ...localFilters, maxAmount: parseFloat(e.target.value) || 0 })}
                         />
                       </div>
                     </div>
@@ -275,7 +275,7 @@ const SearchComponent = ({
             onClick={onDownloadClick}
           >
             <div className="flex items-center gap-2">
-              <Download/>
+              <Download />
             </div>
           </button>
         )}

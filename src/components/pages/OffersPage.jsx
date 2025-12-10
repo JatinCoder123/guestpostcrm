@@ -307,32 +307,6 @@ export function OffersPage() {
           <div className="px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
             {offers.length} Active Offers
           </div>
-
-          <div className="relative group">
-            <button
-              onClick={() => {
-                setEditData(null);
-                setShowOffer(true);
-              }}
-              className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center transition"
-            >
-              <img
-                width="40"
-                height="40"
-                src="https://img.icons8.com/arcade/64/plus.png"
-                alt="plus"
-              />
-            </button>
-
-            {/* Tooltip */}
-            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
-                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
-                   opacity-0 group-hover:opacity-100 transition 
-                   pointer-events-none whitespace-nowrap shadow-md">
-              Create Offer
-            </span>
-          </div>
-
         </div>
 
         {/* Table */}
