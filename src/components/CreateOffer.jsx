@@ -1,428 +1,52 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, GripVertical, MoveLeft } from "lucide-react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
-
-import { useNavigate } from "react-router-dom";
-import { createOrder, orderAction } from "../store/Slices/orders";
-import PreviewOrders from "./PreviewOrders";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { renderToStaticMarkup } from "react-dom/server";
-import { viewEmailAction } from "../store/Slices/viewEmail";
-const LOCAL_KEY = "create_order_draft_v1";
+import Create from "./Create";
+import Preview from "./Preview";
+import { excludeEmail, websiteLists } from "../assets/assets";
 
-export default function CreateOrder() {
+const fields = [
+  { name: "amount", label: "Offer Amount", type: "number" },
+  { name: "client_offer_c", label: "Client Offer", type: "number" },
+  { name: "our_offer_c", label: "Our Offer", type: "number" },
+  { name: "website", label: "Website", type: "select", options: websiteLists },
+]
+export default function CreateOffer() {
   const { email } = useSelector((state) => state.ladger);
-  const {
-    creating,
-    orders: prevOrders,
-  } = useSelector((state) => state.orders);
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const { contactInfo } = useSelector((state) => state.viewEmail);
-  const { loading, message } = useSelector((state) => state.threadEmail);
-
-
-  const [orders, setOrders] = useState([]);
-
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
-
-
+  const { offers } = useSelector((state) => state.offers);
+  const { contactInfo } = useSelector((state) => state.viewEmail)
+  const [currentOffers, setCurrentOffers] = useState([])
   useEffect(() => {
-    if (prevOrders.length > 0) {
-      setOrders(
-        prevOrders.filter((d) => d.client_email === email)
-      );
-    }
-  }, [prevOrders, email]);
-
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(orders));
-  }, [orders]);
-
-  // ────────────────────────────────────────────────
-  // Auto adjust active index
-  useEffect(() => {
-    if (activeIndex >= orders.length && orders.length > 0)
-      setActiveIndex(orders.length - 1);
-  }, [orders.length, activeIndex]);
-
-
-  // ────────────────────────────────────────────────
-  // Delete order (allow 0 orders)
-  const removeOrder = (idx) => {
-    setOrders((prev) => {
-      const next = prev.filter((_, i) => i !== idx);
-      return next;
-    });
-  };
-
-  // ────────────────────────────────────────────────
-  // Update order
-  const updateOrder = (idx, patch) => {
-    setOrders((prev) => {
-      const next = prev.map((d, i) => (i === idx ? { ...d, ...patch } : d));
-      return next;
-    });
-  };
-
-  // ────────────────────────────────────────────────
-  // Validation logic
-  const valid = useMemo(
-    () =>
-      orders.length > 0 &&
-      orders.every(
-        (d) => String(d.total_amount_c).trim() !== "" && Number(d.total_amount_c) > 0
-      ),
-    [orders]
-  );
-
-  const totalAmount = useMemo(
-    () => orders.reduce((s, d) => s + Number(d.total_amount_c || 0), 0),
-    [orders]
-  );
-
-  // ────────────────────────────────────────────────
-  // Submit
-  const submitAll = () => {
-    if (orders.length === 0) {
-      toast.error("No orders to submit.");
-      return;
-    }
-
-    if (!valid) {
-      toast.error("Please validate all orders before submitting.");
-      return;
-    }
-    if (contactInfo.thread_id) {
-      dispatch(sendEmailToThread(contactInfo.thread_id, renderToStaticMarkup(
-        <PreviewOrders
-          orders={orders}
-          totalAmount={totalAmount}
-          userEmail={email}
-        />
-      )))
-    }
+    const offer = offers.filter(d => excludeEmail(d.real_name) == email)
+    setCurrentOffers(() => [...offer])
+  }, [email, offers])
+  const submitHandler = (totalAmount) => {
+    // dispatch(createDeal(currentOffers));
+    // if (contactInfo.thread_id) {
+    //   dispatch(sendEmailToThread(contactInfo.thread_id, renderToStaticMarkup(
+    //     <Preview
+    //       data={currentOffers}
+    //       type="Offers"
+    //       totalAmount={totalAmount}
+    //       userEmail={email}
+    //     />
+    //   )))
+    // }
+    alert("We're working on it. Please try again after some time.")
 
   };
-
-
-  useEffect(() => {
-    if (message) {
-      localStorage.removeItem(LOCAL_KEY);
-      navigate(-1);
-    }
-  }, [message]);
-
-  // ────────────────────────────────────────────────
-  // Drag & Drop
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
-    const arr = Array.from(orders);
-    const [moved] = arr.splice(result.source.index, 1);
-    arr.splice(result.destination.index, 0, moved);
-    setOrders(arr);
-  };
-
 
   return (
-    <>
-
-      <div className="w-full min-h-[80vh] p-6 bg-gray-50 flex justify-center">
-        <div className="w-full max-w-6xl grid grid-cols-12 gap-6">
-          {/* LEFT SECTION */}
-          <div className="col-span-12 lg:col-span-8">
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 relative">
-              {/* Header Row */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
-                  >
-                    <MoveLeft size={16} />
-                    Back
-                  </button>
-
-                  <h3 className="text-2xl font-semibold">Create Offers</h3>
-                </div>
-              </div>
-
-              {/* Deals List */}
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="deals-droppable">
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="space-y-4"
-                    >
-                      <AnimatePresence>
-                        {orders.length > 0 && orders.map((order, idx) => (
-                          <Draggable
-                            key={order.id}
-                            draggableId={order.id}
-                            index={idx}
-                          >
-                            {(dp) => (
-                              <motion.div
-                                layout
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.98 }}
-                                ref={dp.innerRef}
-                                {...dp.draggableProps}
-                                {...dp.dragHandleProps}
-                                className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm"
-                              >
-
-
-                                <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
-                                  {/* Amount */}
-                                  <div>
-                                    <label className="block text-xs text-gray-600">
-                                      Order Id
-                                    </label>
-                                    <div className="relative mt-1">
-                                      <input
-                                        value={order.order_id || ""}
-                                        disabled
-                                        inputMode="numeric"
-                                        className="w-full rounded-xl border px-3 py-2 bg-white"
-                                      />
-                                    </div>
-                                  </div>
-                                  {/* Amount */}
-                                  <div>
-                                    <label className="block text-xs text-gray-600">
-                                      Amount
-                                    </label>
-                                    <div className="relative mt-1">
-                                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                        $
-                                      </span>
-                                      <input
-                                        value={order.total_amount_c || ""}
-                                        onChange={(e) =>
-                                          updateOrder(idx, {
-                                            total_amount_c: e.target.value,
-                                          })
-                                        }
-                                        inputMode="numeric"
-                                        className="w-full rounded-xl border px-3 pl-9 py-2 bg-white"
-                                        placeholder="1000"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* Website */}
-                                  <div>
-                                    <label className="block text-xs text-gray-600">
-                                      Website
-                                    </label>
-                                    <input
-                                      value={order.website_c || ""}
-                                      onChange={(e) =>
-                                        updateOrder(idx, {
-                                          website_c: e.target.value,
-                                        })
-                                      }
-                                      className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
-                                    />
-                                  </div>
-
-                                  {/* Email */}
-                                  <div>
-                                    <label className="block text-xs text-gray-600">
-                                      Email
-                                    </label>
-                                    <input
-                                      value={order.client_email || ""}
-                                      disabled
-                                      className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
-                                    />
-                                  </div>
-                                  {/* Website */}
-                                  <div>
-                                    <label className="block text-xs text-gray-600">
-                                      Invoice Link
-                                    </label>
-                                    <input
-                                      value={order.invoice_link_c || ""}
-                                      onChange={(e) =>
-                                        updateOrder(idx, {
-                                          invoice_link_c: e.target.value,
-                                        })
-                                      }
-                                      className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
-                                    />
-                                  </div>
-                                  {/* Website */}
-                                  <div>
-                                    <label className="block text-xs text-gray-600">
-                                      Their Link
-                                    </label>
-                                    <input
-                                      value={order.their_links || ""}
-                                      onChange={(e) =>
-                                        updateOrder(idx, {
-                                          their_links: e.target.value,
-                                        })
-                                      }
-                                      className="w-full rounded-xl border px-3 py-2 bg-white mt-1"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="flex items-start justify-end gap-3">
-                                  <button
-                                    onClick={() => removeOrder(idx)}
-                                    className="text-red-500 p-2 rounded-lg hover:bg-red-50"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </div>
-                              </motion.div>
-                            )}
-                          </Draggable>
-                        ))}
-                      </AnimatePresence>
-
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-
-              {/* Footer */}
-              <div className="mt-6 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  Total Orders: {orders.length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT SIDEBAR */}
-          <div className="col-span-12 lg:col-span-4">
-            <div className="sticky top-6 space-y-4">
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                <h4 className="font-semibold">Offers for {email}</h4>
-
-                <div className="mt-3 text-sm text-gray-600">
-                  <div className="flex justify-between">
-                    <span>Orders</span>
-                    <strong>{orders.length}</strong>
-                  </div>
-
-                  {/* Website breakdown */}
-                  <div className="mt-3">
-                    <strong className="block mb-1">Websites</strong>
-
-                    {orders.length === 0 ? (
-                      <p className="text-gray-400">No websites selected</p>
-                    ) : (
-                      <ul className="list-none space-y-1">
-                        {orders.map((d, i) => (
-                          <li key={i}>
-                            {d.website_c || "(no site)"} —{" "}
-                            <strong>${Number(d.dealamount || 0)}</strong>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <hr className="my-3 border-gray-300" />
-
-                    <div className="flex justify-between text-lg">
-                      <strong>Total Amount</strong>
-                      <strong>${totalAmount.toLocaleString()}</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex gap-3">
-                  <button
-                    disabled={orders.length === 0 || !valid || creating}
-                    onClick={submitAll}
-                    className={`w-full px-3 py-2 rounded-lg text-white ${orders.length === 0 || !valid
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700"
-                      }`}
-                  >
-                    {loading ? "Submitting..." : "Submit All Orders"}
-                  </button>
-
-                  {/* PREVIEW BUTTON */}
-                  <button
-                    onClick={() => setShowPreview(true)}
-                    className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
-                  >
-                    Preview
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* PREVIEW MODAL */}
-        {showPreview && (
-          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-2">
-
-            {/* OUTER WRAPPER (WIDER + ROUNDED) */}
-            <div className="bg-white w-full max-w-[800px] rounded-2xl shadow-2xl overflow-hidden relative">
-
-              {/* SCROLLABLE CONTENT */}
-              <div className="max-h-[80vh] overflow-y-auto p-6">
-
-                <PreviewOrders
-                  orders={orders}
-                  totalAmount={totalAmount}
-                  userEmail={email}
-                />
-
-              </div>
-
-              {/* FOOTER BUTTONS */}
-              <div className="p-4 border-t flex items-center justify-between bg-white">
-
-                <button
-                  onClick={submitAll}
-                  style={{
-                    padding: "12px 26px",
-                    background:
-                      "linear-gradient(135deg, #4e79ff, #6db6ff)",
-                    color: "white",
-                    borderRadius: "8px",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "16px",
-                    fontWeight: "700",
-                    boxShadow:
-                      "0px 4px 12px rgba(0,0,0,0.15)",
-                  }}
-                >
-                  {loading ? "Submitting..." : "Submit Orders"}
-                </button>
-
-                <button
-                  className="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition"
-                  onClick={() => setShowPreview(false)}
-                >
-                  Close
-                </button>
-              </div>
-
-            </div>
-          </div>
-        )}
-      </div></>
-
+    <Create data={currentOffers} setData={setCurrentOffers} type="offers" submitData={submitHandler} fields={fields} amountKey={"amount"} renderPreview={({ data, totalAmount, email }) => (
+      <Preview
+        data={data}
+        type="Offers"
+        totalAmount={totalAmount}
+        userEmail={email}
+      />
+    )} />
   );
 }

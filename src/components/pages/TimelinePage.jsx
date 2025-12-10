@@ -9,9 +9,6 @@ import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
 import { LoadingAll, LoadingChase, LoadingSpin } from "../Loading";
-import { Titletooltip } from "../pages/Titletooltip"
-
-import { getAiReply } from "../../store/Slices/aiReply";
 import { sendEmailToThread, threadEmailAction } from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
@@ -49,17 +46,7 @@ export function TimelinePage() {
     message: threadMessage,
     sending,
   } = useSelector((state) => state.threadEmail);
-
-  const {
-    aiReply,
-    loading: aiReplyLoading,
-    error: aiError,
-  } = useSelector((s) => s.aiReply);
-
   const dispatch = useDispatch();
-
-
-
   const { ladger, email, mailersSummary, loading, error } = useSelector(
     (state) => state.ladger
   );
