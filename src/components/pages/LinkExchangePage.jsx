@@ -1,53 +1,92 @@
+import {
+  Mail,
+  Calendar,
+  User,
+  FileText,
+  MessageSquare,
+  LeafyGreen,
+  BarChart,
+  Repeat,
+  Heart,
+} from "lucide-react";
+
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import EmailBox from "../EmailBox";
+import useThread from "../../hooks/useThread";
+import Pagination from "../Pagination";
+import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
+import { getLinkExchange } from "../../store/Slices/linkExchange";
 import { useState } from "react";
-import { Gift, User, Calendar, DollarSign, Tag, Pen } from "lucide-react";
 import SearchComponent from "./SearchComponent";
 export function LinkExchangePage() {
-  const [showPopup, setShowPopup] = useState(false);
-  const [editData, setEditData] = useState(null);
-
-  // ⭐ Static Dummy Data
-  const links = [
-    {
-      date: "2025-01-30",
-      id: "LE001",
-      partner: "example.com",
-      give: "Link From Blog",
-      take: "Homepage Link",
-      status: "Pending",
-    },
-    {
-      date: "2025-01-28",
-      id: "LE002",
-      partner: "mysite.org",
-      give: "Guest Post Link",
-      take: "Sidebar Link",
-      status: "Accepted",
-    },
-    {
-      date: "2025-01-22",
-      id: "LE003",
-      partner: "seo-site.net",
-      give: "Footer Link",
-      take: "Guest Post",
-      status: "Pending",
-    },
-  ];
-
-
-   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const { count, emails } = useSelector((state) => state.linkExchange);
+  const [
+    handleThreadClick,
+    showEmail,
+    setShowEmails,
+    currentThreadId,
+    setCurrentThreadId,
+  ] = useThread();
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); 
   const [selectedSort, setSelectedSort] = useState('');
-  // const { count, deals, loading, error, updating, message } = useSelector((state) => state.deals);
-  // const dispatch = useDispatch();
-  // const navigateTo = useNavigate();
-  // const { timeline, email } = useSelector((state) => state.ladger);
-  const [currentDealUpdate, setCurrentDealUpdate] = useState(null)
+
+
+  
+  const filteredEmails = emails
+  .filter((item) => {
+    const searchValue = topsearch.toLowerCase();
+    if (!searchValue) return true;
+
+    // SAFELY HANDLE "from"
+    const fromField = item?.first_name ?? "";
+    const contact = fromField.includes("<")
+      ? fromField.split("<")[0].trim().toLowerCase()
+      : fromField.trim().toLowerCase();
+
+    // SAFE subject
+    const subject = item?.subject?.toLowerCase() ?? "";
+
+    const date = item?.date_entered?.toLowerCase() ?? "";
+
+    if (selectedCategory === "contect" || selectedCategory === "contact") {
+      return contact.includes(searchValue);
+    }
+    if (selectedCategory === "subject") {
+      return subject.includes(searchValue);
+    }
+
+    return contact.includes(searchValue);
+  })
+  .sort((a, b) => {
+    if (!selectedSort) return 0;
+
+    const aFrom = a?.from ?? "";
+    const bFrom = b?.from ?? "";
+
+    if (selectedSort === "asc") {
+      return aFrom.localeCompare(bFrom);
+    }
+    if (selectedSort === "desc") {
+      return bFrom.localeCompare(aFrom);
+    }
+    if (selectedSort === "oldest") {
+      return new Date(a.date_entered) - new Date(b.date_entered);
+    }
+
+    return 0;
+  });
+
+
+
+
+
 
 
   const dropdownOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'contect', label: 'contact' },
+    { value: 'subject', label: 'subject' },
   ];
 
   const filterOptions = [
@@ -55,7 +94,7 @@ export function LinkExchangePage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-
+   
   ];
 
   const handleFilterApply = (filters) => {
@@ -73,262 +112,179 @@ export function LinkExchangePage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value);
-   
-  };
-
-  const handleDownload = () => {
+    setSelectedSort(value); 
     
   };
-  const updateDealHandler = (currentDeal, data) => {
-    const updateDealData = {
-      ...currentDeal,
-      ...data
-    }
-    dispatch(updateDeal(updateDealData))
-  }
-  // useEffect(() => {
-  //   if (message) {
-  //     toast.success(message);
-  //     setCurrentDealUpdate(null)
-  //     dispatch(dealsAction.clearAllMessages())
-  //   }
-  //   if (error) {
-  //     toast.error(error);
-  //     dispatch(dealsAction.clearAllErrors())
-  //   }
-  // }, [message, error, dispatch]);
+
+ 
+  const handleDownload = () => {
+ if (!filteredEmails || filteredEmails.length === 0) {
+  toast.error("No data available to download");
+  return;
+}
+
+  // Convert Objects → CSV rows
+  const headers = ["Date", "Contact", "Subject", "Count"];
+  
+  const rows = filteredEmails.map((email) => [
+    email.date_entered,
+    email.first_name.split("<")[0].trim(),
+    email.subject,
+    email.thread_count
+  ]);
+
+  // Convert to CSV string
+  const csvContent =
+    headers.join(",") +
+    "\n" +
+    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+  // Create and auto-download file
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "unreplied-emails.csv";
+  a.click();
+};
 
 
-
-
-
-
-
-  const total = links.length;
-  const pending = links.filter((l) => l.status === "Pending").length;
-  const accepted = links.filter((l) => l.status === "Accepted").length;
-
-  // ⭐ Show popup like CreateOffer
-  if (showPopup) {
-    return (
-      <div className="p-10 bg-white rounded-2xl shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">
-          {editData ? "Edit Link Exchange" : "Create Link Exchange"}
-        </h2>
-
-        <button
-          onClick={() => {
-            setEditData(null);
-            setShowPopup(false);
-          }}
-          className="px-4 py-2 rounded-lg bg-red-500 text-white"
-        >
-          Close
-        </button>
-      </div>
-    );
-  }
 
   return (
     <>
-      {/* ⭐ Stats Section */}
 
+      <SearchComponent
+      
+      dropdownOptions={dropdownOptions}
+      onDropdownChange={handleCategoryChange} 
+      selectedDropdownValue={selectedCategory} 
+      dropdownPlaceholder="Filter by contact"
+      
+      
+      onSearchChange={handleSearchChange}
+      searchValue={topsearch}
+      searchPlaceholder="Search emails..."
+      
+      
+      onFilterApply={handleFilterApply}
+      filterPlaceholder="Filters"
+      showFilter={true}
+      
+      
+      archiveOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'inactive', label: 'Inactive' },
+      ]}
+      transactionTypeOptions={[
+        { value: 'all', label: 'All Emails' },
+        { value: 'incoming', label: 'Incoming' },
+        { value: 'outgoing', label: 'Outgoing' },
+      ]}
+      currencyOptions={[
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+      ]}
+      
+      
+      onDownloadClick={handleDownload}
+      showDownload={true}
+      
+      
+      className="mb-6"
+    />
 
-       <SearchComponent
-
-        dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by Status"
-
-
-        onSearchChange={handleSearchChange}
-        searchValue={topsearch}
-        searchPlaceholder="Search emails..."
-
-
-        onFilterApply={handleFilterApply}
-        filterPlaceholder="Filters"
-        showFilter={true}
-
-
-        archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
-        ]}
-        transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
-        ]}
-        currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
-        ]}
-
-
-        onDownloadClick={handleDownload}
-        showDownload={true}
-
-
-        className="mb-6"
-      />
-
-
-
-
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        
-        {/* Total Exchanges */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Total Exchanges</p>
-              <p className="text-2xl text-gray-900 mt-1">{total}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Gift className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
+      {showEmail && currentThreadId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+          <EmailBox
+            onClose={() => setShowEmails(false)}
+            view={false}
+            threadId={currentThreadId}
+          />
         </div>
-
-        {/* Pending */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Pending</p>
-              <p className="text-2xl text-gray-900 mt-1">{pending}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Tag className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Accepted */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Accepted</p>
-              <p className="text-2xl text-gray-900 mt-1">{accepted}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl text-green-700">✓</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Value (Static for UI only) */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Total Value</p>
-              <p className="text-2xl text-gray-900 mt-1">$0</p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-
-
-
-      {/* ⭐ Header + Create Button */}
+      )}
+      {/* Unanswered Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <Gift className="w-6 h-6 text-yellow-600" />
-            <h2 className="text-xl text-gray-900 font-semibold">
-              LINK EXCHANGE
-            </h2>
+            <MessageSquare className="w-6 h-6 text-purple-600" />
+            <h2 className="text-xl font-semibold text-gray-900">LINK EXCHANGE EMAILS</h2>
+            <a href="">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
-
-          {/* Create Button + Tooltip */}
-          <div className="relative group">
-            <button
-              onClick={() => setShowPopup(true)}
-              className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center transition"
-            >
-              <img
-                width="40"
-                height="40"
-                src="https://img.icons8.com/arcade/64/plus.png"
-                alt="plus"
-              />
-            </button>
-
-            <span className="absolute left-1/5 -bottom-3 -translate-x-1/2 bg-gray-800 text-white text-sm px-3 py-1 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap shadow-md">
-              Create Link Exchange
-            </span>
-          </div>
+          <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
+            {count} Favourite
+          </span>
         </div>
 
-        {/* ⭐ Table */}
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+              <tr className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    DATE
+                    <span>DATE</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">ID</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    PARTNER
+                    <span>CONTACT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">YOU GIVE</th>
-                <th className="px-6 py-4 text-left">YOU TAKE</th>
-                <th className="px-6 py-4 text-left">ACTIONS</th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span>SUBJECT</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <BarChart className="w-4 h-4" />
+                    <span>DESCRIPTION</span>
+                  </div>
+                </th>
               </tr>
             </thead>
-
             <tbody>
-              {links.map((row, i) => (
+              {filteredEmails.map((email, index) => (
                 <tr
-                  key={i}
-                  className="border-b border-gray-100 hover:bg-pink-50 transition"
+                  key={index}
+                  onClick={() => {
+                      setCurrentThreadId(email.thread_id);
+                      handleThreadClick(email.from, email.thread_id);
+                      setEmail(email.from?.split("<")[1].split(">")[0]);
+                    }}
+                  className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-gray-600">{row.date}</td>
-                  <td className="px-6 py-4 text-blue-600">{row.id}</td>
-                  <td className="px-6 py-4 text-gray-700">{row.partner}</td>
-                  <td className="px-6 py-4 text-green-600">{row.give}</td>
-                  <td className="px-6 py-4 text-gray-600">{row.take}</td>
-
                   <td className="px-6 py-4">
-                    <button
-                      className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                      onClick={() => {
-                        setEditData(row);
-                        setShowPopup(true);
-                      }}
-                    >
-                      <Pen className="w-5 h-5 text-blue-600" />
-                    </button>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{email.date_entered}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">{email.first_name}</td>
+                  <td className="px-6 py-4 text-purple-600">{email.subject}</td>
+                  <td className="px-6 py-4 text-purple-600">
+                    {email.description}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {emails.length > 0 && <Pagination slice={"fav"} fn={getLinkExchange} />}
 
-        {links.length === 0 && (
+        {filteredEmails.length === 0 && (
           <div className="p-12 text-center">
-            <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">
-              No link exchanges yet. Create your first one to begin.
-            </p>
+            <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No Favourite emails yet.</p>
           </div>
         )}
       </div>

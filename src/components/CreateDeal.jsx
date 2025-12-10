@@ -12,7 +12,6 @@ import PreviewDeals from "./PreviewDeals";
 import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { renderToStaticMarkup } from "react-dom/server";
 
-const LOCAL_KEY = "create_deals_draft_v1";
 
 export default function CreateDeal() {
   const { email } = useSelector((state) => state.ladger);
@@ -41,8 +40,6 @@ export default function CreateDeal() {
   // INITIAL STATE — allow empty array
   const [deals, setDeals] = useState(() => {
     try {
-      const raw = localStorage.getItem(LOCAL_KEY);
-      if (raw) return JSON.parse(raw);
       return [];
     } catch (e) {
       toast.error(e);
@@ -91,14 +88,7 @@ export default function CreateDeal() {
     });
   }, [validWebsites]);
 
-  // ────────────────────────────────────────────────
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(deals));
-  }, [deals]);
 
-  // ────────────────────────────────────────────────
-  // Auto adjust active index
   useEffect(() => {
     if (activeIndex >= deals.length && deals.length > 0)
       setActiveIndex(deals.length - 1);
@@ -191,7 +181,6 @@ export default function CreateDeal() {
     if (message) {
       toast.success(message);
       setDeals([]);
-      localStorage.removeItem(LOCAL_KEY);
       navigate("/deals");
       dispatch(dealsAction.clearAllMessages());
     }
@@ -235,16 +224,6 @@ export default function CreateDeal() {
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => {
-                    localStorage.setItem(LOCAL_KEY, JSON.stringify(deals));
-                    toast.success("Draft saved locally");
-                  }}
-                  className="px-3 py-2 bg-gray-100 rounded-lg text-sm"
-                >
-                  Save Draft
-                </button>
-
-                <button
                   onClick={addDeal}
                   className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
                 >
@@ -280,26 +259,9 @@ export default function CreateDeal() {
                               {...dp.dragHandleProps}
                               className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm"
                             >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex items-center gap-3">
-                                  <div className="p-2 bg-gray-100 rounded-lg cursor-grab">
-                                    <GripVertical size={18} />
-                                  </div>
 
-                                  <h4 className="text-lg font-medium">
-                                    Deal for {deal.email}
-                                  </h4>
-                                </div>
 
-                                <button
-                                  onClick={() => removeDeal(idx)}
-                                  className="text-red-500 p-2 rounded-lg hover:bg-red-50"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-
-                              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className=" grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {/* Amount */}
                                 <div>
                                   <label className="block text-xs text-gray-600">
@@ -364,6 +326,14 @@ export default function CreateDeal() {
                                   </select>
                                 </div>
                               </div>
+                              <div className="flex items-end justify-end  gap-3">
+                                <button
+                                  onClick={() => removeDeal(idx)}
+                                  className="text-red-500 p-2 rounded-lg hover:bg-red-50"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
                             </motion.div>
                           )}
                         </Draggable>
@@ -399,7 +369,9 @@ export default function CreateDeal() {
         <div className="col-span-12 lg:col-span-4">
           <div className="sticky top-6 space-y-4">
             <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-              <h4 className="font-semibold">Summary</h4>
+              <h4 className="font-semibold">
+                <h4 className="text-lg font-medium">Deals For {email}</h4>
+              </h4>
 
               <div className="mt-3 text-sm text-gray-600">
                 <div className="flex justify-between">
@@ -478,7 +450,26 @@ export default function CreateDeal() {
             </div>
 
             {/* FOOTER BUTTONS */}
-            <div className="p-4 border-t flex justify-end bg-white">
+            <div className="p-4 border-t flex items-center justify-between bg-white">
+
+              <button
+                onClick={submitAll}
+                style={{
+                  padding: "12px 26px",
+                  background:
+                    "linear-gradient(135deg, #4e79ff, #6db6ff)",
+                  color: "white",
+                  borderRadius: "8px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  fontWeight: "700",
+                  boxShadow:
+                    "0px 4px 12px rgba(0,0,0,0.15)",
+                }}
+              >
+                Submit Deals
+              </button>
               <button
                 className="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition"
                 onClick={() => setShowPreview(false)}
@@ -489,8 +480,9 @@ export default function CreateDeal() {
 
           </div>
         </div>
-      )}
+      )
+      }
 
-    </div>
+    </div >
   );
 }

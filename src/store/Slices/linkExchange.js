@@ -1,13 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const bulkSlice = createSlice({
-  name: "bulk",
+const exchangeSlice = createSlice({
+  name: "exchange",
   initialState: {
     loading: false,
     emails: [],
     message: null,
-    marking: false,
+    exchanging: false,
     count: 0,
     pageCount: 1,
     pageIndex: 1,
@@ -23,7 +23,7 @@ const bulkSlice = createSlice({
       const { count, emails, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.emails = emails;
-      // Update marked map for fetched marked emails
+      // Update exchange map for fetched marked emails
       emails.forEach((email) => {
         state.marked[email.thread_id || email.id] = true;
       });
@@ -36,18 +36,18 @@ const bulkSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    markingRequest(state) {
-      state.marking = true;
+    exchangingRequest(state) {
+      state.exchanging = true;
       state.error = null;
       state.message = null;
     },
-    markingSucess(state, action) {
-      state.marking = false;
+    exchangingSucess(state, action) {
+      state.exchanging = false;
       state.error = null;
       state.message = action.payload;
     },
-    markingFailed(state, action) {
-      state.marking = false;
+    exchangingFailed(state, action) {
+      state.exchanging = false;
       state.error = action.payload;
       state.message = null;
     },
@@ -64,67 +64,67 @@ const bulkSlice = createSlice({
   },
 });
 
-export const getBulkEmails = (filter, email) => {
+export const getLinkExchange = (filter, email) => {
   return async (dispatch, getState) => {
-    dispatch(bulkSlice.actions.getEmailRequest());
+    dispatch(exchangeSlice.actions.getEmailRequest());
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=bulk&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=exchange&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=bulk&filter=${filter}&page=1&page_size=50`
+          }&type=exchange&filter=${filter}&page=1&page_size=50`
         );
       }
-      console.log(`Bulk emails`, response.data);
+      console.log(`Exchange links data`, response.data);
       const data = response.data;
       dispatch(
-        bulkSlice.actions.getEmailSucess({
+        exchangeSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })
       );
-      dispatch(bulkSlice.actions.clearAllErrors());
+      dispatch(exchangeSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(bulkSlice.actions.getEmailFailed("Fetching Bulk Emails Failed"));
+      dispatch(exchangeSlice.actions.getEmailFailed("Fetching Bulk Emails Failed"));
     }
   };
 };
 
-export const markingEmail = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
+export const linkExchange = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
-    dispatch(bulkSlice.actions.markingRequest());
+    dispatch(exchangeSlice.actions.exchangingRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const response = await axios.get(
-        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
+        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=exchange`,
         {}
       );
-      console.log(`Mark Toggle Response`, response.data);
+      console.log(`Exchange Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
         throw new Error("Toggle failed");
       }
       // Determine message based on new_value
-      const message = data.new_value === 1 ? "Email Marked Successfully" : "Email Unmarked Successfully";
+      const message = data.new_value === 1 ? "Email link exchage Successfully" : "Email unlink Successfully";
       dispatch(
-        bulkSlice.actions.markingSucess(message)
+        exchangeSlice.actions.exchangingSucess(message)
       );
       
-      dispatch(bulkSlice.actions.clearAllErrors());
+      dispatch(exchangeSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(bulkSlice.actions.markingFailed(error.message));
+      dispatch(exchangeSlice.actions.exchangingFailed(error.message));
     }
   };
 };
 
-export const bulkAction = bulkSlice.actions;
-export default bulkSlice.reducer;
+export const linkExchangeaction = exchangeSlice.actions;
+export default exchangeSlice.reducer;
