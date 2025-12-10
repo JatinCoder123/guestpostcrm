@@ -20,7 +20,6 @@ import {
   TagIcon,
   TruckIcon,
   Users,
-  TagIcon
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
