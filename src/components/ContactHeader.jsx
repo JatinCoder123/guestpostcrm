@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import SocialButtons from './SocialButtons'
 
 const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
-    const { ladger, email } = useSelector((state) => state.ladger)
+    const { email } = useSelector((state) => state.ladger)
     const { contactInfo, contactLoading } = useSelector((state) => state.viewEmail)
     const { emails } = useSelector((state) => state.unreplied)
 
@@ -16,33 +16,32 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
             <div className="flex items-start gap-4">
                 <div className="flex items-center gap-3">
                     {/* EMAIL / NAME SECTION */}
-                    {ladger.length > 0 && (
-                        <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                                <Mail className="w-5 h-5 text-gray-600" />
-                            </div>
 
-                            {contactLoading ? (
-                                <LoadingAll size="30" color="blue" />
-                            ) : (
-                                <Link
-                                    to="/contacts"
-                                    className="text-gray-800 text-lg font-semibold"
-                                >
-                                    {contactInfo?.full_name === ""
-                                        ? email
-                                        : contactInfo?.full_name}
-                                </Link>
-                            )}
-
-                            <img
-                                width="50"
-                                height="50"
-                                src="https://img.icons8.com/bubbles/100/verified-account.png"
-                                alt="verified"
-                            />
+                    <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-gray-600" />
                         </div>
-                    )}
+
+                        {contactLoading ? (
+                            <LoadingAll size="30" color="blue" />
+                        ) : (
+                            <Link
+                                to="/contacts"
+                                className="text-gray-800 text-lg font-semibold"
+                            >
+                                {contactInfo?.full_name === ""
+                                    ? email
+                                    : contactInfo?.full_name}
+                            </Link>
+                        )}
+
+                        <img
+                            width="50"
+                            height="50"
+                            src="https://img.icons8.com/bubbles/100/verified-account.png"
+                            alt="verified"
+                        />
+                    </div>
 
                     {/* TYPE, STATUS, STAGE */}
                     <div className="ml-4 flex items-center gap-4">

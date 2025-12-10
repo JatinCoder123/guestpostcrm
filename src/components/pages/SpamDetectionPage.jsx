@@ -66,7 +66,7 @@ export function SpamDetectionPage() {
               </tr>
             </thead>
             <tbody>
-              {detection.map((spam) => (
+              {detection?.length > 0 && detection.map((spam) => (
                 <tr
                   key={spam.thread_id}
                   className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
