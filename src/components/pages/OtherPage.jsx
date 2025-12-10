@@ -73,7 +73,7 @@ export function OtherPage() {
       subtitle: "Tag manager will be shown here",
       icon: <TagIcon className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
-      link: "/spam-detection",
+      link: "/tag-manager",
     },
 
        {

@@ -10,6 +10,7 @@ const viewEmailSlice = createSlice({
     viewEmail: [],
     contactInfo: null,
     accountInfo: null,
+    dealInfo:null,
     threadId: null,
     message: null,
     error: null,
@@ -36,19 +37,22 @@ const viewEmailSlice = createSlice({
       state.contactLoading = true;
       state.contactInfo = null;
       state.accountInfo = null;
+      state.dealInfo = null;
       state.error = null;
     },
     getContactSucess(state, action) {
-      const { contactInfo, accountInfo } = action.payload;
+      const { contactInfo, accountInfo, dealInfo } = action.payload;
       state.contactLoading = false;
       state.contactInfo = contactInfo;
       state.accountInfo = accountInfo;
+      state.dealInfo = dealInfo;
       state.error = null;
     },
     getContactFailed(state, action) {
       state.contactLoading = false;
       state.contactInfo = null;
       state.accountInfo = null;
+      state.dealInfo = null;
       state.error = action.payload;
     },
     editContactRequest(state) {
@@ -130,6 +134,7 @@ export const getContact = () => {
         viewEmailSlice.actions.getContactSucess({
           contactInfo: data.contact ?? null,
           accountInfo: data.account ?? null,
+          dealInfo: data.deal_fetch ?? null,
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());

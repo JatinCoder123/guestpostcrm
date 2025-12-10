@@ -9,14 +9,131 @@ import {
   Repeat,
   EqualApproximatelyIcon,
 } from "lucide-react";
-
+import { toast } from "react-toastify";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getmovedEmails } from "../../store/Slices/movedEmails";
+
+import SearchComponent from "./SearchComponent";
+
+
 export function MovedPage() {
   const { count, emails } = useSelector((state) => state.moved);
+
+
+  
+    const [topsearch, setTopsearch] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSort, setSelectedSort] = useState('');
+
+
+
+    
+  const filteredEmails = emails
+  .filter((item) => {
+    const searchValue = topsearch.toLowerCase();
+    if (!searchValue) return true;
+
+    // SAFELY HANDLE "from"
+    const fromField = item?.email ?? "";
+    const contact = fromField.toLowerCase();
+  
+    // SAFE subject
+    const subject = item?.subject?.toLowerCase() ?? "";
+
+    const date = item?.date_entered?.toLowerCase() ?? "";
+
+    if (selectedCategory === "contect" || selectedCategory === "contact") {
+      return contact.includes(searchValue);
+    }
+    if (selectedCategory === "subject") {
+      return subject.includes(searchValue);
+    }
+
+    return contact.includes(searchValue);
+  })
+  .sort((a, b) => {
+    if (!selectedSort) return 0;
+
+    const aFrom = a?.from ?? "";
+    const bFrom = b?.from ?? "";
+
+    if (selectedSort === "asc") {
+      return aFrom.localeCompare(bFrom);
+    }
+    if (selectedSort === "desc") {
+      return bFrom.localeCompare(aFrom);
+    }
+    if (selectedSort === "oldest") {
+      return new Date(a.date_entered) - new Date(b.date_entered);
+    }
+
+    return 0;
+  });
+
+
+
+
+
+
+    
+      const handleSearchChange = (value) => {
+        setTopsearch(value);
+        
+      };
+    
+      const handleCategoryChange = (value) => {
+        setSelectedCategory(value);
+        
+      };
+    
+      const handleFilterApply = (filters) => {
+       
+      };
+    
+    
+      const handleDownload = () => {
+        if (!filteredEmails || filteredEmails.length === 0) {
+          toast.error("No data available to download");
+          return;
+        }
+    
+        // Convert Objects → CSV rows
+        const headers = ["DATE", "SENDER","SUBJECT"];
+    
+        const rows = filteredEmails.map((email) => [
+          email.date_entered,
+          email.email,
+          email.subject
+    
+    
+    
+        ]);
+    
+        // Convert to CSV string
+        const csvContent =
+          headers.join(",") +
+          "\n" +
+          rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    
+        // Create and auto-download file
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+    
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "unreplied-emails.csv";
+        a.click();
+      };
+    
+    
+    
+
+
+
   const [
     handleThreadClick,
     showEmail,
@@ -35,6 +152,34 @@ export function MovedPage() {
   }
   return (
     <>
+
+     <SearchComponent
+        dropdownOptions={[
+  { value: 'contect', label: 'Sender' },
+    { value: 'subject', label: 'Subject' },
+
+        ]}
+        selectedDropdownValue={selectedCategory}
+        onDropdownChange={handleCategoryChange}
+        // dropdownPlaceholder="Filter by websites"
+
+        searchValue={topsearch}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search  items..."
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+        className="mb-6"
+      />
+
+
+
+
       {/* Moved Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -83,7 +228,7 @@ export function MovedPage() {
               </tr>
             </thead>
             <tbody>
-              {emails.map((email, index) => (
+              {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
@@ -115,7 +260,7 @@ export function MovedPage() {
         {emails?.length > 0 && (
           <Pagination slice={"moved"} fn={getmovedEmails} />
         )}
-        {emails.length === 0 && (
+        {filteredEmails.length === 0 && (
           <div className="p-12 text-center">
             <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No Moved emails yet.</p>

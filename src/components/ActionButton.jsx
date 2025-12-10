@@ -195,6 +195,19 @@ const ActionButton = ({
           label: "Link Exchange",
           action: () => dispatch(linkExchange(threadId)),
         },
+        {
+          icon: marking ? (
+            <LoadingChase />
+          ) : (
+            <img
+              src="https://img.icons8.com/color/48/tags--v1.png"
+              className="w-6 h-6"
+              alt="tag"
+            />
+          ),
+          label: "Mark Tag",
+          action: () => dispatch(markingEmail(threadId)),
+        },
       ].map((btn, i) => (
         <div className="relative" key={i}>
           <button

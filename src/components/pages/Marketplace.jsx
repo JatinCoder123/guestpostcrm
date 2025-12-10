@@ -1,31 +1,31 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-
+ 
 import SearchComponent from "./SearchComponent";
-
-
+ 
+ 
 import { Store, Gift, User, Calendar, Pencil, Pen, LinkIcon, ActivityIcon } from "lucide-react";
 import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
-
+ 
 export function Marketplace() {
   const dispatch = useDispatch();
   const { items, count, loading } = useSelector((state) => state.marketplace);
   const [selectedSort, setSelectedSort] = useState('');
-
-
+ 
+ 
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
   const filtereditems = items
     .filter((item) => {
       const searchValue = topsearch.toLowerCase();
       if (!searchValue) return true; // no search → show all
-
+ 
       const contact = item.name.toLowerCase();
       if (selectedCategory === "contect" || selectedCategory === "contact") {
         return contact.includes(searchValue);
@@ -34,111 +34,111 @@ export function Marketplace() {
     })
     .sort((a, b) => {
       if (!selectedSort) return 0;
-
+ 
       if (selectedSort === "asc") {
         return a.from.localeCompare(b.from);
       }
-
+ 
       if (selectedSort === "desc") {
         return b.from.localeCompare(a.from);
       }
-
+ 
       return 0;
     });
-
+ 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log("Searching for:", value);
+   
   };
-
+ 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log("Filter selected:", value);
+   
   };
-
+ 
   const handleFilterApply = (filters) => {
-    console.log("Applied filters:", filters);
+   
   };
-
-
+ 
+ 
   const handleDownload = () => {
     if (!filtereditems || filtereditems.length === 0) {
       toast.error("No data available to download");
       return;
     }
-
+ 
     // Convert Objects → CSV rows
     const headers = ["DATE", "WEBSITES"];
-
+ 
     const rows = filtereditems.map((email) => [
       email.date_entered,
       email.name
-
-
-
+ 
+ 
+ 
     ]);
-
+ 
     // Convert to CSV string
     const csvContent =
       headers.join(",") +
       "\n" +
       rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
-
+ 
     // Create and auto-download file
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-
+ 
     const a = document.createElement("a");
     a.href = url;
     a.download = "unreplied-emails.csv";
     a.click();
   };
-
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
   useEffect(() => {
     dispatch(getMarketplace());
   }, [dispatch]);
-
+ 
   return (
     <>
       <SearchComponent
         dropdownOptions={[
           { value: "all", label: "websites" },
-
+ 
         ]}
         selectedDropdownValue={selectedCategory}
         onDropdownChange={handleCategoryChange}
         dropdownPlaceholder="Filter by websites"
-
+ 
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Search marketplace items..."
-
+ 
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
+ 
         onDownloadClick={handleDownload}
         showDownload={true}
-
+ 
         className="mb-6"
       />
-
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 mr-5">
           <div className="flex items-center gap-3">
             <Store className="w-6 h-6 text-yellow-600" />
             <h2 className="text-xl text-gray-900 font-semibold"> MARKETPLACE</h2>
-
+ 
             <a
               href="https://www.guestpostcrm.com/blog/offers-in-guestpostcrm/"
               target="_blank"
@@ -164,17 +164,17 @@ export function Marketplace() {
                 alt="plus"
               />
             </button>
-
+ 
             {/* Tooltip */}
-            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
-                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
-                   opacity-0 group-hover:opacity-100 transition 
+            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2
+                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md
+                   opacity-0 group-hover:opacity-100 transition
                    pointer-events-none whitespace-nowrap shadow-md">
               Create Marketplace
             </span>
           </div>
         </div>
-
+ 
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -186,14 +186,14 @@ export function Marketplace() {
                     DATE
                   </div>
                 </th>
-
+ 
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <LinkIcon className="w-4 h-4" />
                     WEBSITES
                   </div>
                 </th>
-
+ 
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <ActivityIcon className="w-4 h-4" />
@@ -202,7 +202,7 @@ export function Marketplace() {
                 </th>
               </tr>
             </thead>
-
+ 
             <tbody>
               {filtereditems.map((row, index) => (
                 <tr
@@ -227,7 +227,7 @@ export function Marketplace() {
             </tbody>
           </table>
         </div>
-
+ 
         {!loading && filtereditems.length === 0 && (
           <div className="p-12 text-center">
             <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
