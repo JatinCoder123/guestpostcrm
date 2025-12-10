@@ -1,5 +1,5 @@
 
-
+import SearchComponent from "./SearchComponent";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -21,6 +21,68 @@ export function Allbacklinkspage() {
   
   const [showDetail, setShowDetail] = useState(false);
   const [currentBacklinkId, setCurrentBacklinkId] = useState(null);
+
+
+
+    const [topsearch, setTopsearch] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+
+
+
+    
+      const handleSearchChange = (value) => {
+        setTopsearch(value);
+        
+      };
+    
+      const handleCategoryChange = (value) => {
+        setSelectedCategory(value);
+        
+      };
+    
+      const handleFilterApply = (filters) => {
+       
+      };
+    
+    
+      const handleDownload = () => {
+        if (!filtereditems || filtereditems.length === 0) {
+          toast.error("No data available to download");
+          return;
+        }
+    
+        // Convert Objects → CSV rows
+        const headers = ["DATE", "WEBSITES"];
+    
+        const rows = filtereditems.map((email) => [
+          email.date_entered,
+          email.name
+    
+    
+    
+        ]);
+    
+        // Convert to CSV string
+        const csvContent =
+          headers.join(",") +
+          "\n" +
+          rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    
+        // Create and auto-download file
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+    
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "unreplied-emails.csv";
+        a.click();
+      };
+    
+    
+
+
+
+
 
   
   useEffect(() => {
@@ -99,6 +161,31 @@ export function Allbacklinkspage() {
   }
 
   return (
+    <>
+
+     <SearchComponent
+        dropdownOptions={[
+          { value: "all", label: "target url" },
+          { value: "all", label: "author" }
+
+        ]}
+        selectedDropdownValue={selectedCategory}
+        onDropdownChange={handleCategoryChange}
+        // dropdownPlaceholder="Filter by target url "
+
+        searchValue={topsearch}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search marketplace items..."
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+        className="mb-6"
+      />
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       
       
@@ -220,5 +307,6 @@ export function Allbacklinkspage() {
         </div>
       )}
     </div>
+    </>
   );
 }

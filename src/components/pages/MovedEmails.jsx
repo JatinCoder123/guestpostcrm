@@ -9,14 +9,82 @@ import {
   Repeat,
   EqualApproximatelyIcon,
 } from "lucide-react";
-
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getmovedEmails } from "../../store/Slices/movedEmails";
+
+import SearchComponent from "./SearchComponent";
+
+
 export function MovedPage() {
   const { count, emails } = useSelector((state) => state.moved);
+
+
+  
+    const [topsearch, setTopsearch] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+
+
+
+
+
+    
+      const handleSearchChange = (value) => {
+        setTopsearch(value);
+        
+      };
+    
+      const handleCategoryChange = (value) => {
+        setSelectedCategory(value);
+        
+      };
+    
+      const handleFilterApply = (filters) => {
+       
+      };
+    
+    
+      const handleDownload = () => {
+        if (!filtereditems || filtereditems.length === 0) {
+          toast.error("No data available to download");
+          return;
+        }
+    
+        // Convert Objects → CSV rows
+        const headers = ["DATE", "WEBSITES"];
+    
+        const rows = filtereditems.map((email) => [
+          email.date_entered,
+          email.name
+    
+    
+    
+        ]);
+    
+        // Convert to CSV string
+        const csvContent =
+          headers.join(",") +
+          "\n" +
+          rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    
+        // Create and auto-download file
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+    
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "unreplied-emails.csv";
+        a.click();
+      };
+    
+    
+    
+
+
+
   const [
     handleThreadClick,
     showEmail,
@@ -35,6 +103,33 @@ export function MovedPage() {
   }
   return (
     <>
+
+     <SearchComponent
+        dropdownOptions={[
+          { value: "all", label: "websites" },
+
+        ]}
+        selectedDropdownValue={selectedCategory}
+        onDropdownChange={handleCategoryChange}
+        dropdownPlaceholder="Filter by websites"
+
+        searchValue={topsearch}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search marketplace items..."
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+        className="mb-6"
+      />
+
+
+
+
       {/* Moved Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
