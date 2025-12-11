@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { editContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 
-// Framer motion variants for stagger animations
+
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
@@ -31,16 +31,111 @@ const itemVariants = {
 };
 
 export default function Contactpage() {
-  const { contactInfo, accountInfo,dealInfo,message,error,loading} = useSelector(
+  const { contactInfo, accountInfo, dealInfo, message, error, loading } = useSelector(
     (state) => state.viewEmail
   );
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    contact: contactInfo || {},
-    account: accountInfo || {},
-    deal: dealInfo || {}
+    contact: {},
+    account: {},
+    deal: []
   });
-const dispatch = useDispatch();
+  
+  const [highestDealAmount, setHighestDealAmount] = useState("N/A");
+  const [highestDealDate, setHighestDealDate] = useState("N/A");
+  
+  const dispatch = useDispatch();
+
+  
+  useEffect(() => {
+  
+    
+    
+    let dealsArray = [];
+    
+    if (Array.isArray(dealInfo)) {
+      dealsArray = dealInfo;
+    } else if (dealInfo && typeof dealInfo === 'object') {
+      
+      if (Array.isArray(dealInfo.deal)) {
+        dealsArray = dealInfo.deal;
+      } else {
+        
+        dealsArray = Object.values(dealInfo).filter(item => item && typeof item === 'object');
+      }
+    }
+
+    
+    
+    const newFormData = {
+      contact: contactInfo || {},
+      account: accountInfo || {},
+      deal: dealsArray
+    };
+    
+    setFormData(newFormData);
+    
+    
+    calculateHighestDeal(newFormData.deal);
+    
+  }, [contactInfo, accountInfo, dealInfo]);
+
+  const calculateHighestDeal = (deals) => {
+    if (!Array.isArray(deals) || deals.length === 0) {
+      setHighestDealAmount("N/A");
+      setHighestDealDate("N/A");
+      return;
+    }
+    
+    
+    const dealsWithAmount = deals.filter(item => {
+      const amount = item?.dealamount;
+      return amount !== null && amount !== undefined && amount !== "" && !isNaN(parseFloat(amount));
+    });
+    
+    if (dealsWithAmount.length === 0) {
+      setHighestDealAmount("N/A");
+      setHighestDealDate("N/A");
+      return;
+    }
+    
+    
+    let highestDeal = dealsWithAmount[0];
+    let highestAmount = parseFloat(highestDeal.dealamount) || 0;
+    
+    for (let i = 1; i < dealsWithAmount.length; i++) {
+      const currentDeal = dealsWithAmount[i];
+      const currentAmount = parseFloat(currentDeal.dealamount) || 0;
+      
+      if (currentAmount > highestAmount) {
+        highestAmount = currentAmount;
+        highestDeal = currentDeal;
+      }
+    }
+    
+    setHighestDealAmount(highestAmount.toString());
+    setHighestDealDate(highestDeal.date_entered ? formatDate(highestDeal.date_entered) : "N/A");
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    
+    
+    const dateOnly = dateString.split(' ')[0];
+    
+    try {
+      
+      const date = new Date(dateOnly);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-GB'); 
+        
+      }
+      return dateOnly;
+    } catch (error) {
+      return dateOnly;
+    }
+  };
+
   const handleEditClick = () => {
     setIsEditing(true);
   };
@@ -57,28 +152,26 @@ const dispatch = useDispatch();
   };
 
   const handleSave = () => {
-    dispatch(editContact(formData))
+    dispatch(editContact(formData));
     setIsEditing(false);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
   };
+
   useEffect(() => {
-   if(message){
-    toast.success(message);
-    dispatch(viewEmailAction.clearAllMessage())
-   }
-   if(error){
-    toast.success(error);
-    dispatch(viewEmailAction.clearAllErrors())
-   }
+    if (message) {
+      toast.success(message);
+      dispatch(viewEmailAction.clearAllMessage());
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(viewEmailAction.clearAllErrors());
+    }
   }, [message, error, dispatch]);
 
 
-  useEffect(() => {
-  console.log('formData:', formData);
-}, []);
 
   return (
     <div className="w-full min-h-screen from-purple-50 via-blue-50 to-pink-50 py-12 px-4">
@@ -138,6 +231,7 @@ const dispatch = useDispatch();
           </div>
         </div>
       </motion.div>
+      
       {/* Main Content Grid */}
       <motion.div
         variants={containerVariants}
@@ -164,10 +258,25 @@ const dispatch = useDispatch();
               <GlassInfo icon={<User />} label="Customer Type" value={contactInfo?.customer_type} />
               <GlassInfo icon={<ChartSpline />} label="Status" value={contactInfo?.status} />
               <GlassInfo icon={<Target />} label="Last Activity" value={contactInfo?.date_modified} />
-              <GlassInfo icon={<DollarSign />} label="Deal Amount" value={formData?.deal?.[0]?.dealamount || "N/A"} />
-              <GlassInfo icon={<Clock />} label="Deal Date" value={formData?.deal?.[0]?.date_entered || "N/A"} />
+              <GlassInfo icon={<DollarSign />} label="Deal Amount" value={highestDealAmount} />
+              <GlassInfo icon={<Clock />} label="Deal Date" value={highestDealDate} />
             </div>
+            
+            {/* Display all deal amounts for debugging */}
+            {formData.deal && formData.deal.length > 0 && (
+              <div className="mt-6 p-4 bg-gray-50/50 rounded-xl">
+                <p className="text-sm font-semibold text-gray-600 mb-2">All Deal Amounts:</p>
+                <div className="flex flex-wrap gap-2">
+                  {formData.deal.map((deal, index) => (
+                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                      ${deal.dealamount || "0"}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+          
           {/* Addresses Section */}
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -183,6 +292,7 @@ const dispatch = useDispatch();
             </div>
           </div>
         </motion.div>
+        
         {/* Account Details - 1 column */}
         <motion.div variants={itemVariants} className="space-y-6">
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
@@ -200,6 +310,7 @@ const dispatch = useDispatch();
               <GlassInfo icon={<Building2 />} label="Website" value={accountInfo?.website} fullWidth />
             </div>
           </div>
+          
           {/* Account Addresses */}
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Account Addresses</h3>
