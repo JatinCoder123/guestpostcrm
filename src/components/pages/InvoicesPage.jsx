@@ -11,7 +11,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
-import Pagination from "../Pagination"; 
+import Pagination from "../Pagination";
 import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices";
 import SearchComponent from "./SearchComponent";
 import UpdatePopup from "../UpdatePopup";
@@ -124,22 +124,22 @@ export function InvoicesPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    
+
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-   
+
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    
+
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    
+
   };
 
 
@@ -327,7 +327,7 @@ export function InvoicesPage() {
             <button
 
               className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-              onClick={() => setShowCreateInvoice(true)}
+              onClick={() => alert("work in progress")}
             >
               <img
                 width="40"

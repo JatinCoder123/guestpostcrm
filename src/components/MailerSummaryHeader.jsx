@@ -133,7 +133,7 @@ function TD({ data, type, setData }) {
       dispatch(createOrder())
       return;
     }
-    navigateTo(`/${type}/view`, { state: { email } })
+    data.length > 0 ? navigateTo(`/${type}/view`, { state: { email } }) : navigateTo(`/${type}/create`, { state: { email } })
 
   }
   return (

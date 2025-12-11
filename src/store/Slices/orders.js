@@ -123,7 +123,7 @@ export const createOrder = () => {
       console.log(`Orders created`, data);
       if (!data.order.response) {
         dispatch(
-          ordersSlice.actions.createOrderFailed("Order Can't be created. First Create a Deal")
+          ordersSlice.actions.createOrderFailed(data.order)
         );
         return;
       }

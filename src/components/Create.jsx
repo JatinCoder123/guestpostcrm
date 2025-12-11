@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MoveLeft, Pencil } from "lucide-react";
+import { MoveLeft, Pencil, Plus } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -88,6 +88,14 @@ export default function Create({ data, email, setData, type, pageType, sending, 
                                     </button>
                                     <h3 className="text-2xl font-semibold">{`${pageType == "view" ? "" : (data.length > 0) ? "Edit" : "Create"} ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                                 </div>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
+                                    >
+                                        <Plus size={16} /> Add
+                                    </button>
+                                </div>
+
                             </div>
 
                             {/* Deals List */}
@@ -145,15 +153,6 @@ export default function Create({ data, email, setData, type, pageType, sending, 
                                                                 <div className="mt-4 grid grid-cols-2 gap-3">
                                                                     {lists.length > 0 && lists.map((list, listIndex) => <DisplayList key={listIndex} spamScores={item.spam_score_c} data={item[list.name]} label={list.label} />)}
                                                                 </div>
-
-                                                                {/* <div className="flex items-start justify-end gap-3">
-                                                                    <button
-                                                                        onClick={() => removeData(itemIndex)}
-                                                                        className="text-red-500 p-2 rounded-lg hover:bg-red-50"
-                                                                    >
-                                                                        <Trash2 size={16} />
-                                                                    </button>
-                                                                </div> */}
                                                             </motion.div>
                                                         )}
                                                     </Draggable>
@@ -212,7 +211,7 @@ export default function Create({ data, email, setData, type, pageType, sending, 
                                     </div>
                                 </div>
                                 {type !== "orders" && <div className="mt-4 flex gap-3">
-                                    {pageType == "view" ? <button
+                                    {pageType == "view" ? <><button
                                         disabled={data.length === 0}
                                         onClick={() => sendHandler(totalAmount)}
                                         className={`w-full px-3 py-2 rounded-lg text-white ${sending
@@ -221,24 +220,21 @@ export default function Create({ data, email, setData, type, pageType, sending, 
                                             }`}
                                     >
                                         {sending ? "Sending..." : "Send"}
-                                    </button> : <button
-                                        disabled={data.length === 0 || !valid}
-                                        onClick={handleSubmit}
-                                        className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                                            ? "bg-gray-300 cursor-not-allowed"
-                                            : "bg-green-600 hover:bg-green-700"
-                                            }`}
-                                    >
-                                        {loading ? "Submitting..." : "Submit"}
-                                    </button>}
-
-
-                                    <button
+                                    </button><button
                                         onClick={() => setShowPreview(true)}
                                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                                     >
-                                        Preview
-                                    </button>
+                                            Preview
+                                        </button></> : <button
+                                            disabled={data.length === 0 || !valid}
+                                            onClick={handleSubmit}
+                                            className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
+                                                ? "bg-gray-300 cursor-not-allowed"
+                                                : "bg-green-600 hover:bg-green-700"
+                                                }`}
+                                        >
+                                        {loading ? "Submitting..." : "Submit"}
+                                    </button>}
                                 </div>}
 
                             </div>
