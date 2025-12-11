@@ -187,7 +187,7 @@ const ActionButton = ({
             <LoadingChase />
           ) : (
             <img
-        className="w-6 h-6"
+              className="w-6 h-6"
               src="https://img.icons8.com/office/40/link.png"
               alt="link"
             />
@@ -196,9 +196,7 @@ const ActionButton = ({
           action: () => dispatch(linkExchange(threadId)),
         },
         {
-          icon: marking ? (
-            <LoadingChase />
-          ) : (
+          icon: (
             <img
               src="https://img.icons8.com/color/48/tags--v1.png"
               className="w-6 h-6"
@@ -206,7 +204,7 @@ const ActionButton = ({
             />
           ),
           label: "Mark Tag",
-          action: () => dispatch(markingEmail(threadId)),
+          action: () => {},
         },
       ].map((btn, i) => (
         <div className="relative" key={i}>

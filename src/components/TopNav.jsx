@@ -164,7 +164,7 @@ export function TopNav() {
           <div
             className={`
       absolute -top-2 -right-2
-      bg-blue-600 text-white text-xs font-semibold
+      bg-orange-800 text-white text-xs font-semibold
       rounded-full w-6 h-6 
       flex items-center justify-center
       shadow-md
