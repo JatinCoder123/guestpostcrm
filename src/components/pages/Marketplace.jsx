@@ -107,12 +107,12 @@ export function Marketplace() {
     <>
       <SearchComponent
         dropdownOptions={[
-          { value: "all", label: "websites" },
+          { value: "all", label: "Websites" },
 
         ]}
         selectedDropdownValue={selectedCategory}
         onDropdownChange={handleCategoryChange}
-        dropdownPlaceholder="Filter by websites"
+        // dropdownPlaceholder="Filter by websites"
 
         searchValue={topsearch}
         onSearchChange={handleSearchChange}

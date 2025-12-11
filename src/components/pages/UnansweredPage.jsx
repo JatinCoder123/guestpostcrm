@@ -107,8 +107,8 @@ export function UnansweredPage() {
 
    const dropdownOptions = [
     
-    { value: 'contect', label: 'contact' },
-    { value: 'subject', label: 'subject' },
+    { value: 'contect', label: 'Contact' },
+    { value: 'subject', label: 'Subject' },
   ];
 
   const filterOptions = [
@@ -179,12 +179,12 @@ export function UnansweredPage() {
       dropdownOptions={dropdownOptions}
       onDropdownChange={handleCategoryChange} 
       selectedDropdownValue={selectedCategory} 
-      dropdownPlaceholder="Filter by contact"
+      // dropdownPlaceholder="Filter by contact"
       
       
       onSearchChange={handleSearchChange}
       searchValue={topsearch}
-      searchPlaceholder="Search emails..."
+      searchPlaceholder="Search here..."
       
       
       onFilterApply={handleFilterApply}

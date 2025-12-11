@@ -215,8 +215,8 @@ export function Allbacklinkspage() {
 
      <SearchComponent
         dropdownOptions={[
-          { value: "subject", label: "target url" },
-          { value: "contact", label: "author" }
+          { value: "subject", label: "Target url" },
+          { value: "contact", label: "Author" }
 
         ]}
         selectedDropdownValue={selectedCategory}

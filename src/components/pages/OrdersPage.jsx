@@ -95,8 +95,8 @@ export function OrdersPage() {
 
 
   const dropdownOptions = [
-    { value: 'contect', label: 'contact' },
-    { value: 'subject', label: 'order id' },
+    { value: 'contect', label: 'Contact' },
+    { value: 'subject', label: 'Order id' },
   ];
 
   const filterOptions = [
@@ -205,12 +205,12 @@ export function OrdersPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
+        // dropdownPlaceholder="Filter by contact"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}

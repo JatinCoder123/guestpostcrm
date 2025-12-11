@@ -6,7 +6,12 @@ import {
   AlertTriangle,
   BarChart,
   Shield,
+  TagIcon,
+  Laptop,
+  Contact
+  
 } from "lucide-react";
+
 
 import SearchComponent from "./SearchComponent";
 import { useState } from "react";
@@ -14,7 +19,7 @@ import { useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getDetection } from "../../store/Slices/detection";
 
-export function SpamDetectionPage() {
+export function Contacts_otherPage() {
   const { detection, count } = useSelector((state) => state.detection);
 
 
@@ -52,12 +57,9 @@ export function SpamDetectionPage() {
 
   return (
     <>
-
-
-
      <SearchComponent
         dropdownOptions={[
-          { value: "all", label: "Websites" },
+          { value: "all", label: "Contact" },
 
         ]}
         selectedDropdownValue={selectedCategory}
@@ -66,7 +68,7 @@ export function SpamDetectionPage() {
 
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search  items..."
+        searchPlaceholder="Search  here..."
 
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
@@ -85,15 +87,15 @@ export function SpamDetectionPage() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-6 h-6 text-orange-600" />
-            <h2 className="text-xl text-gray-900">SPAM DETECTION</h2>
+            <Contact className="w-6 h-6 text-green-600" />
+            <h2 className="text-xl text-gray-900">Contacts</h2>
             <a href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/" target="_blank"
               rel="noopener noreferrer">
               <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
             </a>
           </div>
           <span className="px-4 py-1.5 bg-orange-100 text-orange-700 rounded-full">
-            {count} Spam Detected
+            {count} Contacts
           </span>
         </div>
 
@@ -118,7 +120,7 @@ export function SpamDetectionPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
-                    <span>SPAM REASON</span>
+                    <span>System Suggestions</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">

@@ -9,6 +9,8 @@ import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
+import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
+import { Contacts_otherPage } from "./components/pages/Contacts_otherPage";
 
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
@@ -80,6 +82,14 @@ const router = createBrowserRouter([
        {
         path: "tag-manager",
         element: <TagManagerpage />,
+      },
+           {
+        path: "system-suggestion",
+        element: <SystemSuggestionsPage/>,
+      },
+                 {
+        path: "contacts",
+        element: <Contacts_otherPage/>,
       },
       {
         path: "unanswered",

@@ -107,8 +107,8 @@ export function UnrepliedEmailsPage() {
 
   const dropdownOptions = [
 
-    { value: 'contect', label: 'contact' },
-    { value: 'subject', label: 'subject' },
+    { value: 'contect', label: 'Contact' },
+    { value: 'subject', label: 'Subject' },
   ];
 
   const filterOptions = [
@@ -165,12 +165,12 @@ export function UnrepliedEmailsPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by Status"
+        // dropdownPlaceholder="Filter by Status"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}

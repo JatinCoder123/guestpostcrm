@@ -155,8 +155,8 @@ export function MovedPage() {
 
      <SearchComponent
         dropdownOptions={[
-  { value: 'contect', label: 'cender' },
-    { value: 'subject', label: 'subject' },
+  { value: 'contect', label: 'Sender' },
+    { value: 'subject', label: 'Subject' },
 
         ]}
         selectedDropdownValue={selectedCategory}
