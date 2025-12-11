@@ -14,8 +14,8 @@ import { getOrders, orderAction, updateOrder } from "../../store/Slices/orders";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
-import UpdatePopup from "../UpdatePopup";
 import { toast } from "react-toastify";
+import { excludeEmail } from "../../assets/assets";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
@@ -121,29 +121,8 @@ export function OrdersPage() {
     console.log('Category selected:', value);
   };
 
-  const handleSortChange = (value) => {
-    setSelectedSort(value);
-    console.log('Sort selected:', value);
-  };
 
-  const updateOrderHandler = (currentOrder, data) => {
-    const updateOrderData = {
-      ...currentOrder,
-      ...data
-    }
-    dispatch(updateOrder(updateOrderData))
-  }
-  useEffect(() => {
-    if (error) {
-      toast.error(error)
-      dispatch(orderAction.clearAllErrors())
-    }
-    if (message) {
-      toast.success(message)
-      setCurrentUpdateOrder(null)
-      dispatch(orderAction.clearAllMessages())
-    }
-  }, [dispatch, error, message])
+
 
   const handleDownload = () => {
     if (!filteredorders || filteredorders.length === 0) {
@@ -381,7 +360,7 @@ export function OrdersPage() {
                     <div className="flex gap-2">
                       {/* Update Button */}
                       <button
-                        onClick={() => setCurrentUpdateOrder(order)}
+                        onClick={() => navigateTo(`/orders/edit/${order.id}`, { state: { email: excludeEmail(order.real_name) } })}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >

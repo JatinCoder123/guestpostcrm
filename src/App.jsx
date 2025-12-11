@@ -77,7 +77,7 @@ const router = createBrowserRouter([
         path: "spam-detection",
         element: <SpamDetectionPage />,
       },
-       {
+      {
         path: "tag-manager",
         element: <TagManagerpage />,
       },
@@ -101,7 +101,7 @@ const router = createBrowserRouter([
         element: <DealsPage />,
       },
       {
-        path: "deals/create",
+        path: "deals/:type/:id?",
         element: <CreateDeal />,
       },
       {
@@ -109,7 +109,7 @@ const router = createBrowserRouter([
         element: <OffersPage />,
       },
       {
-        path: "offers/create",
+        path: "offers/:type/:id?",
         element: <CreateOffer />,
       },
       {
@@ -117,7 +117,7 @@ const router = createBrowserRouter([
         element: <OrdersPage />,
       },
       {
-        path: "orders/create",
+        path: "orders/:type/:id?",
         element: <CreateOrder />,
       },
       {

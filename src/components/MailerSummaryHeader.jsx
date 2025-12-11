@@ -108,6 +108,7 @@ export default MailerSummaryHeader;
 
 function TD({ data, type, setData }) {
   const { creating, message, error, loading } = useSelector((state) => state.orders);
+  const { email } = useSelector((state) => state.ladger);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   useEffect(() => {
@@ -132,7 +133,7 @@ function TD({ data, type, setData }) {
       dispatch(createOrder())
       return;
     }
-    navigateTo(`/${type}/create`)
+    navigateTo(`/${type}/view`, { state: { email } })
 
   }
   return (
@@ -144,7 +145,7 @@ function TD({ data, type, setData }) {
             <img className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data.length > 0 ? "edit" : "add"}.png`}
+              src={`https://img.icons8.com/stickers/100/${data.length > 0 ? "visible" : "add"}.png`}
               alt="add"
             />
           </button>

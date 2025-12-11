@@ -1,19 +1,14 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, GripVertical, MoveLeft } from "lucide-react";
+import { MoveLeft, Pencil } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import PreviewOrders from "./PreviewOrders";
-import { renderToStaticMarkup } from "react-dom/server";
-import { viewEmailAction } from "../store/Slices/viewEmail";
 
-export default function Create({ data, setData, type, fields, lists = [], submitData, renderPreview, preview = true, amountKey }) {
-    const { email } = useSelector((state) => state.ladger);
+export default function Create({ data, email, setData, type, pageType, fields, lists = [], submitData, handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
-    const { contactInfo } = useSelector((state) => state.viewEmail);
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
     const [showPreview, setShowPreview] = useState(false);
@@ -72,15 +67,13 @@ export default function Create({ data, setData, type, fields, lists = [], submit
         }
         submitData(totalAmount)
     };
-
-
     return (
         <>
 
             <div className="w-full min-h-[80vh] p-6 bg-gray-50 flex justify-center">
-                <div className="w-full max-w-6xl grid grid-cols-12 gap-6">
+                <div className="w-full max-w-6xl flex justify-between gap-6">
                     {/* LEFT SECTION */}
-                    <div className="col-span-12 lg:col-span-8">
+                    <div className="col-span-12 flex-1 lg:col-span-8">
                         <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 relative">
                             {/* Header Row */}
                             <div className="flex items-center justify-between mb-6">
@@ -92,8 +85,7 @@ export default function Create({ data, setData, type, fields, lists = [], submit
                                         <MoveLeft size={16} />
                                         Back
                                     </button>
-
-                                    <h3 className="text-2xl font-semibold">{`${data.length > 0 ? "Edit" : "Create"} ${type}`}</h3>
+                                    <h3 className="text-2xl font-semibold">{`${pageType == "view" ? "" : (data.length > 0) ? "Edit" : "Create"} ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                                 </div>
                             </div>
 
@@ -122,8 +114,30 @@ export default function Create({ data, setData, type, fields, lists = [], submit
                                                                 ref={dp.innerRef}
                                                                 {...dp.draggableProps}
                                                                 {...dp.dragHandleProps}
-                                                                className="bg-white border border-gray-100 p-4 rounded-2xl shadow-sm"
+                                                                className={`bg-white relative border border-gray-100 p-6 ${pageType == "edit" && "pb-15"} rounded-2xl shadow-sm `}
                                                             >
+                                                                {pageType == "view" && <button
+                                                                    onClick={() => navigate(`/${type}/edit/${item.id}`)}
+                                                                    className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+                                                                >
+                                                                    <Pencil size={16} />
+                                                                </button>}
+                                                                {pageType == "edit" && <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
+                                                                    <button
+                                                                        onClick={() => navigate(-1)}
+                                                                        disabled={updating}
+                                                                        className={`flex items-center gap-2 px-3 py-1.5 ${updating ? "cursor-not-allowed" : ""} bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition`}
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleUpdate(item)}
+                                                                        disabled={updating}
+                                                                        className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${!updating ? "bg-green-500 hover:bg-green-600" : "bg-green-300 cursor-not-allowed"}`}
+                                                                    >
+                                                                        {updating ? "Updating..." : "Update"}</button>
+                                                                </div>}
+
                                                                 <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} />)}
                                                                 </div>
@@ -151,16 +165,16 @@ export default function Create({ data, setData, type, fields, lists = [], submit
                             </DragDropContext>
 
                             {/* Footer */}
-                            <div className="mt-6 flex items-center justify-between">
+                            {pageType !== "edit" && <div className="mt-6 flex items-center justify-between">
                                 <p className="text-sm text-gray-600">
                                     Total {type[0].toUpperCase() + type.slice(1)}: {data.length}
                                 </p>
-                            </div>
+                            </div>}
                         </div>
                     </div>
 
                     {/* RIGHT SIDEBAR */}
-                    <div className="col-span-12 lg:col-span-4">
+                    {pageType !== "edit" && <div className="col-span-12 lg:col-span-4">
                         <div className="sticky top-6 space-y-4">
                             <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
                                 <h4 className="font-semibold">{type[0].toUpperCase() + type.slice(1)} for {email}</h4>
@@ -221,7 +235,7 @@ export default function Create({ data, setData, type, fields, lists = [], submit
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>}
                 </div>
                 {/* PREVIEW MODAL */}
                 {showPreview && preview && (
@@ -312,7 +326,7 @@ function InputField({
             {/* ✅ DEFAULT INPUT */}
             {type !== "select" && type !== "textarea" && type !== "list" && (
                 <input
-                    value={value}
+                    value={value == "N/A" ? "" : value}
                     onChange={onChange}
                     placeholder={placeholder}
                     type={type}
@@ -326,37 +340,49 @@ function InputField({
 }
 
 function DisplayList({ data, label, spamScores }) {
-    // ✅ Normalize data to array
+    // Normalize data to array
     const list = Array.isArray(data)
         ? data
         : typeof data === "string"
             ? data.split(",").map(item => item.trim()).filter(Boolean)
             : [];
+
     const spamScoreList = Array.isArray(spamScores)
         ? spamScores
         : typeof spamScores === "string"
             ? spamScores.split(",").map(item => item.trim()).filter(Boolean)
             : [];
 
-    // ✅ Don't render if nothing to show
     if (!list.length) return null;
 
     return (
         <div className="flex flex-col gap-1">
+
             {label && (
                 <span className="text-xs font-semibold text-gray-500">
-                    {label} {`${label == "Their Link" ? "(Spam Score)" : ""}`}
+                    {label} {label === "Their Link" ? "(Spam Score)" : ""}
                 </span>
             )}
 
-            <ul className="list-disc list-inside space-y-1">
-                {list.map((item, idx) => (
-                    <li key={idx} className="text-sm text-gray-700">
-                        {item}
-                        <span className="text-red-500">{label == "Their Link" ? ` (${spamScoreList[idx]})` : ""}</span>
-                    </li>
-                ))}
-            </ul>
+            {/* ⭐ Wrapper container to prevent collapsing */}
+            <div className="border border-gray-300 rounded-md p-3 bg-white max-h-60 overflow-y-auto">
+
+                <ul className="list-disc list-inside space-y-1">
+                    {list.map((item, idx) => (
+                        <li
+                            key={idx}
+                            className="text-sm text-gray-700 break-words leading-relaxed"
+                        >
+                            {item}
+                            {label === "Their Link" && (
+                                <span className="text-red-500"> ({spamScoreList[idx]})</span>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+
+            </div>
         </div>
     );
 }
+
