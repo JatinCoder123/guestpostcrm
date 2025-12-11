@@ -4,8 +4,14 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
-import { getUnansweredEmails, getUnansweredEmailWithOutLoading } from "./store/Slices/unansweredEmails";
-import { getUnrepliedEmail, getUnrepliedEmailWithOutLoading } from "./store/Slices/unrepliedEmails";
+import {
+  getUnansweredEmails,
+  getUnansweredEmailWithOutLoading,
+} from "./store/Slices/unansweredEmails";
+import {
+  getUnrepliedEmail,
+  getUnrepliedEmailWithOutLoading,
+} from "./store/Slices/unrepliedEmails";
 import { getOrders } from "./store/Slices/orders";
 import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
@@ -29,13 +35,22 @@ import { getAllAvatar } from "./store/Slices/avatarSlice";
 import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 import { getmovedEmails } from "./store/Slices/movedEmails";
 import { SocketContext } from "./context/SocketContext";
+import { hotAction } from "./store/Slices/hotSlice";
+import { eventActions } from "./store/Slices/eventSlice";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
-  const { displayIntro, setActivePage, enteredEmail, currentIndex, setCurrentIndex } = useContext(PageContext);
-  const { currentAvatar, currentMail } = useContext(SocketContext);
+  const {
+    displayIntro,
+    setActivePage,
+    enteredEmail,
+    currentIndex,
+    setCurrentIndex,
+  } = useContext(PageContext);
+  const { currentAvatar, currentMail, currentHotCount, recentCount } =
+    useContext(SocketContext);
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
@@ -60,14 +75,14 @@ const RootLayout = () => {
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
-    setCurrentIndex(0)
+    setCurrentIndex(0);
   }, [enteredEmail, timeline]);
-  const firstEmail = emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+  const firstEmail =
+    emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
 
   useEffect(() => {
     if (enteredEmail) {
       dispatch(getLadgerEmail(enteredEmail));
-
     } else if (firstEmail) {
       dispatch(getLadgerEmail(firstEmail));
     }
@@ -82,7 +97,15 @@ const RootLayout = () => {
   useEffect(() => {
     dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
     dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-  }, [currentMail])
+  }, [currentMail]);
+  useEffect(() => {
+    if (!currentHotCount) return;
+    dispatch(hotAction.updateCount(1));
+  }, [currentHotCount]);
+  useEffect(() => {
+    if (!currentHotCount) return;
+    dispatch(eventActions.updateCount(1));
+  }, [recentCount]);
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (
@@ -102,8 +125,9 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
-                }`}
+              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${
+                sidebarCollapsed ? "ml-4" : "ml-0"
+              }`}
             >
               <div className="p-6">
                 <WelcomeHeader />
