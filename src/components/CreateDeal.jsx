@@ -48,7 +48,7 @@ export default function CreateDeal() {
     }
   }, [message, error, dispatch])
   return (
-    <Create data={currentDeals} email={state.email} pageType={type} handleUpdate={handleUpdate} updating={updating} setData={setCurrentDeals} amountKey={"dealamount"} type="deals" validWebsites={validWebsites} submitData={submitHandler} fields={fields} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={currentDeals} email={state.email} pageType={type} handleUpdate={handleUpdate} updating={updating} setData={setCurrentDeals} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, totalAmount, email }) => (
       <Preview
         data={data}
         type="Deals"

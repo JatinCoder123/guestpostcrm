@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { excludeEmail } from "../assets/assets";
 
 export default function Create({ data, email, setData, type, pageType, fields, lists = [], submitData, handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
@@ -117,7 +118,7 @@ export default function Create({ data, email, setData, type, pageType, fields, l
                                                                 className={`bg-white relative border border-gray-100 p-6 ${pageType == "edit" && "pb-15"} rounded-2xl shadow-sm `}
                                                             >
                                                                 {pageType == "view" && <button
-                                                                    onClick={() => navigate(`/${type}/edit/${item.id}`)}
+                                                                    onClick={() => navigate(`/${type}/edit/${item.id}`, { state: { email } })}
                                                                     className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
                                                                 >
                                                                     <Pencil size={16} />
