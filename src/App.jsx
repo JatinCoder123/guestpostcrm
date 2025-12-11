@@ -46,6 +46,7 @@ import CreateOrder from "./components/CreateOrder";
 import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
+import { HotPage } from "./components/pages/HotPage";
 
 
 const router = createBrowserRouter([
@@ -179,6 +180,10 @@ const router = createBrowserRouter([
       {
         path: "avatars",
         element: <AvatarPage />,
+      },
+        {
+        path: "hot-records",
+        element: <HotPage />,
       },
 
       {

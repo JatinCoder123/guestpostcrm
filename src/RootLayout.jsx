@@ -29,13 +29,14 @@ import { getAllAvatar } from "./store/Slices/avatarSlice";
 import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 import { getmovedEmails } from "./store/Slices/movedEmails";
 import { SocketContext } from "./context/SocketContext";
+import {  hotAction } from "./store/Slices/hotSlice";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
   const { displayIntro, setActivePage, enteredEmail, currentIndex, setCurrentIndex } = useContext(PageContext);
-  const { currentAvatar, currentMail } = useContext(SocketContext);
+  const { currentAvatar, currentMail,currentHotCount } = useContext(SocketContext);
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
@@ -83,6 +84,9 @@ const RootLayout = () => {
     dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
     dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
   }, [currentMail])
+  useEffect(() => {
+    if(!currentHotCount)return;
+dispatch(hotAction.updateCount(1))  }, [currentHotCount])
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (

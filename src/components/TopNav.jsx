@@ -18,11 +18,15 @@ import { toast } from "react-toastify";
 import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
+import { getAllHot } from "../store/Slices/hotSlice";
 
 export function TopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
-  const { setEnteredEmail, search, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
+  const { count } = useSelector((state) => state.hot);
+  const { setEnteredEmail, search, setWelcomeHeaderContent, setSearch } =
+    useContext(PageContext);
+
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const profileMenuRef = useRef(null);
@@ -55,6 +59,13 @@ export function TopNav() {
       handleSearch();
     }
   };
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    setAnimate(true);
+    const timer = setTimeout(() => setAnimate(false), 300);
+    return () => clearTimeout(timer);
+  }, [count]);
 
   useEffect(() => {
     if (error) {
@@ -139,13 +150,30 @@ export function TopNav() {
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-3 relative">
+      <div className="flex  items-center gap-3 relative">
         {/* Hot Button */}
         <button
-          onClick={() => setShowAvatar((prev) => !prev)}
-          className="flex cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
+          onClick={() => {
+            navigateTo("hot-records");
+          
+          }}
+          className="flex relative  cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
         >
-          <Flame className="w-4 h-4" />
+          <Flame className="w-5 h-5 text-white-500" />
+
+          <div
+            className={`
+      absolute -top-2 -right-2
+      bg-blue-600 text-white text-xs font-semibold
+      rounded-full w-6 h-6 
+      flex items-center justify-center
+      shadow-md
+      transition-all duration-300 ease-out
+      ${animate ? "scale-125 opacity-100" : "scale-90 opacity-90"}
+    `}
+          >
+            {count}
+          </div>
         </button>
 
         {/* Notification Button */}
@@ -215,10 +243,11 @@ export function TopNav() {
                     className={`
       flex items-center justify-center cursor-pointer
       p-2 rounded-full transition-all duration-300 shadow-sm
-      ${loading
-                        ? "opacity-50 cursor-not-allowed bg-gray-200"
-                        : "hover:bg-red-200"
-                      }
+      ${
+        loading
+          ? "opacity-50 cursor-not-allowed bg-gray-200"
+          : "hover:bg-red-200"
+      }
     `}
                   >
                     <img

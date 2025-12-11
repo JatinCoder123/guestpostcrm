@@ -23,6 +23,7 @@ import backlinksReducer from "./Slices/backlinks.js";
 import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
+import hotReducer from "./Slices/hotSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -50,6 +51,7 @@ export const store = configureStore({
     events: eventReducer,
     marketplace: marketplaceReducer,
     linkExchange: linkExchangeReducer,
+    hot: hotReducer,
 
 
   },
