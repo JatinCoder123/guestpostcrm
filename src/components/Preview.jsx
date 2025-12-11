@@ -2,7 +2,9 @@ export default function Preview({
     data = [],
     type,
     totalAmount = 0,
-    userEmail
+    userEmail,
+    websiteKey,
+    amountKey
 }) {
     return (
         <>
@@ -144,7 +146,7 @@ export default function Preview({
                                                                                 color: "#263238",
                                                                             }}
                                                                         >
-                                                                            {d.website_c || "(no website)"}
+                                                                            {d[websiteKey] || "(no website)"}
                                                                         </td>
 
                                                                         <td
@@ -159,7 +161,7 @@ export default function Preview({
                                                                         >
                                                                             $
                                                                             {Number(
-                                                                                d.dealamount || 0
+                                                                                d[amountKey] || 0
                                                                             ).toLocaleString()}
                                                                         </td>
                                                                     </tr>

@@ -10,16 +10,18 @@ import { renderToStaticMarkup } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 
 const fields = [
+  { name: "website_c", label: "Website", type: "select", options: websiteLists },
   { name: "dealamount", label: "Deal Amount", type: "number" },
   { name: "status", label: "Status", type: "select", options: ["active", "inactive", "pending"] },
-  { name: "website", label: "Website", type: "select", options: websiteLists },
 ]
 export default function CreateDeal() {
   const { type, id } = useParams();
   const { state } = useLocation()
   const { deals, updating, error, message } = useSelector((state) => state.deals);
+  const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
   const [currentDeals, setCurrentDeals] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -33,6 +35,18 @@ export default function CreateDeal() {
   const submitHandler = () => {
     alert("We're working on it. Please try again after some time.")
   };
+  const sendHandler = (totalAmount) => {
+    dispatch(sendEmail(renderToStaticMarkup(
+      <Preview
+        data={currentDeals}
+        type="Deals"
+        totalAmount={totalAmount}
+        userEmail={state.email}
+        websiteKey="website_c"
+        amountKey="dealamount"
+      />
+    )))
+  }
   const handleUpdate = (item) => {
     dispatch(updateDeal(item))
   }
@@ -45,15 +59,28 @@ export default function CreateDeal() {
     if (error) {
       toast.error(error)
       dispatch(dealsAction.clearAllErrors())
+
     }
-  }, [message, error, dispatch])
+    if (sendMessage) {
+      toast.success(sendMessage)
+      dispatch(viewEmailAction.clearAllMessage())
+      navigate(-1)
+
+    }
+    if (sendError) {
+      toast.error(sendError)
+      dispatch(viewEmailAction.clearAllErrors())
+    }
+  }, [message, error, dispatch, sendError, sendMessage])
   return (
-    <Create data={currentDeals} email={state.email} pageType={type} handleUpdate={handleUpdate} updating={updating} setData={setCurrentDeals} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={currentDeals} email={state.email} pageType={type} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} sending={sending} setData={setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, totalAmount, email }) => (
       <Preview
         data={data}
         type="Deals"
         totalAmount={totalAmount}
         userEmail={email}
+        websiteKey="website_c"
+        amountKey="dealamount"
       />
     )} />
   );

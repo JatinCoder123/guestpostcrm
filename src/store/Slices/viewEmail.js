@@ -10,7 +10,7 @@ const viewEmailSlice = createSlice({
     viewEmail: [],
     contactInfo: null,
     accountInfo: null,
-    dealInfo:null,
+    dealInfo: null,
     threadId: null,
     message: null,
     error: null,

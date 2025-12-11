@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { excludeEmail } from "../assets/assets";
 
-export default function Create({ data, email, setData, type, pageType, fields, lists = [], submitData, handleUpdate, updating, renderPreview, preview = true, amountKey }) {
+export default function Create({ data, email, setData, type, pageType, sending, fields, lists = [], submitData, sendHandler, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -48,7 +48,7 @@ export default function Create({ data, email, setData, type, pageType, fields, l
     );
 
     const totalAmount = useMemo(
-        () => data.reduce((s, d) => s + Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`] || 0), 0),
+        () => data.reduce((s, d) => s + Number(d[amountKey] || 0), 0),
         [data]
     );
     useEffect(() => {
@@ -140,7 +140,7 @@ export default function Create({ data, email, setData, type, pageType, fields, l
                                                                 </div>}
 
                                                                 <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
-                                                                    {fields.map((field, fieldIndex) => <InputField key={fieldIndex} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} />)}
+                                                                    {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} />)}
                                                                 </div>
                                                                 <div className="mt-4 grid grid-cols-2 gap-3">
                                                                     {lists.length > 0 && lists.map((list, listIndex) => <DisplayList key={listIndex} spamScores={item.spam_score_c} data={item[list.name]} label={list.label} />)}
@@ -196,7 +196,7 @@ export default function Create({ data, email, setData, type, pageType, fields, l
                                             <ul className="list-none space-y-1">
                                                 {data.map((d, i) => (
                                                     <li key={i}>
-                                                        {d.website_c || "(no site)"} —{" "}
+                                                        {d[websiteKey] || "(no site)"} —{" "}
                                                         <strong>${Number(d[amountKey] || 0)}</strong>
                                                     </li>
                                                 ))}
@@ -211,9 +211,17 @@ export default function Create({ data, email, setData, type, pageType, fields, l
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="mt-4 flex gap-3">
-                                    <button
+                                {type !== "orders" && <div className="mt-4 flex gap-3">
+                                    {pageType == "view" ? <button
+                                        disabled={data.length === 0}
+                                        onClick={() => sendHandler(totalAmount)}
+                                        className={`w-full px-3 py-2 rounded-lg text-white ${sending
+                                            ? "bg-green-300 cursor-not-allowed"
+                                            : "bg-green-600 hover:bg-green-700"
+                                            }`}
+                                    >
+                                        {sending ? "Sending..." : "Send"}
+                                    </button> : <button
                                         disabled={data.length === 0 || !valid}
                                         onClick={handleSubmit}
                                         className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
@@ -222,18 +230,17 @@ export default function Create({ data, email, setData, type, pageType, fields, l
                                             }`}
                                     >
                                         {loading ? "Submitting..." : "Submit"}
-                                    </button>
+                                    </button>}
 
-                                    {/* PREVIEW BUTTON */}
-                                    {preview && (
-                                        <button
-                                            onClick={() => setShowPreview(true)}
-                                            className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
-                                        >
-                                            Preview
-                                        </button>
-                                    )}
-                                </div>
+
+                                    <button
+                                        onClick={() => setShowPreview(true)}
+                                        className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
+                                    >
+                                        Preview
+                                    </button>
+                                </div>}
+
                             </div>
                         </div>
                     </div>}
@@ -255,7 +262,7 @@ export default function Create({ data, email, setData, type, pageType, fields, l
                             <div className="p-4 border-t flex items-center justify-between bg-white">
 
                                 <button
-                                    onClick={handleSubmit}
+                                    onClick={() => sendHandler(totalAmount)}
                                     className="px-[26px] py-[12px] bg-gradient-to-br from-[#4e79ff] to-[#6db6ff] text-white rounded-lg border-none cursor-pointer text-base font-bold shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
 
                                 >
@@ -288,8 +295,11 @@ function InputField({
     type = "text",
     disabled = false,
     options = [], // ✅ for select
+    pageType = ""
 }) {
     const value = data?.[name] ?? "";
+    disabled = pageType == "view" ? true : disabled;
+    type = pageType == "view" ? "text" : type;
 
     return (
         <div className="w-full">
@@ -333,7 +343,7 @@ function InputField({
                     type={type}
                     disabled={disabled}
                     inputMode={type === "number" ? "numeric" : undefined}
-                    className="w-full rounded-xl border px-3 py-2 bg-white"
+                    className={`w-full rounded-xl border px-3 py-2 bg-white`}
                 />
             )}
         </div>

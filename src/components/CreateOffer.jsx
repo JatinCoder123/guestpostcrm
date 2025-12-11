@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
-import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { renderToStaticMarkup } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
@@ -10,17 +9,18 @@ import { excludeEmail, websiteLists } from "../assets/assets";
 import { useParams, useLocation } from "react-router-dom";
 import { offersAction, updateOffer } from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
+import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 const fields = [
+  { name: "website", label: "Website", type: "select", options: websiteLists },
   { name: "amount", label: "Offer Amount", type: "number" },
   { name: "client_offer_c", label: "Client Offer", type: "number" },
   { name: "our_offer_c", label: "Our Offer", type: "number" },
-  { name: "website", label: "Website", type: "select", options: websiteLists },
 ]
 export default function CreateOffer() {
   const { type, id } = useParams();
   const { state } = useLocation()
   const navigate = useNavigate()
-  const { contactInfo } = useSelector((state) => state.viewEmail)
+  const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
   const [currentOffers, setCurrentOffers] = useState([])
   const dispatch = useDispatch()
   const { updating, error, offers, message } = useSelector((state) => state.offers)
@@ -31,12 +31,23 @@ export default function CreateOffer() {
     }
     setCurrentOffers(() => [...offer])
   }, [state.email, offers, type, id])
-  const submitHandler = (totalAmount) => {
-    alert("We're working on it. Please try again after some time.")
-
-  };
+  const sendHandler = (totalAmount) => {
+    dispatch(sendEmail(renderToStaticMarkup(
+      <Preview
+        data={currentOffers}
+        type="Offers"
+        totalAmount={totalAmount}
+        userEmail={state.email}
+        websiteKey="website"
+        amountKey="amount"
+      />
+    )))
+  }
   const handleUpdate = (offer) => {
     dispatch(updateOffer(offer))
+  }
+  const submitHandler = () => {
+    alert("We're working on it. Please try again after some time.")
   }
 
   useEffect(() => {
@@ -49,15 +60,27 @@ export default function CreateOffer() {
       toast.error(error)
       dispatch(offersAction.clearAllErrors())
     }
-  }, [message, error, dispatch])
+    if (sendMessage) {
+      toast.success(sendMessage)
+      dispatch(viewEmailAction.clearAllMessage())
+      navigate(-1)
+
+    }
+    if (sendError) {
+      toast.error(sendError)
+      dispatch(viewEmailAction.clearAllErrors())
+    }
+  }, [message, error, dispatch, sendMessage, sendError])
 
   return (
-    <Create data={currentOffers} email={state.email} pageType={type} handleUpdate={handleUpdate} updating={updating} setData={setCurrentOffers} type="offers" submitData={submitHandler} fields={fields} amountKey={"amount"} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={currentOffers} email={state.email} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"amount"} renderPreview={({ data, totalAmount, email }) => (
       <Preview
         data={data}
         type="Offers"
         totalAmount={totalAmount}
         userEmail={email}
+        websiteKey="website"
+        amountKey="amount"
       />
     )} />
   );
