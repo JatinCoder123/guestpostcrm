@@ -23,6 +23,10 @@ import backlinksReducer from "./Slices/backlinks.js";
 import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
+import contactOtherReducer from "./Slices/contact_other";
+//import contactdefaulterReducer  from "./Slices/contactdefaulterSlice.js";
+import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
+
 
 export const store = configureStore({
   reducer: {
@@ -50,6 +54,9 @@ export const store = configureStore({
     events: eventReducer,
     marketplace: marketplaceReducer,
     linkExchange: linkExchangeReducer,
+
+    contact_other: contactOtherReducer,
+      contactdefaulter: contactdefaulterReducer,
 
 
   },
