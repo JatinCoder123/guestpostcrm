@@ -67,6 +67,7 @@ export function formatTime(dateString) {
   return `${day} ${shortMonth} ${year}, ${time}`;
 }
 export function excludeEmail(str) {
+  console.log(str)
   if (str.includes("<")) {
     return str.split("<")[1].split(">")[0].trim();
   }

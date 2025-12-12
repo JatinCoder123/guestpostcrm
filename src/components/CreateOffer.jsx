@@ -7,7 +7,7 @@ import Create from "./Create";
 import Preview from "./Preview";
 import { excludeEmail, websiteLists } from "../assets/assets";
 import { useParams, useLocation } from "react-router-dom";
-import { offersAction, updateOffer } from "../store/Slices/offers";
+import { createOffer, offersAction, updateOffer } from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 const fields = [
@@ -22,22 +22,28 @@ export default function CreateOffer() {
   const navigate = useNavigate()
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
   const [currentOffers, setCurrentOffers] = useState([])
+  const [newOffers, setNewOffers] = useState([])
   const dispatch = useDispatch()
-  const { updating, error, offers, message } = useSelector((state) => state.offers)
+  const { updating, error, offers, message, creating } = useSelector((state) => state.offers)
   useEffect(() => {
-    let offer = offers.filter(d => excludeEmail(d.real_name) == state.email)
+    let offer = offers.filter(d => excludeEmail(d.real_name ?? d.name) == state?.email)
     if (type == "edit" && id !== undefined) {
       offer = offer.filter(d => d.id == id)
     }
     setCurrentOffers(() => [...offer])
-  }, [state.email, offers, type, id])
+  }, [state, offers, type, id])
+  useEffect(() => {
+    if (type == "create" && !state) {
+      navigate("/")
+    }
+  }, [state, type])
   const sendHandler = (totalAmount) => {
     dispatch(sendEmail(renderToStaticMarkup(
       <Preview
         data={currentOffers}
         type="Offers"
         totalAmount={totalAmount}
-        userEmail={state.email}
+        userEmail={state?.email}
         websiteKey="website"
         amountKey="amount"
       />
@@ -47,7 +53,7 @@ export default function CreateOffer() {
     dispatch(updateOffer(offer))
   }
   const submitHandler = () => {
-    alert("We're working on it. Please try again after some time.")
+    dispatch(createOffer(newOffers))
   }
 
   useEffect(() => {
@@ -73,7 +79,7 @@ export default function CreateOffer() {
   }, [message, error, dispatch, sendMessage, sendError])
 
   return (
-    <Create data={currentOffers} email={state.email} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"amount"} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} creating={creating} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"amount"} renderPreview={({ data, totalAmount, email }) => (
       <Preview
         data={data}
         type="Offers"

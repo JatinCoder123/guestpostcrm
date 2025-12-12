@@ -27,15 +27,20 @@ export default function CreateOrder() {
   const navigate = useNavigate();
   const [currentOrders, setCurrentOrders] = useState([])
   useEffect(() => {
-    let order = orders.filter(d => excludeEmail(d.real_name) == state.email)
+    let order = orders.filter(d => excludeEmail(d.real_name) == state?.email)
     if (type == "edit" && id !== undefined) {
       order = order.filter(d => d.id == id)
     }
     setCurrentOrders(() => [...order])
-  }, [state.email, orders, type, id])
+  }, [state, orders, type, id])
   const handleUpdate = (order) => {
     dispatch(updateOrder(order))
   }
+  useEffect(() => {
+    if (type == "create" && !state) {
+      navigate("/")
+    }
+  }, [state, type])
   useEffect(() => {
     if (message) {
       toast.success(message)
@@ -49,6 +54,6 @@ export default function CreateOrder() {
   }, [message, error, dispatch])
 
   return (
-    <Create data={currentOrders} email={state.email} setData={setCurrentOrders} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} preview={false} lists={lists} type="orders" fields={fields} amountKey={"total_amount_c"} pageType={type} />
+    <Create data={currentOrders} email={state?.email} setData={setCurrentOrders} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} preview={false} lists={lists} type="orders" fields={fields} amountKey={"total_amount_c"} pageType={type} />
   );
 }

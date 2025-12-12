@@ -20,20 +20,22 @@ const fields = [
 export default function CreateDeal() {
   const { type, id } = useParams();
   const { state } = useLocation()
-  const { deals, updating, error, message } = useSelector((state) => state.deals);
+  const { deals, updating, error, message, creating } = useSelector((state) => state.deals);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
   const [currentDeals, setCurrentDeals] = useState([])
+  const [newDeals, setNewDeals] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
   useEffect(() => {
-    let deal = deals.filter(d => excludeEmail(d.real_name) == state.email)
+    console.log(deals)
+    let deal = deals.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
     if (type == "edit" && id !== undefined) {
       deal = deal.filter(d => d.id == id)
     }
     setCurrentDeals(() => [...deal])
-  }, [state.email, deals, type, id])
+  }, [state, deals, type, id])
   const submitHandler = () => {
-    alert("We're working on it. Please try again after some time.")
+    dispatch(createDeal(newDeals))
   };
   const sendHandler = (totalAmount) => {
     dispatch(sendEmail(renderToStaticMarkup(
@@ -41,7 +43,7 @@ export default function CreateDeal() {
         data={currentDeals}
         type="Deals"
         totalAmount={totalAmount}
-        userEmail={state.email}
+        userEmail={state?.email}
         websiteKey="website_c"
         amountKey="dealamount"
       />
@@ -50,6 +52,11 @@ export default function CreateDeal() {
   const handleUpdate = (item) => {
     dispatch(updateDeal(item))
   }
+  useEffect(() => {
+    if (type == "create" && !state) {
+      navigate("/")
+    }
+  }, [state, type])
   useEffect(() => {
     if (message) {
       toast.success(message)
@@ -73,7 +80,7 @@ export default function CreateDeal() {
     }
   }, [message, error, dispatch, sendError, sendMessage])
   return (
-    <Create data={currentDeals} email={state.email} pageType={type} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} sending={sending} setData={setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} pageType={type} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, totalAmount, email }) => (
       <Preview
         data={data}
         type="Deals"

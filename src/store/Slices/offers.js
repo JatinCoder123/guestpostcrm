@@ -11,6 +11,7 @@ const offersSlice = createSlice({
     error: null,
     updating: false,
     message: null,
+    creating: false,
   },
   reducers: {
     getOffersRequest(state) {
@@ -29,6 +30,22 @@ const offersSlice = createSlice({
       state.loading = false;
 
       state.error = action.payload;
+    },
+    createOfferRequest(state) {
+      state.creating = true;
+      state.message = null;
+      state.error = null;
+    },
+    createOfferSuccess(state, action) {
+      state.creating = false;
+      state.message = action.payload.message;
+      state.offers = action.payload.offers;
+      state.error = null;
+    },
+    createOfferFailed(state, action) {
+      state.creating = false;
+      state.error = action.payload;
+      state.message = null;
     },
     updateOfferRequest(state) {
       state.updating = true;
@@ -127,6 +144,44 @@ export const updateOffer = (offer) => {
     }
   };
 };
+export const createOffer = (offers = []) => {
+  return async (dispatch, getState) => {
+    dispatch(offersSlice.actions.createOfferRequest());
+    try {
+      offers.map(async (offer) => {
+        console.log(offer);
+        const domain = getState().user.crmEndpoint.split("?")[0];
+        const { data } = await axios.post(
+          `${domain}?entryPoint=get_post_all&action_type=post_data`,
 
+          {
+            parent_bean: {
+              module: "outr_offer",
+              ...offer,
+            },
+          },
+          {
+            headers: {
+              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+              "Content-Type": "aplication/json",
+            },
+          }
+        );
+        console.log(`Create Offer`, data);
+
+      });
+      const updatedOffers = [...offers, ...getState().offers.offers];
+      dispatch(
+        offersSlice.actions.createOfferSuccess({
+          message: "Offers Created Successfully",
+          offers: updatedOffers,
+        })
+      );
+      dispatch(offersSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));
+    }
+  };
+};
 export const offersAction = offersSlice.actions;
 export default offersSlice.reducer;

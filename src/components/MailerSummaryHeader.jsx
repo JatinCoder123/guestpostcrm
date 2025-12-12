@@ -21,21 +21,21 @@ const MailerSummaryHeader = () => {
   const { deals } = useSelector((state) => state.deals);
   const [emailData, setEmailData] = useState({ orders: [], offers: [], deals: [] });
   useEffect(() => {
-    const order = orders.filter(o => excludeEmail(o.real_name) == email)
+    const order = orders.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       orders: order
     }))
   }, [email, orders])
   useEffect(() => {
-    const deal = deals.filter(d => excludeEmail(d.real_name) == email)
+    const deal = deals.filter(d => excludeEmail(d.real_name ?? d.email) == email)
     setEmailData((prev) => ({
       ...prev,
       deals: deal
     }))
   }, [email, deals])
   useEffect(() => {
-    const offer = offers.filter(o => excludeEmail(o.real_name) == email)
+    const offer = offers.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       offers: offer

@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MoveLeft, Pencil, Plus } from "lucide-react";
+import { ListPlus, MoveLeft, Pencil, Plus, Trash } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { excludeEmail } from "../assets/assets";
 
-export default function Create({ data, email, setData, type, pageType, sending, fields, lists = [], submitData, sendHandler, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
+export default function Create({ data, email, setData, type, pageType, creating, sending, fields, lists = [], submitData, sendHandler, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -18,11 +17,8 @@ export default function Create({ data, email, setData, type, pageType, sending, 
             setActiveIndex(data.length - 1);
     }, [data.length, activeIndex]);
 
-    const removeData = (idx) => {
-        setData((prev) => {
-            const next = prev.filter((_, i) => i !== idx);
-            return next;
-        });
+    const removeData = (id) => {
+        setData((prev) => prev.filter(d => d.id !== id));
     };
 
     const updateData = (idx, patch) => {
@@ -31,6 +27,21 @@ export default function Create({ data, email, setData, type, pageType, sending, 
             return next;
         })
     };
+    const addData = () => {
+        const newData = getEmptyData(fields)
+        setData((prev) => [newData, ...prev]);
+    };
+
+    const getEmptyData = (fields) => {
+        const newData = { id: `${Date.now()}${Math.random()}` };
+        fields.forEach((field) => {
+            newData[field.name] = "";
+        });
+        newData["email"] = email;
+
+        return newData;
+    };
+
 
     const handelChange = (idx, field, e) => {
         const value = e.target.value;
@@ -86,16 +97,32 @@ export default function Create({ data, email, setData, type, pageType, sending, 
                                         <MoveLeft size={16} />
                                         Back
                                     </button>
-                                    <h3 className="text-2xl font-semibold">{`${pageType == "view" ? "" : (data.length > 0) ? "Edit" : "Create"} ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
+                                    <h3 className="text-2xl font-semibold">{`${pageType == "view" ? "" : pageType.charAt(0).toUpperCase() + pageType.slice(1)} ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
-                                    >
-                                        <Plus size={16} /> Add
-                                    </button>
-                                </div>
-
+                                {
+                                    pageType == "view" && type !== "orders" && (
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => navigate(`/${type}/create`, { state: { email } })}
+                                                className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
+                                            >
+                                                <ListPlus size={16} /> Create
+                                            </button>
+                                        </div>
+                                    )
+                                }
+                                {
+                                    pageType == "create" && (
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={addData}
+                                                className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
+                                            >
+                                                <Plus size={16} /> Add
+                                            </button>
+                                        </div>
+                                    )
+                                }
                             </div>
 
                             {/* Deals List */}
@@ -130,6 +157,12 @@ export default function Create({ data, email, setData, type, pageType, sending, 
                                                                     className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
                                                                 >
                                                                     <Pencil size={16} />
+                                                                </button>}
+                                                                {pageType == "create" && <button
+                                                                    onClick={() => removeData(item.id)}
+                                                                    className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+                                                                >
+                                                                    <Trash size={16} />
                                                                 </button>}
                                                                 {pageType == "edit" && <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
                                                                     <button
@@ -233,7 +266,7 @@ export default function Create({ data, email, setData, type, pageType, sending, 
                                                 : "bg-green-600 hover:bg-green-700"
                                                 }`}
                                         >
-                                        {loading ? "Submitting..." : "Submit"}
+                                        {creating ? "Submitting..." : "Submit"}
                                     </button>}
                                 </div>}
 
