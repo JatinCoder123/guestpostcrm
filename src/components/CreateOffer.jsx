@@ -10,12 +10,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { createOffer, offersAction, updateOffer } from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
-const fields = [
-  { name: "website", label: "Website", type: "select", options: websiteLists },
-  { name: "amount", label: "Offer Amount", type: "number" },
-  { name: "client_offer_c", label: "Client Offer", type: "number" },
-  { name: "our_offer_c", label: "Our Offer", type: "number" },
-]
+
 export default function CreateOffer() {
   const { type, id } = useParams();
   const { state } = useLocation()
@@ -23,10 +18,17 @@ export default function CreateOffer() {
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
   const [currentOffers, setCurrentOffers] = useState([])
   const [newOffers, setNewOffers] = useState([])
+  const [validWebsites, setValidWebsites] = useState(websiteLists);
+  const fields = [
+    { name: "website", label: "Website", type: "select", options: validWebsites },
+    { name: "amount", label: "Offer Amount", type: "number" },
+    { name: "client_offer_c", label: "Client Offer", type: "number" },
+    { name: "our_offer_c", label: "Our Offer", type: "number" },
+  ]
   const dispatch = useDispatch()
   const { updating, error, offers, message, creating } = useSelector((state) => state.offers)
   useEffect(() => {
-    let offer = offers.filter(d => excludeEmail(d.real_name ?? d.name) == state?.email)
+    let offer = offers.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
     if (type == "edit" && id !== undefined) {
       offer = offer.filter(d => d.id == id)
     }
@@ -77,9 +79,15 @@ export default function CreateOffer() {
       dispatch(viewEmailAction.clearAllErrors())
     }
   }, [message, error, dispatch, sendMessage, sendError])
+  useEffect(() => {
+    const available = websiteLists.filter((web) =>
+      offers.every((offer) => offer.website !== web)
+    );
+    setValidWebsites(available);
+  }, [offers]);
 
   return (
-    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} creating={creating} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"amount"} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} creating={creating} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"amount"} validWebsites={validWebsites} renderPreview={({ data, totalAmount, email }) => (
       <Preview
         data={data}
         type="Offers"
