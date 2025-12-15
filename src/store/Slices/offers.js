@@ -106,6 +106,7 @@ export const getOffers = (filter, email) => {
 export const updateOffer = (offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
+    console.log(`Update Offer`, offer);
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
@@ -157,7 +158,11 @@ export const createOffer = (offers = []) => {
           {
             parent_bean: {
               module: "outr_offer",
-              ...offer,
+              amount: offer.amount,
+              client_offer_c: offer.client_offer_c,
+              our_offer_c: offer.our_offer_c,
+              website: offer.website,
+              name: offer.email,
             },
           },
           {

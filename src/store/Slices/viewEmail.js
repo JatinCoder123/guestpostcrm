@@ -181,7 +181,7 @@ export const editContact = (contactData) => {
     }
   };
 };
-export const sendEmail = (reply) => {
+export const sendEmail = (reply, message = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
     const threadId = getState().viewEmail.threadId;
@@ -200,7 +200,7 @@ export const sendEmail = (reply) => {
       console.log(`Reply Data`, data);
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
-          message: data.message,
+          message: message ?? data.message,
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());

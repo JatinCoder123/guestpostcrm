@@ -95,8 +95,11 @@ const RootLayout = () => {
     }
   }, [email]);
   useEffect(() => {
-    dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
-    dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+    if (currentMail) {
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+    }
+
   }, [currentMail]);
   useEffect(() => {
     if (!currentHotCount) return;
@@ -125,9 +128,8 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${
-                sidebarCollapsed ? "ml-4" : "ml-0"
-              }`}
+              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
+                }`}
             >
               <div className="p-6">
                 <WelcomeHeader />

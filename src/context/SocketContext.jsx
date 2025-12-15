@@ -8,6 +8,7 @@ export const SocketContextProvider = (props) => {
   const [currentHot, setCurrentHot] = useState(null);
   const [currentHotCount, setCurrentHotCount] = useState(null);
   const [recentCount, setRecentCount] = useState(null);
+
   useEffect(() => {
     const newAvatarHandler = (data) => {
       console.log("new avatar", data);
@@ -33,7 +34,7 @@ export const SocketContextProvider = (props) => {
       else{
         setRecentCount(Date.now());
       }
-      
+
       setCurrentHot(Date.now())
       setCurrentMail(Date.now());
     };
