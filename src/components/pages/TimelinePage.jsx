@@ -39,7 +39,6 @@ export function TimelinePage() {
   const { currentIndex, setCurrentIndex } = useContext(PageContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
-  const prevEmailCountRef = useRef(0);
 
 
   const {
@@ -96,10 +95,6 @@ export function TimelinePage() {
       );
       dispatch(threadEmailAction.clearAllMessage());
     }
-<<<<<<< HEAD
-  }, [dispatch, error, sendError, message, threadError, threadMessage]);
-
-=======
   }, [
     dispatch,
     error,
@@ -108,7 +103,6 @@ export function TimelinePage() {
     threadError,
     threadMessage,
   ]);
->>>>>>> 955128a5a4ff4668ce2ac11e114703fd0e5d0862
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
@@ -155,10 +149,7 @@ export function TimelinePage() {
       }, 5000);
 
       return () => clearTimeout(timer);
-    }
-
-    prevEmailCountRef.current = emails.length;
-  }, [showNewEmailBanner]);
+    }  }, [showNewEmailBanner]);
   if (showEmail) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
