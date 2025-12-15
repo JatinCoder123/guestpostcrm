@@ -21,7 +21,6 @@ export default function CreateDeal() {
   const fields = [
     { name: "website_c", label: "Website", type: "select", options: validWebsites },
     { name: "dealamount", label: "Deal Amount", type: "number" },
-    { name: "status", label: "Status", type: "select", options: ["active", "inactive", "pending"] },
   ]
   const [newDeals, setNewDeals] = useState([])
   const navigate = useNavigate()
@@ -36,12 +35,11 @@ export default function CreateDeal() {
   const submitHandler = () => {
     dispatch(createDeal(newDeals))
   };
-  const sendHandler = (totalAmount) => {
+  const sendHandler = () => {
     dispatch(sendEmail(renderToStaticMarkup(
       <Preview
         data={currentDeals}
         type="Deals"
-        totalAmount={totalAmount}
         userEmail={state?.email}
         websiteKey="website_c"
         amountKey="dealamount"
@@ -85,11 +83,10 @@ export default function CreateDeal() {
     setValidWebsites(available);
   }, [currentDeals, newDeals]);
   return (
-    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} pageType={type} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} validWebsites={validWebsites} fields={fields} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} pageType={type} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} validWebsites={validWebsites} fields={fields} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Deals"
-        totalAmount={totalAmount}
         userEmail={email}
         websiteKey="website_c"
         amountKey="dealamount"

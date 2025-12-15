@@ -21,7 +21,6 @@ export default function CreateOffer() {
   const [validWebsites, setValidWebsites] = useState(websiteLists);
   const fields = [
     { name: "website", label: "Website", type: "select", options: validWebsites },
-    { name: "amount", label: "Offer Amount", type: "number" },
     { name: "client_offer_c", label: "Client Offer", type: "number" },
     { name: "our_offer_c", label: "Our Offer", type: "number" },
   ]
@@ -39,12 +38,11 @@ export default function CreateOffer() {
       navigate("/")
     }
   }, [state, type])
-  const sendHandler = (totalAmount) => {
+  const sendHandler = () => {
     dispatch(sendEmail(renderToStaticMarkup(
       <Preview
         data={currentOffers}
         type="Offers"
-        totalAmount={totalAmount}
         userEmail={state?.email}
         websiteKey="website"
         amountKey="amount"
@@ -87,11 +85,10 @@ export default function CreateOffer() {
   }, [offers]);
 
   return (
-    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} creating={creating} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"amount"} validWebsites={validWebsites} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} creating={creating} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"amount"} validWebsites={validWebsites} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Offers"
-        totalAmount={totalAmount}
         userEmail={email}
         websiteKey="website"
         amountKey="amount"

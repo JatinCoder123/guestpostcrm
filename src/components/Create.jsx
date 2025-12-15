@@ -70,10 +70,6 @@ export default function Create({ data, email, setData, type, pageType, creating,
         [data]
     );
 
-    const totalAmount = useMemo(
-        () => data.reduce((s, d) => s + Number(d[amountKey] || 0), 0),
-        [data]
-    );
     useEffect(() => {
         if (message) {
             navigate(-1);
@@ -89,7 +85,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
             toast.error(`Please validate all ${type} before submitting.`);
             return;
         }
-        submitData(totalAmount)
+        submitData()
     };
     return (
         <>
@@ -116,10 +112,14 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                         <div className="flex items-center gap-3">
                                             <button
                                                 onClick={() => navigate(`/${type}/create`, { state: { email } })}
-                                                className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
+                                                className="inline-flex items-center gap-2 "
                                             >
-                                                <ListPlus size={16} /> Create
-                                            </button>
+                                                <img
+                                                    width="40"
+                                                    height="40"
+                                                    src="https://img.icons8.com/arcade/64/plus.png"
+                                                    alt="plus"
+                                                />                                            </button>
                                         </div>
                                     )
                                 }
@@ -192,7 +192,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                                         {updating ? "Updating..." : "Update"}</button>
                                                                 </div>}
 
-                                                                <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                                                <div className="mt-4 flex  gap-3">
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} />)}
                                                                 </div>
                                                                 <div className="mt-4 grid grid-cols-2 gap-3">
@@ -246,19 +246,12 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                 ))}
                                             </ul>
                                         )}
-
-                                        <hr className="my-3 border-gray-300" />
-
-                                        <div className="flex justify-between text-lg">
-                                            <strong>Total Amount</strong>
-                                            <strong>${totalAmount.toLocaleString()}</strong>
-                                        </div>
                                     </div>
                                 </div>
                                 {type !== "orders" && <div className="mt-4 flex gap-3">
                                     {pageType == "view" ? <><button
                                         disabled={data.length === 0}
-                                        onClick={() => sendHandler(totalAmount)}
+                                        onClick={() => sendHandler()}
                                         className={`w-full px-3 py-2 rounded-lg text-white ${sending
                                             ? "bg-green-300 cursor-not-allowed"
                                             : "bg-green-600 hover:bg-green-700"
@@ -296,14 +289,14 @@ export default function Create({ data, email, setData, type, pageType, creating,
                             {/* SCROLLABLE CONTENT */}
                             <div className="max-h-[80vh] overflow-y-auto p-6">
 
-                                {renderPreview({ data, totalAmount, email })}
+                                {renderPreview({ data, email })}
                             </div>
 
                             {/* FOOTER BUTTONS */}
                             <div className="p-4 border-t flex items-center justify-between bg-white">
 
                                 <button
-                                    onClick={() => sendHandler(totalAmount)}
+                                    onClick={() => sendHandler()}
                                     className="px-[26px] py-[12px] bg-gradient-to-br from-[#4e79ff] to-[#6db6ff] text-white rounded-lg border-none cursor-pointer text-base font-bold shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
 
                                 >
@@ -340,10 +333,10 @@ function InputField({
 }) {
     const value = data?.[name] ?? "";
     disabled = pageType == "view" ? true : disabled;
-    type = pageType == "view" ? "text" : type;
+    type = pageType == "view" && type == "select" ? "text" : type;
 
     return (
-        <div className="w-full">
+        <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[400px]`}>
             <label className="block text-xs mb-1 text-gray-600">
                 {label}
             </label>
