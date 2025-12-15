@@ -24,14 +24,14 @@ export const SocketContextProvider = (props) => {
 
     const newMailHandler = (data) => {
       console.log("new mail", data);
+      
       if(data.name !== "outr_el_process_audit" && data.name !== "outr_recent_activity"){
         setCurrentHotCount(Date.now());
        
-        return;
+ 
       }
-      if(data.name === "outr_recent_activity"){
+      else{
         setRecentCount(Date.now());
-        return;
       }
       
       setCurrentHot(Date.now())

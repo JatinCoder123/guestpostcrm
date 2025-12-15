@@ -291,7 +291,7 @@ export function TimelinePage() {
                     </div>
                     
                     {emails.length > 0 &&<div
-                      dangerouslySetInnerHTML={{ __html: emails[currentIndex].body }}
+                      dangerouslySetInnerHTML={{ __html: emails[currentIndex].body || "no body found"}}
                       className="whitespace-pre-line text-sm leading-relaxed"
                     /> }
                     
