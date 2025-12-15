@@ -34,7 +34,7 @@ export default function CreateDeal() {
   }, [state, deals, type, id])
   const submitHandler = () => {
     dispatch(createDeal(newDeals))
-  };
+  }
   const sendHandler = () => {
     dispatch(sendEmail(renderToStaticMarkup(
       <Preview
@@ -44,7 +44,7 @@ export default function CreateDeal() {
         websiteKey="website_c"
         amountKey="dealamount"
       />
-    )))
+    ), "Deal Sent Successfully"))
   }
   const handleUpdate = (item) => {
     dispatch(updateDeal(item))
@@ -56,6 +56,17 @@ export default function CreateDeal() {
   }, [state, type])
   useEffect(() => {
     if (message) {
+      if (message.includes("Created")) {
+        dispatch(sendEmail(renderToStaticMarkup(
+          <Preview
+            data={[...newDeals, ...currentDeals]}
+            type="Deals"
+            userEmail={state?.email}
+            websiteKey="website_c"
+            amountKey="dealamount"
+          />
+        ), "Deal Sent Successfully"))
+      }
       toast.success(message)
       dispatch(dealsAction.clearAllMessages())
       navigate(-1)

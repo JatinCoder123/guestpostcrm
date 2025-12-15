@@ -1,5 +1,5 @@
 import { Reply } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getLadgerEmail, ladgerAction } from "../../store/Slices/ladger";
@@ -23,8 +23,10 @@ import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
-import { updateUnrepliedEmails } from "../../store/Slices/unrepliedEmails";
+import { unrepliedAction, updateUnrepliedEmails } from "../../store/Slices/unrepliedEmails";
 import { updateUnansweredEmails } from "../../store/Slices/unansweredEmails";
+import NewEmailBanner from "../NewEmailBanner";
+import { SocketContext } from "../../context/SocketContext";
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
   const [showThread, setShowThread] = useState(false);
@@ -34,6 +36,9 @@ export function TimelinePage() {
   const { currentIndex, setCurrentIndex } = useContext(PageContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
+  const prevEmailCountRef = useRef(0);
+
+
   const {
     error: sendError,
     message,
@@ -51,7 +56,7 @@ export function TimelinePage() {
     (state) => state.ladger
   );
 
-  const { emails, loading: unrepliedLoading } = useSelector(
+  const { emails, loading: unrepliedLoading, showNewEmailBanner } = useSelector(
     (state) => state.unreplied
   );
   const currentThreadId = emails.length > 0 ? emails[currentIndex].thread_id : null;
@@ -92,10 +97,6 @@ export function TimelinePage() {
     threadError,
     threadMessage,
   ]);
-
-
-
-
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
@@ -116,23 +117,29 @@ export function TimelinePage() {
       setAiReplySentLoading(false);
     }
   };
-
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [emails]);
-
   const handleNext = () => {
     if (currentIndex < emails.length - 1) {
       setCurrentIndex((p) => p + 1);
     }
   };
-
   const handlePrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex((p) => p - 1);
     }
   };
 
+  useEffect(() => {
+    if (showNewEmailBanner) {
+      const timer = setTimeout(() => {
+        setCurrentIndex(0);       // 🔥 redirect to latest email
+        dispatch(unrepliedAction.setShowNewEmailBanner(false));
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+
+    prevEmailCountRef.current = emails.length;
+  }, [showNewEmailBanner]);
   if (showEmail) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
@@ -177,6 +184,7 @@ export function TimelinePage() {
 
   return (
     <>
+      <NewEmailBanner show={showNewEmailBanner} />
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (

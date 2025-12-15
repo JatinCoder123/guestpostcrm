@@ -51,9 +51,19 @@ export default function CreateOffer() {
   }
   const handleUpdate = (offer) => {
     dispatch(updateOffer(offer))
+
   }
   const submitHandler = () => {
     dispatch(createOffer(newOffers))
+    dispatch(sendEmail(renderToStaticMarkup(
+      <Preview
+        data={[...newOffers, ...currentOffers]}
+        type="Offers"
+        userEmail={state?.email}
+        websiteKey="website"
+        amountKey="amount"
+      />
+    ), "Offer Sent Successfully"))
   }
 
   useEffect(() => {
