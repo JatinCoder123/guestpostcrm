@@ -4,6 +4,8 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { UnansweredPage } from "./components/pages/UnansweredPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
+import { Duplicate } from "./components/pages/DuplicatePage";
+
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
@@ -48,6 +50,7 @@ import CreateOrder from "./components/CreateOrder";
 import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
+import { HotPage } from "./components/pages/HotPage";
 
 
 const router = createBrowserRouter([
@@ -79,7 +82,7 @@ const router = createBrowserRouter([
         path: "spam-detection",
         element: <SpamDetectionPage />,
       },
-       {
+      {
         path: "tag-manager",
         element: <TagManagerpage />,
       },
@@ -105,13 +108,17 @@ const router = createBrowserRouter([
         path: "RecentEntry",
         element: <RecentEntry />,
       },
+       {
+        path: "Duplicate",
+        element: <Duplicate />,
+      },
 
       {
         path: "deals",
         element: <DealsPage />,
       },
       {
-        path: "deals/create",
+        path: "deals/:type/:id?",
         element: <CreateDeal />,
       },
       {
@@ -119,7 +126,7 @@ const router = createBrowserRouter([
         element: <OffersPage />,
       },
       {
-        path: "offers/create",
+        path: "offers/:type/:id?",
         element: <CreateOffer />,
       },
       {
@@ -127,7 +134,7 @@ const router = createBrowserRouter([
         element: <OrdersPage />,
       },
       {
-        path: "orders/create",
+        path: "orders/:type/:id?",
         element: <CreateOrder />,
       },
       {
@@ -189,6 +196,10 @@ const router = createBrowserRouter([
       {
         path: "avatars",
         element: <AvatarPage />,
+      },
+        {
+        path: "hot-records",
+        element: <HotPage />,
       },
 
       {

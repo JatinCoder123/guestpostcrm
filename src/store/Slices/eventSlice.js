@@ -52,6 +52,15 @@ const eventSlice = createSlice({
         UpdateEvents(state, action) {
             state.events = action.payload;
         },
+         updateCount(state,action){
+        if(action.payload===1){
+            state.count+=1;
+            return;
+        }
+        state.count=0;
+
+    }
+
     },
 });
 
@@ -62,7 +71,7 @@ export const getEvents = () => {
 
         try {
             const url =
-                `${getState().user.crmEndpoint}&type=recent_activities&user_id=${getState().user.id}&filter=${getState().ladger.timeline}&page=1&page_size=50`;
+                `${getState().user.crmEndpoint}&type=recent_activities&user_id=null&filter=${getState().ladger.timeline}&page=1&page_size=50`;
             const response = await axios.get(url);
 
             console.log("🟢 Full API Response:", response);
@@ -75,7 +84,7 @@ export const getEvents = () => {
 
             dispatch(
                 eventSlice.actions.getEventsSucess({
-                    count: data.data_count ?? 0,
+                    count:  0,
                     events: data.data ?? [],
                 })
             );
@@ -117,6 +126,7 @@ export const addEvent = (event) => {
                 }
             );
             console.log(`Add Event`, data);
+            dispatch(eventSlice.actions.updateCount(1));
 
             dispatch(
                 eventSlice.actions.addEventSucess("Event Added Successfully")

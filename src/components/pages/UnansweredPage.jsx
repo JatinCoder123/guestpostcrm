@@ -180,6 +180,7 @@ export function UnansweredPage() {
       onDropdownChange={handleCategoryChange} 
       selectedDropdownValue={selectedCategory} 
       // dropdownPlaceholder="Filter by contact"
+      dropdownPlaceholder="Filter by"
       
       
       onSearchChange={handleSearchChange}

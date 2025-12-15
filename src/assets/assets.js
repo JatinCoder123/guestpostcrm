@@ -2,7 +2,7 @@ import logo from "./logo.png";
 import duplicateImg from "./duplicate.png";
 export default logo;
 export const images = { duplicateImg };
-export const websiteListForDeal = [
+export const websiteLists = [
   "https://www.wp-1click.com/",
   "https://www.outrightcrm.com/",
   "https://store.outrightcrm.com/",
@@ -66,7 +66,18 @@ export function formatTime(dateString) {
 
   return `${day} ${shortMonth} ${year}, ${time}`;
 }
-
+export function excludeEmail(str) {
+  if (str.includes("<")) {
+    return str.split("<")[1].split(">")[0].trim();
+  }
+  return str;
+}
+export function excludeName(str) {
+  if (str.includes("<")) {
+    return str.split("<")[0];
+  }
+  return str;
+}
 export function daysUntil(dateString) {
   if (!dateString) return null;
   const d = new Date(dateString);

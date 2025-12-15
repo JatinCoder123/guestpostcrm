@@ -1,13 +1,18 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   daysUntil,
+  excludeEmail,
   formatExpiryLabel,
   formatTime,
   getDifference,
 } from "../assets/assets";
 import { Titletooltip } from "./TitleTooltip";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { LoadingChase } from "./Loading";
+import { createOrder, getOrdersWithoutLoading, orderAction } from "../store/Slices/orders";
+import { toast } from "react-toastify";
+import { create } from "zustand";
 
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
@@ -16,21 +21,21 @@ const MailerSummaryHeader = () => {
   const { deals } = useSelector((state) => state.deals);
   const [emailData, setEmailData] = useState({ orders: [], offers: [], deals: [] });
   useEffect(() => {
-    const order = orders.filter(o => o.name == email)
+    const order = orders.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       orders: order
     }))
   }, [email, orders])
   useEffect(() => {
-    const deal = deals.filter(d => d.email == email)
+    const deal = deals.filter(d => excludeEmail(d.real_name ?? d.email) == email)
     setEmailData((prev) => ({
       ...prev,
       deals: deal
     }))
   }, [email, deals])
   useEffect(() => {
-    const offer = offers.filter(o => o.name == email)
+    const offer = offers.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       offers: offer
@@ -42,24 +47,12 @@ const MailerSummaryHeader = () => {
         <table className="min-w-full border border-blue-400 rounded-xl overflow-hidden text-sm">
           <thead className="bg-blue-50">
             <tr>
-              <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                DATE
-              </th>
-              <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                SUBJECT
-              </th>
-              <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                MOTIVE
-              </th>
-              <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                ORDER
-              </th>
-              <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                OFFER
-              </th>
-              <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-                DEAL
-              </th>
+              <TH title="DATE" />
+              <TH title="SUBJECT" />
+              <TH title="MOTIVE" />
+              <TH title="ORDER" />
+              <TH title="OFFER" />
+              <TH title="DEAL" />
             </tr>
           </thead>
           <tbody>
@@ -99,48 +92,9 @@ const MailerSummaryHeader = () => {
                   </div>
                 </Titletooltip>{" "}
               </td>
-              <td className="border border-blue-400 px-4 py-3">
-
-                <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
-                  {emailData.orders.length > 0 ? `${emailData.orders.length} Orders` : "No Order"}
-                  <Link to={"/orders/create"}>
-                    <img className="ml-2"
-                      width="20"
-                      height="20"
-                      src={`https://img.icons8.com/stickers/100/${emailData.orders.length > 0 ? "edit" : "add"}.png`}
-                      alt="add"
-                    />
-                  </Link>
-                </span>
-              </td>
-              <td className="border border-blue-400 px-4 py-3">
-
-                <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
-                  {emailData.offers.length > 0 ? `${emailData.offers.length} Offers` : "No Offer"}
-                  <Link to={"/offers/create"}>
-                    <img className="ml-2"
-                      width="20"
-                      height="20"
-                      src={`https://img.icons8.com/stickers/100/${emailData.offers.length > 0 ? "edit" : "add"}.png`}
-                      alt="add"
-                    />
-                  </Link>
-                </span>
-              </td>
-              <td className="border border-blue-400 px-4 py-3">
-
-                <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
-                  {emailData.deals.length > 0 ? `${emailData.deals.length} Deals` : "No Deal"}
-                  <Link to={"/deals/create"}>
-                    <img className="ml-2"
-                      width="20"
-                      height="20"
-                      src={`https://img.icons8.com/stickers/100/${emailData.deals.length > 0 ? "edit" : "add"}.png`}
-                      alt="add"
-                    />
-                  </Link>
-                </span>
-              </td>
+              <TD data={emailData.orders} setData={setEmailData} type="orders" />
+              <TD data={emailData.offers} type="offers" />
+              <TD data={emailData.deals} type="deals" />
             </tr>
           </tbody>
         </table>
@@ -150,3 +104,60 @@ const MailerSummaryHeader = () => {
 };
 
 export default MailerSummaryHeader;
+
+
+function TD({ data, type, setData }) {
+  const { creating, message, error, loading } = useSelector((state) => state.orders);
+  const { email } = useSelector((state) => state.ladger);
+  const dispatch = useDispatch();
+  const navigateTo = useNavigate();
+  useEffect(() => {
+    if (type == "orders") {
+      if (message) {
+        toast.success(message)
+        dispatch(getOrdersWithoutLoading())
+        setData((prev) => ({
+          ...prev,
+          orders: [1]
+        }))
+        dispatch(orderAction.clearAllMessages())
+      }
+      if (error) {
+        toast.error(error)
+        dispatch(orderAction.clearAllErrors())
+      }
+    }
+  }, [dispatch, creating, message, error])
+  const handleClick = () => {
+    if (type == "orders" && data.length == 0) {
+      dispatch(createOrder())
+      return;
+    }
+    data.length > 0 ? navigateTo(`/${type}/view`, { state: { email } }) : navigateTo(`/${type}/create`, { state: { email } })
+
+  }
+  return (
+    <td className="border border-blue-400 px-4 py-3">
+      {(loading || creating) && type == "orders" ? <LoadingChase /> :
+        <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
+          {data.length > 0 ? `${data.length} ${type}` : `No ${type}`}
+          <button onClick={handleClick}>
+            <img className="ml-2"
+              width="20"
+              height="20"
+              src={`https://img.icons8.com/stickers/100/${data.length > 0 ? "visible" : "add"}.png`}
+              alt="add"
+            />
+          </button>
+        </span>}
+
+    </td>
+  );
+}
+function TH({ title }) {
+  return (
+    <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
+      {title}
+    </th>
+  );
+}

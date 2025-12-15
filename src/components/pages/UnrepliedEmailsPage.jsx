@@ -166,6 +166,7 @@ export function UnrepliedEmailsPage() {
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         // dropdownPlaceholder="Filter by Status"
+        dropdownPlaceholder="Filter by"
 
 
         onSearchChange={handleSearchChange}

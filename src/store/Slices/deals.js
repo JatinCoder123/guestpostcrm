@@ -40,7 +40,8 @@ const dealsSlice = createSlice({
     },
     createDealSucess(state, action) {
       state.creating = false;
-      state.message = action.payload;
+      state.message = action.payload.message;
+      state.deals = action.payload.deals;
       state.error = null;
     },
     createDealFailed(state, action) {
@@ -112,14 +113,19 @@ export const getDeals = (filter, email) => {
 export const createDeal = (deals = []) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       deals.map(async (deal) => {
         console.log(deal);
-        const domain = getState().user.crmEndpoint.split("?")[0];
-        const { data } = await axios.post(
+        const res = await axios.post(
           `${domain}?entryPoint=get_post_all&action_type=post_data`,
-
           {
+            // parent_bean:
+            // {
+            //   module: "Contacts",
+            //   id: getState().viewEmail.contactInfo.id
+
+            // },
             parent_bean: {
               module: "outr_deal_fetch",
               dealamount: deal.dealamount,
@@ -130,15 +136,19 @@ export const createDeal = (deals = []) => {
           {
             headers: {
               "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "aplication/json",
+              "Content-Type": "application/json",
             },
           }
         );
-        console.log(`Create Deal`, data);
-      });
+        console.log(`Create Deal`, res);
 
+      });
+      const updatedDeals = [...deals, ...getState().deals.deals];
       dispatch(
-        dealsSlice.actions.createDealSucess("Deals Created Successfully")
+        dealsSlice.actions.createDealSucess({
+          message: "Deals Created Successfully",
+          deals: updatedDeals,
+        })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
     } catch (error) {
@@ -182,6 +192,7 @@ export const updateDeal = (deal) => {
     }
   };
 };
+
 
 export const dealsAction = dealsSlice.actions;
 export default dealsSlice.reducer;

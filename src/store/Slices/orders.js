@@ -39,6 +39,21 @@ const ordersSlice = createSlice({
       state.message = null;
       state.error = null;
     },
+    createOrderRequest(state) {
+      state.creating = true;
+      state.message = null;
+      state.error = null;
+    },
+    createOrderSuccess(state, action) {
+      state.creating = false;
+      state.message = action.payload;
+      state.error = null;
+    },
+    createOrderFailed(state, action) {
+      state.creating = false;
+      state.error = action.payload;
+      state.message = null;
+    },
     updateOrderSuccess(state, action) {
       state.updating = false;
       state.message = action.payload.message;
@@ -97,15 +112,41 @@ export const getOrders = (filter, email) => {
     }
   };
 };
-export const createOrder = (order) => {
+export const createOrder = () => {
+  return async (dispatch, getState) => {
+    dispatch(ordersSlice.actions.createOrderRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
+    try {
+      let response;
+      response = await axios.get(`${domain}?entryPoint=manual_order&email=${getState().ladger.email}`);
+      const data = response.data;
+      console.log(`Orders created`, data);
+      if (!data.order.response) {
+        dispatch(
+          ordersSlice.actions.createOrderFailed(data.order)
+        );
+        return;
+      }
+      console.log(`Orders created`, data);
+      dispatch(
+        ordersSlice.actions.createOrderSuccess("Order Created Successfully")
+      );
+      dispatch(ordersSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ordersSlice.actions.createOrderFailed("Creating Order Failed")
+      );
+    }
+  };
+};
+export const getOrdersWithoutLoading = () => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.getOrdersRequest());
-
     try {
       let response;
       response = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=create_order&order=${order}`
+        }&type=get_orders&filter=${getState().ladger.timeline}&page=1&page_size=50`
       );
       const data = response.data;
       console.log(`Orders orders`, data);
@@ -120,11 +161,12 @@ export const createOrder = (order) => {
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        ordersSlice.actions.getOrdersFailed("Fetching Orders orders Failed")
+        ordersSlice.actions.getOrdersFailed("Fetching Orders Failed")
       );
     }
   };
 };
+
 export const updateOrder = (order) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
