@@ -120,13 +120,13 @@ export const createDeal = (deals = []) => {
         const res = await axios.post(
           `${domain}?entryPoint=get_post_all&action_type=post_data`,
           {
-            // parent_bean:
-            // {
-            //   module: "Contacts",
-            //   id: getState().viewEmail.contactInfo.id
+            parent_bean:
+            {
+              module: "Contacts",
+              id: getState().viewEmail.contactInfo.id
 
-            // },
-            parent_bean: {
+            },
+            child_bean: {
               module: "outr_deal_fetch",
               dealamount: deal.dealamount,
               email: deal.email,
