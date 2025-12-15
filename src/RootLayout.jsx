@@ -68,9 +68,9 @@ const RootLayout = () => {
     dispatch(getLinkExchange(timeline, enteredEmail));
     dispatch(getBulkEmails(timeline, enteredEmail));
     dispatch(getOrders(timeline, enteredEmail));
-    dispatch(getDeals(timeline, enteredEmail));
+    dispatch(getDeals(enteredEmail));
     dispatch(getInvoices(timeline, enteredEmail));
-    dispatch(getOffers(timeline, enteredEmail));
+    dispatch(getOffers(enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
