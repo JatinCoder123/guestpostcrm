@@ -4,30 +4,29 @@ import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import { createDeal, dealsAction, updateDeal } from "../store/Slices/deals";
 import { excludeEmail, websiteLists } from "../assets/assets";
-import PreviewDeals from "./PreviewDeals";
-import { sendEmailToThread } from "../store/Slices/threadEmail";
 import { renderToStaticMarkup } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 
-const fields = [
-  { name: "website_c", label: "Website", type: "select", options: websiteLists },
-  { name: "dealamount", label: "Deal Amount", type: "number" },
-  { name: "status", label: "Status", type: "select", options: ["active", "inactive", "pending"] },
-]
+
 export default function CreateDeal() {
   const { type, id } = useParams();
   const { state } = useLocation()
   const { deals, updating, error, message, creating } = useSelector((state) => state.deals);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
   const [currentDeals, setCurrentDeals] = useState([])
+  const [validWebsites, setValidWebsites] = useState([]);
+  const fields = [
+    { name: "website_c", label: "Website", type: "select", options: validWebsites },
+    { name: "dealamount", label: "Deal Amount", type: "number" },
+    { name: "status", label: "Status", type: "select", options: ["active", "inactive", "pending"] },
+  ]
   const [newDeals, setNewDeals] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
   useEffect(() => {
-    console.log(deals)
     let deal = deals.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
     if (type == "edit" && id !== undefined) {
       deal = deal.filter(d => d.id == id)
@@ -79,8 +78,14 @@ export default function CreateDeal() {
       dispatch(viewEmailAction.clearAllErrors())
     }
   }, [message, error, dispatch, sendError, sendMessage])
+  useEffect(() => {
+    const available = websiteLists.filter((web) =>
+      [...currentDeals, ...newDeals].every((deal) => deal.website_c !== web)
+    );
+    setValidWebsites(available);
+  }, [currentDeals, newDeals]);
   return (
-    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} pageType={type} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, totalAmount, email }) => (
+    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} pageType={type} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} validWebsites={validWebsites} fields={fields} renderPreview={({ data, totalAmount, email }) => (
       <Preview
         data={data}
         type="Deals"
@@ -92,39 +97,3 @@ export default function CreateDeal() {
     )} />
   );
 }
-
-
-// const fillEmptyWebsites = (arr) => {
-//     if (!arr || arr.length === 0) return arr;
-
-//     const used = new Set(arr.map((d) => d.website_c).filter(Boolean));
-//     const result = arr.map((d) => ({ ...d }));
-
-//     let siteIdx = 0;
-//     for (let i = 0; i < result.length; i++) {
-//       if (!result[i].website_c) {
-//         while (
-//           siteIdx < validWebsites.length &&
-//           used.has(validWebsites[siteIdx])
-//         ) {
-//           siteIdx++;
-//         }
-//         if (siteIdx < validWebsites.length) {
-//           result[i].website_c = validWebsites[siteIdx];
-//           used.add(validWebsites[siteIdx]);
-//           siteIdx++;
-//         }
-//       }
-//     }
-//     return result;
-//   };
-
-//  const [validWebsites, setValidWebsites] = useState([]);
-
-
-//   useEffect(() => {
-//     const available = websiteLists.filter((web) =>
-//       deals.every((deal) => deal.website_c !== web)
-//     );
-//     setValidWebsites(available);
-//   }, [deals]);

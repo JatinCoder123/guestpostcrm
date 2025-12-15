@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-export default function Create({ data, email, setData, type, pageType, creating, sending, fields, lists = [], submitData, sendHandler, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
+export default function Create({ data, email, setData, type, pageType, creating, sending, validWebsites, fields, lists = [], submitData, sendHandler, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -43,6 +43,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
     };
 
 
+
     const handelChange = (idx, field, e) => {
         const value = e.target.value;
         updateData(idx, { [field]: value });
@@ -50,11 +51,22 @@ export default function Create({ data, email, setData, type, pageType, creating,
 
 
     const valid = useMemo(
-        () =>
-            data.length > 0 &&
-            data.every(
-                (d) => String(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]).trim() !== "" && Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) > 0
-            ),
+        () => {
+            if (data.length > 0) {
+                if (type == "deals") {
+                    return data.every(
+                        (d) => String(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]).trim() !== "" && Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) > 0
+                    )
+                }
+                else if (type == "offers") {
+                    return data.every(
+                        (d) => String(d["client_offer_c"]).trim() !== "" && Number(d["client_offer_c"]) > 0 && String(d["website_c"]).trim() !== "" && String(d["amount"]).trim() !== "" && Number(d["amount"]) > 0
+                    )
+                }
+            }
+            return false;
+        },
+
         [data]
     );
 
@@ -112,7 +124,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                     )
                                 }
                                 {
-                                    pageType == "create" && (
+                                    pageType == "create" && validWebsites.length > 0 && (
                                         <div className="flex items-center gap-3">
                                             <button
                                                 onClick={addData}
