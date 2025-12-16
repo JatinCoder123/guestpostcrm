@@ -5,7 +5,6 @@ import { UnansweredPage } from "./components/pages/UnansweredPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
-
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
@@ -14,7 +13,6 @@ import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
 import { Contacts_otherPage } from "./components/pages/Contacts_otherPage";
 import { DraftInvoice } from "./components/pages/DraftInvoice";
-
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,7 +36,6 @@ import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
 import { MarkBulkPage } from "./components/pages/MarkBulkPage";
-
 import { DefaulterPage } from "./components/pages/Defaulterpage";
 import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
@@ -61,11 +58,7 @@ const router = createBrowserRouter([
   },
   {
     path: "",
-    element: (
-      <ErrorBoundary>
-        <RootLayout />
-      </ErrorBoundary>
-    ),
+    element: <RootLayout />,
     children: [
       {
         index: true,
@@ -87,19 +80,19 @@ const router = createBrowserRouter([
         path: "tag-manager",
         element: <TagManagerpage />,
       },
-           {
+      {
         path: "system-suggestion",
-        element: <SystemSuggestionsPage/>,
+        element: <SystemSuggestionsPage />,
       },
 
-       {
+      {
         path: "draft-invoice",
-        element:<DraftInvoice/>
+        element: <DraftInvoice />
 
       },
-                 {
+      {
         path: "contacts",
-        element: <Contacts_otherPage/>,
+        element: <Contacts_otherPage />,
       },
       {
         path: "unanswered",
@@ -115,7 +108,7 @@ const router = createBrowserRouter([
         path: "RecentEntry",
         element: <RecentEntry />,
       },
-       {
+      {
         path: "Duplicate",
         element: <Duplicate />,
       },
@@ -204,7 +197,7 @@ const router = createBrowserRouter([
         path: "avatars",
         element: <AvatarPage />,
       },
-        {
+      {
         path: "hot-records",
         element: <HotPage />,
       },
@@ -265,9 +258,7 @@ export default function App() {
       {isAuthenticated && (
         <SocketContextProvider>
           <PageContextProvider>
-            <ErrorBoundary>
-              <RouterProvider router={router} />
-            </ErrorBoundary>
+            <RouterProvider router={router} />
           </PageContextProvider>
         </SocketContextProvider>
       )}

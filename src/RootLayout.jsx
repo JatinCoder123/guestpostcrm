@@ -37,6 +37,7 @@ import { getmovedEmails } from "./store/Slices/movedEmails";
 import { SocketContext } from "./context/SocketContext";
 import { hotAction } from "./store/Slices/hotSlice";
 import { eventActions } from "./store/Slices/eventSlice";
+import ErrorBoundary from "./components/ErrorBoundary";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
@@ -200,7 +201,9 @@ const RootLayout = () => {
             >
               <div className="p-6">
                 <WelcomeHeader />
-                <Outlet />
+                <ErrorBoundary>
+                  <Outlet />
+                </ErrorBoundary>
                 {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}

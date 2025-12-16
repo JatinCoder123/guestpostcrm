@@ -54,7 +54,7 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading, showNewEmailBanner } = useSelector(
     (state) => state.unreplied
   );
-  const currentThreadId = emails.length > 0 ? emails[currentIndex].thread_id : null;
+  const currentThreadId = emails?.length > 0 ? emails[currentIndex].thread_id : null;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -113,7 +113,7 @@ export function TimelinePage() {
     }
   };
   const handleNext = () => {
-    if (currentIndex < emails.length - 1) {
+    if (currentIndex < emails?.length - 1) {
       setCurrentIndex((p) => p + 1);
     }
   };
@@ -191,7 +191,7 @@ export function TimelinePage() {
               ) : (
                 <MailerSummaryHeader />
               )}
-              {emails.length > 0 && (
+              {emails?.length > 0 && (
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* AI SUMMARY */}
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
@@ -281,7 +281,7 @@ export function TimelinePage() {
                         <Reply className="w-6 h-6 text-yellow-700" />
                       </motion.button>
                     </div>
-                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: emails.length > 0 && emails[currentIndex].body ? emails[currentIndex].body : "No Message Found!" }} />
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: emails?.length > 0 && emails[currentIndex].body ? emails[currentIndex].body : "No Message Found!" }} />
 
 
                   </div>
