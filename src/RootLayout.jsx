@@ -3,7 +3,7 @@ import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
+import { getLadger, getLadgerEmail, getLadgerWithOutLoading } from "./store/Slices/ladger";
 import {
   getUnansweredEmails,
   getUnansweredEmailWithOutLoading,
@@ -112,6 +112,12 @@ const RootLayout = () => {
     }
     if (notificationCount.outr_deal_fetch) {
       dispatch(getDeals());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -120,6 +126,12 @@ const RootLayout = () => {
     }
     if (notificationCount.outr_order_gp_li) {
       dispatch(getOrders());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -128,6 +140,12 @@ const RootLayout = () => {
     }
     if (notificationCount.outr_self_test) {
       dispatch(getInvoices());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -136,6 +154,12 @@ const RootLayout = () => {
     }
     if (notificationCount.outr_offer) {
       dispatch(getOffers());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -149,6 +173,7 @@ const RootLayout = () => {
         outr_recent_activity: null,
       }));
     }
+
 
   }, [notificationCount]);
   return (

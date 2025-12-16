@@ -434,7 +434,7 @@ function DisplayList({ data, label, spamScores }) {
                             key={idx}
                             className="text-sm text-gray-700 flex items-center justify-between break-words leading-relaxed"
                         >
-                            <span>{item}</span>
+                            <span className="max-w-[300px]">{item}</span>
                             {label === "Their Link" && (
                                 <span className="text-red-500"> {spamScoreList[idx]}</span>
                             )}

@@ -281,10 +281,9 @@ export function TimelinePage() {
                         <Reply className="w-6 h-6 text-yellow-700" />
                       </motion.button>
                     </div>
-                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                      {emails.length > 0 &&
-                        emails[currentIndex].subject}
-                    </p>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: emails.length > 0 && emails[currentIndex].body ? emails[currentIndex].body : "No Message Found!" }} />
+
+
                   </div>
                 </div>
               )}

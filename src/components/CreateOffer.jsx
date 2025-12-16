@@ -50,7 +50,7 @@ export default function CreateOffer() {
         type="Offers"
         userEmail={state?.email}
         websiteKey="website"
-        amountKey="amount"
+        amountKey="our_offer_c"
       />
     )))
   }
