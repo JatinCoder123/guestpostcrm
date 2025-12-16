@@ -23,6 +23,9 @@ export function TagManagerpage() {
   
     const [topsearch, setTopsearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+
+
+  
   
   
    
@@ -58,7 +61,7 @@ export function TagManagerpage() {
 
      <SearchComponent
         dropdownOptions={[
-          { value: "all", label: "websites" },
+          { value: "all", label: "Contact" },
 
         ]}
         selectedDropdownValue={selectedCategory}
@@ -67,7 +70,7 @@ export function TagManagerpage() {
 
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search  items..."
+        searchPlaceholder="Search  here..."
 
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"

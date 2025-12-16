@@ -47,7 +47,7 @@ export function OffersPage() {
 
   const navigateTo = useNavigate()
   const dropdownOptions = [
-    { value: 'contect', label: 'contact' }
+    { value: 'contect', label: 'Contact' }
   ];
   const handleFilterApply = (filters) => {
     console.log('Applied filters from popup:', filters);
@@ -117,12 +117,12 @@ export function OffersPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
+        // dropdownPlaceholder="Filter by contact"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}

@@ -4,11 +4,16 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { UnansweredPage } from "./components/pages/UnansweredPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
+import { Duplicate } from "./components/pages/DuplicatePage";
+
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
+import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
+import { Contacts_otherPage } from "./components/pages/Contacts_otherPage";
+import { DraftInvoice } from "./components/pages/DraftInvoice";
 
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
@@ -82,6 +87,20 @@ const router = createBrowserRouter([
         path: "tag-manager",
         element: <TagManagerpage />,
       },
+           {
+        path: "system-suggestion",
+        element: <SystemSuggestionsPage/>,
+      },
+
+       {
+        path: "draft-invoice",
+        element:<DraftInvoice/>
+
+      },
+                 {
+        path: "contacts",
+        element: <Contacts_otherPage/>,
+      },
       {
         path: "unanswered",
         element: <UnansweredPage />,
@@ -95,6 +114,10 @@ const router = createBrowserRouter([
       {
         path: "RecentEntry",
         element: <RecentEntry />,
+      },
+       {
+        path: "Duplicate",
+        element: <Duplicate />,
       },
 
       {

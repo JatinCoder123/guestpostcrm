@@ -51,7 +51,7 @@ export function DealsPage() {
       return 0;
     });
   const dropdownOptions = [
-    { value: 'contect', label: 'contact' }
+    { value: 'contect', label: 'Contact' }
   ];
 
   const filterOptions = [
@@ -127,12 +127,13 @@ export function DealsPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
+        // dropdownPlaceholder="Filter by contact"
         dropdownPlaceholder="Filter by"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}
