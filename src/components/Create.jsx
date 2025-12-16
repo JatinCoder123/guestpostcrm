@@ -346,7 +346,7 @@ function InputField({
     pageType = ""
 }) {
     const value = data?.[name] ?? "";
-    disabled = pageType == "view" ? true : disabled;
+    disabled = pageType == "create" ? false : pageType == "view" ? true : disabled;
 
     return (
         <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[300px]`}>

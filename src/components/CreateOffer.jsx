@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
-  { name: "client_offer_c", label: "Client Offer", type: "number" },
+  { name: "client_offer_c", label: "Client Offer", type: "number", disabled: true },
   { name: "our_offer_c", label: "Our Offer", type: "number" },
 ]
 export default function CreateOffer() {
