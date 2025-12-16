@@ -76,7 +76,7 @@ export default function CreateOffer() {
             type="Offers"
             userEmail={state?.email}
             websiteKey="website"
-            amountKey="amount"
+            amountKey="our_offer_c"
           />
         ), "Offer Sent Successfully"))
       }
@@ -102,13 +102,13 @@ export default function CreateOffer() {
 
 
   return (
-    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} deleting={deleting} deleteId={deleteOfferId} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={null} renderPreview={({ data, email }) => (
+    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} deleting={deleting} deleteId={deleteOfferId} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"our_offer_c"} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Offers"
         userEmail={email}
         websiteKey="website"
-        amountKey="amount"
+        amountKey="our_offer_c"
       />
     )} />
   );

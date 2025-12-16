@@ -255,7 +255,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                 {data.map((d, i) => (
                                                     <li key={i}>
                                                         {d[websiteKey] || "(no site)"}
-                                                        {amountKey && <strong>- ${Number(d[amountKey] || 0)}</strong>}
+                                                        {amountKey && <strong>- ${isNaN(Number(d[amountKey])) ? 0 : Number(d[amountKey])}</strong>}
                                                     </li>
                                                 ))}
                                             </ul>

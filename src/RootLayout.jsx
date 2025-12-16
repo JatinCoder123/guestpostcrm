@@ -49,7 +49,7 @@ const RootLayout = () => {
     currentIndex,
     setCurrentIndex,
   } = useContext(PageContext);
-  const { currentAvatar, currentMail, currentHotCount, recentCount } =
+  const { currentAvatar, notificationCount, setNotificationCount } =
     useContext(SocketContext);
   useEffect(() => {
     setShowAvatar(true);
@@ -67,9 +67,9 @@ const RootLayout = () => {
     dispatch(getFavEmails(timeline, enteredEmail));
     dispatch(getLinkExchange(timeline, enteredEmail));
     dispatch(getBulkEmails(timeline, enteredEmail));
-    dispatch(getOrders(timeline, enteredEmail));
+    dispatch(getOrders(enteredEmail));
     dispatch(getDeals(enteredEmail));
-    dispatch(getInvoices(timeline, enteredEmail));
+    dispatch(getInvoices(enteredEmail));
     dispatch(getOffers(enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
@@ -95,20 +95,62 @@ const RootLayout = () => {
     }
   }, [email]);
   useEffect(() => {
-    if (currentMail) {
+    if (notificationCount.unreplied_email) {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      setNotificationCount((prev) => ({
+        ...prev,
+        unreplied_email: null,
+      }));
+    }
+    if (notificationCount.outr_el_process_audit) {
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_el_process_audit: null,
+      }));
+    }
+    if (notificationCount.outr_deal_fetch) {
+      dispatch(getDeals());
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_deal_fetch: null,
+      }));
+    }
+    if (notificationCount.outr_order_gp_li) {
+      dispatch(getOrders());
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_order_gp_li: null,
+      }));
+    }
+    if (notificationCount.outr_self_test) {
+      dispatch(getInvoices());
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_self_test: null,
+      }));
+    }
+    if (notificationCount.outr_offer) {
+      dispatch(getOffers());
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_offer: null,
+      }));
+    }
+    if (notificationCount.outr_recent_activity) {
+      dispatch(eventActions.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_recent_activity: null,
+      }));
     }
 
-  }, [currentMail]);
-  useEffect(() => {
-    if (!currentHotCount) return;
-    dispatch(hotAction.updateCount(1));
-  }, [currentHotCount]);
-  useEffect(() => {
-    if (!currentHotCount) return;
-    dispatch(eventActions.updateCount(1));
-  }, [recentCount]);
+  }, [notificationCount]);
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (

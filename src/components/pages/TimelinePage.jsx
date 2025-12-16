@@ -211,7 +211,7 @@ export function TimelinePage() {
                           transition={{ type: "spring", stiffness: 400 }}
                           className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                           onClick={handleAiAutoReply}
-                          disabled={sending || mailersSummary == null || mailersSummary?.ai_response.trim() === ""}
+                          disabled={sending || mailersSummary == null || mailersSummary?.ai_response?.trim() === ""}
                         >
                           <img
                             width="33"
