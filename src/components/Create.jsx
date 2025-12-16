@@ -184,11 +184,11 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                                 >
                                                                     <Pencil size={16} />
                                                                 </button>}
-                                                                {(pageType == "create" || pageType == "view") && deleting && deleteId == item.id ? <div className="flex items-center right-16 absolute  top-2 gap-2 "><LoadingChase size="20" color="red" /></div> : <button
+                                                                {pageType !== "edit" && <button
                                                                     onClick={() => { pageType == "create" ? removeData(item.id) : handleDelete(item.id) }}
                                                                     className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
                                                                 >
-                                                                    <Trash size={16} />
+                                                                    {deleting && deleteId == item.id ? <LoadingChase size="20" color="white" /> : <Trash size={16} />}
                                                                 </button>}
                                                                 {pageType == "edit" && <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
                                                                     <button
