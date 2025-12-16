@@ -6,8 +6,9 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { LoadingChase } from "./Loading";
 
-export default function Create({ data, email, setData, type, pageType, creating, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
+export default function Create({ data, email, setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -183,9 +184,9 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                                 >
                                                                     <Pencil size={16} />
                                                                 </button>}
-                                                                {(pageType == "create" || pageType == "view") && <button
+                                                                {(pageType == "create" || pageType == "view") && deleting && deleteId == item.id ? <div className="flex items-center right-16 absolute  top-2 gap-2 "><LoadingChase size="20" color="red" /></div> : <button
                                                                     onClick={() => { pageType == "create" ? removeData(item.id) : handleDelete(item.id) }}
-                                                                    className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
+                                                                    className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
                                                                 >
                                                                     <Trash size={16} />
                                                                 </button>}

@@ -30,7 +30,7 @@ export default function CreateOffer() {
   }])
 
   const dispatch = useDispatch()
-  const { updating, error, offers, message, creating } = useSelector((state) => state.offers)
+  const { updating, error, offers, message, creating, deleting, deleteOfferId } = useSelector((state) => state.offers)
   useEffect(() => {
     let offer = offers.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
     if (type == "edit" && id !== undefined) {
@@ -102,7 +102,7 @@ export default function CreateOffer() {
 
 
   return (
-    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={null} renderPreview={({ data, email }) => (
+    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} deleting={deleting} deleteId={deleteOfferId} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={null} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Offers"

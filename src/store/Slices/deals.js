@@ -14,6 +14,8 @@ const dealsSlice = createSlice({
     error: null,
     message: null,
     updating: false,
+    deleting: false,
+    deleteDealId: null,
   },
   reducers: {
     getDealsRequest(state) {
@@ -66,18 +68,21 @@ const dealsSlice = createSlice({
       state.message = null;
       state.error = action.payload;
     },
-    deleteDealRequest(state) {
+    deleteDealRequest(state, action) {
       state.deleting = true;
       state.error = null;
+      state.deleteDealId = action.payload;
     },
     deleteDealSuccess(state, action) {
       state.deleting = false;
       state.deals = action.payload.deals;
       state.count = action.payload.count;
+      state.deleteDealId = null;
       state.error = null;
     },
     deleteDealFailed(state, action) {
       state.deleting = false;
+      state.deleteDealId = null;
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -210,7 +215,7 @@ export const updateDeal = (deal) => {
 };
 export const deleteDeal = (id) => {
   return async (dispatch, getState) => {
-    dispatch(dealsSlice.actions.deleteDealRequest());
+    dispatch(dealsSlice.actions.deleteDealRequest(id));
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`
       );

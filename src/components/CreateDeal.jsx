@@ -17,7 +17,7 @@ const fields = [
 export default function CreateDeal() {
   const { type, id } = useParams();
   const { state } = useLocation()
-  const { deals, updating, error, message, creating } = useSelector((state) => state.deals);
+  const { deals, updating, error, message, creating, deleting, deleteDealId } = useSelector((state) => state.deals);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
   const [currentDeals, setCurrentDeals] = useState([])
 
@@ -99,7 +99,7 @@ export default function CreateDeal() {
   }, [message, error, dispatch, sendError, sendMessage])
 
   return (
-    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} pageType={type} handleDelete={handleDelete} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, email }) => (
+    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} deleting={deleting} deleteId={deleteDealId} pageType={type} handleDelete={handleDelete} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Deals"

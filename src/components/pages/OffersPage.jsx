@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import CreateOffer from "../CreateOffer";
-import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus, Pen } from "lucide-react";
-import { getOffers, offersAction, updateOffer } from "../../store/Slices/offers";
+import { Gift, User, Calendar, DollarSign, Tag, Pen, Trash } from "lucide-react";
+import { deleteOffer, getOffers, offersAction, } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
-import UpdatePopup from "../UpdatePopup";
 import { useNavigate } from "react-router-dom";
 import { excludeEmail } from "../../assets/assets";
+import { LoadingChase, LoadingSpin } from "../Loading";
 
 export function OffersPage() {
-  const { offers, count, loading } = useSelector((state) => state.offers);
+  const { offers, count, loading, error, deleting, deleteOfferId } = useSelector((state) => state.offers);
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
+  const dispatch = useDispatch();
   const filteredoffers = offers
     .filter((item) => {
       const searchValue = topsearch.toLowerCase();
@@ -41,12 +41,6 @@ export function OffersPage() {
       return 0;
     });
 
-
-
-
-
-
-
   // Calculate stats
   const pending = offers.filter((o) => o.status === "Pending").length;
   const accepted = offers.filter((o) => o.status === "Accepted").length;
@@ -55,15 +49,6 @@ export function OffersPage() {
   const dropdownOptions = [
     { value: 'contect', label: 'contact' }
   ];
-
-  const filterOptions = [
-    { value: 'asc', label: 'A to Z' },
-    { value: 'desc', label: 'Z to A' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-
-  ];
-
   const handleFilterApply = (filters) => {
     console.log('Applied filters from popup:', filters);
   };
@@ -76,11 +61,6 @@ export function OffersPage() {
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
     console.log('Category selected:', value);
-  };
-
-  const handleSortChange = (value) => {
-    setSelectedSort(value);
-    console.log('Sort selected:', value);
   };
 
 
@@ -119,6 +99,12 @@ export function OffersPage() {
     a.click();
   };
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+      dispatch(offersAction.clearAllErrors())
+    }
+  }, [error])
 
 
 
@@ -294,7 +280,7 @@ export function OffersPage() {
                   <td className="pl-9 py-4">
 
 
-                    <div className="flex gap-2">
+                    <div className="flex items-center justify-center gap-2">
                       {/* Update Button */}
                       <button
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
@@ -303,6 +289,16 @@ export function OffersPage() {
                       >
                         <Pen className="w-5 h-5 text-blue-600" />
                       </button>
+                      {/* Delete Button */}
+                      {deleting && deleteOfferId === offer.id ? <LoadingChase size="20" color="red" /> : (
+                        <button
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                          title="Delete"
+                          onClick={() => dispatch(deleteOffer(offer.id))}
+                        >
+                          <Trash className="w-5 h-5 text-red-600" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

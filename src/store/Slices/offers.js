@@ -12,6 +12,8 @@ const offersSlice = createSlice({
     updating: false,
     message: null,
     creating: false,
+    deleting: false,
+    deleteOfferId: null,
   },
   reducers: {
     getOffersRequest(state) {
@@ -64,12 +66,14 @@ const offersSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
-    deleteOfferRequest(state) {
+    deleteOfferRequest(state, action) {
       state.deleting = true;
       state.error = null;
+      state.deleteOfferId = action.payload;
     },
     deleteOfferSuccess(state, action) {
       state.deleting = false;
+      state.deleteOfferId = null;
       state.offers = action.payload.offers;
       state.count = action.payload.count;
       state.error = null;
@@ -77,6 +81,7 @@ const offersSlice = createSlice({
     deleteOfferFailed(state, action) {
       state.deleting = false;
       state.error = action.payload;
+      state.deleteOfferId = null;
     },
     clearAllMessages(state) {
       state.message = null;
@@ -206,7 +211,7 @@ export const createOffer = (offers = []) => {
 };
 export const deleteOffer = (id) => {
   return async (dispatch, getState) => {
-    dispatch(offersSlice.actions.deleteOfferRequest());
+    dispatch(offersSlice.actions.deleteOfferRequest(id));
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_offer&record_id=${id}`
       );
