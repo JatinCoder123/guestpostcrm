@@ -26,6 +26,8 @@ import linkExchangeReducer from "./Slices/linkExchange.js";
 import contactOtherReducer from "./Slices/contact_other";
 //import contactdefaulterReducer  from "./Slices/contactdefaulterSlice.js";
 import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
+
+import DraftInvoiceReducer from "./Slices/draftInvoice.js";
 import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
 
 import hotReducer from "./Slices/hotSlice.js";
@@ -61,8 +63,9 @@ export const store = configureStore({
     contact_other: contactOtherReducer,
       contactdefaulter: contactdefaulterReducer,
 
-        duplicateEmails: duplicateEmailReducer,
-        user: userReducer,
+     duplicateEmails: duplicateEmailReducer,
+     user: userReducer,
+     DraftInvoice: DraftInvoiceReducer,
 
 
   },

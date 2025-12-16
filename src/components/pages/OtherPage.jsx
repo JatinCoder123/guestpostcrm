@@ -20,7 +20,8 @@ import {
   TagIcon,
   TruckIcon,
   Users,
-  Laptop
+  Laptop,
+  PencilOff
   
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
@@ -91,6 +92,14 @@ export function OtherPage() {
       icon: <Contact className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "/contacts",
+    },
+
+        {
+      title: "Draft Invoice",
+      subtitle: "Contact tag will be shown here",
+      icon: <PencilOff className="w-8 h-8 text-red-500" />,
+      bg: "bg-green-50",
+      link: "/draft-invoice",
     }
   ];
 

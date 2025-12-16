@@ -13,6 +13,7 @@ import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
 import { Contacts_otherPage } from "./components/pages/Contacts_otherPage";
+import { DraftInvoice } from "./components/pages/DraftInvoice";
 
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
@@ -89,6 +90,12 @@ const router = createBrowserRouter([
            {
         path: "system-suggestion",
         element: <SystemSuggestionsPage/>,
+      },
+
+       {
+        path: "draft-invoice",
+        element:<DraftInvoice/>
+
       },
                  {
         path: "contacts",
