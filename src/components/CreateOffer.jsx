@@ -69,7 +69,7 @@ export default function CreateOffer() {
   useEffect(() => {
     if (message) {
       if (message.includes("Created")) {
-        dispatch(getOffers())
+        // dispatch(getOffers())
         dispatch(sendEmail(renderToStaticMarkup(
           <Preview
             data={[...newOffers, ...currentOffers]}

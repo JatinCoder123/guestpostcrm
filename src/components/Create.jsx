@@ -69,12 +69,12 @@ export default function Create({ data, email, setData, type, pageType, creating,
             if (data.length > 0) {
                 if (type == "deals") {
                     return data.every(
-                        (d) => String(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]).trim() !== "" && Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) > 0
+                        (d) => String(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]).trim() !== "" && Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) > 0 && String(d[websiteKey]).trim() !== ""
                     )
                 }
                 else if (type == "offers") {
                     return data.every(
-                        (d) => String(d["client_offer_c"]).trim() !== "" && Number(d["client_offer_c"]) > 0 && String(d["website_c"]).trim() !== ""
+                        (d) => String(d["client_offer_c"]).trim() !== "" && Number(d["client_offer_c"]) > 0 && String(d[websiteKey]).trim() !== ""
                     )
                 }
             }
