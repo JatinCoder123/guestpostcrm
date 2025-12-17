@@ -6,7 +6,7 @@ import {
   AlertTriangle,
   BarChart,
   Shield,
-  TagIcon
+  TagIcon,
 } from "lucide-react";
 
 import SearchComponent from "./SearchComponent";
@@ -18,52 +18,27 @@ import { getDetection } from "../../store/Slices/detection";
 export function TagManagerpage() {
   const { detection, count } = useSelector((state) => state.detection);
 
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+  };
 
-  
-    const [topsearch, setTopsearch] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('');
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+  };
 
+  const handleFilterApply = (filters) => {};
 
-  
-  
-  
-   
-  
-    
-        const handleSearchChange = (value) => {
-          setTopsearch(value);
-          
-        };
-      
-        const handleCategoryChange = (value) => {
-          setSelectedCategory(value);
-          
-        };
-      
-        const handleFilterApply = (filters) => {
-         
-        };
-      
-      
-        const handleDownload = () => {
-         console.log("download handeler");
-        };
-  
-
-
-
+  const handleDownload = () => {
+    console.log("download handeler");
+  };
 
   return (
     <>
-
-
-
-     <SearchComponent
-        dropdownOptions={[
-          { value: "all", label: "Contact" },
-
-        ]}
+      <SearchComponent
+        dropdownOptions={[{ value: "all", label: "Contact" }]}
         selectedDropdownValue={selectedCategory}
         onDropdownChange={handleCategoryChange}
         // dropdownPlaceholder="Filter by websites"
@@ -71,18 +46,13 @@ export function TagManagerpage() {
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Search  here..."
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
         className="mb-6"
       />
-
-
 
       {/* Spam Detection Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -91,9 +61,17 @@ export function TagManagerpage() {
           <div className="flex items-center gap-3">
             <TagIcon className="w-6 h-6 text-green-600" />
             <h2 className="text-xl text-gray-900">Tag Manager</h2>
-            <a href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/" target="_blank"
-              rel="noopener noreferrer">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            <a
+              href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <span className="px-4 py-1.5 bg-orange-100 text-orange-700 rounded-full">
@@ -134,30 +112,31 @@ export function TagManagerpage() {
               </tr>
             </thead>
             <tbody>
-              {detection?.length > 0 && detection.map((spam) => (
-                <tr
-                  key={spam.thread_id}
-                  className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{spam.date}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.from}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.thread_count}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {detection?.length > 0 &&
+                detection.map((spam) => (
+                  <tr
+                    key={spam.thread_id}
+                    className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{spam.date}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-900">
+                        <span>{spam.from}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-900">
+                        <span>{spam.thread_count}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
