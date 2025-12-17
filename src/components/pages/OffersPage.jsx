@@ -161,7 +161,7 @@ export function OffersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Offers</p>
+              <p className="text-gray-500 text-sm">New</p>
               <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -174,7 +174,7 @@ export function OffersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Pending</p>
+              <p className="text-gray-500 text-sm">Expired</p>
               <p className="text-2xl text-gray-900 mt-1">{pending}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -187,7 +187,7 @@ export function OffersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Accepted</p>
+              <p className="text-gray-500 text-sm">Upcoming Expire</p>
               <p className="text-2xl text-gray-900 mt-1">{accepted}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -200,7 +200,7 @@ export function OffersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Value</p>
+              <p className="text-gray-500 text-sm">Rejected </p>
               <p className="text-2xl text-gray-900 mt-1">
                 ${offers.reduce((sum, o) => sum + Number(o.amount || 0), 0)}
               </p>
