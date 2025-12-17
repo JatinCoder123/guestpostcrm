@@ -159,9 +159,7 @@ export default function Preview({
                                                                             }}
                                                                         >
                                                                             $
-                                                                            {Number(
-                                                                                d[amountKey] || 0
-                                                                            ).toLocaleString()}
+                                                                            {isNaN(Number(d[amountKey])) ? 0 : Number(d[amountKey])}
                                                                         </td>
                                                                     </tr>
                                                                 ))}

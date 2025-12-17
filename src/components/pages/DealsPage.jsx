@@ -6,6 +6,7 @@ import {
   DollarSign,
   Calendar,
   User,
+  Trash
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
@@ -13,14 +14,15 @@ import SearchComponent from "./SearchComponent";
 import Pagination from "../Pagination";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getDeals } from "../../store/Slices/deals";
+import { deleteDeal, getDeals } from "../../store/Slices/deals";
 import { excludeEmail } from "../../assets/assets";
+import { LoadingChase } from "../Loading";
 
 export function DealsPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { count, deals, loading, error, message } = useSelector((state) => state.deals);
+  const { count, deals, loading, error, deleting, deleteDealId } = useSelector((state) => state.deals);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
@@ -49,7 +51,7 @@ export function DealsPage() {
       return 0;
     });
   const dropdownOptions = [
-    { value: 'contect', label: 'contact' }
+    { value: 'contect', label: 'Contact' }
   ];
 
   const filterOptions = [
@@ -125,12 +127,13 @@ export function DealsPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
+        // dropdownPlaceholder="Filter by contact"
         dropdownPlaceholder="Filter by"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}
@@ -278,7 +281,7 @@ export function DealsPage() {
                   </td>
 
                   <td className="px-6 py-4">
-                    <div className="flex gap-2">
+                    <div className="flex items-center justify-center gap-2">
                       {/* Update Button */}
                       <button
                         onClick={() => navigateTo(`/deals/edit/${deal.id}`, { state: { email: excludeEmail(deal.real_name) } })}
@@ -287,6 +290,15 @@ export function DealsPage() {
                       >
                         <Pen className="w-5 h-5 text-blue-600" />
                       </button>
+                      {deleting && deleteDealId === deal.id ? <LoadingChase size="20" color="red" /> : (
+                        <button
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                          title="Delete"
+                          onClick={() => dispatch(deleteDeal(deal.id))}
+                        >
+                          <Trash className="w-5 h-5 text-red-600" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

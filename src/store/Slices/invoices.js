@@ -72,7 +72,7 @@ const invoicesSlice = createSlice({
   },
 });
 
-export const getInvoices = (filter, email) => {
+export const getInvoices = (email) => {
   return async (dispatch, getState) => {
     dispatch(invoicesSlice.actions.getInvoicesRequest());
 
@@ -81,12 +81,12 @@ export const getInvoices = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_invoices&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=get_invoices&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_invoices&filter=${filter}&page=1&page_size=50`
+          }&type=get_invoices&filter=${getState().ladger.timeline}&page=1&page_size=50`
         );
       }
       const data = response.data;

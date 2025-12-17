@@ -22,7 +22,7 @@ import SearchComponent from "./SearchComponent";
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  
+
   const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.unreplied);
 
@@ -62,7 +62,7 @@ export function UnrepliedEmailsPage() {
       const searchValue = topsearch.toLowerCase();
       if (!searchValue) return true; // no search → show all
 
-      const contact = item.from.split("<")[0].trim().toLowerCase();
+      const contact = item.from?.split("<")[0].trim().toLowerCase();
       const subject = item.subject?.toLowerCase() || "";
       const date = item.date_entered?.toLowerCase() || "";
 
@@ -107,8 +107,8 @@ export function UnrepliedEmailsPage() {
 
   const dropdownOptions = [
 
-    { value: 'contect', label: 'contact' },
-    { value: 'subject', label: 'subject' },
+    { value: 'contect', label: 'Contact' },
+    { value: 'subject', label: 'Subject' },
   ];
 
   const filterOptions = [
@@ -136,7 +136,7 @@ export function UnrepliedEmailsPage() {
 
     const rows = filteredEmails.map((email) => [
       email.date_entered,
-      email.from.split("<")[0].trim(),
+      email.from?.split("<")[0].trim(),
       email.subject,
       email.thread_count
     ]);
@@ -165,12 +165,13 @@ export function UnrepliedEmailsPage() {
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
+        // dropdownPlaceholder="Filter by Status"
         dropdownPlaceholder="Filter by"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}
@@ -258,7 +259,7 @@ export function UnrepliedEmailsPage() {
                 >
                   <td
                     onClick={() => {
-                      const input = email.from.split("<")[1].split(">")[0];
+                      const input = email.from?.split("<")[1].split(">")[0];
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
@@ -275,7 +276,7 @@ export function UnrepliedEmailsPage() {
 
                   <td
                     onClick={() => {
-                      const input = email.from.split("<")[1].split(">")[0];
+                      const input = email.from?.split("<")[1].split(">")[0];
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
@@ -284,14 +285,14 @@ export function UnrepliedEmailsPage() {
                     }}
                     className="px-6 py-4 text-gray-900"
                   >
-                    {email.from.split("<")[0].trim()}
+                    {email.from?.split("<")[0].trim()}
                   </td>
 
                   <td
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
-                      setEmail(email.from.split("<")[1].split(">")[0]);
+                      setEmail(email.from?.split("<")[1].split(">")[0]);
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
@@ -300,7 +301,7 @@ export function UnrepliedEmailsPage() {
 
                   <td
                     onClick={() => {
-                      const input = email.from.split("<")[1].split(">")[0];
+                      const input = email.from?.split("<")[1].split(">")[0];
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);

@@ -6,8 +6,9 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { LoadingChase } from "./Loading";
 
-export default function Create({ data, email, setData, type, pageType, creating, sending, validWebsites, fields, lists = [], submitData, sendHandler, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
+export default function Create({ data, email, setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -46,8 +47,21 @@ export default function Create({ data, email, setData, type, pageType, creating,
 
     const handelChange = (idx, field, e) => {
         const value = e.target.value;
+
+        if (field === websiteKey) {
+            const alreadyUsed = data.some(
+                (d, i) => i !== idx && d[websiteKey] === value
+            );
+
+            if (alreadyUsed) {
+                toast.error("This website is already used in another deal");
+                return;
+            }
+        }
+
         updateData(idx, { [field]: value });
     };
+
 
 
     const valid = useMemo(
@@ -55,12 +69,12 @@ export default function Create({ data, email, setData, type, pageType, creating,
             if (data.length > 0) {
                 if (type == "deals") {
                     return data.every(
-                        (d) => String(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]).trim() !== "" && Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) > 0
+                        (d) => String(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]).trim() !== "" && Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) > 0 && String(d[websiteKey]).trim() !== ""
                     )
                 }
                 else if (type == "offers") {
                     return data.every(
-                        (d) => String(d["client_offer_c"]).trim() !== "" && Number(d["client_offer_c"]) > 0 && String(d["website_c"]).trim() !== "" && String(d["amount"]).trim() !== "" && Number(d["amount"]) > 0
+                        (d) => String(d["client_offer_c"]).trim() !== "" && Number(d["client_offer_c"]) > 0 && String(d[websiteKey]).trim() !== ""
                     )
                 }
             }
@@ -124,7 +138,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                     )
                                 }
                                 {
-                                    pageType == "create" && validWebsites.length > 0 && (
+                                    pageType == "create" && (
                                         <div className="flex items-center gap-3">
                                             <button
                                                 onClick={addData}
@@ -170,11 +184,11 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                                 >
                                                                     <Pencil size={16} />
                                                                 </button>}
-                                                                {pageType == "create" && <button
-                                                                    onClick={() => removeData(item.id)}
-                                                                    className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+                                                                {pageType !== "edit" && <button
+                                                                    onClick={() => { pageType == "create" ? removeData(item.id) : handleDelete(item.id) }}
+                                                                    className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
                                                                 >
-                                                                    <Trash size={16} />
+                                                                    {deleting && deleteId == item.id ? <LoadingChase size="20" color="white" /> : <Trash size={16} />}
                                                                 </button>}
                                                                 {pageType == "edit" && <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
                                                                     <button
@@ -192,7 +206,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                                         {updating ? "Updating..." : "Update"}</button>
                                                                 </div>}
 
-                                                                <div className="mt-4 flex  gap-3">
+                                                                <div className="mt-4 flex flex-wrap gap-3">
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} />)}
                                                                 </div>
                                                                 <div className="mt-4 grid grid-cols-2 gap-3">
@@ -240,8 +254,8 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                             <ul className="list-none space-y-1">
                                                 {data.map((d, i) => (
                                                     <li key={i}>
-                                                        {d[websiteKey] || "(no site)"} —{" "}
-                                                        <strong>${Number(d[amountKey] || 0)}</strong>
+                                                        {d[websiteKey] || "(no site)"}
+                                                        {amountKey && <strong>- ${isNaN(Number(d[amountKey])) ? 0 : Number(d[amountKey])}</strong>}
                                                     </li>
                                                 ))}
                                             </ul>
@@ -332,11 +346,10 @@ function InputField({
     pageType = ""
 }) {
     const value = data?.[name] ?? "";
-    disabled = pageType == "view" ? true : disabled;
-    type = pageType == "view" && type == "select" ? "text" : type;
+    disabled = pageType == "create" ? false : pageType == "view" ? true : disabled;
 
     return (
-        <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[400px]`}>
+        <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[300px]`}>
             <label className="block text-xs mb-1 text-gray-600">
                 {label}
             </label>
@@ -404,9 +417,12 @@ function DisplayList({ data, label, spamScores }) {
         <div className="flex flex-col gap-1">
 
             {label && (
-                <span className="text-xs font-semibold text-gray-500">
-                    {label} {label === "Their Link" ? "(Spam Score)" : ""}
-                </span>
+                <div className="flex items-center justify-between gap-1">
+                    <span className="text-xs font-semibold text-gray-500">
+                        {label}
+                    </span>
+                    {label === "Their Link" && <span className="text-xs font-semibold text-gray-500">(Spam Score)</span>}
+                </div>
             )}
 
             {/* ⭐ Wrapper container to prevent collapsing */}
@@ -416,11 +432,11 @@ function DisplayList({ data, label, spamScores }) {
                     {list.map((item, idx) => (
                         <li
                             key={idx}
-                            className="text-sm text-gray-700 break-words leading-relaxed"
+                            className="text-sm text-gray-700 flex items-center justify-between break-words leading-relaxed"
                         >
-                            {item}
+                            <span className="max-w-[300px]">{item}</span>
                             {label === "Their Link" && (
-                                <span className="text-red-500"> ({spamScoreList[idx]})</span>
+                                <span className="text-red-500"> {spamScoreList[idx]}</span>
                             )}
                         </li>
                     ))}

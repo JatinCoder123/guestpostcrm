@@ -36,6 +36,9 @@ export default function CreateOrder() {
   const handleUpdate = (order) => {
     dispatch(updateOrder(order))
   }
+  const handleDelete = (id) => {
+    alert("Work in progress")
+  }
   useEffect(() => {
     if (type == "create" && !state) {
       navigate("/")
@@ -54,6 +57,6 @@ export default function CreateOrder() {
   }, [message, error, dispatch])
 
   return (
-    <Create data={currentOrders} email={state?.email} setData={setCurrentOrders} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} preview={false} lists={lists} type="orders" fields={fields} amountKey={"total_amount_c"} pageType={type} />
+    <Create data={currentOrders} email={state?.email} setData={setCurrentOrders} websiteKey="website_c" handleDelete={handleDelete} handleUpdate={handleUpdate} updating={updating} preview={false} lists={lists} type="orders" fields={fields} amountKey={"total_amount_c"} pageType={type} />
   );
 }

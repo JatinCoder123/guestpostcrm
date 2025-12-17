@@ -4,10 +4,15 @@ const socket = io("https://server.guestpostcrm.com");
 export const SocketContext = createContext();
 export const SocketContextProvider = (props) => {
   const [currentAvatar, setCurrentAvatar] = useState();
-  const [currentMail, setCurrentMail] = useState(null);
-  const [currentHot, setCurrentHot] = useState(null);
-  const [currentHotCount, setCurrentHotCount] = useState(null);
-  const [recentCount, setRecentCount] = useState(null);
+  const [notificationCount, setNotificationCount] = useState({
+    outr_offer: null,
+    outr_recent_activity: null,
+    outr_el_process_audit: null,
+    unreplied_email: null,
+    outr_deal_fetch: null,
+    outr_order_gp_list: null,
+    outr_self_test: null,
+  });
 
   useEffect(() => {
     const newAvatarHandler = (data) => {
@@ -25,6 +30,7 @@ export const SocketContextProvider = (props) => {
 
     const newMailHandler = (data) => {
       console.log("new mail", data);
+<<<<<<< HEAD
       
       if(data.name !== "outr_el_process_audit" && data.name !== "outr_recent_activity"){
         setCurrentHotCount(Date.now());
@@ -39,6 +45,12 @@ export const SocketContextProvider = (props) => {
 
       setCurrentHot(Date.now())
       setCurrentMail(Date.now());
+=======
+      setNotificationCount((prev) => ({
+        ...prev,
+        [data.name]: Date.now(),
+      }));
+>>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
     };
 
     socket.on("new_avatar", newAvatarHandler);
@@ -55,11 +67,8 @@ export const SocketContextProvider = (props) => {
   const value = {
     currentAvatar,
     setCurrentAvatar,
-    currentMail,
-    setCurrentMail,
-    currentHot,
-    currentHotCount,
-    recentCount,
+    notificationCount,
+    setNotificationCount,
   };
 
   return (

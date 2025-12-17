@@ -1,7 +1,9 @@
 import React from "react";
 import { images } from "../assets/assets";
+import { useNavigate } from "react-router-dom"; // ✅ ADD THIS
 
 const SocialButtons = () => {
+   const navigate = useNavigate(); // ✅ ADD THIS
   return (
     <div className="flex gap-3 ml-6">
       <button className="cursor-pointer hover:scale-105">
@@ -44,6 +46,7 @@ const SocialButtons = () => {
           height="55"
           src={images.duplicateImg}
           alt="duplicate count"
+          onClick={() => navigate("/Duplicate")}
         />
       </button>
     </div>

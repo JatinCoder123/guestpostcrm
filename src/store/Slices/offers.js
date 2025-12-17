@@ -12,6 +12,8 @@ const offersSlice = createSlice({
     updating: false,
     message: null,
     creating: false,
+    deleting: false,
+    deleteOfferId: null,
   },
   reducers: {
     getOffersRequest(state) {
@@ -40,6 +42,7 @@ const offersSlice = createSlice({
       state.creating = false;
       state.message = action.payload.message;
       state.offers = action.payload.offers;
+      state.count = action.payload.count;
       state.error = null;
     },
     createOfferFailed(state, action) {
@@ -63,6 +66,23 @@ const offersSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
+    deleteOfferRequest(state, action) {
+      state.deleting = true;
+      state.error = null;
+      state.deleteOfferId = action.payload;
+    },
+    deleteOfferSuccess(state, action) {
+      state.deleting = false;
+      state.deleteOfferId = null;
+      state.offers = action.payload.offers;
+      state.count = action.payload.count;
+      state.error = null;
+    },
+    deleteOfferFailed(state, action) {
+      state.deleting = false;
+      state.error = action.payload;
+      state.deleteOfferId = null;
+    },
     clearAllMessages(state) {
       state.message = null;
     },
@@ -72,7 +92,7 @@ const offersSlice = createSlice({
   },
 });
 
-export const getOffers = (filter, email) => {
+export const getOffers = (email) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.getOffersRequest());
 
@@ -81,12 +101,12 @@ export const getOffers = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=get_offers&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&filter=${filter}&page=1&page_size=50`
+          }&type=get_offers&filter=${getState().ladger.timeline}&page=1&page_size=50`
         );
       }
       const data = response.data;
@@ -180,11 +200,35 @@ export const createOffer = (offers = []) => {
         offersSlice.actions.createOfferSuccess({
           message: "Offers Created Successfully",
           offers: updatedOffers,
+          count: updatedOffers.length,
         })
       );
       dispatch(offersSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));
+    }
+  };
+};
+export const deleteOffer = (id) => {
+  return async (dispatch, getState) => {
+    dispatch(offersSlice.actions.deleteOfferRequest(id));
+    try {
+      const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_offer&record_id=${id}`
+      );
+      console.log(`Delete Offer`, data);
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+      const updatedOffers = getState().offers.offers.filter((offer) => offer.id !== id);
+      dispatch(
+        offersSlice.actions.deleteOfferSuccess({
+          offers: updatedOffers,
+          count: getState().offers.count - 1,
+        })
+      );
+      dispatch(offersSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(offersSlice.actions.deleteOfferFailed(error.message));
     }
   };
 };
