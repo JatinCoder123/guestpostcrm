@@ -1,59 +1,30 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import CreateOffer from "../CreateOffer";
-import { Gift, User, Calendar, DollarSign, Tag, Pencil, Plus, Pen } from "lucide-react";
-import { getOffers, offersAction, updateOffer } from "../../store/Slices/offers";
+import { Gift, User, Calendar, DollarSign, Tag, Pen, Trash } from "lucide-react";
+import { deleteOffer, getOffers, offersAction, } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
-import UpdatePopup from "../UpdatePopup";
+import { useNavigate } from "react-router-dom";
+import { excludeEmail } from "../../assets/assets";
+import { LoadingChase, LoadingSpin } from "../Loading";
 
 export function OffersPage() {
-  const { offers, count, loading, updating, error, message } = useSelector((state) => state.offers);
-  const [showOffer, setShowOffer] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const { offers, count, loading, error, deleting, deleteOfferId } = useSelector((state) => state.offers);
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const [currentUpdateOffer, setCurrentUpdateOffer] = useState(null);
-
-  // Show popup only
-  if (showOffer) {
-    return (
-      <CreateOffer
-        editData={editData}
-        onClose={() => {
-          setEditData(null);
-          setShowOffer(false);
-        }}
-      />
-    );
-  }
-
-
-
-
+  const dispatch = useDispatch();
   const filteredoffers = offers
     .filter((item) => {
       const searchValue = topsearch.toLowerCase();
       if (!searchValue) return true; // no search → show all
 
       const contact = item.real_name?.split("<")[0].trim().toLowerCase();
-      // const subject = item.order_id?.toLowerCase() || "";
-      // const date = item.date_entered?.toLowerCase() || "";
-
-      // 🟢 If category selected
       if (selectedCategory === "contect" || selectedCategory === "contact") {
         return contact.includes(searchValue);
       }
-      // if (selectedCategory === "subject") {
-      //   return subject.includes(searchValue);
-      // }
-      // if (selectedCategory === "date") {
-      //   return date.includes(searchValue);
-      // }
 
-      // 🟢 Default search → CONTACT
       return contact.includes(searchValue);
     })
     .sort((a, b) => {
@@ -67,40 +38,17 @@ export function OffersPage() {
         return b.from.localeCompare(a.from);
       }
 
-      // if (selectedSort === "newest") {
-      //   return new Date(b.date_entered) - new Date(a.date_entered);
-      // }
-
-      // if (selectedSort === "oldest") {
-      //   return new Date(a.date_entered) - new Date(b.date_entered);
-      // }
-
       return 0;
     });
-
-
-
-
-
-
 
   // Calculate stats
   const pending = offers.filter((o) => o.status === "Pending").length;
   const accepted = offers.filter((o) => o.status === "Accepted").length;
 
-  const dispatch = useDispatch();
+  const navigateTo = useNavigate()
   const dropdownOptions = [
-    { value: 'contect', label: 'contact' }
+    { value: 'contect', label: 'Contact' }
   ];
-
-  const filterOptions = [
-    { value: 'asc', label: 'A to Z' },
-    { value: 'desc', label: 'Z to A' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-
-  ];
-
   const handleFilterApply = (filters) => {
     console.log('Applied filters from popup:', filters);
   };
@@ -113,11 +61,6 @@ export function OffersPage() {
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
     console.log('Category selected:', value);
-  };
-
-  const handleSortChange = (value) => {
-    setSelectedSort(value);
-    console.log('Sort selected:', value);
   };
 
 
@@ -156,54 +99,30 @@ export function OffersPage() {
     a.click();
   };
 
-
-
-  const updateOfferHandler = (offer, data) => {
-    const updatedOffer = { ...offer, ...data };
-    dispatch(updateOffer(updatedOffer));
-  };
   useEffect(() => {
     if (error) {
-      toast.error(error);
+      toast.error(error)
       dispatch(offersAction.clearAllErrors())
     }
-    if (message) {
-      toast.success(message);
-      setCurrentUpdateOffer(null);
-      dispatch(offersAction.clearAllMessages())
-    }
-  }, [dispatch, message, error]);
+  }, [error])
+
+
+
 
   return (
     <>
-      {
-        currentUpdateOffer && (
-          <UpdatePopup
-            open={!!currentUpdateOffer}
-            title="Update Offer"
-            fields={[
-              { name: "offer_name", label: "Offer Email", type: "text", value: currentUpdateOffer.name, disabled: true },
-              { name: "client_offer_c", label: "Client Offer", type: "text", value: currentUpdateOffer.client_offer_c },
-              { name: "our_offer_c", label: "Our Offer", type: "text", value: currentUpdateOffer.our_offer_c },
-              { name: "website", label: "Website", type: "text", value: currentUpdateOffer.website },
-            ]}
-            loading={updating}
-            onUpdate={(data) => updateOfferHandler(currentUpdateOffer, data)}
-            onClose={() => setCurrentUpdateOffer(null)}
-          />
-        )
-      }
+
       <SearchComponent
 
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
-        dropdownPlaceholder="Filter by contact"
+        // dropdownPlaceholder="Filter by contact"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}
@@ -361,17 +280,25 @@ export function OffersPage() {
                   <td className="pl-9 py-4">
 
 
-                    <div className="flex gap-2">
+                    <div className="flex items-center justify-center gap-2">
                       {/* Update Button */}
                       <button
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
-                        onClick={() => {
-                          setCurrentUpdateOffer(offer);
-                        }}
+                        onClick={() => navigateTo(`/offers/edit/${offer.id}`, { state: { email: excludeEmail(offer.real_name) } })}
                       >
                         <Pen className="w-5 h-5 text-blue-600" />
                       </button>
+                      {/* Delete Button */}
+                      {deleting && deleteOfferId === offer.id ? <LoadingChase size="20" color="red" /> : (
+                        <button
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                          title="Delete"
+                          onClick={() => dispatch(deleteOffer(offer.id))}
+                        >
+                          <Trash className="w-5 h-5 text-red-600" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

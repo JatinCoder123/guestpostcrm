@@ -3,9 +3,15 @@ import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
-import { getUnansweredEmails, getUnansweredEmailWithOutLoading } from "./store/Slices/unansweredEmails";
-import { getUnrepliedEmail, getUnrepliedEmailWithOutLoading } from "./store/Slices/unrepliedEmails";
+import { getLadger, getLadgerEmail, getLadgerWithOutLoading } from "./store/Slices/ladger";
+import {
+  getUnansweredEmails,
+  getUnansweredEmailWithOutLoading,
+} from "./store/Slices/unansweredEmails";
+import {
+  getUnrepliedEmail,
+  getUnrepliedEmailWithOutLoading,
+} from "./store/Slices/unrepliedEmails";
 import { getOrders } from "./store/Slices/orders";
 import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
@@ -29,13 +35,23 @@ import { getAllAvatar } from "./store/Slices/avatarSlice";
 import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 import { getmovedEmails } from "./store/Slices/movedEmails";
 import { SocketContext } from "./context/SocketContext";
+import { hotAction } from "./store/Slices/hotSlice";
+import { eventActions } from "./store/Slices/eventSlice";
+import ErrorBoundary from "./components/ErrorBoundary";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
-  const { displayIntro, setActivePage, enteredEmail, currentIndex, setCurrentIndex } = useContext(PageContext);
-  const { currentAvatar, currentMail } = useContext(SocketContext);
+  const {
+    displayIntro,
+    setActivePage,
+    enteredEmail,
+    currentIndex,
+    setCurrentIndex,
+  } = useContext(PageContext);
+  const { currentAvatar, notificationCount, setNotificationCount } =
+    useContext(SocketContext);
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
@@ -52,22 +68,22 @@ const RootLayout = () => {
     dispatch(getFavEmails(timeline, enteredEmail));
     dispatch(getLinkExchange(timeline, enteredEmail));
     dispatch(getBulkEmails(timeline, enteredEmail));
-    dispatch(getOrders(timeline, enteredEmail));
-    dispatch(getDeals(timeline, enteredEmail));
-    dispatch(getInvoices(timeline, enteredEmail));
-    dispatch(getOffers(timeline, enteredEmail));
+    dispatch(getOrders(enteredEmail));
+    dispatch(getDeals(enteredEmail));
+    dispatch(getInvoices(enteredEmail));
+    dispatch(getOffers(enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
-    setCurrentIndex(0)
+    setCurrentIndex(0);
   }, [enteredEmail, timeline]);
-  const firstEmail = emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+  const firstEmail =
+    emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
 
   useEffect(() => {
     if (enteredEmail) {
       dispatch(getLadgerEmail(enteredEmail));
-
     } else if (firstEmail) {
       dispatch(getLadgerEmail(firstEmail));
     }
@@ -80,9 +96,87 @@ const RootLayout = () => {
     }
   }, [email]);
   useEffect(() => {
-    dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail));
-    dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-  }, [currentMail])
+    if (notificationCount.unreplied_email) {
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      setNotificationCount((prev) => ({
+        ...prev,
+        unreplied_email: null,
+      }));
+    }
+    if (notificationCount.outr_el_process_audit) {
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_el_process_audit: null,
+      }));
+    }
+    if (notificationCount.outr_deal_fetch) {
+      dispatch(getDeals());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_deal_fetch: null,
+      }));
+    }
+    if (notificationCount.outr_order_gp_li) {
+      dispatch(getOrders());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_order_gp_li: null,
+      }));
+    }
+    if (notificationCount.outr_self_test) {
+      dispatch(getInvoices());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_self_test: null,
+      }));
+    }
+    if (notificationCount.outr_offer) {
+      dispatch(getOffers());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_offer: null,
+      }));
+    }
+    if (notificationCount.outr_recent_activity) {
+      dispatch(eventActions.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_recent_activity: null,
+      }));
+    }
+
+
+  }, [notificationCount]);
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (
@@ -107,7 +201,9 @@ const RootLayout = () => {
             >
               <div className="p-6">
                 <WelcomeHeader />
-                <Outlet />
+                <ErrorBoundary>
+                  <Outlet />
+                </ErrorBoundary>
                 {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}

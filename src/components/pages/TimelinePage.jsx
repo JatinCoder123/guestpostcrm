@@ -8,7 +8,7 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
-import { LoadingAll, LoadingChase, LoadingSpin } from "../Loading";
+import { LoadingChase } from "../Loading";
 import { sendEmailToThread, threadEmailAction } from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
@@ -18,13 +18,13 @@ import TimelineEvent from "../TimelineEvent";
 import MailerSummaryHeader from "../MailerSummaryHeader";
 import NoResult from "../NoResult";
 import ContactHeader from "../ContactHeader";
-import { extractEmail } from "../../assets/assets";
 import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
-import { updateUnrepliedEmails } from "../../store/Slices/unrepliedEmails";
+import { unrepliedAction, updateUnrepliedEmails } from "../../store/Slices/unrepliedEmails";
 import { updateUnansweredEmails } from "../../store/Slices/unansweredEmails";
+import NewEmailBanner from "../NewEmailBanner";
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
   const [showThread, setShowThread] = useState(false);
@@ -51,10 +51,10 @@ export function TimelinePage() {
     (state) => state.ladger
   );
 
-  const { emails, loading: unrepliedLoading } = useSelector(
+  const { emails, loading: unrepliedLoading, showNewEmailBanner } = useSelector(
     (state) => state.unreplied
   );
-  const currentThreadId = emails.length > 0 ? emails[currentIndex].thread_id : null;
+  const currentThreadId = emails?.length > 0 ? emails[currentIndex].thread_id : null;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -92,10 +92,6 @@ export function TimelinePage() {
     threadError,
     threadMessage,
   ]);
-
-
-
-
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
@@ -116,23 +112,27 @@ export function TimelinePage() {
       setAiReplySentLoading(false);
     }
   };
-
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [emails]);
-
   const handleNext = () => {
-    if (currentIndex < emails.length - 1) {
+    if (currentIndex < emails?.length - 1) {
       setCurrentIndex((p) => p + 1);
     }
   };
-
   const handlePrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex((p) => p - 1);
     }
   };
 
+  useEffect(() => {
+    if (showNewEmailBanner) {
+      const timer = setTimeout(() => {
+        setCurrentIndex(0);       // 🔥 redirect to latest email
+        dispatch(unrepliedAction.setShowNewEmailBanner(false));
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showNewEmailBanner]);
   if (showEmail) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
@@ -177,6 +177,7 @@ export function TimelinePage() {
 
   return (
     <>
+      <NewEmailBanner show={showNewEmailBanner} />
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
@@ -190,7 +191,7 @@ export function TimelinePage() {
               ) : (
                 <MailerSummaryHeader />
               )}
-              {emails.length > 0 && (
+              {emails?.length > 0 && (
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* AI SUMMARY */}
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
@@ -210,7 +211,7 @@ export function TimelinePage() {
                           transition={{ type: "spring", stiffness: 400 }}
                           className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                           onClick={handleAiAutoReply}
-                          disabled={sending || mailersSummary == null || mailersSummary?.ai_response.trim() === ""}
+                          disabled={sending || mailersSummary == null || mailersSummary?.ai_response?.trim() === ""}
                         >
                           <img
                             width="33"
@@ -280,10 +281,9 @@ export function TimelinePage() {
                         <Reply className="w-6 h-6 text-yellow-700" />
                       </motion.button>
                     </div>
-                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                      {emails.length > 0 &&
-                        emails[currentIndex].subject}
-                    </p>
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: emails?.length > 0 && emails[currentIndex].body ? emails[currentIndex].body : "No Message Found!" }} />
+
+
                   </div>
                 </div>
               )}

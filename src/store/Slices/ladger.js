@@ -72,8 +72,7 @@ export const getLadger = () => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger&filter=${
-          getState().ladger.timeline
+        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline
         }&page=1&page_size=50`,
         {
           withCredentials: false,
@@ -104,8 +103,36 @@ export const getLadgerEmail = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger&filter=${
-          getState().ladger.timeline
+        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline
+        }&email=${email}&page=1&page_size=50`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("Ladger Of Email", data);
+      dispatch(
+        ladgerSlice.actions.getLadgerSuccess({
+          duplicate: data.duplicate_threads_count,
+          ladger: data.data,
+          mailersSummary: data.mailers_summary,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
+          email: email,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.getLadgerFailed(error.response?.data?.message)
+      );
+    }
+  };
+};
+export const getLadgerWithOutLoading = (email) => {
+  return async (dispatch, getState) => {
+    try {
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline
         }&email=${email}&page=1&page_size=50`,
         {
           withCredentials: false,

@@ -6,25 +6,26 @@ import {
   DollarSign,
   Calendar,
   User,
+  Trash
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
-import { dealsAction, getDeals, updateDeal } from "../../store/Slices/deals";
 import Pagination from "../Pagination";
 import { useNavigate } from "react-router-dom";
-import UpdatePopup from "../UpdatePopup";
 import { toast } from "react-toastify";
+import { deleteDeal, getDeals } from "../../store/Slices/deals";
+import { excludeEmail } from "../../assets/assets";
+import { LoadingChase } from "../Loading";
 
 export function DealsPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { count, deals, loading, error, updating, message } = useSelector((state) => state.deals);
+  const { count, deals, loading, error, deleting, deleteDealId } = useSelector((state) => state.deals);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
-  const { timeline, email } = useSelector((state) => state.ladger);
-  const [currentDealUpdate, setCurrentDealUpdate] = useState(null)
+
 
   const filtereddeals = deals
     .filter((item) => {
@@ -50,7 +51,7 @@ export function DealsPage() {
       return 0;
     });
   const dropdownOptions = [
-    { value: 'contect', label: 'contact' }
+    { value: 'contect', label: 'Contact' }
   ];
 
   const filterOptions = [
@@ -119,54 +120,20 @@ export function DealsPage() {
   };
 
 
-  const updateDealHandler = (currentDeal, data) => {
-    const updateDealData = {
-      ...currentDeal,
-      ...data
-    }
-    dispatch(updateDeal(updateDealData))
-  }
-  useEffect(() => {
-    if (message) {
-      toast.success(message);
-      setCurrentDealUpdate(null)
-      dispatch(dealsAction.clearAllMessages())
-    }
-    if (error) {
-      toast.error(error);
-      dispatch(dealsAction.clearAllErrors())
-    }
-  }, [message, error, dispatch]);
-
   return (
     <>
-      {
-        currentDealUpdate && (
-          <UpdatePopup
-            open={!!currentDealUpdate}
-            title="Update Deal"
-            fields={[
-              { name: "dealamount", label: "Deal Amount", type: "number", value: currentDealUpdate.dealamount },
-              { name: "website_c", label: "Website", type: "text", value: currentDealUpdate.website_c },
-              { name: "email", label: "Email", type: "email", value: currentDealUpdate.email, disabled: true },
-            ]}
-            loading={updating}
-            onUpdate={(data) => updateDealHandler(currentDealUpdate, data)}
-            onClose={() => setCurrentDealUpdate(null)}
-          />
-        )
-      }
       <SearchComponent
 
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
+        // dropdownPlaceholder="Filter by contact"
         dropdownPlaceholder="Filter by"
 
 
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
-        searchPlaceholder="Search emails..."
+        searchPlaceholder="Search here..."
 
 
         onFilterApply={handleFilterApply}
@@ -314,15 +281,24 @@ export function DealsPage() {
                   </td>
 
                   <td className="px-6 py-4">
-                    <div className="flex gap-2">
+                    <div className="flex items-center justify-center gap-2">
                       {/* Update Button */}
                       <button
-                        onClick={() => setCurrentDealUpdate(deal)}
+                        onClick={() => navigateTo(`/deals/edit/${deal.id}`, { state: { email: excludeEmail(deal.real_name) } })}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
                         <Pen className="w-5 h-5 text-blue-600" />
                       </button>
+                      {deleting && deleteDealId === deal.id ? <LoadingChase size="20" color="red" /> : (
+                        <button
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                          title="Delete"
+                          onClick={() => dispatch(deleteDeal(deal.id))}
+                        >
+                          <Trash className="w-5 h-5 text-red-600" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

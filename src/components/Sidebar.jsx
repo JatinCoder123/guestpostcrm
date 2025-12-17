@@ -263,15 +263,30 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all cursor-pointer 
                          ${collapsed ? "justify-center" : ""}
                          ${activePage === item.id
-                  ? `bg-gray-100 ${item.color}`
+                  ? `bg-gray-200 ${item.color}`
                   : `${item.hover} text-gray-700`
                 }`}
             >
               {/* FIXED ICON SIZE ALWAYS */}
-              <item.icon
-                className={`w-5 h-5 ${activePage === item.id ? item.color : "text-gray-500"
-                  }`}
-              />
+             <item.icon
+  className={`w-5 h-5 transition-all duration-300 ease-out
+    ${
+      activePage === item.id
+        ? `
+         
+          translate-x-0
+          scale-130
+          drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]
+        `
+        : `
+          text-gray-500
+          translate-x-0
+          scale-100
+        `
+    }`
+  }
+/>
+
 
               {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
               {!collapsed && (

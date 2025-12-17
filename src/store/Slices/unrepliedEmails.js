@@ -10,6 +10,7 @@ const unrepliedSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
+    showNewEmailBanner: false,
   },
   reducers: {
     getEmailRequest(state) {
@@ -40,6 +41,9 @@ const unrepliedSlice = createSlice({
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.error = null;
+    },
+    setShowNewEmailBanner(state, action) {
+      state.showNewEmailBanner = action.payload;
     }
   },
 });
@@ -79,7 +83,7 @@ export const getUnrepliedEmail = (filter, email) => {
     }
   };
 };
-export const getUnrepliedEmailWithOutLoading = (filter, email) => {
+export const getUnrepliedEmailWithOutLoading = (filter, email, newEmail = false) => {
   return async (dispatch, getState) => {
     try {
       let response;
@@ -103,6 +107,9 @@ export const getUnrepliedEmailWithOutLoading = (filter, email) => {
           emails: data.data,
         })
       );
+      if (newEmail) {
+        dispatch(unrepliedSlice.actions.setShowNewEmailBanner(true));
+      }
       dispatch(unrepliedSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(

@@ -1,8 +1,9 @@
 export default function Preview({
     data = [],
     type,
-    totalAmount = 0,
-    userEmail
+    userEmail,
+    websiteKey,
+    amountKey
 }) {
     return (
         <>
@@ -144,7 +145,7 @@ export default function Preview({
                                                                                 color: "#263238",
                                                                             }}
                                                                         >
-                                                                            {d.website_c || "(no website)"}
+                                                                            {d[websiteKey] || "(no website)"}
                                                                         </td>
 
                                                                         <td
@@ -158,40 +159,10 @@ export default function Preview({
                                                                             }}
                                                                         >
                                                                             $
-                                                                            {Number(
-                                                                                d.dealamount || 0
-                                                                            ).toLocaleString()}
+                                                                            {isNaN(Number(d[amountKey])) ? 0 : Number(d[amountKey])}
                                                                         </td>
                                                                     </tr>
                                                                 ))}
-
-                                                                {/* TOTAL AMOUNT */}
-                                                                <tr>
-                                                                    <td
-                                                                        style={{
-                                                                            padding: "14px",
-                                                                            fontSize: "16px",
-                                                                            fontWeight: "700",
-                                                                            color: "#1a2b6b",
-                                                                            borderTop: "3px solid #4e79ff",
-                                                                        }}
-                                                                    >
-                                                                        Total Amount
-                                                                    </td>
-
-                                                                    <td
-                                                                        style={{
-                                                                            padding: "14px",
-                                                                            textAlign: "right",
-                                                                            fontSize: "18px",
-                                                                            fontWeight: "800",
-                                                                            color: "#1a2b6b",
-                                                                            borderTop: "3px solid #4e79ff",
-                                                                        }}
-                                                                    >
-                                                                        ${totalAmount.toLocaleString()}
-                                                                    </td>
-                                                                </tr>
                                                             </tbody>
                                                         </table>
 

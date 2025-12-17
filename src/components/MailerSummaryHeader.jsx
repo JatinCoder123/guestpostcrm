@@ -16,26 +16,26 @@ import { create } from "zustand";
 
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
-  const { orders } = useSelector((state) => state.orders);
-  const { offers } = useSelector((state) => state.offers);
-  const { deals } = useSelector((state) => state.deals);
+  const { orders, loading: ordersLoading } = useSelector((state) => state.orders);
+  const { offers, loading: offersLoading } = useSelector((state) => state.offers);
+  const { deals, loading: dealsLoading } = useSelector((state) => state.deals);
   const [emailData, setEmailData] = useState({ orders: [], offers: [], deals: [] });
   useEffect(() => {
-    const order = orders.filter(o => excludeEmail(o.real_name) == email)
+    const order = orders.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       orders: order
     }))
   }, [email, orders])
   useEffect(() => {
-    const deal = deals.filter(d => excludeEmail(d.real_name) == email)
+    const deal = deals.filter(d => excludeEmail(d.real_name ?? d.email) == email)
     setEmailData((prev) => ({
       ...prev,
       deals: deal
     }))
   }, [email, deals])
   useEffect(() => {
-    const offer = offers.filter(o => excludeEmail(o.real_name) == email)
+    const offer = offers.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       offers: offer
@@ -92,9 +92,9 @@ const MailerSummaryHeader = () => {
                   </div>
                 </Titletooltip>{" "}
               </td>
-              <TD data={emailData.orders} setData={setEmailData} type="orders" />
-              <TD data={emailData.offers} type="offers" />
-              <TD data={emailData.deals} type="deals" />
+              <TD data={emailData.orders} setData={setEmailData} type="orders" loading={ordersLoading} />
+              <TD data={emailData.offers} type="offers" loading={offersLoading} />
+              <TD data={emailData.deals} type="deals" loading={dealsLoading} />
             </tr>
           </tbody>
         </table>
@@ -106,8 +106,9 @@ const MailerSummaryHeader = () => {
 export default MailerSummaryHeader;
 
 
-function TD({ data, type, setData }) {
+function TD({ data, type, setData, LoadingData }) {
   const { creating, message, error, loading } = useSelector((state) => state.orders);
+  const { email } = useSelector((state) => state.ladger);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   useEffect(() => {
@@ -132,7 +133,7 @@ function TD({ data, type, setData }) {
       dispatch(createOrder())
       return;
     }
-    navigateTo(`/${type}/create`)
+    data.length > 0 ? navigateTo(`/${type}/view`, { state: { email } }) : navigateTo(`/${type}/create`, { state: { email } })
 
   }
   return (
@@ -144,7 +145,7 @@ function TD({ data, type, setData }) {
             <img className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data.length > 0 ? "edit" : "add"}.png`}
+              src={`https://img.icons8.com/stickers/100/${data.length > 0 ? "visible" : "add"}.png`}
               alt="add"
             />
           </button>

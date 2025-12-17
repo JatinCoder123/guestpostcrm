@@ -14,6 +14,8 @@ const dealsSlice = createSlice({
     error: null,
     message: null,
     updating: false,
+    deleting: false,
+    deleteDealId: null,
   },
   reducers: {
     getDealsRequest(state) {
@@ -40,7 +42,9 @@ const dealsSlice = createSlice({
     },
     createDealSucess(state, action) {
       state.creating = false;
-      state.message = action.payload;
+      state.message = action.payload.message;
+      state.deals = action.payload.deals;
+      state.count = action.payload.count;
       state.error = null;
     },
     createDealFailed(state, action) {
@@ -64,6 +68,23 @@ const dealsSlice = createSlice({
       state.message = null;
       state.error = action.payload;
     },
+    deleteDealRequest(state, action) {
+      state.deleting = true;
+      state.error = null;
+      state.deleteDealId = action.payload;
+    },
+    deleteDealSuccess(state, action) {
+      state.deleting = false;
+      state.deals = action.payload.deals;
+      state.count = action.payload.count;
+      state.deleteDealId = null;
+      state.error = null;
+    },
+    deleteDealFailed(state, action) {
+      state.deleting = false;
+      state.deleteDealId = null;
+      state.error = action.payload;
+    },
     clearAllErrors(state) {
       state.error = null;
     },
@@ -76,7 +97,7 @@ const dealsSlice = createSlice({
   },
 });
 
-export const getDeals = (filter, email) => {
+export const getDeals = (email) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.getDealsRequest());
 
@@ -85,12 +106,12 @@ export const getDeals = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=get_deals&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&filter=${filter}&page=1&page_size=50`
+          }&type=get_deals&filter=${getState().ladger.timeline}&page=1&page_size=50`
         );
       }
       const data = response.data;
@@ -112,15 +133,20 @@ export const getDeals = (filter, email) => {
 export const createDeal = (deals = []) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       deals.map(async (deal) => {
         console.log(deal);
-        const domain = getState().user.crmEndpoint.split("?")[0];
-        const { data } = await axios.post(
+        const res = await axios.post(
           `${domain}?entryPoint=get_post_all&action_type=post_data`,
-
           {
-            parent_bean: {
+            parent_bean:
+            {
+              module: "Contacts",
+              id: getState().viewEmail.contactInfo.id
+
+            },
+            child_bean: {
               module: "outr_deal_fetch",
               dealamount: deal.dealamount,
               email: deal.email,
@@ -130,15 +156,20 @@ export const createDeal = (deals = []) => {
           {
             headers: {
               "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "aplication/json",
+              "Content-Type": "application/json",
             },
           }
         );
-        console.log(`Create Deal`, data);
-      });
+        console.log(`Create Deal`, res);
 
+      });
+      const updatedDeals = [...deals, ...getState().deals.deals];
       dispatch(
-        dealsSlice.actions.createDealSucess("Deals Created Successfully")
+        dealsSlice.actions.createDealSucess({
+          message: "Deals Created Successfully",
+          deals: updatedDeals,
+          count: updatedDeals.length,
+        })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
     } catch (error) {
@@ -179,6 +210,29 @@ export const updateDeal = (deal) => {
       dispatch(dealsSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(dealsSlice.actions.updateDealFailed("Deal Update Failed"));
+    }
+  };
+};
+export const deleteDeal = (id) => {
+  return async (dispatch, getState) => {
+    dispatch(dealsSlice.actions.deleteDealRequest(id));
+    try {
+      const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`
+      );
+      console.log(`Delete Deal`, data);
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+      const updatedDeals = getState().deals.deals.filter((deal) => deal.id !== id);
+      dispatch(
+        dealsSlice.actions.deleteDealSuccess({
+          deals: updatedDeals,
+          count: getState().deals.count - 1,
+        })
+      );
+      dispatch(dealsSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(dealsSlice.actions.deleteDealFailed(error.message));
     }
   };
 };
