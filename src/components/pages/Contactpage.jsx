@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import {
   User,
   Phone,
@@ -12,35 +11,102 @@ import {
   Target,
   DollarSign,
   Clock,
+  TrendingUp,
+  Hash,
+  Globe,
+  Calendar,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { editContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 
-// Framer motion variants for stagger animations
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.12 }
-  }
-};
-const itemVariants = {
-  hidden: { opacity: 0, y: 25 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45 } }
-};
-
 export default function Contactpage() {
-  const { contactInfo, accountInfo,dealInfo,message,error,loading} = useSelector(
+  const { contactInfo, accountInfo, dealInfo, message, error, loading } = useSelector(
     (state) => state.viewEmail
   );
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    contact: contactInfo || {},
-    account: accountInfo || {},
-    deal: dealInfo || {}
+    contact: {},
+    account: {},
+    deal: []
   });
-const dispatch = useDispatch();
+  
+  const [totalDealCount, setTotalDealCount] = useState(0);
+  const [highestDealAmount, setHighestDealAmount] = useState(0);
+  const [highestDealIndex, setHighestDealIndex] = useState(-1);
+  const [highestDealDate, setHighestDealDate] = useState("N/A");
+  
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    let dealsArray = [];
+    
+    if (Array.isArray(dealInfo)) {
+      dealsArray = dealInfo;
+    } else if (dealInfo && typeof dealInfo === 'object') {
+      if (Array.isArray(dealInfo.deal)) {
+        dealsArray = dealInfo.deal;
+      } else {
+        dealsArray = Object.values(dealInfo).filter(item => item && typeof item === 'object');
+      }
+    }
+
+    const newFormData = {
+      contact: contactInfo || {},
+      account: accountInfo || {},
+      deal: dealsArray
+    };
+    
+    setFormData(newFormData);
+    calculateDealStats(newFormData.deal);
+    
+  }, [contactInfo, accountInfo, dealInfo]);
+
+  const calculateDealStats = (deals) => {
+    if (!Array.isArray(deals) || deals.length === 0) {
+      setTotalDealCount(0);
+      setHighestDealAmount(0);
+      setHighestDealIndex(-1);
+      setHighestDealDate("N/A");
+      return;
+    }
+    
+    setTotalDealCount(deals.length);
+    
+    let maxAmount = 0;
+    let maxIndex = -1;
+    let maxDate = "N/A";
+    
+    deals.forEach((deal, index) => {
+      const amount = parseFloat(deal?.dealamount) || 0;
+      if (amount > maxAmount) {
+        maxAmount = amount;
+        maxIndex = index;
+        maxDate = deal.date_entered ? formatDate(deal.date_entered) : "N/A";
+      }
+    });
+    
+    setHighestDealAmount(maxAmount);
+    setHighestDealIndex(maxIndex);
+    setHighestDealDate(maxDate);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    
+    const dateOnly = dateString.split(' ')[0];
+    
+    try {
+      const date = new Date(dateOnly);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-GB'); 
+      }
+      return dateOnly;
+    } catch (error) {
+      return dateOnly;
+    }
+  };
+
   const handleEditClick = () => {
     setIsEditing(true);
   };
@@ -57,99 +123,62 @@ const dispatch = useDispatch();
   };
 
   const handleSave = () => {
-    dispatch(editContact(formData))
+    dispatch(editContact(formData));
     setIsEditing(false);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
   };
+
   useEffect(() => {
-   if(message){
-    toast.success(message);
-    dispatch(viewEmailAction.clearAllMessage())
-   }
-   if(error){
-    toast.success(error);
-    dispatch(viewEmailAction.clearAllErrors())
-   }
+    if (message) {
+      toast.success(message);
+      dispatch(viewEmailAction.clearAllMessage());
+    }
+    if (error) {
+      toast.error(error);
+      dispatch(viewEmailAction.clearAllErrors());
+    }
   }, [message, error, dispatch]);
 
-
-  useEffect(() => {
-  console.log('formData:', formData);
-}, []);
-
   return (
-    <div className="w-full min-h-screen from-purple-50 via-blue-50 to-pink-50 py-12 px-4">
+    <div className="w-full min-h-screen bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8] py-12 px-4">
       {/* Hero Section with Avatar */}
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="max-w-7xl mx-auto mb-8"
-      >
+      <div className="max-w-7xl mx-auto mb-8">
         <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <motion.div
-              animate={{
-                y: [0, -10, 0],
-                rotate: [0, 5, 0, -5, 0]
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 5,
-                ease: "easeInOut"
-              }}
-              className="relative"
-            >
-              <div className="w-12 h-12 rounded-full backdrop-blur-xl bg-gradient-to-br from-purple-400/30 to-blue-400/30 border border-white/50 flex items-center justify-center shadow-xl">
-                <User size={30} className="text-purple-600" />
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full backdrop-blur-xl bg-gradient-to-br from-[#a855f7]/30 to-[#60a5fa]/30 border border-white/50 flex items-center justify-center shadow-xl">
+                <User size={30} className="text-[#9333ea]" />
               </div>
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full border-4 border-white"
-              />
-            </motion.div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#4ade80] rounded-full border-4 border-white" />
+            </div>
            
             <div className="flex-1 text-center md:text-left">
-              <motion.h1
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
-              >
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#9333ea] to-[#3b82f6] bg-clip-text text-transparent">
                 {contactInfo?.full_name || "No Name"}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-lg text-gray-600 mt-2"
-              >
+              </h1>
+              <p className="text-lg text-gray-600 mt-2">
                 {contactInfo?.type} {contactInfo?.title}
-              </motion.p>
-             
+              </p>
             </div>
+            
             <div className="editbtn cursor-pointer" onClick={handleEditClick}>
-                <img width="48" height="48" src="https://img.icons8.com/fluency/48/create-new.png" alt="create-new"/>
-              </div>
+              <img width="48" height="48" src="https://img.icons8.com/fluency/48/create-new.png" alt="create-new"/>
+            </div>
           </div>
         </div>
-      </motion.div>
+      </div>
+      
       {/* Main Content Grid */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6"
-      >
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Contact Information - 2 columns */}
-        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Contact Information Card */}
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#a855f7] to-[#60a5fa] flex items-center justify-center">
                 <User className="text-white" size={20} />
               </div>
               Contact Information
@@ -164,14 +193,189 @@ const dispatch = useDispatch();
               <GlassInfo icon={<User />} label="Customer Type" value={contactInfo?.customer_type} />
               <GlassInfo icon={<ChartSpline />} label="Status" value={contactInfo?.status} />
               <GlassInfo icon={<Target />} label="Last Activity" value={contactInfo?.date_modified} />
-              <GlassInfo icon={<DollarSign />} label="Deal Amount" value={formData?.deal?.[0]?.dealamount || "N/A"} />
-              <GlassInfo icon={<Clock />} label="Deal Date" value={formData?.deal?.[0]?.date_entered || "N/A"} />
             </div>
           </div>
+          
+          {/* Deals Information Section - FIXED HEIGHT AND SCROLLABLE */}
+          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4ade80] to-[#10b981] flex items-center justify-center">
+                <DollarSign className="text-white" size={20} />
+              </div>
+              Deals Information
+            </h2>
+            
+            {/* Deals Summary Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#60a5fa]/20 to-[#22d3ee]/20 flex items-center justify-center">
+                    <Hash className="text-[#3b82f6]" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">Total Deals</p>
+                    <p className="text-xl font-bold text-gray-800">{totalDealCount}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#fbbf24]/20 to-[#f97316]/20 flex items-center justify-center">
+                    <TrendingUp className="text-[#eab308]" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">Highest Deal</p>
+                    <p className="text-xl font-bold text-gray-800">${highestDealAmount}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#a855f7]/20 to-[#ec4899]/20 flex items-center justify-center">
+                    <Calendar className="text-[#9333ea]" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">Deal Date</p>
+                    <p className="text-xl font-bold text-gray-800">{highestDealDate}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Deals Table with Fixed Height and Scrollable */}
+            {formData.deal && formData.deal.length > 0 ? (
+              <div className="space-y-4">
+                {/* Table Header */}
+                <div className="grid grid-cols-12 gap-4 mb-2 pb-3 pt-3 border-b border-gray-200/50 sticky top-0 bg-white/40 backdrop-blur-sm z-10">
+                  <div className="col-span-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <Hash size={20} /> #
+                    </p>
+                  </div>
+                  <div className="col-span-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <Calendar size={20} /> Date
+                    </p>
+                  </div>
+                  <div className="col-span-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <DollarSign size={20} /> Deal Amount
+                    </p>
+                  </div>
+                  <div className="col-span-5">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <Globe size={20} /> Website
+                    </p>
+                  </div>
+                  
+                </div>
+                
+                {/* Table Rows with Fixed Height Container */}
+                <div 
+                  className="space-y-2 h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#d1d5db transparent'
+                  }}
+                >
+                  {formData.deal.map((deal, index) => (
+                    <div
+                      key={index}
+                      className={`grid grid-cols-12 gap-4 p-3 backdrop-blur-md bg-white/20 border ${
+                        index === highestDealIndex 
+                          ? 'border-[#f59e0b]/50' 
+                          : 'border-white/40'
+                      } rounded-xl items-center transition-all duration-200 hover:scale-101 hover:bg-white/50 hover:border-[#9333ea]/30`}
+                    >
+                      {/* Serial Number */}
+                      <div className="col-span-1">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          index === highestDealIndex 
+                            ? 'bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30' 
+                            : 'bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20'
+                        }`}>
+                          <span className={`text-sm font-bold ${
+                            index === highestDealIndex ? 'text-[#92400e]' : 'text-gray-800'
+                          }`}>
+                            {index + 1}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Date */}
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#a855f7]/20 to-[#ec4899]/20 flex items-center justify-center">
+                            <Calendar size={16} className="text-[#9333ea]" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-700">
+                              {deal.date_entered ? formatDate(deal.date_entered) : "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Deal Amount */}
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            index === highestDealIndex 
+                              ? 'bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30' 
+                              : 'bg-gradient-to-br from-[#4ade80]/20 to-[#10b981]/20'
+                          }`}>
+                            <DollarSign size={16} className={
+                              index === highestDealIndex ? 'text-[#92400e]' : 'text-[#059669]'
+                            } />
+                          </div>
+                          <div>
+                            <p className={`text-base font-bold ${
+                              index === highestDealIndex ? 'text-[#92400e]' : 'text-gray-800'
+                            }`}>
+                              ${deal.dealamount || "0"}
+                            </p>
+                            {index === highestDealIndex && (
+                              <p className="text-xs text-[#d97706] font-medium">Highest Deal</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Website */}
+                      <div className="col-span-5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#60a5fa]/20 to-[#22d3ee]/20 flex items-center justify-center">
+                            <Globe size={16} className="text-[#3b82f6]" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800 truncate">
+                              {deal.website_c || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto rounded-full backdrop-blur-md bg-white/30 border border-white/50 flex items-center justify-center mb-4">
+                  <DollarSign className="text-gray-400" size={24} />
+                </div>
+                <p className="text-gray-500 font-medium">No deals found</p>
+              </div>
+            )}
+          </div>
+          
           {/* Addresses Section */}
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#60a5fa] to-[#22d3ee] flex items-center justify-center">
                 <MapPin className="text-white" size={20} />
               </div>
               Addresses
@@ -182,24 +386,26 @@ const dispatch = useDispatch();
               <GlassInfo icon={<MapPin />} label="Secondary Address" value={contactInfo?.alt_address_street} fullWidth />
             </div>
           </div>
-        </motion.div>
+        </div>
+        
         {/* Account Details - 1 column */}
-        <motion.div variants={itemVariants} className="space-y-6">
+        <div className="space-y-6">
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f472b6] to-[#a855f7] flex items-center justify-center">
                 <Building2 className="text-white" size={20} />
               </div>
               Account
             </h2>
            
             <div className="space-y-4">
-              <GlassInfo icon={<Building2 />} label="Company" value={accountInfo?.company} fullWidth />
-              <GlassInfo icon={<CreditCard />} label="Account ID" value={accountInfo?.accountId} fullWidth />
-              <GlassInfo icon={<Phone />} label="Phone" value={accountInfo?.phone_office} fullWidth />
+              <GlassInfo icon={<Building2 />} label="Company" value={formData?.contact?.account_name} fullWidth />
+              <GlassInfo icon={<CreditCard />} label="Account ID" value={formData?.contact?.account_id} fullWidth />
+              <GlassInfo icon={<Phone />} label="Phone" value={formData?.contact?.phone_work} fullWidth />
               <GlassInfo icon={<Building2 />} label="Website" value={accountInfo?.website} fullWidth />
             </div>
           </div>
+          
           {/* Account Addresses */}
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Account Addresses</h3>
@@ -208,22 +414,13 @@ const dispatch = useDispatch();
               <GlassInfo icon={<MapPin />} label="Shipping" value={accountInfo?.shipping_address_street} fullWidth />
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Edit Modal */}
       {isEditing && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={handleCancel}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCancel}>
+          <div 
             className="backdrop-blur-xl bg-white/90 border border-white/50 rounded-3xl p-8 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
@@ -234,11 +431,12 @@ const dispatch = useDispatch();
               </button>
             </div>
 
+            {/* Edit form content */}
             <div className="space-y-8">
               {/* Contact Information */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <User size={20} className="text-purple-600" />
+                  <User size={20} className="text-[#9333ea]" />
                   Contact Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -249,7 +447,7 @@ const dispatch = useDispatch();
                       name="first_name"
                       value={formData.contact.first_name || ''}
                       onChange={(e) => handleChange(e, 'contact')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
@@ -259,7 +457,7 @@ const dispatch = useDispatch();
                       name="last_name"
                       value={formData.contact.last_name || ''}
                       onChange={(e) => handleChange(e, 'contact')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
@@ -269,7 +467,7 @@ const dispatch = useDispatch();
                       name="stage"
                       value={formData.contact.stage || ''}
                       onChange={(e) => handleChange(e, 'contact')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
@@ -279,7 +477,7 @@ const dispatch = useDispatch();
                       name="phone_mobile"
                       value={formData.contact.phone_mobile || ''}
                       onChange={(e) => handleChange(e, 'contact')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
@@ -289,7 +487,7 @@ const dispatch = useDispatch();
                       name="email1"
                       value={formData.contact.email1 || ''}
                       onChange={(e) => handleChange(e, 'contact')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
@@ -299,7 +497,7 @@ const dispatch = useDispatch();
                       name="date_entered"
                       value={formData.contact.date_entered || ''}
                       onChange={(e) => handleChange(e, 'contact')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
@@ -309,7 +507,7 @@ const dispatch = useDispatch();
                       name="customer_type"
                       value={formData.contact.customer_type || ''}
                       onChange={(e) => handleChange(e, 'contact')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                 </div>
@@ -318,7 +516,7 @@ const dispatch = useDispatch();
               {/* Contact Addresses */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <MapPin size={20} className="text-blue-600" />
+                  <MapPin size={20} className="text-[#3b82f6]" />
                   Contact Addresses
                 </h3>
                 <div className="space-y-4">
@@ -329,7 +527,7 @@ const dispatch = useDispatch();
                       value={formData.contact.billing_address_street || ''}
                       onChange={(e) => handleChange(e, 'contact')}
                       rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
                     />
                   </div>
                   <div className="col-span-full">
@@ -339,7 +537,7 @@ const dispatch = useDispatch();
                       value={formData.contact.alt_address_street || ''}
                       onChange={(e) => handleChange(e, 'contact')}
                       rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
                     />
                   </div>
                 </div>
@@ -348,7 +546,7 @@ const dispatch = useDispatch();
               {/* Account Information */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <Building2 size={20} className="text-pink-600" />
+                  <Building2 size={20} className="text-[#ec4899]" />
                   Account Information
                 </h3>
                 <div className="space-y-4">
@@ -359,7 +557,7 @@ const dispatch = useDispatch();
                       name="company"
                       value={formData.account.company || ''}
                       onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
                     />
                   </div>
                   <div>
@@ -369,7 +567,7 @@ const dispatch = useDispatch();
                       name="accountId"
                       value={formData.account.accountId || ''}
                       onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
                     />
                   </div>
                   <div>
@@ -379,7 +577,7 @@ const dispatch = useDispatch();
                       name="phone_office"
                       value={formData.account.phone_office || ''}
                       onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
                     />
                   </div>
                   <div>
@@ -389,7 +587,7 @@ const dispatch = useDispatch();
                       name="website"
                       value={formData.account.website || ''}
                       onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
                     />
                   </div>
                 </div>
@@ -398,7 +596,7 @@ const dispatch = useDispatch();
               {/* Account Addresses */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <MapPin size={20} className="text-blue-600" />
+                  <MapPin size={20} className="text-[#3b82f6]" />
                   Account Addresses
                 </h3>
                 <div className="space-y-4">
@@ -409,7 +607,7 @@ const dispatch = useDispatch();
                       value={formData.account.billing_address_street || ''}
                       onChange={(e) => handleChange(e, 'account')}
                       rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
                     />
                   </div>
                   <div className="col-span-full">
@@ -419,7 +617,7 @@ const dispatch = useDispatch();
                       value={formData.account.shipping_address_street || ''}
                       onChange={(e) => handleChange(e, 'account')}
                       rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
                     />
                   </div>
                 </div>
@@ -436,13 +634,13 @@ const dispatch = useDispatch();
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-colors"
+                className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white font-semibold rounded-xl hover:from-[#7e22ce] hover:to-[#2563eb] transition-colors"
               >
                 Save Changes
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -451,33 +649,20 @@ const dispatch = useDispatch();
 // Glassmorphic Info Box
 function GlassInfo({ icon, label, value, fullWidth = false }) {
   return (
-    <motion.div
-      variants={itemVariants}
-      whileHover={{
-        scale: 1.03,
-        boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
-      }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className={`
-        backdrop-blur-md bg-white/30 border border-white/60
-        p-4 rounded-2xl flex items-center gap-4
-        shadow-lg hover:shadow-xl cursor-pointer
-        ${fullWidth ? 'col-span-full' : ''}
-      `}
-    >
-      <motion.div
-        whileHover={{ rotate: 360 }}
-        transition={{ duration: 0.6 }}
-        className="
-          w-12 h-12 flex items-center justify-center rounded-xl
-          bg-gradient-to-br from-purple-400/20 to-blue-400/20
-          backdrop-blur-sm border border-white/40
-          text-purple-600
-        "
-      >
+    <div className={`
+      backdrop-blur-md bg-white/30 border border-white/60
+      p-4 rounded-2xl flex items-center gap-4
+      shadow-lg hover:shadow-xl cursor-pointer hover:scale-103 transition-all duration-200
+      ${fullWidth ? 'col-span-full' : ''}
+    `}>
+      <div className="
+        w-12 h-12 flex items-center justify-center rounded-xl
+        bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20
+        backdrop-blur-sm border border-white/40
+        text-[#9333ea] hover:rotate-360 transition-transform duration-600
+      ">
         {icon}
-      </motion.div>
+      </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
           {label}
@@ -486,6 +671,6 @@ function GlassInfo({ icon, label, value, fullWidth = false }) {
           {value || "N/A"}
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 }

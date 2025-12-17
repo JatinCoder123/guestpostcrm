@@ -40,7 +40,6 @@ export function TimelinePage() {
     threadId,
   } = useSelector((state) => state.viewEmail);
 
-
   const {
     error: threadError,
     message: threadMessage,
@@ -74,14 +73,18 @@ export function TimelinePage() {
     }
     if (threadMessage) {
       toast.success(threadMessage);
-      const newEmail = emails.find((email) => email.thread_id == currentThreadId);
+      const newEmail = emails.find(
+        (email) => email.thread_id == currentThreadId
+      );
       dispatch(updateUnrepliedEmails(currentThreadId));
       dispatch(updateUnansweredEmails(newEmail));
-      dispatch(addEvent({
-        email: email,
-        thread_id: currentThreadId,
-        recent_activity: threadMessage,
-      }));
+      dispatch(
+        addEvent({
+          email: email,
+          thread_id: currentThreadId,
+          recent_activity: threadMessage,
+        })
+      );
       dispatch(threadEmailAction.clearAllMessage());
     }
   }, [
@@ -111,12 +114,19 @@ export function TimelinePage() {
   const handleAiAutoReply = async () => {
     setAiReplySentLoading(true);
     try {
-      dispatch(sendEmailToThread(emails[currentIndex].thread_id, mailersSummary?.ai_response));
-      dispatch(addEvent({
-        email: email,
-        thread_id: emails[currentIndex].thread_id,
-        recent_activity: "AI reply sent",
-      }));
+      dispatch(
+        sendEmailToThread(
+          emails[currentIndex].thread_id,
+          mailersSummary?.ai_response
+        )
+      );
+      dispatch(
+        addEvent({
+          email: email,
+          thread_id: emails[currentIndex].thread_id,
+          recent_activity: "AI reply sent",
+        })
+      );
     } catch (error) {
       console.error("❌ Error sending AI reply:", error);
       toast.error("Failed to send AI reply");
@@ -148,7 +158,6 @@ export function TimelinePage() {
   if (showEmail) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-
         <EmailBox
           onClose={() => setShowEmails(false)}
           view={true}
@@ -161,7 +170,6 @@ export function TimelinePage() {
   if (showThread) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-
         <EmailBox
           onClose={() => setShowThread(false)}
           threadId={currentThreadId}
@@ -195,8 +203,11 @@ export function TimelinePage() {
         {!loading && !unrepliedLoading && (
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
-
-              <ContactHeader onNext={handleNext} onPrev={handlePrev} currentIndex={currentIndex} />
+              <ContactHeader
+                onNext={handleNext}
+                onPrev={handlePrev}
+                currentIndex={currentIndex}
+              />
 
               {!mailersSummary || Object.keys(mailersSummary).length === 0 ? (
                 <NoResult />
@@ -238,19 +249,20 @@ export function TimelinePage() {
                     {!sending && (
                       <div className="mb-3">
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                          {mailersSummary == null || mailersSummary?.ai_response == "" ? "No AI reply generated." : mailersSummary?.ai_response}
+                          {mailersSummary == null ||
+                          mailersSummary?.ai_response == ""
+                            ? "No AI reply generated."
+                            : mailersSummary?.ai_response}
                         </p>
                       </div>
                     )}
                   </div>
-
 
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
                     <div className="flex items-center mb-2">
                       <h3 className="text-blue-700 font-semibold">
                         AI Summary
                       </h3>
-
 
                       <motion.button
                         whileHover={{ scale: 1.15 }}
@@ -276,7 +288,6 @@ export function TimelinePage() {
                     </p>
                   </div>
 
-
                   {/* Latest Message */}
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
                     <div className="flex items-center justify-start mb-2">
@@ -299,8 +310,20 @@ export function TimelinePage() {
                   </div>
                 </div>
               )}
+<<<<<<< HEAD
               {!(!mailersSummary || Object.keys(mailersSummary).length === 0) && (
                 <ActionButton handleActionBtnClick={handleActionBtnClick} handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={currentThreadId} />
+=======
+              {!(
+                !mailersSummary || Object.keys(mailersSummary).length === 0
+              ) && (
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmails}
+                  setShowIP={setShowIP}
+                  threadId={currentThreadId}
+                />
+>>>>>>> 4a54ff10323ac101ec87aa416896da89446e8e7f
               )}
             </div>
 
