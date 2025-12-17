@@ -15,7 +15,7 @@ import SearchComponent from "./SearchComponent";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Pagination from "../Pagination";
-import { getTags, tagActions } from "../../store/Slices/tag"; // Import tagActions
+import { getTags, tagActions } from "../../store/Slices/tag";
 import CreateTag from "./CreateTag";
 
 export function TagManagerpage() {
@@ -23,13 +23,15 @@ export function TagManagerpage() {
   const { tags, count, creating } = useSelector((state) => state.tag);
   
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedTag, setSelectedTag] = useState('');
+  // Initialize with "hot" to show hot tags on load
+  const [selectedCategory, setSelectedCategory] = useState('hot');
+  const [selectedTag, setSelectedTag] = useState('hot'); // For dropdown selection
   const [deletingId, setDeletingId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [createdTagName, setCreatedTagName] = useState("");
   
+  // Fetch tags on component mount or when selectedTag changes
   useEffect(() => {
     dispatch(getTags(selectedTag));
   }, [dispatch, selectedTag]);
@@ -126,7 +128,7 @@ export function TagManagerpage() {
       <div className={`${showCreateForm ? 'filter blur-sm pointer-events-none' : ''} transition-all duration-300`}>
         <SearchComponent
           dropdownOptions={dropdownOptions}
-          selectedDropdownValue={selectedCategory}
+          selectedDropdownValue={selectedCategory} // This will show "hot" as selected on load
           onDropdownChange={handleCategoryChange}
           dropdownPlaceholder="Select Tag"
           searchValue={topsearch}
