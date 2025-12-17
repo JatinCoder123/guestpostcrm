@@ -203,9 +203,6 @@ export function ReminderPage() {
               />
             </a>
           </div>
-          <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-            Send Reminders
-          </button>
         </div>
         {/* Table */}
         <div className="overflow-x-auto">
@@ -273,14 +270,14 @@ export function ReminderPage() {
                     <td className="px-6 py-4 text-gray-600">{order.status}</td>
 
                     <td className="px-6 py-4 flex items-center">
-                      {sendReminderLoading && sendReminderId === order.id ?<LoadingChase size="20" color="blue"/> : <button
-                        className={`px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm ${order.status==="Sent"?"opacity-50 cursor-not-allowed":""}`}
+                      {sendReminderLoading && sendReminderId === order.id ? <LoadingChase size="20" color="blue" /> : <button
+                        className={`px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm ${order.status === "Sent" ? "opacity-50 cursor-not-allowed" : ""}`}
                         onClick={() => sendReminder(order.id)}
                         disabled={order.status === "Sent"}
                       >
                         Send Reminder
                       </button>}
-                     
+
                     </td>
                   </tr>
                 ))
