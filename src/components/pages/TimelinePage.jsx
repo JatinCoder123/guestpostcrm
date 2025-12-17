@@ -8,16 +8,8 @@ import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
-<<<<<<< HEAD
-import { LoadingAll, LoadingChase, LoadingSpin } from "../Loading";
-import {
-  sendEmailToThread,
-  threadEmailAction,
-} from "../../store/Slices/threadEmail";
-=======
 import { LoadingChase } from "../Loading";
 import { sendEmailToThread, threadEmailAction } from "../../store/Slices/threadEmail";
->>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
 import Ip from "../Ip";
@@ -42,11 +34,6 @@ export function TimelinePage() {
   const { currentIndex, setCurrentIndex } = useContext(PageContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
   const {
     error: sendError,
     message,
@@ -66,12 +53,7 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading, showNewEmailBanner } = useSelector(
     (state) => state.unreplied
   );
-<<<<<<< HEAD
-  const currentThreadId =
-    emails.length > 0 ? emails[currentIndex].thread_id : null;
-=======
   const currentThreadId = emails?.length > 0 ? emails[currentIndex].thread_id : null;
->>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -159,12 +141,8 @@ export function TimelinePage() {
       }, 3000);
 
       return () => clearTimeout(timer);
-<<<<<<< HEAD
-    }  }, [showNewEmailBanner]);
-=======
     }
   }, [showNewEmailBanner]);
->>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
   if (showEmail) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
@@ -244,15 +222,7 @@ export function TimelinePage() {
                           transition={{ type: "spring", stiffness: 400 }}
                           className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                           onClick={handleAiAutoReply}
-<<<<<<< HEAD
-                          disabled={
-                            sending ||
-                            mailersSummary == null ||
-                            mailersSummary?.ai_response.trim() === ""
-                          }
-=======
                           disabled={sending || mailersSummary == null || mailersSummary?.ai_response?.trim() === ""}
->>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
                         >
                           <img
                             width="33"
@@ -322,18 +292,9 @@ export function TimelinePage() {
                         <Reply className="w-6 h-6 text-yellow-700" />
                       </motion.button>
                     </div>
-<<<<<<< HEAD
-                    
-                    {emails.length > 0 &&<div
-                      dangerouslySetInnerHTML={{ __html: emails[currentIndex].body || "no body found"}}
-                      className="whitespace-pre-line text-sm leading-relaxed"
-                    /> }
-                    
-=======
                     <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: emails?.length > 0 && emails[currentIndex].body ? emails[currentIndex].body : "No Message Found!" }} />
 
 
->>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
                   </div>
                 </div>
               )}

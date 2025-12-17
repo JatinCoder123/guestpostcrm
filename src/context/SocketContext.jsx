@@ -30,27 +30,10 @@ export const SocketContextProvider = (props) => {
 
     const newMailHandler = (data) => {
       console.log("new mail", data);
-<<<<<<< HEAD
-      
-      if(data.name !== "outr_el_process_audit" && data.name !== "outr_recent_activity"){
-        setCurrentHotCount(Date.now());
-        return;
-       
- 
-      }
-      else{
-        setRecentCount(Date.now());
-        return;
-      }
-
-      setCurrentHot(Date.now())
-      setCurrentMail(Date.now());
-=======
       setNotificationCount((prev) => ({
         ...prev,
         [data.name]: Date.now(),
       }));
->>>>>>> 26919d5e6bb76b11213aa02a4c3b250969e9116a
     };
 
     socket.on("new_avatar", newAvatarHandler);
