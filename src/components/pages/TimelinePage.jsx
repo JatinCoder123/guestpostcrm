@@ -318,6 +318,7 @@ export function TimelinePage() {
                     setShowEmails={setShowEmails}
                     setShowIP={setShowIP}
                     threadId={currentThreadId}
+                    handleActionBtnClick={handleActionBtnClick}
                   />
                 )}
             </div>
