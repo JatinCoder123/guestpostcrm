@@ -12,6 +12,8 @@ export const SocketContextProvider = (props) => {
     outr_deal_fetch: null,
     outr_order_gp_list: null,
     outr_self_test: null,
+    refresh_ladger: null
+
   });
 
   useEffect(() => {

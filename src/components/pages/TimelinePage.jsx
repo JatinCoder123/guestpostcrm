@@ -95,6 +95,14 @@ export function TimelinePage() {
   const handleMoveSuccess = () => {
     dispatch(getLadgerEmail(email));
   };
+  const handleActionBtnClick = (btnBody) => {
+    dispatch(sendEmailToThread(emails[currentIndex].thread_id, btnBody));
+    dispatch(addEvent({
+      email: email,
+      thread_id: emails[currentIndex].thread_id,
+      recent_activity: "Quick Action Button Reply Sent",
+    }));
+  };
 
   const handleAiAutoReply = async () => {
     setAiReplySentLoading(true);
@@ -288,7 +296,7 @@ export function TimelinePage() {
                 </div>
               )}
               {!(!mailersSummary || Object.keys(mailersSummary).length === 0) && (
-                <ActionButton handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={currentThreadId} />
+                <ActionButton handleActionBtnClick={handleActionBtnClick} handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={currentThreadId} />
               )}
             </div>
 

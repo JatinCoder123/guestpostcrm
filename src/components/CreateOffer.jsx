@@ -40,7 +40,13 @@ export default function CreateOffer() {
     setCurrentOffers(() => [...offer])
   }, [state, offers, type, id])
   useEffect(() => {
-    const valid = websiteLists.filter(w => !currentOffers.some(o => o.website == w))
+    let valid = [];
+    if (type == "create") {
+      valid = websiteLists.filter(w => !currentOffers.some(o => o.website == w))
+    }
+    if (type == "edit") {
+      valid = websiteLists.filter(w => currentOffers.some(o => o.id == id || o.website !== w))
+    }
     setValidWebsite(valid)
   }, [currentOffers])
   useEffect(() => {

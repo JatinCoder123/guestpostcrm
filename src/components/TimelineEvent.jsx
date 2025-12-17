@@ -2,6 +2,7 @@ import React from "react";
 import Pagination from "./Pagination";
 import { getLadgerEmail } from "../store/Slices/ladger";
 import { useSelector } from "react-redux";
+import { Eye } from "lucide-react";
 
 const TimelineEvent = () => {
   const { ladger } = useSelector((state) => state.ladger);
@@ -25,7 +26,7 @@ const TimelineEvent = () => {
                     <img
                       width="100"
                       height="100"
-                      src="https://img.icons8.com/bubbles/100/new-post.png"
+                      src={event.icon ? event.icon : "https://img.icons8.com/bubbles/100/new-post.png"}
                       alt="new-post"
                     />
                   </div>
@@ -38,14 +39,14 @@ const TimelineEvent = () => {
 
                 {/* Card */}
                 <div
-                  className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${
-                    index == 0 ? "bg-gradient-to-r from-[#FFFF00] to-white" : ""
-                  }`}
+                  className={`flex-1 border-2 rounded-xl  p-4 mt-3 ${index == 0 ? "bg-gradient-to-r from-[#FFFF00] to-white" : ""
+                    }`}
                 >
                   <div className="flex items-center gap-2 justify-between mb-2">
-                    <span className="text-gray-700">
-                      {event.type_c?.charAt(0).toUpperCase() +
-                        event.type_c?.slice(1)}
+                    <span className="text-gray-700 flex items-center justify-center gap-2">
+                      <span title={event.description ? event.description : ""} className="cursor-pointer hover:scale-110"><Eye size={20} className="text-blue-600" /></span>
+                      <span>{event.type_c?.charAt(0).toUpperCase() +
+                        event.type_c?.slice(1)}</span>
                     </span>
 
                     <span className="text-gray-500 text-sm">

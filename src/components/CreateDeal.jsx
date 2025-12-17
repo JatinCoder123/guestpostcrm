@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useContext } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +9,7 @@ import Create from "./Create";
 import Preview from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
+import { SocketContext } from "../context/SocketContext";
 
 const fields = [
   { name: "website_c", label: "Website", type: "select", options: websiteLists },
@@ -21,6 +22,7 @@ export default function CreateDeal() {
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
   const [validWebsite, setValidWebsite] = useState([])
   const [currentDeals, setCurrentDeals] = useState([])
+  const { setNotificationCount } = useContext(SocketContext);
 
   const [newDeals, setNewDeals] = useState([{
     website_c: "",
@@ -38,8 +40,15 @@ export default function CreateDeal() {
     setCurrentDeals(() => [...deal])
   }, [state, deals, type, id])
   useEffect(() => {
-    const valid = websiteLists.filter(w => !currentDeals.some(d => d.website_c == w))
+    let valid = [];
+    if (type == "create") {
+      valid = websiteLists.filter(w => !currentDeals.some(d => d.website_c == w))
+    }
+    if (type == "edit") {
+      valid = websiteLists.filter(w => currentDeals.some(d => d.id == id || d.website_c !== w))
+    }
     setValidWebsite(valid)
+
   }, [currentDeals])
   const submitHandler = () => {
     dispatch(createDeal(newDeals));
@@ -72,6 +81,10 @@ export default function CreateDeal() {
     if (message) {
       if (message.includes("Created")) {
         dispatch(getDeals())
+        setNotificationCount((prev) => ({
+          ...prev,
+          outr_deal_fetch: Date.now(),
+        }));
         dispatch(sendEmail(renderToStaticMarkup(
           <Preview
             data={[...newDeals, ...currentDeals]}

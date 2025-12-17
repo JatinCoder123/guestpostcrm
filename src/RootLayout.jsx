@@ -38,6 +38,7 @@ import { SocketContext } from "./context/SocketContext";
 import { hotAction } from "./store/Slices/hotSlice";
 import { eventActions } from "./store/Slices/eventSlice";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
@@ -76,6 +77,7 @@ const RootLayout = () => {
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
+    dispatch(getQuickActionBtn());
     setCurrentIndex(0);
   }, [enteredEmail, timeline]);
   const firstEmail =
@@ -123,6 +125,18 @@ const RootLayout = () => {
       setNotificationCount((prev) => ({
         ...prev,
         outr_deal_fetch: null,
+      }));
+    }
+    if (notificationCount.refresh_ladger) {
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail))
+      }
+      else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail))
+      }
+      setNotificationCount((prev) => ({
+        ...prev,
+        refresh_ladger: null,
       }));
     }
     if (notificationCount.outr_order_gp_li) {
