@@ -39,6 +39,22 @@ const SearchComponent = ({
     { value: 'eur', label: 'EUR' },
     { value: 'gbp', label: 'GBP' },
   ],
+  statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'New', label: 'New' },
+    { value: 'Duplicate', label: 'Duplicate' },
+    { value: 'AI Failed', label: 'AI Failed' },
+    { value: 'AI Passed', label: 'AI Passed' },
+    { value: 'In process', label: 'In process' },
+    { value: 'Accepted', label: 'Accepted' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'Published', label: 'Published' },
+    { value: 'Blacklisted', label: 'Blacklisted' },
+    { value: 'Spam Score High', label: 'Spam Score High' },
+    { value: 'Link Removed', label: 'Link Removed' },
+    { value: 'Link ReAdded', label: 'Link ReAdded' },
+    { value: 'Hold', label: 'Hold' },
+  ],
 
   // Additional props
   className = "",
@@ -49,6 +65,7 @@ const SearchComponent = ({
     transactionType: 'all',
     dateRange: '30',
     currency: 'all',
+    status: 'all',
     minAmount: 0,
     maxAmount: 0,
   });
@@ -70,6 +87,7 @@ const SearchComponent = ({
       transactionType: 'all',
       dateRange: '30',
       currency: 'all',
+      status: 'all',
       minAmount: 0,
       maxAmount: 0,
     });
@@ -222,7 +240,29 @@ const SearchComponent = ({
                     </div>
                   </div>
 
-                  {/* Third Row: Amount Range (Full width) */}
+                  {/* Third Row: Status + Empty Space for alignment */}
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    {/* Status Section */}
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Status</h4>
+                      <select
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={localFilters.status}
+                        onChange={(e) => setLocalFilters({ ...localFilters, status: e.target.value })}
+                      >
+                        {statusOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Empty div for maintaining grid structure */}
+                    <div></div>
+                  </div>
+
+                  {/* Fourth Row: Amount Range (Full width) */}
                   <div className="mb-6">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Amount range</h4>
                     <div className="grid grid-cols-2 gap-4">
