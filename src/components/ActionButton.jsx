@@ -20,6 +20,7 @@ import { addEvent } from "../store/Slices/eventSlice";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { getTags } from "../store/Slices/markTagSlice";
+import { applyTag } from "../store/Slices/markTagSlice";
 
 const ActionButton = ({
   handleMoveSuccess,
@@ -245,14 +246,17 @@ const ActionButton = ({
                     {tags.map((tag) => (
                       <button
                         key={tag.name}
-                        onClick={() => setShowTags(false)}
+                        onClick={() => {
+                          dispatch(applyTag(tag.name)); // 🔥 pass selected tag
+                          setShowTags(false);
+                        }}
                         className="
-                w-full text-left px-4 py-3
-                text-sm font-semibold text-gray-700
-                border-b last:border-b-0
-                hover:bg-indigo-50 hover:text-indigo-600
-                transition
-              "
+      w-full text-left px-4 py-3
+      text-sm font-semibold text-gray-700
+      border-b last:border-b-0
+      hover:bg-indigo-50 hover:text-indigo-600
+      transition
+    "
                       >
                         {tag.name}
                       </button>

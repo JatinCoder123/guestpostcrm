@@ -29,12 +29,8 @@ const markTagSlice = createSlice({
   },
 });
 
-export const {
-  getTagsRequest,
-  getTagsSuccess,
-  getTagsFail,
-  clearAllErrors,
-} = markTagSlice.actions;
+export const { getTagsRequest, getTagsSuccess, getTagsFail, clearAllErrors } =
+  markTagSlice.actions;
 
 export default markTagSlice.reducer;
 
@@ -50,8 +46,40 @@ export const getTags = () => async (dispatch) => {
     // API gives: { success, fields: [...] }
     dispatch(getTagsSuccess(data.fields));
   } catch (error) {
-    dispatch(
-      getTagsFail(error.response?.data?.message || error.message)
-    );
+    dispatch(getTagsFail(error.response?.data?.message || error.message));
   }
+};
+
+export const applyTag = (selectedTag) => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch(markTagSlice.actions.getTagsRequest());
+
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const threadId = getState().viewEmail?.contactInfo?.id;
+
+      const response = await axios.get(
+        `${domain}?entryPoint=contactAction&email=&field=${selectedTag}`
+      );
+
+      const data = response.data;
+
+      if (!data.success) {
+        throw new Error("Tag apply failed");
+      }
+
+      dispatch(markTagSlice.actions.getTagsSuccess(data.alltags || []));
+
+      // OPTIONAL: success toast / message
+      console.log("Tag applied successfully");
+
+      dispatch(markTagSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        markTagSlice.actions.getTagsFail(
+          error.response?.data?.message || error.message
+        )
+      );
+    }
+  };
 };
