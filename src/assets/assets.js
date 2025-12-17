@@ -11,14 +11,25 @@ export const websiteLists = [
   "https://www.mailsextract.com/",
   "https://www.guestpostcrm.com/",
 ];
+// export const periodOptions = [
+//   { period: "today", title: "Today" },
+//   { period: "yesterday", title: "Yesterday" },
+//   { period: "last_7_days", title: "Last 7 Days" },
+//   { period: "last_14_days", title: "Last 14 Days" },
+//   { period: "last_21_days", title: "Last 21 Days" },
+//   { period: "last_30_days", title: "Last 30 Days" },
+//   { period: "last_90_days", title: "Last 90 Days" },
+// ];
 export const periodOptions = [
   { period: "today", title: "Today" },
   { period: "yesterday", title: "Yesterday" },
-  { period: "last_7_days", title: "Last 7 Days" },
-  { period: "last_14_days", title: "Last 14 Days" },
-  { period: "last_21_days", title: "Last 21 Days" },
-  { period: "last_30_days", title: "Last 30 Days" },
-  { period: "last_90_days", title: "Last 90 Days" },
+  { period: "this_week", title: "This week" },
+  { period: "last_7_days", title: "Last 7 days" },
+  { period: "last_30_days", title: "Last 30 days" },
+  { period: "this_month", title: "This month" },
+  { period: "last_month", title: "Last month" },
+  { period: "last_3_months", title: "Last 3 months" },
+  
 ];
 export function getDifference(dateString) {
   const inputDate = new Date(dateString);
