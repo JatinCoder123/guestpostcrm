@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LoadingChase } from "./Loading";
 
-export default function Create({ data, email, setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
+export default function Create({ data, email, validWebsite = [], setValidWebsite, setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -62,7 +62,9 @@ export default function Create({ data, email, setData, type, pageType, creating,
         updateData(idx, { [field]: value });
     };
 
-
+    useEffect(() => {
+        console.log(data)
+    }, [data])
 
     const valid = useMemo(
         () => {
@@ -207,7 +209,7 @@ export default function Create({ data, email, setData, type, pageType, creating,
                                                                 </div>}
 
                                                                 <div className="mt-4 flex flex-wrap gap-3">
-                                                                    {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} />)}
+                                                                    {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} websiteLists={validWebsite} />)}
                                                                 </div>
                                                                 <div className="mt-4 grid grid-cols-2 gap-3">
                                                                     {lists.length > 0 && lists.map((list, listIndex) => <DisplayList key={listIndex} spamScores={item.spam_score_c} data={item[list.name]} label={list.label} />)}
@@ -343,10 +345,12 @@ function InputField({
     type = "text",
     disabled = false,
     options = [], // ✅ for select
-    pageType = ""
+    pageType = "",
+    websiteLists = []
 }) {
     const value = data?.[name] ?? "";
     disabled = pageType == "create" ? false : pageType == "view" ? true : disabled;
+    type = pageType == "view" && type == "select" ? "text" : type;
 
     return (
         <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[300px]`}>
@@ -361,7 +365,8 @@ function InputField({
                     disabled={disabled}
                     className="w-full rounded-xl border px-3 py-2 bg-white"
                 >
-                    {options.map((opt, idx) => (
+                    <option value="" disabled>Select Website</option>
+                    {websiteLists.map((opt, idx) => (
                         <option key={idx} value={opt}>
                             {opt}
                         </option>

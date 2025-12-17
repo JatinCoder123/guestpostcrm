@@ -19,6 +19,7 @@ export default function CreateDeal() {
   const { state } = useLocation()
   const { deals, updating, error, message, creating, deleting, deleteDealId } = useSelector((state) => state.deals);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
+  const [validWebsite, setValidWebsite] = useState([])
   const [currentDeals, setCurrentDeals] = useState([])
 
   const [newDeals, setNewDeals] = useState([{
@@ -36,6 +37,10 @@ export default function CreateDeal() {
     }
     setCurrentDeals(() => [...deal])
   }, [state, deals, type, id])
+  useEffect(() => {
+    const valid = websiteLists.filter(w => !currentDeals.some(d => d.website_c == w))
+    setValidWebsite(valid)
+  }, [currentDeals])
   const submitHandler = () => {
     dispatch(createDeal(newDeals));
   };
@@ -99,7 +104,7 @@ export default function CreateDeal() {
   }, [message, error, dispatch, sendError, sendMessage])
 
   return (
-    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} deleting={deleting} deleteId={deleteDealId} pageType={type} handleDelete={handleDelete} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, email }) => (
+    <Create data={type == "create" ? newDeals : currentDeals} validWebsite={validWebsite} email={state?.email} deleting={deleting} deleteId={deleteDealId} pageType={type} handleDelete={handleDelete} websiteLists={websiteLists} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Deals"
