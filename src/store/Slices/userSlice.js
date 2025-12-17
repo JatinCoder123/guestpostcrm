@@ -10,6 +10,7 @@ const userSlice = createSlice({
     user: {},
     isAuthenticated: false,
     crmEndpoint: null,
+    id: null,
     businessEmail: null,
     error: null,
     message: null,
@@ -20,15 +21,17 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.user = {};
       state.crmEndpoint = null;
+      state.id = null;
       state.businessEmail = null;
       state.error = null;
     },
     loadUserSuccess(state, action) {
-      const { crmEndpoint, businessEmail, user } = action.payload;
+      const { crmEndpoint, businessEmail, user, id } = action.payload;
       state.loading = false;
       state.isAuthenticated = true;
       state.user = user;
       state.crmEndpoint = crmEndpoint;
+      state.id = id;
       state.businessEmail = businessEmail;
       state.error = null;
     },
@@ -37,6 +40,7 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.user = {};
       state.crmEndpoint = null;
+      state.id = null;
       state.businessEmail = null;
       state.error = action.payload;
     },
@@ -48,6 +52,9 @@ const userSlice = createSlice({
       state.loading = false;
       state.isAuthenticated = false;
       state.user = {};
+      state.id = null;
+      state.crmEndpoint = null;
+      state.businessEmail = null;
       state.error = null;
       state.message = action.payload;
     },
@@ -76,6 +83,7 @@ export const getUser = () => {
           user: data.user,
           crmEndpoint: data.crmEndpoint,
           businessEmail: data.businessEmail,
+          id: data.id,
         })
       );
 

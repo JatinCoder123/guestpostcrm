@@ -5,14 +5,19 @@ export const PageContext = createContext();
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
   const [displayIntro, setDisplayIntro] = useState(true);
-  const [enteredEmail, setEnteredEmail] = useState(null);
+  const [welcomeHeaderContent, setWelcomeHeaderContent] = useState("Unreplied");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [enteredEmail, setEnteredEmail] = useState(
+    localStorage.getItem("email") || null
+  );
+  const [search, setSearch] = useState(localStorage.getItem("email") || "");
 
   // Set activePage based on current URL
   useEffect(() => {
-    const path = window.location.pathname; // e.g. "/orders/123"
-    const firstPart = path.split("/")[1]; // "orders"
+    const path = window.location.pathname;
 
-    setActivePage(firstPart || ""); // set "" if no path
+    const firstPart = path.split("/")[1];
+    setActivePage(firstPart || "");
   }, []);
 
   const value = {
@@ -22,6 +27,12 @@ export const PageContextProvider = (props) => {
     setDisplayIntro,
     enteredEmail,
     setEnteredEmail,
+    search,
+    setSearch,
+    welcomeHeaderContent,
+    setWelcomeHeaderContent,
+    currentIndex,
+    setCurrentIndex,
   };
 
   return (

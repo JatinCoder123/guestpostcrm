@@ -23,6 +23,9 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      {
+        console.log("ERROR");
+      }
       return (
         <div className="p-6 rounded-xl bg-red-50 border border-red-300 shadow">
           <h2 className="text-xl font-semibold text-red-600">
@@ -33,7 +36,7 @@ class ErrorBoundary extends React.Component {
           </p>
 
           <button
-            onClick={this.handleReset}
+            onClick={()=>{window.location.reload()}}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg"
           >
             Try Again

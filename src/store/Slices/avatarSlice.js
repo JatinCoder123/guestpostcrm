@@ -1,30 +1,38 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const aiCreditsSlice = createSlice({
-  name: "aiCredits",
+const avatarSlice = createSlice({
+  name: "avatar",
   initialState: {
     loading: false,
-    data: null,
+    avatars: [],
+    avatar: null,
     error: null,
   },
   reducers: {
-    getAiCreditsRequest(state) {
+    getAllAvatarRequest(state) {
       state.loading = true;
       state.error = null;
     },
-    getAiCreditsSucess(state, action) {
-      const { aiCredits, count, pageIndex, pageCount, balance } =
-        action.payload;
+    getAllAvatarSucess(state, action) {
       state.loading = false;
-      state.aiCredits = aiCredits;
-      state.count = count;
-      state.balance = balance;
-      state.pageIndex = pageIndex;
-      state.pageCount = pageCount;
+      state.avatars = action.payload;
       state.error = null;
     },
-    getAiCreditsFailed(state, action) {
+    getAllAvatarFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    getAvatarRequest(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    getAvatarSucess(state, action) {
+      state.loading = false;
+      state.avatar = action.payload;
+      state.error = null;
+    },
+    getAvatarFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
@@ -34,34 +42,38 @@ const aiCreditsSlice = createSlice({
   },
 });
 
-export const getAiCredits = (filter, index = 1) => {
+export const getAllAvatar = () => {
   return async (dispatch, getState) => {
-    dispatch(aiCreditsSlice.actions.getAiCreditsRequest());
-
+    dispatch(avatarSlice.actions.getAllAvatarRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
-        }&type=get_credits&filter=${filter}&page=${index}&page_size=50`
-      );
-      console.log(`aiCredits`, data);
-      dispatch(
-        aiCreditsSlice.actions.getAiCreditsSucess({
-          count: data.data_count,
-          balance: data.credit_balance,
-          aiCredits: data.data,
-          pageIndex: data.current_page,
-          pageCount: data.total_pages,
-        })
-      );
-      dispatch(aiCreditsSlice.actions.clearAllErrors());
+      const { data } = await axios.get(`${domain}?entryPoint=avtar`);
+      console.log(`avatars`, data);
+      dispatch(avatarSlice.actions.getAllAvatarSucess(data));
+      dispatch(avatarSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        aiCreditsSlice.actions.getAiCreditsFailed("Fetching Credits Failed")
+        avatarSlice.actions.getAllAvatarFailed("Fetching All Avatars Failed")
+      );
+    }
+  };
+};
+export const getAvatar = () => {
+  return async (dispatch, getState) => {
+    dispatch(avatarSlice.actions.getAvatarRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
+    try {
+      const { data } = await axios.get(`${domain}?entryPoint=avtar&email=${getState().ladger.email}`);
+      console.log(`avatar of email`, data);
+      dispatch(avatarSlice.actions.getAvatarSucess(data.avatar_url));
+      dispatch(avatarSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        avatarSlice.actions.getAvatarFailed("Fetching Avatar of email Failed")
       );
     }
   };
 };
 
-export const aiCreditsAction = aiCreditsSlice.actions;
-export default aiCreditsSlice.reducer;
+export const avatarAction = avatarSlice.actions;
+export default avatarSlice.reducer;

@@ -6,6 +6,7 @@ import {
   X,
   User2Icon,
   ChevronDown,
+  Flame,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -17,12 +18,15 @@ import { toast } from "react-toastify";
 import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
+import { getAllHot } from "../store/Slices/hotSlice";
 
-export function TopNav({setShowAvatar}) {
-  const [input, setInput] = useState("");
+export function TopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { loading, error, user } = useSelector((state) => state.user);
-  const { setEnteredEmail } = useContext(PageContext);
+  const { count } = useSelector((state) => state.hot);
+  const { setEnteredEmail, search, setWelcomeHeaderContent, setSearch } =
+    useContext(PageContext);
+
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const profileMenuRef = useRef(null);
@@ -33,15 +37,18 @@ export function TopNav({setShowAvatar}) {
   };
 
   const handleSearch = () => {
-    if (input.trim()) {
+    if (search.trim()) {
+      localStorage.setItem("email", search);
       navigateTo("");
-      setEnteredEmail(input);
+      setWelcomeHeaderContent("Search");
+      setEnteredEmail(search);
     }
   };
 
   const handleClear = () => {
-    if (input.trim()) {
-      setInput("");
+    if (search.trim()) {
+      localStorage.removeItem("email");
+      setSearch("");
       navigateTo("");
       setEnteredEmail(null);
     }
@@ -52,6 +59,13 @@ export function TopNav({setShowAvatar}) {
       handleSearch();
     }
   };
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    setAnimate(true);
+    const timer = setTimeout(() => setAnimate(false), 300);
+    return () => clearTimeout(timer);
+  }, [count]);
 
   useEffect(() => {
     if (error) {
@@ -75,6 +89,7 @@ export function TopNav({setShowAvatar}) {
   }, []);
 
   const handleSelectPeriod = (option) => {
+    localStorage.setItem("timeline", option);
     dispatch(ladgerAction.setTimeline(option));
   };
 
@@ -97,15 +112,15 @@ export function TopNav({setShowAvatar}) {
         />
 
         {/* Search Bar */}
-        <div className="flex items-center gap-3 mx-6 w-full max-w-xl flex-shrink-0">
+        <div className="flex items-center gap-2 mx-6 w-full max-w-xl flex-shrink-0">
           <div className="relative flex-1 min-w-[250px] max-w-[400px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              value={input}
+              value={search}
               placeholder="Input Email to Search"
               onKeyDown={handleKeyPress}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg 
                          focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
             />
@@ -122,23 +137,52 @@ export function TopNav({setShowAvatar}) {
           {/* Clear Button */}
           <button
             onClick={handleClear}
-            className="flex cursor-pointer items-center justify-center p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex cursor-pointer items-center justify-center mr-3 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <X className="w-4 h-4 text-white" />
           </button>
+          {/* Period Dropdown */}
+          <DropDown
+            options={periodOptions}
+            handleSelectOption={handleSelectPeriod}
+          />
         </div>
-
-        {/* Period Dropdown */}
-        <DropDown
-          options={periodOptions}
-          handleSelectOption={handleSelectPeriod}
-        />
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-3 relative">
+      <div className="flex  items-center gap-3 relative">
+        {/* Hot Button */}
+        <button
+          onClick={() => {
+            navigateTo("hot-records");
+          
+          }}
+          className="flex relative  cursor-pointer items-center gap-2 p-4 bg-orange-500 text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
+          <Flame className="w-5 h-5 text-white-500" />
+
+          <div
+            className={`
+      absolute -top-2 -right-2
+      bg-orange-800 text-white text-xs font-semibold
+      rounded-full w-6 h-6 
+      flex items-center justify-center
+      shadow-md
+      transition-all duration-300 ease-out
+      ${animate ? "scale-125 opacity-100" : "scale-90 opacity-90"}
+    `}
+          >
+            {count}
+          </div>
+        </button>
+
         {/* Notification Button */}
-        <button onClick={()=>setShowAvatar(prev=>!prev)} className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors">
+        <button
+          onClick={() => {
+            navigateTo("avatars");
+          }}
+          className="flex cursor-pointer items-center gap-2 p-4 bg-[#f1b911] text-white rounded-full hover:bg-[#cae445] transition-colors"
+        >
           <User2Icon className="w-4 h-4" />
         </button>
 
@@ -182,7 +226,7 @@ export function TopNav({setShowAvatar}) {
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                   {/* User Info */}
                   <div className="flex flex-col overflow-hidden">
-                    <p className="font-semibold text-gray-900 text-lg truncate">
+                    <p className="font-semibold text-gray-900  truncate">
                       {user?.name || "User"}
                     </p>
                     <p className="text-sm text-gray-500 truncate">
@@ -194,7 +238,7 @@ export function TopNav({setShowAvatar}) {
                   <motion.button
                     onClick={handleLogout}
                     disabled={loading}
-                    whileHover={!loading ? { scale: 1.1, x: 5 } : {}}
+                    whileHover={!loading ? { scale: 1.1 } : {}}
                     whileTap={{ scale: 0.95 }}
                     className={`
       flex items-center justify-center cursor-pointer
@@ -208,7 +252,7 @@ export function TopNav({setShowAvatar}) {
                   >
                     <img
                       className={`
-        w-10 h-10 transition-all duration-300 
+        w-8 h-8 transition-all duration-300 
         ${loading ? "opacity-40" : "opacity-100"}
       `}
                       src="https://img.icons8.com/arcade/64/exit.png"

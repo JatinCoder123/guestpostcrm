@@ -1,13 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
   initialState: {
     loading: false,
+    contactLoading: false,
     viewEmail: [],
     contactInfo: null,
     accountInfo: null,
+    dealInfo: null,
     threadId: null,
     message: null,
     error: null,
@@ -31,22 +34,40 @@ const viewEmailSlice = createSlice({
       state.error = action.payload;
     },
     getContactRequest(state) {
-      state.loading = true;
+      state.contactLoading = true;
       state.contactInfo = null;
       state.accountInfo = null;
+      state.dealInfo = null;
       state.error = null;
     },
     getContactSucess(state, action) {
-      const { contactInfo, accountInfo } = action.payload;
-      state.loading = false;
+      const { contactInfo, accountInfo, dealInfo } = action.payload;
+      state.contactLoading = false;
       state.contactInfo = contactInfo;
       state.accountInfo = accountInfo;
+      state.dealInfo = dealInfo;
       state.error = null;
     },
     getContactFailed(state, action) {
-      state.loading = false;
+      state.contactLoading = false;
       state.contactInfo = null;
       state.accountInfo = null;
+      state.dealInfo = null;
+      state.error = action.payload;
+    },
+    editContactRequest(state) {
+      state.contactLoading = true;
+      state.message = null;
+      state.error = null;
+    },
+    editContactSucess(state, action) {
+      state.contactLoading = false;
+      state.message = "Contact updated successfully";
+      state.error = null;
+    },
+    editContactFailed(state, action) {
+      state.contactLoading = false;
+      state.message = null;
       state.error = action.payload;
     },
     sendEmailRequest(state) {
@@ -79,7 +100,8 @@ export const getViewEmail = (email) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email}`
+        `${getState().user.crmEndpoint}&type=view_email&email=${getState().ladger.email
+        }`
       );
       console.log(`viewEmail`, data);
       dispatch(
@@ -91,39 +113,75 @@ export const getViewEmail = (email) => {
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getViewEmailFailed("Fetching Deals  Failed")
+        viewEmailSlice.actions.getViewEmailFailed(
+          "Fetching View Emails  Failed"
+        )
       );
     }
   };
 };
-export const getContact = (email) => {
+export const getContact = () => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getContactRequest());
 
     try {
       const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
-        }&type=get_contact&email=${email}&page=1&page_size=50`
+        `${getState().user.crmEndpoint
+        }&type=get_contact&email=${getState().ladger.email}&page=1&page_size=50`
       );
       console.log(`contact`, data);
       dispatch(
         viewEmailSlice.actions.getContactSucess({
           contactInfo: data.contact ?? null,
           accountInfo: data.account ?? null,
+          dealInfo: data.deal_fetch ?? null,
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getContactFailed(
-          "Fetching Contact Details failed"
-        )
+        viewEmailSlice.actions.getContactFailed("Fetching View Details failed")
       );
     }
   };
 };
-export const sendEmail = (reply) => {
+export const editContact = (contactData) => {
+  return async (dispatch) => {
+    dispatch(viewEmailSlice.actions.editContactRequest());
+    console.log("contactData", contactData);
+
+    try {
+      const data = await axios.post(
+        `${MODULE_URL}&action_type=post_data`,
+
+        {
+          parent_bean: {
+            module: "Contacts",
+            ...contactData["contact"],
+          },
+          child_bean: {
+            module: "Accounts",
+            ...contactData["account"],
+          },
+        },
+        {
+          headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "aplication/json",
+          },
+        }
+      );
+      console.log(`contact`, data);
+      dispatch(viewEmailSlice.actions.editContactSucess());
+      dispatch(viewEmailSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        viewEmailSlice.actions.editContactFailed("Update Contact failed")
+      );
+    }
+  };
+};
+export const sendEmail = (reply, message = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
     const threadId = getState().viewEmail.threadId;
@@ -142,7 +200,7 @@ export const sendEmail = (reply) => {
       console.log(`Reply Data`, data);
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
-          message: data.message,
+          message: message ?? data.message,
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());

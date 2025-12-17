@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { base64ToUtf8 } from "../assets/assets";
 
 const useModule = ({
   url,
@@ -7,9 +8,11 @@ const useModule = ({
   body = null,
   headers = {},
   enabled = true,
+  name = null,
   dependencies = [],
 }) => {
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
 
@@ -21,23 +24,60 @@ const useModule = ({
       const response = await axios({
         url,
         method,
-        rowBody: body,
+        data: body,
         headers,
       });
-      console.log(`${Object.entries(body)} : `, response);
-      setData(response.data);
+      console.log(name, response);
+      let data = response.data;
+      setData(data);
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
     }
   }, [url, method, body, headers]);
+  const add = async ({ url, method, body, headers }) => {
+    setCreating(true);
+    setError(null);
+
+    try {
+      const response = await axios({
+        url,
+        method,
+        data: body,
+        headers,
+      });
+      console.log(`${Object.entries(body)} : `, response.data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreating(false);
+    }
+  };
+  const update = async ({ url, method, body, headers }) => {
+    setCreating(true);
+    setError(null);
+
+    try {
+      const response = await axios({
+        url,
+        method,
+        data: body,
+        headers,
+      });
+      console.log(`${Object.entries(body)} : `, response.data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   useEffect(() => {
     if (enabled) run();
   }, [...dependencies, enabled]);
 
-  return { loading, error, data, refetch: run };
+  return { loading, error, data, setData, refetch: run, add, update };
 };
 
 export default useModule;

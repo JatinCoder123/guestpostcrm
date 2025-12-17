@@ -5,7 +5,9 @@ const threadEmailSlice = createSlice({
   name: "threadEmail",
   initialState: {
     loading: false,
+    sending: false,
     threadEmail: [],
+    message: null,
     error: null,
   },
   reducers: {
@@ -19,24 +21,31 @@ const threadEmailSlice = createSlice({
       state.loading = false;
       state.threadEmail = threadEmail;
       state.error = null;
+      state.message = null;
     },
     getThreadEmailFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
+      state.message = null;
     },
     sendEmailRequest(state) {
+      state.sending = true;
       state.loading = true;
       state.message = null;
       state.error = null;
     },
     sendEmailSucess(state, action) {
       const { message } = action.payload;
+      state.sending = false;
+
       state.loading = false;
       state.message = message;
       state.error = null;
     },
     sendEmailFailed(state, action) {
+      state.sending = false;
       state.loading = false;
+      state.message = null;
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -54,8 +63,7 @@ export const getThreadEmail = (email, threadId) => {
 
     try {
       const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
+        `${getState().user.crmEndpoint
         }&type=view_thread&thread_id=${threadId}&email=${email}&page=1&page_size=50`
       );
       console.log(`threadEmail`, data);
@@ -67,7 +75,9 @@ export const getThreadEmail = (email, threadId) => {
       dispatch(threadEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        threadEmailSlice.actions.getThreadEmailFailed("Fetching Deals  Failed")
+        threadEmailSlice.actions.getThreadEmailFailed(
+          "Fetching Thread Email  Failed"
+        )
       );
     }
   };
@@ -90,7 +100,7 @@ export const sendEmailToThread = (threadId, reply) => {
       console.log(`Reply Data`, data);
       dispatch(
         threadEmailSlice.actions.sendEmailSucess({
-          message: data.message,
+          message: "Reply To Thread Sent Successfully",
         })
       );
       dispatch(threadEmailSlice.actions.clearAllErrors());
