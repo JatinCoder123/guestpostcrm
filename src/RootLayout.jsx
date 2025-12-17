@@ -1,9 +1,10 @@
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react"; 
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger, getLadgerEmail, getLadgerWithOutLoading } from "./store/Slices/ladger";
+import { checkForDuplicates, getDuplicateCount } from "./store/Slices/duplicateEmailSlice";
 import {
   getUnansweredEmails,
   getUnansweredEmailWithOutLoading,
@@ -31,16 +32,17 @@ import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getLinkExchange } from "./store/Slices/linkExchange";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
 import { getAllAvatar } from "./store/Slices/avatarSlice";
-
 import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 import { getmovedEmails } from "./store/Slices/movedEmails";
 import { SocketContext } from "./context/SocketContext";
 import { hotAction } from "./store/Slices/hotSlice";
 import { eventActions } from "./store/Slices/eventSlice";
 import ErrorBoundary from "./components/ErrorBoundary";
+
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
+  
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
   const {
@@ -50,16 +52,24 @@ const RootLayout = () => {
     currentIndex,
     setCurrentIndex,
   } = useContext(PageContext);
+  
   const { currentAvatar, notificationCount, setNotificationCount } =
     useContext(SocketContext);
+  
+  const dispatch = useDispatch();
+  const location = useLocation().pathname.split("/")[2];
+  
+  // Show avatar when new avatar arrives
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
-  const location = useLocation().pathname.split("/")[2];
+  
+  // Set active page based on URL
   useEffect(() => {
     setActivePage(location);
-  }, [location]);
-  const dispatch = useDispatch();
+  }, [location, setActivePage]);
+  
+  // Initial data fetch when timeline or email changes
   useEffect(() => {
     dispatch(getAiCredits(timeline));
     dispatch(getUnansweredEmails(timeline, enteredEmail));
@@ -76,34 +86,48 @@ const RootLayout = () => {
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
     dispatch(getAllAvatar());
+    
+    // ✅ INITIALIZE: Fetch initial duplicate count
+    dispatch(getDuplicateCount());
+    
     setCurrentIndex(0);
-  }, [enteredEmail, timeline]);
+  }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
+  
   const firstEmail =
     emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
 
+  // Fetch ladger when email changes
   useEffect(() => {
     if (enteredEmail) {
       dispatch(getLadgerEmail(enteredEmail));
     } else if (firstEmail) {
       dispatch(getLadgerEmail(firstEmail));
     }
-  }, [enteredEmail, firstEmail]);
+  }, [enteredEmail, firstEmail, dispatch]);
 
+  // Fetch view email and contact when ladger email is set
   useEffect(() => {
     if (email) {
       dispatch(getViewEmail());
       dispatch(getContact());
     }
-  }, [email]);
+  }, [email, dispatch]);
+
+  // Handle socket notifications
   useEffect(() => {
     if (notificationCount.unreplied_email) {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      
+      // ✅ CHECK FOR DUPLICATES: When new email arrives
+      dispatch(checkForDuplicates());
+      
       setNotificationCount((prev) => ({
         ...prev,
         unreplied_email: null,
       }));
     }
+    
     if (notificationCount.outr_el_process_audit) {
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -111,13 +135,13 @@ const RootLayout = () => {
         outr_el_process_audit: null,
       }));
     }
+    
     if (notificationCount.outr_deal_fetch) {
       dispatch(getDeals());
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail))
-      }
-      else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail))
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
       }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -125,27 +149,28 @@ const RootLayout = () => {
         outr_deal_fetch: null,
       }));
     }
-    if (notificationCount.outr_order_gp_li) {
+    
+    // ✅ FIXED: Changed outr_order_gp_li to outr_order_gp_list (matches SocketContext)
+    if (notificationCount.outr_order_gp_list) {
       dispatch(getOrders());
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail))
-      }
-      else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail))
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
       }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
-        outr_order_gp_li: null,
+        outr_order_gp_list: null,
       }));
     }
+    
     if (notificationCount.outr_self_test) {
       dispatch(getInvoices());
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail))
-      }
-      else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail))
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
       }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -153,13 +178,13 @@ const RootLayout = () => {
         outr_self_test: null,
       }));
     }
+    
     if (notificationCount.outr_offer) {
       dispatch(getOffers());
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail))
-      }
-      else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail))
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
       }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -167,6 +192,7 @@ const RootLayout = () => {
         outr_offer: null,
       }));
     }
+    
     if (notificationCount.outr_recent_activity) {
       dispatch(eventActions.updateCount(1));
       setNotificationCount((prev) => ({
@@ -174,9 +200,8 @@ const RootLayout = () => {
         outr_recent_activity: null,
       }));
     }
+  }, [notificationCount, timeline, enteredEmail, firstEmail, dispatch, setNotificationCount]);
 
-
-  }, [notificationCount]);
   return (
     <AnimatePresence mode="wait">
       {displayIntro ? (
@@ -196,8 +221,9 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
-                }`}
+              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${
+                sidebarCollapsed ? "ml-4" : "ml-0"
+              }`}
             >
               <div className="p-6">
                 <WelcomeHeader />

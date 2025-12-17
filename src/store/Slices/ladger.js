@@ -109,7 +109,7 @@ export const getLadgerEmail = (email) => {
           withCredentials: false,
         }
       );
-      console.log("Ladger Of Email", data);
+      
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
@@ -138,7 +138,7 @@ export const getLadgerWithOutLoading = (email) => {
           withCredentials: false,
         }
       );
-      console.log("Ladger Of Email", data);
+      
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
@@ -185,6 +185,7 @@ export const getIpWithEmail = () => {
     }
   };
 };
+
 
 export const ladgerAction = ladgerSlice.actions;
 export default ladgerSlice.reducer;

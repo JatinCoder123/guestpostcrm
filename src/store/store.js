@@ -64,7 +64,6 @@ export const store = configureStore({
       contactdefaulter: contactdefaulterReducer,
 
      duplicateEmails: duplicateEmailReducer,
-     user: userReducer,
      DraftInvoice: DraftInvoiceReducer,
 
 
