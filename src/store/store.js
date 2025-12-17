@@ -32,6 +32,7 @@ import DraftInvoiceReducer from "./Slices/draftInvoice.js";
 import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
 
 import hotReducer from "./Slices/hotSlice.js";
+import tagReducer from "./Slices/tag.js";
 
 export const store = configureStore({
   reducer: {
@@ -61,6 +62,7 @@ export const store = configureStore({
     marketplace: marketplaceReducer,
     linkExchange: linkExchangeReducer,
     hot: hotReducer,
+    tag:tagReducer,
 
     contact_other: contactOtherReducer,
       contactdefaulter: contactdefaulterReducer,

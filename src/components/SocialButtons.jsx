@@ -101,15 +101,11 @@ useEffect(() => {
         />
       </button>
       
-<<<<<<< HEAD
       {/* DUPLICATE BUTTON WITH BADGE */}
       <button 
         className="cursor-pointer hover:scale-105 rounded-full p-2 relative"
         onClick={handleDuplicateClick}
       >
-=======
-      <button className="cursor-pointer hover:scale-105 rounded-full p-2">
->>>>>>> 959d896dd984cff6f0dc657599b4b0000e1580fb
         <img
           width="55"
           height="55"
