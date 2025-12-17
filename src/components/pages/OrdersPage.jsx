@@ -278,7 +278,7 @@ export function OrdersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Orders</p>
+              <p className="text-gray-500 text-sm">Pending</p>
               <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
@@ -290,7 +290,7 @@ export function OrdersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">In Progress</p>
+              <p className="text-gray-500 text-sm">Completed</p>
               <p className="text-2xl text-gray-900 mt-1">
                 {orders.filter(o => o.order_status?.toLowerCase().includes('progress') || o.order_status?.toLowerCase().includes('process')).length}
               </p>
@@ -304,7 +304,7 @@ export function OrdersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Completed</p>
+              <p className="text-gray-500 text-sm">Rejected</p>
               <p className="text-2xl text-gray-900 mt-1">
                 {orders.filter(o => o.order_status?.toLowerCase().includes('complete')).length}
               </p>
@@ -318,7 +318,7 @@ export function OrdersPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Revenue</p>
+              <p className="text-gray-500 text-sm">Paid </p>
               <p className="text-2xl text-gray-900 mt-1">
                 ${orders.reduce((sum, order) => sum + (parseFloat(order.total_amount_c) || 0), 0).toFixed(2)}
               </p>

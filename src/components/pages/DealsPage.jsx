@@ -170,7 +170,7 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Deals</p>
+              <p className="text-gray-500 text-sm">New</p>
               <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -182,7 +182,7 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Value</p>
+              <p className="text-gray-500 text-sm">Expired</p>
               <p className="text-2xl text-gray-900 mt-1">$10.5K</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -194,7 +194,7 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Win Rate</p>
+              <p className="text-gray-500 text-sm">No Order</p>
               <p className="text-2xl text-gray-900 mt-1">58%</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -206,7 +206,7 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Avg. Deal Size</p>
+              <p className="text-gray-500 text-sm">Upcoming Expire</p>
               <p className="text-2xl text-gray-900 mt-1">$3.5K</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">

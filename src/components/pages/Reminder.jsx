@@ -123,7 +123,7 @@ export function ReminderPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Order Reminder</p>
+              <p className="text-gray-500 text-sm">All</p>
               <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -134,7 +134,7 @@ export function ReminderPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Overdue</p>
+              <p className="text-gray-500 text-sm">Sent</p>
               <p className="text-2xl text-gray-900 mt-1">$3.1K</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -145,7 +145,7 @@ export function ReminderPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Avg Days Overdue</p>
+              <p className="text-gray-500 text-sm">Pending</p>
               <p className="text-2xl text-gray-900 mt-1">4.3</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -156,7 +156,7 @@ export function ReminderPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Recovery Rate</p>
+              <p className="text-gray-500 text-sm">Cancelled</p>
               <p className="text-2xl text-gray-900 mt-1">85%</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
