@@ -33,6 +33,7 @@ const ActionButton = ({
   const { contactInfo } = useSelector((state) => state.viewEmail);
   const { sending } = useSelector((state) => state.threadEmail);
   const { email } = useSelector((s) => s.ladger);
+  const [clickedActionBtn, setClickedActionBtn] = useState(null)
   const handleForward = (to) => {
     dispatch(forwardEmail(contactInfo.id, to, threadId));
   };
@@ -134,6 +135,9 @@ const ActionButton = ({
       toast.error(buttonsError);
       dispatch(quickActionBtnActions.clearErrors());
     }
+    if (!sending) {
+      setClickedActionBtn(null)
+    }
   }, [
     dispatch,
     forwardError,
@@ -144,7 +148,8 @@ const ActionButton = ({
     markingMessage,
     changeError,
     changeMessage,
-    buttonsError
+    buttonsError,
+    sending
   ]);
   return (
     <div className="mt-4 flex items-center  flex-wrap gap-3">
@@ -255,11 +260,12 @@ const ActionButton = ({
             onClick={(e) => {
               e.stopPropagation();
               handleActionBtnClick(btn.body);
+              setClickedActionBtn(btn.id)
             }}
             disabled={sending}
-            className=" group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer"
+            className={` group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer ${sending ? "cursor-not-allowed" : "cursor-pointer"}`}
           >
-            {sending ? <LoadingChase size="20" /> : <img src={btn.icon} alt={btn.name} className="w-8 h-8" />}
+            {clickedActionBtn === btn.id && sending ? <LoadingChase size="20" /> : <img src={btn.icon} alt={btn.name} className="w-8 h-8 " />}
             <div dangerouslySetInnerHTML={{ __html: btn.body }} className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20" />
 
           </button>

@@ -96,6 +96,10 @@ export function TimelinePage() {
     dispatch(getLadgerEmail(email));
   };
   const handleActionBtnClick = (btnBody) => {
+    if (emails.length == 0) {
+      toast.info("No Unreplied Email found");
+      return;
+    }
     dispatch(sendEmailToThread(emails[currentIndex].thread_id, btnBody));
     dispatch(addEvent({
       email: email,
