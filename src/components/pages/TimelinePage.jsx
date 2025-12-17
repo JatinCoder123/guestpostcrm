@@ -250,7 +250,7 @@ export function TimelinePage() {
                       <div className="mb-3">
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                           {mailersSummary == null ||
-                          mailersSummary?.ai_response == ""
+                            mailersSummary?.ai_response == ""
                             ? "No AI reply generated."
                             : mailersSummary?.ai_response}
                         </p>
@@ -310,21 +310,16 @@ export function TimelinePage() {
                   </div>
                 </div>
               )}
-<<<<<<< HEAD
-              {!(!mailersSummary || Object.keys(mailersSummary).length === 0) && (
-                <ActionButton handleActionBtnClick={handleActionBtnClick} handleMoveSuccess={handleMoveSuccess} setShowEmails={setShowEmails} setShowIP={setShowIP} threadId={currentThreadId} />
-=======
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmails}
-                  setShowIP={setShowIP}
-                  threadId={currentThreadId}
-                />
->>>>>>> 4a54ff10323ac101ec87aa416896da89446e8e7f
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmails}
+                    setShowIP={setShowIP}
+                    threadId={currentThreadId}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 && <TimelineEvent />}
