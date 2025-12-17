@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const initialState = {
   loading: false,
@@ -56,10 +57,11 @@ export const applyTag = (selectedTag) => {
       dispatch(markTagSlice.actions.getTagsRequest());
 
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const threadId = getState().viewEmail?.contactInfo?.id;
 
       const response = await axios.get(
-        `${domain}?entryPoint=contactAction&email=&field=${selectedTag}`
+        `${domain}?entryPoint=contactAction&email=${
+          getState().ladger.email
+        }&field=${selectedTag}`
       );
 
       const data = response.data;
@@ -68,10 +70,16 @@ export const applyTag = (selectedTag) => {
         throw new Error("Tag apply failed");
       }
 
+      // ✅ dynamic message (added)
+      const message =
+        data.new_value === 1
+          ? "Tag applied successfully"
+          : "Tag removed successfully";
+
       dispatch(markTagSlice.actions.getTagsSuccess(data.alltags || []));
 
-      // OPTIONAL: success toast / message
-      console.log("Tag applied successfully");
+      // ✅ toast with dynamic text
+      toast.success(message);
 
       dispatch(markTagSlice.actions.clearAllErrors());
     } catch (error) {
