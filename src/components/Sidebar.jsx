@@ -81,9 +81,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
     (s) => s.marketplace
   );
-  const { count: linkExchangeCount, loading: linkExchangeLoading } = useSelector(
-    (s) => s.linkExchange
-  );
+  const { count: linkExchangeCount, loading: linkExchangeLoading } =
+    useSelector((s) => s.linkExchange);
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
     (s) => s.forwarded
@@ -212,7 +211,6 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",
     },
-
   ];
 
   return (
@@ -227,8 +225,9 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
         {/* COLLAPSE BUTTON */}
         <button
           onClick={onToggleCollapse}
-          className={`fixed ${collapsed ? "left-23" : "left-62"
-            } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
+          className={`fixed ${
+            collapsed ? "left-23" : "left-62"
+          } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
                      rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}
@@ -241,9 +240,10 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
             navigateTo("");
           }}
           className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-            ${activePage === ""
-              ? "bg-green-500 text-white"
-              : "bg-green-50 text-green-700"
+            ${
+              activePage === ""
+                ? "bg-green-500 text-white"
+                : "bg-green-50 text-green-700"
             }`}
         >
           <Radio className="w-5 h-5 animate-pulse" />
@@ -260,16 +260,18 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
                 setActivePage(item.id);
                 navigateTo(item.id);
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all cursor-pointer 
-                         ${collapsed ? "justify-center" : ""}
-                         ${activePage === item.id
-                  ? `bg-gray-200 ${item.color}`
-                  : `${item.hover} text-gray-700`
-                }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer
+                ${collapsed ? "justify-center" : ""}
+                    ${
+                      activePage === item.id
+                        ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-sm scale-[1.01]"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }
+                ${item.hover}`}
             >
               {/* FIXED ICON SIZE ALWAYS */}
-             <item.icon
-  className={`w-5 h-5 transition-all duration-300 ease-out
+              <item.icon
+                className={`w-5 h-5 transition-all duration-300 ease-out
     ${
       activePage === item.id
         ? `
@@ -283,10 +285,8 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
           translate-x-0
           scale-100
         `
-    }`
-  }
-/>
-
+    }`}
+              />
 
               {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
               {!collapsed && (

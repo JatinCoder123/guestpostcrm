@@ -19,6 +19,8 @@ import { useContext, useEffect, useState } from "react";
 import { addEvent } from "../store/Slices/eventSlice";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
+import { getTags } from "../store/Slices/markTagSlice";
+import { applyTag } from "../store/Slices/markTagSlice";
 
 const ActionButton = ({
   handleMoveSuccess,
@@ -27,6 +29,7 @@ const ActionButton = ({
   threadId,
 }) => {
   const [showUsers, setShowUsers] = useState(false);
+  const [showTags, setShowTags] = useState(false);
   const { enteredEmail } = useContext(PageContext);
   const { contactInfo } = useSelector((state) => state.viewEmail);
   const { email } = useSelector((s) => s.ladger);
@@ -49,6 +52,8 @@ const ActionButton = ({
     error: favouriteError,
     message: favouriteMessage,
   } = useSelector((s) => s.fav);
+
+  const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
 
   const {
     marking,
@@ -204,7 +209,10 @@ const ActionButton = ({
             />
           ),
           label: "Mark Tag",
-          action: () => {},
+          action: () => {
+            setShowTags((p) => !p);
+            dispatch(getTags());
+          },
         },
       ].map((btn, i) => (
         <div className="relative" key={i}>
@@ -225,6 +233,38 @@ const ActionButton = ({
               forwardHandler={handleForward}
               onClose={() => setShowUsers(false)}
             />
+          )}
+          {showTags && btn.label === "Mark Tag" && (
+            <div className="absolute top-14 right-0 w-60 z-40">
+              <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
+                {tagLoading ? (
+                  <div className="py-6 flex justify-center">
+                    <LoadingChase />
+                  </div>
+                ) : (
+                  <div className="max-h-56 overflow-y-auto">
+                    {tags.map((tag) => (
+                      <button
+                        key={tag.name}
+                        onClick={() => {
+                          dispatch(applyTag(tag.name)); // 🔥 pass selected tag
+                          setShowTags(false);
+                        }}
+                        className="
+      w-full text-left px-4 py-3
+      text-sm font-semibold text-gray-700
+      border-b last:border-b-0
+      hover:bg-indigo-50 hover:text-indigo-600
+      transition
+    "
+                      >
+                        {tag.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
       ))}
