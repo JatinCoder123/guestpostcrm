@@ -385,15 +385,18 @@ function InputField({
 
             {/* ✅ DEFAULT INPUT */}
             {type !== "select" && type !== "textarea" && type !== "list" && (
-                <input
-                    value={value == "N/A" ? "" : value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    type={type}
-                    disabled={disabled}
-                    inputMode={type === "number" ? "numeric" : undefined}
-                    className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"}`}
-                />
+                <div className="flex items-center gap-1">
+                    {type == "number" && <span>$</span>}
+                    <input
+                        value={value == "N/A" ? "" : value}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        type={type}
+                        disabled={disabled}
+                        inputMode={type === "number" ? "numeric" : undefined}
+                        className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"}`}
+                    /></div>
+
             )}
         </div>
     );
