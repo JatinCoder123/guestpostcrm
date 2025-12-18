@@ -116,7 +116,7 @@ useEffect(() => {
         
         {displayCount > 0 && (
           <div className={`
-            absolute -top-1 -right-1
+            absolute top-0 right-0 transform -translate-x-1/2 -translate-y-1/2
             bg-red-600 text-white text-xs font-semibold
             rounded-full w-6 h-6
             flex items-center justify-center
@@ -131,7 +131,7 @@ useEffect(() => {
         
         {displayCount === 0 && (
           <div className="
-            absolute -top-1 -right-1
+            absolute top-0 right-0 transform -translate-x-1/2 -translate-y-1/2
             bg-gray-300 text-gray-700 text-xs font-semibold
             rounded-full w-6 h-6
             flex items-center justify-center
