@@ -53,7 +53,7 @@ export function TimelinePage() {
   const { emails, loading: unrepliedLoading, showNewEmailBanner } = useSelector(
     (state) => state.unreplied
   );
-  const currentThreadId = emails?.length > 0 ? emails[currentIndex].thread_id : null;
+  const currentThreadId = emails?.length > 0 ? emails[currentIndex]?.thread_id : null;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -103,10 +103,10 @@ export function TimelinePage() {
       toast.info("No Unreplied Email found");
       return;
     }
-    dispatch(sendEmailToThread(emails[currentIndex].thread_id, btnBody));
+    dispatch(sendEmailToThread(emails[currentIndex]?.thread_id, btnBody));
     dispatch(addEvent({
       email: email,
-      thread_id: emails[currentIndex].thread_id,
+      thread_id: emails[currentIndex]?.thread_id,
       recent_activity: "Quick Action Button Reply Sent",
     }));
   };
@@ -116,14 +116,14 @@ export function TimelinePage() {
     try {
       dispatch(
         sendEmailToThread(
-          emails[currentIndex].thread_id,
+          emails[currentIndex]?.thread_id,
           mailersSummary?.ai_response
         )
       );
       dispatch(
         addEvent({
           email: email,
-          thread_id: emails[currentIndex].thread_id,
+          thread_id: emails[currentIndex]?.thread_id,
           recent_activity: "AI reply sent",
         })
       );
@@ -304,7 +304,7 @@ export function TimelinePage() {
                         <Reply className="w-6 h-6 text-yellow-700" />
                       </motion.button>
                     </div>
-                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: emails?.length > 0 && emails[currentIndex].body ? emails[currentIndex].body : "No Message Found!" }} />
+                    <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line" dangerouslySetInnerHTML={{ __html: emails?.length > 0 && emails[currentIndex]?.body ? emails[currentIndex].body : "No Message Found!" }} />
 
 
                   </div>
