@@ -134,35 +134,24 @@ export const createDeal = (deals = []) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
+
     try {
-      deals.map(async (deal) => {
-        console.log(deal);
-        const res = await axios.post(
-          `${domain}?entryPoint=get_post_all&action_type=post_data`,
-          {
-            parent_bean:
-            {
-              module: "Contacts",
-              id: getState().viewEmail.contactInfo.id
-
-            },
-            child_bean: {
-              module: "outr_deal_fetch",
-              dealamount: deal.dealamount,
-              email: deal.email,
-              website_c: deal.website_c,
-            },
+      const res = await axios.post(
+        `${domain}?entryPoint=get_deal_details`,
+        {
+          records: deals.map((deal) => ({
+            amount: deal.dealamount,
+            email: deal.email,
+            website: deal.website_c,
+          })),
+          child_bean: {
+            module: "Contacts",
+            id: getState().viewEmail.contactInfo.id,
+            email: deals[0].email
           },
-          {
-            headers: {
-              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log(`Create Deal`, res);
-
-      });
+        }
+      );
+      console.log(`Create Deal`, res);
       const updatedDeals = [...deals, ...getState().deals.deals];
       dispatch(
         dealsSlice.actions.createDealSucess({

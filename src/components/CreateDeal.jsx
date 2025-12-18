@@ -19,17 +19,14 @@ export default function CreateDeal() {
   const { type, id } = useParams();
   const { state } = useLocation()
   const { deals, updating, error, message, creating, deleting, deleteDealId } = useSelector((state) => state.deals);
+  const { offers } = useSelector((state) => state.offers);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
   const [validWebsite, setValidWebsite] = useState([])
   const [currentDeals, setCurrentDeals] = useState([])
+  const [currentOffers, setCurrentOffers] = useState([])
   const { setNotificationCount } = useContext(SocketContext);
 
-  const [newDeals, setNewDeals] = useState([{
-    website_c: "",
-    dealamount: "",
-    id: `${Date.now()}${Math.random()}`,
-    email: state?.email,
-  }])
+  const [newDeals, setNewDeals] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
   useEffect(() => {
@@ -38,7 +35,9 @@ export default function CreateDeal() {
       deal = deal.filter(d => d.id == id)
     }
     setCurrentDeals(() => [...deal])
-  }, [state, deals, type, id])
+    let offer = offers.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
+    setCurrentOffers(() => [...offer])
+  }, [state, deals, offers, type, id])
   useEffect(() => {
     let valid = [];
     if (type == "create") {
@@ -50,6 +49,29 @@ export default function CreateDeal() {
     setValidWebsite(valid)
 
   }, [currentDeals])
+  useEffect(() => {
+    if (type == "create") {
+      const currentOfferWithoutDeal = currentOffers.length > 0 ? currentOffers.filter(o => !currentDeals.some(d => d.website_c == o.website)) : []
+      if (currentOfferWithoutDeal.length > 0) {
+        const newDeals = currentOfferWithoutDeal.map((offer) => ({
+          website_c: offer.website,
+          dealamount: offer.our_offer_c,
+          id: `${Date.now()}${Math.random()}`,
+          email: state?.email,
+        }))
+        setNewDeals(newDeals)
+      }
+      else
+        setNewDeals([
+          {
+            website_c: "",
+            dealamount: "",
+            id: `${Date.now()}${Math.random()}`,
+            email: state?.email,
+          }
+        ])
+    }
+  }, [type, currentDeals])
   const submitHandler = () => {
     dispatch(createDeal(newDeals));
   };

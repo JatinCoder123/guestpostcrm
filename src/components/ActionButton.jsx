@@ -70,9 +70,6 @@ const ActionButton = ({
     message: markingMessage,
   } = useSelector((s) => s.bulk);
   const dispatch = useDispatch();
-  const actionBtnHandler = (btn) => {
-
-  }
   useEffect(() => {
     if (forwardError) {
       toast.error(forwardError);
@@ -268,16 +265,10 @@ const ActionButton = ({
                       <button
                         key={tag.name}
                         onClick={() => {
-                          dispatch(applyTag(tag.name)); // 🔥 pass selected tag
+                          dispatch(applyTag(tag.name));
                           setShowTags(false);
                         }}
-                        className="
-      w-full text-left px-4 py-3
-      text-sm font-semibold text-gray-700
-      border-b last:border-b-0
-      hover:bg-indigo-50 hover:text-indigo-600
-      transition
-    "
+                        className="w-full text-left px-4 py-3 text-sm font-semibold text-gray-700 border-b last:border-b-0 hover:bg-indigo-50 hover:text-indigo-600 transition"
                       >
                         {tag.name}
                       </button>
@@ -303,7 +294,7 @@ const ActionButton = ({
               setClickedActionBtn(btn.id)
             }}
             disabled={sending}
-            className={` group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer ${sending ? "cursor-not-allowed" : "cursor-pointer"}`}
+            className={` group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border-gray-200 hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all cursor-pointer ${sending ? "cursor-not-allowed" : "cursor-pointer"}`}
           >
             {clickedActionBtn === btn.id && sending ? <LoadingChase size="20" /> : <img src={btn.icon} alt={btn.name} className="w-8 h-8 " />}
             <div dangerouslySetInnerHTML={{ __html: btn.body }} className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20" />
