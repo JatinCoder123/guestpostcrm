@@ -62,9 +62,6 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
         updateData(idx, { [field]: value });
     };
 
-    useEffect(() => {
-        console.log(data)
-    }, [data])
 
     const valid = useMemo(
         () => {
@@ -207,10 +204,10 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
                                                                     >
                                                                         {updating ? "Updating..." : "Update"}</button>
                                                                 </div>}
-
                                                                 <div className="mt-4 flex flex-wrap gap-3">
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} websiteLists={validWebsite} />)}
                                                                 </div>
+
                                                                 <div className="mt-4 grid grid-cols-2 gap-3">
                                                                     {lists.length > 0 && lists.map((list, listIndex) => <DisplayList key={listIndex} spamScores={item.spam_score_c} data={item[list.name]} label={list.label} />)}
                                                                 </div>
@@ -354,7 +351,7 @@ function InputField({
 
     return (
         <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[300px]`}>
-            <label className="block text-xs mb-1 text-gray-600">
+            <label className={`block  mb-1  ${pageType == "view" ? "text-gray-500 text-sm" : "text-xs text-gray-600"}`}>
                 {label}
             </label>
             {/* ✅ SELECT */}
@@ -363,7 +360,7 @@ function InputField({
                     value={value}
                     onChange={onChange}
                     disabled={disabled}
-                    className="w-full rounded-xl border px-3 py-2 bg-white"
+                    className={`w-full rounded-xl px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"} `}
                 >
                     <option value="" disabled>Select Website</option>
                     {websiteLists.map((opt, idx) => (
@@ -382,21 +379,24 @@ function InputField({
                     placeholder={placeholder}
                     disabled={disabled}
                     rows={4}
-                    className="w-full rounded-xl border px-3 py-2 bg-white resize-none"
+                    className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"} resize-none`}
                 />
             )}
 
             {/* ✅ DEFAULT INPUT */}
             {type !== "select" && type !== "textarea" && type !== "list" && (
-                <input
-                    value={value == "N/A" ? "" : value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    type={type}
-                    disabled={disabled}
-                    inputMode={type === "number" ? "numeric" : undefined}
-                    className={`w-full rounded-xl border px-3 py-2 bg-white`}
-                />
+                <div className="flex items-center gap-1">
+                    {type == "number" && <span>$</span>}
+                    <input
+                        value={value == "N/A" ? "" : value}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        type={type}
+                        disabled={disabled}
+                        inputMode={type === "number" ? "numeric" : undefined}
+                        className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"}`}
+                    /></div>
+
             )}
         </div>
     );
@@ -451,4 +451,5 @@ function DisplayList({ data, label, spamScores }) {
         </div>
     );
 }
+
 

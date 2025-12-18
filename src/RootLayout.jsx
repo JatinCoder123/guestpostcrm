@@ -162,6 +162,7 @@ const RootLayout = () => {
     // ✅ FIXED: Changed outr_order_gp_li to outr_order_gp_list (matches SocketContext)
     if (notificationCount.outr_order_gp_li) {
       dispatch(getOrders());
+      dispatch(getInvoices())
       if (enteredEmail) {
         dispatch(getLadgerWithOutLoading(enteredEmail));
         dispatch(getViewEmail(enteredEmail));

@@ -25,12 +25,10 @@ import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
 import contactOtherReducer from "./Slices/contact_other";
-//import contactdefaulterReducer  from "./Slices/contactdefaulterSlice.js";
 import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
 import quickActionBtnReducer from "./Slices/quickActionBtn";
 import DraftInvoiceReducer from "./Slices/draftInvoice.js";
 import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
-
 import hotReducer from "./Slices/hotSlice.js";
 import tagReducer from "./Slices/tag.js";
 
@@ -69,9 +67,5 @@ export const store = configureStore({
     user: userReducer,
     DraftInvoice: DraftInvoiceReducer,
     tag: tagReducer,
-
-
-
-
   },
 });
