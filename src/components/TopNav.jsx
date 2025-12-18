@@ -41,10 +41,10 @@ export function TopNav() {
     if (search.trim()) {
       // If ANY text is typed (not empty)
       setHasTextInput(true);
-      
+
       // Start blinking animation on clear button
       setIsBlinking(true);
-      
+
       // Stop blinking after 3 seconds
       const timer = setTimeout(() => setIsBlinking(false), 3000);
       return () => clearTimeout(timer);
@@ -58,10 +58,10 @@ export function TopNav() {
   // Effect to handle save info selection
   useEffect(() => {
     // Check if save info is selected
-    const isSaveInfoSelected = localStorage.getItem('saveInfo') === 'true' || 
-                               user?.saveInfo === true ||
-                               false;
-    
+    const isSaveInfoSelected = localStorage.getItem('saveInfo') === 'true' ||
+      user?.saveInfo === true ||
+      false;
+
     if (isSaveInfoSelected) {
       setSaveInfoSelected(true);
     }
@@ -77,7 +77,7 @@ export function TopNav() {
       toast.error("Please enter an email address");
       return;
     }
-    
+
     if (search.trim()) {
       localStorage.setItem("email", search);
       navigateTo("");
@@ -105,10 +105,10 @@ export function TopNav() {
   const handleSaveInfoToggle = () => {
     const newSaveInfoState = !saveInfoSelected;
     setSaveInfoSelected(newSaveInfoState);
-    
+
     // Save to localStorage
     localStorage.setItem('saveInfo', newSaveInfoState.toString());
-    
+
     toast.info(newSaveInfoState ? "Save Info enabled" : "Save Info disabled");
   };
 
@@ -196,20 +196,19 @@ export function TopNav() {
               flex cursor-pointer items-center justify-center mr-3 p-2 
               rounded-lg transition-all duration-300 relative
               ${isBlinking ? 'shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''}
-              ${
-                hasTextInput || saveInfoSelected
-                  ? "bg-red-600 hover:bg-red-700 text-white border-2 border-red-800"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              ${hasTextInput || saveInfoSelected
+                ? "bg-red-500 hover:bg-red-600 text-white border-2 border-red-800"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
               }
             `}
             title={hasTextInput ? "Text detected - Clear button is red" : "Clear search"}
           >
             <X className="w-4 h-4" />
-            
+
             {/* Enhanced blinking effect */}
             {isBlinking && (
               <motion.div
-                animate={{ 
+                animate={{
                   opacity: [0.2, 0.8, 0.2],
                   scale: [1, 1.1, 1]
                 }}
@@ -217,11 +216,11 @@ export function TopNav() {
                 className="absolute inset-0 rounded-lg bg-red-500 -z-10"
               />
             )}
-            
+
             {/* Optional: Add notification dot when blinking */}
             {isBlinking && (
               <motion.div
-                animate={{ 
+                animate={{
                   scale: [0.8, 1.2, 0.8],
                   rotate: [0, 360, 0]
                 }}
@@ -230,7 +229,7 @@ export function TopNav() {
               />
             )}
           </motion.button>
-          
+
           {/* Period Dropdown */}
           <DropDown
             options={periodOptions}
@@ -332,10 +331,9 @@ export function TopNav() {
                     className={`
                       flex items-center justify-center cursor-pointer
                       p-2 rounded-full transition-all duration-300 shadow-sm
-                      ${
-                        loading
-                          ? "opacity-50 cursor-not-allowed bg-gray-200"
-                          : "hover:bg-red-200"
+                      ${loading
+                        ? "opacity-50 cursor-not-allowed bg-gray-200"
+                        : "hover:bg-red-200"
                       }
                     `}
                   >
@@ -349,7 +347,7 @@ export function TopNav() {
                     />
                   </motion.button>
                 </div>
-                
+
                 {/* Save Info Toggle in Dropdown */}
                 <div className="p-4 border-t border-gray-100">
                   <div className="flex items-center justify-between">
@@ -358,20 +356,18 @@ export function TopNav() {
                     </span>
                     <button
                       onClick={handleSaveInfoToggle}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        saveInfoSelected ? 'bg-red-500' : 'bg-gray-300'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${saveInfoSelected ? 'bg-red-500' : 'bg-gray-300'
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          saveInfoSelected ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${saveInfoSelected ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {saveInfoSelected 
-                      ? "Clear button stays red when Save Info is enabled" 
+                    {saveInfoSelected
+                      ? "Clear button stays red when Save Info is enabled"
                       : "Toggle to enable/disable save info"}
                   </p>
                 </div>

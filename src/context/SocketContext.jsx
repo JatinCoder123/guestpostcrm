@@ -10,7 +10,7 @@ export const SocketContextProvider = (props) => {
     outr_el_process_audit: null,
     unreplied_email: null,
     outr_deal_fetch: null,
-    outr_order_gp_list: null,
+    outr_order_gp_li: null,
     outr_self_test: null,
     refresh_ladger: null
 
