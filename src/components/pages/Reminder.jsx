@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import Pagination from "../Pagination";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getOrderRem } from "../../store/Slices/orderRem";
 import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
@@ -30,6 +30,32 @@ export function ReminderPage() {
   const [reminders, setReminders] = useState(orderRem);
 
   const { email } = useSelector((state) => state.ladger);
+
+  // Calculate stats from reminders data
+  const stats = useMemo(() => {
+    const totalReminders = reminders.length;
+    const sentReminders = reminders.filter(reminder => 
+      reminder.status?.toLowerCase() === 'sent' || 
+      reminder.status?.toLowerCase() === 'completed'
+    ).length;
+    const pendingReminders = reminders.filter(reminder => 
+      reminder.status?.toLowerCase() === 'pending' || 
+      reminder.status?.toLowerCase() === 'scheduled'
+    ).length;
+    const cancelledReminders = reminders.filter(reminder => 
+      reminder.status?.toLowerCase() === 'cancel' || 
+      reminder.status?.toLowerCase() === 'failed'
+    ).length;
+
+    return {
+      total: totalReminders,
+      sent: sentReminders,
+      pending: pendingReminders,
+      cancelled: cancelledReminders,
+      // Calculate completion percentage
+      completionRate: totalReminders > 0 ? Math.round((sentReminders / totalReminders) * 100) : 0
+    };
+  }, [reminders]);
 
   async function sendReminder(reminderId) {
     setSendReminderLoading(true);
@@ -143,7 +169,7 @@ export function ReminderPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">All</p>
-              <p className="text-2xl text-gray-900 mt-1">{count}</p>
+              <p className="text-2xl text-gray-900 mt-1">{stats.total}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <AlertCircle className="w-6 h-6 text-red-600" />
@@ -154,10 +180,10 @@ export function ReminderPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Sent</p>
-              <p className="text-2xl text-gray-900 mt-1">$3.1K</p>
+              <p className="text-2xl text-gray-900 mt-1">{stats.sent}</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-orange-600" />
+              <Mail className="w-6 h-6 text-orange-600" />
             </div>
           </div>
         </div>
@@ -165,7 +191,7 @@ export function ReminderPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Pending</p>
-              <p className="text-2xl text-gray-900 mt-1">4.3</p>
+              <p className="text-2xl text-gray-900 mt-1">{stats.pending}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <Calendar className="w-6 h-6 text-yellow-600" />
@@ -176,14 +202,27 @@ export function ReminderPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Cancelled</p>
-              <p className="text-2xl text-gray-900 mt-1">85%</p>
+              <p className="text-2xl text-gray-900 mt-1">{stats.cancelled}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">📈</span>
+              <User className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Alternative: If you want to show completion rate instead of cancelled */}
+      {/* <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-500 text-sm">Completion Rate</p>
+            <p className="text-2xl text-gray-900 mt-1">{stats.completionRate}%</p>
+          </div>
+          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <span className="text-2xl">📈</span>
+          </div>
+        </div>
+      </div> */}
 
       {/* Payment Missed Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -267,7 +306,19 @@ export function ReminderPage() {
                     <td className="px-6 py-4 text-green-600">
                       {order.scheduled_time}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{order.status}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        order.status?.toLowerCase() === 'sent' 
+                          ? 'bg-green-100 text-green-800' 
+                          : order.status?.toLowerCase() === 'pending'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : order.status?.toLowerCase() === 'cancelled'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.status || 'Unknown'}
+                      </span>
+                    </td>
 
                     <td className="px-6 py-4 flex items-center">
                       {sendReminderLoading && sendReminderId === order.id ? <LoadingChase size="20" color="blue" /> : <button
