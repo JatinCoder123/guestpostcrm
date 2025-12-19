@@ -116,6 +116,15 @@ const RootLayout = () => {
     if (notificationCount.unreplied_email) {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
       setCurrentIndex(0);
       dispatch(checkForDuplicates());
       setNotificationCount((prev) => ({
@@ -143,15 +152,8 @@ const RootLayout = () => {
 
     if (notificationCount.outr_deal_fetch) {
       dispatch(getDeals());
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      }
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -163,6 +165,8 @@ const RootLayout = () => {
     if (notificationCount.outr_order_gp_li) {
       dispatch(getOrders());
       dispatch(getInvoices())
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       if (enteredEmail) {
         dispatch(getLadgerWithOutLoading(enteredEmail));
         dispatch(getViewEmail(enteredEmail));
@@ -199,6 +203,8 @@ const RootLayout = () => {
 
     if (notificationCount.outr_offer) {
       dispatch(getOffers());
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       if (enteredEmail) {
         dispatch(getLadgerWithOutLoading(enteredEmail));
         dispatch(getViewEmail(enteredEmail));
