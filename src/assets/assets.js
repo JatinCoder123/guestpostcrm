@@ -29,7 +29,7 @@ export const periodOptions = [
   { period: "this_month", title: "This month" },
   { period: "last_month", title: "Last month" },
   { period: "last_3_months", title: "Last 3 months" },
-  
+
 ];
 export function getDifference(dateString) {
   const inputDate = new Date(dateString);
@@ -97,6 +97,7 @@ export function daysUntil(dateString) {
   const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   return days;
 }
+
 
 export function formatExpiryLabel(dateString) {
   const days = daysUntil(dateString) ?? 2;
