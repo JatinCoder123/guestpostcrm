@@ -109,7 +109,8 @@ export const getLadgerEmail = (email) => {
           withCredentials: false,
         }
       );
-      
+      console.log("Ladger Email", data);
+
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,
@@ -138,7 +139,7 @@ export const getLadgerWithOutLoading = (email) => {
           withCredentials: false,
         }
       );
-      
+      console.log("LADGER", data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: data.duplicate_threads_count,

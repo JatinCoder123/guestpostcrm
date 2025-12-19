@@ -271,13 +271,13 @@ const RootLayout = () => {
                 <ErrorBoundary>
                   <Outlet />
                 </ErrorBoundary>
-                {showAvatar && currentAvatar && (
+                {/* {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}
                     avatarUrl={currentAvatar?.url}
                     mute={currentAvatar}
                   />
-                )}
+                )} */}
               </div>
               <Footer />
             </main>
