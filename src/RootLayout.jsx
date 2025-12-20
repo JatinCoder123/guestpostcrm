@@ -1,11 +1,18 @@
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadger, getLadgerEmail } from "./store/Slices/ladger";
-import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
-import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
+import { getLadger, getLadgerEmail, getLadgerWithOutLoading } from "./store/Slices/ladger";
+import { checkForDuplicates, getDuplicateCount } from "./store/Slices/duplicateEmailSlice";
+import {
+  getUnansweredEmails,
+  getUnansweredEmailWithOutLoading,
+} from "./store/Slices/unansweredEmails";
+import {
+  getUnrepliedEmail,
+  getUnrepliedEmailWithOutLoading,
+} from "./store/Slices/unrepliedEmails";
 import { getOrders } from "./store/Slices/orders";
 import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
@@ -18,67 +25,224 @@ import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
-import Pagination from "./components/Pagination";
 import Avatar from "./components/Avatar";
-import { getDealRem } from "./store/Slices/dealRem";
 import { getOrderRem } from "./store/Slices/orderRem";
-import { getLinkRem } from "./store/Slices/linkRem";
-import { getPaymentRem } from "./store/Slices/paymentRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
+import { getLinkExchange } from "./store/Slices/linkExchange";
 import { getBulkEmails } from "./store/Slices/markBulkSlice";
 import { getAllAvatar } from "./store/Slices/avatarSlice";
-
 import { getdefaulterEmails } from "./store/Slices/defaulterEmails";
 import { getmovedEmails } from "./store/Slices/movedEmails";
 import { SocketContext } from "./context/SocketContext";
+import { hotAction } from "./store/Slices/hotSlice";
+import { eventActions } from "./store/Slices/eventSlice";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
 const RootLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
+
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
-  const { displayIntro, setActivePage, enteredEmail } = useContext(PageContext);
-  const { currentAvatar } = useContext(SocketContext);
+  const {
+    displayIntro,
+    setActivePage,
+    enteredEmail,
+    currentIndex,
+    setCurrentIndex,
+  } = useContext(PageContext);
+
+  const { currentAvatar, notificationCount, setNotificationCount } =
+    useContext(SocketContext);
+
+  const dispatch = useDispatch();
+  const location = useLocation().pathname.split("/")[2];
+
+  // Show avatar when new avatar arrives
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
-  const location = useLocation().pathname.split("/")[2];
+
+  // Set active page based on URL
   useEffect(() => {
     setActivePage(location);
-  }, [location]);
+  }, [location, setActivePage]);
+
+  // Initial data fetch when timeline or email changes
   useEffect(() => {
-    if (email) {
-      dispatch(getContact(email));
-    }
-  }, [email]);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    enteredEmail && dispatch(getLadgerEmail(enteredEmail));
     dispatch(getAiCredits(timeline));
     dispatch(getUnansweredEmails(timeline, enteredEmail));
     dispatch(getUnrepliedEmail(timeline, enteredEmail));
     dispatch(getForwardedEmails(timeline, enteredEmail));
     dispatch(getFavEmails(timeline, enteredEmail));
+    dispatch(getLinkExchange(timeline, enteredEmail));
     dispatch(getBulkEmails(timeline, enteredEmail));
-    dispatch(getOrders(timeline, enteredEmail));
-    dispatch(getDeals(timeline, enteredEmail));
-    dispatch(getInvoices(timeline, enteredEmail));
-    dispatch(getOffers(timeline, enteredEmail));
+    dispatch(getOrders(enteredEmail));
+    dispatch(getDeals(enteredEmail));
+    dispatch(getInvoices(enteredEmail));
+    dispatch(getOffers(enteredEmail));
     dispatch(getDetection(timeline, enteredEmail));
-    dispatch(getDealRem(timeline, enteredEmail));
-    dispatch(getOrderRem(timeline, enteredEmail));
-    dispatch(getLinkRem(timeline, enteredEmail));
-    dispatch(getPaymentRem(timeline, enteredEmail));
     dispatch(getdefaulterEmails(timeline, enteredEmail));
     dispatch(getmovedEmails(timeline, enteredEmail));
-    dispatch(getViewEmail());
     dispatch(getAllAvatar());
-  }, [enteredEmail, timeline]);
+    dispatch(getQuickActionBtn());
+    dispatch(getDuplicateCount());
+    setCurrentIndex(0);
+  }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
+
+  const firstEmail =
+    emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+
+  // Fetch ladger when email changes
   useEffect(() => {
-    if (emails.length > 0) {
-      dispatch(getLadgerEmail(emails[0].from.match(/[\w.-]+@[\w.-]+\.\w+/)[0]));
+    if (enteredEmail) {
+      dispatch(getLadgerEmail(enteredEmail));
+    } else if (firstEmail) {
+      dispatch(getLadgerEmail(firstEmail));
     }
-  }, [emails]);
+  }, [enteredEmail, firstEmail, dispatch]);
+
+  // Fetch view email and contact when ladger email is set
+  useEffect(() => {
+    if (email) {
+      dispatch(getViewEmail());
+      dispatch(getContact());
+    }
+  }, [email, dispatch]);
+
+  // Handle socket notifications
+  useEffect(() => {
+    if (notificationCount.unreplied_email) {
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
+      setCurrentIndex(0);
+      dispatch(checkForDuplicates());
+      setNotificationCount((prev) => ({
+        ...prev,
+        unreplied_email: null,
+      }));
+    }
+
+    if (notificationCount.outr_el_process_audit) {
+      dispatch(hotAction.updateCount(1));
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_el_process_audit: null,
+      }));
+    }
+
+    if (notificationCount.outr_deal_fetch) {
+      dispatch(getDeals());
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_deal_fetch: null,
+      }));
+    }
+
+    // ✅ FIXED: Changed outr_order_gp_li to outr_order_gp_list (matches SocketContext)
+    if (notificationCount.outr_order_gp_li) {
+      dispatch(getOrders());
+      dispatch(getInvoices())
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_order_gp_li: null,
+      }));
+    }
+
+    if (notificationCount.outr_self_test) {
+      dispatch(getInvoices());
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_self_test: null,
+      }));
+    }
+
+    if (notificationCount.outr_offer) {
+      dispatch(getOffers());
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_offer: null,
+      }));
+    }
+
+    if (notificationCount.outr_recent_activity) {
+      dispatch(eventActions.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_recent_activity: null,
+      }));
+    }
+    if (notificationCount.refresh_ladger) {
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      } setNotificationCount((prev) => ({
+        ...prev,
+        refresh_ladger: null,
+      }));
+    }
+  }, [notificationCount, dispatch, setNotificationCount]);
 
   return (
     <AnimatePresence mode="wait">
@@ -99,19 +263,21 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${
-                sidebarCollapsed ? "ml-4" : "ml-0"
-              }`}
+              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
+                }`}
             >
               <div className="p-6">
                 <WelcomeHeader />
-                <Outlet />
-                {showAvatar && currentAvatar && (
+                <ErrorBoundary>
+                  <Outlet />
+                </ErrorBoundary>
+                {/* {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}
-                    avatarUrl={currentAvatar}
+                    avatarUrl={currentAvatar?.url}
+                    mute={currentAvatar}
                   />
-                )}
+                )} */}
               </div>
               <Footer />
             </main>

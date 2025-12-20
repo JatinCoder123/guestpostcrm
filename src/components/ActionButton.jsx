@@ -1,0 +1,365 @@
+import { Globe, Mail } from "lucide-react";
+import Loading, { LoadingChase } from "./Loading";
+import UserDropdown from "./UserDropDown";
+import MoveToDropdown from "./MoveToDropdown";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  favAction,
+  favEmail,
+  getFavEmailsWithOutLoading,
+} from "../store/Slices/favEmailSlice";
+import { bulkAction, markingEmail } from "../store/Slices/markBulkSlice";
+import {
+  forwardEmail,
+  getForwardedEmailsWithOutLoading,
+  forwardedAction,
+} from "../store/Slices/forwardedEmailSlice";
+import { toast } from "react-toastify";
+import { useContext, useEffect, useState } from "react";
+import { addEvent } from "../store/Slices/eventSlice";
+import { PageContext } from "../context/pageContext";
+import {
+  linkExchange,
+  linkExchangeaction,
+} from "../store/Slices/linkExchange";
+import { quickActionBtnActions } from "../store/Slices/quickActionBtn";
+import { getTags, applyTag } from "../store/Slices/markTagSlice";
+
+/* 🔹 Separator Component */
+const Separator = () => (
+  <div className="h-8 w-[1px] bg-gray-500 mx-2" />
+);
+
+const ActionButton = ({
+  handleMoveSuccess,
+  setShowEmails,
+  setShowIP,
+  threadId,
+  handleActionBtnClick,
+}) => {
+  const dispatch = useDispatch();
+  const [showUsers, setShowUsers] = useState(false);
+  const [showTags, setShowTags] = useState(false);
+  const [clickedActionBtn, setClickedActionBtn] = useState(null);
+
+  const { enteredEmail } = useContext(PageContext);
+
+  const { contactInfo, count } = useSelector((s) => s.viewEmail);
+  const { sending } = useSelector((s) => s.threadEmail);
+  const { email } = useSelector((s) => s.ladger);
+
+  const { forward, error: forwardError, message: forwardMessage } =
+    useSelector((s) => s.forwarded);
+
+  const {
+    buttons,
+    error: buttonsError,
+    loading: buttonsLoading,
+  } = useSelector((s) => s.quickActionBtn);
+
+  const {
+    exchanging,
+    error: changeError,
+    message: changeMessage,
+  } = useSelector((s) => s.linkExchange);
+
+  const {
+    favourite,
+    error: favouriteError,
+    message: favouriteMessage,
+  } = useSelector((s) => s.fav);
+
+  const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
+
+  const {
+    marking,
+    error: markingError,
+    message: markingMessage,
+  } = useSelector((s) => s.bulk);
+
+  const handleForward = (to) => {
+    dispatch(forwardEmail(contactInfo.id, to, threadId));
+  };
+
+  /* 🔹 Side Effects */
+  useEffect(() => {
+    if (forwardError) {
+      toast.error(forwardError);
+      dispatch(forwardedAction.clearAllErrors());
+    }
+
+    if (forwardMessage) {
+      toast.success(forwardMessage);
+      dispatch(
+        addEvent({
+          email,
+          thread_id: threadId,
+          recent_activity: "forwarded",
+        })
+      );
+      dispatch(forwardedAction.clearAllMessages());
+      dispatch(getForwardedEmailsWithOutLoading(enteredEmail));
+    }
+
+    if (favouriteError) {
+      toast.error(favouriteError);
+      dispatch(favAction.clearAllErrors());
+    }
+
+    if (favouriteMessage) {
+      toast.success(favouriteMessage);
+      dispatch(
+        addEvent({
+          email,
+          thread_id: threadId,
+          recent_activity: "favourite",
+        })
+      );
+      dispatch(favAction.clearAllMessages());
+      dispatch(getFavEmailsWithOutLoading(enteredEmail));
+    }
+
+    if (markingError) {
+      toast.error(markingError);
+      dispatch(bulkAction.clearAllErrors());
+    }
+
+    if (markingMessage) {
+      toast.success(markingMessage);
+      dispatch(
+        addEvent({
+          email,
+          thread_id: threadId,
+          recent_activity: "bulk marked",
+        })
+      );
+      dispatch(bulkAction.clearAllMessages());
+    }
+
+    if (changeMessage) {
+      toast.success(changeMessage);
+      dispatch(
+        addEvent({
+          email,
+          thread_id: threadId,
+          recent_activity: "link exchange status changed",
+        })
+      );
+      dispatch(linkExchangeaction.clearAllMessages());
+    }
+
+    if (changeError) {
+      toast.error(changeError);
+      dispatch(linkExchangeaction.clearAllErrors());
+    }
+
+    if (buttonsError) {
+      toast.error(buttonsError);
+      dispatch(quickActionBtnActions.clearErrors());
+    }
+
+    if (!sending) {
+      setClickedActionBtn(null);
+    }
+  }, [
+    dispatch,
+    forwardError,
+    forwardMessage,
+    favouriteError,
+    favouriteMessage,
+    markingError,
+    markingMessage,
+    changeError,
+    changeMessage,
+    buttonsError,
+    sending,
+    email,
+    threadId,
+    enteredEmail,
+  ]);
+
+  /* 🔹 Static Buttons */
+  const actionButtons = [
+    {
+      icon: <img width="40" height="40" src="https://img.icons8.com/keek/100/new-post.png" alt="new-post" />,
+      label: "Email",
+      count: count,
+      action: () => setShowEmails(true),
+    },
+    {
+      icon: <img width="30" height="30" src="https://img.icons8.com/fluency/48/ip-address.png" alt="ip-address" />,
+      label: "IP",
+      action: () => setShowIP(true),
+    },
+    {
+      icon: favourite ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/color/48/filled-like.png"
+          className="w-6 h-6"
+          alt="fav"
+        />
+      ),
+      label: "Favourite",
+      action: () => dispatch(favEmail(threadId)),
+    },
+    {
+      icon: forward ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/color/48/redo.png"
+          className="w-6 h-6"
+          alt="forward"
+        />
+      ),
+      label: "Assign",
+      action: () => setShowUsers((p) => !p),
+    },
+    {
+      icon: marking ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/color/48/bursts.png"
+          className="w-6 h-6"
+          alt="bulk"
+        />
+      ),
+      label: "Mark Bulk",
+      action: () => dispatch(markingEmail(threadId)),
+    },
+    {
+      icon: exchanging ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/office/40/link.png"
+          className="w-6 h-6"
+          alt="link"
+        />
+      ),
+      label: "Link Exchange",
+      action: () => dispatch(linkExchange(threadId)),
+    },
+    {
+      icon: (
+        <img
+          src="https://img.icons8.com/color/48/tags--v1.png"
+          className="w-6 h-6"
+          alt="tag"
+        />
+      ),
+      label: "Mark Tag",
+      action: () => {
+        setShowTags((p) => !p);
+        dispatch(getTags());
+      },
+    },
+  ];
+
+  return (
+    <div className="mt-4 flex items-center flex-wrap gap-2">
+      {actionButtons.map((btn, i, arr) => (
+        <div key={i} className="flex items-center relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              btn.action();
+            }}
+            className="group flex items-center justify-center w-12 h-12
+            bg-white rounded-xl shadow-md border border-gray-200
+            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
+          >
+            {btn.icon}
+            <span className="absolute -bottom-9 left-1/2 -translate-x-1/2
+            bg-black text-white text-xs px-2 py-1 rounded opacity-0
+            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
+              {btn.label}
+            </span>
+          </button>
+          {btn.count && <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{btn.count}</span>}
+
+          {showUsers && btn.label === "Assign" && (
+            <UserDropdown
+              forwardHandler={handleForward}
+              onClose={() => setShowUsers(false)}
+            />
+          )}
+
+          {showTags && btn.label === "Mark Tag" && (
+            <div className="absolute top-14 right-0 w-60 z-40">
+              <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
+                {tagLoading ? (
+                  <div className="py-6 flex justify-center">
+                    <LoadingChase />
+                  </div>
+                ) : (
+                  tags.map((tag) => (
+                    <button
+                      key={tag.name}
+                      onClick={() => {
+                        dispatch(applyTag(tag.name));
+                        setShowTags(false);
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-semibold
+                      text-gray-700 border-b last:border-b-0
+                      hover:bg-indigo-50 hover:text-indigo-600 transition"
+                    >
+                      {tag.name}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          <Separator />
+        </div>
+      ))}
+
+      <MoveToDropdown
+        currentThreadId={threadId}
+        onMoveSuccess={handleMoveSuccess}
+      />
+      <Separator />
+
+
+      {buttonsLoading ? (
+        <LoadingChase size="30" />
+      ) : (
+        buttons?.map((btn, i) => (
+          <div key={i} className="flex items-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleActionBtnClick(btn.body);
+                setClickedActionBtn(btn.id);
+              }}
+              disabled={sending}
+              className="group flex items-center justify-center w-12 h-12
+              bg-white rounded-xl shadow-md border border-gray-200
+              hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
+            >
+              {clickedActionBtn === btn.id && sending ? (
+                <LoadingChase size="20" />
+              ) : (
+                <img src={btn.icon} alt={btn.name} className="w-8 h-8" />
+              )}
+              <div
+                dangerouslySetInnerHTML={{ __html: btn.body }}
+                className="absolute -bottom-9 left-1/2 -translate-x-1/2
+                bg-black text-white text-xs px-2 py-1 rounded opacity-0
+                group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
+              />
+            </button>
+            {i < buttons.length - 1 && <Separator />}
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
+export default ActionButton;

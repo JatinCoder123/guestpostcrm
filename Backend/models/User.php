@@ -1,9 +1,9 @@
 <?php
+
 class User
 {
     private $endpoint = "https://crm.outrightsystems.org/index.php?entryPoint=get_domain";
 
-    // List of allowed emails
     private $allowedEmails = [
         "verm.jatin2004@gmail.com",
         "adityadav1119@gmail.com",
@@ -14,36 +14,66 @@ class User
         "promotion@outrightcrm.com"
     ];
 
+    private $cachePath = __DIR__ . "/../cache/";
+    private $cacheTTL  = 300; // 5 minutes
+
     public function verifyUser($email)
     {
-        // If email is in allowed list → replace with master email
         if (in_array($email, $this->allowedEmails)) {
             $email = "vikas@outrightcrm.com";
         }
 
-        // Build full URL
-        $url = $this->endpoint . "&email=" . urlencode($email);
+        // ✅ Check cache first
+        $cacheKey = md5($email);
+        $cacheFile = $this->cachePath . $cacheKey . ".json";
 
-        // Initialize cURL
-        $ch = curl_init();
-
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true, 
-            CURLOPT_SSL_VERIFYPEER => false, 
-            CURLOPT_TIMEOUT => 10
-        ]);
-
-        // Execute request
-        $response = curl_exec($ch);
-
-        // Error handling
-        if (curl_errno($ch)) {
-            return "cURL Error: " . curl_error($ch);
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $this->cacheTTL) {
+            return file_get_contents($cacheFile);
         }
 
-        curl_close($ch);
+        $url = $this->endpoint . "&email=" . urlencode($email);
 
-        return $response;
+        $attempts = 3;
+
+        for ($i = 1; $i <= $attempts; $i++) {
+
+            $ch = curl_init();
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_CONNECTTIMEOUT => 15,
+                CURLOPT_TIMEOUT => 40,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_FAILONERROR => false
+            ]);
+
+            $response = curl_exec($ch);
+
+            if ($response !== false) {
+                curl_close($ch);
+
+                // ✅ Save to cache
+                if (!is_dir($this->cachePath)) {
+                    mkdir($this->cachePath, 0755, true);
+                }
+
+                file_put_contents($cacheFile, $response);
+                return $response;
+            }
+
+            $error = curl_error($ch);
+            curl_close($ch);
+
+            // ⏳ small delay before retry
+            sleep(1);
+        }
+
+        return json_encode([
+            "success" => false,
+            "error" => "CRM unreachable after retries",
+            "reason" => $error ?? "Timeout"
+        ]);
     }
 }

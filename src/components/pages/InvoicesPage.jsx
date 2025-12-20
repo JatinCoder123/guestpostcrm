@@ -6,17 +6,30 @@ import {
   User,
   Download,
   Pen,
+  CreditCard,
+  Wallet,
+  Banknote,
+  Globe,
+  Flag,
 } from "lucide-react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
 import Pagination from "../Pagination";
-import { getInvoices } from "../../store/Slices/invoices";
+import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices";
+import EnhancedSearch from "./EnhancedSearch";
+import UpdatePopup from "../UpdatePopup";
+import { toast } from "react-toastify";
 
 export function InvoicesPage() {
-  const { invoices, count } = useSelector((state) => state.invoices);
+  const { invoices, count, message, error, updating } = useSelector((state) => state.invoices);
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
+  const [filters, setFilters] = useState({});
+  const dispatch = useDispatch();
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -30,6 +43,40 @@ export function InvoicesPage() {
         return "bg-gray-100 text-gray-700";
       default:
         return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const getPaymentMethodIcon = (method) => {
+    switch (method?.toLowerCase()) {
+      case 'paypal':
+        return <Wallet className="w-4 h-4 mr-1" />;
+      case 'payoneer':
+        return <Globe className="w-4 h-4 mr-1" />;
+      case 'wise':
+        return <Banknote className="w-4 h-4 mr-1" />;
+      case 'indian_upi':
+        return <Flag className="w-4 h-4 mr-1" />;
+      case 'swift_india':
+        return <Banknote className="w-4 h-4 mr-1" />;
+      default:
+        return <Wallet className="w-4 h-4 mr-1" />;
+    }
+  };
+
+  const getPaymentMethodColor = (method) => {
+    switch (method?.toLowerCase()) {
+      case 'paypal':
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case 'payoneer':
+        return "bg-orange-100 text-orange-700 border-orange-200";
+      case 'wise':
+        return "bg-green-100 text-green-700 border-green-200";
+      case 'indian_upi':
+        return "bg-indigo-100 text-indigo-700 border-indigo-200";
+      case 'swift_india':
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
@@ -54,15 +101,402 @@ export function InvoicesPage() {
     );
   }
 
+  // Filter configuration for Invoice page
+  const invoiceFilterConfig = [
+    {
+      key: 'archive',
+      type: 'select',
+      label: 'Archive',
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'active', label: 'Active' },
+        { value: 'archived', label: 'Archived' },
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'dateRange',
+      type: 'date-range',
+      label: 'Date',
+      placeholder: 'Select date range'
+    },
+    // {
+    //   key: 'transactionType',
+    //   type: 'select',
+    //   label: 'Transaction type',
+    //   options: [
+    //     { value: 'all', label: 'All transactions' },
+    //     { value: 'invoice', label: 'Invoice' },
+    //     { value: 'payment', label: 'Payment' },
+    //     { value: 'refund', label: 'Refund' },
+    //     { value: 'credit', label: 'Credit' },
+    //     { value: 'debit', label: 'Debit' },
+    //   ],
+    //   defaultValue: 'all'
+    // },
+    {
+      key: 'paymentMethod',
+      type: 'select',
+      label: 'Payment method',
+      options: [
+        { value: 'all', label: 'All methods' },
+        { value: 'paypal', label: 'PayPal' },
+        { value: 'payoneer', label: 'Payoneer' },
+        { value: 'wise', label: 'Wise' },
+        { value: 'indian_upi', label: 'Indian UPI' },
+        { value: 'swift_india', label: 'Swift India' },
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'amountRange',
+      type: 'range',
+      label: 'Amount range',
+      min: 0,
+      max: 100000,
+      step: 100
+    },
+    {
+      key: 'status',
+      type: 'select',
+      label: 'Status',
+      options: [
+        { value: 'all', label: 'All status' },
+        { value: 'PAID', label: 'Paid' },
+        { value: 'DRAFT', label: 'Draft' },
+        { value: 'SENT', label: 'Sent' },
+        { value: 'CANCELLED', label: 'Cancelled' },
+        { value: 'OVERDUE', label: 'Overdue' },
+        { value: 'PARTIAL', label: 'Partial Payment' },
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'currency',
+      type: 'select',
+      label: 'Currency',
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'usd', label: 'USD' },
+        { value: 'eur', label: 'EUR' },
+        { value: 'gbp', label: 'GBP' },
+        { value: 'inr', label: 'INR' },
+      ],
+      defaultValue: 'all'
+    },
+    {
+      key: 'hasAttachment',
+      type: 'checkbox',
+      label: 'Has attachment'
+    }
+  ];
+
+  // Apply all filters to invoices
+  const filteredinvoices = invoices
+    .filter((item) => {
+      // Apply search filter
+      const searchValue = topsearch.toLowerCase();
+      if (searchValue) {
+        const contact = item.name?.split("<")[0]?.trim().toLowerCase() || "";
+        const invoiceId = item.invoice_id?.toLowerCase() || "";
+        const email = item.email_c?.toLowerCase() || "";
+        const paymentMethod = item.payment_method?.toLowerCase() || "";
+        
+        if (selectedCategory === "contact") {
+          return contact.includes(searchValue);
+        }
+        if (selectedCategory === "paymentMethod") {
+          return paymentMethod.includes(searchValue);
+        }
+        // Default search: search in contact, invoice ID, email, and payment method
+        return contact.includes(searchValue) || 
+               invoiceId.includes(searchValue) || 
+               email.includes(searchValue) ||
+               paymentMethod.includes(searchValue);
+      }
+      return true;
+    })
+    .filter((item) => {
+      // Apply status filter
+      if (filters.status && filters.status !== 'all') {
+        const invoiceStatus = item.status_c?.toString().toUpperCase() || "";
+        const filterStatus = filters.status.toUpperCase();
+        return invoiceStatus === filterStatus;
+      }
+      return true;
+    })
+    .filter((item) => {
+      // Apply amount range filter
+      if (filters.amountRange && (filters.amountRange.min > 0 || filters.amountRange.max > 0)) {
+        const amount = parseFloat(item.amount_c) || 0;
+        const min = filters.amountRange.min || 0;
+        const max = filters.amountRange.max || Infinity;
+        
+        return amount >= min && amount <= max;
+      }
+      return true;
+    })
+    .filter((item) => {
+      // Apply date range filter
+      if (filters.dateRange && (filters.dateRange.start || filters.dateRange.end)) {
+        const invoiceDate = new Date(item.date_entered);
+        const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
+        const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
+        
+        if (startDate && invoiceDate < startDate) return false;
+        if (endDate && invoiceDate > endDate) return false;
+        
+        return true;
+      }
+      return true;
+    })
+    .filter((item) => {
+      // Apply payment method filter
+      if (filters.paymentMethod && filters.paymentMethod !== 'all') {
+        const paymentMethod = item.payment_method?.toLowerCase() || "";
+        const filterMethod = filters.paymentMethod.toLowerCase();
+        
+        // Handle exact match for payment methods
+        if (['paypal', 'payoneer', 'wise', 'indian_upi', 'swift_india'].includes(filterMethod)) {
+          return paymentMethod === filterMethod;
+        }
+        
+        // For partial matching if needed
+        return paymentMethod.includes(filterMethod);
+      }
+      return true;
+    })
+    .filter((item) => {
+      // Apply currency filter
+      if (filters.currency && filters.currency !== 'all') {
+        const invoiceCurrency = item.currency?.toLowerCase() || 'usd';
+        return invoiceCurrency === filters.currency.toLowerCase();
+      }
+      return true;
+    })
+    .filter((item) => {
+      // Apply archive filter
+      if (filters.archive && filters.archive !== 'all') {
+        const isArchived = item.archived || item.is_archived || false;
+        if (filters.archive === 'archived') {
+          return isArchived;
+        } else if (filters.archive === 'active') {
+          return !isArchived;
+        }
+      }
+      return true;
+    })
+    .filter((item) => {
+      // Apply has attachment filter
+      if (filters.hasAttachment) {
+        return item.has_attachment || item.attachments || item.attachment_count > 0;
+      }
+      return true;
+    });
+
+  const dropdownOptions = [
+    { value: 'contact', label: 'Contact' },
+    { value: 'paymentMethod', label: 'Payment Method' }
+  ];
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+  };
+
+  const handleFilterApply = (appliedFilters) => {
+    console.log('Applied filters:', appliedFilters);
+    setFilters(appliedFilters);
+  };
+
+  const handleDownload = () => {
+    if (!filteredinvoices || filteredinvoices.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    const headers = ["DATE", "INVOICE ID", "CLIENT", "AMOUNT", "PAYMENT METHOD", "STATUS", "DUE DATE", "PAID DATE"];
+    const rows = filteredinvoices.map((invoice) => [
+      invoice.date_entered,
+      invoice.invoice_id?.slice(0, 4),
+      invoice.name,
+      invoice.amount_c,
+      invoice.payment_method || 'N/A',
+      invoice.status_c,
+      invoice.due_date,
+      invoice.payment_data
+    ]);
+
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "invoices.csv";
+    a.click();
+  };
+
+  const updateInvoiceHandler = (invoice, data) => {
+    const updatedInvoice = {
+      ...invoice,
+      ...data,
+    };
+    dispatch(updateInvoice(updatedInvoice));
+  };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(invoicesAction.clearAllErrors());
+    }
+    if (message) {
+      toast.success(message);
+      setCurrentUpdateInvoice(null);
+      dispatch(invoicesAction.clearAllMessages());
+    }
+  }, [dispatch, message, error]);
+
+  // Calculate stats based on filtered data
+  const totalInvoices = filteredinvoices.length;
+  const paidInvoices = filteredinvoices.filter(inv => inv.status_c === "PAID");
+  const pendingInvoices = filteredinvoices.filter(inv => inv.status_c === "DRAFT" || inv.status_c === "SENT");
+  const overdueInvoices = filteredinvoices.filter(inv => {
+    if (inv.status_c === "OVERDUE") return true;
+    // Check if due date is passed and status is not PAID
+    if (inv.due_date && inv.status_c !== "PAID") {
+      const dueDate = new Date(inv.due_date);
+      const today = new Date();
+      return dueDate < today;
+    }
+    return false;
+  });
+
+  const paidAmount = paidInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
+  const pendingAmount = pendingInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
+  const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
+
+  // Calculate payment method statistics
+  const paymentMethodsStats = {};
+  filteredinvoices.forEach(inv => {
+    const method = inv.payment_method || 'Unknown';
+    if (!paymentMethodsStats[method]) {
+      paymentMethodsStats[method] = { count: 0, amount: 0 };
+    }
+    paymentMethodsStats[method].count++;
+    paymentMethodsStats[method].amount += parseFloat(inv.amount_c) || 0;
+  });
+
+  const topPaymentMethod = Object.entries(paymentMethodsStats)
+    .sort((a, b) => b[1].amount - a[1].amount)[0] || ['None', {count: 0, amount: 0}];
+
   return (
     <>
+      {currentUpdateInvoice && (
+        <UpdatePopup
+          open={!!currentUpdateInvoice}
+          title="Update Invoice"
+          fields={[
+            { name: "name", label: "Name", type: "text", value: currentUpdateInvoice.name },
+            { name: "email_c", label: "Email", type: "text", value: currentUpdateInvoice.email_c },
+            { name: "amount_c", label: "Amount", type: "number", value: currentUpdateInvoice.amount_c },
+            { 
+              name: "payment_method", 
+              label: "Payment Method", 
+              type: "select", 
+              value: currentUpdateInvoice.payment_method,
+              options: [
+                { value: 'paypal', label: 'PayPal' },
+                { value: 'payoneer', label: 'Payoneer' },
+                { value: 'wise', label: 'Wise' },
+                { value: 'indian_upi', label: 'Indian UPI' },
+                { value: 'swift_india', label: 'Swift India' },
+              ]
+            },
+          ]}
+          loading={updating}
+          onUpdate={(data) => updateInvoiceHandler(currentUpdateInvoice, data)}
+          onClose={() => setCurrentUpdateInvoice(null)}
+        />
+      )}
+      
+      {/* Use EnhancedSearch with dynamic filters */}
+      <EnhancedSearch
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search here..."
+        onFilterApply={handleFilterApply}
+        filterConfig={invoiceFilterConfig}
+        filterPlaceholder="Filters"
+        showFilter={true}
+        onDownloadClick={handleDownload}
+        showDownload={true}
+        className="mb-6"
+      />
+
+      {/* Active Filters Display */}
+      {Object.keys(filters).length > 0 && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-gray-700">Active Filters:</span>
+            {Object.entries(filters).map(([key, value]) => {
+              const config = invoiceFilterConfig.find(c => c.key === key);
+              if (!config) return null;
+              
+              let displayValue = '';
+              if (config.type === 'select') {
+                const option = config.options.find(o => o.value === value);
+                displayValue = option ? option.label : value;
+              } else if (config.type === 'range') {
+                if (value.min || value.max) {
+                  displayValue = `$${value.min || 0} - $${value.max || '∞'}`;
+                }
+              } else if (config.type === 'date-range') {
+                if (value.start || value.end) {
+                  displayValue = `${value.start || 'Start'} to ${value.end || 'End'}`;
+                }
+              } else if (config.type === 'checkbox') {
+                if (value) {
+                  displayValue = config.label;
+                }
+              }
+              
+              if (displayValue) {
+                return (
+                  <span key={key} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                    {config.label}: {displayValue}
+                  </span>
+                );
+              }
+              return null;
+            })}
+            <button
+              onClick={() => setFilters({})}
+              className="ml-auto text-sm text-red-600 hover:text-red-800"
+            >
+              Clear All Filters
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Invoices</p>
-              <p className="text-2xl text-gray-900 mt-1">{count}</p>
+              <p className="text-2xl text-gray-900 mt-1">{totalInvoices}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-yellow-600" />
@@ -74,7 +508,7 @@ export function InvoicesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Paid</p>
-              <p className="text-2xl text-gray-900 mt-1">$500</p>
+              <p className="text-2xl text-gray-900 mt-1">${paidAmount.toFixed(2)}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-green-600" />
@@ -82,13 +516,13 @@ export function InvoicesPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Pending</p>
-              <p className="text-2xl text-gray-900 mt-1">$1.2K</p>
+              <p className="text-2xl text-gray-900 mt-1">${pendingAmount.toFixed(2)}</p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <span className="text-2xl">⏳</span>
             </div>
           </div>
@@ -98,10 +532,27 @@ export function InvoicesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Overdue</p>
-              <p className="text-2xl text-gray-900 mt-1">$750</p>
+              <p className="text-2xl text-gray-900 mt-1">${overdueAmount.toFixed(2)}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Top Payment Method</p>
+              <p className="text-lg text-gray-900 mt-1">
+                {topPaymentMethod[0] !== 'None' 
+                  ? `${topPaymentMethod[0].replace('_', ' ').toUpperCase()}`
+                  : 'None'}
+              </p>
+              <p className="text-sm text-gray-500">${topPaymentMethod[1].amount.toFixed(2)}</p>
+            </div>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <Wallet className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
@@ -109,21 +560,35 @@ export function InvoicesPage() {
 
       {/* Invoices Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6 text-yellow-600" />
-            <h2 className="text-xl text-gray-900">INVOICES</h2>
-             <a href="">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+            <h2 className="text-xl font-semibold text-gray-900">INVOICES</h2>
+            <a href="https://www.guestpostcrm.com/blog/one-click-paypal-invoice-creation/" target="_blank"
+              rel="noopener noreferrer">
+              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            </a>
           </div>
-          <button
-            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-            onClick={() => setShowCreateInvoice(true)}
-          >
-            + New Invoice
-          </button>
+
+          <div className="relative group">
+            <button
+              className="p-5 cursor-pointer hover:scale-110 flex items-center justify-center transition"
+              onClick={() => alert("work in progress")}
+            >
+              <img
+                width="40"
+                height="40"
+                src="https://img.icons8.com/arcade/64/plus.png"
+                alt="plus"
+              />
+            </button>
+            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
+                   opacity-0 group-hover:opacity-100 transition 
+                   pointer-events-none whitespace-nowrap shadow-md">
+              Create Invoices
+            </span>
+          </div>
         </div>
 
         {/* Table */}
@@ -131,6 +596,12 @@ export function InvoicesPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>DATE</span>
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-left">INVOICE ID</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -144,61 +615,57 @@ export function InvoicesPage() {
                     <span>AMOUNT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">STATUS</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>ISSUE DATE</span>
+                    <Wallet className="w-4 h-4" />
+                    <span>PAYMENT METHOD</span>
                   </div>
                 </th>
+                <th className="px-6 py-4 text-left">STATUS</th>
                 <th className="px-6 py-4 text-left">DUE DATE</th>
                 <th className="px-6 py-4 text-left">PAID DATE</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
             <tbody>
-              {invoices.map((invoice) => (
+              {filteredinvoices.map((invoice) => (
                 <tr
                   key={invoice.id}
                   className="border-b border-gray-100 hover:bg-yellow-50 transition-colors cursor-pointer"
                 >
+                  <td className="px-6 py-4 text-gray-600">
+                    {invoice.date_entered}
+                  </td>
                   <td className="px-6 py-4 text-yellow-600">
                     {invoice.invoice_id?.slice(0, 4)}
                   </td>
                   <td className="px-6 py-4 text-gray-900">{invoice.name}</td>
                   <td className="px-6 py-4 text-green-600">
-                    {invoice.amount_c ?? "NOT PAID"}
+                    ${parseFloat(invoice.amount_c || 0).toFixed(2)}
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                        invoice.status_c
-                      )}`}
-                    >
+                    <div className="flex items-center">
+                      <span className={`px-3 py-1.5 rounded-full text-sm border flex items-center ${getPaymentMethodColor(invoice.payment_method)}`}>
+                        {getPaymentMethodIcon(invoice.payment_method)}
+                        {invoice.payment_method ? invoice.payment_method.replace('_', ' ').toUpperCase() : 'N/A'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(invoice.status_c)}`}>
                       {invoice.status_c}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {invoice.date_entered}
+                    {invoice.due_date || "PENDING"}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {invoice.due_date ?? "PENDING"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {invoice.payment_data ?? "PENDING"}
+                    {invoice.payment_data || "PENDING"}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      {/* Download Button */}
                       <button
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Download"
-                      >
-                        <Download className="w-4 h-4 text-gray-600" />
-                      </button>
-
-                      {/* Update Button */}
-                      <button
+                        onClick={() => setCurrentUpdateInvoice(invoice)}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
@@ -211,15 +678,23 @@ export function InvoicesPage() {
             </tbody>
           </table>
         </div>
-        {invoices.length > 0 && (
+        {filteredinvoices.length > 0 && (
           <Pagination slice={"invoices"} fn={getInvoices} />
         )}
-        {invoices.length === 0 && (
+        {filteredinvoices.length === 0 && (
           <div className="p-12 text-center">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">
-              No invoices yet. Create your first invoice to get started.
+              No invoices found matching your criteria.
             </p>
+            {Object.keys(filters).length > 0 && (
+              <button
+                onClick={() => setFilters({})}
+                className="mt-4 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
         )}
       </div>

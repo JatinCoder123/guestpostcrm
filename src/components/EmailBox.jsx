@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
-import { sendEmailToThread } from "../store/Slices/threadEmail";
+import { getThreadEmail, sendEmailToThread, threadEmailAction } from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
 import {
@@ -35,10 +35,13 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const { businessEmail } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
-  const { email } = useSelector((s) => s.ladger);
 
   const emails = view ? viewEmail : threadEmail;
-
+  useEffect(() => {
+    if (!view && threadId) {
+      dispatch(getThreadEmail(tempEmail, threadId))
+    }
+  }, [threadId, view]);
   const [messageLimit, setMessageLimit] = useState(3);
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
@@ -80,12 +83,14 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
 
   // LOAD TEMPLATE INTO EDITOR
   useEffect(() => {
-    if (template && editorReady && editorRef.current) {
-      editorRef.current.setContent(template[0]?.body_html || "");
-      setInput(template[0]?.body_html || "");
-    } else if (defaultTemplate && editorReady && editorRef.current) {
-      editorRef.current.setContent(base64ToUtf8(defaultTemplate.html_base64));
-      setInput(base64ToUtf8(defaultTemplate.html_base64));
+    if ((template || defaultTemplate) && editorReady && editorRef.current) {
+      const htmlContent = template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
+      if (htmlContent) {
+        editorRef.current.setContent(htmlContent);
+        setInput(htmlContent);
+      } else {
+        toast.warn("Template is empty—starting with blank editor.");
+      }
     }
   }, [template, defaultTemplate, editorReady]);
 
@@ -128,8 +133,8 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
     }
 
     const contentToSend =
-      editorRef.current?.getContent({ format: "text" }) ||
-      htmlToPlainText(input);
+      editorRef.current?.getContent() ||
+      input;
 
     if (view) dispatch(sendEmail(contentToSend));
     else dispatch(sendEmailToThread(threadId, contentToSend));
@@ -146,8 +151,12 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
       onClose();
     }
   };
-
-  const visibleMessages = emails.slice(-messageLimit);
+  const visibleMessages = emails?.slice(-messageLimit);
+  useEffect(() => {
+    if (scrollRef.current && visibleMessages?.length <= 3) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [visibleMessages]);
 
   return (
     <motion.div
@@ -280,7 +289,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                             transition={{ duration: 0.2, type: "spring" }}
                             className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2 bg-white p-3 rounded-2xl shadow-2xl border border-gray-200"
                           >
-                            {children.map((child, j) => (
+                            {children?.map((child, j) => (
                               <motion.button
                                 key={j}
                                 whileHover={{ scale: 1.03, y: -1 }}
@@ -319,7 +328,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
         /* ========================= CHAT SCREEN ========================= */
         <>
           <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">
-            {messageLimit < emails.length && (
+            {messageLimit < emails?.length && (
               <>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -330,7 +339,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
-                  onClick={() => setMessageLimit(emails.length)}
+                  onClick={() => setMessageLimit(emails?.length)}
                   className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   Show All
@@ -343,7 +352,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
             ref={scrollRef}
             className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
           >
-            {visibleMessages.map((mail, idx) => {
+            {visibleMessages?.map((mail, idx) => {
               const isUser = mail.from_email.includes(businessEmail);
               return (
                 <motion.div
@@ -354,17 +363,15 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                   className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${
-                      isUser
-                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                    }`}
+                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${isUser
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span
-                        className={`text-xs font-medium ${
-                          isUser ? "opacity-90" : "text-gray-500"
-                        }`}
+                        className={`text-xs font-medium ${isUser ? "opacity-90" : "text-gray-500"
+                          }`}
                       >
                         {isUser ? "You" : mail.from_name || "Sender"}
                       </span>
@@ -372,9 +379,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                         {new Date(mail.date_created).toLocaleString()}
                       </span>
                     </div>
-                    <p className="whitespace-pre-line text-sm leading-relaxed">
-                      {mail.body}
-                    </p>
+                    <div dangerouslySetInnerHTML={{ __html: mail.body }} className="whitespace-pre-line text-sm leading-relaxed " />
                   </div>
                 </motion.div>
               );

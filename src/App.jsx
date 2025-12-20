@@ -2,22 +2,24 @@ import { useEffect } from "react";
 import { TimelinePage } from "./components/pages/TimelinePage";
 import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { UnansweredPage } from "./components/pages/UnansweredPage";
+import { Marketplace } from "./components/pages/Marketplace";
+import { RecentEntry } from "./components/pages/RecentEntry";
+import { Duplicate } from "./components/pages/DuplicatePage";
 import { DealsPage } from "./components/pages/DealsPage";
 import { OffersPage } from "./components/pages/OffersPage";
 import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
+import { TagManagerpage } from "./components/pages/TagManagerpage";
+import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
+import { Contacts_otherPage } from "./components/pages/Contacts_otherPage";
+import { DraftInvoice } from "./components/pages/DraftInvoice";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
-import { PaymentMissedPage } from "./components/pages/PaymentMissedPage";
-import { LinkRemovalPage } from "./components/pages/LinkRemovalPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
-import { DealRemindersPage } from "./components/pages/DealRemindersPage";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadger } from "./store/Slices/ladger";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import RootLayout from "./RootLayout";
 import { AiCreditsPage } from "./components/pages/AiCreditsPage";
 import { PageContextProvider } from "./context/pageContext";
-import { OrderReminderPage } from "./components/pages/OrderReminderPage";
 import { getUser, userAction } from "./store/Slices/userSlice";
 import Login from "./components/pages/Login";
 import LoadingPage from "./components/pages/LoadingPage";
@@ -34,7 +36,6 @@ import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
 import { MarkBulkPage } from "./components/pages/MarkBulkPage";
-
 import { DefaulterPage } from "./components/pages/Defaulterpage";
 import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
@@ -42,6 +43,14 @@ import CreateDeal from "./components/CreateDeal";
 import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
+import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
+import CreateOrder from "./components/CreateOrder";
+import { ReminderPage } from "./components/pages/Reminder";
+import { LinkExchangePage } from "./components/pages/LinkExchangePage";
+import CreateOffer from "./components/CreateOffer";
+import { HotPage } from "./components/pages/HotPage";
+
+
 const router = createBrowserRouter([
   {
     path: "*",
@@ -49,11 +58,7 @@ const router = createBrowserRouter([
   },
   {
     path: "",
-    element: (
-      <ErrorBoundary>
-        <RootLayout />
-      </ErrorBoundary>
-    ),
+    element: <RootLayout />,
     children: [
       {
         index: true,
@@ -72,15 +77,48 @@ const router = createBrowserRouter([
         element: <SpamDetectionPage />,
       },
       {
+        path: "tag-manager",
+        element: <TagManagerpage />,
+      },
+      {
+        path: "system-suggestion",
+        element: <SystemSuggestionsPage />,
+      },
+
+      {
+        path: "draft-invoice",
+        element: <DraftInvoice />
+
+      },
+      {
+        path: "contacts",
+        element: <Contacts_otherPage />,
+      },
+      {
         path: "unanswered",
         element: <UnansweredPage />,
       },
+
+      {
+        path: "Marketplace",
+        element: <Marketplace />,
+      },
+
+      {
+        path: "RecentEntry",
+        element: <RecentEntry />,
+      },
+      {
+        path: "Duplicate",
+        element: <Duplicate />,
+      },
+
       {
         path: "deals",
         element: <DealsPage />,
       },
       {
-        path: "deals/create",
+        path: "deals/:type/:id?",
         element: <CreateDeal />,
       },
       {
@@ -88,28 +126,31 @@ const router = createBrowserRouter([
         element: <OffersPage />,
       },
       {
+        path: "offers/:type/:id?",
+        element: <CreateOffer />,
+      },
+      {
         path: "orders",
         element: <OrdersPage />,
+      },
+      {
+        path: "orders/:type/:id?",
+        element: <CreateOrder />,
       },
       {
         path: "invoices",
         element: <InvoicesPage />,
       },
+
       {
-        path: "payment-missed",
-        element: <PaymentMissedPage />,
+        path: "link-exchange",
+        element: <LinkExchangePage />,
       },
+
+
       {
-        path: "link-removal",
-        element: <LinkRemovalPage />,
-      },
-      {
-        path: "deal-reminders",
-        element: <DealRemindersPage />,
-      },
-      {
-        path: "order-reminders",
-        element: <OrderReminderPage />,
+        path: "reminders",
+        element: <ReminderPage />,
       },
       {
         path: "timeline",
@@ -145,12 +186,20 @@ const router = createBrowserRouter([
         element: <MovedPage />,
       },
       {
+        path: "all-backlinks",
+        element: <Allbacklinkspage />,
+      },
+      {
         path: "other",
         element: <OtherPage />,
       },
       {
         path: "avatars",
         element: <AvatarPage />,
+      },
+      {
+        path: "hot-records",
+        element: <HotPage />,
       },
 
       {
@@ -199,9 +248,6 @@ export default function App() {
     dispatch(getUser());
   }, []);
   useEffect(() => {
-    if (isAuthenticated) dispatch(getLadger());
-  }, [isAuthenticated]);
-  useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(userAction.clearAllErrors());
@@ -212,9 +258,7 @@ export default function App() {
       {isAuthenticated && (
         <SocketContextProvider>
           <PageContextProvider>
-            <ErrorBoundary>
-              <RouterProvider router={router} />
-            </ErrorBoundary>
+            <RouterProvider router={router} />
           </PageContextProvider>
         </SocketContextProvider>
       )}

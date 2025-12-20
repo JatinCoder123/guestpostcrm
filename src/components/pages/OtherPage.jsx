@@ -1,5 +1,6 @@
 import {
   Clock9Icon,
+  Contact,
   Cpu,
   CreditCard,
   FileCog,
@@ -19,6 +20,9 @@ import {
   TagIcon,
   TruckIcon,
   Users,
+  Laptop,
+  PencilOff
+  
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
@@ -37,7 +41,7 @@ export function OtherPage() {
       subtitle: "All BackLinks content shown here",
       icon: <Option className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
-      link: "paypal-credentials",
+      link: "/all-backlinks",
     },
     {
       title: "Defaulters",
@@ -72,13 +76,43 @@ export function OtherPage() {
       subtitle: "Tag manager will be shown here",
       icon: <TagIcon className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
-      link: "/spam-detection",
+      link: "/tag-manager",
     },
+
+       {
+      title: "System Suggestions",
+      subtitle: "Tag manager will be shown here",
+       icon: <Laptop className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "/system-suggestion",
+    },
+    {
+      title: "Contacts",
+      subtitle: "Contact tag will be shown here",
+      icon: <Contact className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "/contacts",
+    },
+
+        {
+      title: "Draft Invoice",
+      subtitle: "Contact tag will be shown here",
+      icon: <PencilOff className="w-8 h-8 text-red-500" />,
+      bg: "bg-green-50",
+      link: "/draft-invoice",
+    }
   ];
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-6">Others</h2>
+      <div className="flex gap-5">
+        <h2 className="text-2xl font-semibold mb-6">Others</h2>
+
+       <a href="https://www.guestpostcrm.com/blog/other-section-in-guestpostcrm/"  target="_blank" 
+  rel="noopener noreferrer">
+         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
+         </a>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {menuItems.map((item, index) => (

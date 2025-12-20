@@ -5,6 +5,8 @@ export const PageContext = createContext();
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
   const [displayIntro, setDisplayIntro] = useState(true);
+  const [welcomeHeaderContent, setWelcomeHeaderContent] = useState("Unreplied");
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
     localStorage.getItem("email") || null
   );
@@ -27,6 +29,10 @@ export const PageContextProvider = (props) => {
     setEnteredEmail,
     search,
     setSearch,
+    welcomeHeaderContent,
+    setWelcomeHeaderContent,
+    currentIndex,
+    setCurrentIndex,
   };
 
   return (

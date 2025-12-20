@@ -73,13 +73,13 @@ export const getBulkEmails = (filter, email) => {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=mark_bulk&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=bulk&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${
             getState().user.crmEndpoint
-          }&type=mark_bulk&filter=${filter}&page=1&page_size=50`
+          }&type=bulk&filter=${filter}&page=1&page_size=50`
         );
       }
       console.log(`Bulk emails`, response.data);
@@ -102,9 +102,10 @@ export const getBulkEmails = (filter, email) => {
 export const markingEmail = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(bulkSlice.actions.markingRequest());
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const response = await axios.get(
-        `https://errika.guestpostcrm.com/?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
+        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
         {}
       );
       console.log(`Mark Toggle Response`, response.data);

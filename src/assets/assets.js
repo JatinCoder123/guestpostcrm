@@ -1,7 +1,8 @@
 import logo from "./logo.png";
+import duplicateImg from "./duplicate.png";
 export default logo;
-
-export const websiteListForDeal = [
+export const images = { duplicateImg };
+export const websiteLists = [
   "https://www.wp-1click.com/",
   "https://www.outrightcrm.com/",
   "https://store.outrightcrm.com/",
@@ -10,14 +11,25 @@ export const websiteListForDeal = [
   "https://www.mailsextract.com/",
   "https://www.guestpostcrm.com/",
 ];
+// export const periodOptions = [
+//   { period: "today", title: "Today" },
+//   { period: "yesterday", title: "Yesterday" },
+//   { period: "last_7_days", title: "Last 7 Days" },
+//   { period: "last_14_days", title: "Last 14 Days" },
+//   { period: "last_21_days", title: "Last 21 Days" },
+//   { period: "last_30_days", title: "Last 30 Days" },
+//   { period: "last_90_days", title: "Last 90 Days" },
+// ];
 export const periodOptions = [
   { period: "today", title: "Today" },
   { period: "yesterday", title: "Yesterday" },
-  { period: "last_7_days", title: "Last 7 Days" },
-  { period: "last_14_days", title: "Last 14 Days" },
-  { period: "last_21_days", title: "Last 21 Days" },
-  { period: "last_30_days", title: "Last 30 Days" },
-  { period: "last_90_days", title: "Last 90 Days" },
+  { period: "this_week", title: "This week" },
+  { period: "last_7_days", title: "Last 7 days" },
+  { period: "last_30_days", title: "Last 30 days" },
+  { period: "this_month", title: "This month" },
+  { period: "last_month", title: "Last month" },
+  { period: "last_3_months", title: "Last 3 months" },
+
 ];
 export function getDifference(dateString) {
   const inputDate = new Date(dateString);
@@ -51,15 +63,32 @@ export function getDifference(dateString) {
 export function formatTime(dateString) {
   const inputDate = new Date(dateString);
 
-  // --- SHORT MONTH NAME ---
   const shortMonth = inputDate.toLocaleString("en-US", { month: "short" });
-
   const day = inputDate.getDate();
   const year = inputDate.getFullYear();
 
-  return `${day} ${shortMonth} ${year}`;
-}
+  // Format time (24hr format)
+  const time = inputDate.toLocaleString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
 
+
+  return `${day} ${shortMonth} ${year}, ${time}`;
+}
+export function excludeEmail(str) {
+  if (str.includes("<")) {
+    return str.split("<")[1].split(">")[0].trim();
+  }
+  return str;
+}
+export function excludeName(str) {
+  if (str.includes("<")) {
+    return str.split("<")[0];
+  }
+  return str;
+}
 export function daysUntil(dateString) {
   if (!dateString) return null;
   const d = new Date(dateString);
@@ -68,6 +97,7 @@ export function daysUntil(dateString) {
   const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   return days;
 }
+
 
 export function formatExpiryLabel(dateString) {
   const days = daysUntil(dateString) ?? 2;
@@ -114,4 +144,13 @@ export function base64ToUtf8(base64) {
       return "";
     }
   }
+}
+
+
+export const extractEmail = (str) => {
+  if (str.includes("<")) {
+    return str.split("<")[1].split(">")[0];
+  }
+  return str;
+
 }

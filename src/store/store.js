@@ -5,6 +5,7 @@ import unansweredReducer from "./Slices/unansweredEmails.js";
 import favReducer from "./Slices/favEmailSlice.js";
 import bulkReducer from "./Slices/markBulkSlice.js";
 import forwarededReducer from "./Slices/forwardedEmailSlice.js";
+import markTagReducer from "./Slices/markTagSlice.js";
 import dealsReducer from "./Slices/deals.js";
 import offersReducer from "./Slices/offers.js";
 import invoiceReducer from "./Slices/invoices.js";
@@ -14,14 +15,23 @@ import viewEmailReducer from "./Slices/viewEmail.js";
 import threadEmailReducer from "./Slices/threadEmail.js";
 import aiCreditsReducer from "./Slices/aiCredits.js";
 import aiReplyReducer from "./Slices/aiReply.js";
-import linkRemReducer from "./Slices/linkRem.js";
 import orderRemReducer from "./Slices/orderRem.js";
-import paymetnRemReducer from "./Slices/paymentRem.js";
-import dealRemReducer from "./Slices/dealRem.js";
 import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
 import movederReducer from "./Slices/movedEmails.js";
+import backlinksReducer from "./Slices/backlinks.js";
+import eventReducer from "./Slices/eventSlice.js";
+import marketplaceReducer from "./Slices/Marketplace.js";
+import linkExchangeReducer from "./Slices/linkExchange.js";
+import contactOtherReducer from "./Slices/contact_other";
+import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
+import quickActionBtnReducer from "./Slices/quickActionBtn";
+import DraftInvoiceReducer from "./Slices/draftInvoice.js";
+import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
+import hotReducer from "./Slices/hotSlice.js";
+import tagReducer from "./Slices/tag.js";
+
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -40,12 +50,22 @@ export const store = configureStore({
     aiCredits: aiCreditsReducer,
     aiReply: aiReplyReducer,
     orderRem: orderRemReducer,
-    dealRem: dealRemReducer,
-    paymentRem: paymetnRemReducer,
-    linkRem: linkRemReducer,
     user: userReducer,
     bulk: bulkReducer,
+    markTag: markTagReducer,
     avatar: avatarReducer,
     defaulter: defaulterReducer,
+    backlinks: backlinksReducer,
+    events: eventReducer,
+    marketplace: marketplaceReducer,
+    linkExchange: linkExchangeReducer,
+    hot: hotReducer,
+    quickActionBtn: quickActionBtnReducer,
+    contact_other: contactOtherReducer,
+    contactdefaulter: contactdefaulterReducer,
+    duplicateEmails: duplicateEmailReducer,
+    user: userReducer,
+    DraftInvoice: DraftInvoiceReducer,
+    tag: tagReducer,
   },
 });

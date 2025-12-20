@@ -24,6 +24,9 @@ import {
   RectangleEllipsis,
   Link2Off,
   Link,
+  Store,
+  ClipboardEdit,
+  BellRing,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -64,29 +67,23 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const { count: offersCount, loading: offersLoading } = useSelector(
     (s) => s.offers
   );
-  const { count: detectionCount, loading: detectionLoading } = useSelector(
-    (s) => s.detection
-  );
+
   const { count: invoiceCount, loading: invoicesLoading } = useSelector(
     (s) => s.invoices
   );
   const { count: orderCount, loading: ordersLoading } = useSelector(
     (s) => s.orders
   );
-  const { count: linkRemCount, loading: linkRemLoading } = useSelector(
-    (s) => s.linkRem
-  );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
     (s) => s.orderRem
   );
-  const { count: paymentRemCount, loading: paymentRemLoading } = useSelector(
-    (s) => s.paymentRem
+
+  const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
+    (s) => s.marketplace
   );
-  const { count: dealRemCount, loading: dealRemLoading } = useSelector(
-    (s) => s.dealRem
-  );
+  const { count: linkExchangeCount, loading: linkExchangeLoading } =
+    useSelector((s) => s.linkExchange);
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
-  const { count: bulkCount, loading: bulkLoading } = useSelector((s) => s.bulk);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
     (s) => s.forwarded
   );
@@ -95,7 +92,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
   const menuItems = [
     {
       id: "unreplied-emails",
-      label: "Unreplied Emails",
+      label: "Unreplied ",
       icon: Mail,
       loading: unrepliedLoading,
       count: unrepliedCount,
@@ -105,7 +102,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "unanswered",
-      label: "Unanswered",
+      label: "Replied",
       icon: MessageSquare,
       loading: unansweredLoading,
       count: unansweredCount,
@@ -115,7 +112,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "forwarded-emails",
-      label: "Forwarded Emails",
+      label: "Assigned",
       icon: Forward,
       loading: forwardLoading,
       count: forwardCount,
@@ -125,7 +122,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
     },
     {
       id: "favourite-emails",
-      label: "Favourite Emails",
+      label: "Favourite ",
       icon: Heart,
       loading: favLoading,
       count: favCount,
@@ -133,15 +130,26 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-red-50",
       countBg: "bg-pink-500 text-white",
     },
+
     {
-      id: "deals",
-      label: "Deals",
-      icon: Handshake,
-      loading: dealsLoading,
-      count: dealCount,
-      color: "text-blue-600",
-      hover: "hover:bg-blue-50",
-      countBg: "bg-blue-500 text-white",
+      id: "Marketplace",
+      label: "Marketplaces",
+      icon: Store,
+      loading: marketPlaceLoading,
+      count: marketPlaceCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-pink-500 text-white",
+    },
+    {
+      id: "link-exchange",
+      label: "Link Exchange",
+      icon: Link,
+      loading: linkExchangeLoading,
+      count: linkExchangeCount,
+      color: "text-pink-600",
+      hover: "hover:bg-pink-50",
+      countBg: "bg-pink-500 text-white",
     },
     {
       id: "offers",
@@ -152,6 +160,16 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       color: "text-green-600",
       hover: "hover:bg-green-50",
       countBg: "bg-green-500 text-white",
+    },
+    {
+      id: "deals",
+      label: "Deals",
+      icon: Handshake,
+      loading: dealsLoading,
+      count: dealCount,
+      color: "text-blue-600",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "orders",
@@ -173,67 +191,25 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       hover: "hover:bg-yellow-50",
       countBg: "bg-yellow-500 text-white",
     },
-
-    {
-      id: "link-removal",
-      label: "Link Removal",
-      icon: Link2,
-      loading: linkRemLoading,
-      count: linkRemCount,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
-    },
-
-    {
-      id: "link-exchange",
-      label: "Link Exchange",
-      icon: Link,
-      loading: linkRemLoading,
-      count: linkRemCount,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
-    },
-    {
-      id: "deal-reminders",
-      label: "Deal Reminders",
-      icon: Bell,
-      loading: dealRemLoading,
-      count: dealRemCount,
-      color: "text-cyan-600",
-      hover: "hover:bg-cyan-50",
-      countBg: "bg-cyan-500 text-white",
-    },
-    {
-      id: "order-reminders",
-      label: "Order Reminders",
-      icon: ShoppingBag,
-      loading: ordersLoading,
-      count: orderRemCount,
-      color: "text-teal-600",
-      hover: "hover:bg-teal-50",
-      countBg: "bg-teal-500 text-white",
-    },
-    {
-      id: "payment-missed",
-      label: "Payment Reminders",
-      icon: CreditCard,
-      loading: paymentRemLoading,
-      count: paymentRemCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-red-500 text-white",
-    },
     {
       id: "other",
       label: "Others",
       icon: RectangleEllipsis,
-      loading: paymentRemLoading,
-      count: paymentRemCount,
+      loading: orderRemLoading,
+      count: orderRemCount,
       color: "text-red-600",
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",
+    },
+    {
+      id: "reminders",
+      label: "Reminders",
+      icon: BellRing,
+      loading: orderRemLoading,
+      count: null,
+      color: "text-cyan-600",
+      hover: "hover:bg-cyan-50",
+      countBg: "bg-cyan-500 text-white",
     },
   ];
 
@@ -284,30 +260,45 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
                 setActivePage(item.id);
                 navigateTo(item.id);
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all cursor-pointer 
-                         ${collapsed ? "justify-center" : ""}
-                         ${
-                           activePage === item.id
-                             ? `bg-gray-100 ${item.color}`
-                             : `${item.hover} text-gray-700`
-                         }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer
+                ${collapsed ? "justify-center" : ""}
+                    ${
+                      activePage === item.id
+                        ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-sm scale-[1.01]"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }
+                ${item.hover}`}
             >
               {/* FIXED ICON SIZE ALWAYS */}
               <item.icon
-                className={`w-5 h-5 ${
-                  activePage === item.id ? item.color : "text-gray-500"
-                }`}
+                className={`w-5 h-5 transition-all duration-300 ease-out
+    ${
+      activePage === item.id
+        ? `
+         
+          translate-x-0
+          scale-130
+          drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]
+        `
+        : `
+          text-gray-500
+          translate-x-0
+          scale-100
+        `
+    }`}
               />
 
               {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
               {!collapsed && (
                 <>
                   <span className="flex-1 text-left">{item.label}</span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
-                  >
-                    {item.loading ? <LoadingSpin /> : <>{item.count}</>}
-                  </span>
+                  {item.count != null && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
+                    >
+                      {item.loading ? <LoadingSpin /> : <>{item.count}</>}
+                    </span>
+                  )}
                 </>
               )}
             </button>
