@@ -7,6 +7,7 @@ const viewEmailSlice = createSlice({
   initialState: {
     loading: false,
     contactLoading: false,
+    count: 0,
     stage: null,
     status: null,
     viewEmail: [],
@@ -24,10 +25,11 @@ const viewEmailSlice = createSlice({
       state.error = null;
     },
     getViewEmailSucess(state, action) {
-      const { viewEmail, threadId } = action.payload;
+      const { viewEmail, threadId, count } = action.payload;
       state.loading = false;
       state.viewEmail = viewEmail;
       state.threadId = threadId;
+      state.count = count;
       state.error = null;
     },
     getViewEmailFailed(state, action) {
@@ -116,6 +118,7 @@ export const getViewEmail = (email = null) => {
         viewEmailSlice.actions.getViewEmailSucess({
           viewEmail: data.emails,
           threadId: data.thread_id,
+          count: data.total_emails
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
@@ -202,6 +205,7 @@ export const sendEmail = (reply, message = null) => {
         {
           threadId,
           replyBody: reply,
+          email: getState().ladger.email,
         },
         {
           headers: { "Content-Type": "application/json" },

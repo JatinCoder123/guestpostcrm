@@ -19,7 +19,7 @@ export const SocketContextProvider = (props) => {
   useEffect(() => {
     const newAvatarHandler = (data) => {
       console.log("new avatar", data);
-      setCurrentAvatar({ url: data.avatar_url.split("html/")[1], mute: false });
+      // setCurrentAvatar({ url: data.avatar_url.split("html/")[1], mute: false });
     };
 
     const latestAvatarHandler = (avatar) => {

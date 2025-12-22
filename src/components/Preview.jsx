@@ -1,3 +1,44 @@
+function addOneWeek(dateStr) {
+    // Parse the date
+    const date = new Date(dateStr);
+
+    // Add 7 days
+    date.setDate(date.getDate() + 7);
+
+    // Format parts
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "short" });
+    const year = String(date.getFullYear()).slice(-2);
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12 || 12;
+
+    return `${day} ${month} ${year} ${hours}:${minutes} ${ampm}`;
+}
+function addOneMonth(dateStr) {
+    const date = new Date(dateStr);
+
+    // Add 1 month
+    date.setMonth(date.getMonth() + 1);
+
+    // Format parts
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "short" });
+    const year = String(date.getFullYear()).slice(-2);
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12 || 12;
+
+    return `${day} ${month} ${year} ${hours}:${minutes} ${ampm}`;
+}
+
+
 export default function Preview({
     data = [],
     type,
@@ -125,6 +166,18 @@ export default function Preview({
                                                                     >
                                                                         Amount
                                                                     </th>
+                                                                    <th
+                                                                        style={{
+                                                                            textAlign: "right",
+                                                                            padding: "12px",
+                                                                            fontSize: "15px",
+                                                                            fontWeight: "700",
+                                                                            color: "#1a2b6b",
+                                                                            borderBottom: "2px solid #d0ddff",
+                                                                        }}
+                                                                    >
+                                                                        Expiry Date
+                                                                    </th>
                                                                 </tr>
                                                             </thead>
 
@@ -160,6 +213,42 @@ export default function Preview({
                                                                         >
                                                                             $
                                                                             {isNaN(Number(d[amountKey])) ? 0 : Number(d[amountKey])}
+                                                                        </td>
+                                                                        <td
+                                                                            style={{
+                                                                                padding: "12px",
+                                                                                borderBottom: "1px solid #e1e7ff",
+                                                                                textAlign: "right",
+                                                                                fontSize: "14px",
+                                                                                color: "#1a2b6b",
+                                                                                fontWeight: "600",
+                                                                            }}
+                                                                        >
+                                                                            {type == "Deals" ?
+                                                                                addOneWeek(
+                                                                                    d.date_entered_formatted
+                                                                                        ? d.date_entered_formatted
+                                                                                        : new Date().toLocaleString("en-GB", {
+                                                                                            day: "2-digit",
+                                                                                            month: "short",
+                                                                                            year: "2-digit",
+                                                                                            hour: "2-digit",
+                                                                                            minute: "2-digit",
+                                                                                            hour12: true,
+                                                                                        })
+                                                                                )
+                                                                                : addOneMonth(
+                                                                                    d.date_entered_formatted
+                                                                                        ? d.date_entered_formatted
+                                                                                        : new Date().toLocaleString("en-GB", {
+                                                                                            day: "2-digit",
+                                                                                            month: "short",
+                                                                                            year: "2-digit",
+                                                                                            hour: "2-digit",
+                                                                                            minute: "2-digit",
+                                                                                            hour12: true,
+                                                                                        })
+                                                                                )}
                                                                         </td>
                                                                     </tr>
                                                                 ))}
