@@ -262,7 +262,7 @@ export function ReminderPage() {
                       {order.recipient}
                     </td>
                     <td className="px-6 py-4 text-red-600">
-                      {order.reminder_type}
+                      {order.reminder_type_label}
                     </td>
                     <td className="px-6 py-4 text-green-600">
                       {order.scheduled_time}

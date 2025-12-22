@@ -7,6 +7,7 @@ const ordersSlice = createSlice({
   initialState: {
     loading: false,
     orders: [],
+    statusLists: {},
     count: 0,
     pageCount: 1,
     pageIndex: 1,
@@ -22,9 +23,10 @@ const ordersSlice = createSlice({
       state.error = null;
     },
     getOrdersSucess(state, action) {
-      const { count, orders, pageCount, pageIndex } = action.payload;
+      const { count, orders, pageCount, pageIndex, statusLists } = action.payload;
       state.loading = false;
       state.orders = orders;
+      state.statusLists = action.payload.statusLists;
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
@@ -99,6 +101,7 @@ export const getOrders = (email) => {
       dispatch(
         ordersSlice.actions.getOrdersSucess({
           count: data.data_count ?? 0,
+          statusLists: data.order_status_list,
           orders: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
