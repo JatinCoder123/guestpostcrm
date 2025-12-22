@@ -49,6 +49,7 @@ const DropDown = ({ options, handleSelectOption }) => {
           end: formatDate(startDate),
           display: formatDate(startDate)
         };
+        
       
       case "this_week":
         // Get start of week (Monday)
@@ -162,8 +163,8 @@ const DropDown = ({ options, handleSelectOption }) => {
   focus:ring-2 focus:ring-blue-500/30
 
   active:border-blue-600
-"
->
+">
+
         <div className="flex flex-col flex-1 min-w-0">
           <span className="text-sm font-medium text-gray-900 truncate">
             {selectedOption?.title || "Select"}
