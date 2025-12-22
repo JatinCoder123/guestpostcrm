@@ -275,7 +275,7 @@ export function ReminderPage() {
                         onClick={() => sendReminder(order.id)}
                         disabled={order.status === "Sent"}
                       >
-                        Send Reminder
+                        <img width="34" height="34" src="https://img.icons8.com/arcade/64/send.png" alt="send"/>
                       </button>}
 
                     </td>

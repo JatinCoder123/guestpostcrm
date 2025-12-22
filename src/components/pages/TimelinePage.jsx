@@ -44,6 +44,7 @@ export function TimelinePage() {
     error: sendError,
     message,
     threadId,
+    viewEmail
   } = useSelector((state) => state.viewEmail);
 
   const {
@@ -311,6 +312,18 @@ export function TimelinePage() {
                       >
                         <Reply className="w-6 h-6 text-yellow-700" />
                       </motion.button>
+                      <div className="ml-10 flex items-center gap-2">
+                        {viewEmail?.length > 0 && (
+                          <>
+                            <span className="text-xs text-gray-500">
+                            {viewEmail[viewEmail.length - 1]?.date_created} <br/>
+                        </span>
+                          <span className="text-xs text-gray-500">
+                           ( {viewEmail[viewEmail.length - 1]?.date_created_ago} )<br/>
+                        </span></>
+                        
+                        )}
+                      </div>
                     </div>
                     <div
                       className="text-gray-700 text-sm leading-relaxed whitespace-pre-line"

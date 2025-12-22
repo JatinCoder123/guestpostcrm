@@ -58,7 +58,8 @@ const MailerSummaryHeader = () => {
             <tr className="text-center">
               <td className="border border-blue-400 px-4 py-3">
                 <div className="font-semibold text-gray-900">
-                  {formatTime(mailersSummary?.date_entered)}
+                  {mailersSummary?.date_entered
+}
                 </div>
                 <div className="text-xs text-gray-600">
                   {getDifference(mailersSummary?.date_entered)}
