@@ -204,13 +204,11 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
                                                                         {updating ? "Updating..." : "Update"}</button>
                                                                 </div>}
                                                                 {type == "orders" && pageType == "view" && <OrderId order_id={item.order_id} />}
-                                                                {type == "orders" && pageType == "view" ? <OrderView data={item} /> : <> <div className="mt-4 flex flex-wrap gap-3">
+                                                                {type == "orders" && pageType == "view" ? <OrderView data={item} lists={lists} /> : <> <div className="mt-4 flex flex-wrap gap-3">
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} websiteLists={validWebsite} />)}
                                                                 </div>
                                                                 </>}
-                                                                <div className="mt-4 grid grid-cols-2 gap-3">
-                                                                    {lists.length > 0 && lists.map((list, listIndex) => <DisplayList key={listIndex} spamScores={item.spam_score_c} data={item[list.name]} label={list.label} />)}
-                                                                </div>
+
 
                                                             </motion.div>
                                                         )}
@@ -333,7 +331,6 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
     );
 }
 
-
 function InputField({
     label,
     name,
@@ -347,67 +344,94 @@ function InputField({
 }) {
     const { statusLists } = useSelector((state) => state.orders);
 
+    // value must ALWAYS match <option value="">
     const value = data?.[name] ?? "";
-    console.log(statusLists)
-    const dropDownOptions = type === "select" && label === "Order Status" ? Object.values(statusLists) : websiteLists;
 
-    disabled = pageType == "create" ? false : pageType == "view" ? true : disabled;
-    type = pageType == "view" && type == "select" ? "text" : type;
+    // Handle disabled & type based on pageType
+    const isDisabled =
+        pageType === "create" ? false : pageType === "view" ? true : disabled;
 
+    const inputType =
+        pageType === "view" && type === "select" ? "text" : type;
 
     return (
-        <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[300px]`}>
-            <label className={`block  mb-1  ${pageType == "view" ? "text-gray-500 text-sm" : "text-xs text-gray-600"}`}>
+        <div className={`${inputType === "number" ? "w-30" : "w-full"} max-w-[300px]`}>
+            <label
+                className={`block mb-1 ${pageType === "view" ? "text-gray-500 text-sm" : "text-xs text-gray-600"
+                    }`}
+            >
                 {label}
             </label>
-            {/* ✅ SELECT */}
-            {type === "select" && (
+
+            {/* ================= SELECT ================= */}
+            {inputType === "select" && (
                 <select
                     value={value}
-                    onChange={label === "Order Status" ? (e) => onChange({ target: { value: Object.keys(statusLists).find((opt) => opt === e.target.value) } }) : (e) => onChange(e)}
-                    disabled={disabled}
-                    className={`w-full rounded-xl px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"} `}
+                    onChange={onChange}
+                    disabled={isDisabled}
+                    className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
+                        ? "bg-gray-100"
+                        : "bg-white border"
+                        }`}
                 >
-                    <option value="" disabled>Select {label}</option>
-                    {dropDownOptions.map((opt, idx) => (
-                        <option key={idx} value={opt}>
-                            {opt}
-                        </option>
-                    ))}
+                    <option value="" disabled>
+                        Select {label}
+                    </option>
+
+                    {/* Order Status (object → key/value) */}
+                    {label === "Order Status"
+                        ? Object.entries(statusLists).map(([key, val]) => (
+                            <option key={key} value={key}>
+                                {val}
+                            </option>
+                        ))
+                        : websiteLists.map((opt, idx) => (
+                            <option key={idx} value={opt}>
+                                {opt}
+                            </option>
+                        ))}
                 </select>
             )}
-            { }
 
-            {/* ✅ TEXTAREA */}
-            {type === "textarea" && (
+            {/* ================= TEXTAREA ================= */}
+            {inputType === "textarea" && (
                 <textarea
                     value={value}
                     onChange={onChange}
                     placeholder={placeholder}
-                    disabled={disabled}
+                    disabled={isDisabled}
                     rows={4}
-                    className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"} resize-none`}
+                    className={`w-full rounded-xl px-3 py-2 resize-none ${pageType === "view" || isDisabled
+                        ? "bg-gray-100"
+                        : "bg-white border"
+                        }`}
                 />
             )}
 
-            {/* ✅ DEFAULT INPUT */}
-            {type !== "select" && type !== "textarea" && type !== "list" && (
-                <div className="flex items-center gap-1">
-                    {type == "number" && <span>$</span>}
-                    <input
-                        value={value == "N/A" ? "" : value}
-                        onChange={onChange}
-                        placeholder={placeholder}
-                        type={type}
-                        disabled={disabled}
-                        inputMode={type === "number" ? "numeric" : undefined}
-                        className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"}`}
-                    /></div>
-
-            )}
+            {/* ================= INPUT ================= */}
+            {inputType !== "select" &&
+                inputType !== "textarea" &&
+                inputType !== "list" && (
+                    <div className="flex items-center gap-1">
+                        {inputType === "number" && <span>$</span>}
+                        <input
+                            value={value === "N/A" ? "" : value}
+                            onChange={onChange}
+                            placeholder={placeholder}
+                            type={inputType}
+                            disabled={isDisabled}
+                            inputMode={inputType === "number" ? "numeric" : undefined}
+                            className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
+                                ? "bg-gray-100"
+                                : "bg-white border"
+                                }`}
+                        />
+                    </div>
+                )}
         </div>
     );
 }
+
 
 
 
@@ -429,63 +453,68 @@ function DisplayList({ data, label, spamScores }) {
 
     return (
         <div className="flex flex-col gap-3 group">
-            {label && (
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                            {label}
-                        </span>
-                    </div>
-                    {label === "Their Link" && (
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                            (Spam Score)
-                        </span>
-                    )}
-                </div>
-            )}
-
-            {/* 3D Container with layered shadows */}
+            {/* 3D Container */}
             <div className="relative transform-gpu transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
-                {/* Ambient shadow layers */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl transform translate-y-3 translate-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute inset-0 bg-slate-900/10 rounded-2xl transform translate-y-1.5 translate-x-1"></div>
+                <div className="relative bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 mt-7 border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500 overflow-hidden">
 
-                {/* Main container with bevel effect */}
-                <div className="relative bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500 overflow-hidden">
-                    {/* Top edge highlight */}
-                    <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-white to-transparent"></div>
+                    {/* Label */}
+                    {label && (
+                        <div className="flex items-center gap-2 px-5 pt-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                {label}
+                            </span>
+                            {label === "Their Link" && (
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                    (Spam Score)
+                                </span>
+                            )}
+                        </div>
+                    )}
 
-                    {/* Inner glow on hover */}
+                    {/* Inner glow */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                    {/* Scrollable content area */}
+                    {/* Scrollable List */}
                     <div className="relative z-10 p-5 max-h-60 overflow-y-auto custom-scrollbar">
-                        <ul className="space-y-3">
+                        <ul className="space-y-1.5 relative">
                             {list.map((item, idx) => (
                                 <li
                                     key={idx}
-                                    className="relative group/item transform transition-all duration-300 hover:translate-x-1"
+                                    className="relative group/item transform transition-all duration-300 hover:translate-x-1 pl-6"
                                 >
-                                    {/* Item background with 3D effect */}
+                                    {/* Vertical connector */}
+                                    {idx !== list.length - 1 && (
+                                        <span
+                                            className="absolute left-[6px] top-6 w-[2px] h-full 
+                      bg-gradient-to-b from-blue-400 via-purple-400 to-transparent
+                      opacity-40"
+                                        />
+                                    )}
+
+                                    {/* Hover background */}
                                     <div className="absolute inset-0 bg-gradient-to-r from-slate-100/50 to-transparent rounded-lg opacity-0 group-hover/item:opacity-100 transition-opacity"></div>
 
-                                    <div className="relative flex items-center justify-between gap-3 p-3 rounded-lg">
-                                        {/* Bullet point with gradient */}
+                                    <div className="relative flex items-center justify-between gap-2 p-1 rounded-lg">
+                                        {/* Bullet + text */}
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
-                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg shadow-blue-500/50 flex-shrink-0"></div>
+                                            <div className="relative mt-1.5 flex-shrink-0">
+                                                {/* Node glow */}
+                                                <span className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 blur-sm opacity-60"></span>
+                                                {/* Node */}
+                                                <span className="relative block w-2 h-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 shadow-md shadow-blue-500/50"></span>
+                                            </div>
+
                                             <span className="text-sm text-slate-700 font-medium break-words leading-relaxed">
                                                 {item}
                                             </span>
                                         </div>
 
-                                        {/* Spam score badge with 3D effect */}
+                                        {/* Spam Score */}
                                         {label === "Their Link" && spamScoreList[idx] && (
                                             <div className="relative flex-shrink-0">
-                                                {/* Badge glow */}
-                                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-lg blur-md opacity-50"></div>
-
-                                                <span className="relative inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 text-xs font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(234,179,8,0.3)] border border-yellow-200">
+                                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-lg blur-md opacity-40"></div>
+                                                <span className="relative inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 text-xs font-bold shadow-md border border-yellow-200">
                                                     {spamScoreList[idx]}
                                                 </span>
                                             </div>
@@ -495,35 +524,14 @@ function DisplayList({ data, label, spamScores }) {
                             ))}
                         </ul>
                     </div>
-
-                    {/* Bottom gradient fade for scroll indication */}
-                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-100 to-transparent pointer-events-none"></div>
-
-                    {/* Corner accent */}
-                    <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-blue-500/10 to-transparent rounded-2xl"></div>
                 </div>
             </div>
-
-            <style jsx>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 8px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: linear-gradient(to bottom, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.2));
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
-                    border-radius: 10px;
-                    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: linear-gradient(to bottom, #2563eb, #7c3aed);
-                }
-            `}</style>
         </div>
     );
 }
+
+
+
 
 
 
@@ -577,46 +585,36 @@ function Field({ label, value, link, children, title }) {
     );
 }
 
-function OrderView({ data }) {
+function OrderView({ data, lists }) {
     return (
         <div className="w-full relative mt-3">
             <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
-
-
-
                 <div className="relative z-10">
-
-                    {/* Invoice + Order Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-                        <Field label="Invoice Link" value={data.invoice_link_c} link title="View Invoice" />
-                        <Field label="Document Link" value={data.doc_link_c} link title="View Document" />
-
                         <Field label="Date" value={data.date_entered_formatted} />
-
+                        <Field label="Type" value={data.order_type} />
                         <Field label="Amount" value={`$${data.total_amount_c}`} />
-
                         <Field label="Status">
                             <div className="relative inline-flex">
-                                {/* Glow effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl blur-lg opacity-50"></div>
-
-                                <span className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(234,179,8,0.4)] border border-yellow-200">
-                                    <span className="relative flex h-3 w-3">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-600 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-600 shadow-lg"></span>
-                                    </span>
+                                <span className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xl bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(234,179,8,0.4)] ">
                                     {data.order_status}
                                 </span>
                             </div>
                         </Field>
-
-                        <Field label="Type" value={data.order_type} />
+                        <Field label="Invoice Link" value={data.invoice_link_c} link title="View Invoice" />
                         <Field label="Anchor Text" value={"Anchor Text"} />
+
+                        <Field label="Document Link" value={data.doc_link_c} link title="View Document" />
                     </div>
 
 
                 </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                    {lists.length > 0 && lists.map((list, listIndex) => <div key={listIndex} className="relative"> <DisplayList spamScores={data.spam_score_c} data={data[list.name]} label={list.label} />
+                        {listIndex < lists.length - 1 && <img className="absolute z-[10] top-20 -right-6" width="36" height="36" src="https://img.icons8.com/doodle/48/link--v1.png" alt="connected" />}
+                    </div>)}
 
+                </div>
             </div>
         </div>
     );
