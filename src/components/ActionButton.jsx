@@ -279,7 +279,11 @@ const ActionButton = ({
               {btn.label}
             </span>
           </button>
-          {btn.count && <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{btn.count}</span>}
+          {btn.count > 0 && (
+            <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+              {btn.count}
+            </span>
+          )}
 
           {showUsers && btn.label === "Assign" && (
             <UserDropdown
