@@ -63,7 +63,7 @@ export default function CreateOffer() {
         websiteKey="website"
         amountKey="our_offer_c"
       />
-    )))
+    ), "Offer Send Successfully"))
   }
   const handleUpdate = (offer) => {
     dispatch(updateOffer(offer))
@@ -89,7 +89,7 @@ export default function CreateOffer() {
             websiteKey="website"
             amountKey="our_offer_c"
           />
-        ), "Offer Sent Successfully"))
+        ), "Offer Send Successfully"))
       }
       toast.success(message)
       dispatch(offersAction.clearAllMessages())

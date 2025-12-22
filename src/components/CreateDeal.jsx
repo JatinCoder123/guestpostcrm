@@ -85,7 +85,7 @@ export default function CreateDeal() {
         websiteKey="website_c"
         amountKey="dealamount"
       />
-    ), "Deal Sent Successfully"))
+    ), "Deal Send Successfully"))
   }
   const handleUpdate = (item) => {
     dispatch(updateDeal(item))
@@ -115,7 +115,7 @@ export default function CreateDeal() {
             websiteKey="website_c"
             amountKey="dealamount"
           />
-        ), "Deal Sent Successfully"))
+        ), "Deal Send Successfully"))
       }
       toast.success(message)
       dispatch(dealsAction.clearAllMessages())

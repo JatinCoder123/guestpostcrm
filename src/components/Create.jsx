@@ -116,7 +116,6 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
                                         className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                                     >
                                         <MoveLeft size={16} />
-                                        Back
                                     </button>
                                     <h3 className="text-2xl font-semibold">{`${pageType == "view" ? "" : pageType.charAt(0).toUpperCase() + pageType.slice(1)} ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                                 </div>
@@ -232,7 +231,7 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
                     </div>
 
                     {/* RIGHT SIDEBAR */}
-                    {pageType !== "edit" && <div className="col-span-12 lg:col-span-4">
+                    {pageType !== "edit" && type !== "orders" && <div className="col-span-12 lg:col-span-4">
                         <div className="sticky top-6 space-y-4">
                             <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
                                 <h4 className="font-semibold">{type[0].toUpperCase() + type.slice(1)} for {email}</h4>
@@ -360,7 +359,7 @@ function InputField({
                     value={value}
                     onChange={onChange}
                     disabled={disabled}
-                    className={`w-full rounded-xl px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"} `}
+                    className={`w-full rounded-xl px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"} `}
                 >
                     <option value="" disabled>Select Website</option>
                     {websiteLists.map((opt, idx) => (
@@ -379,7 +378,7 @@ function InputField({
                     placeholder={placeholder}
                     disabled={disabled}
                     rows={4}
-                    className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"} resize-none`}
+                    className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"} resize-none`}
                 />
             )}
 
@@ -394,7 +393,7 @@ function InputField({
                         type={type}
                         disabled={disabled}
                         inputMode={type === "number" ? "numeric" : undefined}
-                        className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"}`}
+                        className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"}`}
                     /></div>
 
             )}
