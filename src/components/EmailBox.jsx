@@ -377,6 +377,9 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                       </span>
                       <span className="text-xs opacity-70">
                         {new Date(mail.date_created).toLocaleString()}
+                        <div className="ml-0">
+                          {mail.date_created_ago}
+                        </div>
                       </span>
                     </div>
                     <div
@@ -401,7 +404,8 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
             </motion.button>
           </div>
         </>
-      )}
-    </motion.div>
+      )
+      }
+    </motion.div >
   );
 }
