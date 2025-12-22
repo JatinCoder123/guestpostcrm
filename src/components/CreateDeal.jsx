@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useContext } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +9,7 @@ import Create from "./Create";
 import Preview from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
+import { SocketContext } from "../context/SocketContext";
 
 const fields = [
   { name: "website_c", label: "Website", type: "select", options: websiteLists },
@@ -18,15 +19,14 @@ export default function CreateDeal() {
   const { type, id } = useParams();
   const { state } = useLocation()
   const { deals, updating, error, message, creating, deleting, deleteDealId } = useSelector((state) => state.deals);
+  const { offers } = useSelector((state) => state.offers);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
+  const [validWebsite, setValidWebsite] = useState([])
   const [currentDeals, setCurrentDeals] = useState([])
+  const [currentOffers, setCurrentOffers] = useState([])
+  const { setNotificationCount } = useContext(SocketContext);
 
-  const [newDeals, setNewDeals] = useState([{
-    website_c: "",
-    dealamount: "",
-    id: `${Date.now()}${Math.random()}`,
-    email: state?.email,
-  }])
+  const [newDeals, setNewDeals] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
   useEffect(() => {
@@ -35,7 +35,43 @@ export default function CreateDeal() {
       deal = deal.filter(d => d.id == id)
     }
     setCurrentDeals(() => [...deal])
-  }, [state, deals, type, id])
+    let offer = offers.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
+    setCurrentOffers(() => [...offer])
+  }, [state, deals, offers, type, id])
+  useEffect(() => {
+    let valid = [];
+    if (type == "create") {
+      valid = websiteLists.filter(w => !currentDeals.some(d => d.website_c == w))
+    }
+    if (type == "edit") {
+      valid = websiteLists.filter(w => currentDeals.some(d => d.id == id || d.website_c !== w))
+    }
+    setValidWebsite(valid)
+
+  }, [currentDeals])
+  useEffect(() => {
+    if (type == "create") {
+      const currentOfferWithoutDeal = currentOffers.length > 0 ? currentOffers.filter(o => !currentDeals.some(d => d.website_c == o.website)) : []
+      if (currentOfferWithoutDeal.length > 0) {
+        const newDeals = currentOfferWithoutDeal.map((offer) => ({
+          website_c: offer.website,
+          dealamount: offer.our_offer_c,
+          id: `${Date.now()}${Math.random()}`,
+          email: state?.email,
+        }))
+        setNewDeals(newDeals)
+      }
+      else
+        setNewDeals([
+          {
+            website_c: "",
+            dealamount: "",
+            id: `${Date.now()}${Math.random()}`,
+            email: state?.email,
+          }
+        ])
+    }
+  }, [type, currentDeals])
   const submitHandler = () => {
     dispatch(createDeal(newDeals));
   };
@@ -67,6 +103,10 @@ export default function CreateDeal() {
     if (message) {
       if (message.includes("Created")) {
         dispatch(getDeals())
+        setNotificationCount((prev) => ({
+          ...prev,
+          outr_deal_fetch: Date.now(),
+        }));
         dispatch(sendEmail(renderToStaticMarkup(
           <Preview
             data={[...newDeals, ...currentDeals]}
@@ -99,7 +139,7 @@ export default function CreateDeal() {
   }, [message, error, dispatch, sendError, sendMessage])
 
   return (
-    <Create data={type == "create" ? newDeals : currentDeals} email={state?.email} deleting={deleting} deleteId={deleteDealId} pageType={type} handleDelete={handleDelete} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, email }) => (
+    <Create data={type == "create" ? newDeals : currentDeals} validWebsite={validWebsite} email={state?.email} deleting={deleting} deleteId={deleteDealId} pageType={type} handleDelete={handleDelete} websiteLists={websiteLists} websiteKey="website_c" handleUpdate={handleUpdate} updating={updating} creating={creating} sending={sending} setData={type == "create" ? setNewDeals : setCurrentDeals} sendHandler={sendHandler} amountKey={"dealamount"} type="deals" submitData={submitHandler} fields={fields} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Deals"

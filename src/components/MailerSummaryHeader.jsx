@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { LoadingChase } from "./Loading";
 import { createOrder, getOrdersWithoutLoading, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
-import { create } from "zustand";
 
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
@@ -106,8 +105,8 @@ const MailerSummaryHeader = () => {
 export default MailerSummaryHeader;
 
 
-function TD({ data, type, setData, LoadingData }) {
-  const { creating, message, error, loading } = useSelector((state) => state.orders);
+function TD({ data, type, setData, loading }) {
+  const { creating, message, error } = useSelector((state) => state.orders);
   const { email } = useSelector((state) => state.ladger);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
@@ -138,7 +137,7 @@ function TD({ data, type, setData, LoadingData }) {
   }
   return (
     <td className="border border-blue-400 px-4 py-3">
-      {(loading || creating) && type == "orders" ? <LoadingChase /> :
+      {(creating && type == "orders") || loading ? <LoadingChase /> :
         <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
           {data.length > 0 ? `${data.length} ${type}` : `No ${type}`}
           <button onClick={handleClick}>

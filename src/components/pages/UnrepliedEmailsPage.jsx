@@ -17,6 +17,7 @@ import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import SearchComponent from "./SearchComponent";
+import { extractEmail } from "../../assets/assets";
 
 
 export function UnrepliedEmailsPage() {
@@ -259,7 +260,7 @@ export function UnrepliedEmailsPage() {
                 >
                   <td
                     onClick={() => {
-                      const input = email.from?.split("<")[1].split(">")[0];
+                      const input = extractEmail(email.from);
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
@@ -276,7 +277,7 @@ export function UnrepliedEmailsPage() {
 
                   <td
                     onClick={() => {
-                      const input = email.from?.split("<")[1].split(">")[0];
+                      const input = extractEmail(email.from);
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
@@ -285,14 +286,14 @@ export function UnrepliedEmailsPage() {
                     }}
                     className="px-6 py-4 text-gray-900"
                   >
-                    {email.from?.split("<")[0].trim()}
+                    {extractEmail(email.from)}
                   </td>
 
                   <td
                     onClick={() => {
                       setCurrentThreadId(email.thread_id);
                       handleThreadClick(email.from, email.thread_id);
-                      setEmail(email.from?.split("<")[1].split(">")[0]);
+                      setEmail(extractEmail(email.from));
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
@@ -301,7 +302,7 @@ export function UnrepliedEmailsPage() {
 
                   <td
                     onClick={() => {
-                      const input = email.from?.split("<")[1].split(">")[0];
+                      const input = extractEmail(email.from);
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);

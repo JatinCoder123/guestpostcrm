@@ -5,6 +5,7 @@ import unansweredReducer from "./Slices/unansweredEmails.js";
 import favReducer from "./Slices/favEmailSlice.js";
 import bulkReducer from "./Slices/markBulkSlice.js";
 import forwarededReducer from "./Slices/forwardedEmailSlice.js";
+import markTagReducer from "./Slices/markTagSlice.js";
 import dealsReducer from "./Slices/deals.js";
 import offersReducer from "./Slices/offers.js";
 import invoiceReducer from "./Slices/invoices.js";
@@ -24,13 +25,12 @@ import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
 import contactOtherReducer from "./Slices/contact_other";
-//import contactdefaulterReducer  from "./Slices/contactdefaulterSlice.js";
 import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
-
+import quickActionBtnReducer from "./Slices/quickActionBtn";
 import DraftInvoiceReducer from "./Slices/draftInvoice.js";
 import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
-
 import hotReducer from "./Slices/hotSlice.js";
+import tagReducer from "./Slices/tag.js";
 
 export const store = configureStore({
   reducer: {
@@ -52,6 +52,7 @@ export const store = configureStore({
     orderRem: orderRemReducer,
     user: userReducer,
     bulk: bulkReducer,
+    markTag: markTagReducer,
     avatar: avatarReducer,
     defaulter: defaulterReducer,
     backlinks: backlinksReducer,
@@ -59,14 +60,12 @@ export const store = configureStore({
     marketplace: marketplaceReducer,
     linkExchange: linkExchangeReducer,
     hot: hotReducer,
-
+    quickActionBtn: quickActionBtnReducer,
     contact_other: contactOtherReducer,
-      contactdefaulter: contactdefaulterReducer,
-
-     duplicateEmails: duplicateEmailReducer,
-     user: userReducer,
-     DraftInvoice: DraftInvoiceReducer,
-
-
+    contactdefaulter: contactdefaulterReducer,
+    duplicateEmails: duplicateEmailReducer,
+    user: userReducer,
+    DraftInvoice: DraftInvoiceReducer,
+    tag: tagReducer,
   },
 });

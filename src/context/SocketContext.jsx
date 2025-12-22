@@ -10,14 +10,16 @@ export const SocketContextProvider = (props) => {
     outr_el_process_audit: null,
     unreplied_email: null,
     outr_deal_fetch: null,
-    outr_order_gp_list: null,
+    outr_order_gp_li: null,
     outr_self_test: null,
+    refresh_ladger: null
+
   });
 
   useEffect(() => {
     const newAvatarHandler = (data) => {
       console.log("new avatar", data);
-      setCurrentAvatar({ url: data.avatar_url.split("html/")[1], mute: false });
+      // setCurrentAvatar({ url: data.avatar_url.split("html/")[1], mute: false });
     };
 
     const latestAvatarHandler = (avatar) => {

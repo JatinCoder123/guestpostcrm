@@ -21,6 +21,7 @@ export default function CreateOffer() {
   const navigate = useNavigate()
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
   const [currentOffers, setCurrentOffers] = useState([])
+  const [validWebsite, setValidWebsite] = useState([])
   const [newOffers, setNewOffers] = useState([{
     website: "",
     client_offer_c: "",
@@ -38,6 +39,16 @@ export default function CreateOffer() {
     }
     setCurrentOffers(() => [...offer])
   }, [state, offers, type, id])
+  useEffect(() => {
+    let valid = [];
+    if (type == "create") {
+      valid = websiteLists.filter(w => !currentOffers.some(o => o.website == w))
+    }
+    if (type == "edit") {
+      valid = websiteLists.filter(w => currentOffers.some(o => o.id == id || o.website !== w))
+    }
+    setValidWebsite(valid)
+  }, [currentOffers])
   useEffect(() => {
     if (type == "create" && !state) {
       navigate("/")
@@ -69,7 +80,7 @@ export default function CreateOffer() {
   useEffect(() => {
     if (message) {
       if (message.includes("Created")) {
-        // dispatch(getOffers())
+        dispatch(getOffers())
         dispatch(sendEmail(renderToStaticMarkup(
           <Preview
             data={[...newOffers, ...currentOffers]}
@@ -102,7 +113,7 @@ export default function CreateOffer() {
 
 
   return (
-    <Create data={type == "create" ? newOffers : currentOffers} email={state?.email} deleting={deleting} deleteId={deleteOfferId} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"our_offer_c"} renderPreview={({ data, email }) => (
+    <Create data={type == "create" ? newOffers : currentOffers} validWebsite={validWebsite} setValidWebsite={setValidWebsite} email={state?.email} deleting={deleting} deleteId={deleteOfferId} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"our_offer_c"} renderPreview={({ data, email }) => (
       <Preview
         data={data}
         type="Offers"

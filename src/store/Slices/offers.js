@@ -169,32 +169,27 @@ export const createOffer = (offers = []) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
-      offers.map(async (offer) => {
-        console.log(offer);
-        const domain = getState().user.crmEndpoint.split("?")[0];
-        const { data } = await axios.post(
-          `${domain}?entryPoint=get_post_all&action_type=post_data`,
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_offer`,
 
-          {
-            parent_bean: {
-              module: "outr_offer",
-              amount: offer.amount,
-              client_offer_c: offer.client_offer_c,
-              our_offer_c: offer.our_offer_c,
-              website: offer.website,
-              name: offer.email,
-            },
+        {
+          records: offers.map((offer) => ({
+            amount: offer.amount,
+            client_offer_c: offer.client_offer_c,
+            our_offer_c: offer.our_offer_c,
+            website: offer.website,
+            email_c: offer.email,
+            name: offer.email,
+          })),
+          child_bean: {
+            module: "Contacts",
+            email1: offers[0].email,
+
           },
-          {
-            headers: {
-              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "aplication/json",
-            },
-          }
-        );
-        console.log(`Create Offer`, data);
-
-      });
+        },
+      );
+      console.log(`Create Offer`, data);
       const updatedOffers = [...offers, ...getState().offers.offers];
       dispatch(
         offersSlice.actions.createOfferSuccess({

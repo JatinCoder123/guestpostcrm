@@ -11,12 +11,18 @@ import Pagination from "../Pagination";
 import { useState, useEffect, useCallback } from "react";
 import { getOrderRem } from "../../store/Slices/orderRem";
 import SearchComponent from "./SearchComponent";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { LoadingChase } from "../Loading";
+
 
 export function ReminderPage() {
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSort, setSelectedSort] = useState('');
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedSort, setSelectedSort] = useState("");
   const dispatch = useDispatch();
+  const [sendReminderLoading, setSendReminderLoading] = useState(false);
+  const [sendReminderId, setSendReminderId] = useState(null);
 
   const { orderRem, dropdownOptions, count, loading, error } = useSelector(
     (state) => state.orderRem
@@ -25,20 +31,41 @@ export function ReminderPage() {
 
   const { email } = useSelector((state) => state.ladger);
 
+  async function sendReminder(reminderId) {
+    setSendReminderLoading(true);
+    setSendReminderId(reminderId);
+
+    axios
+      .get(
+        `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=send_reminder&reminder_id=${reminderId}`
+      )
+      .then((res) => {
+        if (res.data?.success) {
+          toast.success("Reminder sent successfully");
+          dispatch(getOrderRem())
+        } else {
+          toast.error(res.data?.message || "Failed to send reminder");
+        }
+      })
+      .catch(() => {
+        toast.error("Something went wrong while sending reminder");
+      }).finally(() => {
+        setSendReminderLoading(false);
+        setSendReminderId(null);
+      });
+  }
+
   useEffect(() => {
-    if (selectedCategory === 'all') {
+    if (selectedCategory === "all") {
       dispatch(getOrderRem(null, 1));
-    }
-    else {
+    } else {
       dispatch(getOrderRem(email, 1));
     }
-
   }, [email, selectedCategory, dispatch]);
-
 
   useEffect(() => {
     const filteredReminders = orderRem.filter((reminder) => {
-      if (selectedCategory === 'all') {
+      if (selectedCategory === "all") {
         return true;
       }
       return reminder.reminder_type === selectedCategory;
@@ -46,21 +73,19 @@ export function ReminderPage() {
     setReminders(filteredReminders);
   }, [selectedCategory, orderRem]);
 
-
   const getDisplayLabel = (type) => {
     return dropdownOptions.find((option) => option.value === type)?.label;
   };
 
-
   const filterOptions = [
-    { value: 'asc', label: 'A to Z' },
-    { value: 'desc', label: 'Z to A' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
+    { value: "asc", label: "A to Z" },
+    { value: "desc", label: "Z to A" },
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
+    console.log("Applied filters from popup:", filters);
   };
 
   const handleSearchChange = (value) => {
@@ -76,7 +101,7 @@ export function ReminderPage() {
   };
 
   const handleDownload = () => {
-    console.log('Download clicked');
+    console.log("Download clicked");
   };
 
   return (
@@ -86,37 +111,31 @@ export function ReminderPage() {
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         dropdownPlaceholder="Filter by Type"
-
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
         searchPlaceholder="Search reminders..."
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
         archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
+          { value: "all", label: "All" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
         ]}
         transactionTypeOptions={[
-          { value: 'all', label: 'All Reminders' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
+          { value: "all", label: "All Reminders" },
+          { value: "incoming", label: "Incoming" },
+          { value: "outgoing", label: "Outgoing" },
         ]}
         currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
+          { value: "all", label: "All" },
+          { value: "usd", label: "USD" },
+          { value: "eur", label: "EUR" },
         ]}
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
         className="mb-6"
       />
-
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -172,7 +191,9 @@ export function ReminderPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <CreditCard className="w-6 h-6 text-red-600" />
-            <h2 className="text-xl text-gray-900">{getDisplayLabel(selectedCategory)}</h2>
+            <h2 className="text-xl text-gray-900">
+              {getDisplayLabel(selectedCategory)}
+            </h2>
             <a href="">
               <img
                 width="30"
@@ -182,15 +203,11 @@ export function ReminderPage() {
               />
             </a>
           </div>
-          <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-            Send Reminders
-          </button>
         </div>
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-
               <tr className="bg-gradient-to-r from-red-600 to-pink-600 text-white">
                 <th className="px-6 py-4 text-left">DATE</th>
 
@@ -244,14 +261,23 @@ export function ReminderPage() {
                     <td className="px-6 py-4 text-gray-900">
                       {order.recipient}
                     </td>
-                    <td className="px-6 py-4 text-red-600">{order.reminder_type}</td>
-                    <td className="px-6 py-4 text-green-600">{order.scheduled_time}</td>
+                    <td className="px-6 py-4 text-red-600">
+                      {order.reminder_type}
+                    </td>
+                    <td className="px-6 py-4 text-green-600">
+                      {order.scheduled_time}
+                    </td>
                     <td className="px-6 py-4 text-gray-600">{order.status}</td>
 
-                    <td className="px-6 py-4">
-                      <button className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    <td className="px-6 py-4 flex items-center">
+                      {sendReminderLoading && sendReminderId === order.id ? <LoadingChase size="20" color="blue" /> : <button
+                        className={`px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm ${order.status === "Sent" ? "opacity-50 cursor-not-allowed" : ""}`}
+                        onClick={() => sendReminder(order.id)}
+                        disabled={order.status === "Sent"}
+                      >
                         Send Reminder
-                      </button>
+                      </button>}
+
                     </td>
                   </tr>
                 ))

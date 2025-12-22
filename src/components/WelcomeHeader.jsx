@@ -66,7 +66,7 @@ const WelcomeHeader = () => {
               <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
                 <Mail className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
                 <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-80 transition-all duration-600">
-                  Email:{" "}
+                  Business Email:{" "}
                   <span className="font-bold text-blue-700">
                     {businessEmail}
                   </span>

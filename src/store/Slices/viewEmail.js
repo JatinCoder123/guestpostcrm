@@ -7,6 +7,9 @@ const viewEmailSlice = createSlice({
   initialState: {
     loading: false,
     contactLoading: false,
+    count: 0,
+    stage: null,
+    status: null,
     viewEmail: [],
     contactInfo: null,
     accountInfo: null,
@@ -22,10 +25,11 @@ const viewEmailSlice = createSlice({
       state.error = null;
     },
     getViewEmailSucess(state, action) {
-      const { viewEmail, threadId } = action.payload;
+      const { viewEmail, threadId, count } = action.payload;
       state.loading = false;
       state.viewEmail = viewEmail;
       state.threadId = threadId;
+      state.count = count;
       state.error = null;
     },
     getViewEmailFailed(state, action) {
@@ -35,14 +39,18 @@ const viewEmailSlice = createSlice({
     },
     getContactRequest(state) {
       state.contactLoading = true;
+      state.stage = null;
+      state.status = null;
       state.contactInfo = null;
       state.accountInfo = null;
       state.dealInfo = null;
       state.error = null;
     },
     getContactSucess(state, action) {
-      const { contactInfo, accountInfo, dealInfo } = action.payload;
+      const { contactInfo, accountInfo, dealInfo, stage, status } = action.payload;
       state.contactLoading = false;
+      state.stage = stage;
+      state.status = status;
       state.contactInfo = contactInfo;
       state.accountInfo = accountInfo;
       state.dealInfo = dealInfo;
@@ -50,6 +58,8 @@ const viewEmailSlice = createSlice({
     },
     getContactFailed(state, action) {
       state.contactLoading = false;
+      state.stage = null;
+      state.status = null;
       state.contactInfo = null;
       state.accountInfo = null;
       state.dealInfo = null;
@@ -94,13 +104,13 @@ const viewEmailSlice = createSlice({
   },
 });
 
-export const getViewEmail = (email) => {
+export const getViewEmail = (email = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getViewEmailRequest());
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${getState().ladger.email
+        `${getState().user.crmEndpoint}&type=view_email&email=${email ?? getState().ladger.email
         }`
       );
       console.log(`viewEmail`, data);
@@ -108,6 +118,7 @@ export const getViewEmail = (email) => {
         viewEmailSlice.actions.getViewEmailSucess({
           viewEmail: data.emails,
           threadId: data.thread_id,
+          count: data.total_emails
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
@@ -120,18 +131,20 @@ export const getViewEmail = (email) => {
     }
   };
 };
-export const getContact = () => {
+export const getContact = (email = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getContactRequest());
 
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=get_contact&email=${getState().ladger.email}&page=1&page_size=50`
+        }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`
       );
       console.log(`contact`, data);
       dispatch(
         viewEmailSlice.actions.getContactSucess({
+          stage: data.stage,
+          status: data.status,
           contactInfo: data.contact ?? null,
           accountInfo: data.account ?? null,
           dealInfo: data.deal_fetch ?? null,
@@ -192,6 +205,7 @@ export const sendEmail = (reply, message = null) => {
         {
           threadId,
           replyBody: reply,
+          email: getState().ladger.email,
         },
         {
           headers: { "Content-Type": "application/json" },

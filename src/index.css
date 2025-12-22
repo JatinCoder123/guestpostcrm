@@ -224,3 +224,46 @@ html {
 .scrollbar-hide {
   -ms-overflow-style: none;
 }
+/* Hide scrollbar but allow scrolling */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.mail-content {
+  color: #1f2937; /* slate-800 */
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Fix common email HTML elements */
+.mail-content * {
+  color: inherit !important;
+  background-color: transparent !important;
+  max-width: 100%;
+}
+
+.mail-content a {
+  color: #2563eb !important; /* blue-600 */
+  text-decoration: underline;
+}
+
+.mail-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mail-content td,
+.mail-content th {
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.mail-content img {
+  max-width: 100%;
+  height: auto;
+}
