@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ListPlus, MoveLeft, Pencil, Plus, Trash } from "lucide-react";
+import { ListPlus, MoveLeft, Pencil, Plus, Trash, X } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LoadingChase } from "./Loading";
 
-export default function Create({ data, email, validWebsite = [], setValidWebsite, setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
+export default function Create({ data, email, validWebsite = [], setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -116,7 +116,6 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
                                         className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                                     >
                                         <MoveLeft size={16} />
-                                        Back
                                     </button>
                                     <h3 className="text-2xl font-semibold">{`${pageType == "view" ? "" : pageType.charAt(0).toUpperCase() + pageType.slice(1)} ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                                 </div>
@@ -179,11 +178,11 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
                                                             >
                                                                 {pageType == "view" && <button
                                                                     onClick={() => navigate(`/${type}/edit/${item.id}`, { state: { email } })}
-                                                                    className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+                                                                    className="flex items-center right-2 absolute z-[100] top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
                                                                 >
                                                                     <Pencil size={16} />
                                                                 </button>}
-                                                                {pageType !== "edit" && <button
+                                                                {pageType !== "edit" && type !== "orders" && <button
                                                                     onClick={() => { pageType == "create" ? removeData(item.id) : handleDelete(item.id) }}
                                                                     className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
                                                                 >
@@ -204,13 +203,15 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
                                                                     >
                                                                         {updating ? "Updating..." : "Update"}</button>
                                                                 </div>}
-                                                                <div className="mt-4 flex flex-wrap gap-3">
+                                                                {type == "orders" && pageType == "view" && <OrderId order_id={item.order_id} />}
+                                                                {type == "orders" && pageType == "view" ? <OrderView data={item} /> : <> <div className="mt-4 flex flex-wrap gap-3">
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} websiteLists={validWebsite} />)}
                                                                 </div>
-
+                                                                </>}
                                                                 <div className="mt-4 grid grid-cols-2 gap-3">
                                                                     {lists.length > 0 && lists.map((list, listIndex) => <DisplayList key={listIndex} spamScores={item.spam_score_c} data={item[list.name]} label={list.label} />)}
                                                                 </div>
+
                                                             </motion.div>
                                                         )}
                                                     </Draggable>
@@ -232,7 +233,7 @@ export default function Create({ data, email, validWebsite = [], setValidWebsite
                     </div>
 
                     {/* RIGHT SIDEBAR */}
-                    {pageType !== "edit" && <div className="col-span-12 lg:col-span-4">
+                    {pageType !== "edit" && type !== "orders" && <div className="col-span-12 lg:col-span-4">
                         <div className="sticky top-6 space-y-4">
                             <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
                                 <h4 className="font-semibold">{type[0].toUpperCase() + type.slice(1)} for {email}</h4>
@@ -341,13 +342,18 @@ function InputField({
     placeholder,
     type = "text",
     disabled = false,
-    options = [], // ✅ for select
     pageType = "",
-    websiteLists = []
+    websiteLists = [],
 }) {
+    const { statusLists } = useSelector((state) => state.orders);
+
     const value = data?.[name] ?? "";
+    console.log(statusLists)
+    const dropDownOptions = type === "select" && label === "Order Status" ? Object.values(statusLists) : websiteLists;
+
     disabled = pageType == "create" ? false : pageType == "view" ? true : disabled;
     type = pageType == "view" && type == "select" ? "text" : type;
+
 
     return (
         <div className={`${type === "number" ? "w-30" : "w-full"} max-w-[300px]`}>
@@ -358,18 +364,19 @@ function InputField({
             {type === "select" && (
                 <select
                     value={value}
-                    onChange={onChange}
+                    onChange={label === "Order Status" ? (e) => onChange({ target: { value: Object.keys(statusLists).find((opt) => opt === e.target.value) } }) : (e) => onChange(e)}
                     disabled={disabled}
-                    className={`w-full rounded-xl px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"} `}
+                    className={`w-full rounded-xl px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"} `}
                 >
-                    <option value="" disabled>Select Website</option>
-                    {websiteLists.map((opt, idx) => (
+                    <option value="" disabled>Select {label}</option>
+                    {dropDownOptions.map((opt, idx) => (
                         <option key={idx} value={opt}>
                             {opt}
                         </option>
                     ))}
                 </select>
             )}
+            { }
 
             {/* ✅ TEXTAREA */}
             {type === "textarea" && (
@@ -379,7 +386,7 @@ function InputField({
                     placeholder={placeholder}
                     disabled={disabled}
                     rows={4}
-                    className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"} resize-none`}
+                    className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"} resize-none`}
                 />
             )}
 
@@ -394,13 +401,15 @@ function InputField({
                         type={type}
                         disabled={disabled}
                         inputMode={type === "number" ? "numeric" : undefined}
-                        className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" ? "bg-gray-100" : "bg-white border"}`}
+                        className={`w-full rounded-xl  px-3 py-2 ${pageType == "view" || disabled ? "bg-gray-100" : "bg-white border"}`}
                     /></div>
 
             )}
         </div>
     );
 }
+
+
 
 function DisplayList({ data, label, spamScores }) {
     // Normalize data to array
@@ -419,33 +428,194 @@ function DisplayList({ data, label, spamScores }) {
     if (!list.length) return null;
 
     return (
-        <div className="flex flex-col gap-1">
-
+        <div className="flex flex-col gap-3 group">
             {label && (
-                <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs font-semibold text-gray-500">
-                        {label}
-                    </span>
-                    {label === "Their Link" && <span className="text-xs font-semibold text-gray-500">(Spam Score)</span>}
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            {label}
+                        </span>
+                    </div>
+                    {label === "Their Link" && (
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            (Spam Score)
+                        </span>
+                    )}
                 </div>
             )}
 
-            {/* ⭐ Wrapper container to prevent collapsing */}
-            <div className="border border-gray-300 rounded-md p-3 bg-white max-h-60 overflow-y-auto">
+            {/* 3D Container with layered shadows */}
+            <div className="relative transform-gpu transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
+                {/* Ambient shadow layers */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl transform translate-y-3 translate-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-slate-900/10 rounded-2xl transform translate-y-1.5 translate-x-1"></div>
 
-                <ul className="list-disc list-inside space-y-1">
-                    {list.map((item, idx) => (
-                        <li
-                            key={idx}
-                            className="text-sm text-gray-700 flex items-center justify-between break-words leading-relaxed"
-                        >
-                            <span className="max-w-[300px]">{item}</span>
-                            {label === "Their Link" && (
-                                <span className="text-red-500"> {spamScoreList[idx]}</span>
+                {/* Main container with bevel effect */}
+                <div className="relative bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500 overflow-hidden">
+                    {/* Top edge highlight */}
+                    <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-white to-transparent"></div>
+
+                    {/* Inner glow on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    {/* Scrollable content area */}
+                    <div className="relative z-10 p-5 max-h-60 overflow-y-auto custom-scrollbar">
+                        <ul className="space-y-3">
+                            {list.map((item, idx) => (
+                                <li
+                                    key={idx}
+                                    className="relative group/item transform transition-all duration-300 hover:translate-x-1"
+                                >
+                                    {/* Item background with 3D effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-r from-slate-100/50 to-transparent rounded-lg opacity-0 group-hover/item:opacity-100 transition-opacity"></div>
+
+                                    <div className="relative flex items-center justify-between gap-3 p-3 rounded-lg">
+                                        {/* Bullet point with gradient */}
+                                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg shadow-blue-500/50 flex-shrink-0"></div>
+                                            <span className="text-sm text-slate-700 font-medium break-words leading-relaxed">
+                                                {item}
+                                            </span>
+                                        </div>
+
+                                        {/* Spam score badge with 3D effect */}
+                                        {label === "Their Link" && spamScoreList[idx] && (
+                                            <div className="relative flex-shrink-0">
+                                                {/* Badge glow */}
+                                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-lg blur-md opacity-50"></div>
+
+                                                <span className="relative inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 text-xs font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(234,179,8,0.3)] border border-yellow-200">
+                                                    {spamScoreList[idx]}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Bottom gradient fade for scroll indication */}
+                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-100 to-transparent pointer-events-none"></div>
+
+                    {/* Corner accent */}
+                    <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-blue-500/10 to-transparent rounded-2xl"></div>
+                </div>
+            </div>
+
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 8px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: linear-gradient(to bottom, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.2));
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+                    border-radius: 10px;
+                    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(to bottom, #2563eb, #7c3aed);
+                }
+            `}</style>
+        </div>
+    );
+}
+
+
+
+
+
+
+
+function Field({ label, value, link, children, title }) {
+    const content = children || value;
+
+    return (
+        <div className="group perspective-1000">
+            <div className="relative transform-gpu transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+                {/* 3D Shadow layers */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl transform translate-y-4 translate-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-slate-900/10 rounded-2xl transform translate-y-2 translate-x-1"></div>
+
+                {/* Main card with bevel effect */}
+                <div className="relative bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-5 border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500">
+                    {/* Inner glow */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    {/* Top edge highlight */}
+                    <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-white to-transparent"></div>
+
+                    <div className="relative z-10">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                            {label}
+                        </div>
+                        <div className="text-gray-800 font-semibold text-lg">
+                            {link ? (
+                                <a
+                                    href={value}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 underline decoration-2 underline-offset-4 transition-all"
+                                >
+                                    {title} →
+                                </a>
+                            ) : (
+                                content
                             )}
-                        </li>
-                    ))}
-                </ul>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function OrderView({ data }) {
+    return (
+        <div className="w-full relative mt-3">
+            <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
+
+
+
+                <div className="relative z-10">
+
+                    {/* Invoice + Order Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                        <Field label="Invoice Link" value={data.invoice_link_c} link title="View Invoice" />
+                        <Field label="Document Link" value={data.doc_link_c} link title="View Document" />
+
+                        <Field label="Date" value={data.date_entered_formatted} />
+
+                        <Field label="Amount" value={`$${data.total_amount_c}`} />
+
+                        <Field label="Status">
+                            <div className="relative inline-flex">
+                                {/* Glow effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl blur-lg opacity-50"></div>
+
+                                <span className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(234,179,8,0.4)] border border-yellow-200">
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-600 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-600 shadow-lg"></span>
+                                    </span>
+                                    {data.order_status}
+                                </span>
+                            </div>
+                        </Field>
+
+                        <Field label="Type" value={data.order_type} />
+                        <Field label="Anchor Text" value={"Anchor Text"} />
+                    </div>
+
+
+                </div>
 
             </div>
         </div>
@@ -453,3 +623,39 @@ function DisplayList({ data, label, spamScores }) {
 }
 
 
+
+
+function OrderId({ order_id }) {
+    return (
+        <div className="w-full mb-6">
+            {/* 3D Card Container */}
+            <div className="relative group">
+                {/* Main card */}
+                <div className="relative rounded-2xl  overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
+
+
+                    {/* Content */}
+                    <div className="relative z-10 flex items-center justify-center">
+                        <div className="text-center">
+                            {/* Label */}
+                            <div className="flex items-center justify-center gap-2 mb-3">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                    Order ID
+                                </span>
+                            </div>
+
+                            {/* Order ID with metallic effect */}
+                            <div className="relative inline-block">
+                                <h2 className="text-2xl font-black  bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight ">
+                                    {order_id}
+                                </h2>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    );
+}

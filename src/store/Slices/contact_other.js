@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
+import { getUser } from "./userSlice";
 
 const contactOtherSlice = createSlice({
   name: "contact_other",
@@ -31,26 +32,26 @@ const contactOtherSlice = createSlice({
 });
 
 export const getContacts = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(contactOtherSlice.actions.getContactsRequest());
-
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const { data } = await axios.post(
-  "https://errika.guestpostcrm.com/index.php?entryPoint=get_post_all&action_type=get_data",
-  {
-    module: "Contacts",
-  },
-  {
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": CREATE_DEAL_API_KEY,   // <-- FIXED HERE
-    },
-  }
-);
+        `${domain}?entryPoint=get_post_all&action_type=get_data`,
+        {
+          module: "Contacts",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": CREATE_DEAL_API_KEY,   // <-- FIXED HERE
+          },
+        }
+      );
 
-console.log("Contact_other data:", data);
+      console.log("Contact_other data:", data);
 
-  console.log("Contact_other data:");
+      console.log("Contact_other data:");
       console.log("Contact_other data:", data);
 
       dispatch(

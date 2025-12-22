@@ -183,7 +183,6 @@ const ActionButton = ({
     {
       icon: <img width="40" height="40" src="https://img.icons8.com/keek/100/new-post.png" alt="new-post" />,
       label: "Email",
-      count: count,
       action: () => setShowEmails(true),
     },
     {
@@ -279,7 +278,11 @@ const ActionButton = ({
               {btn.label}
             </span>
           </button>
-          {btn.count && <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{btn.count}</span>}
+          {btn.label === "Email" && (
+            <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+              {count}
+            </span>
+          )}
 
           {showUsers && btn.label === "Assign" && (
             <UserDropdown

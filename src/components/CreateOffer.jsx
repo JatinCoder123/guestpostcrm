@@ -63,7 +63,7 @@ export default function CreateOffer() {
         websiteKey="website"
         amountKey="our_offer_c"
       />
-    )))
+    ), "Offer Send Successfully"))
   }
   const handleUpdate = (offer) => {
     dispatch(updateOffer(offer))
@@ -80,7 +80,7 @@ export default function CreateOffer() {
   useEffect(() => {
     if (message) {
       if (message.includes("Created")) {
-        // dispatch(getOffers())
+        dispatch(getOffers())
         dispatch(sendEmail(renderToStaticMarkup(
           <Preview
             data={[...newOffers, ...currentOffers]}
@@ -89,7 +89,7 @@ export default function CreateOffer() {
             websiteKey="website"
             amountKey="our_offer_c"
           />
-        ), "Offer Sent Successfully"))
+        ), "Offer Send Successfully"))
       }
       toast.success(message)
       dispatch(offersAction.clearAllMessages())

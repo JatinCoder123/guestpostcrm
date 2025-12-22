@@ -19,7 +19,7 @@ import Pagination from "../Pagination";
 import { getContacts } from "../../store/Slices/contact_other";
 
 export function Contacts_otherPage() {
-  
+
   const dispatch = useDispatch();   // ✅ FIX ADDED
 
   const { detection = [], count = 0 } =
@@ -36,7 +36,7 @@ export function Contacts_otherPage() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleDownload = () => {
     console.log("download handler");
@@ -111,9 +111,9 @@ export function Contacts_otherPage() {
 
             <tbody>
               {detection.length > 0 &&
-                detection.map((item ) => (
+                detection.map((item) => (
                   <tr
-                    key={item.thread_id}
+                    key={item.id}
                     className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-4 w-1/4">

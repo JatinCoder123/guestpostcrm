@@ -14,6 +14,7 @@ const TimelineEvent = () => {
     if (type.includes("Contact")) navigateTo(`/contacts`);
     if (type.includes("Scheduled") || type.includes("Reminder"))
       navigateTo(`/reminders`);
+    if (type.includes("Invoice")) navigateTo(`/invoices`);
   };
 
   return (
@@ -54,11 +55,10 @@ const TimelineEvent = () => {
                 {/* CARD */}
                 <div
                   className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                  ${
-                    index === 0
+                  ${index === 0
                       ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                       : "bg-white border-gray-200"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-gray-700 flex items-center gap-2">
@@ -96,7 +96,7 @@ const TimelineEvent = () => {
                       <span className="font-medium">
                         {event.type_c
                           ? event.type_c.charAt(0).toUpperCase() +
-                            event.type_c.slice(1)
+                          event.type_c.slice(1)
                           : "Event"}
                       </span>
                     </span>

@@ -201,7 +201,7 @@ export function InvoicesPage() {
         const invoiceId = item.invoice_id?.toLowerCase() || "";
         const email = item.email_c?.toLowerCase() || "";
         const paymentMethod = item.payment_method?.toLowerCase() || "";
-        
+
         if (selectedCategory === "contact") {
           return contact.includes(searchValue);
         }
@@ -209,10 +209,10 @@ export function InvoicesPage() {
           return paymentMethod.includes(searchValue);
         }
         // Default search: search in contact, invoice ID, email, and payment method
-        return contact.includes(searchValue) || 
-               invoiceId.includes(searchValue) || 
-               email.includes(searchValue) ||
-               paymentMethod.includes(searchValue);
+        return contact.includes(searchValue) ||
+          invoiceId.includes(searchValue) ||
+          email.includes(searchValue) ||
+          paymentMethod.includes(searchValue);
       }
       return true;
     })
@@ -231,7 +231,7 @@ export function InvoicesPage() {
         const amount = parseFloat(item.amount_c) || 0;
         const min = filters.amountRange.min || 0;
         const max = filters.amountRange.max || Infinity;
-        
+
         return amount >= min && amount <= max;
       }
       return true;
@@ -242,10 +242,10 @@ export function InvoicesPage() {
         const invoiceDate = new Date(item.date_entered);
         const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
         const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
-        
+
         if (startDate && invoiceDate < startDate) return false;
         if (endDate && invoiceDate > endDate) return false;
-        
+
         return true;
       }
       return true;
@@ -255,12 +255,12 @@ export function InvoicesPage() {
       if (filters.paymentMethod && filters.paymentMethod !== 'all') {
         const paymentMethod = item.payment_method?.toLowerCase() || "";
         const filterMethod = filters.paymentMethod.toLowerCase();
-        
+
         // Handle exact match for payment methods
         if (['paypal', 'payoneer', 'wise', 'indian_upi', 'swift_india'].includes(filterMethod)) {
           return paymentMethod === filterMethod;
         }
-        
+
         // For partial matching if needed
         return paymentMethod.includes(filterMethod);
       }
@@ -395,7 +395,7 @@ export function InvoicesPage() {
   });
 
   const topPaymentMethod = Object.entries(paymentMethodsStats)
-    .sort((a, b) => b[1].amount - a[1].amount)[0] || ['None', {count: 0, amount: 0}];
+    .sort((a, b) => b[1].amount - a[1].amount)[0] || ['None', { count: 0, amount: 0 }];
 
   return (
     <>
@@ -407,10 +407,10 @@ export function InvoicesPage() {
             { name: "name", label: "Name", type: "text", value: currentUpdateInvoice.name },
             { name: "email_c", label: "Email", type: "text", value: currentUpdateInvoice.email_c },
             { name: "amount_c", label: "Amount", type: "number", value: currentUpdateInvoice.amount_c },
-            { 
-              name: "payment_method", 
-              label: "Payment Method", 
-              type: "select", 
+            {
+              name: "payment_method",
+              label: "Payment Method",
+              type: "select",
               value: currentUpdateInvoice.payment_method,
               options: [
                 { value: 'paypal', label: 'PayPal' },
@@ -426,7 +426,7 @@ export function InvoicesPage() {
           onClose={() => setCurrentUpdateInvoice(null)}
         />
       )}
-      
+
       {/* Use EnhancedSearch with dynamic filters */}
       <EnhancedSearch
         dropdownOptions={dropdownOptions}
@@ -452,7 +452,7 @@ export function InvoicesPage() {
             {Object.entries(filters).map(([key, value]) => {
               const config = invoiceFilterConfig.find(c => c.key === key);
               if (!config) return null;
-              
+
               let displayValue = '';
               if (config.type === 'select') {
                 const option = config.options.find(o => o.value === value);
@@ -470,7 +470,7 @@ export function InvoicesPage() {
                   displayValue = config.label;
                 }
               }
-              
+
               if (displayValue) {
                 return (
                   <span key={key} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
@@ -545,7 +545,7 @@ export function InvoicesPage() {
             <div>
               <p className="text-gray-500 text-sm">Top Payment Method</p>
               <p className="text-lg text-gray-900 mt-1">
-                {topPaymentMethod[0] !== 'None' 
+                {topPaymentMethod[0] !== 'None'
                   ? `${topPaymentMethod[0].replace('_', ' ').toUpperCase()}`
                   : 'None'}
               </p>
@@ -639,7 +639,7 @@ export function InvoicesPage() {
                   <td className="px-6 py-4 text-yellow-600">
                     {invoice.invoice_id?.slice(0, 4)}
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{invoice.name}</td>
+                  <td className="px-6 py-4 text-gray-900">{invoice.email}</td>
                   <td className="px-6 py-4 text-green-600">
                     ${parseFloat(invoice.amount_c || 0).toFixed(2)}
                   </td>

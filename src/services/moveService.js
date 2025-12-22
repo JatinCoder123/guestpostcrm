@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {MOVE_END_POINT} from '../store/constants';
+import { MOVE_END_POINT } from '../store/constants';
 
 const BASE_URL = MOVE_END_POINT
 

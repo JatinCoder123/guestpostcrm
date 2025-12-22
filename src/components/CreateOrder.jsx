@@ -11,10 +11,11 @@ const fields = [
   { name: "website_c", label: "Website", type: "select", options: websiteLists },
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
-  { name: "order_status", label: "Order Status", type: "text", },
+  { name: "order_status", label: "Order Status", type: "select", },
+  { name: "invoice_link_c", label: "Invoice Link", type: "text" },
+
 ]
 const lists = [
-  { name: "invoice_link_c", label: "Invoice Link" },
   { name: "their_links", label: "Their Link" },
   { name: "our_link", label: "Our Link" },
 ]
