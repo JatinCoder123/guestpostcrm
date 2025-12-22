@@ -249,9 +249,9 @@ const RootLayout = () => {
       {displayIntro ? (
         <DisplayIntro key="intro" />
       ) : (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="min-h-screen bg-[#F8FAFC] ">
           <TopNav setShowAvatar={setShowAvatar} />
-          <div className="flex h-[calc(100vh-100px)]">
+          <div className="flex h-[calc(100vh-100px)] ">
             {/* Sidebar scrolls independently */}
             <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
               <Sidebar
@@ -263,7 +263,7 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
                 }`}
             >
               <div className="p-6">
