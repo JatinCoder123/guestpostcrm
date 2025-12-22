@@ -36,52 +36,22 @@ export function TopNav() {
 
   /* 🔥 Blink when typing */
   useEffect(() => {
-    if (search.trim()) {
-      // If ANY text is typed (not empty)
-      setHasTextInput(true);
-
-      // Start blinking animation on clear button
-      setIsBlinking(true);
-
-      // Stop blinking after 3 seconds
-      const timer = setTimeout(() => setIsBlinking(false), 3000);
-      return () => clearTimeout(timer);
-    } else {
-      // If input is empty
-      setHasTextInput(false);
-      setIsBlinking(false);
-    }
+    if (search.trim()) setIsBlinking(true);
   }, [search]);
 
-  // Effect to handle save info selection
-  useEffect(() => {
-    // Check if save info is selected
-    const isSaveInfoSelected = localStorage.getItem('saveInfo') === 'true' ||
-      user?.saveInfo === true ||
-      false;
+  const stopBlinking = () => setIsBlinking(false);
 
-    if (isSaveInfoSelected) {
-      setSaveInfoSelected(true);
-    }
-  }, [user]);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    setShowProfileMenu(false);
-  };
-
+  /* 🔍 Search */
   const handleSearch = () => {
     if (!search.trim()) {
       toast.error("Please enter an email address");
       return;
     }
-
-    if (search.trim()) {
-      localStorage.setItem("email", search);
-      navigateTo("");
-      setWelcomeHeaderContent("Search");
-      setEnteredEmail(search);
-    }
+    stopBlinking();
+    localStorage.setItem("email", search);
+    setEnteredEmail(search);
+    setWelcomeHeaderContent("Search");
+    navigateTo("");
   };
 
   /* ❌ Clear */
@@ -97,15 +67,16 @@ export function TopNav() {
     if (e.key === "Enter") handleSearch();
   };
 
-  // Function to handle save info selection
-  const handleSaveInfoToggle = () => {
-    const newSaveInfoState = !saveInfoSelected;
-    setSaveInfoSelected(newSaveInfoState);
+  const handleSelectPeriod = (option) => {
+    stopBlinking();
+    localStorage.setItem("timeline", option);
+    dispatch(ladgerAction.setTimeline(option));
+  };
 
-    // Save to localStorage
-    localStorage.setItem('saveInfo', newSaveInfoState.toString());
-
-    toast.info(newSaveInfoState ? "Save Info enabled" : "Save Info disabled");
+  const handleLogout = () => {
+    stopBlinking();
+    dispatch(logout());
+    setShowProfileMenu(false);
   };
 
   /* Close profile on outside click */
@@ -188,43 +159,17 @@ export function TopNav() {
             animate={isBlinking ? { scale: [1, 1.1, 1] } : {}}
             transition={isBlinking ? { repeat: Infinity, duration: 0.7 } : {}}
             className={`
-              flex cursor-pointer items-center justify-center mr-3 p-2 
-              rounded-lg transition-all duration-300 relative
-              ${isBlinking ? 'shadow-[0_0_20px_rgba(239,68,68,0.8)]' : ''}
-              ${hasTextInput || saveInfoSelected
-                ? "bg-red-500 hover:bg-red-600 text-white border-2 border-red-800"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
+              p-2 rounded-lg
+              ${
+                isBlinking
+                  ? "bg-red-600 text-white shadow-[0_0_18px_rgba(239,68,68,0.9)]"
+                  : "bg-blue-600 text-white"
               }
             `}
           >
             <X className="w-4 h-4" />
-
-            {/* Enhanced blinking effect */}
-            {isBlinking && (
-              <motion.div
-                animate={{
-                  opacity: [0.2, 0.8, 0.2],
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ repeat: Infinity, duration: 0.9 }}
-                className="absolute inset-0 rounded-lg bg-red-500 -z-10"
-              />
-            )}
-
-            {/* Optional: Add notification dot when blinking */}
-            {isBlinking && (
-              <motion.div
-                animate={{
-                  scale: [0.8, 1.2, 0.8],
-                  rotate: [0, 360, 0]
-                }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full border border-white"
-              />
-            )}
           </motion.button>
 
-          {/* Period Dropdown */}
           <DropDown
             options={periodOptions}
             handleSelectOption={handleSelectPeriod}
@@ -284,66 +229,16 @@ export function TopNav() {
                 exit={{ opacity: 0, y: -10 }}
                 className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl"
               >
-                <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                  {/* User Info */}
-                  <div className="flex flex-col overflow-hidden">
-                    <p className="font-semibold text-gray-900 truncate">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="text-sm text-gray-500 truncate">
-                      {user?.email || "user@example.com"}
-                    </p>
-                  </div>
-
-                  {/* Logout Button */}
-                  <motion.button
-                    onClick={handleLogout}
-                    disabled={loading}
-                    whileHover={!loading ? { scale: 1.1 } : {}}
-                    whileTap={{ scale: 0.95 }}
-                    className={`
-                      flex items-center justify-center cursor-pointer
-                      p-2 rounded-full transition-all duration-300 shadow-sm
-                      ${loading
-                        ? "opacity-50 cursor-not-allowed bg-gray-200"
-                        : "hover:bg-red-200"
-                      }
-                    `}
-                  >
-                    <img
-                      className={`
-                        w-8 h-8 transition-all duration-300 
-                        ${loading ? "opacity-40" : "opacity-100"}
-                      `}
-                      src="https://img.icons8.com/arcade/64/exit.png"
-                      alt="exit"
-                    />
-                  </motion.button>
+                <div className="p-4">
+                  <p className="font-semibold">{user?.name}</p>
+                  <p className="text-sm text-gray-500">{user?.email}</p>
                 </div>
-
-                {/* Save Info Toggle in Dropdown */}
-                <div className="p-4 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      Save Info
-                    </span>
-                    <button
-                      onClick={handleSaveInfoToggle}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${saveInfoSelected ? 'bg-red-500' : 'bg-gray-300'
-                        }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${saveInfoSelected ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                      />
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {saveInfoSelected
-                      ? "Clear button stays red when Save Info is enabled"
-                      : "Toggle to enable/disable save info"}
-                  </p>
-                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                >
+                  Logout
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
