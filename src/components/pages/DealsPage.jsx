@@ -239,6 +239,7 @@ export function DealsPage() {
                     <Calendar className="w-4 h-4" />
                     <span> DATE</span>
                   </div>
+
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -264,8 +265,8 @@ export function DealsPage() {
               {filtereddeals.map((deal, index) => (
                 <tr
                   key={index}
-                  className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
-                >
+                  className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer">
+  
                   <td className="px-6 py-4 text-gray-600">{deal.date_entered}</td>
                   <td className="px-6 py-4 text-blue-600">{deal.real_name?.split("<")[0].trim()}</td>
                   <td className="px-6 py-4 text-gray-900">
