@@ -6,6 +6,7 @@ const ladgerSlice = createSlice({
     loading: false,
     email: localStorage.getItem("email") || null,
     ladger: [],
+    noSearchResultData: null,
     ip: null,
     ipMails: null,
     mailersSummary: null,
@@ -15,10 +16,12 @@ const ladgerSlice = createSlice({
     timeline: localStorage.getItem("timeline") || "last_7_days",
     message: null,
     duplicate: 0,
+    searchNotFound: false,
   },
   reducers: {
     getLadgerRequest(state) {
       state.loading = true;
+      state.searchNotFound = false;
       state.error = null;
     },
     getLadgerSuccess(state, action) {
@@ -31,11 +34,13 @@ const ladgerSlice = createSlice({
       state.pageCount = pageIndex;
       state.email = email;
       state.duplicate = duplicate;
+      state.searchNotFound = ladger.length === 0;
       state.error = null;
     },
     getLadgerFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
+      state.searchNotFound = false;
     },
     setTimeline(state, action) {
       state.timeline = action.payload;
@@ -54,6 +59,21 @@ const ladgerSlice = createSlice({
       state.error = null;
     },
     getIpWithEmailFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    getNoSearchResultDataRequest(state) {
+      state.loading = true;
+      state.noSearchResultData = null;
+      state.error = null;
+    },
+    getNoSearchResultDataSuccess(state, action) {
+      const { noSearchResultData } = action.payload;
+      state.loading = false;
+      state.noSearchResultData = noSearchResultData;
+      state.error = null;
+    },
+    getNoSearchResultDataFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
@@ -182,6 +202,30 @@ export const getIpWithEmail = () => {
     } catch (error) {
       dispatch(
         ladgerSlice.actions.getIpWithEmailFailed(error.response?.data?.message)
+      );
+    }
+  };
+};
+export const getNoSearchResultData = (search) => {
+  return async (dispatch, getState) => {
+    dispatch(ladgerSlice.actions.getNoSearchResultDataRequest());
+    try {
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint}&type=live_search&query=${search}`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("NO SEARCH RESULT", data);
+      dispatch(
+        ladgerSlice.actions.getNoSearchResultDataSuccess({
+          noSearchResultData: data.data,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.getNoSearchResultDataFailed(error.response?.data?.message)
       );
     }
   };

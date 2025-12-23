@@ -31,6 +31,7 @@ import {
 } from "../../store/Slices/unrepliedEmails";
 import { updateUnansweredEmails } from "../../store/Slices/unansweredEmails";
 import NewEmailBanner from "../NewEmailBanner";
+import { NoSearchFoundPage } from "../NoSearchFoundPage";
 export function TimelinePage() {
   const [showEmail, setShowEmails] = useState(false);
   const [showThread, setShowThread] = useState(false);
@@ -53,7 +54,7 @@ export function TimelinePage() {
     sending,
   } = useSelector((state) => state.threadEmail);
   const dispatch = useDispatch();
-  const { ladger, email, mailersSummary, loading, error } = useSelector(
+  const { ladger, email, mailersSummary, searchNotFound, loading, error } = useSelector(
     (state) => state.ladger
   );
 
@@ -160,6 +161,10 @@ export function TimelinePage() {
       return () => clearTimeout(timer);
     }
   }, [showNewEmailBanner]);
+  if (searchNotFound) {
+    // localStorage.removeItem("email");
+    return <NoSearchFoundPage />
+  }
   if (showEmail) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
@@ -259,7 +264,7 @@ export function TimelinePage() {
                       <div className="mb-3">
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                           {mailersSummary == null ||
-                          mailersSummary?.ai_response == ""
+                            mailersSummary?.ai_response == ""
                             ? "No AI reply generated."
                             : mailersSummary?.ai_response}
                         </p>
@@ -316,12 +321,12 @@ export function TimelinePage() {
                         {viewEmail?.length > 0 && (
                           <>
                             <span className="text-xs text-gray-500">
-                            {viewEmail[viewEmail.length - 1]?.date_created} <br/>
-                        </span>
-                          <span className="text-xs text-gray-500">
-                           ( {viewEmail[viewEmail.length - 1]?.date_created_ago} )<br/>
-                        </span></>
-                        
+                              {viewEmail[viewEmail.length - 1]?.date_created} <br />
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ( {viewEmail[viewEmail.length - 1]?.date_created_ago} )<br />
+                            </span></>
+
                         )}
                       </div>
                     </div>
@@ -340,14 +345,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmails}
-                  setShowIP={setShowIP}
-                  threadId={currentThreadId}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmails}
+                    setShowIP={setShowIP}
+                    threadId={currentThreadId}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (

@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LoadingChase } from "./Loading";
+import UpdatePopup from "./UpdatePopup";
 
 export default function Create({ data, email, validWebsite = [], setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
     const navigate = useNavigate();
@@ -643,6 +644,8 @@ function OrderId({ order_id }) {
     );
 }
 
+
+
 function OrderListEdit({ data, onChange }) {
 
     const lists = [
@@ -651,45 +654,61 @@ function OrderListEdit({ data, onChange }) {
     ];
 
     const toArray = (value) =>
-        value
-            .split(",")
-            .map(v => v.trim())
-            .filter(Boolean);
+        value.split(",").map(v => v.trim());
 
-    const toString = (arr) => arr.join(",");
+    // 🔥 FIXED: keep empty values
+    const toString = (arr) =>
+        arr.map(v => v.trim()).join(",");
+
+    const updateItem = (name, currentValue, index, newValue) => {
+        const arr = toArray(currentValue);
+        arr[index] = newValue;
+        onChange(name, { target: { value: toString(arr) } });
+    };
 
     const addItem = (name, currentValue) => {
-        const newValue = prompt("Enter link");
-        if (!newValue) return;
-        const updatedArray = [...toArray(currentValue), newValue];
-        onChange(name, { target: { value: toString(updatedArray) } });
+        const arr = toArray(currentValue);
+
+        // prevent multiple empty inputs
+        if (arr.length && arr[arr.length - 1] === "") return;
+
+        arr.push("");
+        onChange(name, { target: { value: toString(arr) } });
     };
 
     const removeItem = (name, currentValue, index) => {
-        const updatedArray = toArray(currentValue).filter((_, i) => i !== index);
-        onChange(name, { target: { value: toString(updatedArray) } });
+        const arr = toArray(currentValue).filter((_, i) => i !== index);
+        onChange(name, { target: { value: toString(arr) } });
     };
 
     return (
         <div className="w-full mt-6 space-y-6">
-            {/* Side-by-side Lists */}
-            <div className="grid bg-white/10  rounded-xl grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid bg-white/10 rounded-xl grid-cols-1 md:grid-cols-2 gap-6">
+
                 {lists.map((list) => {
                     const items = toArray(list.value);
+                    const lastIsEmpty =
+                        items.length > 0 && items[items.length - 1] === "";
 
                     return (
                         <div
                             key={list.name}
-                            className="rounded-xl border border-white/10 p-4 "
+                            className="rounded-xl border border-white/10 p-4"
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-sm font-semibold ">
+                                <h3 className="text-sm font-semibold">
                                     {list.label}
                                 </h3>
+
                                 <button
                                     onClick={() => addItem(list.name, list.value)}
-                                    className="p-1 rounded-full "
+                                    disabled={lastIsEmpty}
+                                    className={`p-1 rounded-full transition
+                                        ${lastIsEmpty
+                                            ? "opacity-40 cursor-not-allowed"
+                                            : "hover:bg-white/10 active:scale-95"
+                                        }`}
                                 >
                                     <Plus size={16} />
                                 </button>
@@ -706,10 +725,23 @@ function OrderListEdit({ data, onChange }) {
                                 {items.map((item, idx) => (
                                     <div
                                         key={idx}
-                                        className="flex items-center justify-between gap-2 border border-black/10
-                                        px-3 py-2 rounded-lg bg-white/5 text-sm "
+                                        className="flex items-center gap-2 border border-black/10
+                                        px-3 py-2 rounded-lg bg-white/5"
                                     >
-                                        <span className="truncate">{item}</span>
+                                        <input
+                                            value={item}
+                                            onChange={(e) =>
+                                                updateItem(
+                                                    list.name,
+                                                    list.value,
+                                                    idx,
+                                                    e.target.value
+                                                )
+                                            }
+                                            placeholder="Enter link"
+                                            className="flex-1 bg-transparent outline-none text-sm"
+                                        />
+
                                         <button
                                             onClick={() =>
                                                 removeItem(
@@ -718,7 +750,8 @@ function OrderListEdit({ data, onChange }) {
                                                     idx
                                                 )
                                             }
-                                            className="bg-red-500 p-1 rounded-full text-white"
+                                            className="bg-red-500/90 p-1 rounded-full text-white
+                                            hover:bg-red-500 active:scale-95 transition"
                                         >
                                             <X size={14} />
                                         </button>
@@ -732,3 +765,6 @@ function OrderListEdit({ data, onChange }) {
         </div>
     );
 }
+
+
+
