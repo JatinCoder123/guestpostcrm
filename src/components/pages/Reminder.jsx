@@ -15,7 +15,6 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { LoadingChase } from "../Loading";
 
-
 export function ReminderPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -42,14 +41,15 @@ export function ReminderPage() {
       .then((res) => {
         if (res.data?.success) {
           toast.success("Reminder sent successfully");
-          dispatch(getOrderRem())
+          dispatch(getOrderRem());
         } else {
           toast.error(res.data?.message || "Failed to send reminder");
         }
       })
       .catch(() => {
         toast.error("Something went wrong while sending reminder");
-      }).finally(() => {
+      })
+      .finally(() => {
         setSendReminderLoading(false);
         setSendReminderId(null);
       });
@@ -259,7 +259,7 @@ export function ReminderPage() {
                       {order.date_entered}
                     </td>
                     <td className="px-6 py-4 text-gray-900">
-                      {order.recipient}
+                      {order.real_name.split("<")[0].trim()}
                     </td>
                     <td className="px-6 py-4 text-red-600">
                       {order.reminder_type_label}
@@ -270,14 +270,31 @@ export function ReminderPage() {
                     <td className="px-6 py-4 text-gray-600">{order.status}</td>
 
                     <td className="px-6 py-4 flex items-center">
-                      {sendReminderLoading && sendReminderId === order.id ? <LoadingChase size="20" color="blue" /> : <button
-                        className={`px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm ${order.status === "Sent" ? "opacity-50 cursor-not-allowed" : ""}`}
-                        onClick={() => sendReminder(order.id)}
-                        disabled={order.status === "Sent"}
-                      >
-                        <img width="34" height="34" src="https://img.icons8.com/arcade/64/send.png" alt="send"/>
-                      </button>}
-
+                      {sendReminderLoading && sendReminderId === order.id ? (
+                        <LoadingChase size="20" color="blue" />
+                      ) : (
+                        <button
+                          className={`px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm 
+                            ${
+                              order.status === "Sent" ||
+                              order.status === "cancel"
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }
+                          `}
+                          onClick={() => sendReminder(order.id)}
+                          disabled={
+                            order.status === "Sent" || order.status === "cancel"
+                          }
+                        >
+                          <img
+                            width="34"
+                            height="34"
+                            src="https://img.icons8.com/arcade/64/send.png"
+                            alt="send"
+                          />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

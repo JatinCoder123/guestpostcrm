@@ -318,16 +318,16 @@ export function InvoicesPage() {
       return;
     }
 
-    const headers = ["DATE", "INVOICE ID", "CLIENT", "AMOUNT", "PAYMENT METHOD", "STATUS", "DUE DATE", "PAID DATE"];
+    const headers = ["DATE", "INVOICE ID", "CLIENT", "AMOUNT", "PAYMENT METHOD", "STATUS", "DUE DATE", "LINK"];
     const rows = filteredinvoices.map((invoice) => [
       invoice.date_entered,
-      invoice.invoice_id?.slice(0, 4),
-      invoice.name,
+      invoice.id,
+      invoice.email_c,
       invoice.amount_c,
       invoice.payment_method || 'N/A',
       invoice.status_c,
       invoice.due_date,
-      invoice.payment_data
+      invoice.preview
     ]);
 
     const csvContent =
@@ -603,6 +603,7 @@ export function InvoicesPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">INVOICE ID</th>
+                <th className="px-6 py-4 text-left">LINK</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
@@ -623,7 +624,7 @@ export function InvoicesPage() {
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
                 <th className="px-6 py-4 text-left">DUE DATE</th>
-                <th className="px-6 py-4 text-left">PAID DATE</th>
+              
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
@@ -639,10 +640,16 @@ export function InvoicesPage() {
                   <td className="px-6 py-4 text-yellow-600">
                     {invoice.invoice_id?.slice(0, 4)}
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{invoice.email}</td>
+                  <td className="px-6 py-4 text-gray-900">
+                    <a href={invoice.preview} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      View Invoice
+                    </a>
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">{invoice.email_c}</td>
                   <td className="px-6 py-4 text-green-600">
                     ${parseFloat(invoice.amount_c || 0).toFixed(2)}
                   </td>
+
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <span className={`px-3 py-1.5 rounded-full text-sm border flex items-center ${getPaymentMethodColor(invoice.payment_method)}`}>
@@ -659,9 +666,7 @@ export function InvoicesPage() {
                   <td className="px-6 py-4 text-gray-600">
                     {invoice.due_date || "PENDING"}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {invoice.payment_data || "PENDING"}
-                  </td>
+                
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       <button

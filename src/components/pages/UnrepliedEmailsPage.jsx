@@ -286,7 +286,7 @@ export function UnrepliedEmailsPage() {
                     }}
                     className="px-6 py-4 text-gray-900"
                   >
-                    {extractEmail(email.from)}
+                    {email.from.split("<")[0].trim()}
                   </td>
 
                   <td
