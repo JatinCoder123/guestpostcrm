@@ -1,17 +1,12 @@
-import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
-import { motion } from "framer-motion";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { Edit3 } from "lucide-react";
 import { useState } from "react";
-
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
-import EditPayPal from "./EditPayPal";
 import EditUser from "./EditUser";
 import { useSelector } from "react-redux";
-import { Description } from "@radix-ui/react-dialog";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);

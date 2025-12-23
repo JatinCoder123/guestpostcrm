@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, CREATE_DEAL_URL, MODULE_URL } from "../constants";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const eventSlice = createSlice({
     name: "events",
@@ -52,14 +52,14 @@ const eventSlice = createSlice({
         UpdateEvents(state, action) {
             state.events = action.payload;
         },
-         updateCount(state,action){
-        if(action.payload===1){
-            state.count+=1;
-            return;
-        }
-        state.count=0;
+        updateCount(state, action) {
+            if (action.payload === 1) {
+                state.count += 1;
+                return;
+            }
+            state.count = 0;
 
-    }
+        }
 
     },
 });
@@ -84,7 +84,7 @@ export const getEvents = () => {
 
             dispatch(
                 eventSlice.actions.getEventsSucess({
-                    count:  0,
+                    count: 0,
                     events: data.data ?? [],
                 })
             );

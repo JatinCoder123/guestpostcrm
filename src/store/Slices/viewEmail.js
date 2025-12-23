@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -159,13 +159,13 @@ export const getContact = (email = null) => {
   };
 };
 export const editContact = (contactData) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.editContactRequest());
     console.log("contactData", contactData);
-
+    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const data = await axios.post(
-        `${MODULE_URL}&action_type=post_data`,
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
 
         {
           parent_bean: {

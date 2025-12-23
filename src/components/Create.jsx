@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ListPlus, MoveLeft, Pencil, Plus, Trash, X } from "lucide-react";
+import { ListPlus, MoveLeft, Pencil, Plus, PlusIcon, Trash, X } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -45,7 +45,7 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
 
 
 
-    const handelChange = (idx, field, e) => {
+    const handelChange = (idx = null, field, e) => {
         const value = e.target.value;
 
         if (field === websiteKey) {
@@ -208,8 +208,7 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} websiteLists={validWebsite} />)}
                                                                 </div>
                                                                 </>}
-
-
+                                                                {type == "orders" && pageType == "edit" && <OrderListEdit data={item} onChange={(listName, e) => handelChange(itemIndex, listName, e)} />}
                                                             </motion.div>
                                                         )}
                                                     </Draggable>
@@ -343,25 +342,21 @@ function InputField({
     websiteLists = [],
 }) {
     const { statusLists } = useSelector((state) => state.orders);
-
-    // value must ALWAYS match <option value="">
     const value = data?.[name] ?? "";
-
-    // Handle disabled & type based on pageType
     const isDisabled =
         pageType === "create" ? false : pageType === "view" ? true : disabled;
 
     const inputType =
         pageType === "view" && type === "select" ? "text" : type;
-
     return (
         <div className={`${inputType === "number" ? "w-30" : "w-full"} max-w-[300px]`}>
             <label
                 className={`block mb-1 ${pageType === "view" ? "text-gray-500 text-sm" : "text-xs text-gray-600"
-                    }`}
+                    } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
             >
                 {label}
             </label>
+
 
             {/* ================= SELECT ================= */}
             {inputType === "select" && (
@@ -408,6 +403,8 @@ function InputField({
                 />
             )}
 
+
+
             {/* ================= INPUT ================= */}
             {inputType !== "select" &&
                 inputType !== "textarea" &&
@@ -435,7 +432,7 @@ function InputField({
 
 
 
-function DisplayList({ data, label, spamScores }) {
+function DisplayList({ data, label, spamScores, listIndex }) {
     // Normalize data to array
     const list = Array.isArray(data)
         ? data
@@ -452,7 +449,7 @@ function DisplayList({ data, label, spamScores }) {
     if (!list.length) return null;
 
     return (
-        <div className="flex flex-col gap-3 group">
+        <div className="flex flex-col gap-3 group relative">
             {/* 3D Container */}
             <div className="relative transform-gpu transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
                 <div className="relative bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 mt-7 border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500 overflow-hidden">
@@ -526,18 +523,11 @@ function DisplayList({ data, label, spamScores }) {
                     </div>
                 </div>
             </div>
+            {listIndex == 1 && <img className="absolute z-[10] top-20 -left-6 " width="36" height="36" src="https://img.icons8.com/doodle/48/link--v1.png" alt="connected" />}
+
         </div>
     );
 }
-
-
-
-
-
-
-
-
-
 
 function Field({ label, value, link, children, title }) {
     const content = children || value;
@@ -610,18 +600,13 @@ function OrderView({ data, lists }) {
 
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                    {lists.length > 0 && lists.map((list, listIndex) => <div key={listIndex} className="relative"> <DisplayList spamScores={data.spam_score_c} data={data[list.name]} label={list.label} />
-                        {listIndex < lists.length - 1 && <img className="absolute z-[10] top-20 -right-6" width="36" height="36" src="https://img.icons8.com/doodle/48/link--v1.png" alt="connected" />}
-                    </div>)}
+                    {lists.length > 0 && lists.map((list, listIndex) => <DisplayList key={listIndex} spamScores={data.spam_score_c} data={data[list.name]} label={list.label} listIndex={listIndex} />)}
 
                 </div>
             </div>
         </div>
     );
 }
-
-
-
 
 function OrderId({ order_id }) {
     return (
@@ -654,6 +639,96 @@ function OrderId({ order_id }) {
                 </div>
             </div>
 
+        </div>
+    );
+}
+
+function OrderListEdit({ data, onChange }) {
+
+    const lists = [
+        { name: "our_link", label: "Our Link", value: data.our_link || "" },
+        { name: "their_links", label: "Their Link", value: data.their_links || "" },
+    ];
+
+    const toArray = (value) =>
+        value
+            .split(",")
+            .map(v => v.trim())
+            .filter(Boolean);
+
+    const toString = (arr) => arr.join(",");
+
+    const addItem = (name, currentValue) => {
+        const newValue = prompt("Enter link");
+        if (!newValue) return;
+        const updatedArray = [...toArray(currentValue), newValue];
+        onChange(name, { target: { value: toString(updatedArray) } });
+    };
+
+    const removeItem = (name, currentValue, index) => {
+        const updatedArray = toArray(currentValue).filter((_, i) => i !== index);
+        onChange(name, { target: { value: toString(updatedArray) } });
+    };
+
+    return (
+        <div className="w-full mt-6 space-y-6">
+            {/* Side-by-side Lists */}
+            <div className="grid bg-white/10  rounded-xl grid-cols-1 md:grid-cols-2 gap-6">
+                {lists.map((list) => {
+                    const items = toArray(list.value);
+
+                    return (
+                        <div
+                            key={list.name}
+                            className="rounded-xl border border-white/10 p-4 "
+                        >
+                            {/* Header */}
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-sm font-semibold ">
+                                    {list.label}
+                                </h3>
+                                <button
+                                    onClick={() => addItem(list.name, list.value)}
+                                    className="p-1 rounded-full "
+                                >
+                                    <Plus size={16} />
+                                </button>
+                            </div>
+
+                            {/* Items */}
+                            <div className="space-y-2">
+                                {items.length === 0 && (
+                                    <p className="text-xs text-slate-500">
+                                        No items added
+                                    </p>
+                                )}
+
+                                {items.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="flex items-center justify-between gap-2 border border-black/10
+                                        px-3 py-2 rounded-lg bg-white/5 text-sm "
+                                    >
+                                        <span className="truncate">{item}</span>
+                                        <button
+                                            onClick={() =>
+                                                removeItem(
+                                                    list.name,
+                                                    list.value,
+                                                    idx
+                                                )
+                                            }
+                                            className="bg-red-500 p-1 rounded-full text-white"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
