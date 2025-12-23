@@ -14,22 +14,27 @@ import {
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import {useContext, useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
 import Pagination from "../Pagination";
 import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices";
 import EnhancedSearch from "./EnhancedSearch";
 import UpdatePopup from "../UpdatePopup";
 import { toast } from "react-toastify";
+import { excludeEmail ,extractEmail} from "../../assets/assets";
+import { PageContext } from "../../context/pageContext";
+import { useNavigate } from "react-router-dom";
 
 export function InvoicesPage() {
   const { invoices, count, message, error, updating } = useSelector((state) => state.invoices);
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
+  const {setSearch,setEnteredEmail} = useContext(PageContext);
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
   const [filters, setFilters] = useState({});
   const dispatch = useDispatch();
+  const navigateTo = useNavigate();
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -634,9 +639,21 @@ export function InvoicesPage() {
                   key={invoice.id}
                   className="border-b border-gray-100 hover:bg-yellow-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-gray-600">
-                    {invoice.date_entered}
-                  </td>
+                  <td
+                                      className="px-6 py-4 text-gray-600 cursor-pointer"
+                                      onClick={() => {
+                                        const input = extractEmail(invoice.email_c);
+                                        localStorage.setItem("email", input);
+                                        setSearch(input);
+                                        setEnteredEmail(input);
+                                        navigateTo("/");
+                                      }}
+                                    >
+                                      <div className="flex items-center gap-2 text-gray-600">
+                                        <Calendar className="w-4 h-4 text-gray-400" />
+                                        <span>{invoice.date_entered}</span>
+                                      </div>
+                                    </td>
                   <td className="px-6 py-4 text-yellow-600">
                     {invoice.invoice_id?.slice(0, 4)}
                   </td>
@@ -645,7 +662,19 @@ export function InvoicesPage() {
                       View Invoice
                     </a>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{invoice.email_c}</td>
+                  
+                  <td
+                    onClick={() => {
+                      const input = extractEmail(invoice.email_c);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/contacts");
+                    }}
+                    className="px-6 py-4 text-gray-900 cursor-pointer"
+                  >
+                    {invoice.email_c?.split("<")[0]?.trim() || "N/A"}
+                  </td>
                   <td className="px-6 py-4 text-green-600">
                     ${parseFloat(invoice.amount_c || 0).toFixed(2)}
                   </td>
