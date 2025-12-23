@@ -6,26 +6,29 @@ import {
   DollarSign,
   Calendar,
   User,
-  Trash
+  Trash,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
 import Pagination from "../Pagination";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { deleteDeal, getDeals } from "../../store/Slices/deals";
-import { excludeEmail } from "../../assets/assets";
+import { excludeEmail, extractEmail } from "../../assets/assets";
 import { LoadingChase } from "../Loading";
+import { PageContext } from "../../context/pageContext";
 
 export function DealsPage() {
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSort, setSelectedSort] = useState('');
-  const { count, deals, loading, error, deleting, deleteDealId } = useSelector((state) => state.deals);
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const {setSearch,setEnteredEmail} = useContext(PageContext);
+  const [selectedSort, setSelectedSort] = useState("");
+  const { count, deals, loading, error, deleting, deleteDealId } = useSelector(
+    (state) => state.deals
+  );
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
-
 
   const filtereddeals = deals
     .filter((item) => {
@@ -50,39 +53,33 @@ export function DealsPage() {
       }
       return 0;
     });
-  const dropdownOptions = [
-    { value: 'contect', label: 'Contact' }
-  ];
+  const dropdownOptions = [{ value: "contect", label: "Contact" }];
 
   const filterOptions = [
-    { value: 'asc', label: 'A to Z' },
-    { value: 'desc', label: 'Z to A' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-
+    { value: "asc", label: "A to Z" },
+    { value: "desc", label: "Z to A" },
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
+    console.log("Applied filters from popup:", filters);
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
+    console.log("Searching for:", value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
+    console.log("Category selected:", value);
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    console.log('Sort selected:', value);
+    console.log("Sort selected:", value);
   };
-
-
-
 
   const handleDownload = () => {
     if (!filtereddeals || filtereddeals.length === 0) {
@@ -98,9 +95,7 @@ export function DealsPage() {
       email.real_name?.split("<")[0].trim(),
       email.website_c,
       email.dealamount,
-      email.status
-
-
+      email.status,
     ]);
 
     // Convert to CSV string
@@ -119,49 +114,37 @@ export function DealsPage() {
     a.click();
   };
 
-
   return (
     <>
       <SearchComponent
-
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         // dropdownPlaceholder="Filter by contact"
         dropdownPlaceholder="Filter by"
-
-
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
         searchPlaceholder="Search here..."
-
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
-
         archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
+          { value: "all", label: "All" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
         ]}
         transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
+          { value: "all", label: "All Emails" },
+          { value: "incoming", label: "Incoming" },
+          { value: "outgoing", label: "Outgoing" },
         ]}
         currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
+          { value: "all", label: "All" },
+          { value: "usd", label: "USD" },
+          { value: "eur", label: "EUR" },
         ]}
-
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
-
         className="mb-6"
       />
 
@@ -222,9 +205,17 @@ export function DealsPage() {
           <div className="flex items-center gap-3">
             <Handshake className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl font-semibold text-gray-900">DEALS</h2>
-            <a href="https://www.guestpostcrm.com/blog/deal-expiry-renewal-reminders/" target="_blank"
-              rel="noopener noreferrer">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            <a
+              href="https://www.guestpostcrm.com/blog/deal-expiry-renewal-reminders/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
         </div>
@@ -246,9 +237,7 @@ export function DealsPage() {
                     <span>CONTACT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">
-                  WEBSITES
-                </th>
+                <th className="px-6 py-4 text-left">WEBSITES</th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
@@ -266,8 +255,34 @@ export function DealsPage() {
                   key={index}
                   className="border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-gray-600">{deal.date_entered}</td>
-                  <td className="px-6 py-4 text-blue-600">{deal.real_name?.split("<")[0].trim()}</td>
+                  <td
+                    className="px-6 py-4 text-gray-600 cursor-pointer"
+                    onClick={() => {
+                      const input = extractEmail(deal.email);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/");
+                    }}
+                  >
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{deal.date_entered}</span>
+                    </div>
+                  </td>
+                  
+                  <td
+                    onClick={() => {
+                      const input = extractEmail(deal.email);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/contacts");
+                    }}
+                    className="px-6 py-4 text-gray-900 cursor-pointer"
+                  >
+                    {deal.real_name?.split("<")[0].trim()}
+                  </td>
                   <td className="px-6 py-4 text-gray-900">
                     {deal.website_c == "" ? "No Name" : deal.website_c}
                   </td>
@@ -284,13 +299,19 @@ export function DealsPage() {
                     <div className="flex items-center justify-center gap-2">
                       {/* Update Button */}
                       <button
-                        onClick={() => navigateTo(`/deals/edit/${deal.id}`, { state: { email: excludeEmail(deal.real_name) } })}
+                        onClick={() =>
+                          navigateTo(`/deals/edit/${deal.id}`, {
+                            state: { email: excludeEmail(deal.real_name) },
+                          })
+                        }
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
                       >
                         <Pen className="w-5 h-5 text-blue-600" />
                       </button>
-                      {deleting && deleteDealId === deal.id ? <LoadingChase size="20" color="red" /> : (
+                      {deleting && deleteDealId === deal.id ? (
+                        <LoadingChase size="20" color="red" />
+                      ) : (
                         <button
                           className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                           title="Delete"
