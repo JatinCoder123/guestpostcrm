@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY, MODULE_URL, TINY_EDITOR_API_KEY } from "../../../store/constants";
+import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Eye, X, Save, RotateCcw, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -8,6 +7,7 @@ import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import { Editor } from "@tinymce/tinymce-react";
+import { useSelector } from "react-redux";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -15,8 +15,9 @@ export default function TemplatesPage() {
   const [originalContent, setOriginalContent] = useState("");
   const [isChanged, setIsChanged] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
-  
+  const { crmEndpoint } = useSelector((state) => state.user);
+
+
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -24,7 +25,7 @@ export default function TemplatesPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const { loading, data, error, refetch } = useModule({
-    url: `${MODULE_URL}&action_type=get_data`,
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: { module: "EmailTemplates" },
     headers: {
@@ -33,7 +34,7 @@ export default function TemplatesPage() {
     },
   });
 
-  
+
   useEffect(() => {
     if (editorContent !== originalContent) {
       setIsChanged(true);
@@ -68,7 +69,7 @@ export default function TemplatesPage() {
         }
       };
 
-      const response = await fetch(`${MODULE_URL}&action_type=post_data`, {
+      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`, {
         method: "POST",
         headers: {
           "x-api-key": CREATE_DEAL_API_KEY,
@@ -79,7 +80,7 @@ export default function TemplatesPage() {
 
       const responseText = await response.text();
       let result;
-      
+
       try {
         result = responseText ? JSON.parse(responseText) : {};
       } catch (e) {
@@ -90,11 +91,11 @@ export default function TemplatesPage() {
         setOriginalContent(editorContent);
         setIsChanged(false);
         alert("✅ Template saved successfully!");
-        
+
         setTimeout(() => {
           refetch();
         }, 1000);
-        
+
       } else {
         alert(`❌ Save failed: ${result.error || result.message || "Unknown error"}`);
       }
@@ -102,22 +103,22 @@ export default function TemplatesPage() {
     } catch (err) {
       console.error("Save error:", err);
       alert(`❌ Save failed: ${err.message}`);
-      
+
       setOriginalContent(editorContent);
       setIsChanged(false);
-      
+
     } finally {
       setIsSaving(false);
     }
   };
 
-  
+
   const handleCreateNewTemplate = async () => {
     if (!newTemplateName.trim()) {
       alert("Please enter template name");
       return;
     }
-    if(!newDescription.trim()){
+    if (!newDescription.trim()) {
       alert("Please enter description here");
       return;
     }
@@ -143,7 +144,7 @@ export default function TemplatesPage() {
 
       console.log("Creating new template:", requestBody);
 
-      const response = await fetch(`${MODULE_URL}&action_type=post_data`, {
+      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`, {
         method: "POST",
         headers: {
           "x-api-key": CREATE_DEAL_API_KEY,
@@ -154,7 +155,7 @@ export default function TemplatesPage() {
 
       const responseText = await response.text();
       let result;
-      
+
       try {
         result = responseText ? JSON.parse(responseText) : {};
       } catch (e) {
@@ -165,18 +166,18 @@ export default function TemplatesPage() {
 
       if (response.ok && (result.parent_updated === true || result.parent_id || result.id)) {
         alert("✅ New template created successfully!");
-        
-        
+
+
         setNewTemplateName("");
         setNewDescription("");
         setNewTemplateContent("");
         setShowNewTemplateModal(false);
-        
-        
+
+
         setTimeout(() => {
           refetch();
         }, 1000);
-        
+
       } else {
         alert(`❌ Failed to create template: ${result.error || result.message || "Unknown error"}`);
       }
@@ -214,7 +215,7 @@ export default function TemplatesPage() {
     setShowNewTemplateModal(false);
   };
 
-  
+
   if (showNewTemplateModal) {
     return (
       <div
@@ -233,16 +234,15 @@ export default function TemplatesPage() {
             <div className="flex items-center gap-4">
               <h2 className="text-2xl font-bold">Create New Template</h2>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                  isCreating 
-                    ? "bg-gray-400 cursor-not-allowed" 
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isCreating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 active:scale-95"
+                  }`}
               >
                 {isCreating ? (
                   <>
@@ -256,7 +256,7 @@ export default function TemplatesPage() {
                   </>
                 )}
               </button>
-              
+
               <button
                 onClick={handleCloseNewTemplateModal}
                 className="p-2 hover:bg-white/20 rounded-full transition"
@@ -269,7 +269,7 @@ export default function TemplatesPage() {
           {/* Template Name Input */}
           <div className="px-6 py-4 bg-gray-50 border-b">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Template Name *
@@ -283,8 +283,8 @@ export default function TemplatesPage() {
                   autoFocus
                 />
               </div>
-              
-              
+
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description *
@@ -342,7 +342,7 @@ export default function TemplatesPage() {
       </div>
     );
   }
-  
+
 
   if (viewItem) {
     return (
@@ -362,17 +362,16 @@ export default function TemplatesPage() {
             <div className="flex items-center gap-4">
               <h2 className="text-2xl font-bold">{viewItem.name}</h2>
             </div>
-            
+
             <div className="flex items-center gap-3">
               {isChanged && (
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    isSaving 
-                      ? "bg-gray-400 cursor-not-allowed" 
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                 >
                   {isSaving ? (
                     <>
@@ -386,7 +385,7 @@ export default function TemplatesPage() {
                   )}
                 </button>
               )}
-              
+
               {isChanged && (
                 <button
                   onClick={handleCancel}
@@ -396,7 +395,7 @@ export default function TemplatesPage() {
                   Cancel
                 </button>
               )}
-              
+
               <button
                 onClick={handleClose}
                 className="p-2 hover:bg-white/20 rounded-full transition"
@@ -449,13 +448,13 @@ export default function TemplatesPage() {
     );
   }
 
-  
+
   return (
     <div className="p-8 min-h-screen bg-gray-50">
-      <Header text="Template Manager" 
+      <Header text="Template Manager"
         handleCreate={() => setShowNewTemplateModal(true)}
         showCreateButton={true}
-      
+
       />
 
 

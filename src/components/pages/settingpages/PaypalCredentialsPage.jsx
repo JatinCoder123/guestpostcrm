@@ -1,5 +1,5 @@
 import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Edit3 } from "lucide-react";
 import { useState } from "react";
@@ -7,12 +7,14 @@ import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditPayPal from "./EditPayPal";
+import { useSelector } from "react-redux";
 
 export function PaypalCredentials() {
   const [editItem, setEditItem] = useState(null);
+  const { crmEndpoint } = useSelector((state) => state.user);
 
   const { loading, data, error, setData, refetch, update } = useModule({
-    url: `${MODULE_URL}&action_type=get_data`,
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "outr_credentials",
@@ -27,7 +29,7 @@ export function PaypalCredentials() {
       prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
     );
     update({
-      url: `${MODULE_URL}&action_type=post_data`,
+      url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
       method: "POST",
       body: {
         parent_bean: {
@@ -126,11 +128,10 @@ export function PaypalCredentials() {
                   {/* Status */}
                   <td className="p-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        item.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${item.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                        }`}
                     >
                       {item.status}
                     </span>

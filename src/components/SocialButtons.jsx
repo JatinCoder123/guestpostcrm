@@ -10,14 +10,8 @@ const SocialButtons = () => {
   const dispatch = useDispatch();
   const [animate, setAnimate] = useState(false);
   const [hasBeenClicked, setHasBeenClicked] = useState(false);
-
-
   const duplicateCount = useSelector((state) => state.duplicateEmails?.count || 0);
-
-
   const { notificationCount, setNotificationCount } = useContext(SocketContext);
-
-
   useEffect(() => {
     if (duplicateCount > 0) {
       setAnimate(true);
@@ -29,18 +23,9 @@ const SocialButtons = () => {
 
   useEffect(() => {
     if (notificationCount.unreplied_email) {
-      console.log("📧 New email arrived, checking for duplicates...");
-
-
       dispatch(enableDuplicateUpdates());
-
-
       dispatch(checkForDuplicates());
-
-
       setHasBeenClicked(false);
-
-
       setNotificationCount((prev) => ({
         ...prev,
         unreplied_email: null,
@@ -50,15 +35,8 @@ const SocialButtons = () => {
 
 
   const handleDuplicateClick = () => {
-    console.log("📌 Duplicate button clicked - Resetting count to 0");
-
-
     setHasBeenClicked(true);
-
-
     dispatch(resetDuplicateCount());
-
-
     navigate("/Duplicate");
   };
 
@@ -66,8 +44,8 @@ const SocialButtons = () => {
   const displayCount = hasBeenClicked ? 0 : duplicateCount;
 
   return (
-    <div className="flex gap-3 ml-6">
-      <button className="cursor-pointer hover:scale-105">
+    <div className="flex gap-3 ml-1">
+      {/* <button className="cursor-pointer hover:scale-105">
         <img
           width="48"
           height="48"
@@ -99,7 +77,7 @@ const SocialButtons = () => {
           src="https://img.icons8.com/external-those-icons-flat-those-icons/48/external-Hangout-Logo-social-media-those-icons-flat-those-icons.png"
           alt="external-Hangout-Logo-social-media-those-icons-flat-those-icons"
         />
-      </button>
+      </button> */}
 
       {/* DUPLICATE BUTTON WITH BADGE */}
       <button

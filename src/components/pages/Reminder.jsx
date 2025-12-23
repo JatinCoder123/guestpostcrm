@@ -273,9 +273,9 @@ export function ReminderPage() {
                       {sendReminderLoading && sendReminderId === order.id ? <LoadingChase size="20" color="blue" /> : <button
                         className={`px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm ${order.status === "Sent" ? "opacity-50 cursor-not-allowed" : ""}`}
                         onClick={() => sendReminder(order.id)}
-                        disabled={order.status === "Sent"}
+                        disabled={order.status === "Sent" || order.status === "Cancel"}
                       >
-                        <img width="34" height="34" src="https://img.icons8.com/arcade/64/send.png" alt="send"/>
+                        <img width="34" height="34" src="https://img.icons8.com/arcade/64/send.png" alt="send" />
                       </button>}
 
                     </td>

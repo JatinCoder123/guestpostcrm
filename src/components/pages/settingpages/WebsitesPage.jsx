@@ -1,19 +1,21 @@
 import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../../../store/constants";
-import { motion, AnimatePresence } from "framer-motion";
-import { Edit3, Undo2, X } from "lucide-react";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import { motion } from "framer-motion";
+import { Edit3 } from "lucide-react";
 import { useState } from "react";
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditWebSite from "./EditWebSite";
+import { useSelector } from "react-redux";
 
 export default function WebsitesPage() {
   const [editItem, setEditItem] = useState(null);
+  const { crmEndpoint } = useSelector((state) => state.user);
 
   const { loading, data, error, setData, refetch, add, update } = useModule({
-    url: `${MODULE_URL}&action_type=get_data`,
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "outr_Website_manage",
@@ -26,7 +28,7 @@ export default function WebsitesPage() {
   const handleCreate = (updatedItem) => {
     setData((prev) => [{ id: Math.random(), ...updatedItem }, ...prev]);
     add({
-      url: `${MODULE_URL}&action_type=post_data`,
+      url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
       method: "POST",
       body: {
         parent_bean: {
@@ -45,7 +47,7 @@ export default function WebsitesPage() {
       prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
     );
     update({
-      url: `${MODULE_URL}&action_type=post_data`,
+      url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
       method: "POST",
       body: {
         parent_bean: {
@@ -114,15 +116,14 @@ export default function WebsitesPage() {
                 <span
                   className={`
               px-3 py-1 text-xs font-semibold rounded-full
-              ${
-                item.website_stage_c === "1"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : item.website_stage_c === "2"
-                  ? "bg-blue-100 text-blue-700"
-                  : item.website_stage_c === "3"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-600"
-              }
+              ${item.website_stage_c === "1"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : item.website_stage_c === "2"
+                        ? "bg-blue-100 text-blue-700"
+                        : item.website_stage_c === "3"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-600"
+                    }
             `}
                 >
                   Type: {item.website_type}

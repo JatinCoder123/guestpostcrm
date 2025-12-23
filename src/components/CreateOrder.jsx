@@ -13,11 +13,11 @@ const fields = [
   { name: "total_amount_c", label: "Order Amount", type: "number" },
   { name: "order_status", label: "Order Status", type: "select", },
   { name: "invoice_link_c", label: "Invoice Link", type: "text" },
-
 ]
 const lists = [
-  { name: "their_links", label: "Their Link" },
   { name: "our_link", label: "Our Link" },
+
+  { name: "their_links", label: "Their Link" },
 ]
 export default function CreateOrder() {
   const { type, id } = useParams();

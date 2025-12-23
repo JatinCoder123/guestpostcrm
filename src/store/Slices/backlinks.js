@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const backlinksSlice = createSlice({
   name: "backlinks",

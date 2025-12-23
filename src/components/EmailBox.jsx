@@ -18,7 +18,6 @@ import { getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
 import {
   CREATE_DEAL_API_KEY,
-  MODULE_URL,
   TINY_EDITOR_API_KEY,
 } from "../store/constants";
 import { LoadingChase } from "./Loading";
@@ -32,7 +31,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
-  const { businessEmail } = useSelector((s) => s.user);
+  const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
 
@@ -66,7 +65,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
 
   // SELECTED TEMPLATE
   const { loading: templateLoading, data: template } = useModule({
-    url: `${MODULE_URL}&action_type=get_data`,
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "EmailTemplates",

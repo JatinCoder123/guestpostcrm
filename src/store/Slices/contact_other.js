@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { CREATE_DEAL_API_KEY, MODULE_URL } from "../constants";
-import { getUser } from "./userSlice";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const contactOtherSlice = createSlice({
   name: "contact_other",
