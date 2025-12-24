@@ -129,23 +129,23 @@ function TD({ data, type, setData, loading }) {
     }
   }, [dispatch, creating, message, error])
   const handleClick = () => {
-    if (type == "orders" && data.length == 0) {
+    if (type == "orders" && data?.length == 0) {
       dispatch(createOrder())
       return;
     }
-    data.length > 0 ? navigateTo(`/${type}/view`, { state: { email } }) : navigateTo(`/${type}/create`, { state: { email } })
+    data?.length > 0 ? navigateTo(`/${type}/view`, { state: { email } }) : navigateTo(`/${type}/create`, { state: { email } })
 
   }
   return (
     <td className="border border-blue-400 px-4 py-3">
       {(creating && type == "orders") || loading ? <LoadingChase /> :
         <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
-          {data.length > 0 ? `${data.length} ${type}` : `No ${type}`}
+          {data?.length > 0 ? `${data?.length} ${type}` : `No ${type}`}
           <button onClick={handleClick}>
             <img className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data.length > 0 ? "visible" : "add"}.png`}
+              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"}.png`}
               alt="add"
             />
           </button>

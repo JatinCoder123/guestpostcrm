@@ -63,6 +63,9 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
 
         updateData(idx, { [field]: value });
     };
+    const handelUpdateList = (updatedList) => {
+        updateData(activeIndex, { seo_backlinks: updatedList });
+    };
 
 
     const valid = useMemo(
@@ -210,7 +213,7 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} websiteLists={validWebsite} />)}
                                                                 </div>
                                                                 </>}
-                                                                {type == "orders" && pageType == "edit" && <OrderListEdit data={item} onChange={(listName, e) => handelChange(itemIndex, listName, e)} />}
+                                                                {type == "orders" && pageType == "edit" && <OrderListEdit seo_backlinks={item.seo_backlinks} handleUpdateList={(updatedList) => handelUpdateList(itemIndex, updatedList)} />}
                                                             </motion.div>
                                                         )}
                                                     </Draggable>
@@ -432,106 +435,6 @@ function InputField({
 }
 
 
-
-
-function DisplayList({ data, label, spamScores, listIndex }) {
-    // Normalize data to array
-    const list = Array.isArray(data)
-        ? data
-        : typeof data === "string"
-            ? data.split(",").map(item => item.trim()).filter(Boolean)
-            : [];
-
-    const spamScoreList = Array.isArray(spamScores)
-        ? spamScores
-        : typeof spamScores === "string"
-            ? spamScores.split(",").map(item => item.trim()).filter(Boolean)
-            : [];
-
-    if (!list.length) return null;
-
-    return (
-        <div className="flex flex-col gap-3 group relative">
-            {/* 3D Container */}
-            <div className="relative transform-gpu transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1">
-                <div className="relative bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 mt-7 border-2 border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_20px_50px_rgba(0,0,0,0.25)] transition-all duration-500 overflow-hidden">
-
-                    {/* Label */}
-                    {label && (
-                        <div className="flex items-center gap-2 px-5 pt-3">
-                            <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                                {label}
-                            </span>
-                            {label === "Their Link" && (
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                                    (Spam Score)
-                                </span>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                    {/* Scrollable List */}
-                    <div className="relative z-10 p-5 max-h-60 overflow-y-auto custom-scrollbar">
-                        <ul className="space-y-1.5 relative">
-                            {list.map((item, idx) => (
-                                <li
-                                    key={idx}
-                                    className="relative group/item transform transition-all duration-300 hover:translate-x-1 pl-6"
-                                >
-                                    {/* Vertical connector */}
-                                    {idx !== list.length - 1 && (
-                                        <span
-                                            className="absolute left-[6px] top-6 w-[2px] h-full 
-                      bg-gradient-to-b from-blue-400 via-purple-400 to-transparent
-                      opacity-40"
-                                        />
-                                    )}
-
-                                    {/* Hover background */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-slate-100/50 to-transparent rounded-lg opacity-0 group-hover/item:opacity-100 transition-opacity"></div>
-
-                                    <div className="relative flex items-center justify-between gap-2 p-1 rounded-lg">
-                                        {/* Bullet + text */}
-                                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                                            <div className="relative mt-1.5 flex-shrink-0">
-                                                {/* Node glow */}
-                                                <span className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 blur-sm opacity-60"></span>
-                                                {/* Node */}
-                                                <span className="relative block w-2 h-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 shadow-md shadow-blue-500/50"></span>
-                                            </div>
-
-                                            <span className="text-sm text-slate-700 font-medium break-words leading-relaxed">
-                                                {item}
-                                            </span>
-                                        </div>
-
-                                        {/* Spam Score */}
-                                        {label === "Their Link" && spamScoreList[idx] && (
-                                            <div className="relative flex-shrink-0">
-                                                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-lg blur-md opacity-40"></div>
-                                                <span className="relative inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 text-xs font-bold shadow-md border border-yellow-200">
-                                                    {spamScoreList[idx]}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            {listIndex == 1 && <img className="absolute z-[10] top-20 -left-6 " width="36" height="36" src="https://img.icons8.com/doodle/48/link--v1.png" alt="connected" />}
-
-        </div>
-    );
-}
-
-
 function OrderId({ order_id }) {
     return (
         <div className="w-full mb-6">
@@ -569,117 +472,150 @@ function OrderId({ order_id }) {
 
 
 
-function OrderListEdit({ data, onChange }) {
 
-    const lists = [
-        { name: "our_link", label: "Our Link", value: data.our_link || "" },
-        { name: "their_links", label: "Their Link", value: data.their_links || "" },
-    ];
+function OrderListEdit({ seo_backlinks = [], handleUpdateList }) {
+    const splitLinks = (value = "") =>
+        value.split(",").map(v => v.trim()).filter(Boolean);
 
-    const toArray = (value) =>
-        value.split(",").map(v => v.trim());
-
-    // 🔥 FIXED: keep empty values
-    const toString = (arr) =>
+    const joinLinks = (arr) =>
         arr.map(v => v.trim()).join(",");
 
-    const updateItem = (name, currentValue, index, newValue) => {
-        const arr = toArray(currentValue);
-        arr[index] = newValue;
-        onChange(name, { target: { value: toString(arr) } });
+    /* ---------------- ACTIONS ---------------- */
+
+    const updateParent = (index, value) => {
+        const updated = [...seo_backlinks];
+        updated[index].target_url = value;
+        handleUpdateList(updated);
     };
 
-    const addItem = (name, currentValue) => {
-        const arr = toArray(currentValue);
-
-        // prevent multiple empty inputs
-        if (arr.length && arr[arr.length - 1] === "") return;
-
-        arr.push("");
-        onChange(name, { target: { value: toString(arr) } });
+    const removeParent = (index) => {
+        const updated = seo_backlinks.filter((_, i) => i !== index);
+        handleUpdateList(updated);
     };
 
-    const removeItem = (name, currentValue, index) => {
-        const arr = toArray(currentValue).filter((_, i) => i !== index);
-        onChange(name, { target: { value: toString(arr) } });
+    const addParent = () => {
+        handleUpdateList([
+            ...seo_backlinks,
+            {
+                target_url: "",
+                backlink_url: "",
+            },
+        ]);
     };
+
+    const addChild = (pIdx) => {
+        const updated = [...seo_backlinks];
+        const children = splitLinks(updated[pIdx].backlink_url);
+        children.push("");
+        updated[pIdx].backlink_url = joinLinks(children);
+        handleUpdateList(updated);
+    };
+
+    const updateChild = (pIdx, cIdx, value) => {
+        const updated = [...seo_backlinks];
+        const children = splitLinks(updated[pIdx].backlink_url);
+        children[cIdx] = value;
+        updated[pIdx].backlink_url = joinLinks(children);
+        handleUpdateList(updated);
+    };
+
+    const removeChild = (pIdx, cIdx) => {
+        const updated = [...seo_backlinks];
+        const children = splitLinks(updated[pIdx].backlink_url)
+            .filter((_, i) => i !== cIdx);
+        updated[pIdx].backlink_url = joinLinks(children);
+        handleUpdateList(updated);
+    };
+
+    /* ---------------- UI ---------------- */
 
     return (
-        <div className="w-full mt-6 space-y-6">
-            <div className="grid bg-white/10 rounded-xl grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-6 space-y-6">
 
-                {lists.map((list) => {
-                    const items = toArray(list.value);
-                    const lastIsEmpty =
-                        items.length > 0 && items[items.length - 1] === "";
+            {/* ADD OUR LINK */}
+            <button
+                onClick={addParent}
+                className="flex items-center gap-2 px-4 py-2
+                bg-blue-500 text-white rounded-lg text-sm
+                hover:bg-blue-600 transition"
+            >
+                <Plus size={16} /> Add Our Link
+            </button>
+
+            {/* TREE */}
+            <div className="space-y-5">
+                {seo_backlinks?.map((item, pIdx) => {
+                    const children = splitLinks(item.backlink_url);
 
                     return (
                         <div
-                            key={list.name}
-                            className="rounded-xl border border-white/10 p-4"
+                            key={item.id || pIdx}
+                            className="border border-white/10 rounded-xl
+                            p-4 bg-white/5"
                         >
-                            {/* Header */}
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-sm font-semibold">
-                                    {list.label}
-                                </h3>
+
+                            {/* OUR LINK (PARENT) */}
+                            <div className="flex items-center gap-2 mb-4">
+                                <input
+                                    value={item.target_url}
+                                    onChange={(e) =>
+                                        updateParent(pIdx, e.target.value)
+                                    }
+                                    placeholder="Enter Our Link (Target URL)"
+                                    className="flex-1 bg-transparent border
+                                    border-black/10 px-3 py-2 rounded-lg text-sm"
+                                />
 
                                 <button
-                                    onClick={() => addItem(list.name, list.value)}
-                                    disabled={lastIsEmpty}
-                                    className={`p-1 rounded-full transition
-                                        ${lastIsEmpty
-                                            ? "opacity-40 cursor-not-allowed"
-                                            : "hover:bg-white/10 active:scale-95"
-                                        }`}
+                                    onClick={() => removeParent(pIdx)}
+                                    className="bg-red-500 text-white p-2
+                                    rounded-full hover:bg-red-600 transition"
                                 >
-                                    <Plus size={16} />
+                                    <X size={14} />
                                 </button>
                             </div>
 
-                            {/* Items */}
-                            <div className="space-y-2">
-                                {items.length === 0 && (
-                                    <p className="text-xs text-slate-500">
-                                        No items added
-                                    </p>
-                                )}
-
-                                {items.map((item, idx) => (
+                            {/* THEIR LINKS (CHILDREN) */}
+                            <div className="ml-6 space-y-2">
+                                {children.map((child, cIdx) => (
                                     <div
-                                        key={idx}
-                                        className="flex items-center gap-2 border border-black/10
-                                        px-3 py-2 rounded-lg bg-white/5"
+                                        key={cIdx}
+                                        className="flex items-center gap-2"
                                     >
                                         <input
-                                            value={item}
+                                            value={child}
                                             onChange={(e) =>
-                                                updateItem(
-                                                    list.name,
-                                                    list.value,
-                                                    idx,
+                                                updateChild(
+                                                    pIdx,
+                                                    cIdx,
                                                     e.target.value
                                                 )
                                             }
-                                            placeholder="Enter link"
-                                            className="flex-1 bg-transparent outline-none text-sm"
+                                            placeholder="Enter Their Link (Backlink URL)"
+                                            className="flex-1 bg-transparent border
+                                            border-black/10 px-3 py-2 rounded-lg text-sm"
                                         />
 
                                         <button
                                             onClick={() =>
-                                                removeItem(
-                                                    list.name,
-                                                    list.value,
-                                                    idx
-                                                )
+                                                removeChild(pIdx, cIdx)
                                             }
-                                            className="bg-red-500/90 p-1 rounded-full text-white
-                                            hover:bg-red-500 active:scale-95 transition"
+                                            className="bg-red-500/80 text-white
+                                            p-1.5 rounded-full hover:bg-red-600"
                                         >
-                                            <X size={14} />
+                                            <X size={12} />
                                         </button>
                                     </div>
                                 ))}
+
+                                {/* ADD CHILD */}
+                                <button
+                                    onClick={() => addChild(pIdx)}
+                                    className="flex items-center gap-2 text-xs
+                                    text-blue-400 hover:text-blue-300 mt-2"
+                                >
+                                    <Plus size={14} /> Add Their Link
+                                </button>
                             </div>
                         </div>
                     );
@@ -688,6 +624,10 @@ function OrderListEdit({ data, onChange }) {
         </div>
     );
 }
+
+
+
+
 
 
 

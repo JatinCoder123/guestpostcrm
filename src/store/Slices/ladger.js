@@ -25,7 +25,7 @@ const ladgerSlice = createSlice({
       state.error = null;
     },
     getLadgerSuccess(state, action) {
-      const { duplicate, ladger, email, pageCount, pageIndex, mailersSummary } =
+      const { duplicate, ladger, email, pageCount, pageIndex, search, mailersSummary } =
         action.payload;
       state.loading = false;
       state.ladger = ladger;
@@ -34,7 +34,7 @@ const ladgerSlice = createSlice({
       state.pageCount = pageIndex;
       state.email = email;
       state.duplicate = duplicate;
-      state.searchNotFound = ladger.length === 0;
+      state.searchNotFound = ladger.length === 0 && search.trim() !== "";
       state.error = null;
     },
     getLadgerFailed(state, action) {
@@ -86,7 +86,7 @@ const ladgerSlice = createSlice({
   },
 });
 
-export const getLadger = () => {
+export const getLadger = (search) => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
@@ -101,6 +101,7 @@ export const getLadger = () => {
       console.log("Ladger", data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
+          search,
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
           mailersSummary: data.mailers_summary,
@@ -117,7 +118,7 @@ export const getLadger = () => {
     }
   };
 };
-export const getLadgerEmail = (email) => {
+export const getLadgerEmail = (email, search) => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
@@ -133,6 +134,7 @@ export const getLadgerEmail = (email) => {
 
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
+          search,
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
           mailersSummary: data.mailers_summary,
@@ -149,7 +151,7 @@ export const getLadgerEmail = (email) => {
     }
   };
 };
-export const getLadgerWithOutLoading = (email) => {
+export const getLadgerWithOutLoading = (email, search) => {
   return async (dispatch, getState) => {
     try {
       const { data } = await axios.get(
@@ -162,6 +164,7 @@ export const getLadgerWithOutLoading = (email) => {
       console.log("LADGER", data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
+          search,
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
           mailersSummary: data.mailers_summary,

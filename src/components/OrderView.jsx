@@ -78,7 +78,7 @@ function Field({ label, value, link, children, title }) {
 
 
 
-function DisplayList({ data, label, spamScores }) {
+function DisplayList({ data = [], label, spamScores }) {
     const list = Array.isArray(data)
         ? data
         : typeof data === "string"
