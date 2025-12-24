@@ -1,84 +1,93 @@
-import React, { useContext, useEffect } from 'react'
-import { getNoSearchResultData, ladgerAction } from '../store/Slices/ladger';
-import { useDispatch, useSelector } from 'react-redux';
-import { PageContext } from '../context/pageContext';
-import { toast } from 'react-toastify';
-import { LoadingChase } from './Loading';
-import { Calendar, Import } from 'lucide-react';
+import React, { useContext, useEffect } from "react";
+import { getNoSearchResultData, ladgerAction } from "../store/Slices/ladger";
+import { useDispatch, useSelector } from "react-redux";
+import { PageContext } from "../context/pageContext";
+import { toast } from "react-toastify";
+import { LoadingChase } from "./Loading";
+import { Calendar, Import } from "lucide-react";
+
 export const NoSearchFoundPage = () => {
     const { search } = useContext(PageContext);
-    const { noSearchResultData, loading, error } = useSelector((state) => state.ladger);
-    const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
+    const { noSearchResultData, loading, error } = useSelector(
+        (state) => state.ladger
+    );
+    const { loading: unrepliedLoading } = useSelector(
+        (state) => state.unreplied
+    );
+
     const dispatch = useDispatch();
+
     useEffect(() => {
-        dispatch(getNoSearchResultData(search))
-    }, [search])
+        dispatch(getNoSearchResultData(search));
+    }, [search, dispatch]);
+
     useEffect(() => {
         if (error) {
-            toast.error(error)
-            dispatch(ladgerAction.clearAllErrors())
+            toast.error(error);
+            dispatch(ladgerAction.clearAllErrors());
         }
-    }, [error, dispatch])
+    }, [error, dispatch]);
+
     if (loading || unrepliedLoading) {
-        return <div className='flex justify-center items-center '>
-            <LoadingChase />
-        </div>
+        return (
+            <div className="flex justify-center items-center h-[60vh]">
+                <LoadingChase />
+            </div>
+        );
     }
-    if (noSearchResultData?.length === 0) {
-        return <div className='flex justify-center items-center '>No Search Found</div>
+
+    if (!noSearchResultData?.length) {
+        return (
+            <div className="flex justify-center items-center h-[60vh] text-gray-500">
+                No Search Found
+            </div>
+        );
     }
+
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full ">
-                <thead>
-                    <tr className="bg-gradient-to-r from-orange-500 to-yellow-600  text-white">
+        <div className="space-y-3 p-4">
+            {noSearchResultData.map((item, index) => (
+                <div
+                    key={index}
+                    className="flex items-center justify-between gap-4
+          bg-white rounded-xl shadow-sm border border-gray-100
+          hover:bg-pink-50 transition cursor-pointer px-4 py-3"
+                >
+                    {/* Left: Avatar + Email */}
+                    <div className="flex items-center gap-3 min-w-[220px]">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-yellow-500
+            flex items-center justify-center text-white font-semibold">
+                            {item.customer_email?.[0]?.toUpperCase()}
+                        </div>
 
-                        <th className="px-6 py-4 text-left" >
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-
-                                DATE
-
+                        <div>
+                            <p className="text-sm font-medium text-gray-800">
+                                {item.customer_email}
+                            </p>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <Calendar className="w-3 h-3" />
+                                {item.date_created}
                             </div>
-                        </th>
-                        <th className="px-6 py-4 text-left">EMAIL</th>
-                        <th className="px-6 py-4 text-left">
-                            SUBJECT
-                        </th>
-                        <th className="px-6 py-4 text-left">ACTIONS</th>
-                    </tr>
-                </thead>
+                        </div>
+                    </div>
 
-                <tbody>
-                    {noSearchResultData?.map((item, index) => (
-                        <tr
-                            key={index}
-                            className="border-b border-gray-100 hover:bg-pink-50 transition"
-                        >
-                            <td className="px-6 py-4 text-gray-600">{item.date_created}</td>
-                            <td className="px-6 py-4">{item.customer_email}</td>
-                            <td className="px-6 py-4 text-blue-600">{item.subject}</td>
+                    {/* Middle: Subject */}
+                    <div className="flex-1">
+                        <p className="text-sm text-gray-700 line-clamp-2">
+                            {item.subject}
+                        </p>
+                    </div>
 
-
-                            <td className="pl-9 py-4">
-
-
-                                <div className="flex items-center justify-center gap-2">
-                                    {/* Update Button */}
-                                    <button
-                                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                                        onClick={() => alert("Work in progress")}
-                                    >
-                                        <Import className="w-5 h-5 text-blue-600" />
-                                    </button>
-
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-
-            </table>
+                    {/* Right: Action */}
+                    <button
+                        onClick={() => alert("Work in progress")}
+                        className="p-2 rounded-lg hover:bg-blue-100 transition"
+                        title="Import"
+                    >
+                        <Import className="w-5 h-5 text-blue-600" />
+                    </button>
+                </div>
+            ))}
         </div>
-    )
-}
+    );
+};
