@@ -63,8 +63,12 @@ export function TimelinePage() {
     loading: unrepliedLoading,
     showNewEmailBanner,
   } = useSelector((state) => state.unreplied);
+  const {
+    emails: repliedMails,
+    loading: unansweredLoading,
+  } = useSelector((state) => state.unanswered);
   const currentThreadId =
-    emails?.length > 0 ? emails[currentIndex]?.thread_id : null;
+    emails?.length > 0 ? emails[currentIndex]?.thread_id : repliedMails?.length > 0 ? repliedMails[currentIndex]?.thread_id : null;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -141,7 +145,7 @@ export function TimelinePage() {
     }
   };
   const handleNext = () => {
-    if (currentIndex < emails?.length - 1) {
+    if (currentIndex < emails?.length - 1 || currentIndex < repliedMails?.length - 1) {
       setCurrentIndex((p) => p + 1);
     }
   };
@@ -333,9 +337,7 @@ export function TimelinePage() {
                     className="text-gray-700 text-sm leading-relaxed whitespace-pre-line"
                     dangerouslySetInnerHTML={{
                       __html:
-                        emails?.length > 0 && emails[currentIndex]?.body
-                          ? emails[currentIndex].body
-                          : "No Message Found!",
+                        emails?.length > 0 ? emails[currentIndex]?.body : repliedMails?.length > 0 ? repliedMails[currentIndex]?.body : "No Message Found!",
                     }}
                   />
                 </div>

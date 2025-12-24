@@ -45,6 +45,7 @@ const RootLayout = () => {
 
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
+  const { emails: repliedMails } = useSelector((state) => state.unanswered);
   const {
     displayIntro,
     setActivePage,
@@ -92,8 +93,7 @@ const RootLayout = () => {
     setCurrentIndex(0);
   }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
 
-  const firstEmail =
-    emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+  const firstEmail = emails.length > 0 ? emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] : repliedMails.length > 0 ? repliedMails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] : null;
 
   // Fetch ladger when email changes
   useEffect(() => {

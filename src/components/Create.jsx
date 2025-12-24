@@ -63,8 +63,8 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
 
         updateData(idx, { [field]: value });
     };
-    const handelUpdateList = (updatedList) => {
-        updateData(activeIndex, { seo_backlinks: updatedList });
+    const handelUpdateList = (itemIndex, updatedList) => {
+        updateData(itemIndex, { seo_backlinks: updatedList });
     };
 
 
