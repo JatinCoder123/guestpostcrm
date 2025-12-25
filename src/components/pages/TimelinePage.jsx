@@ -68,7 +68,7 @@ export function TimelinePage() {
     loading: unansweredLoading,
   } = useSelector((state) => state.unanswered);
   const currentThreadId =
-    emails?.length > 0 ? emails[currentIndex]?.thread_id : repliedMails?.length > 0 ? repliedMails[currentIndex]?.thread_id : null;
+    emails?.length > 0 && emails[currentIndex]?.thread_id;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -91,6 +91,7 @@ export function TimelinePage() {
       const newEmail = emails.find(
         (email) => email.thread_id == currentThreadId
       );
+      setCurrentIndex(0)
       dispatch(updateUnrepliedEmails(currentThreadId));
       dispatch(updateUnansweredEmails(newEmail));
       dispatch(
@@ -145,7 +146,7 @@ export function TimelinePage() {
     }
   };
   const handleNext = () => {
-    if (currentIndex < emails?.length - 1 || currentIndex < repliedMails?.length - 1) {
+    if (currentIndex < emails?.length - 1) {
       setCurrentIndex((p) => p + 1);
     }
   };

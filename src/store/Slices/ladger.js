@@ -123,14 +123,14 @@ export const getLadgerEmail = (email, search) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
-      const res = await axios.get(
+      const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline
         }&email=${email}&page=1&page_size=50`,
         {
           withCredentials: false,
         }
       );
-      console.log("Ladger Email", res);
+      console.log("Ladger Email", data);
 
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
