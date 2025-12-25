@@ -155,6 +155,15 @@ const RootLayout = () => {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       dispatch(hotAction.updateCount(1));
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
       setNotificationCount((prev) => ({
         ...prev,
         outr_deal_fetch: null,

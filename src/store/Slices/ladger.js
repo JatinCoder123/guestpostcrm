@@ -71,22 +71,22 @@ export const getLadger = () => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
-      const { data } = await axios.get(
+      const res = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline
         }&page=1&page_size=50`,
         {
           withCredentials: false,
         }
       );
-      console.log("Ladger", data);
+      console.log("Ladger", res.data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
-          duplicate: data.duplicate_threads_count,
-          ladger: data.data,
-          mailersSummary: data.mailers_summary,
-          email: data.mailers_summary.email,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
+          duplicate: res.data.duplicate_threads_count,
+          ladger: res.data.data,
+          mailersSummary: res.data.mailers_summary,
+          email: res.data.mailers_summary.email,
+          pageCount: res.data.total_pages,
+          pageIndex: res.data.current_page,
         })
       );
       dispatch(ladgerSlice.actions.clearAllErrors());
@@ -102,22 +102,22 @@ export const getLadgerEmail = (email) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
-      const { data } = await axios.get(
+      const res = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline
         }&email=${email}&page=1&page_size=50`,
         {
           withCredentials: false,
         }
       );
-      console.log("Ladger Email", data);
+      console.log("Ladger Email", res);
 
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
-          duplicate: data.duplicate_threads_count,
-          ladger: data.data,
-          mailersSummary: data.mailers_summary,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
+          duplicate: res.data.duplicate_threads_count,
+          ladger: res.data.data,
+          mailersSummary: res.data.mailers_summary,
+          pageCount: res.data.total_pages,
+          pageIndex: res.data.current_page,
           email: email,
         })
       );
