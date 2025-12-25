@@ -292,14 +292,14 @@ const RootLayout = () => {
             </main>
           </div>
 
-          <div className="fixed bottom-1 right-2 cursor-pointer">
+          {/* <div className="fixed bottom-1 right-2 cursor-pointer">
             <img
               width="80"
               height="80"
               src="https://img.icons8.com/3d-fluency/94/whatsapp-logo.png"
               alt="whatsapp-logo"
             />
-          </div>
+          </div> */}
         </div>
       )}
     </AnimatePresence>

@@ -375,7 +375,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                         {isUser ? "You" : mail.from_name || "Sender"}
                       </span>
                       <span className="text-xs opacity-70">
-                        {new Date(mail.date_created).toLocaleString()}
+                        {mail.date_created}
                         <div className="ml-0">
                           {mail.date_created_ago}
                         </div>

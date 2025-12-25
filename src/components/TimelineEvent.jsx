@@ -34,7 +34,7 @@ const TimelineEvent = () => {
               <div key={event.id} className="relative flex items-start gap-4">
                 {/* ICON */}
                 <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                  <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center text-white shadow-lg">
                     <img
                       width="40"
                       height="40"
