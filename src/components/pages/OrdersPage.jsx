@@ -12,22 +12,24 @@ import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getOrders, orderAction, updateOrder } from "../../store/Slices/orders";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
-import { excludeEmail } from "../../assets/assets";
+import { excludeEmail, extractEmail } from "../../assets/assets";
+import { PageContext } from "../../context/pageContext";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
+  const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null)
   const { orders, count, loading, error, message, updating } = useSelector(
     (state) => state.orders
   );
   const navigateTo = useNavigate()
   const dispatch = useDispatch()
-  
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Completed":
@@ -64,7 +66,6 @@ export function OrdersPage() {
   useEffect(() => {
     if (orders.length > 0) {
       const uniqueStatuses = [...new Set(orders.map(order => order.order_status))];
-      console.log('Unique order statuses in data:', uniqueStatuses);
     }
   }, [orders]);
 
@@ -85,7 +86,7 @@ export function OrdersPage() {
         if (selectedCategory === "subject") {
           return orderId.includes(searchValue);
         }
-        
+
         // Default search: search in both contact and order ID
         return contact.includes(searchValue) || orderId.includes(searchValue);
       }
@@ -98,17 +99,17 @@ export function OrdersPage() {
         // Handle case-insensitive matching and partial matches
         const orderStatus = item.order_status?.toString().toLowerCase().trim() || "";
         const filterStatus = filters.status.toLowerCase().trim();
-        
+
         // Try exact match first
         if (orderStatus === filterStatus) {
           return true;
         }
-        
+
         // Try partial match (e.g., "In process" vs "In Process")
         if (orderStatus.includes(filterStatus) || filterStatus.includes(orderStatus)) {
           return true;
         }
-        
+
         // Try to match common variations
         const statusVariations = {
           'new': ['new', 'pending', 'received'],
@@ -117,14 +118,14 @@ export function OrdersPage() {
           'accepted': ['accepted', 'approved', 'confirmed'],
           'duplicate': ['duplicate', 'copied'],
         };
-        
+
         // Check if any variation matches
         if (statusVariations[filterStatus]) {
-          return statusVariations[filterStatus].some(variation => 
+          return statusVariations[filterStatus].some(variation =>
             orderStatus.includes(variation)
           );
         }
-        
+
         return false;
       }
       return true;
@@ -135,7 +136,7 @@ export function OrdersPage() {
         const amount = parseFloat(item.total_amount_c) || 0;
         const minAmount = filters.minAmount || 0;
         const maxAmount = filters.maxAmount || Infinity;
-        
+
         return amount >= minAmount && amount <= maxAmount;
       }
       return true;
@@ -222,7 +223,7 @@ export function OrdersPage() {
           onClose={() => setCurrentUpdateOrder(null)}
         />
       )}
-      
+
       <SearchComponent
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
@@ -385,8 +386,31 @@ export function OrdersPage() {
                   key={order.id}
                   className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-indigo-600">{order.date_entered}</td>
-                  <td className="px-6 py-4 text-gray-900">
+                  <td
+                    className="px-6 py-4 text-gray-600 cursor-pointer"
+                    onClick={() => {
+                      const input = extractEmail(order.real_name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/");
+                    }}
+                  >
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{order.date_entered}</span>
+                    </div>
+                  </td>
+                  <td
+                    onClick={() => {
+                      const input = extractEmail(order.real_name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/contacts");
+                    }}
+                    className="px-6 py-4 text-gray-900 cursor-pointer"
+                  >
                     {order.real_name?.split("<")[0]?.trim() || "N/A"}
                   </td>
                   <td className="px-6 py-4 text-green-600">
@@ -423,7 +447,7 @@ export function OrdersPage() {
             </tbody>
           </table>
         </div>
-        
+
         <Pagination slice={"orders"} fn={getOrders} />
 
         {!loading && filteredorders.length === 0 && (

@@ -6,6 +6,7 @@ const ladgerSlice = createSlice({
     loading: false,
     email: localStorage.getItem("email") || null,
     ladger: [],
+    noSearchResultData: null,
     ip: null,
     ipMails: null,
     mailersSummary: null,
@@ -15,14 +16,16 @@ const ladgerSlice = createSlice({
     timeline: localStorage.getItem("timeline") || "last_7_days",
     message: null,
     duplicate: 0,
+    searchNotFound: false,
   },
   reducers: {
     getLadgerRequest(state) {
       state.loading = true;
+      state.searchNotFound = false;
       state.error = null;
     },
     getLadgerSuccess(state, action) {
-      const { duplicate, ladger, email, pageCount, pageIndex, mailersSummary } =
+      const { duplicate, ladger, email, pageCount, pageIndex, search, mailersSummary } =
         action.payload;
       state.loading = false;
       state.ladger = ladger;
@@ -31,11 +34,13 @@ const ladgerSlice = createSlice({
       state.pageCount = pageIndex;
       state.email = email;
       state.duplicate = duplicate;
+      state.searchNotFound = ladger.length === 0 && search.trim() !== "";
       state.error = null;
     },
     getLadgerFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
+      state.searchNotFound = false;
     },
     setTimeline(state, action) {
       state.timeline = action.payload;
@@ -57,6 +62,21 @@ const ladgerSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    getNoSearchResultDataRequest(state) {
+      state.loading = true;
+      state.noSearchResultData = null;
+      state.error = null;
+    },
+    getNoSearchResultDataSuccess(state, action) {
+      const { noSearchResultData } = action.payload;
+      state.loading = false;
+      state.noSearchResultData = noSearchResultData;
+      state.error = null;
+    },
+    getNoSearchResultDataFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
     clearAllErrors(state) {
       state.error = null;
     },
@@ -66,7 +86,7 @@ const ladgerSlice = createSlice({
   },
 });
 
-export const getLadger = () => {
+export const getLadger = (search) => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
@@ -81,12 +101,13 @@ export const getLadger = () => {
       console.log("Ladger", res.data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
-          duplicate: res.data.duplicate_threads_count,
-          ladger: res.data.data,
-          mailersSummary: res.data.mailers_summary,
-          email: res.data.mailers_summary.email,
-          pageCount: res.data.total_pages,
-          pageIndex: res.data.current_page,
+          search,
+          duplicate: data.duplicate_threads_count,
+          ladger: data.data,
+          mailersSummary: data.mailers_summary,
+          email: data.mailers_summary.email,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
         })
       );
       dispatch(ladgerSlice.actions.clearAllErrors());
@@ -97,7 +118,7 @@ export const getLadger = () => {
     }
   };
 };
-export const getLadgerEmail = (email) => {
+export const getLadgerEmail = (email, search) => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
@@ -113,11 +134,12 @@ export const getLadgerEmail = (email) => {
 
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
-          duplicate: res.data.duplicate_threads_count,
-          ladger: res.data.data,
-          mailersSummary: res.data.mailers_summary,
-          pageCount: res.data.total_pages,
-          pageIndex: res.data.current_page,
+          search,
+          duplicate: data.duplicate_threads_count,
+          ladger: data.data,
+          mailersSummary: data.mailers_summary,
+          pageCount: data.total_pages,
+          pageIndex: data.current_page,
           email: email,
         })
       );
@@ -129,7 +151,7 @@ export const getLadgerEmail = (email) => {
     }
   };
 };
-export const getLadgerWithOutLoading = (email) => {
+export const getLadgerWithOutLoading = (email, search) => {
   return async (dispatch, getState) => {
     try {
       const { data } = await axios.get(
@@ -142,6 +164,7 @@ export const getLadgerWithOutLoading = (email) => {
       console.log("LADGER", data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
+          search,
           duplicate: data.duplicate_threads_count,
           ladger: data.data,
           mailersSummary: data.mailers_summary,
@@ -182,6 +205,30 @@ export const getIpWithEmail = () => {
     } catch (error) {
       dispatch(
         ladgerSlice.actions.getIpWithEmailFailed(error.response?.data?.message)
+      );
+    }
+  };
+};
+export const getNoSearchResultData = (search) => {
+  return async (dispatch, getState) => {
+    dispatch(ladgerSlice.actions.getNoSearchResultDataRequest());
+    try {
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint}&type=live_search&query=${search}`,
+        {
+          withCredentials: false,
+        }
+      );
+      console.log("NO SEARCH RESULT", data);
+      dispatch(
+        ladgerSlice.actions.getNoSearchResultDataSuccess({
+          noSearchResultData: data.data,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.getNoSearchResultDataFailed(error.response?.data?.message)
       );
     }
   };

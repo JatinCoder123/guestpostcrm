@@ -45,12 +45,14 @@ const RootLayout = () => {
 
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
+  const { emails: repliedMails } = useSelector((state) => state.unanswered);
   const {
     displayIntro,
     setActivePage,
     enteredEmail,
     currentIndex,
     setCurrentIndex,
+    search
   } = useContext(PageContext);
 
   const { currentAvatar, notificationCount, setNotificationCount } =
@@ -91,15 +93,14 @@ const RootLayout = () => {
     setCurrentIndex(0);
   }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
 
-  const firstEmail =
-    emails?.[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+  const firstEmail = emails.length > 0 ? emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] : repliedMails.length > 0 ? repliedMails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] : null;
 
   // Fetch ladger when email changes
   useEffect(() => {
     if (enteredEmail) {
-      dispatch(getLadgerEmail(enteredEmail));
+      dispatch(getLadgerEmail(enteredEmail, search));
     } else if (firstEmail) {
-      dispatch(getLadgerEmail(firstEmail));
+      dispatch(getLadgerEmail(firstEmail, search));
     }
   }, [enteredEmail, firstEmail, dispatch]);
 
@@ -117,11 +118,11 @@ const RootLayout = () => {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getLadgerWithOutLoading(enteredEmail, search));
         dispatch(getViewEmail(enteredEmail));
         dispatch(getContact(enteredEmail));
       } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
       }
@@ -136,11 +137,11 @@ const RootLayout = () => {
     if (notificationCount.outr_el_process_audit) {
       dispatch(hotAction.updateCount(1));
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getLadgerWithOutLoading(enteredEmail, search));
         dispatch(getViewEmail(enteredEmail));
         dispatch(getContact(enteredEmail));
       } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
       }
@@ -177,11 +178,11 @@ const RootLayout = () => {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getLadgerWithOutLoading(enteredEmail, search));
         dispatch(getViewEmail(enteredEmail));
         dispatch(getContact(enteredEmail));
       } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
       }
@@ -215,11 +216,11 @@ const RootLayout = () => {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
+        dispatch(getLadgerWithOutLoading(enteredEmail, search));
         dispatch(getViewEmail(enteredEmail));
         dispatch(getContact(enteredEmail));
       } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
+        dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
       }

@@ -20,21 +20,21 @@ const MailerSummaryHeader = () => {
   const { deals, loading: dealsLoading } = useSelector((state) => state.deals);
   const [emailData, setEmailData] = useState({ orders: [], offers: [], deals: [] });
   useEffect(() => {
-    const order = orders.filter(o => excludeEmail(o.real_name ?? o.email) == email)
+    const order = orders?.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       orders: order
     }))
   }, [email, orders])
   useEffect(() => {
-    const deal = deals.filter(d => excludeEmail(d.real_name ?? d.email) == email)
+    const deal = deals?.filter(d => excludeEmail(d.real_name ?? d.email) == email)
     setEmailData((prev) => ({
       ...prev,
       deals: deal
     }))
   }, [email, deals])
   useEffect(() => {
-    const offer = offers.filter(o => excludeEmail(o.real_name ?? o.email) == email)
+    const offer = offers?.filter(o => excludeEmail(o.real_name ?? o.email) == email)
     setEmailData((prev) => ({
       ...prev,
       offers: offer
@@ -59,7 +59,7 @@ const MailerSummaryHeader = () => {
               <td className="border border-blue-400 px-4 py-3">
                 <div className="font-semibold text-gray-900">
                   {mailersSummary?.date_entered
-}
+                  }
                 </div>
                 <div className="text-xs text-gray-600">
                   {getDifference(mailersSummary?.date_entered)}
@@ -129,23 +129,23 @@ function TD({ data, type, setData, loading }) {
     }
   }, [dispatch, creating, message, error])
   const handleClick = () => {
-    if (type == "orders" && data.length == 0) {
+    if (type == "orders" && data?.length == 0) {
       dispatch(createOrder())
       return;
     }
-    data.length > 0 ? navigateTo(`/${type}/view`, { state: { email } }) : navigateTo(`/${type}/create`, { state: { email } })
+    data?.length > 0 ? navigateTo(`/${type}/view`, { state: { email } }) : navigateTo(`/${type}/create`, { state: { email } })
 
   }
   return (
     <td className="border border-blue-400 px-4 py-3">
       {(creating && type == "orders") || loading ? <LoadingChase /> :
         <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
-          {data.length > 0 ? `${data.length} ${type}` : `No ${type}`}
+          {data?.length > 0 ? `${data?.length} ${type}` : `No ${type}`}
           <button onClick={handleClick}>
             <img className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data.length > 0 ? "visible" : "add"}.png`}
+              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"}.png`}
               alt="add"
             />
           </button>

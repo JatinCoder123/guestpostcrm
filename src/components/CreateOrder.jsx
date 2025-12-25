@@ -12,11 +12,10 @@ const fields = [
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
   { name: "order_status", label: "Order Status", type: "select", },
-  { name: "invoice_link_c", label: "Invoice Link", type: "text" },
+  { name: "invoice_link_c", label: "Invoice Link", type: "text", disabled: true },
 ]
 const lists = [
   { name: "our_link", label: "Our Link" },
-
   { name: "their_links", label: "Their Link" },
 ]
 export default function CreateOrder() {
