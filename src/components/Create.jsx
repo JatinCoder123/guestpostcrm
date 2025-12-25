@@ -182,7 +182,7 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
                                                             >
                                                                 {pageType == "view" && <button
                                                                     onClick={() => navigate(`/${type}/edit/${item.id}`, { state: { email } })}
-                                                                    className="flex items-center right-2 absolute z-[100] top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+                                                                    className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
                                                                 >
                                                                     <Pencil size={16} />
                                                                 </button>}

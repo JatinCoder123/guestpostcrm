@@ -1,43 +1,34 @@
 function addOneWeek(dateStr) {
-    // Parse the date
     const date = new Date(dateStr);
-
-    // Add 7 days
     date.setDate(date.getDate() + 7);
-
-    // Format parts
+    
     const day = String(date.getDate()).padStart(2, "0");
     const month = date.toLocaleString("en-US", { month: "short" });
     const year = String(date.getFullYear()).slice(-2);
-
+    
     let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
-
     hours = hours % 12 || 12;
-
+    
     return `${day} ${month} ${year} ${hours}:${minutes} ${ampm}`;
 }
+
 function addOneMonth(dateStr) {
     const date = new Date(dateStr);
-
-    // Add 1 month
     date.setMonth(date.getMonth() + 1);
-
-    // Format parts
+    
     const day = String(date.getDate()).padStart(2, "0");
     const month = date.toLocaleString("en-US", { month: "short" });
     const year = String(date.getFullYear()).slice(-2);
-
+    
     let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
-
     hours = hours % 12 || 12;
-
+    
     return `${day} ${month} ${year} ${hours}:${minutes} ${ampm}`;
 }
-
 
 export default function Preview({
     data = [],
@@ -48,371 +39,511 @@ export default function Preview({
 }) {
     return (
         <>
-            <p>&nbsp;</p>
-            <p>&nbsp;</p>
-
             <div id="sugar_text_copy-area">
                 <table
                     style={{ width: "100%" }}
                     border="0"
                     cellSpacing="0"
                     cellPadding="0"
-                    bgcolor="#eef4ff"
+                    bgcolor="#f9f7f3"
                 >
                     <tbody>
                         <tr>
-                            <td style={{ padding: "30px" }} width="100%">
+                            <td style={{ padding: "20px" }} width="100%">
                                 <table style={{ width: "100%" }} cellSpacing="0" cellPadding="0">
                                     <tbody>
-
                                         {/* ========================= HEADER ========================= */}
                                         <tr>
-                                            <td
-                                                style={{
-                                                    padding: "10px",
-                                                }}
-                                            >
-
-
+                                            <td style={{ padding: "10px" }}>
                                                 {/* ========================= PREVIEW CARD ========================= */}
                                                 <div
                                                     style={{
-                                                        fontFamily: "Arial, sans-serif",
-                                                        background: "#eef4ff",
-                                                        padding: "30px",
-                                                        borderRadius: "12px",
+                                                        fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
+                                                        background: "#ffffff",
+                                                        padding: "0",
+                                                        borderRadius: "16px",
                                                         maxWidth: "650px",
                                                         margin: "0 auto",
-                                                        boxShadow: "0px 6px 18px rgba(0,0,0,0.08)",
-                                                        marginTop: "15px",
+                                                        boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+                                                        overflow: "hidden",
                                                     }}
                                                 >
                                                     {/* HEADER */}
                                                     <div
                                                         style={{
-                                                            background:
-                                                                "linear-gradient(135deg, #4e79ff, #6db6ff)",
-                                                            padding: "20px",
-                                                            borderRadius: "10px",
-                                                            color: "white",
+                                                            background: "linear-gradient(135deg, #FFD166 0%, #FFB347 100%)",
+                                                            padding: "30px 20px",
+                                                            color: "#2c3e50",
                                                             textAlign: "center",
-                                                            marginBottom: "25px",
-                                                            boxShadow: "0px 4px 12px rgba(0,0,0,0.15)",
+                                                            borderBottom: "1px solid rgba(255,255,255,0.2)",
                                                         }}
                                                     >
                                                         <h1
                                                             style={{
                                                                 margin: 0,
-                                                                fontSize: "26px",
+                                                                fontSize: "28px",
                                                                 fontWeight: "700",
+                                                                letterSpacing: "-0.5px",
+                                                                color: "#2c3e50",
                                                             }}
                                                         >
                                                             {type} Summary
                                                         </h1>
 
                                                         {userEmail && (
-                                                            <p
-                                                                style={{
-                                                                    marginTop: "8px",
-                                                                    opacity: 0.95,
-                                                                    fontSize: "14px",
-                                                                }}
-                                                            >
-                                                                For: <strong>{userEmail}</strong>
-                                                            </p>
+                                                            <div style={{
+                                                                marginTop: "12px",
+                                                                display: "inline-flex",
+                                                                alignItems: "center",
+                                                                gap: "6px",
+                                                                background: "rgba(255,255,255,0.2)",
+                                                                padding: "6px 14px",
+                                                                borderRadius: "20px",
+                                                                fontSize: "13px",
+                                                            }}>
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#2c3e50">
+                                                                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                                                                </svg>
+                                                                <span>For: <strong>{userEmail}</strong></span>
+                                                            </div>
                                                         )}
                                                     </div>
 
                                                     {/* DEALS CARD */}
                                                     <div
                                                         style={{
-                                                            background: "#ffffff",
-                                                            padding: "20px",
-                                                            borderRadius: "10px",
-                                                            border: "1px solid #d0ddff",
-                                                            boxShadow: "0px 4px 10px rgba(0,0,0,0.05)",
+                                                            padding: "30px",
                                                         }}
                                                     >
-                                                        <table
-                                                            style={{
-                                                                width: "100%",
-                                                                borderCollapse: "collapse",
-                                                                marginBottom: "20px",
-                                                            }}
-                                                        >
-                                                            <thead>
-                                                                <tr style={{ backgroundColor: "#e8efff" }}>
-                                                                    <th
-                                                                        style={{
-                                                                            textAlign: "left",
-                                                                            padding: "12px",
-                                                                            fontSize: "15px",
-                                                                            fontWeight: "700",
-                                                                            color: "#1a2b6b",
-                                                                            borderBottom: "2px solid #d0ddff",
-                                                                        }}
-                                                                    >
-                                                                        Website
-                                                                    </th>
-                                                                    <th
-                                                                        style={{
-                                                                            textAlign: "right",
-                                                                            padding: "12px",
-                                                                            fontSize: "15px",
-                                                                            fontWeight: "700",
-                                                                            color: "#1a2b6b",
-                                                                            borderBottom: "2px solid #d0ddff",
-                                                                        }}
-                                                                    >
-                                                                        Amount
-                                                                    </th>
-                                                                    <th
-                                                                        style={{
-                                                                            textAlign: "right",
-                                                                            padding: "12px",
-                                                                            fontSize: "15px",
-                                                                            fontWeight: "700",
-                                                                            color: "#1a2b6b",
-                                                                            borderBottom: "2px solid #d0ddff",
-                                                                        }}
-                                                                    >
-                                                                        Expiry Date
-                                                                    </th>
-                                                                </tr>
-                                                            </thead>
-
-                                                            <tbody>
-                                                                {data.map((d, i) => (
-                                                                    <tr
-                                                                        key={i}
-                                                                        style={{
-                                                                            backgroundColor:
-                                                                                i % 2 === 0 ? "#f7f9ff" : "#ffffff",
-                                                                        }}
-                                                                    >
-                                                                        <td
+                                                        <div style={{
+                                                            marginBottom: "25px",
+                                                            paddingBottom: "15px",
+                                                            borderBottom: "2px solid #FFD166"
+                                                        }}>
+                                                            <h3 style={{
+                                                                margin: 0,
+                                                                fontSize: "18px",
+                                                                fontWeight: "600",
+                                                                color: "#2c3e50",
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: "8px"
+                                                            }}>
+                                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFB347">
+                                                                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                                                                </svg>
+                                                                {type} Details
+                                                            </h3>
+                                                        </div>
+                                                        
+                                                        <div style={{
+                                                            overflow: "hidden",
+                                                            borderRadius: "12px",
+                                                            border: "1px solid #FFD166",
+                                                            boxShadow: "0 3px 10px rgba(255, 209, 102, 0.1)"
+                                                        }}>
+                                                            <table
+                                                                style={{
+                                                                    width: "100%",
+                                                                    borderCollapse: "collapse",
+                                                                }}
+                                                            >
+                                                                <thead>
+                                                                    <tr style={{ 
+                                                                        background: "linear-gradient(to right, #FFF9E6, #FFF4D4)",
+                                                                        borderBottom: "2px solid #FFD166"
+                                                                    }}>
+                                                                        <th
                                                                             style={{
-                                                                                padding: "12px",
-                                                                                borderBottom: "1px solid #e1e7ff",
+                                                                                textAlign: "left",
+                                                                                padding: "18px 20px",
                                                                                 fontSize: "14px",
-                                                                                color: "#263238",
+                                                                                fontWeight: "700",
+                                                                                color: "#2c3e50",
+                                                                                letterSpacing: "0.5px",
                                                                             }}
                                                                         >
-                                                                            {d[websiteKey] || "(no website)"}
-                                                                        </td>
-
-                                                                        <td
+                                                                            Website
+                                                                        </th>
+                                                                        <th
                                                                             style={{
-                                                                                padding: "12px",
-                                                                                borderBottom: "1px solid #e1e7ff",
                                                                                 textAlign: "right",
+                                                                                padding: "18px 20px",
                                                                                 fontSize: "14px",
-                                                                                color: "#1a2b6b",
-                                                                                fontWeight: "600",
+                                                                                fontWeight: "700",
+                                                                                color: "#2c3e50",
+                                                                                letterSpacing: "0.5px",
                                                                             }}
                                                                         >
-                                                                            $
-                                                                            {isNaN(Number(d[amountKey])) ? 0 : Number(d[amountKey])}
-                                                                        </td>
-                                                                        <td
+                                                                            Amount
+                                                                        </th>
+                                                                        <th
                                                                             style={{
-                                                                                padding: "12px",
-                                                                                borderBottom: "1px solid #e1e7ff",
                                                                                 textAlign: "right",
+                                                                                padding: "18px 20px",
                                                                                 fontSize: "14px",
-                                                                                color: "#1a2b6b",
-                                                                                fontWeight: "600",
+                                                                                fontWeight: "700",
+                                                                                color: "#2c3e50",
+                                                                                letterSpacing: "0.5px",
                                                                             }}
                                                                         >
-                                                                            {type == "Deals" ?
-                                                                                addOneWeek(
-                                                                                    d.date_entered_formatted
-                                                                                        ? d.date_entered_formatted
-                                                                                        : new Date().toLocaleString("en-GB", {
-                                                                                            day: "2-digit",
-                                                                                            month: "short",
-                                                                                            year: "2-digit",
-                                                                                            hour: "2-digit",
-                                                                                            minute: "2-digit",
-                                                                                            hour12: true,
-                                                                                        })
-                                                                                )
-                                                                                : addOneMonth(
-                                                                                    d.date_entered_formatted
-                                                                                        ? d.date_entered_formatted
-                                                                                        : new Date().toLocaleString("en-GB", {
-                                                                                            day: "2-digit",
-                                                                                            month: "short",
-                                                                                            year: "2-digit",
-                                                                                            hour: "2-digit",
-                                                                                            minute: "2-digit",
-                                                                                            hour12: true,
-                                                                                        })
-                                                                                )}
-                                                                        </td>
+                                                                            Expiry Date
+                                                                        </th>
                                                                     </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
+                                                                </thead>
 
+                                                                <tbody>
+                                                                    {data.map((d, i) => (
+                                                                        <tr
+                                                                            key={i}
+                                                                            style={{
+                                                                                background: i % 2 === 0 ? "#FFFDF6" : "#FFF9E6",
+                                                                                borderBottom: i === data.length - 1 ? "none" : "1px solid #FFECB3",
+                                                                            }}
+                                                                        >
+                                                                            <td
+                                                                                style={{
+                                                                                    padding: "18px 20px",
+                                                                                    fontSize: "14px",
+                                                                                    color: "#2c3e50",
+                                                                                    fontWeight: "500",
+                                                                                    borderRight: "1px solid #FFECB3",
+                                                                                }}
+                                                                            >
+                                                                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                                                                    <div style={{
+                                                                                        width: "6px",
+                                                                                        height: "6px",
+                                                                                        borderRadius: "50%",
+                                                                                        background: "#06D6A0"
+                                                                                    }}></div>
+                                                                                    {d[websiteKey] || "(no website)"}
+                                                                                </div>
+                                                                            </td>
 
+                                                                            <td
+                                                                                style={{
+                                                                                    padding: "18px 20px",
+                                                                                    textAlign: "right",
+                                                                                    fontSize: "14px",
+                                                                                    color: "#2c3e50",
+                                                                                    fontWeight: "600",
+                                                                                    borderRight: "1px solid #FFECB3",
+                                                                                }}
+                                                                            >
+                                                                                ${isNaN(Number(d[amountKey])) ? "0.00" : Number(d[amountKey]).toFixed(2)}
+                                                                            </td>
+                                                                            <td
+                                                                                style={{
+                                                                                    padding: "18px 20px",
+                                                                                    textAlign: "right",
+                                                                                    fontSize: "14px",
+                                                                                    color: type === "Deals" ? "#FF9E00" : "#06D6A0",
+                                                                                    fontWeight: "600",
+                                                                                }}
+                                                                            >
+                                                                                {type == "Deals" ?
+                                                                                    addOneWeek(
+                                                                                        d.date_entered_formatted
+                                                                                            ? d.date_entered_formatted
+                                                                                            : new Date().toLocaleString("en-GB", {
+                                                                                                day: "2-digit",
+                                                                                                month: "short",
+                                                                                                year: "2-digit",
+                                                                                                hour: "2-digit",
+                                                                                                minute: "2-digit",
+                                                                                                hour12: true,
+                                                                                            })
+                                                                                    )
+                                                                                    : addOneMonth(
+                                                                                        d.date_entered_formatted
+                                                                                            ? d.date_entered_formatted
+                                                                                            : new Date().toLocaleString("en-GB", {
+                                                                                                day: "2-digit",
+                                                                                                month: "short",
+                                                                                                year: "2-digit",
+                                                                                                hour: "2-digit",
+                                                                                                minute: "2-digit",
+                                                                                                hour12: true,
+                                                                                            })
+                                                                                    )}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
                                         </tr>
 
                                         {/* ========================= GUIDELINES ========================= */}
-                                        <tr><td style={{ padding: "5px" }}>&nbsp;</td></tr>
-
-                                        <tr>
-                                            <td style={{ padding: "10px" }}>&nbsp;</td>
-                                        </tr>
+                                        <tr><td style={{ padding: "20px" }}>&nbsp;</td></tr>
 
                                         <tr>
                                             <td>
-                                                <p
-                                                    style={{
-                                                        paddingLeft: "20px",
-                                                        color: "#1a2b6b",
-                                                        fontWeight: 600,
-                                                    }}
-                                                >
-                                                    Please review the following important guidelines before we proceed:
-                                                </p>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td style={{ padding: "10px 20px", background: "#e8efff", borderLeft: "3px solid #4e79ff" }}>
-                                                <p>DF Link Spam Must Be Under 7%</p>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
-                                                <p><strong>Article Duration:</strong> 1 year.</p>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
-                                                <p>Content will undergo <strong>AI detection; editorial fees</strong> apply if flagged.</p>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
-                                                <p>
-                                                    Please review the{" "}
-                                                    <a
+                                                <div style={{
+                                                    maxWidth: "650px",
+                                                    margin: "0 auto",
+                                                    background: "#ffffff",
+                                                    borderRadius: "12px",
+                                                    padding: "30px",
+                                                    boxShadow: "0 5px 15px rgba(0,0,0,0.05)"
+                                                }}>
+                                                    <h3
                                                         style={{
-                                                            padding: "5px 10px",
-                                                            background: "#d4ddff",
-                                                            color: "#1a2b6b",
-                                                            textDecoration: "none",
-                                                            borderRadius: "4px",
+                                                            color: "#2c3e50",
+                                                            fontWeight: 700,
+                                                            fontSize: "18px",
+                                                            marginBottom: "20px",
+                                                            paddingBottom: "10px",
+                                                            borderBottom: "2px solid #FFD166",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            gap: "10px"
                                                         }}
-                                                        href="https://www.outrightcrm.com/blog/elead-crm/"
                                                     >
-                                                        Sample Post
-                                                    </a>
-                                                </p>
-                                            </td>
-                                        </tr>
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFB347">
+                                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                                        </svg>
+                                                        Important Guidelines
+                                                    </h3>
 
-                                        <tr>
-                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
-                                                <p>Articles must contain a minimum of 900 words.</p>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
-                                                <p>We will add 2-3 internal links within a Guest Post for SEO purposes.</p>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td style={{ padding: "10px 20px", background: "#ffffff", borderLeft: "3px solid #4e79ff" }}>
-                                                <p>Most link insertions are done instantly; guest posts are completed within 1-3 business days.</p>
+                                                    <div style={{
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        gap: "12px"
+                                                    }}>
+                                                        {[
+                                                            "DF Link Spam Must Be Under 7%",
+                                                            "Article Duration: 1 year.",
+                                                            "Content will undergo AI detection; editorial fees apply if flagged.",
+                                                            "Please review the Sample Post",
+                                                            "Articles must contain a minimum of 900 words.",
+                                                            "We will add 2-3 internal links within a Guest Post for SEO purposes.",
+                                                            "Most link insertions are done instantly; guest posts are completed within 1-3 business days."
+                                                        ].map((text, index) => (
+                                                            <div key={index} style={{
+                                                                display: "flex",
+                                                                alignItems: "flex-start",
+                                                                gap: "12px",
+                                                                padding: "12px 15px",
+                                                                background: index % 2 === 0 ? "#FFFDF6" : "#FFF9E6",
+                                                                borderRadius: "8px",
+                                                                borderLeft: "3px solid #FFB347"
+                                                            }}>
+                                                                <div style={{
+                                                                    width: "24px",
+                                                                    height: "24px",
+                                                                    borderRadius: "50%",
+                                                                    background: "#FFD166",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "center",
+                                                                    fontSize: "12px",
+                                                                    fontWeight: "bold",
+                                                                    color: "#2c3e50",
+                                                                    flexShrink: 0
+                                                                }}>
+                                                                    {index + 1}
+                                                                </div>
+                                                                <div style={{
+                                                                    color: "#2c3e50",
+                                                                    fontSize: "14px",
+                                                                    lineHeight: "1.5"
+                                                                }}>
+                                                                    {text.includes("Sample Post") ? (
+                                                                        <>
+                                                                            Please review the{" "}
+                                                                            <a
+                                                                                style={{
+                                                                                    padding: "3px 8px",
+                                                                                    background: "#FFD166",
+                                                                                    color: "#2c3e50",
+                                                                                    textDecoration: "none",
+                                                                                    borderRadius: "4px",
+                                                                                    fontWeight: "600",
+                                                                                    display: "inline-flex",
+                                                                                    alignItems: "center",
+                                                                                    gap: "4px"
+                                                                                }}
+                                                                                href="https://www.outrightcrm.com/blog/elead-crm/"
+                                                                            >
+                                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="#2c3e50">
+                                                                                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                                                                                </svg>
+                                                                                Sample Post
+                                                                            </a>
+                                                                        </>
+                                                                    ) : (
+                                                                        text
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
 
                                         {/* ========================= PAYMENT SECTION ========================= */}
+                                        <tr><td style={{ padding: "20px" }}>&nbsp;</td></tr>
 
                                         <tr>
-                                            <td
-                                                style={{
-                                                    background: "#ffffff",
-                                                    padding: "20px",
-                                                    borderLeft: "3px solid #4e79ff",
-                                                }}
-                                            >
-                                                <h3 style={{ color: "#1a2b6b" }}>Payment Methods</h3>
+                                            <td>
+                                                <div style={{
+                                                    maxWidth: "650px",
+                                                    margin: "0 auto",
+                                                    background: "linear-gradient(135deg, #FFFDF6, #FFF9E6)",
+                                                    borderRadius: "12px",
+                                                    padding: "30px",
+                                                    boxShadow: "0 5px 15px rgba(0,0,0,0.05)",
+                                                    border: "1px solid #FFD166"
+                                                }}>
+                                                    <h3 style={{ 
+                                                        color: "#2c3e50",
+                                                        fontSize: "18px",
+                                                        fontWeight: "700",
+                                                        marginBottom: "20px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "10px"
+                                                    }}>
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFB347">
+                                                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                                                        </svg>
+                                                        Payment Methods
+                                                    </h3>
 
-                                                <table style={{ width: "100%" }}>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>
-                                                                <img
-                                                                    src="http://img.mailinblue.com/6590752/images/682ef211e6090_1747907089.png"
-                                                                    alt=""
-                                                                    width="13"
-                                                                    height="17"
-                                                                />{" "}
-                                                                PayPal: <strong>pay@outrightcrm.com</strong>
-                                                            </td>
-                                                        </tr>
+                                                    <div style={{
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        gap: "15px"
+                                                    }}>
+                                                        <div style={{
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            gap: "12px",
+                                                            padding: "15px",
+                                                            background: "white",
+                                                            borderRadius: "8px",
+                                                            border: "1px solid #FFECB3"
+                                                        }}>
+                                                            <div style={{
+                                                                width: "40px",
+                                                                height: "40px",
+                                                                borderRadius: "8px",
+                                                                background: "linear-gradient(135deg, #003087, #009cde)",
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                justifyContent: "center"
+                                                            }}>
+                                                                <span style={{ 
+                                                                    color: "white", 
+                                                                    fontWeight: "bold", 
+                                                                    fontSize: "16px" 
+                                                                }}>PP</span>
+                                                            </div>
+                                                            <div>
+                                                                <div style={{
+                                                                    fontWeight: "600",
+                                                                    color: "#2c3e50",
+                                                                    marginBottom: "2px"
+                                                                }}>PayPal</div>
+                                                                <div style={{ color: "#666", fontSize: "14px" }}>
+                                                                    <strong>pay@outrightcrm.com</strong>
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
-                                                        <tr>
-                                                            <td>
-                                                                <img
-                                                                    src="http://img.mailinblue.com/6590752/images/682ef2a81908d_1747907240.png"
-                                                                    alt=""
-                                                                    width="15"
-                                                                    height="15"
-                                                                />{" "}
-                                                                Payoneer: <strong>ashish@outrightcrm.com</strong>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                                        <div style={{
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            gap: "12px",
+                                                            padding: "15px",
+                                                            background: "white",
+                                                            borderRadius: "8px",
+                                                            border: "1px solid #FFECB3"
+                                                        }}>
+                                                            <div style={{
+                                                                width: "40px",
+                                                                height: "40px",
+                                                                borderRadius: "8px",
+                                                                background: "linear-gradient(135deg, #FF4800, #FF6B35)",
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                justifyContent: "center"
+                                                            }}>
+                                                                <span style={{ 
+                                                                    color: "white", 
+                                                                    fontWeight: "bold", 
+                                                                    fontSize: "16px" 
+                                                                }}>PO</span>
+                                                            </div>
+                                                            <div>
+                                                                <div style={{
+                                                                    fontWeight: "600",
+                                                                    color: "#2c3e50",
+                                                                    marginBottom: "2px"
+                                                                }}>Payoneer</div>
+                                                                <div style={{ color: "#666", fontSize: "14px" }}>
+                                                                    <strong>ashish@outrightcrm.com</strong>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
 
                                         {/* ========================= POLICY LINKS ========================= */}
+                                        <tr><td style={{ padding: "20px" }}>&nbsp;</td></tr>
+
                                         <tr>
                                             <td>
-                                                <table style={{ width: "100%" }} cellSpacing="0" cellPadding="0">
-                                                    <tbody>
-                                                        <tr>
-                                                            {[
-                                                                ["URL Policy", "https://www.outrightcrm.com/anchor-url-policy-2/"],
-                                                                ["Anchor Text Policy", "https://www.outrightcrm.com/anchor-text-policy/"],
-                                                                ["Content Policy", "https://www.outrightcrm.com/policy-for-blog-submissions/"],
-                                                            ].map(([label, link]) => (
-                                                                <td key={label} align="center">
-                                                                    <a
-                                                                        style={{
-                                                                            padding: "10px 15px",
-                                                                            border: "1px solid #4e79ff",
-                                                                            fontSize: "14px",
-                                                                            color: "#1a2b6b",
-                                                                            textDecoration: "none",
-                                                                            display: "inline-block",
-                                                                            margin: "5px",
-                                                                            background: "#eef4ff",
-                                                                            borderRadius: "6px",
-                                                                        }}
-                                                                        href={link}
-                                                                    >
-                                                                        {label}
-                                                                    </a>
-                                                                </td>
-                                                            ))}
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                                <div style={{
+                                                    maxWidth: "650px",
+                                                    margin: "0 auto",
+                                                    textAlign: "center"
+                                                }}>
+                                                    <div style={{
+                                                        display: "flex",
+                                                        gap: "12px",
+                                                        justifyContent: "center",
+                                                        flexWrap: "wrap"
+                                                    }}>
+                                                        {[
+                                                            ["URL Policy", "https://www.outrightcrm.com/anchor-url-policy-2/"],
+                                                            ["Anchor Text Policy", "https://www.outrightcrm.com/anchor-text-policy/"],
+                                                            ["Content Policy", "https://www.outrightcrm.com/policy-for-blog-submissions/"],
+                                                        ].map(([label, link]) => (
+                                                            <a
+                                                                key={label}
+                                                                style={{
+                                                                    padding: "12px 20px",
+                                                                    border: "2px solid #FFD166",
+                                                                    fontSize: "14px",
+                                                                    color: "#2c3e50",
+                                                                    textDecoration: "none",
+                                                                    display: "inline-flex",
+                                                                    alignItems: "center",
+                                                                    gap: "8px",
+                                                                    background: "white",
+                                                                    borderRadius: "8px",
+                                                                    fontWeight: "600",
+                                                                    transition: "all 0.3s ease",
+                                                                }}
+                                                                href={link}
+                                                            >
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFB347">
+                                                                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                                                                </svg>
+                                                                {label}
+                                                            </a>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
 
@@ -423,8 +554,6 @@ export default function Preview({
                     </tbody>
                 </table>
             </div>
-
-            <p>&nbsp;</p>
         </>
     );
 }
