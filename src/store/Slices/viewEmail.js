@@ -161,30 +161,38 @@ export const getContact = (email = null) => {
 export const editContact = (contactData) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.editContactRequest());
-    console.log("contactData", contactData);
-    const domain = getState().user.crmEndpoint.split("?")[0];
-    try {
-      const data = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
 
-        {
-          parent_bean: {
-            module: "Contacts",
-            ...contactData["contact"],
-          },
-          child_bean: {
-            module: "Accounts",
-            ...contactData["account"],
-          },
+    const domain = getState().user.crmEndpoint.split("?")[0];
+
+    try {
+      // Base payload (always send parent_bean)
+      const payload = {
+        parent_bean: {
+          module: "Contacts",
+          ...contactData.contact,
         },
+      };
+
+      // ✅ Only add child_bean if account_id exists
+      if (contactData?.contact?.account_id) {
+        payload.child_bean = {
+          module: "Accounts",
+          ...contactData.account,
+        };
+      }
+
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+        payload,
         {
           headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
+            "X-Api-Key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json", // typo fixed
           },
         }
       );
-      console.log(`contact`, data);
+
+      console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess());
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
@@ -194,6 +202,7 @@ export const editContact = (contactData) => {
     }
   };
 };
+
 export const sendEmail = (reply, message = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
