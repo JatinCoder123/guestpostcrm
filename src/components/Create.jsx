@@ -7,7 +7,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LoadingChase } from "./Loading";
-import UpdatePopup from "./UpdatePopup";
 import { OrderView } from "./OrderView";
 
 export default function Create({ data, email, validWebsite = [], setData, type, pageType, creating, deleting, deleteId, sending, fields, lists = [], submitData, sendHandler, handleDelete, websiteKey = "website", handleUpdate, updating, renderPreview, preview = true, amountKey }) {
