@@ -56,7 +56,7 @@ export function TopNav() {
     localStorage.removeItem("email");
     setSearch("");
     setEnteredEmail(null);
-    navigateTo("");
+    navigateTo("/");
   };
 
   const handleKeyPress = (e) => {
@@ -104,7 +104,7 @@ export function TopNav() {
 
   return (
     <div className="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-      
+
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
@@ -115,7 +115,7 @@ export function TopNav() {
 
         {/* SEARCH AREA */}
         <div className="flex items-center gap-2">
-          
+
           {/* INPUT */}
           <div className="relative w-[380px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -144,10 +144,9 @@ export function TopNav() {
                 className={`
                   absolute right-2 top-1/2 -translate-y-1/2
                   w-6 h-6 flex items-center justify-center rounded-md
-                  ${
-                    isBlinking
-                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                      : "bg-gray-300 text-gray-700"
+                  ${isBlinking
+                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                    : "bg-gray-300 text-gray-700"
                   }
                 `}
               >
@@ -166,7 +165,7 @@ export function TopNav() {
             "
           >
             <Search className="w-4 h-4" />
-            
+
           </button>
 
           <DropDown

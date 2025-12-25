@@ -91,14 +91,14 @@ export const getLadger = (search) => {
     dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
-      const res = await axios.get(
+      const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline
         }&page=1&page_size=50`,
         {
           withCredentials: false,
         }
       );
-      console.log("Ladger", res.data);
+      console.log("Ladger", data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
           search,

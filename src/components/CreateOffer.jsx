@@ -10,6 +10,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { createOffer, deleteOffer, getOffers, offersAction, updateOffer } from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
+import { ManualSideCall } from "../services/utils";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
   { name: "client_offer_c", label: "Client Offer", type: "number", disabled: true },
@@ -20,6 +21,8 @@ export default function CreateOffer() {
   const { state } = useLocation()
   const navigate = useNavigate()
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
+  const { crmEndpoint } = useSelector((state) => state.user);
+
   const [currentOffers, setCurrentOffers] = useState([])
   const [validWebsite, setValidWebsite] = useState([])
   const [newOffers, setNewOffers] = useState([{
@@ -91,6 +94,8 @@ export default function CreateOffer() {
           />
         ), "Offer Send Successfully"))
       }
+      ManualSideCall(crmEndpoint, state?.email, "Offer Created Successfully")
+
       toast.success(message)
       dispatch(offersAction.clearAllMessages())
       navigate(-1)

@@ -25,8 +25,6 @@ import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
-import Avatar from "./components/Avatar";
-import { getOrderRem } from "./store/Slices/orderRem";
 import { getForwardedEmails } from "./store/Slices/forwardedEmailSlice";
 import { getFavEmails } from "./store/Slices/favEmailSlice";
 import { getLinkExchange } from "./store/Slices/linkExchange";
@@ -100,6 +98,9 @@ const RootLayout = () => {
       dispatch(getLadgerEmail(enteredEmail, search));
     } else if (firstEmail) {
       dispatch(getLadgerEmail(firstEmail, search));
+    }
+    else {
+      dispatch(getLadger(search));
     }
   }, [enteredEmail, firstEmail, dispatch]);
 

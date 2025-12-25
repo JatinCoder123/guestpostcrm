@@ -10,6 +10,7 @@ import Preview from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { SocketContext } from "../context/SocketContext";
+import { ManualSideCall } from "../services/utils";
 
 const fields = [
   { name: "website_c", label: "Website", type: "select", options: websiteLists },
@@ -21,6 +22,7 @@ export default function CreateDeal() {
   const { deals, updating, error, message, creating, deleting, deleteDealId } = useSelector((state) => state.deals);
   const { offers } = useSelector((state) => state.offers);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
+  const { crmEndpoint } = useSelector((state) => state.user);
   const [validWebsite, setValidWebsite] = useState([])
   const [currentDeals, setCurrentDeals] = useState([])
   const [currentOffers, setCurrentOffers] = useState([])
@@ -107,6 +109,7 @@ export default function CreateDeal() {
           ...prev,
           outr_deal_fetch: Date.now(),
         }));
+        ManualSideCall(crmEndpoint, state?.email, "Deal Created Successfully")
         dispatch(sendEmail(renderToStaticMarkup(
           <Preview
             data={[...newDeals, ...currentDeals]}
