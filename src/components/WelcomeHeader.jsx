@@ -3,10 +3,13 @@ import { useSelector } from "react-redux";
 import { periodOptions } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useContext } from "react";
+import { PageContext } from "../context/pageContext";
 
 const WelcomeHeader = () => {
   const { email, timeline, loading } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
+  const { welcomeHeaderContent } = useContext(PageContext);
   const { count } = useSelector((state) => state.events);
 
   const navigate = useNavigate();
@@ -36,10 +39,14 @@ const WelcomeHeader = () => {
         {/* LEFT */}
         <div className="flex items-center gap-5">
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
+            <span className="font-bold text-gray-900">
+              {welcomeHeaderContent + " "}
+            </span>
             Results for{" "}
             <span className="font-bold text-gray-900">
               {time?.replace(/_/g, " ")}
             </span>
+
             {email && !loading && (
               <>
                 {" • "}

@@ -49,7 +49,8 @@ const RootLayout = () => {
     enteredEmail,
     currentIndex,
     setCurrentIndex,
-    search
+    search,
+    setWelcomeHeaderContent,
   } = useContext(PageContext);
 
   const { currentAvatar, notificationCount, setNotificationCount } =
@@ -91,6 +92,11 @@ const RootLayout = () => {
   }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
 
   const firstEmail = emails.length > 0 ? emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] : null;
+  useEffect(() => {
+    if (emails.length > 0) {
+      setWelcomeHeaderContent("Unreplied");
+    }
+  }, [emails]);
 
   // Fetch ladger when email changes
   useEffect(() => {
@@ -102,7 +108,7 @@ const RootLayout = () => {
     else {
       dispatch(getLadger(search));
     }
-  }, [enteredEmail, firstEmail, dispatch]);
+  }, [enteredEmail, firstEmail, timeline, dispatch]);
 
   // Fetch view email and contact when ladger email is set
   useEffect(() => {
@@ -111,6 +117,7 @@ const RootLayout = () => {
       dispatch(getContact());
     }
   }, [email, dispatch]);
+
 
   // Handle socket notifications
   useEffect(() => {

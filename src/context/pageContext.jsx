@@ -5,12 +5,13 @@ export const PageContext = createContext();
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
   const [displayIntro, setDisplayIntro] = useState(true);
-  const [welcomeHeaderContent, setWelcomeHeaderContent] = useState("Unreplied");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
     localStorage.getItem("email") || null
   );
   const [search, setSearch] = useState(localStorage.getItem("email") || "");
+  const [welcomeHeaderContent, setWelcomeHeaderContent] = useState(search.trim() !== "" ? "Search" : "");
+
 
   // Set activePage based on current URL
   useEffect(() => {

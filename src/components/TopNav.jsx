@@ -54,6 +54,7 @@ export function TopNav() {
   /* ❌ Clear */
   const handleClear = () => {
     localStorage.removeItem("email");
+    setWelcomeHeaderContent("");
     setSearch("");
     setEnteredEmail(null);
     navigateTo("/");
