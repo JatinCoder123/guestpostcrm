@@ -57,9 +57,6 @@ export function TimelinePage() {
   const { ladger, email, mailersSummary, searchNotFound, loading, error } = useSelector(
     (state) => state.ladger
   );
-  console.log("ladger", ladger);
-
-
   const {
     emails,
     loading: unrepliedLoading,
