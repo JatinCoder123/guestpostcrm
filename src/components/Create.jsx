@@ -182,7 +182,7 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
                                                             >
                                                                 {pageType == "view" && <button
                                                                     onClick={() => navigate(`/${type}/edit/${item.id}`, { state: { email } })}
-                                                                    className="flex items-center right-2 absolute  top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
+                                                                    className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""} top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
                                                                 >
                                                                     <Pencil size={16} />
                                                                 </button>}
@@ -212,7 +212,7 @@ export default function Create({ data, email, validWebsite = [], setData, type, 
                                                                     {fields.map((field, fieldIndex) => <InputField key={fieldIndex} pageType={pageType} {...field} data={item} onChange={(e) => handelChange(itemIndex, field.name, e)} websiteLists={validWebsite} />)}
                                                                 </div>
                                                                 </>}
-                                                                {type == "orders" && pageType == "edit" && <OrderListEdit seo_backlinks={item.seo_backlinks} handleUpdateList={(updatedList) => handelUpdateList(itemIndex, updatedList)} />}
+                                                                {type == "orders" && pageType == "edit" && <OrderListEdit seo_backlinks={item.seo_backlinks} handleUpdateList={(updatedList) => handelUpdateList(itemIndex, updatedList)} handleUpdateItem={(totalAmount) => handelChange(itemIndex, "total_amount_c", totalAmount)} />}
                                                             </motion.div>
                                                         )}
                                                     </Draggable>
@@ -469,71 +469,40 @@ function OrderId({ order_id }) {
     );
 }
 
-
-
-
-function OrderListEdit({ seo_backlinks = [], handleUpdateList }) {
-    const splitLinks = (value = "") =>
-        value.split(",").map(v => v.trim()).filter(Boolean);
-
-    const joinLinks = (arr) =>
-        arr.map(v => v.trim()).join(",");
-
-    /* ---------------- ACTIONS ---------------- */
-
-    const updateParent = (index, value) => {
+function OrderListEdit({ seo_backlinks = [], handleUpdateList, handleUpdateItem }) {
+    const updateItem = (index, item, value) => {
         const updated = [...seo_backlinks];
-        updated[index].target_url = value;
+        updated[index][item] = value;
+        const totalAmount = updated.reduce((total, item) => total + Number(item.link_amount), 0);
+        handleUpdateItem({ target: { value: totalAmount } });
         handleUpdateList(updated);
     };
 
-    const removeParent = (index) => {
+    const removeItem = (index) => {
         const updated = seo_backlinks.filter((_, i) => i !== index);
+        const totalAmount = updated.reduce((total, item) => total + Number(item.link_amount), 0);
+        handleUpdateItem({ target: { value: totalAmount } });
         handleUpdateList(updated);
     };
 
-    const addParent = () => {
+    const addItem = () => {
         handleUpdateList([
-            ...seo_backlinks,
             {
                 target_url: "",
                 backlink_url: "",
+                link_amount: "",
             },
+            ...seo_backlinks
+
         ]);
     };
-
-    const addChild = (pIdx) => {
-        const updated = [...seo_backlinks];
-        const children = splitLinks(updated[pIdx].backlink_url);
-        children.push("");
-        updated[pIdx].backlink_url = joinLinks(children);
-        handleUpdateList(updated);
-    };
-
-    const updateChild = (pIdx, cIdx, value) => {
-        const updated = [...seo_backlinks];
-        const children = splitLinks(updated[pIdx].backlink_url);
-        children[cIdx] = value;
-        updated[pIdx].backlink_url = joinLinks(children);
-        handleUpdateList(updated);
-    };
-
-    const removeChild = (pIdx, cIdx) => {
-        const updated = [...seo_backlinks];
-        const children = splitLinks(updated[pIdx].backlink_url)
-            .filter((_, i) => i !== cIdx);
-        updated[pIdx].backlink_url = joinLinks(children);
-        handleUpdateList(updated);
-    };
-
-    /* ---------------- UI ---------------- */
 
     return (
         <div className="mt-6 space-y-6">
 
             {/* ADD OUR LINK */}
             <button
-                onClick={addParent}
+                onClick={addItem}
                 className="flex items-center gap-2 px-4 py-2
                 bg-blue-500 text-white rounded-lg text-sm
                 hover:bg-blue-600 transition"
@@ -544,8 +513,6 @@ function OrderListEdit({ seo_backlinks = [], handleUpdateList }) {
             {/* TREE */}
             <div className="space-y-5">
                 {seo_backlinks?.map((item, pIdx) => {
-                    const children = splitLinks(item.backlink_url);
-
                     return (
                         <div
                             key={item.id || pIdx}
@@ -558,15 +525,15 @@ function OrderListEdit({ seo_backlinks = [], handleUpdateList }) {
                                 <input
                                     value={item.target_url}
                                     onChange={(e) =>
-                                        updateParent(pIdx, e.target.value)
+                                        updateItem(pIdx, "target_url", e.target.value)
                                     }
-                                    placeholder="Enter Our Link (Target URL)"
+                                    placeholder="Enter Our Link"
                                     className="flex-1 bg-transparent border
                                     border-black/10 px-3 py-2 rounded-lg text-sm"
                                 />
 
                                 <button
-                                    onClick={() => removeParent(pIdx)}
+                                    onClick={() => removeItem(pIdx)}
                                     className="bg-red-500 text-white p-2
                                     rounded-full hover:bg-red-600 transition"
                                 >
@@ -574,47 +541,35 @@ function OrderListEdit({ seo_backlinks = [], handleUpdateList }) {
                                 </button>
                             </div>
 
-                            {/* THEIR LINKS (CHILDREN) */}
-                            <div className="ml-6 space-y-2">
-                                {children.map((child, cIdx) => (
-                                    <div
-                                        key={cIdx}
-                                        className="flex items-center gap-2"
-                                    >
-                                        <input
-                                            value={child}
-                                            onChange={(e) =>
-                                                updateChild(
-                                                    pIdx,
-                                                    cIdx,
-                                                    e.target.value
-                                                )
-                                            }
-                                            placeholder="Enter Their Link (Backlink URL)"
-                                            className="flex-1 bg-transparent border
-                                            border-black/10 px-3 py-2 rounded-lg text-sm"
-                                        />
-
-                                        <button
-                                            onClick={() =>
-                                                removeChild(pIdx, cIdx)
-                                            }
-                                            className="bg-red-500/80 text-white
-                                            p-1.5 rounded-full hover:bg-red-600"
-                                        >
-                                            <X size={12} />
-                                        </button>
-                                    </div>
-                                ))}
-
-                                {/* ADD CHILD */}
-                                <button
-                                    onClick={() => addChild(pIdx)}
-                                    className="flex items-center gap-2 text-xs
-                                    text-blue-400 hover:text-blue-300 mt-2"
-                                >
-                                    <Plus size={14} /> Add Their Link
-                                </button>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    value={item.backlink_url}
+                                    onChange={(e) =>
+                                        updateItem(
+                                            pIdx,
+                                            "backlink_url",
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="Enter Their Link"
+                                    className="w-[400px] bg-transparent border border-black/10 px-5 py-2 rounded-lg text-sm ml-2"
+                                />
+                                <div className="ml-2">
+                                    <span>$</span>
+                                    <input
+                                        value={item.link_amount}
+                                        onChange={(e) =>
+                                            updateItem(
+                                                pIdx,
+                                                "link_amount",
+                                                e.target.value
+                                            )
+                                        }
+                                        type="number"
+                                        placeholder="Enter Link Amount"
+                                        className="w-[200px] bg-transparent border border-black/10 px-5 py-2 rounded-lg text-sm ml-1"
+                                    />
+                                </div>
                             </div>
                         </div>
                     );

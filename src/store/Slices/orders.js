@@ -173,6 +173,7 @@ export const getOrdersWithoutLoading = () => {
 export const updateOrder = (order) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
+    console.log("Update Order", order);
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
