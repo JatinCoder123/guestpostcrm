@@ -60,7 +60,6 @@
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^2.1.7",
     "react-router-dom": "^7.9.5",
-    "react-snowfall": "^2.4.0",
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.2",
     "socket.io-client": "^4.8.1",
