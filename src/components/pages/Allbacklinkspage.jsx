@@ -14,9 +14,13 @@ import {
 } from "lucide-react";
 import { BacklinkDetailBox } from "../../components/pages/BacklinkDetailBox";
 import { getBacklinks, getBacklinkDetail } from "../../store/Slices/backlinks";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 export function Allbacklinkspage() {
   const dispatch = useDispatch();
+    const navigate = useNavigate();
   const { loading, backlinks, error } = useSelector((state) => state.backlinks);
   
   const [showDetail, setShowDetail] = useState(false);
@@ -73,10 +77,6 @@ export function Allbacklinkspage() {
 
     return 0;
   });
-
-
-
-
 
 
     
@@ -232,7 +232,7 @@ export function Allbacklinkspage() {
         showFilter={true}
 
         onDownloadClick={handleDownload}
-        showDownload={true}
+        showDownload={true} 
 
         className="mb-6"
       />
@@ -241,6 +241,14 @@ export function Allbacklinkspage() {
       
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
+  {/* Back Button */}
+  <button
+    onClick={() => navigate(-1)}
+    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm"
+    title="Go back"
+  >
+    <ArrowLeft className="w-5 h-5 text-green-700" />
+  </button>
           <ExternalLink className="w-6 h-6 text-green-600" />
           <h2 className="text-xl text-gray-900">ALL BACKLINKS</h2>
           <a href="#" title="Backlinks Information">

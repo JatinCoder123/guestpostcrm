@@ -14,15 +14,17 @@ import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { LoadingChase } from "../Loading";
- 
+import { useSearchParams } from "react-router-dom";
+
 export function ReminderPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [topsearch, setTopsearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("pending"); // Default to "pending"
+  const [selectedCategory, setSelectedCategory] = useState("pending");
   const [selectedSort, setSelectedSort] = useState("");
   const dispatch = useDispatch();
   const [sendReminderLoading, setSendReminderLoading] = useState(false);
   const [sendReminderId, setSendReminderId] = useState(null);
- 
+
   const { orderRem, dropdownOptions, count, loading, error } = useSelector(
     (state) => state.orderRem
   );
@@ -30,18 +32,60 @@ export function ReminderPage() {
   // Create enhanced dropdown options with "Pending" filter
   const enhancedDropdownOptions = [
     { value: "all", label: "All Reminders" },
-    { value: "pending", label: "Pending Reminders" }, // Added pending filter
+    { value: "pending", label: "Pending Reminders" },
     ...dropdownOptions // Original type filters
   ];
- 
+
   const [reminders, setReminders] = useState([]);
- 
+
   const { email } = useSelector((state) => state.ladger);
- 
+
+  // Check for URL filter parameter on component mount
+  useEffect(() => {
+    const urlFilter = searchParams.get('filter');
+    if (urlFilter) {
+      // Decode the filter from URL
+      const decodedFilter = decodeURIComponent(urlFilter);
+      console.log("URL Filter received:", decodedFilter);
+      
+      // Find matching option from dropdown
+      let matchingOption = enhancedDropdownOptions.find(option => 
+        option.value.toLowerCase() === decodedFilter.toLowerCase() ||
+        option.label.toLowerCase().includes(decodedFilter.toLowerCase()) ||
+        decodedFilter.toLowerCase().includes(option.value.toLowerCase())
+      );
+      
+      if (!matchingOption) {
+        // Try to match by converting underscores to spaces
+        const filterWithSpaces = decodedFilter.replace(/_/g, ' ');
+        matchingOption = enhancedDropdownOptions.find(option => 
+          option.value.toLowerCase() === filterWithSpaces.toLowerCase() ||
+          option.label.toLowerCase().includes(filterWithSpaces.toLowerCase())
+        );
+        
+        if (matchingOption) {
+          console.log("Matched with spaces conversion:", matchingOption.value);
+          setSelectedCategory(matchingOption.value);
+        } else {
+          // If still no match, use the raw filter value
+          console.log("Using raw filter value:", decodedFilter);
+          setSelectedCategory(decodedFilter);
+        }
+      } else {
+        console.log("Found matching option:", matchingOption.value);
+        setSelectedCategory(matchingOption.value);
+      }
+      
+      // Clear the URL parameter after applying
+      searchParams.delete('filter');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   async function sendReminder(reminderId) {
     setSendReminderLoading(true);
     setSendReminderId(reminderId);
- 
+
     axios
       .get(
         `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=send_reminder&reminder_id=${reminderId}`
@@ -62,7 +106,7 @@ export function ReminderPage() {
         setSendReminderId(null);
       });
   }
- 
+
   useEffect(() => {
     if (selectedCategory === "all" || selectedCategory === "pending") {
       dispatch(getOrderRem(null, 1));
@@ -70,8 +114,20 @@ export function ReminderPage() {
       dispatch(getOrderRem(email, 1));
     }
   }, [email, selectedCategory, dispatch]);
- 
+
+  // Function to normalize reminder type for comparison
+  const normalizeType = (type) => {
+    if (!type) return '';
+    return type.toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   useEffect(() => {
+    console.log("Filtering reminders with category:", selectedCategory);
+    console.log("Total orderRem:", orderRem.length);
+    
     // Filter reminders based on selected category
     let filteredReminders = [...orderRem];
     
@@ -80,22 +136,84 @@ export function ReminderPage() {
       filteredReminders = orderRem.filter(
         reminder => reminder.status.toLowerCase() === 'pending'
       );
+      console.log("Pending filter applied, found:", filteredReminders.length);
     } else if (selectedCategory !== "all") {
+      // Normalize the selected category
+      const normalizedSelectedCategory = normalizeType(selectedCategory);
+      console.log("Normalized selected category:", normalizedSelectedCategory);
+      
       // Filter by reminder type
-      filteredReminders = orderRem.filter(
-        reminder => reminder.reminder_type === selectedCategory
+      filteredReminders = orderRem.filter(reminder => {
+        const reminderType = reminder.reminder_type || '';
+        const reminderTypeLabel = reminder.reminder_type_label || '';
+        
+        // Normalize both for comparison
+        const normalizedReminderType = normalizeType(reminderType);
+        const normalizedReminderTypeLabel = normalizeType(reminderTypeLabel);
+        
+        console.log("Checking reminder:", {
+          reminderType,
+          reminderTypeLabel,
+          normalizedReminderType,
+          normalizedReminderTypeLabel,
+          normalizedSelectedCategory
+        });
+        
+        // Check for matches
+        const matchesType = normalizedReminderType.includes(normalizedSelectedCategory) ||
+                           normalizedSelectedCategory.includes(normalizedReminderType);
+        
+        const matchesLabel = normalizedReminderTypeLabel.includes(normalizedSelectedCategory) ||
+                            normalizedSelectedCategory.includes(normalizedReminderTypeLabel);
+        
+        return matchesType || matchesLabel;
+      });
+      
+      console.log("Type filter applied, found:", filteredReminders.length);
+      
+      // If no matches found with type filtering, show pending of all types
+      if (filteredReminders.length === 0) {
+        console.log("No matches found, showing pending reminders instead");
+        filteredReminders = orderRem.filter(
+          reminder => reminder.status.toLowerCase() === 'pending'
+        );
+      }
+    }
+    
+    // Apply search filter if any
+    if (topsearch) {
+      const searchLower = topsearch.toLowerCase();
+      filteredReminders = filteredReminders.filter(reminder => 
+        reminder.real_name?.toLowerCase().includes(searchLower) ||
+        reminder.reminder_type?.toLowerCase().includes(searchLower) ||
+        reminder.reminder_type_label?.toLowerCase().includes(searchLower)
       );
     }
-    // If selectedCategory is "all", show all reminders
     
+    console.log("Final filtered reminders:", filteredReminders.length);
     setReminders(filteredReminders);
-  }, [selectedCategory, orderRem]);
- 
+  }, [selectedCategory, orderRem, topsearch]);
+
   const getDisplayLabel = (type) => {
-    const option = enhancedDropdownOptions.find((option) => option.value === type);
-    return option ? option.label : type;
+    console.log("Getting display label for:", type);
+    
+    // Handle URL filter types that might not be in dropdown
+    if (type && type.includes('_')) {
+      const label = type.replace(/_/g, ' ') + ' Reminders';
+      console.log("Converted underscore label:", label);
+      return label;
+    }
+    
+    const option = enhancedDropdownOptions.find((option) => 
+      option.value === type || 
+      option.label.toLowerCase().includes(type?.toLowerCase() || '')
+    );
+    
+    const result = option ? option.label : (type || 'All Reminders');
+    console.log("Display label result:", result);
+    return result;
   };
- 
+
   // Calculate stats
   const pendingCount = orderRem.filter(order => 
     order.status.toLowerCase() === 'pending'
@@ -108,40 +226,45 @@ export function ReminderPage() {
   const cancelledCount = orderRem.filter(order => 
     order.status.toLowerCase() === 'cancel'
   ).length;
- 
+
   const filterOptions = [
     { value: "asc", label: "A to Z" },
     { value: "desc", label: "Z to A" },
     { value: "newest", label: "Newest First" },
     { value: "oldest", label: "Oldest First" },
   ];
- 
+
   const handleFilterApply = (filters) => {
     console.log("Applied filters from popup:", filters);
   };
- 
+
   const handleSearchChange = (value) => {
+    console.log("Search changed to:", value);
     setTopsearch(value);
   };
- 
+
   const handleCategoryChange = (value) => {
+    console.log("Category changed to:", value);
     setSelectedCategory(value);
   };
- 
+
   const handleSortChange = (value) => {
     setSelectedSort(value);
   };
- 
+
   const handleDownload = () => {
     console.log("Download clicked");
   };
- 
+
+  // Check if we came from timeline
+  const cameFromTimeline = searchParams.get('filter');
+
   return (
     <>
       <SearchComponent
-        dropdownOptions={enhancedDropdownOptions} // Use enhanced options
+        dropdownOptions={enhancedDropdownOptions}
         onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory} // Default to "pending"
+        selectedDropdownValue={selectedCategory}
         dropdownPlaceholder="Filter by Type"
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
@@ -168,7 +291,7 @@ export function ReminderPage() {
         showDownload={true}
         className="mb-6"
       />
- 
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
@@ -216,7 +339,7 @@ export function ReminderPage() {
           </div>
         </div>
       </div>
- 
+
       {/* Payment Missed Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -225,9 +348,12 @@ export function ReminderPage() {
             <CreditCard className="w-6 h-6 text-red-600" />
             <h2 className="text-xl text-gray-900">
               {getDisplayLabel(selectedCategory)}
-              {selectedCategory === "pending" && (
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  {reminders.length} reminders
+              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                {reminders.length} reminders
+              </span>
+              {cameFromTimeline && (
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  Filtered from timeline
                 </span>
               )}
             </h2>
@@ -287,6 +413,14 @@ export function ReminderPage() {
                     <p className="text-gray-500">
                       No {getDisplayLabel(selectedCategory)} found.
                     </p>
+                    {selectedCategory !== "all" && selectedCategory !== "pending" && (
+                      <button
+                        onClick={() => setSelectedCategory("all")}
+                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Show All Reminders
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -299,13 +433,13 @@ export function ReminderPage() {
                       {order.date_entered}
                     </td>
                     <td className="px-6 py-4 text-gray-900">
-                      {order.real_name.split("<")[0].trim()}
+                      {order.real_name?.split("<")[0].trim() || 'N/A'}
                     </td>
                     <td className="px-6 py-4 text-red-600">
-                      {order.reminder_type_label}
+                      {order.reminder_type_label || order.reminder_type || 'N/A'}
                     </td>
                     <td className="px-6 py-4 text-green-600">
-                      {order.scheduled_time}
+                      {order.scheduled_time || 'N/A'}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs ${

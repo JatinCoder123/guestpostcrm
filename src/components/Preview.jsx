@@ -37,6 +37,7 @@ export default function Preview({
     websiteKey,
     amountKey
 }) {
+
     return (
         <>
             <div id="sugar_text_copy-area">
@@ -279,113 +280,70 @@ export default function Preview({
                                         </tr>
 
                                         {/* ========================= GUIDELINES ========================= */}
-                                        <tr><td style={{ padding: "20px" }}>&nbsp;</td></tr>
+                                        {/* ========================= IMPORTANT GUIDELINES (EMAIL SAFE) ========================= */}
+<tr>
+  <td align="center" style={{ padding: "20px 0" ,background:"#ffffff" }}>
+    <table width="650" cellPadding="0" cellSpacing="0" style={{ background:"#ffffff", fontFamily:"Arial, Helvetica, sans-serif" }}>
+      <tbody>
 
-                                        <tr>
-                                            <td>
-                                                <div style={{
-                                                    maxWidth: "650px",
-                                                    margin: "0 auto",
-                                                    background: "#ffffff",
-                                                    borderRadius: "12px",
-                                                    padding: "30px",
-                                                    boxShadow: "0 5px 15px rgba(0,0,0,0.05)"
-                                                }}>
-                                                    <h3
-                                                        style={{
-                                                            color: "#2c3e50",
-                                                            fontWeight: 700,
-                                                            fontSize: "18px",
-                                                            marginBottom: "20px",
-                                                            paddingBottom: "10px",
-                                                            borderBottom: "2px solid #FFD166",
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: "10px"
-                                                        }}
-                                                    >
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFB347">
-                                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                                                        </svg>
-                                                        Important Guidelines
-                                                    </h3>
+        {/* Header */}
+        <tr>
+          <td style={{ padding:"10px 0 15px", fontSize:"18px", fontWeight:"700", color:"#2c3e50", borderBottom:"2px solid #FFB347" }}>
+            Important Guidelines
+          </td>
+        </tr>
 
-                                                    <div style={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        gap: "12px"
-                                                    }}>
-                                                        {[
-                                                            "DF Link Spam Must Be Under 7%",
-                                                            "Article Duration: 1 year.",
-                                                            "Content will undergo AI detection; editorial fees apply if flagged.",
-                                                            "Please review the Sample Post",
-                                                            "Articles must contain a minimum of 900 words.",
-                                                            "We will add 2-3 internal links within a Guest Post for SEO purposes.",
-                                                            "Most link insertions are done instantly; guest posts are completed within 1-3 business days."
-                                                        ].map((text, index) => (
-                                                            <div key={index} style={{
-                                                                display: "flex",
-                                                                alignItems: "flex-start",
-                                                                gap: "12px",
-                                                                padding: "12px 15px",
-                                                                background: index % 2 === 0 ? "#FFFDF6" : "#FFF9E6",
-                                                                borderRadius: "8px",
-                                                                borderLeft: "3px solid #FFB347"
-                                                            }}>
-                                                                <div style={{
-                                                                    width: "24px",
-                                                                    height: "24px",
-                                                                    borderRadius: "50%",
-                                                                    background: "#FFD166",
-                                                                    display: "flex",
-                                                                    alignItems: "center",
-                                                                    justifyContent: "center",
-                                                                    fontSize: "12px",
-                                                                    fontWeight: "bold",
-                                                                    color: "#2c3e50",
-                                                                    flexShrink: 0
-                                                                }}>
-                                                                    {index + 1}
-                                                                </div>
-                                                                <div style={{
-                                                                    color: "#2c3e50",
-                                                                    fontSize: "14px",
-                                                                    lineHeight: "1.5"
-                                                                }}>
-                                                                    {text.includes("Sample Post") ? (
-                                                                        <>
-                                                                            Please review the{" "}
-                                                                            <a
-                                                                                style={{
-                                                                                    padding: "3px 8px",
-                                                                                    background: "#FFD166",
-                                                                                    color: "#2c3e50",
-                                                                                    textDecoration: "none",
-                                                                                    borderRadius: "4px",
-                                                                                    fontWeight: "600",
-                                                                                    display: "inline-flex",
-                                                                                    alignItems: "center",
-                                                                                    gap: "4px"
-                                                                                }}
-                                                                                href="https://www.outrightcrm.com/blog/elead-crm/"
-                                                                            >
-                                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="#2c3e50">
-                                                                                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
-                                                                                </svg>
-                                                                                Sample Post
-                                                                            </a>
-                                                                        </>
-                                                                    ) : (
-                                                                        text
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+        {[
+          "DF Link Spam Must Be Under 7%",
+          "Article Duration: 1 year.",
+          "Content will undergo AI detection; editorial fees apply if flagged.",
+          "Please review the Sample Post",
+          "Articles must contain a minimum of 900 words.",
+          "We will add 2-3 internal links within a Guest Post for SEO purposes.",
+          "Most link insertions are done instantly; guest posts are completed within 1-3 business days."
+        ].map((text, index) => (
+          <tr key={index}>
+            <td style={{ paddingTop:"10px" }}>
+              <table width="100%" cellPadding="0" cellSpacing="0" style={{ background:"#FFF9E6", borderLeft:"5px solid #FFB347", borderRadius:"8px" }}>
+                <tbody>
+                  <tr>
+                    {/* Number circle */}
+                    <td width="45" align="center" valign="middle">
+                      <table width="28" height="28" cellPadding="0" cellSpacing="0" style={{ background:"#FFD166", borderRadius:"50%" }}>
+                        <tbody>
+                          <tr>
+                            <td align="center" valign="middle" style={{ fontSize:"13px", fontWeight:"bold", color:"#2c3e50" }}>
+                              {index+1}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+
+                    {/* Text */}
+                    <td style={{ padding:"12px 10px", fontSize:"14px", color:"#2c3e50", lineHeight:"20px" }}>
+                      {text.includes("Sample Post") ? (
+                        <>
+                          Please review the{" "}
+                          <a href="https://www.outrightcrm.com/blog/elead-crm/" style={{ color:"#000",background:"#FF8C00", borderRadius:"9px", padding:"7px",  fontWeight:"bold", textDecoration:"none" }}>
+                            Sample Post
+                          </a>
+                        </>
+                      ) : (
+                        text
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        ))}
+
+      </tbody>
+    </table>
+  </td>
+</tr>
 
                                         {/* ========================= PAYMENT SECTION ========================= */}
                                         <tr><td style={{ padding: "20px" }}>&nbsp;</td></tr>
