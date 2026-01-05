@@ -49,8 +49,6 @@ import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
 import { HotPage } from "./components/pages/HotPage";
-import Snowfall from "react-snowfall";
-
 
 const router = createBrowserRouter([
   {
@@ -88,8 +86,7 @@ const router = createBrowserRouter([
 
       {
         path: "draft-invoice",
-        element: <DraftInvoice />
-
+        element: <DraftInvoice />,
       },
       {
         path: "contacts",
@@ -147,7 +144,6 @@ const router = createBrowserRouter([
         path: "link-exchange",
         element: <LinkExchangePage />,
       },
-
 
       {
         path: "reminders",

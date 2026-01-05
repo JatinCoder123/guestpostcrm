@@ -16,6 +16,10 @@ const ordersSlice = createSlice({
     updating: false,
     deleting: false,
     message: null,
+    updateLinkLoading: false,
+    updateLinkMessage: null,
+    creatingLink: false,
+    creatingLinkMessage: null,
   },
   reducers: {
     getOrdersRequest(state) {
@@ -26,7 +30,7 @@ const ordersSlice = createSlice({
       const { count, orders, pageCount, pageIndex, statusLists } = action.payload;
       state.loading = false;
       state.orders = orders;
-      state.statusLists = action.payload.statusLists;
+      state.statusLists = statusLists;
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
@@ -56,6 +60,22 @@ const ordersSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
+    createLinkRequest(state) {
+      state.creatingLink = true;
+      state.creatingLinkMessage = null;
+      state.error = null;
+    },
+    createLinkSuccess(state, action) {
+      state.creatingLink = false;
+      state.orders = action.payload.orders;
+      state.creatingLinkMessage = action.payload.message;
+      state.error = null;
+    },
+    createLinkFailed(state, action) {
+      state.creatingLink = false;
+      state.error = action.payload;
+      state.creatingLinkMessage = null;
+    },
     updateOrderSuccess(state, action) {
       state.updating = false;
       state.message = action.payload.message;
@@ -67,11 +87,55 @@ const ordersSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
+    updateLinkRequest(state) {
+      state.updateLinkLoading = true;
+      state.updateLinkMessage = null;
+      state.error = null;
+    },
+    updateLinkSuccess(state, action) {
+      state.updateLinkLoading = false;
+      state.orders = action.payload.orders;
+      state.updateLinkMessage = action.payload.message;
+      state.error = null;
+    },
+    updateLinkFailed(state, action) {
+      state.updateLinkLoading = false;
+      state.error = action.payload;
+      state.updateLinkMessage = null;
+    },
+    deleteLinkRequest(state) {
+      state.deleting = true;
+      state.error = null;
+    },
+    deleteLinkSuccess(state, action) {
+      state.deleting = false;
+      state.orders = action.payload.orders;
+      state.error = null;
+    },
+    deleteLinkFailed(state, action) {
+      state.deleting = false;
+      state.error = action.payload;
+    },
+    createLinkRequest(state) {
+      state.creating = true;
+      state.error = null;
+    },
+    createLinkSuccess(state, action) {
+      state.creating = false;
+      state.orders = action.payload.orders;
+      state.error = null;
+    },
+    createLinkFailed(state, action) {
+      state.creating = false;
+      state.error = action.payload;
+    },
     clearAllErrors(state) {
       state.error = null;
     },
     clearAllMessages(state) {
       state.message = null;
+      state.updateLinkMessage = null;
+      state.creatingLinkMessage = null;
     },
     setUpdateOrder(state, action) {
       state.orders = action.payload;
@@ -115,6 +179,7 @@ export const getOrders = (email) => {
     }
   };
 };
+
 export const createOrder = () => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
@@ -209,6 +274,128 @@ export const updateOrder = (order) => {
       dispatch(
         ordersSlice.actions.updateOrderFailed("Updating Order Failed")
       );
+    }
+  };
+};
+export const updateSeoLink = (orderId, link) => {
+  return async (dispatch, getState) => {
+    dispatch(ordersSlice.actions.updateLinkRequest());
+    // console.log("Update Seo Link", link);
+    try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          parent_bean: {
+            module: "outr_order_gp_li",
+            id: orderId,
+          },
+          child_bean: {
+            module: "outr_seo_backlinks",
+            ...link,
+          },
+        },
+        {
+          headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "aplication/json",
+          },
+        }
+      );
+      console.log(`Update Order Link`, data);
+      const updatedOrders = getState().orders.orders.map((o) => {
+        if (o.id === orderId) {
+          return {
+            ...o,
+            seo_backlinks: o.seo_backlinks.map((l) =>
+              l.id === link.id ? { ...l, ...link } : l
+            ),
+          };
+        }
+        return o;
+      });
+      dispatch(
+        ordersSlice.actions.updateLinkSuccess({ orders: updatedOrders, message: "Order Link Updated Successfully" })
+      );
+      dispatch(ordersSlice.actions.clearAllErrors());
+    } catch (error) {
+      console.log(error);
+      dispatch(
+        ordersSlice.actions.updateLinkFailed("Updating Order Link Failed")
+      );
+    }
+  };
+};
+export const deleteLink = (orderId, linkId) => {
+  return async (dispatch, getState) => {
+    dispatch(ordersSlice.actions.deleteLinkRequest());
+    try {
+      const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_seo_backlinks&record_id=${linkId}`
+      );
+      console.log(`Delete Order Link`, data);
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+      const updatedOrders = getState().orders.orders.map((o) => {
+        if (o.id === orderId) {
+          return {
+            ...o,
+            seo_backlinks: o.seo_backlinks.filter((l) =>
+              l.id !== linkId
+            ),
+          };
+        }
+        return o;
+      });
+      dispatch(
+        ordersSlice.actions.deleteLinkSuccess({
+          orders: updatedOrders,
+        })
+      );
+      dispatch(ordersSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(ordersSlice.actions.deleteLinkFailed(error.message));
+    }
+  };
+};
+export const createLink = (orderId, link) => {
+  return async (dispatch, getState) => {
+    dispatch(ordersSlice.actions.createLinkRequest());
+    try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+
+        {
+          parent_bean: {
+            module: "outr_order_gp_li",
+            id: orderId,
+          },
+          child_bean: {
+            module: "outr_seo_backlinks",
+            ...link,
+          },
+        },
+      );
+      console.log(`Create Link`, data);
+      const updatedOrders = getState().orders.orders.map((o) => {
+        if (o.id === orderId) {
+          return {
+            ...o,
+            seo_backlinks: [...o.seo_backlinks, { ...link, id: Date.now().toString() }],
+          };
+        }
+        return o;
+      });
+      dispatch(
+        ordersSlice.actions.createLinkSuccess({
+          message: "Link Created Successfully",
+          orders: updatedOrders,
+        })
+      );
+      dispatch(ordersSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(ordersSlice.actions.createLinkFailed("Link Creation Failed"));
     }
   };
 };
