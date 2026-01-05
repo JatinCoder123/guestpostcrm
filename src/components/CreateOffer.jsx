@@ -100,18 +100,34 @@ export default function CreateOffer() {
     if (message) {
       ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
       dispatch(getOffers());
-      dispatch(sendEmail(
-        renderToStaticMarkup(
-          <Preview
-            data={[...currentOffers]}
-            type="Offers"
-            userEmail={state?.email}
-            websiteKey="website"
-            amountKey="our_offer_c"
-          />
-        ),
-        "Offer Send Successfully"
-      ));
+      if (message.includes("Created")) {
+        dispatch(sendEmail(
+          renderToStaticMarkup(
+            <Preview
+              data={[...newOffers, ...currentOffers]}
+              type="Offers"
+              userEmail={state?.email}
+              websiteKey="website"
+              amountKey="our_offer_c"
+            />
+          ),
+          "Offer Send Successfully"
+        ));
+      }
+      else {
+        dispatch(sendEmail(
+          renderToStaticMarkup(
+            <Preview
+              data={[...currentOffers]}
+              type="Offers"
+              userEmail={state?.email}
+              websiteKey="website"
+              amountKey="our_offer_c"
+            />
+          ),
+          "Offer Send Successfully"
+        ));
+      }
 
       toast.success(message);
       dispatch(offersAction.clearAllMessages());
