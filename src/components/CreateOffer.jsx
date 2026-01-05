@@ -13,7 +13,7 @@ import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { ManualSideCall } from "../services/utils";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
-  { name: "client_offer_c", label: "Client Offer", type: "number", disabled: true },
+  { name: "client_offer_c", label: "Client Offer", type: "number", disabled: false },
   { name: "our_offer_c", label: "Our Offer", type: "number" },
 ]
 export default function CreateOffer() {
@@ -80,11 +80,15 @@ export default function CreateOffer() {
   };
 
 
-  useEffect(() => {
-    if (message) {
-      if (message.includes("Created")) {
-        dispatch(getOffers())
-        dispatch(sendEmail(renderToStaticMarkup(
+useEffect(() => {
+  if (message) {
+
+    // ✅ CREATE
+    if (message.includes("Created")) {
+      dispatch(getOffers());
+
+      dispatch(sendEmail(
+        renderToStaticMarkup(
           <Preview
             data={[...newOffers, ...currentOffers]}
             type="Offers"
@@ -92,30 +96,52 @@ export default function CreateOffer() {
             websiteKey="website"
             amountKey="our_offer_c"
           />
-        ), "Offer Send Successfully"))
-      }
-      ManualSideCall(crmEndpoint, state?.email, "Offer Created Successfully")
+        ),
+        "Offer Send Successfully"
+      ));
+    }
 
-      toast.success(message)
-      dispatch(offersAction.clearAllMessages())
-      navigate(-1)
-    }
-    if (error) {
-      toast.error(error)
-      dispatch(offersAction.clearAllErrors())
-    }
-    if (sendMessage) {
-      toast.success(sendMessage)
-      dispatch(viewEmailAction.clearAllMessage())
-      navigate(-1)
+    // ✅ UPDATE (ADD THIS)
+    if (message.includes("Updated")) {
+      dispatch(getOffers());
 
+      dispatch(sendEmail(
+        renderToStaticMarkup(
+          <Preview
+            data={currentOffers}
+            type="Offers"
+            userEmail={state?.email}
+            websiteKey="website"
+            amountKey="our_offer_c"
+          />
+        ),
+        "Offer send Successfully"
+      ));
     }
-    if (sendError) {
-      toast.error(sendError)
-      dispatch(viewEmailAction.clearAllErrors())
-    }
-  }, [message, error, dispatch, sendMessage, sendError])
 
+    ManualSideCall(crmEndpoint, state?.email, message);
+
+    toast.success(message);
+    dispatch(offersAction.clearAllMessages());
+    navigate(-1);
+  }
+
+  if (error) {
+    toast.error(error);
+    dispatch(offersAction.clearAllErrors());
+  }
+
+  if (sendMessage) {
+    toast.success(sendMessage);
+    dispatch(viewEmailAction.clearAllMessage());
+    navigate(-1);
+  }
+
+  if (sendError) {
+    toast.error(sendError);
+    dispatch(viewEmailAction.clearAllErrors());
+  }
+}, [message, error, sendMessage, sendError]);
 
   return (
     <Create data={type == "create" ? newOffers : currentOffers} validWebsite={validWebsite} setValidWebsite={setValidWebsite} email={state?.email} deleting={deleting} deleteId={deleteOfferId} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"our_offer_c"} renderPreview={({ data, email }) => (

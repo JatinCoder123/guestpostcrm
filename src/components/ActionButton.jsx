@@ -42,6 +42,11 @@ const ActionButton = ({
   const [showTags, setShowTags] = useState(false);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
 
+  /* 🔥 ADDED: First Reply states */
+  const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
+  const [reminderId, setReminderId] = useState(null);
+  const [frLoading, setFrLoading] = useState(false);
+
   const { enteredEmail } = useContext(PageContext);
 
   const { contactInfo, count } = useSelector((s) => s.viewEmail);
@@ -81,7 +86,53 @@ const ActionButton = ({
     dispatch(forwardEmail(contactInfo.id, to, threadId));
   };
 
-  /* 🔹 Side Effects */
+  /* 🔥 ADDED: Check FR button visibility */
+  useEffect(() => {
+    if (!email) return;
+
+    const fetchFRButtonStatus = async () => {
+      try {
+        const res = await fetch(
+          `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=fr_button&email=${email}`
+        );
+        const data = await res.json();
+
+        if (data?.reminder_id && data.reminder_id !== false) {
+          setReminderId(data.reminder_id);
+          setShowFirstReplyBtn(true);
+        } else {
+          setShowFirstReplyBtn(false);
+          setReminderId(null);
+        }
+      } catch (err) {
+        setShowFirstReplyBtn(false);
+      }
+    };
+
+    fetchFRButtonStatus();
+  }, [email]);
+
+  /* 🔥 ADDED: Send first reply handler */
+  const handleSendFirstReply = async () => {
+    if (!reminderId) return;
+
+    try {
+      setFrLoading(true);
+
+      await fetch(
+        `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=send_reminder&reminder_id=${reminderId}`
+      );
+
+      toast.success("First reply sent successfully");
+      setShowFirstReplyBtn(false);
+    } catch (err) {
+      toast.error("Failed to send first reply");
+    } finally {
+      setFrLoading(false);
+    }
+  };
+
+  /* 🔹 Side Effects (UNCHANGED) */
   useEffect(() => {
     if (forwardError) {
       toast.error(forwardError);
@@ -178,7 +229,7 @@ const ActionButton = ({
     enteredEmail,
   ]);
 
-  /* 🔹 Static Buttons */
+  /* 🔹 Static Buttons (UNCHANGED) */
   const actionButtons = [
     {
       icon: <img width="40" height="40" src="https://img.icons8.com/keek/100/new-post.png" alt="new-post" />,
@@ -191,65 +242,35 @@ const ActionButton = ({
       action: () => setShowIP(true),
     },
     {
-      icon: favourite ? (
-        <LoadingChase />
-      ) : (
-        <img
-          src="https://img.icons8.com/color/48/filled-like.png"
-          className="w-6 h-6"
-          alt="fav"
-        />
+      icon: favourite ? <LoadingChase /> : (
+        <img src="https://img.icons8.com/color/48/filled-like.png" className="w-6 h-6" alt="fav" />
       ),
       label: "Favourite",
       action: () => dispatch(favEmail(threadId)),
     },
     {
-      icon: forward ? (
-        <LoadingChase />
-      ) : (
-        <img
-          src="https://img.icons8.com/color/48/redo.png"
-          className="w-6 h-6"
-          alt="forward"
-        />
+      icon: forward ? <LoadingChase /> : (
+        <img src="https://img.icons8.com/color/48/redo.png" className="w-6 h-6" alt="forward" />
       ),
       label: "Assign",
       action: () => setShowUsers((p) => !p),
     },
     {
-      icon: marking ? (
-        <LoadingChase />
-      ) : (
-        <img
-          src="https://img.icons8.com/color/48/bursts.png"
-          className="w-6 h-6"
-          alt="bulk"
-        />
+      icon: marking ? <LoadingChase /> : (
+        <img src="https://img.icons8.com/color/48/bursts.png" className="w-6 h-6" alt="bulk" />
       ),
       label: "Mark Bulk",
       action: () => dispatch(markingEmail(threadId)),
     },
     {
-      icon: exchanging ? (
-        <LoadingChase />
-      ) : (
-        <img
-          src="https://img.icons8.com/office/40/link.png"
-          className="w-6 h-6"
-          alt="link"
-        />
+      icon: exchanging ? <LoadingChase /> : (
+        <img src="https://img.icons8.com/office/40/link.png" className="w-6 h-6" alt="link" />
       ),
       label: "Link Exchange",
       action: () => dispatch(linkExchange(threadId)),
     },
     {
-      icon: (
-        <img
-          src="https://img.icons8.com/color/48/tags--v1.png"
-          className="w-6 h-6"
-          alt="tag"
-        />
-      ),
+      icon: <img src="https://img.icons8.com/color/48/tags--v1.png" className="w-6 h-6" alt="tag" />,
       label: "Mark Tag",
       action: () => {
         setShowTags((p) => !p);
@@ -260,7 +281,7 @@ const ActionButton = ({
 
   return (
     <div className="mt-4 flex items-center flex-wrap gap-2">
-      {actionButtons.map((btn, i, arr) => (
+      {actionButtons.map((btn, i) => (
         <div key={i} className="flex items-center relative">
           <button
             onClick={(e) => {
@@ -278,6 +299,7 @@ const ActionButton = ({
               {btn.label}
             </span>
           </button>
+
           {btn.label === "Email" && (
             <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
               {count}
@@ -322,12 +344,43 @@ const ActionButton = ({
         </div>
       ))}
 
+      {/* 🔥 SEND FIRST REPLY BUTTON (NEW, SAFE, SAME CSS) */}
+      {showFirstReplyBtn && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSendFirstReply();
+            }}
+            disabled={frLoading}
+            className="group flex items-center justify-center w-12 h-12
+            bg-white rounded-xl shadow-md border border-gray-200
+            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
+          >
+            {frLoading ? (
+              <LoadingChase size="20" />
+            ) : (
+              <img
+                src="https://img.icons8.com/color/48/reply.png"
+                className="w-6 h-6"
+                alt="first-reply"
+              />
+            )}
+            <span className="absolute -bottom-9 left-1/2 -translate-x-1/2
+            bg-black text-white text-xs px-2 py-1 rounded opacity-0
+            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
+              Send First Reply
+            </span>
+          </button>
+          <Separator />
+        </>
+      )}
+
       <MoveToDropdown
         currentThreadId={threadId}
         onMoveSuccess={handleMoveSuccess}
       />
       <Separator />
-
 
       {buttonsLoading ? (
         <LoadingChase size="30" />
