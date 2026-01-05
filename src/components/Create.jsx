@@ -25,6 +25,7 @@ export default function Create({
     sendHandler,
     handleDelete,
     websiteKey = "website",
+    orderID = "order_id",
     handleUpdate,
     updating,
     renderPreview,
@@ -142,8 +143,8 @@ export default function Create({
                                         <MoveLeft size={16} />
                                     </button>
                                     <h3 className="text-2xl font-semibold">{`${pageType == "view"
-                                            ? ""
-                                            : pageType.charAt(0).toUpperCase() + pageType.slice(1)
+                                        ? ""
+                                        : pageType.charAt(0).toUpperCase() + pageType.slice(1)
                                         } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                                 </div>
                                 {pageType == "view" && type !== "orders" && (
@@ -230,8 +231,8 @@ export default function Create({
                                                                 onClick={() => handleUpdate(item)}
                                                                 disabled={updating}
                                                                 className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${!updating
-                                                                        ? "bg-green-500 hover:bg-green-600"
-                                                                        : "bg-green-300 cursor-not-allowed"
+                                                                    ? "bg-green-500 hover:bg-green-600"
+                                                                    : "bg-green-300 cursor-not-allowed"
                                                                     }`}
                                                             >
                                                                 {updating ? "Updating..." : "Update"}
@@ -295,7 +296,7 @@ export default function Create({
 
                                         {/* Website breakdown */}
                                         <div className="mt-3">
-                                            <strong className="block mb-1">Websites</strong>
+                                            <strong className="block mb-1">{type == "orders" ? "OrderID" : "Websites"}</strong>
 
                                             {data.length === 0 ? (
                                                 <p className="text-gray-400">No websites selected</p>
@@ -303,7 +304,7 @@ export default function Create({
                                                 <ul className="list-none space-y-1">
                                                     {data.map((d, i) => (
                                                         <li key={i}>
-                                                            {d[websiteKey] || "(no site)"}
+                                                            {type == "orders" ? d[orderID] || "(no id)" : d[websiteKey] || "(no site)"}
                                                             {amountKey && (
                                                                 <strong>
                                                                     - $
@@ -326,8 +327,8 @@ export default function Create({
                                                     disabled={data.length === 0}
                                                     onClick={() => sendHandler()}
                                                     className={`w-full px-3 py-2 rounded-lg text-white ${sending
-                                                            ? "bg-green-300 cursor-not-allowed"
-                                                            : "bg-green-600 hover:bg-green-700"
+                                                        ? "bg-green-300 cursor-not-allowed"
+                                                        : "bg-green-600 hover:bg-green-700"
                                                         }`}
                                                 >
                                                     {sending ? "Sending..." : "Send"}
@@ -344,8 +345,8 @@ export default function Create({
                                                 disabled={data.length === 0 || !valid}
                                                 onClick={handleSubmit}
                                                 className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                                                        ? "bg-gray-300 cursor-not-allowed"
-                                                        : "bg-green-600 hover:bg-green-700"
+                                                    ? "bg-gray-300 cursor-not-allowed"
+                                                    : "bg-green-600 hover:bg-green-700"
                                                     }`}
                                             >
                                                 {creating ? "Submitting..." : "Submit"}
@@ -414,8 +415,8 @@ function InputField({
         >
             <label
                 className={`block mb-1 ${pageType === "view"
-                        ? "text-gray-500 text-sm"
-                        : "text-xs text-gray-600"
+                    ? "text-gray-500 text-sm"
+                    : "text-xs text-gray-600"
                     } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
             >
                 {label}
@@ -428,8 +429,8 @@ function InputField({
                     onChange={onChange}
                     disabled={isDisabled}
                     className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-                            ? "bg-gray-100"
-                            : "bg-white border"
+                        ? "bg-gray-100"
+                        : "bg-white border"
                         }`}
                 >
                     <option value="" disabled>
@@ -460,8 +461,8 @@ function InputField({
                     disabled={isDisabled}
                     rows={4}
                     className={`w-full rounded-xl px-3 py-2 resize-none ${pageType === "view" || isDisabled
-                            ? "bg-gray-100"
-                            : "bg-white border"
+                        ? "bg-gray-100"
+                        : "bg-white border"
                         }`}
                 />
             )}
@@ -480,8 +481,8 @@ function InputField({
                             disabled={isDisabled}
                             inputMode={inputType === "number" ? "numeric" : undefined}
                             className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-                                    ? "bg-gray-100"
-                                    : "bg-white border"
+                                ? "bg-gray-100"
+                                : "bg-white border"
                                 }`}
                         />
                     </div>
