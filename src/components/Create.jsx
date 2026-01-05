@@ -432,8 +432,6 @@ function InputField({
         </div>
     );
 }
-
-
 function OrderId({ order_id }) {
     return (
         <div className="w-full mb-6">
