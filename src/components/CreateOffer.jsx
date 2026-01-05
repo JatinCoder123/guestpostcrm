@@ -103,7 +103,7 @@ export default function CreateOffer() {
       dispatch(sendEmail(
         renderToStaticMarkup(
           <Preview
-            data={[...newOffers, ...currentOffers]}
+            data={[...currentOffers]}
             type="Offers"
             userEmail={state?.email}
             websiteKey="website"

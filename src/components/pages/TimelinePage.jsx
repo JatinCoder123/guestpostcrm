@@ -51,6 +51,7 @@ export function TimelinePage() {
   const {
     error: threadError,
     message: threadMessage,
+    threadId,
     sending,
   } = useSelector((state) => state.threadEmail);
   const dispatch = useDispatch();
@@ -122,7 +123,7 @@ export function TimelinePage() {
     try {
       dispatch(
         sendEmailToThread(
-          emails[currentIndex]?.thread_id,
+          emails[currentIndex]?.thread_id ? emails[currentIndex]?.thread_id : threadId,
           mailersSummary?.ai_response
         )
       );

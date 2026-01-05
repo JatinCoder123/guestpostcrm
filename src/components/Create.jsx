@@ -81,9 +81,6 @@ export default function Create({
 
         updateData(idx, { [field]: value });
     };
-    const handelUpdateList = (itemIndex, updatedList) => {
-        updateData(itemIndex, { seo_backlinks: updatedList });
-    };
 
     const valid = useMemo(() => {
         if (data.length > 0) {
