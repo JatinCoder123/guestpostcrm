@@ -22,7 +22,7 @@ export default function CreateDeal() {
   const { state } = useLocation()
   const { deals, updating, error, message, creating, deleting, deleteDealId } = useSelector((state) => state.deals);
   const { offers } = useSelector((state) => state.offers);
-  const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
+  const { sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   const { crmEndpoint } = useSelector((state) => state.user);
   const [validWebsite, setValidWebsite] = useState([])
@@ -36,17 +36,11 @@ export default function CreateDeal() {
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadgerWithOutLoading(enteredEmail, search));
-      dispatch(getViewEmail(enteredEmail));
-      dispatch(getContact(enteredEmail));
     } else if (unrepliedEmails.length > 0) {
       const firstEmail = unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
       dispatch(getLadgerWithOutLoading(firstEmail, search));
-      dispatch(getViewEmail(firstEmail));
-      dispatch(getContact(firstEmail));
     } else {
       dispatch(getLadgerWithOutLoading(state?.email, search));
-      dispatch(getViewEmail(state?.email));
-      dispatch(getContact(state?.email));
     }
   }
   useEffect(() => {

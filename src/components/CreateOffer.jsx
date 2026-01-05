@@ -22,7 +22,7 @@ export default function CreateOffer() {
   const { type, id } = useParams();
   const { state } = useLocation()
   const navigate = useNavigate()
-  const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
+  const { sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
   const { crmEndpoint } = useSelector((state) => state.user);
 
   const [currentOffers, setCurrentOffers] = useState([])
@@ -84,17 +84,11 @@ export default function CreateOffer() {
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadgerWithOutLoading(enteredEmail, search));
-      dispatch(getViewEmail(enteredEmail));
-      dispatch(getContact(enteredEmail));
     } else if (unrepliedEmails.length > 0) {
       const firstEmail = unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
       dispatch(getLadgerWithOutLoading(firstEmail, search));
-      dispatch(getViewEmail(firstEmail));
-      dispatch(getContact(firstEmail));
     } else {
       dispatch(getLadgerWithOutLoading(state?.email, search));
-      dispatch(getViewEmail(state?.email));
-      dispatch(getContact(state?.email));
     }
   }
 

@@ -33,7 +33,7 @@ import { updateUnansweredEmails } from "../../store/Slices/unansweredEmails";
 import NewEmailBanner from "../NewEmailBanner";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 export function TimelinePage() {
-  const [showEmail, setShowEmails] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
   const [showThread, setShowThread] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
@@ -44,7 +44,7 @@ export function TimelinePage() {
   const {
     error: sendError,
     message,
-    threadId,
+    loading: viewEmailLoading,
     viewEmail
   } = useSelector((state) => state.viewEmail);
 
@@ -62,10 +62,6 @@ export function TimelinePage() {
     loading: unrepliedLoading,
     showNewEmailBanner,
   } = useSelector((state) => state.unreplied);
-  const {
-    emails: repliedMails,
-    loading: unansweredLoading,
-  } = useSelector((state) => state.unanswered);
   const currentThreadId =
     emails?.length > 0 && emails[currentIndex]?.thread_id;
   useEffect(() => {
@@ -172,7 +168,7 @@ export function TimelinePage() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
         <EmailBox
-          onClose={() => setShowEmails(false)}
+          onClose={() => setShowEmail(false)}
           view={true}
           tempEmail={email}
         />
@@ -316,7 +312,12 @@ export function TimelinePage() {
                       whileTap={{ scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 400 }}
                       className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
-                      onClick={() => setShowThread(true)}
+                      onClick={() => {
+                        if (emails.length > 0) {
+                          setShowThread(true)
+                        }
+                        else { setShowEmail(true) }
+                      }}
                     >
                       <Reply className="w-6 h-6 text-yellow-700" />
                     </motion.button>
@@ -333,13 +334,21 @@ export function TimelinePage() {
                       )}
                     </div>
                   </div>
-                  <div
-                    className="text-gray-700 text-sm leading-relaxed whitespace-pre-line"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        emails?.length > 0 ? emails[currentIndex]?.body : repliedMails?.length > 0 ? repliedMails[currentIndex]?.body : "No Message Found!",
-                    }}
-                  />
+                  {viewEmailLoading ? (
+                    <LoadingSkeleton
+                      className="h-56"
+                      count={1}
+                      width="100%"
+                      height="100%"
+                    />
+                  ) : (
+                    <div
+                      className="text-gray-700 text-sm leading-relaxed whitespace-pre-line"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          viewEmail?.length > 0 ? viewEmail[viewEmail.length - 1]?.body : "No Message Found!",
+                      }}
+                    />)}
                 </div>
               </div>
               {!(
@@ -347,7 +356,7 @@ export function TimelinePage() {
               ) && (
                   <ActionButton
                     handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmails}
+                    setShowEmails={setShowEmail}
                     setShowIP={setShowIP}
                     threadId={currentThreadId}
                     handleActionBtnClick={handleActionBtnClick}
