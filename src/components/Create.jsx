@@ -25,10 +25,10 @@ export default function Create({
   sendHandler,
   handleDelete,
   websiteKey = "website",
+  orderID="order_id",
   handleUpdate,
   updating,
   renderPreview,
-  preview = true,
   amountKey,
 }) {
   const navigate = useNavigate();
@@ -283,7 +283,7 @@ export default function Create({
           </div>
 
           {/* RIGHT SIDEBAR */}
-          {pageType !== "edit" && type !== "orders" && (
+          {pageType !== "edit"  && (
             <div className="col-span-12 lg:col-span-4">
               <div className="sticky top-6 space-y-4">
                 <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
@@ -301,15 +301,15 @@ export default function Create({
 
                     {/* Website breakdown */}
                     <div className="mt-3">
-                      <strong className="block mb-1">Websites</strong>
+                      <strong className="block mb-1">{type== "orders" ? "OrderID" : "Websites"}</strong>
 
                       {data.length === 0 ? (
-                        <p className="text-gray-400">No websites selected</p>
+                        <p className="text-gray-400"> {type== "orders" ? "No OrderID exist" : "No websites selected"}</p>
                       ) : (
                         <ul className="list-none space-y-1">
                           {data.map((d, i) => (
                             <li key={i}>
-                              {d[websiteKey] || "(no site)"}
+                              {d[websiteKey] || "(no data)"}
                               {amountKey && (
                                 <strong>
                                   - $
@@ -324,8 +324,7 @@ export default function Create({
                       )}
                     </div>
                   </div>
-                  {type !== "orders" && (
-                    <div className="mt-4 flex gap-3">
+                 <div className="mt-4 flex gap-3">
                       {pageType == "view" ? (
                         <>
                           <button
@@ -360,14 +359,13 @@ export default function Create({
                         </button>
                       )}
                     </div>
-                  )}
                 </div>
               </div>
             </div>
           )}
         </div>
         {/* PREVIEW MODAL */}
-        {showPreview && preview && (
+        {showPreview &&  (
           <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-2">
             {/* OUTER WRAPPER (WIDER + ROUNDED) */}
             <div className="bg-white w-full max-w-[800px] rounded-2xl shadow-2xl overflow-hidden relative">

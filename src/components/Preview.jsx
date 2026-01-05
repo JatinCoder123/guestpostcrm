@@ -34,6 +34,7 @@ export default function Preview({
     data = [],
     type,
     userEmail,
+    orderID=null,
     websiteKey,
     amountKey
 }) {
@@ -163,7 +164,7 @@ export default function Preview({
                                                                                 letterSpacing: "0.5px",
                                                                             }}
                                                                         >
-                                                                            Website
+                                                                            {type == "Orders" ? "OrderID" : "Websites"}  
                                                                         </th>
                                                                         <th
                                                                             style={{
@@ -217,7 +218,8 @@ export default function Preview({
                                                                                         borderRadius: "50%",
                                                                                         background: "#06D6A0"
                                                                                     }}></div>
-                                                                                    {d[websiteKey] || "(no website)"}
+                                                                                   
+                                                                                    {type=="Orders"?d[orderID] || "(no id)":d[websiteKey]||("no website")} 
                                                                                 </div>
                                                                             </td>
 
