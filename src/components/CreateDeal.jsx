@@ -8,9 +8,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
-import { SocketContext } from "../context/SocketContext";
+import { getContact, getViewEmail, sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
+import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
+import { getLadgerWithOutLoading } from "../store/Slices/ladger";
 
 const fields = [
   { name: "website_c", label: "Website", type: "select", options: websiteLists },
@@ -22,15 +23,32 @@ export default function CreateDeal() {
   const { deals, updating, error, message, creating, deleting, deleteDealId } = useSelector((state) => state.deals);
   const { offers } = useSelector((state) => state.offers);
   const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail);
+  const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   const { crmEndpoint } = useSelector((state) => state.user);
   const [validWebsite, setValidWebsite] = useState([])
   const [currentDeals, setCurrentDeals] = useState([])
   const [currentOffers, setCurrentOffers] = useState([])
-  const { setNotificationCount } = useContext(SocketContext);
+  const { enteredEmail, search } = useContext(PageContext)
 
   const [newDeals, setNewDeals] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const okHandler = () => {
+    if (enteredEmail) {
+      dispatch(getLadgerWithOutLoading(enteredEmail, search));
+      dispatch(getViewEmail(enteredEmail));
+      dispatch(getContact(enteredEmail));
+    } else if (unrepliedEmails.length > 0) {
+      const firstEmail = unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
+      dispatch(getLadgerWithOutLoading(firstEmail, search));
+      dispatch(getViewEmail(firstEmail));
+      dispatch(getContact(firstEmail));
+    } else {
+      dispatch(getLadgerWithOutLoading(state?.email, search));
+      dispatch(getViewEmail(state?.email));
+      dispatch(getContact(state?.email));
+    }
+  }
   useEffect(() => {
     let deal = deals.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
     if (type == "edit" && id !== undefined) {
@@ -103,23 +121,17 @@ export default function CreateDeal() {
   }, [state, type])
   useEffect(() => {
     if (message) {
-      if (message.includes("Created")) {
-        dispatch(getDeals())
-        setNotificationCount((prev) => ({
-          ...prev,
-          outr_deal_fetch: Date.now(),
-        }));
-        ManualSideCall(crmEndpoint, state?.email, "Deal Created Successfully")
-        dispatch(sendEmail(renderToStaticMarkup(
-          <Preview
-            data={[...newDeals, ...currentDeals]}
-            type="Deals"
-            userEmail={state?.email}
-            websiteKey="website_c"
-            amountKey="dealamount"
-          />
-        ), "Deal Send Successfully"))
-      }
+      dispatch(getDeals())
+      ManualSideCall(crmEndpoint, state?.email, message, 2, okHandler)
+      dispatch(sendEmail(renderToStaticMarkup(
+        <Preview
+          data={[...newDeals, ...currentDeals]}
+          type="Deals"
+          userEmail={state?.email}
+          websiteKey="website_c"
+          amountKey="dealamount"
+        />
+      ), "Deal Send Successfully"))
       toast.success(message)
       dispatch(dealsAction.clearAllMessages())
       navigate(-1)
