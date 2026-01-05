@@ -12,6 +12,7 @@ import { getContact, getViewEmail, sendEmail, viewEmailAction } from "../store/S
 import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
 import { getLadgerWithOutLoading } from "../store/Slices/ladger";
+import { SocketContext } from "../context/SocketContext";
 
 const fields = [
   { name: "website_c", label: "Website", type: "select", options: websiteLists },
@@ -33,6 +34,7 @@ export default function CreateDeal() {
   const [newDeals, setNewDeals] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { setNotificationCount } = useContext(SocketContext);
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadgerWithOutLoading(enteredEmail, search));
@@ -126,6 +128,7 @@ export default function CreateDeal() {
           amountKey="dealamount"
         />
       ), "Deal Send Successfully"))
+
       toast.success(message)
       dispatch(dealsAction.clearAllMessages())
       navigate(-1)
@@ -136,6 +139,10 @@ export default function CreateDeal() {
 
     }
     if (sendMessage) {
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       toast.success(sendMessage)
       dispatch(viewEmailAction.clearAllMessage())
       navigate(-1)

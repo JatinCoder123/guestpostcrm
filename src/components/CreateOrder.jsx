@@ -13,6 +13,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
 import { getLadgerWithOutLoading } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
+import { SocketContext } from "../context/SocketContext";
 const fields = [
   {
     name: "website_c",
@@ -49,7 +50,7 @@ export default function CreateOrder() {
     (state) => state.viewEmail
   );
   const { crmEndpoint } = useSelector((state) => state.user);
-
+  const { setNotificationCount } = useContext(SocketContext)
   const { enteredEmail, search } = useContext(PageContext)
 
   const dispatch = useDispatch();
@@ -110,6 +111,10 @@ export default function CreateOrder() {
         ),
         "Order Send Successfully"
       ));
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       toast.success(message);
       dispatch(orderAction.clearAllMessages());
       navigate(-1);
@@ -119,6 +124,10 @@ export default function CreateOrder() {
       dispatch(orderAction.clearAllErrors());
     }
     if (sendMessage) {
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
       navigate(-1);

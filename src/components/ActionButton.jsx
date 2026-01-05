@@ -24,6 +24,9 @@ import {
 } from "../store/Slices/linkExchange";
 import { quickActionBtnActions } from "../store/Slices/quickActionBtn";
 import { getTags, applyTag } from "../store/Slices/markTagSlice";
+import { SocketContext } from "../context/SocketContext";
+import { getUnrepliedEmailWithOutLoading } from "../store/Slices/unrepliedEmails";
+import { getUnansweredEmailWithOutLoading } from "../store/Slices/unansweredEmails";
 
 /* 🔹 Separator Component */
 const Separator = () => (
@@ -42,12 +45,14 @@ const ActionButton = ({
   const [showTags, setShowTags] = useState(false);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
 
+
   /* 🔥 ADDED: First Reply states */
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
   const [frLoading, setFrLoading] = useState(false);
 
   const { enteredEmail } = useContext(PageContext);
+  const { setNotificationCount } = useContext(SocketContext);
 
   const { contactInfo, count } = useSelector((s) => s.viewEmail);
   const { sending } = useSelector((s) => s.threadEmail);
@@ -122,7 +127,10 @@ const ActionButton = ({
       await fetch(
         `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=send_reminder&reminder_id=${reminderId}`
       );
-
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       toast.success("First reply sent successfully");
       setShowFirstReplyBtn(false);
     } catch (err) {

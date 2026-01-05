@@ -13,6 +13,7 @@ import { getContact, getViewEmail, sendEmail, viewEmailAction } from "../store/S
 import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
 import { getLadgerWithOutLoading } from "../store/Slices/ladger";
+import { SocketContext } from "../context/SocketContext";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
   { name: "client_offer_c", label: "Client Offer", type: "number", disabled: false },
@@ -27,6 +28,7 @@ export default function CreateOffer() {
 
   const [currentOffers, setCurrentOffers] = useState([])
   const { enteredEmail, search } = useContext(PageContext)
+  const { setNotificationCount } = useContext(SocketContext)
   const [validWebsite, setValidWebsite] = useState([])
   const [newOffers, setNewOffers] = useState([{
     website: "",
@@ -38,6 +40,8 @@ export default function CreateOffer() {
 
   const dispatch = useDispatch()
   const { updating, error, offers, message, creating, deleting, deleteOfferId } = useSelector((state) => state.offers)
+  const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
+
   useEffect(() => {
     let offer = offers.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
     if (type == "edit" && id !== undefined) {
@@ -108,6 +112,7 @@ export default function CreateOffer() {
         ),
         "Offer Send Successfully"
       ));
+
       toast.success(message);
       dispatch(offersAction.clearAllMessages());
       navigate(-1);
@@ -119,6 +124,10 @@ export default function CreateOffer() {
     }
 
     if (sendMessage) {
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
       navigate(-1);
