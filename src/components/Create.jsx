@@ -25,6 +25,7 @@ export default function Create({
   sendHandler,
   handleDelete,
   websiteKey = "website",
+  orderID = "order_id",
   handleUpdate,
   updating,
   renderPreview,
@@ -300,7 +301,7 @@ export default function Create({
 
                     {/* Website breakdown */}
                     <div className="mt-3">
-                      <strong className="block mb-1">Websites</strong>
+                      <strong className="block mb-1">{type == "orders" ? "OrderID" : "Websites"}</strong>
 
                       {data.length === 0 ? (
                         <p className="text-gray-400">No websites selected</p>
@@ -308,7 +309,7 @@ export default function Create({
                         <ul className="list-none space-y-1">
                           {data.map((d, i) => (
                             <li key={i}>
-                              {d[websiteKey] || "(no site)"}
+                              {type == "orders" ? d[orderID] || "(no id)" : d[websiteKey] || "(no site)"}
                               {amountKey && (
                                 <strong>
                                   - $
