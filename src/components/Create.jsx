@@ -9,7 +9,6 @@ import { LoadingChase } from "./Loading";
 import { OrderView } from "./OrderView";
 
 export default function Create({
-<<<<<<< HEAD
     data,
     email,
     validWebsite = [],
@@ -31,29 +30,6 @@ export default function Create({
     renderPreview,
     preview = true,
     amountKey,
-=======
-  data,
-  email,
-  validWebsite = [],
-  setData,
-  type,
-  pageType,
-  creating,
-  deleting,
-  deleteId,
-  sending,
-  fields,
-  lists = [],
-  submitData,
-  sendHandler,
-  handleDelete,
-  websiteKey = "website",
-  orderID="order_id",
-  handleUpdate,
-  updating,
-  renderPreview,
-  amountKey,
->>>>>>> bba38c31af383e0db0602ea82d18d2dc23e76115
 }) {
     const navigate = useNavigate();
     const { loading, message } = useSelector((state) => state.threadEmail);
@@ -167,8 +143,8 @@ export default function Create({
                                         <MoveLeft size={16} />
                                     </button>
                                     <h3 className="text-2xl font-semibold">{`${pageType == "view"
-                                            ? ""
-                                            : pageType.charAt(0).toUpperCase() + pageType.slice(1)
+                                        ? ""
+                                        : pageType.charAt(0).toUpperCase() + pageType.slice(1)
                                         } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                                 </div>
                                 {pageType == "view" && type !== "orders" && (
@@ -255,8 +231,8 @@ export default function Create({
                                                                 onClick={() => handleUpdate(item)}
                                                                 disabled={updating}
                                                                 className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${!updating
-                                                                        ? "bg-green-500 hover:bg-green-600"
-                                                                        : "bg-green-300 cursor-not-allowed"
+                                                                    ? "bg-green-500 hover:bg-green-600"
+                                                                    : "bg-green-300 cursor-not-allowed"
                                                                     }`}
                                                             >
                                                                 {updating ? "Updating..." : "Update"}
@@ -351,8 +327,8 @@ export default function Create({
                                                         disabled={data.length === 0}
                                                         onClick={() => sendHandler()}
                                                         className={`w-full px-3 py-2 rounded-lg text-white ${sending
-                                                                ? "bg-green-300 cursor-not-allowed"
-                                                                : "bg-green-600 hover:bg-green-700"
+                                                            ? "bg-green-300 cursor-not-allowed"
+                                                            : "bg-green-600 hover:bg-green-700"
                                                             }`}
                                                     >
                                                         {sending ? "Sending..." : "Send"}
@@ -369,8 +345,8 @@ export default function Create({
                                                     disabled={data.length === 0 || !valid}
                                                     onClick={handleSubmit}
                                                     className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                                                            ? "bg-gray-300 cursor-not-allowed"
-                                                            : "bg-green-600 hover:bg-green-700"
+                                                        ? "bg-gray-300 cursor-not-allowed"
+                                                        : "bg-green-600 hover:bg-green-700"
                                                         }`}
                                                 >
                                                     {creating ? "Submitting..." : "Submit"}
@@ -393,7 +369,6 @@ export default function Create({
                                 {renderPreview({ data, email })}
                             </div>
 
-<<<<<<< HEAD
                             {/* FOOTER BUTTONS */}
                             <div className="p-4 border-t flex items-center justify-between bg-white">
                                 <button
@@ -402,16 +377,6 @@ export default function Create({
                                 >
                                     {loading ? "Submitting..." : "Submit " + type}
                                 </button>
-=======
-          {/* RIGHT SIDEBAR */}
-          {pageType !== "edit"  && (
-            <div className="col-span-12 lg:col-span-4">
-              <div className="sticky top-6 space-y-4">
-                <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                  <h4 className="font-semibold">
-                    {type[0].toUpperCase() + type.slice(1)} for {email}
-                  </h4>
->>>>>>> bba38c31af383e0db0602ea82d18d2dc23e76115
 
                                 <button
                                     className="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition"
@@ -422,111 +387,10 @@ export default function Create({
                             </div>
                         </div>
                     </div>
-<<<<<<< HEAD
                 )}
             </div>
         </>
     );
-=======
-
-                    {/* Website breakdown */}
-                    <div className="mt-3">
-                      <strong className="block mb-1">{type== "orders" ? "OrderID" : "Websites"}</strong>
-
-                      {data.length === 0 ? (
-                        <p className="text-gray-400"> {type== "orders" ? "No OrderID exist" : "No websites selected"}</p>
-                      ) : (
-                        <ul className="list-none space-y-1">
-                          {data.map((d, i) => (
-                            <li key={i}>
-                              {d[websiteKey] || "(no data)"}
-                              {amountKey && (
-                                <strong>
-                                  - $
-                                  {isNaN(Number(d[amountKey]))
-                                    ? 0
-                                    : Number(d[amountKey])}
-                                </strong>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                 <div className="mt-4 flex gap-3">
-                      {pageType == "view" ? (
-                        <>
-                          <button
-                            disabled={data.length === 0}
-                            onClick={() => sendHandler()}
-                            className={`w-full px-3 py-2 rounded-lg text-white ${
-                              sending
-                                ? "bg-green-300 cursor-not-allowed"
-                                : "bg-green-600 hover:bg-green-700"
-                            }`}
-                          >
-                            {sending ? "Sending..." : "Send"}
-                          </button>
-                          <button
-                            onClick={() => setShowPreview(true)}
-                            className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
-                          >
-                            Preview
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          disabled={data.length === 0 || !valid}
-                          onClick={handleSubmit}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${
-                            data.length === 0 || !valid
-                              ? "bg-gray-300 cursor-not-allowed"
-                              : "bg-green-600 hover:bg-green-700"
-                          }`}
-                        >
-                          {creating ? "Submitting..." : "Submit"}
-                        </button>
-                      )}
-                    </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        {/* PREVIEW MODAL */}
-        {showPreview &&  (
-          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-2">
-            {/* OUTER WRAPPER (WIDER + ROUNDED) */}
-            <div className="bg-white w-full max-w-[800px] rounded-2xl shadow-2xl overflow-hidden relative">
-              {/* SCROLLABLE CONTENT */}
-              <div className="max-h-[80vh] overflow-y-auto p-6">
-                {renderPreview({ data, email })}
-              </div>
-
-              {/* FOOTER BUTTONS */}
-              <div className="p-4 border-t flex items-center justify-between bg-white">
-                <button
-                  onClick={() => sendHandler()}
-                  className="px-[26px] py-[12px] bg-gradient-to-br from-[#4e79ff] to-[#6db6ff] text-white rounded-lg border-none cursor-pointer text-base font-bold shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
-                >
-                  {loading ? "Submitting..." : "Submit " + type}
-                </button>
-
-                <button
-                  className="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition"
-                  onClick={() => setShowPreview(false)}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </>
-  );
->>>>>>> bba38c31af383e0db0602ea82d18d2dc23e76115
 }
 
 function InputField({
@@ -552,8 +416,8 @@ function InputField({
         >
             <label
                 className={`block mb-1 ${pageType === "view"
-                        ? "text-gray-500 text-sm"
-                        : "text-xs text-gray-600"
+                    ? "text-gray-500 text-sm"
+                    : "text-xs text-gray-600"
                     } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
             >
                 {label}
@@ -566,8 +430,8 @@ function InputField({
                     onChange={onChange}
                     disabled={isDisabled}
                     className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-                            ? "bg-gray-100"
-                            : "bg-white border"
+                        ? "bg-gray-100"
+                        : "bg-white border"
                         }`}
                 >
                     <option value="" disabled>
@@ -598,8 +462,8 @@ function InputField({
                     disabled={isDisabled}
                     rows={4}
                     className={`w-full rounded-xl px-3 py-2 resize-none ${pageType === "view" || isDisabled
-                            ? "bg-gray-100"
-                            : "bg-white border"
+                        ? "bg-gray-100"
+                        : "bg-white border"
                         }`}
                 />
             )}
@@ -618,8 +482,8 @@ function InputField({
                             disabled={isDisabled}
                             inputMode={inputType === "number" ? "numeric" : undefined}
                             className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-                                    ? "bg-gray-100"
-                                    : "bg-white border"
+                                ? "bg-gray-100"
+                                : "bg-white border"
                                 }`}
                         />
                     </div>
