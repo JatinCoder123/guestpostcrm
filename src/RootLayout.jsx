@@ -3,8 +3,15 @@ import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadger, getLadgerEmail, getLadgerWithOutLoading } from "./store/Slices/ladger";
-import { checkForDuplicates, getDuplicateCount } from "./store/Slices/duplicateEmailSlice";
+import {
+  getLadger,
+  getLadgerEmail,
+  getLadgerWithOutLoading,
+} from "./store/Slices/ladger";
+import {
+  checkForDuplicates,
+  getDuplicateCount,
+} from "./store/Slices/duplicateEmailSlice";
 import {
   getUnansweredEmails,
   getUnansweredEmailWithOutLoading,
@@ -91,7 +98,10 @@ const RootLayout = () => {
     setCurrentIndex(0);
   }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
 
-  const firstEmail = emails.length > 0 ? emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] : null;
+  const firstEmail =
+    emails.length > 0
+      ? emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
+      : null;
   useEffect(() => {
     if (emails.length > 0) {
       setWelcomeHeaderContent("Unreplied");
@@ -104,8 +114,7 @@ const RootLayout = () => {
       dispatch(getLadgerEmail(enteredEmail, search));
     } else if (firstEmail) {
       dispatch(getLadgerEmail(firstEmail, search));
-    }
-    else {
+    } else {
       dispatch(getLadger(search));
     }
   }, [enteredEmail, firstEmail, timeline, dispatch]);
@@ -117,7 +126,6 @@ const RootLayout = () => {
       dispatch(getContact());
     }
   }, [email, dispatch]);
-
 
   // Handle socket notifications
   useEffect(() => {
@@ -152,9 +160,10 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
-      }
-      else {
+      } else {
         dispatch(getLadger(search, false));
+        dispatch(getViewEmail());
+        dispatch(getContact());
       }
       setCurrentIndex(0);
       setNotificationCount((prev) => ({
@@ -207,7 +216,7 @@ const RootLayout = () => {
     // ✅ FIXED: Changed outr_order_gp_li to outr_order_gp_list (matches SocketContext)
     if (notificationCount.outr_order_gp_li) {
       dispatch(getOrders());
-      dispatch(getInvoices())
+      dispatch(getInvoices());
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       if (enteredEmail) {
@@ -260,8 +269,7 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
-      }
-      else {
+      } else {
         dispatch(getLadger(search, false));
       }
       dispatch(hotAction.updateCount(1));
@@ -287,7 +295,8 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
-      } setNotificationCount((prev) => ({
+      }
+      setNotificationCount((prev) => ({
         ...prev,
         refresh_ladger: null,
       }));
@@ -313,8 +322,9 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${sidebarCollapsed ? "ml-4" : "ml-0"
-                }`}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                sidebarCollapsed ? "ml-4" : "ml-0"
+              }`}
             >
               <div className="p-6">
                 <WelcomeHeader />

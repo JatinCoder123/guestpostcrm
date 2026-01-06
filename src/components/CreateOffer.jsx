@@ -49,6 +49,7 @@ export default function CreateOffer() {
   const [currentOffers, setCurrentOffers] = useState([]);
   const { enteredEmail, search } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
+  const [nonEditOffers, setNonEditOffers] = useState([]);
   const [validWebsite, setValidWebsite] = useState([]);
   const [newOffers, setNewOffers] = useState([
     {
@@ -77,6 +78,7 @@ export default function CreateOffer() {
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email
     );
     if (type == "edit" && id !== undefined) {
+      setNonEditOffers(offer.filter((d) => d.id !== id));
       offer = offer.filter((d) => d.id == id);
     }
     setCurrentOffers(() => [...offer]);
@@ -141,12 +143,14 @@ export default function CreateOffer() {
     if (message) {
       ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
       dispatch(getOffers());
-      if (message.includes("Created")) {
+      if (message.includes("Updated")) {
         dispatch(
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={[...newOffers, ...currentOffers]}
+                data={[...nonEditOffers, ...currentOffers].filter(
+                  (o) => o.website !== ""
+                )}
                 type="Offers"
                 userEmail={state?.email}
                 websiteKey="website"
@@ -156,12 +160,15 @@ export default function CreateOffer() {
             "Offer Send Successfully"
           )
         );
+        setNewOffers([]);
       } else {
         dispatch(
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={[...currentOffers]}
+                data={[...newOffers, ...currentOffers].filter(
+                  (o) => o.website !== ""
+                )}
                 type="Offers"
                 userEmail={state?.email}
                 websiteKey="website"
@@ -171,6 +178,7 @@ export default function CreateOffer() {
             "Offer Send Successfully"
           )
         );
+        setNewOffers([]);
       }
 
       toast.success(message);
