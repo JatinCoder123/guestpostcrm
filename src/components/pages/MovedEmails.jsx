@@ -18,20 +18,33 @@ import Pagination from "../Pagination";
 import { getmovedEmails } from "../../store/Slices/movedEmails";
 
 import SearchComponent from "./SearchComponent";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
-export function MovedPage() {
-  const { count, emails } = useSelector((state) => state.moved);
+
+// export function MovedPage() {
+//   const { count, emails } = useSelector((state) => state.moved);
 
 
   
-    const [topsearch, setTopsearch] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('');
-    const [selectedSort, setSelectedSort] = useState('');
+//     const [topsearch, setTopsearch] = useState('');
+//     const [selectedCategory, setSelectedCategory] = useState('');
+//     const [selectedSort, setSelectedSort] = useState('');
 
 
 
     
+export function MovedPage() {
+  const navigate = useNavigate(); // 👈 add this
+  const { count, emails } = useSelector((state) => state.moved);
+
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSort, setSelectedSort] = useState('');
+
+
+  
   const filteredEmails = emails
   .filter((item) => {
     const searchValue = topsearch.toLowerCase();
@@ -184,13 +197,36 @@ export function MovedPage() {
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl text-gray-900">MOVED EMAILS</h2>
              <a href="">
          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
          </a>
-          </div>
+          </div> */}
+          <div className="flex items-center gap-3">
+  {/* Back Button */}
+  <button
+    onClick={() => navigate(-1)}
+    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm"
+    title="Go back"
+  >
+    <ArrowLeft className="w-5 h-5 text-green-700" />
+  </button>
+
+  <MessageSquare className="w-6 h-6 text-purple-600" />
+  <h2 className="text-xl text-gray-900">MOVED EMAILS</h2>
+
+  <a href="">
+    <img
+      width="30"
+      height="30"
+      src="https://img.icons8.com/offices/30/info.png"
+      alt="info"
+    />
+  </a>
+</div>
+
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
             {count} Moved
           </span>
