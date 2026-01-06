@@ -126,8 +126,6 @@ export const getOffers = (email) => {
 export const updateOffer = (offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
-    console.log(`Update Offer`, offer);
-
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       const { data } = await axios.post(

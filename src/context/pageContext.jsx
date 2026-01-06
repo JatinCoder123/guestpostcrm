@@ -1,3 +1,4 @@
+import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 
 export const PageContext = createContext();
@@ -20,6 +21,7 @@ export const PageContextProvider = (props) => {
     const firstPart = path.split("/")[1];
     setActivePage(firstPart || "");
   }, []);
+
 
   const value = {
     activePage,

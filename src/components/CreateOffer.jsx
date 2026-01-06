@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useContext } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,8 +15,16 @@ import {
   updateOffer,
 } from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
-import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
+import {
+  getContact,
+  getViewEmail,
+  sendEmail,
+  viewEmailAction,
+} from "../store/Slices/viewEmail";
+import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
+import { getLadgerWithOutLoading } from "../store/Slices/ladger";
+import { SocketContext } from "../context/SocketContext";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
   {
@@ -32,13 +40,15 @@ export default function CreateOffer() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const {
-    loading: sending,
+    sending,
     message: sendMessage,
     error: sendError,
   } = useSelector((state) => state.viewEmail);
   const { crmEndpoint } = useSelector((state) => state.user);
 
   const [currentOffers, setCurrentOffers] = useState([]);
+  const { enteredEmail, search } = useContext(PageContext);
+  const { setNotificationCount } = useContext(SocketContext);
   const [validWebsite, setValidWebsite] = useState([]);
   const [newOffers, setNewOffers] = useState([
     {
@@ -60,6 +70,8 @@ export default function CreateOffer() {
     deleting,
     deleteOfferId,
   } = useSelector((state) => state.offers);
+  const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
+
   useEffect(() => {
     let offer = offers.filter(
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email
@@ -113,13 +125,23 @@ export default function CreateOffer() {
   const submitHandler = () => {
     dispatch(createOffer(newOffers));
   };
+  const okHandler = () => {
+    if (enteredEmail) {
+      dispatch(getLadgerWithOutLoading(enteredEmail, search));
+    } else if (unrepliedEmails.length > 0) {
+      const firstEmail =
+        unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
+      dispatch(getLadgerWithOutLoading(firstEmail, search));
+    } else {
+      dispatch(getLadgerWithOutLoading(state?.email, search));
+    }
+  };
 
   useEffect(() => {
     if (message) {
-      // ✅ CREATE
+      ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
+      dispatch(getOffers());
       if (message.includes("Created")) {
-        dispatch(getOffers());
-
         dispatch(
           sendEmail(
             renderToStaticMarkup(
@@ -134,28 +156,22 @@ export default function CreateOffer() {
             "Offer Send Successfully"
           )
         );
-      }
-
-      // ✅ UPDATE (ADD THIS)
-      if (message.includes("Updated")) {
-        dispatch(getOffers());
+      } else {
         dispatch(
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={currentOffers}
+                data={[...currentOffers]}
                 type="Offers"
                 userEmail={state?.email}
                 websiteKey="website"
                 amountKey="our_offer_c"
               />
             ),
-            "Offer send Successfully"
+            "Offer Send Successfully"
           )
         );
       }
-
-      ManualSideCall(crmEndpoint, state?.email, message);
 
       toast.success(message);
       dispatch(offersAction.clearAllMessages());
@@ -168,6 +184,10 @@ export default function CreateOffer() {
     }
 
     if (sendMessage) {
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
       navigate(-1);

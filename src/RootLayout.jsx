@@ -141,6 +141,28 @@ const RootLayout = () => {
       }));
     }
 
+    if (notificationCount.refreshUnreplied) {
+      dispatch(getUnrepliedEmail(timeline, enteredEmail, true));
+      dispatch(getUnansweredEmails(timeline, enteredEmail));
+      if (enteredEmail) {
+        dispatch(getLadgerWithOutLoading(enteredEmail, search));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadgerWithOutLoading(firstEmail, search));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
+      else {
+        dispatch(getLadger(search, false));
+      }
+      setCurrentIndex(0);
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: null,
+      }));
+    }
+
     if (notificationCount.outr_el_process_audit) {
       dispatch(hotAction.updateCount(1));
       if (enteredEmail) {
@@ -151,6 +173,8 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
+      } else {
+        dispatch(getLadger(search, false));
       }
       setNotificationCount((prev) => ({
         ...prev,
@@ -171,6 +195,8 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
+      } else {
+        dispatch(getLadger(search, false));
       }
       setNotificationCount((prev) => ({
         ...prev,
@@ -192,6 +218,8 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
+      } else {
+        dispatch(getLadger(search, false));
       }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -210,6 +238,8 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
+      } else {
+        dispatch(getLadger(search, false));
       }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -230,6 +260,9 @@ const RootLayout = () => {
         dispatch(getLadgerWithOutLoading(firstEmail, search));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
+      }
+      else {
+        dispatch(getLadger(search, false));
       }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({

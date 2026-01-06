@@ -143,7 +143,8 @@ export function TheirLink({ data }) {
       {/* META INFO */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Anchor Text */}
-        <div className="flex items-start gap-2">
+          {data.type == "li" && 
+          <div className="flex items-start gap-2">
           <FiTag className="text-slate-400 mt-0.5" size={14} />
           <div>
             <p className="text-xs text-slate-500">Anchor Text</p>
@@ -151,7 +152,8 @@ export function TheirLink({ data }) {
               {data.anchor_text || "-"}
             </p>
           </div>
-        </div>
+        </div>}
+        
 
         {/* Link Amount */}
         <div className="flex items-start gap-2">

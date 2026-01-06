@@ -106,9 +106,9 @@ const ladgerSlice = createSlice({
   },
 });
 
-export const getLadger = (search = "") => {
+export const getLadger = (search = "", loading = true) => {
   return async (dispatch, getState) => {
-    dispatch(ladgerSlice.actions.getLadgerRequest());
+    if (loading) dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
       const { data } = await axios.get(

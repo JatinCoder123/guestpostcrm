@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,7 +6,14 @@ import Create from "./Create";
 import { excludeEmail } from "../assets/assets";
 import { websiteLists } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { orderAction, updateOrder } from "../store/Slices/orders";
+import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
+import Preview from "./Preview";
+import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
+import { renderToStaticMarkup } from "react-dom/server";
+import { PageContext } from "../context/pageContext";
+import { getLadgerWithOutLoading } from "../store/Slices/ladger";
+import { ManualSideCall } from "../services/utils";
+import { SocketContext } from "../context/SocketContext";
 const fields = [
   {
     name: "website_c",
@@ -39,7 +46,13 @@ export default function CreateOrder() {
     updateLinkMessage,
     creatingLinkMessage,
   } = useSelector((state) => state.orders);
-  const { contactInfo } = useSelector((state) => state.viewEmail);
+  const { message: sendMessage, sending } = useSelector(
+    (state) => state.viewEmail
+  );
+  const { crmEndpoint } = useSelector((state) => state.user);
+  const { setNotificationCount } = useContext(SocketContext)
+  const { enteredEmail, search } = useContext(PageContext)
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [currentOrders, setCurrentOrders] = useState([]);
@@ -56,13 +69,52 @@ export default function CreateOrder() {
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  useEffect(() => {
-    if (type == "create" && !state) {
-      navigate("/");
+  const sendHandler = () => {
+    dispatch(
+      sendEmail(
+        renderToStaticMarkup(
+          <Preview
+            data={currentOrders}
+            type="Orders"
+            userEmail={state?.email}
+            orderID="order_id"
+            amountKey="total_amount_c"
+          />
+        ),
+        "Order Send Successfully"
+      )
+    );
+  };
+  const okHandler = () => {
+    if (enteredEmail) {
+      dispatch(getLadgerWithOutLoading(enteredEmail, search));
+    } else if (unrepliedEmails.length > 0) {
+      const firstEmail = unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
+      dispatch(getLadgerWithOutLoading(firstEmail, search));
+    } else {
+      dispatch(getLadgerWithOutLoading(state?.email, search));
     }
-  }, [state, type]);
+  }
   useEffect(() => {
     if (message) {
+      ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
+      dispatch(getOrders())
+      dispatch(sendEmail(
+        renderToStaticMarkup(
+          <Preview
+            data={currentOrders}
+            type="Orders"
+            userEmail={state?.email}
+            websiteKey="website_c"
+            amountKey="total_amount_c"
+          />
+        ),
+        "Order Send Successfully"
+      ));
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       toast.success(message);
       dispatch(orderAction.clearAllMessages());
       navigate(-1);
@@ -71,6 +123,15 @@ export default function CreateOrder() {
       toast.error(error);
       dispatch(orderAction.clearAllErrors());
     }
+    if (sendMessage) {
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
+      toast.success(sendMessage);
+      dispatch(viewEmailAction.clearAllMessage());
+      navigate(-1);
+    }
 
     if (updateLinkMessage) {
       toast.success(updateLinkMessage);
@@ -78,7 +139,7 @@ export default function CreateOrder() {
     if (creatingLinkMessage) {
       toast.success(creatingLinkMessage);
     }
-  }, [message, error, updateLinkMessage, creatingLinkMessage]);
+  }, [message, error, updateLinkMessage, sendMessage, creatingLinkMessage]);
 
   return (
     <Create
@@ -87,13 +148,24 @@ export default function CreateOrder() {
       email={state?.email}
       setData={setCurrentOrders}
       websiteKey="website_c"
+      orderId="order_id"
       handleDelete={handleDelete}
       handleUpdate={handleUpdate}
       updating={updating}
-      preview={false}
       lists={lists}
+      sending={sending}
       type="orders"
+      sendHandler={sendHandler}
       fields={fields}
+      renderPreview={({ data, email }) => (
+        <Preview
+          data={data}
+          type="Orders"
+          userEmail={email}
+          orderId="order_id"
+          amountKey="total_amount_c"
+        />
+      )}
       amountKey={"total_amount_c"}
       pageType={type}
     />

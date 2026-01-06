@@ -13,6 +13,7 @@ const viewEmailSlice = createSlice({
     viewEmail: [],
     contactInfo: null,
     accountInfo: null,
+    sending: false,
     dealInfo: null,
     threadId: null,
     message: null,
@@ -81,18 +82,18 @@ const viewEmailSlice = createSlice({
       state.error = action.payload;
     },
     sendEmailRequest(state) {
-      state.loading = true;
+      state.sending = true;
       state.message = null;
       state.error = null;
     },
     sendEmailSucess(state, action) {
       const { message } = action.payload;
-      state.loading = false;
+      state.sending = false;
       state.message = message;
       state.error = null;
     },
     sendEmailFailed(state, action) {
-      state.loading = false;
+      state.sending = false;
       state.error = action.payload;
     },
     clearAllErrors(state) {
@@ -227,6 +228,7 @@ export const sendEmail = (reply, message = null) => {
         })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
+      dispatch(getViewEmail());
     } catch (error) {
       console.log(error);
       dispatch(

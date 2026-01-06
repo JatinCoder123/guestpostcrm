@@ -83,9 +83,9 @@ const MailerSummaryHeader = () => {
               <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
                 <Titletooltip content={mailersSummary?.motive || "N/A"}>
                   <div className="hover:text-purple-600 transition-colors">
-                    {mailersSummary?.motive
-                      ? mailersSummary.motive.split(" ").slice(0, 6).join(" ") +
-                      (mailersSummary.motive.split(" ").length > 6
+                    {mailersSummary?.correct_motive
+                      ? mailersSummary.correct_motive.split(" ").slice(0, 6).join(" ") +
+                      (mailersSummary.correct_motive.split(" ").length > 6
                         ? "..."
                         : "")
                       : "N/A"}
