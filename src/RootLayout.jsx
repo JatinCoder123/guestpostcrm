@@ -45,7 +45,6 @@ import { eventActions } from "./store/Slices/eventSlice";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
 const RootLayout = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAvatar, setShowAvatar] = useState(true);
 
   const { timeline, email } = useSelector((state) => state.ladger);
@@ -58,6 +57,7 @@ const RootLayout = () => {
     setCurrentIndex,
     search,
     setWelcomeHeaderContent,
+    collapsed,
   } = useContext(PageContext);
 
   const { currentAvatar, notificationCount, setNotificationCount } =
@@ -313,17 +313,13 @@ const RootLayout = () => {
           <div className="flex h-[calc(100vh-100px)] ">
             {/* Sidebar scrolls independently */}
             <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-              <Sidebar
-                collapsed={sidebarCollapsed}
-                setSidebarCollapsed={setSidebarCollapsed}
-                onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-              />
+              <Sidebar />
             </div>
 
             {/* Main content scrolls independently */}
             <main
               className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                sidebarCollapsed ? "ml-4" : "ml-0"
+                collapsed ? "ml-4" : "ml-0"
               }`}
             >
               <div className="p-6">

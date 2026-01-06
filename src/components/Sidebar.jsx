@@ -36,9 +36,11 @@ import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingSpin } from "./Loading";
 
-export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
+export function Sidebar() {
   const navigateTo = useNavigate();
-  const { activePage, setActivePage } = useContext(PageContext);
+
+  const { activePage, setActivePage, collapsed, setSidebarCollapsed } =
+    useContext(PageContext);
 
   const [openSettingsCard, setOpenSettingsCard] = useState(false);
   const cardRef = useRef(null);
@@ -224,7 +226,7 @@ export function Sidebar({ collapsed, setSidebarCollapsed, onToggleCollapse }) {
       >
         {/* COLLAPSE BUTTON */}
         <button
-          onClick={onToggleCollapse}
+          onClick={() => setSidebarCollapsed(!collapsed)}
           className={`fixed ${
             collapsed ? "left-23" : "left-62"
           } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
