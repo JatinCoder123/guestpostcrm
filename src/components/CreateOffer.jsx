@@ -7,105 +7,90 @@ import Create from "./Create";
 import Preview from "./Preview";
 import { excludeEmail, websiteLists } from "../assets/assets";
 import { useParams, useLocation } from "react-router-dom";
-import { createOffer, deleteOffer, getOffers, offersAction, updateOffer } from "../store/Slices/offers";
+import {
+  createOffer,
+  deleteOffer,
+  getOffers,
+  offersAction,
+  updateOffer,
+} from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { ManualSideCall } from "../services/utils";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
-  { name: "client_offer_c", label: "Client Offer", type: "number", disabled: false },
+  {
+    name: "client_offer_c",
+    label: "Client Offer",
+    type: "number",
+    disabled: false,
+  },
   { name: "our_offer_c", label: "Our Offer", type: "number" },
-]
+];
 export default function CreateOffer() {
   const { type, id } = useParams();
-  const { state } = useLocation()
-  const navigate = useNavigate()
-  const { loading: sending, message: sendMessage, error: sendError } = useSelector((state) => state.viewEmail)
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const {
+    loading: sending,
+    message: sendMessage,
+    error: sendError,
+  } = useSelector((state) => state.viewEmail);
   const { crmEndpoint } = useSelector((state) => state.user);
 
-  const [currentOffers, setCurrentOffers] = useState([])
-  const [validWebsite, setValidWebsite] = useState([])
-  const [newOffers, setNewOffers] = useState([{
-    website: "",
-    client_offer_c: "",
-    our_offer_c: "",
-    id: `${Date.now()}${Math.random()}`,
-    email: state?.email,
-  }])
+  const [currentOffers, setCurrentOffers] = useState([]);
+  const [validWebsite, setValidWebsite] = useState([]);
+  const [newOffers, setNewOffers] = useState([
+    {
+      website: "",
+      client_offer_c: "",
+      our_offer_c: "",
+      id: `${Date.now()}${Math.random()}`,
+      email: state?.email,
+    },
+  ]);
 
-  const dispatch = useDispatch()
-  const { updating, error, offers, message, creating, deleting, deleteOfferId } = useSelector((state) => state.offers)
+  const dispatch = useDispatch();
+  const {
+    updating,
+    error,
+    offers,
+    message,
+    creating,
+    deleting,
+    deleteOfferId,
+  } = useSelector((state) => state.offers);
   useEffect(() => {
-    let offer = offers.filter(d => excludeEmail(d.real_name ?? d.email) == state?.email)
+    let offer = offers.filter(
+      (d) => excludeEmail(d.real_name ?? d.email) == state?.email
+    );
     if (type == "edit" && id !== undefined) {
-      offer = offer.filter(d => d.id == id)
+      offer = offer.filter((d) => d.id == id);
     }
-    setCurrentOffers(() => [...offer])
-  }, [state, offers, type, id])
+    setCurrentOffers(() => [...offer]);
+  }, [state, offers, type, id]);
   useEffect(() => {
     let valid = [];
     if (type == "create") {
-      valid = websiteLists.filter(w => !currentOffers.some(o => o.website == w))
+      valid = websiteLists.filter(
+        (w) => !currentOffers.some((o) => o.website == w)
+      );
     }
     if (type == "edit") {
-      valid = websiteLists.filter(w => currentOffers.some(o => o.id == id || o.website !== w))
+      valid = websiteLists.filter((w) =>
+        currentOffers.some((o) => o.id == id || o.website !== w)
+      );
     }
-    setValidWebsite(valid)
-  }, [currentOffers])
+    setValidWebsite(valid);
+  }, [currentOffers]);
   useEffect(() => {
     if (type == "create" && !state) {
-      navigate("/")
+      navigate("/");
     }
-  }, [state, type])
+  }, [state, type]);
   const sendHandler = () => {
-    dispatch(sendEmail(renderToStaticMarkup(
-      <Preview
-        data={currentOffers}
-        type="Offers"
-        userEmail={state?.email}
-        websiteKey="website"
-        amountKey="our_offer_c"
-      />
-    ), "Offer Send Successfully"))
-  }
-  const handleUpdate = (offer) => {
-    dispatch(updateOffer(offer))
-
-  }
-  const handleDelete = (id) => {
-    dispatch(deleteOffer(id))
-  }
-  const submitHandler = () => {
-    dispatch(createOffer(newOffers));
-  };
-
-
-useEffect(() => {
-  if (message) {
-
-    // ✅ CREATE
-    if (message.includes("Created")) {
-      dispatch(getOffers());
-
-      dispatch(sendEmail(
-        renderToStaticMarkup(
-          <Preview
-            data={[...newOffers, ...currentOffers]}
-            type="Offers"
-            userEmail={state?.email}
-            websiteKey="website"
-            amountKey="our_offer_c"
-          />
-        ),
-        "Offer Send Successfully"
-      ));
-    }
-
-    // ✅ UPDATE (ADD THIS)
-    if (message.includes("Updated")) {
-      dispatch(getOffers());
-
-      dispatch(sendEmail(
+    dispatch(
+      sendEmail(
         renderToStaticMarkup(
           <Preview
             data={currentOffers}
@@ -115,43 +100,114 @@ useEffect(() => {
             amountKey="our_offer_c"
           />
         ),
-        "Offer send Successfully"
-      ));
+        "Offer Send Successfully"
+      )
+    );
+  };
+  const handleUpdate = (offer) => {
+    dispatch(updateOffer(offer));
+  };
+  const handleDelete = (id) => {
+    dispatch(deleteOffer(id));
+  };
+  const submitHandler = () => {
+    dispatch(createOffer(newOffers));
+  };
+
+  useEffect(() => {
+    if (message) {
+      // ✅ CREATE
+      if (message.includes("Created")) {
+        dispatch(getOffers());
+
+        dispatch(
+          sendEmail(
+            renderToStaticMarkup(
+              <Preview
+                data={[...newOffers, ...currentOffers]}
+                type="Offers"
+                userEmail={state?.email}
+                websiteKey="website"
+                amountKey="our_offer_c"
+              />
+            ),
+            "Offer Send Successfully"
+          )
+        );
+      }
+
+      // ✅ UPDATE (ADD THIS)
+      if (message.includes("Updated")) {
+        dispatch(getOffers());
+        dispatch(
+          sendEmail(
+            renderToStaticMarkup(
+              <Preview
+                data={currentOffers}
+                type="Offers"
+                userEmail={state?.email}
+                websiteKey="website"
+                amountKey="our_offer_c"
+              />
+            ),
+            "Offer send Successfully"
+          )
+        );
+      }
+
+      ManualSideCall(crmEndpoint, state?.email, message);
+
+      toast.success(message);
+      dispatch(offersAction.clearAllMessages());
+      navigate(-1);
     }
 
-    ManualSideCall(crmEndpoint, state?.email, message);
+    if (error) {
+      toast.error(error);
+      dispatch(offersAction.clearAllErrors());
+    }
 
-    toast.success(message);
-    dispatch(offersAction.clearAllMessages());
-    navigate(-1);
-  }
+    if (sendMessage) {
+      toast.success(sendMessage);
+      dispatch(viewEmailAction.clearAllMessage());
+      navigate(-1);
+    }
 
-  if (error) {
-    toast.error(error);
-    dispatch(offersAction.clearAllErrors());
-  }
-
-  if (sendMessage) {
-    toast.success(sendMessage);
-    dispatch(viewEmailAction.clearAllMessage());
-    navigate(-1);
-  }
-
-  if (sendError) {
-    toast.error(sendError);
-    dispatch(viewEmailAction.clearAllErrors());
-  }
-}, [message, error, sendMessage, sendError]);
+    if (sendError) {
+      toast.error(sendError);
+      dispatch(viewEmailAction.clearAllErrors());
+    }
+  }, [message, error, sendMessage, sendError]);
 
   return (
-    <Create data={type == "create" ? newOffers : currentOffers} validWebsite={validWebsite} setValidWebsite={setValidWebsite} email={state?.email} deleting={deleting} deleteId={deleteOfferId} creating={creating} handleDelete={handleDelete} pageType={type} sending={sending} handleUpdate={handleUpdate} updating={updating} setData={type == "create" ? setNewOffers : setCurrentOffers} type="offers" submitData={submitHandler} sendHandler={sendHandler} fields={fields} amountKey={"our_offer_c"} renderPreview={({ data, email }) => (
-      <Preview
-        data={data}
-        type="Offers"
-        userEmail={email}
-        websiteKey="website"
-        amountKey="our_offer_c"
-      />
-    )} />
+    <Create
+      data={type == "create" ? newOffers : currentOffers}
+      validWebsite={validWebsite}
+      setValidWebsite={setValidWebsite}
+      email={state?.email}
+      deleting={deleting}
+      deleteId={deleteOfferId}
+      creating={creating}
+      handleDelete={handleDelete}
+      pageType={type}
+      sending={sending}
+      handleUpdate={handleUpdate}
+      updating={updating}
+      setData={type == "create" ? setNewOffers : setCurrentOffers}
+      type="offers"
+      submitData={submitHandler}
+      sendHandler={sendHandler}
+      fields={fields}
+      amountKey={"our_offer_c"}
+      renderPreview={({ data, email }) => (
+        <Preview
+          data={data}
+          type="Offers"
+          userEmail={email}
+          websiteKey="website"
+          amountKey="our_offer_c"
+        />
+      )}
+    />
   );
 }
