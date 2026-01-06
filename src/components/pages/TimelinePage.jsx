@@ -25,13 +25,10 @@ import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
-import {
-  unrepliedAction,
-  updateUnrepliedEmails,
-} from "../../store/Slices/unrepliedEmails";
-import { updateUnansweredEmails } from "../../store/Slices/unansweredEmails";
+import { unrepliedAction } from "../../store/Slices/unrepliedEmails";
 import NewEmailBanner from "../NewEmailBanner";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
+import { SocketContext } from "../../context/SocketContext";
 export function TimelinePage() {
   const [showEmail, setShowEmail] = useState(false);
   const [showThread, setShowThread] = useState(false);
@@ -39,32 +36,31 @@ export function TimelinePage() {
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
   const { currentIndex, setCurrentIndex } = useContext(PageContext);
+  const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const {
     error: sendError,
     message,
     loading: viewEmailLoading,
-    viewEmail
+    viewEmail,
+    threadId,
   } = useSelector((state) => state.viewEmail);
 
   const {
     error: threadError,
     message: threadMessage,
-    threadId,
     sending,
   } = useSelector((state) => state.threadEmail);
   const dispatch = useDispatch();
-  const { ladger, email, mailersSummary, searchNotFound, loading, error } = useSelector(
-    (state) => state.ladger
-  );
+  const { ladger, email, mailersSummary, searchNotFound, loading, error } =
+    useSelector((state) => state.ladger);
   const {
     emails,
     loading: unrepliedLoading,
     showNewEmailBanner,
   } = useSelector((state) => state.unreplied);
-  const currentThreadId =
-    emails?.length > 0 && emails[currentIndex]?.thread_id;
+  const currentThreadId = emails?.length > 0 && emails[currentIndex]?.thread_id;
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -84,12 +80,10 @@ export function TimelinePage() {
     }
     if (threadMessage) {
       toast.success(threadMessage);
-      const newEmail = emails.find(
-        (email) => email.thread_id == currentThreadId
-      );
-      setCurrentIndex(0)
-      dispatch(updateUnrepliedEmails(currentThreadId));
-      dispatch(updateUnansweredEmails(newEmail));
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
       dispatch(
         addEvent({
           email: email,
@@ -123,7 +117,9 @@ export function TimelinePage() {
     try {
       dispatch(
         sendEmailToThread(
-          emails[currentIndex]?.thread_id ? emails[currentIndex]?.thread_id : threadId,
+          emails[currentIndex]?.thread_id
+            ? emails[currentIndex]?.thread_id
+            : threadId,
           mailersSummary?.ai_response
         )
       );
@@ -163,7 +159,7 @@ export function TimelinePage() {
     }
   }, [showNewEmailBanner]);
   if (searchNotFound) {
-    return <NoSearchFoundPage />
+    return <NoSearchFoundPage />;
   }
   if (showEmail) {
     return (
@@ -263,7 +259,7 @@ export function TimelinePage() {
                     <div className="mb-3">
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                         {mailersSummary == null ||
-                          mailersSummary?.ai_response == ""
+                        mailersSummary?.ai_response == ""
                           ? "No AI reply generated."
                           : mailersSummary?.ai_response}
                       </p>
@@ -273,9 +269,7 @@ export function TimelinePage() {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
                   <div className="flex items-center mb-2">
-                    <h3 className="text-blue-700 font-semibold">
-                      AI Summary
-                    </h3>
+                    <h3 className="text-blue-700 font-semibold">AI Summary</h3>
 
                     <motion.button
                       whileHover={{ scale: 1.15 }}
@@ -315,9 +309,10 @@ export function TimelinePage() {
                       className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
                       onClick={() => {
                         if (emails.length > 0) {
-                          setShowThread(true)
+                          setShowThread(true);
+                        } else {
+                          setShowEmail(true);
                         }
-                        else { setShowEmail(true) }
                       }}
                     >
                       <Reply className="w-6 h-6 text-yellow-700" />
@@ -326,12 +321,15 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <>
                           <span className="text-xs text-gray-500">
-                            {viewEmail[viewEmail.length - 1]?.date_created} <br />
+                            {viewEmail[viewEmail.length - 1]?.date_created}{" "}
+                            <br />
                           </span>
                           <span className="text-xs text-gray-500">
-                            ( {viewEmail[viewEmail.length - 1]?.date_created_ago} )<br />
-                          </span></>
-
+                            ({" "}
+                            {viewEmail[viewEmail.length - 1]?.date_created_ago}{" "}
+                            )<br />
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
@@ -347,22 +345,25 @@ export function TimelinePage() {
                       className="text-gray-700 text-sm leading-relaxed whitespace-pre-line"
                       dangerouslySetInnerHTML={{
                         __html:
-                          viewEmail?.length > 0 ? viewEmail[viewEmail.length - 1]?.body : "No Message Found!",
+                          viewEmail?.length > 0
+                            ? viewEmail[viewEmail.length - 1]?.body
+                            : "No Message Found!",
                       }}
-                    />)}
+                    />
+                  )}
                 </div>
               </div>
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    threadId={currentThreadId}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  threadId={currentThreadId}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (
