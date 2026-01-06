@@ -109,8 +109,8 @@ const SearchComponent = ({
               <option value="" disabled>
                 {dropdownPlaceholder}
               </option>
-              {dropdownOptions.map((option) => (
-                <option key={option.value} value={option.value}>
+              {dropdownOptions.map((option,index) => (
+                <option key={index} value={option.value}>
                   {option.label}
                 </option>
               ))}
@@ -180,8 +180,8 @@ const SearchComponent = ({
                         value={localFilters.archive}
                         onChange={(e) => setLocalFilters({ ...localFilters, archive: e.target.value })}
                       >
-                        {archiveOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
+                        {archiveOptions.map((option,index) => (
+                          <option key={index} value={option.value}>
                             {option.label}
                           </option>
                         ))}
@@ -196,8 +196,8 @@ const SearchComponent = ({
                         value={localFilters.transactionType}
                         onChange={(e) => setLocalFilters({ ...localFilters, transactionType: e.target.value })}
                       >
-                        {transactionTypeOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
+                        {transactionTypeOptions.map((option,index) => (
+                          <option key={index} value={option.value}>
                             {option.label}
                           </option>
                         ))}
@@ -231,8 +231,8 @@ const SearchComponent = ({
                         value={localFilters.currency}
                         onChange={(e) => setLocalFilters({ ...localFilters, currency: e.target.value })}
                       >
-                        {currencyOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
+                        {currencyOptions.map((option,index) => (
+                          <option key={index} value={option.value}>
                             {option.label}
                           </option>
                         ))}
@@ -250,8 +250,8 @@ const SearchComponent = ({
                         value={localFilters.status}
                         onChange={(e) => setLocalFilters({ ...localFilters, status: e.target.value })}
                       >
-                        {statusOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
+                        {statusOptions.map((option,index) => (
+                          <option key={index} value={option.value}>
                             {option.label}
                           </option>
                         ))}

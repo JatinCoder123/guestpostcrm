@@ -9,116 +9,127 @@ const TimelineEvent = () => {
   const { ladger } = useSelector((state) => state.ladger);
   const navigateTo = useNavigate();
 
+  // Function to extract contact ID from event data
+  const getContactIdFromEvent = (event) => {
+    // Check if event has contact_id directly
+    if (event.contact_id) {
+      return event.contact_id;
+    }
+    
+    // Check if parent_id might be contact ID (when module is Contacts)
+    if (event.module === "Contacts" && event.parent_id) {
+      return event.parent_id;
+    }
+    
+    // Check if there's a parent_type contact with parent_id
+    if (event.parent_type === "Contacts" && event.parent_id) {
+      return event.parent_id;
+    }
+    
+    // Try to extract from description or subject
+    if (event.description || event.subject) {
+      const text = (event.description || event.subject).toLowerCase();
+      // Look for patterns like "Contact: John Doe (ID: 123)"
+      const idMatch = text.match(/id[: ]\s*(\d+)/i);
+      if (idMatch) {
+        return idMatch[1];
+      }
+    }
+    
+    return null;
+  };
+
   // Function to map timeline event types to reminder filter types
   const getReminderFilterType = (eventType) => {
     if (!eventType) return "";
-    
-    const eventTypeLower = eventType.toLowerCase();
-    console.log("Mapping event type:", eventType);
-    
-    // First, extract the base type before "Scheduled" or "Reminder"
-    let baseType = eventType;
-    
-    // Remove "Scheduled" from the end
-    if (eventTypeLower.includes("scheduled")) {
-      baseType = eventType.replace(/scheduled/gi, "").trim();
-    }
-    
-    // Remove "Reminder" from the end
-    if (eventTypeLower.includes("reminder")) {
-      baseType = eventType.replace(/reminder/gi, "").trim();
-    }
-    
-    // Map common timeline event types to reminder filter types
-    const typeMappings = {
-      // Before Reply variants
-      'before reply': 'Before_Reply_Reminder',
-      'reply': 'Before_Reply_Reminder',
-      
-      // Before Offer variants
-      'before offer': 'Before_Offer_Reminder',
-      'offer': 'Before_Offer_Reminder',
-      
-      // Deal variants
-      'deal': 'Deal_Reminder',
-      
-      // Order variants
-      'order': 'Order_Reminder',
-      
-      // Invoice variants
-      'invoice': 'Invoice_Reminder',
-      
-      // Payment variants
-      'payment': 'Payment_Reminder',
-      'payment due': 'Payment_Reminder',
-      
-      // Followup variants
-      'followup': 'Followup_Reminder',
-      'follow up': 'Followup_Reminder',
+
+    const type = eventType.toLowerCase();
+
+    const mappings = {
+      reply: "Before_Reply_Reminder",
+      offer: "Before_Offer_Reminder",
+      deal: "Deal_Reminder",
+      order: "Order_Reminder",
+      invoice: "Invoice_Reminder",
+      payment: "Payment_Reminder",
+      follow: "Followup_Reminder"
     };
-    
-    // Check for exact matches in mappings
-    for (const [key, value] of Object.entries(typeMappings)) {
-      if (baseType.toLowerCase().includes(key) || eventTypeLower.includes(key)) {
-        console.log("Matched mapping:", key, "->", value);
-        return value;
+
+    for (const key in mappings) {
+      if (type.includes(key)) {
+        return mappings[key];
       }
     }
-    
-    // Special case for "Before Reply Reminder-scheduled" or similar patterns
-    if (eventTypeLower.includes("before") && eventTypeLower.includes("reply")) {
-      console.log("Special case: Before Reply -> Before_Reply_Reminder");
-      return "Before_Reply_Reminder";
-    }
-    
-    if (eventTypeLower.includes("before") && eventTypeLower.includes("offer")) {
-      console.log("Special case: Before Offer -> Before_Offer_Reminder");
-      return "Before_Offer_Reminder";
-    }
-    
-    // Default: convert to underscore format, preserving the original
-    const filterType = eventType
-      .replace(/\s+/g, '_')
-      .replace(/-/g, '_')
-      .replace(/\s*-\s*/g, '_')  // Handle dash with spaces
-      .replace(/[^a-zA-Z0-9_]/g, '')  // Remove special characters
-      .replace(/_+/g, '_')  // Remove multiple underscores
-      .trim();
-    
-    console.log("Default conversion result:", filterType);
-    return filterType;
+
+    return eventType
+      .replace(/scheduled|reminder/gi, "")
+      .trim()
+      .replace(/\s+/g, "_");
   };
 
-  const onEyeClick = (type) => {
+  const onEyeClick = (type, event) => {
     if (!type) return;
-    
-    console.log("Eye clicked on type:", type);
-    
-    if (type.includes("Contact")) {
-      console.log("Navigating to contacts");
-      navigateTo(`/contacts`);
-    } 
-    else if (type.includes("Invoice")) {
-      console.log("Navigating to invoices");
-      navigateTo(`/invoices`);
-    }
-    else if (type.includes("Scheduled") || type.includes("Reminder")) {
-      // Get the filter type for reminders
+
+    const lowerType = type.toLowerCase();
+    const contactId = getContactIdFromEvent(event);
+
+    // Handle reminder events
+    if (lowerType.includes("scheduled") || lowerType.includes("reminder")) {
       const filterType = getReminderFilterType(type);
-      console.log("Filter type determined:", filterType);
+      let queryParams = new URLSearchParams();
       
-      // Navigate to reminders with filter parameter
+      // Add filter type if available
       if (filterType) {
-        navigateTo(`/reminders?filter=${encodeURIComponent(filterType)}`);
-        console.log("Navigating to reminders with filter:", filterType);
-      } else {
-        navigateTo(`/reminders`);
-        console.log("Navigating to reminders without filter");
+        queryParams.append('filter', filterType);
       }
-    } else {
-      console.log("Unknown type, navigating to home");
-      navigateTo(`/`);
+      
+      // Add contact ID if available (for single contact filtering)
+      if (contactId) {
+        queryParams.append('contact_id', contactId);
+      }
+      
+      const queryString = queryParams.toString();
+      navigateTo(`/reminders${queryString ? `?${queryString}` : ''}`);
+      return;
     }
+
+    // Handle contact events - navigate to single contact view
+    if (lowerType.includes("contact")) {
+      if (contactId) {
+        // Navigate to single contact view
+        navigateTo(`/contacts/${contactId}`);
+      } else {
+        // Fallback to contacts list if no ID
+        navigateTo('/contacts');
+      }
+      return;
+    }
+
+    // Handle other non-reminder events with contact context
+    const routeMap = [
+      { key: "invoice", path: "/invoices" },
+      { key: "deal", path: "/deals" },
+      { key: "order", path: "/orders" },
+      { key: "payment", path: "/payments" },
+      { key: "offer", path: "/offers" }
+    ];
+
+    const matchedRoute = routeMap.find(route =>
+      lowerType.includes(route.key)
+    );
+
+    if (matchedRoute) {
+      // If we have a contact ID, pass it as query param for filtering
+      if (contactId) {
+        navigateTo(`${matchedRoute.path}?contact_id=${contactId}`);
+      } else {
+        navigateTo(matchedRoute.path);
+      }
+      return;
+    }
+
+    // Default fallback
+    navigateTo("/");
   };
 
   // Function to get appropriate icon based on event type
@@ -131,20 +142,20 @@ const TimelineEvent = () => {
       return "https://img.icons8.com/color/96/contacts.png";
     }
     if (typeLower.includes("invoice")) {
-      return "https://img.icons8.com/color/96/invoice.png";
+      return "https://example.guestpostcrm.com/gp_icons/Invoices.png";
     }
     if (typeLower.includes("reminder") || typeLower.includes("scheduled")) {
       if (typeLower.includes("reply")) {
-        return "https://img.icons8.com/color/96/reply-arrow.png";
+        return "https://example.guestpostcrm.com/gp_icons/offer.png";
       }
       if (typeLower.includes("offer")) {
-        return "https://img.icons8.com/color/96/offer.png";
+        return "https://example.guestpostcrm.com/gp_icons/offer.png";
       }
       if (typeLower.includes("deal")) {
-        return "https://img.icons8.com/color/96/handshake.png";
+        return "https://example.guestpostcrm.com/gp_icons/deal.png";
       }
       if (typeLower.includes("order")) {
-        return "https://img.icons8.com/color/96/purchase-order.png";
+        return "https://example.guestpostcrm.com/gp_icons/order.png";
       }
       if (typeLower.includes("payment")) {
         return "https://img.icons8.com/color/96/money-transfer.png";
@@ -157,37 +168,54 @@ const TimelineEvent = () => {
     return "https://img.icons8.com/bubbles/100/new-post.png";
   };
 
+  // Function to get tooltip text based on event type and contact
+  const getTooltipText = (event) => {
+    const type = event.type_c || "";
+    const contactName = event.contact_name || "";
+    const isReminderEvent = type.toLowerCase().includes("scheduled") || 
+                           type.toLowerCase().includes("reminder");
+    
+    if (isReminderEvent) {
+      const filterType = getReminderFilterType(type);
+      const contactText = contactName ? ` for ${contactName}` : "";
+      return `View ${type} reminders${contactText}`;
+    }
+    
+    if (type.toLowerCase().includes("contact")) {
+      return contactName ? `View ${contactName}` : "View contact details";
+    }
+    
+    return event.description || "View details";
+  };
+
   return (
     <>
-      {/* TIMELINE EVENTS */}
       <div className="py-[2%] px-[30%]">
         <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-2xl text-center text-white">
           TIMELINE
         </h1>
 
         <div className="relative mt-6">
-          {/* Vertical Line */}
           <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300 rounded-full"></div>
 
           <div className="space-y-6">
             {ladger.map((event, index) => {
-              // Determine if this is a reminder type event
-              const isReminderEvent = event.type_c && 
-                (event.type_c.includes("Scheduled") || 
-                 event.type_c.includes("Reminder"));
-              
-              // Get the filter type for tooltip
-              const filterType = isReminderEvent ? getReminderFilterType(event.type_c) : null;
+              const type = event.type_c || "";
+              const lowerType = type.toLowerCase();
+              const isReminderEvent = lowerType.includes("scheduled") || 
+                                     lowerType.includes("reminder");
+              const isContactEvent = lowerType.includes("contact");
+              const filterType = isReminderEvent ? getReminderFilterType(type) : null;
+              const contactId = getContactIdFromEvent(event);
               
               return (
                 <div key={event.id} className="relative flex items-start gap-4">
-                  {/* ICON */}
                   <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">
                     <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center text-white shadow-lg">
                       <img
                         width="40"
                         height="40"
-                        src={getEventIcon(event.type_c)}
+                        src={getEventIcon(type)}
                         alt="icon"
                       />
                     </div>
@@ -198,28 +226,27 @@ const TimelineEvent = () => {
                     />
                   </div>
 
-                  {/* CARD */}
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                    ${index === 0
+                      ${index === 0
                         ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                         : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-gray-700 flex items-center gap-2">
-                        {/* EYE WITH TOOLTIP */}
                         <div
                           className="relative group cursor-pointer"
-                          onClick={() => onEyeClick(event.type_c)}
+                          onClick={() => onEyeClick(type, event)}
                         >
                           <Eye
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110
-                              ${isReminderEvent ? 'text-purple-600' : 'text-blue-600'}`}
+                              ${isReminderEvent ? 'text-purple-600' : 
+                                isContactEvent ? 'text-green-600' : 'text-blue-600'}`}
                           />
 
-                          {/* TOOLTIP */}
+                          {/* Tooltip */}
                           <div
                             className="absolute left-1/2 -translate-x-1/2 -top-10
                                        whitespace-nowrap px-3 py-1.5 text-xs
@@ -228,18 +255,23 @@ const TimelineEvent = () => {
                                        transition-opacity duration-200
                                        pointer-events-none z-50"
                           >
-                            {isReminderEvent 
-                              ? `View ${event.type_c} reminders` 
-                              : event.description || "View details"
-                            }
+                            {getTooltipText(event)}
                             
+                            {/* Show filter info for reminders */}
                             {isReminderEvent && filterType && (
                               <div className="text-xs text-gray-300 mt-1">
                                 Filter: {filterType.replace(/_/g, ' ')}
+                                {contactId && " • Single Contact"}
+                              </div>
+                            )}
+                            
+                            {/* Show contact info for contact events */}
+                            {isContactEvent && contactId && (
+                              <div className="text-xs text-gray-300 mt-1">
+                                Single Contact View
                               </div>
                             )}
 
-                            {/* ARROW */}
                             <div
                               className="absolute left-1/2 -translate-x-1/2 top-full
                                          w-2 h-2 bg-gray-900 rotate-45"
@@ -248,9 +280,8 @@ const TimelineEvent = () => {
                         </div>
 
                         <span className="font-medium">
-                          {event.type_c
-                            ? event.type_c.charAt(0).toUpperCase() +
-                            event.type_c.slice(1)
+                          {type
+                            ? type.charAt(0).toUpperCase() + type.slice(1)
                             : "Event"}
                         </span>
                       </span>
@@ -260,27 +291,19 @@ const TimelineEvent = () => {
                       </span>
                     </div>
 
-                    {/* SUBJECT / DESCRIPTION */}
+                    {/* Event subject */}
                     {event.subject && (
                       <div className="text-sm text-gray-600">{event.subject}</div>
                     )}
                     
-                    {/* Reminder type hint */}
-                    {isReminderEvent && (
-                      <div className="mt-2 text-xs text-purple-600 flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clipRule="evenodd" />
-                        </svg>
-                        Click to view all {event.type_c} reminders
-                        {filterType && (
-                          <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">
-                            Filter: {filterType.replace(/_/g, ' ')}
-                          </span>
-                        )}
+                    {/* Show contact name if available */}
+                    {event.contact_name && (
+                      <div className="text-sm text-gray-700 mt-1">
+                        <span className="font-medium">Contact:</span> {event.contact_name}
                       </div>
                     )}
                     
-                    {/* Event metadata */}
+                    {/* Additional info about the event */}
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                       {event.assigned_user_name && (
                         <span className="flex items-center gap-1">
@@ -305,7 +328,6 @@ const TimelineEvent = () => {
               );
             })}
 
-            {/* END ICON */}
             <div className="relative flex gap-4 mt-6">
               <div className="relative z-10 w-16 flex-shrink-0">
                 <div className="w-12 h-12 flex items-center justify-center">
@@ -320,7 +342,6 @@ const TimelineEvent = () => {
         </div>
       </div>
 
-      {/* PAGINATION */}
       <Pagination slice={"ladger"} fn={getLadgerEmail} />
     </>
   );

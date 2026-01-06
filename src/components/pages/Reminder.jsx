@@ -46,7 +46,7 @@ export function ReminderPage() {
     if (urlFilter) {
       // Decode the filter from URL
       const decodedFilter = decodeURIComponent(urlFilter);
-      console.log("URL Filter received:", decodedFilter);
+     
       
       // Find matching option from dropdown
       let matchingOption = enhancedDropdownOptions.find(option => 
@@ -64,15 +64,14 @@ export function ReminderPage() {
         );
         
         if (matchingOption) {
-          console.log("Matched with spaces conversion:", matchingOption.value);
+     
           setSelectedCategory(matchingOption.value);
         } else {
-          // If still no match, use the raw filter value
-          console.log("Using raw filter value:", decodedFilter);
+          
           setSelectedCategory(decodedFilter);
         }
       } else {
-        console.log("Found matching option:", matchingOption.value);
+
         setSelectedCategory(matchingOption.value);
       }
       
@@ -125,8 +124,7 @@ export function ReminderPage() {
   };
 
   useEffect(() => {
-    console.log("Filtering reminders with category:", selectedCategory);
-    console.log("Total orderRem:", orderRem.length);
+    
     
     // Filter reminders based on selected category
     let filteredReminders = [...orderRem];
@@ -136,11 +134,11 @@ export function ReminderPage() {
       filteredReminders = orderRem.filter(
         reminder => reminder.status.toLowerCase() === 'pending'
       );
-      console.log("Pending filter applied, found:", filteredReminders.length);
+    
     } else if (selectedCategory !== "all") {
       // Normalize the selected category
       const normalizedSelectedCategory = normalizeType(selectedCategory);
-      console.log("Normalized selected category:", normalizedSelectedCategory);
+     
       
       // Filter by reminder type
       filteredReminders = orderRem.filter(reminder => {
@@ -151,14 +149,7 @@ export function ReminderPage() {
         const normalizedReminderType = normalizeType(reminderType);
         const normalizedReminderTypeLabel = normalizeType(reminderTypeLabel);
         
-        console.log("Checking reminder:", {
-          reminderType,
-          reminderTypeLabel,
-          normalizedReminderType,
-          normalizedReminderTypeLabel,
-          normalizedSelectedCategory
-        });
-        
+     
         // Check for matches
         const matchesType = normalizedReminderType.includes(normalizedSelectedCategory) ||
                            normalizedSelectedCategory.includes(normalizedReminderType);
@@ -169,11 +160,11 @@ export function ReminderPage() {
         return matchesType || matchesLabel;
       });
       
-      console.log("Type filter applied, found:", filteredReminders.length);
+    
       
       // If no matches found with type filtering, show pending of all types
       if (filteredReminders.length === 0) {
-        console.log("No matches found, showing pending reminders instead");
+      
         filteredReminders = orderRem.filter(
           reminder => reminder.status.toLowerCase() === 'pending'
         );
@@ -190,17 +181,16 @@ export function ReminderPage() {
       );
     }
     
-    console.log("Final filtered reminders:", filteredReminders.length);
     setReminders(filteredReminders);
   }, [selectedCategory, orderRem, topsearch]);
 
   const getDisplayLabel = (type) => {
-    console.log("Getting display label for:", type);
+    
     
     // Handle URL filter types that might not be in dropdown
     if (type && type.includes('_')) {
       const label = type.replace(/_/g, ' ') + ' Reminders';
-      console.log("Converted underscore label:", label);
+      
       return label;
     }
     
@@ -210,7 +200,7 @@ export function ReminderPage() {
     );
     
     const result = option ? option.label : (type || 'All Reminders');
-    console.log("Display label result:", result);
+   
     return result;
   };
 
@@ -235,16 +225,16 @@ export function ReminderPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log("Applied filters from popup:", filters);
+   
   };
 
   const handleSearchChange = (value) => {
-    console.log("Search changed to:", value);
+    
     setTopsearch(value);
   };
 
   const handleCategoryChange = (value) => {
-    console.log("Category changed to:", value);
+   
     setSelectedCategory(value);
   };
 
@@ -253,7 +243,7 @@ export function ReminderPage() {
   };
 
   const handleDownload = () => {
-    console.log("Download clicked");
+  
   };
 
   // Check if we came from timeline
