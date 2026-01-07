@@ -49,6 +49,7 @@ import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
 import { HotPage } from "./components/pages/HotPage";
+import { ViewReminder } from "./components/ViewReminder";
 
 const router = createBrowserRouter([
   {
@@ -139,16 +140,17 @@ const router = createBrowserRouter([
         path: "invoices",
         element: <InvoicesPage />,
       },
-
       {
         path: "link-exchange",
         element: <LinkExchangePage />,
       },
 
       {
-        path: "reminders",
+        path: "reminders/:id?",
         element: <ReminderPage />,
       },
+
+
       {
         path: "timeline",
         element: <TimelinePage />,

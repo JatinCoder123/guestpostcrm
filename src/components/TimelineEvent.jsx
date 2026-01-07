@@ -82,7 +82,7 @@ const TimelineEvent = () => {
       }
 
       const queryString = queryParams.toString();
-      navigateTo(`/reminders${queryString ? `?${queryString}` : ''}`, { state: { email } });
+      navigateTo(`/reminders/${event.thread_id_c}`, { state: { email } });
       return;
     }
 
@@ -176,13 +176,11 @@ const TimelineEvent = () => {
                         alt="icon"
                       />
                     </div>
-
                     <div
                       className="bg-gradient-to-r from-purple-600 to-blue-600 
                                  absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
                     />
                   </div>
-
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
                       ${index === 0

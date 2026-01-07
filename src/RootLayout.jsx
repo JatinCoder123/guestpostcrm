@@ -1,6 +1,6 @@
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -65,6 +65,19 @@ const RootLayout = () => {
 
   const dispatch = useDispatch();
   const location = useLocation().pathname.split("/")[2];
+  const pathname = useLocation().pathname;
+  const mainRef = useRef(null);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [pathname]);
+
 
   // Show avatar when new avatar arrives
   useEffect(() => {
@@ -318,9 +331,9 @@ const RootLayout = () => {
 
             {/* Main content scrolls independently */}
             <main
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                collapsed ? "ml-4" : "ml-0"
-              }`}
+              ref={mainRef}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+                }`}
             >
               <div className="p-6">
                 <WelcomeHeader />

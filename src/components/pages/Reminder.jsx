@@ -14,17 +14,19 @@ import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { LoadingChase } from "../Loading";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { excludeEmail } from "../../assets/assets";
+import { ViewReminder } from "../ViewReminder";
 
 export function ReminderPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { state } = useLocation();
-
+  const { id } = useParams();
+  const navigate = useNavigate()
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("pending");
-  const [selectedSort, setSelectedSort] = useState("");
   const dispatch = useDispatch();
+  const [open, setOpen] = useState(true)
   const [sendReminderLoading, setSendReminderLoading] = useState(false);
   const [sendReminderId, setSendReminderId] = useState(null);
 
@@ -270,6 +272,7 @@ export function ReminderPage() {
         showDownload={true}
         className="mb-6"
       />
+      {id && open && <ViewReminder onClose={() => setOpen(false)} loading={loading} reminder={reminders.find((reminder) => reminder.thread_id === id)} />}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -346,7 +349,6 @@ export function ReminderPage() {
             </a>
           </div>
         </div>
-
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
