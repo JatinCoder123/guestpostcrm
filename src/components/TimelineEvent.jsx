@@ -6,40 +6,33 @@ import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const TimelineEvent = () => {
-  const { ladger } = useSelector((state) => state.ladger);
+  const { ladger, email } = useSelector((state) => state.ladger);
   const navigateTo = useNavigate();
 
-  // Function to extract contact ID from event data
   const getContactIdFromEvent = (event) => {
-    // Check if event has contact_id directly
     if (event.contact_id) {
       return event.contact_id;
     }
-    
-    // Check if parent_id might be contact ID (when module is Contacts)
+
     if (event.module === "Contacts" && event.parent_id) {
       return event.parent_id;
     }
-    
-    // Check if there's a parent_type contact with parent_id
+
     if (event.parent_type === "Contacts" && event.parent_id) {
       return event.parent_id;
     }
-    
-    // Try to extract from description or subject
+
     if (event.description || event.subject) {
       const text = (event.description || event.subject).toLowerCase();
-      // Look for patterns like "Contact: John Doe (ID: 123)"
       const idMatch = text.match(/id[: ]\s*(\d+)/i);
       if (idMatch) {
         return idMatch[1];
       }
     }
-    
+
     return null;
   };
 
-  // Function to map timeline event types to reminder filter types
   const getReminderFilterType = (eventType) => {
     if (!eventType) return "";
 
@@ -77,19 +70,19 @@ const TimelineEvent = () => {
     if (lowerType.includes("scheduled") || lowerType.includes("reminder")) {
       const filterType = getReminderFilterType(type);
       let queryParams = new URLSearchParams();
-      
+
       // Add filter type if available
       if (filterType) {
         queryParams.append('filter', filterType);
       }
-      
+
       // Add contact ID if available (for single contact filtering)
       if (contactId) {
         queryParams.append('contact_id', contactId);
       }
-      
+
       const queryString = queryParams.toString();
-      navigateTo(`/reminders${queryString ? `?${queryString}` : ''}`);
+      navigateTo(`/reminders${queryString ? `?${queryString}` : ''}`, { state: { email } });
       return;
     }
 
@@ -135,9 +128,9 @@ const TimelineEvent = () => {
   // Function to get appropriate icon based on event type
   const getEventIcon = (eventType) => {
     if (!eventType) return "https://img.icons8.com/bubbles/100/new-post.png";
-    
+
     const typeLower = eventType.toLowerCase();
-    
+
     if (typeLower.includes("contact")) {
       return "https://img.icons8.com/color/96/contacts.png";
     }
@@ -172,19 +165,19 @@ const TimelineEvent = () => {
   const getTooltipText = (event) => {
     const type = event.type_c || "";
     const contactName = event.contact_name || "";
-    const isReminderEvent = type.toLowerCase().includes("scheduled") || 
-                           type.toLowerCase().includes("reminder");
-    
+    const isReminderEvent = type.toLowerCase().includes("scheduled") ||
+      type.toLowerCase().includes("reminder");
+
     if (isReminderEvent) {
       const filterType = getReminderFilterType(type);
       const contactText = contactName ? ` for ${contactName}` : "";
       return `View ${type} reminders${contactText}`;
     }
-    
+
     if (type.toLowerCase().includes("contact")) {
       return contactName ? `View ${contactName}` : "View contact details";
     }
-    
+
     return event.description || "View details";
   };
 
@@ -202,12 +195,12 @@ const TimelineEvent = () => {
             {ladger.map((event, index) => {
               const type = event.type_c || "";
               const lowerType = type.toLowerCase();
-              const isReminderEvent = lowerType.includes("scheduled") || 
-                                     lowerType.includes("reminder");
+              const isReminderEvent = lowerType.includes("scheduled") ||
+                lowerType.includes("reminder");
               const isContactEvent = lowerType.includes("contact");
               const filterType = isReminderEvent ? getReminderFilterType(type) : null;
               const contactId = getContactIdFromEvent(event);
-              
+
               return (
                 <div key={event.id} className="relative flex items-start gap-4">
                   <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">
@@ -242,7 +235,7 @@ const TimelineEvent = () => {
                           <Eye
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110
-                              ${isReminderEvent ? 'text-purple-600' : 
+                              ${isReminderEvent ? 'text-purple-600' :
                                 isContactEvent ? 'text-green-600' : 'text-blue-600'}`}
                           />
 
@@ -256,7 +249,7 @@ const TimelineEvent = () => {
                                        pointer-events-none z-50"
                           >
                             {getTooltipText(event)}
-                            
+
                             {/* Show filter info for reminders */}
                             {isReminderEvent && filterType && (
                               <div className="text-xs text-gray-300 mt-1">
@@ -264,7 +257,7 @@ const TimelineEvent = () => {
                                 {contactId && " • Single Contact"}
                               </div>
                             )}
-                            
+
                             {/* Show contact info for contact events */}
                             {isContactEvent && contactId && (
                               <div className="text-xs text-gray-300 mt-1">
@@ -295,14 +288,14 @@ const TimelineEvent = () => {
                     {event.subject && (
                       <div className="text-sm text-gray-600">{event.subject}</div>
                     )}
-                    
+
                     {/* Show contact name if available */}
                     {event.contact_name && (
                       <div className="text-sm text-gray-700 mt-1">
                         <span className="font-medium">Contact:</span> {event.contact_name}
                       </div>
                     )}
-                    
+
                     {/* Additional info about the event */}
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                       {event.assigned_user_name && (
@@ -313,7 +306,7 @@ const TimelineEvent = () => {
                           {event.assigned_user_name}
                         </span>
                       )}
-                      
+
                       {event.module && (
                         <span className="flex items-center gap-1">
                           <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
