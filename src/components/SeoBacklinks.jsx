@@ -1,5 +1,5 @@
 import { Pencil, Trash } from "lucide-react";
-import { FiLink, FiTag, FiLayers, FiAlertTriangle } from "react-icons/fi";
+import { FiLink, FiTag, FiLayers, FiAlertTriangle, FiHash} from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -114,10 +114,10 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                     />
 
                     {/* Our link */}
-                    {item.type === "li" ? (
-                      <OurLink link={item.target_url} label="Our Link" />
+                    {item.type_c === "LI" ? (
+                      <OurLink link={item.target_url_c} label="Our Link" />
                     ) : (
-                      <OurLink link={item.gp_doc_url} label="Doc Link" />
+                      <OurLink link={item.gp_doc_url_c} label="Doc Link" />
                     )}
                   </div>
                 </div>
@@ -142,14 +142,20 @@ export function TheirLink({ data }) {
 
       {/* META INFO */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <p className="text-xs text-slate-500">Backlink ID</p>
+            <p className="text-sm text-slate-700 font-medium break-all">
+              {data.backlink_id || "-"}
+            </p>
+          </div>
         {/* Anchor Text */}
-          {data.type == "li" && 
+          {data.type_c == "LI" && 
           <div className="flex items-start gap-2">
           <FiTag className="text-slate-400 mt-0.5" size={14} />
           <div>
             <p className="text-xs text-slate-500">Anchor Text</p>
             <p className="text-sm text-slate-700 font-medium break-all">
-              {data.anchor_text || "-"}
+              {data.anchor_text_c || "-"}
             </p>
           </div>
         </div>}
@@ -161,7 +167,7 @@ export function TheirLink({ data }) {
           <div>
             <p className="text-xs text-slate-500">Amount</p>
             <p className="text-sm text-slate-700 font-medium">
-              {data.link_amount ?? "-"}
+              {data.link_amount_c ?? "-"}
             </p>
           </div>
         </div>
@@ -172,7 +178,7 @@ export function TheirLink({ data }) {
           <div>
             <p className="text-xs text-slate-500">Type</p>
             <p className="text-sm text-slate-700 font-medium">
-              {data.type || "-"}
+              {data.type_c || "-"}
             </p>
           </div>
         </div>
@@ -195,7 +201,7 @@ export function TheirLink({ data }) {
         <div className="flex items-center gap-2 flex-shrink-0">
           <FiAlertTriangle className="text-yellow-600" size={14} />
           <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-bold">
-            {data.spam_score}
+            {data.spam_score_c}
           </span>
         </div>
       </div>
