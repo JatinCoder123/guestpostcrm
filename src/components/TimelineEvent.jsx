@@ -125,42 +125,6 @@ const TimelineEvent = () => {
     navigateTo("/");
   };
 
-  // Function to get appropriate icon based on event type
-  const getEventIcon = (eventType) => {
-    if (!eventType) return "https://img.icons8.com/bubbles/100/new-post.png";
-
-    const typeLower = eventType.toLowerCase();
-
-    if (typeLower.includes("contact")) {
-      return "https://img.icons8.com/color/96/contacts.png";
-    }
-    if (typeLower.includes("invoice")) {
-      return "https://example.guestpostcrm.com/gp_icons/Invoices.png";
-    }
-    if (typeLower.includes("reminder") || typeLower.includes("scheduled")) {
-      if (typeLower.includes("reply")) {
-        return "https://example.guestpostcrm.com/gp_icons/offer.png";
-      }
-      if (typeLower.includes("offer")) {
-        return "https://example.guestpostcrm.com/gp_icons/offer.png";
-      }
-      if (typeLower.includes("deal")) {
-        return "https://example.guestpostcrm.com/gp_icons/deal.png";
-      }
-      if (typeLower.includes("order")) {
-        return "https://example.guestpostcrm.com/gp_icons/order.png";
-      }
-      if (typeLower.includes("payment")) {
-        return "https://img.icons8.com/color/96/money-transfer.png";
-      }
-      if (typeLower.includes("follow")) {
-        return "https://img.icons8.com/color/96/follow.png";
-      }
-      return "https://img.icons8.com/color/96/alarm-clock.png";
-    }
-    return "https://img.icons8.com/bubbles/100/new-post.png";
-  };
-
   // Function to get tooltip text based on event type and contact
   const getTooltipText = (event) => {
     const type = event.type_c || "";
@@ -208,7 +172,7 @@ const TimelineEvent = () => {
                       <img
                         width="40"
                         height="40"
-                        src={getEventIcon(type)}
+                        src={event.icon}
                         alt="icon"
                       />
                     </div>
