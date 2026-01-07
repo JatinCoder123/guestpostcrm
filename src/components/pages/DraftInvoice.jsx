@@ -15,14 +15,21 @@ import SearchComponent from "./SearchComponent";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 // import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 import Pagination from "../Pagination";
 import { getDraftInvoice } from "../../store/Slices/draftInvoice.js";
 export function DraftInvoice() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
 
   const {  detection = [], count } = useSelector(
     (state) => state.DraftInvoice
+
+
   );
 
   const [topsearch, setTopsearch] = useState("");
@@ -118,8 +125,6 @@ const [selectedSort, setSelectedSort] = useState('');
     
 
 
-
-
   useEffect(() => {
     dispatch(getDraftInvoice());
   }, [dispatch]);
@@ -148,6 +153,13 @@ const [selectedSort, setSelectedSort] = useState('');
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
+              {/* Back Button */}
+  <button
+    onClick={() => navigate(-1)}
+    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm "
+  >
+    <ArrowLeft className="w-5 h-5 text-green-700" />
+  </button>
             <Laptop className="w-6 h-6 text-green-600" />
             <h2 className="text-xl text-gray-900">DraftInvoice</h2>
           </div>
@@ -184,7 +196,7 @@ const [selectedSort, setSelectedSort] = useState('');
                 ))}
             </tbody>
           </table>
-        </div>
+        </div>   
 
         {/* Pagination – SAME AS DEFUALTER */}
         {filteredEmails.length > 0 && (

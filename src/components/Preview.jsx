@@ -35,7 +35,6 @@ export default function Preview({
     type,
     userEmail,
     websiteKey,
-    orderID = "order_id",
     amountKey
 }) {
 
@@ -43,7 +42,7 @@ export default function Preview({
         <>
             <div id="sugar_text_copy-area">
                 <table
-                    style={{ width: "100%" }}
+                    style={{ maxWidth: "750px", margin : "auto" }}
                     border="0"
                     cellSpacing="0"
                     cellPadding="0"
@@ -165,7 +164,7 @@ export default function Preview({
                                                                                 letterSpacing: "0.5px",
                                                                             }}
                                                                         >
-                                                                            {type == "Orders" ? "OrderID" : "Websites"}
+                                                                            Website
                                                                         </th>
                                                                         <th
                                                                             style={{
@@ -196,7 +195,7 @@ export default function Preview({
 
                                                                 <tbody>
                                                                     {data.map((d, i) => (
-                                                                        <tr
+                                                                     <tr
                                                                             key={i}
                                                                             style={{
                                                                                 background: i % 2 === 0 ? "#FFFDF6" : "#FFF9E6",
@@ -219,7 +218,7 @@ export default function Preview({
                                                                                         borderRadius: "50%",
                                                                                         background: "#06D6A0"
                                                                                     }}></div>
-                                                                                    {type == "Orders" ? d[orderID] || "(no Id)" : d[websiteKey] || "(no Site)"}
+                                                                                    {d[websiteKey] || "(no website)"}
                                                                                 </div>
                                                                             </td>
 
@@ -280,11 +279,11 @@ export default function Preview({
                                             </td>
                                         </tr>
 
-                                        {/* ========================= GUIDELINES ========================= */}
+                                      
                                         {/* ========================= IMPORTANT GUIDELINES (EMAIL SAFE) ========================= */}
 <tr>
-  <td align="center" style={{ padding: "20px 0" ,background:"#ffffff" }}>
-    <table width="650" cellPadding="0" cellSpacing="0" style={{ background:"#ffffff", fontFamily:"Arial, Helvetica, sans-serif" }}>
+  <td align="center" style={{ padding: "20px 0" , }}>
+    <table width="650" cellPadding="0" cellSpacing="0" style={{ background:"#ffffff", fontFamily:"Arial, Helvetica, sans-serif" , padding:"10px" , borderRadius: "10px" ,}}>
       <tbody>
 
         {/* Header */}
@@ -345,167 +344,295 @@ export default function Preview({
     </table>
   </td>
 </tr>
-
+{/* start by kjl */}
                                         {/* ========================= PAYMENT SECTION ========================= */}
-                                        <tr><td style={{ padding: "20px" }}>&nbsp;</td></tr>
+                                     <tr>
+  <td align="center" style={{ padding: "20px" }}>
+    <table
+      width="617"
+      cellPadding="0"
+      cellSpacing="0"
+      border="0"
+      style={{
+        maxWidth: "617px",
+        background: "#FFF9E6",
+        borderRadius: "12px",
+        border: "1px solid #FFD166",
+      }}
+    >
+      <tbody>
+        <tr>
+          <td style={{ padding: "30px" }}>
+            
+            {/* Header */}
+            <table width="100%" cellPadding="0" cellSpacing="0" border="0">
+              <tbody>
+                <tr>
+                  <td
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "700",
+                      color: "#2c3e50",
+                      paddingBottom: "20px",
+                    }}
+                  >
+                    Payment Methods
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-                                        <tr>
-                                            <td>
-                                                <div style={{
-                                                    maxWidth: "650px",
-                                                    margin: "0 auto",
-                                                    background: "linear-gradient(135deg, #FFFDF6, #FFF9E6)",
-                                                    borderRadius: "12px",
-                                                    padding: "30px",
-                                                    boxShadow: "0 5px 15px rgba(0,0,0,0.05)",
-                                                    border: "1px solid #FFD166"
-                                                }}>
-                                                    <h3 style={{ 
-                                                        color: "#2c3e50",
-                                                        fontSize: "18px",
-                                                        fontWeight: "700",
-                                                        marginBottom: "20px",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "10px"
-                                                    }}>
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFB347">
-                                                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
-                                                        </svg>
-                                                        Payment Methods
-                                                    </h3>
+            {/* PayPal */}
+            <table
+              width="100%"
+              cellPadding="0"
+              cellSpacing="0"
+              border="0"
+              style={{
+                background: "#ffffff",
+                border: "1px solid #FFECB3",
+                borderRadius: "8px",
+                marginBottom: "15px",
+              }}
+            >
+              <tbody>
+                <tr>
+                  <td width="60" align="center" style={{ padding: "15px" }}>
+                    <table
+                      width="40"
+                      height="40"
+                      cellPadding="0"
+                      cellSpacing="0"
+                      border="0"
+                      style={{
+                        background: "#003087",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <tbody>
+                        <tr>
+                          <td
+                            align="center"
+                            style={{
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "16px",
+                            }}
+                          >
+                            PP
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
 
-                                                    <div style={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        gap: "15px"
-                                                    }}>
-                                                        <div style={{
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: "12px",
-                                                            padding: "15px",
-                                                            background: "white",
-                                                            borderRadius: "8px",
-                                                            border: "1px solid #FFECB3"
-                                                        }}>
-                                                            <div style={{
-                                                                width: "40px",
-                                                                height: "40px",
-                                                                borderRadius: "8px",
-                                                                background: "linear-gradient(135deg, #003087, #009cde)",
-                                                                display: "flex",
-                                                                alignItems: "center",
-                                                                justifyContent: "center"
-                                                            }}>
-                                                                <span style={{ 
-                                                                    color: "white", 
-                                                                    fontWeight: "bold", 
-                                                                    fontSize: "16px" 
-                                                                }}>PP</span>
-                                                            </div>
-                                                            <div>
-                                                                <div style={{
-                                                                    fontWeight: "600",
-                                                                    color: "#2c3e50",
-                                                                    marginBottom: "2px"
-                                                                }}>PayPal</div>
-                                                                <div style={{ color: "#666", fontSize: "14px" }}>
-                                                                    <strong>pay@outrightcrm.com</strong>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                  <td style={{ padding: "15px" }}>
+                    <table cellPadding="0" cellSpacing="0" border="0">
+                      <tbody>
+                        <tr>
+                          <td
+                            style={{
+                              fontWeight: "600",
+                              color: "#2c3e50",
+                              fontSize: "15px",
+                            }}
+                          >
+                            PayPal
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              fontSize: "14px",
+                              color: "#666",
+                              textDecoration: "none",
+                            }}
+                          >
+                            <strong>pay@outrightcrm.com</strong>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-                                                        <div style={{
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: "12px",
-                                                            padding: "15px",
-                                                            background: "white",
-                                                            borderRadius: "8px",
-                                                            border: "1px solid #FFECB3"
-                                                        }}>
-                                                            <div style={{
-                                                                width: "40px",
-                                                                height: "40px",
-                                                                borderRadius: "8px",
-                                                                background: "linear-gradient(135deg, #FF4800, #FF6B35)",
-                                                                display: "flex",
-                                                                alignItems: "center",
-                                                                justifyContent: "center"
-                                                            }}>
-                                                                <span style={{ 
-                                                                    color: "white", 
-                                                                    fontWeight: "bold", 
-                                                                    fontSize: "16px" 
-                                                                }}>PO</span>
-                                                            </div>
-                                                            <div>
-                                                                <div style={{
-                                                                    fontWeight: "600",
-                                                                    color: "#2c3e50",
-                                                                    marginBottom: "2px"
-                                                                }}>Payoneer</div>
-                                                                <div style={{ color: "#666", fontSize: "14px" }}>
-                                                                    <strong>ashish@outrightcrm.com</strong>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+            {/* Payoneer */}
+            <table
+              width="100%"
+              cellPadding="0"
+              cellSpacing="0"
+              border="0"
+              style={{
+                background: "#ffffff",
+                border: "1px solid #FFECB3",
+                borderRadius: "8px",
+              }}
+            >
+              <tbody>
+                <tr>
+                  <td width="60" align="center" style={{ padding: "15px" }}>
+                    <table
+                      width="40"
+                      height="40"
+                      cellPadding="0"
+                      cellSpacing="0"
+                      border="0"
+                      style={{
+                        background: "#FF6B35",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <tbody>
+                        <tr>
+                          <td
+                            align="center"
+                            style={{
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "16px",
+                            }}
+                          >
+                            PO
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+
+                  <td style={{ padding: "15px" }}>
+                    <table cellPadding="0" cellSpacing="0" border="0">
+                      <tbody>
+                        <tr>
+                          <td
+                            style={{
+                              fontWeight: "600",
+                              color: "#2c3e50",
+                              fontSize: "15px",
+                            }}
+                          >
+                            Payoneer
+                          </td>
+                        </tr>
+                        <tr>
+                          <td
+                            style={{
+                              fontSize: "14px",
+                              color: "#666",
+                              textDecoration: "none",
+                            }}
+                          >
+                            <strong>ashish@outrightcrm.com</strong>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </td>
+</tr>
+
 
                                         {/* ========================= POLICY LINKS ========================= */}
                                         <tr><td style={{ padding: "20px" }}>&nbsp;</td></tr>
 
-                                        <tr>
-                                            <td>
-                                                <div style={{
-                                                    maxWidth: "650px",
-                                                    margin: "0 auto",
-                                                    textAlign: "center"
-                                                }}>
-                                                    <div style={{
-                                                        display: "flex",
-                                                        gap: "12px",
-                                                        justifyContent: "center",
-                                                        flexWrap: "wrap"
-                                                    }}>
-                                                        {[
-                                                            ["URL Policy", "https://www.outrightcrm.com/anchor-url-policy-2/"],
-                                                            ["Anchor Text Policy", "https://www.outrightcrm.com/anchor-text-policy/"],
-                                                            ["Content Policy", "https://www.outrightcrm.com/policy-for-blog-submissions/"],
-                                                        ].map(([label, link]) => (
-                                                            <a
-                                                                key={label}
-                                                                style={{
-                                                                    padding: "12px 20px",
-                                                                    border: "2px solid #FFD166",
-                                                                    fontSize: "14px",
-                                                                    color: "#2c3e50",
-                                                                    textDecoration: "none",
-                                                                    display: "inline-flex",
-                                                                    alignItems: "center",
-                                                                    gap: "8px",
-                                                                    background: "white",
-                                                                    borderRadius: "8px",
-                                                                    fontWeight: "600",
-                                                                    transition: "all 0.3s ease",
-                                                                }}
-                                                                href={link}
-                                                            >
-                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFB347">
-                                                                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
-                                                                </svg>
-                                                                {label}
-                                                            </a>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                     <tr>
+  <td align="center" style={{ padding: "20px" }}>
+    <table
+      width="650"
+      cellPadding="0"
+      cellSpacing="0"
+      border="0"
+      style={{ maxWidth: "650px", margin: "0 auto" }}
+    >
+      <tbody>
+        <tr>
+          <td align="center">
+            <table cellPadding="0" cellSpacing="0" border="0">
+              <tbody>
+                <tr>
 
+                  {/* URL Policy */}
+                  <td align="center" style={{ padding: "6px" }}>
+                    <a
+                      href="https://www.outrightcrm.com/anchor-url-policy-2/"
+                      style={{
+                        display: "inline-block",
+                        padding: "12px 20px",
+                        border: "2px solid #FFD166",
+                        fontSize: "14px",
+                        color: "#2c3e50",
+                        textDecoration: "none",
+                        backgroundColor: "#ffffff",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      URL Policy
+                    </a>
+                  </td>
+
+                  {/* Anchor Text Policy */}
+                  <td align="center" style={{ padding: "6px" }}>
+                    <a
+                      href="https://www.outrightcrm.com/anchor-text-policy/"
+                      style={{
+                        display: "inline-block",
+                        padding: "12px 20px",
+                        border: "2px solid #FFD166",
+                        fontSize: "14px",
+                        color: "#2c3e50",
+                        textDecoration: "none",
+                        backgroundColor: "#ffffff",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Anchor Text Policy
+                    </a>
+                  </td>
+
+                  {/* Content Policy */}
+                  <td align="center" style={{ padding: "6px" }}>
+                    <a
+                      href="https://www.outrightcrm.com/policy-for-blog-submissions/"
+                      style={{
+                        display: "inline-block",
+                        padding: "12px 20px",
+                        border: "2px solid #FFD166",
+                        fontSize: "14px",
+                        color: "#2c3e50",
+                        textDecoration: "none",
+                        backgroundColor: "#ffffff",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Content Policy
+                    </a>
+                  </td>
+
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </td>
+</tr>
+{/* by kjl */}
                                     </tbody>
                                 </table>
                             </td>
@@ -516,3 +643,5 @@ export default function Preview({
         </>
     );
 }
+
+
