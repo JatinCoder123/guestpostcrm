@@ -14,10 +14,13 @@ import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { LoadingChase } from "../Loading";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
+import { excludeEmail } from "../../assets/assets";
 
 export function ReminderPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { state } = useLocation();
+
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("pending");
   const [selectedSort, setSelectedSort] = useState("");
@@ -28,7 +31,10 @@ export function ReminderPage() {
   const { orderRem, dropdownOptions, count, loading, error } = useSelector(
     (state) => state.orderRem
   );
-  
+  const { crmEndpoint } = useSelector(
+    (state) => state.user
+  );
+
   // Create enhanced dropdown options with "Pending" filter
   const enhancedDropdownOptions = [
     { value: "all", label: "All Reminders" },
@@ -46,48 +52,47 @@ export function ReminderPage() {
     if (urlFilter) {
       // Decode the filter from URL
       const decodedFilter = decodeURIComponent(urlFilter);
-     
-      
+
+
       // Find matching option from dropdown
-      let matchingOption = enhancedDropdownOptions.find(option => 
+      let matchingOption = enhancedDropdownOptions.find(option =>
         option.value.toLowerCase() === decodedFilter.toLowerCase() ||
         option.label.toLowerCase().includes(decodedFilter.toLowerCase()) ||
         decodedFilter.toLowerCase().includes(option.value.toLowerCase())
       );
-      
+
       if (!matchingOption) {
         // Try to match by converting underscores to spaces
         const filterWithSpaces = decodedFilter.replace(/_/g, ' ');
-        matchingOption = enhancedDropdownOptions.find(option => 
+        matchingOption = enhancedDropdownOptions.find(option =>
           option.value.toLowerCase() === filterWithSpaces.toLowerCase() ||
           option.label.toLowerCase().includes(filterWithSpaces.toLowerCase())
         );
-        
+
         if (matchingOption) {
-     
+
           setSelectedCategory(matchingOption.value);
         } else {
-          
+
           setSelectedCategory(decodedFilter);
         }
       } else {
 
         setSelectedCategory(matchingOption.value);
       }
-      
+
       // Clear the URL parameter after applying
       searchParams.delete('filter');
       setSearchParams(searchParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-
   async function sendReminder(reminderId) {
     setSendReminderLoading(true);
     setSendReminderId(reminderId);
 
     axios
       .get(
-        `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=send_reminder&reminder_id=${reminderId}`
+        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`
       )
       .then((res) => {
         if (res.data?.success) {
@@ -107,12 +112,15 @@ export function ReminderPage() {
   }
 
   useEffect(() => {
-    if (selectedCategory === "all" || selectedCategory === "pending") {
+    if (state?.email) {
+      dispatch(getOrderRem(state.email, 1));
+    }
+    else if (selectedCategory === "all" || selectedCategory === "pending") {
       dispatch(getOrderRem(null, 1));
     } else {
       dispatch(getOrderRem(email, 1));
     }
-  }, [email, selectedCategory, dispatch]);
+  }, [email, state?.email, selectedCategory, dispatch]);
 
   // Function to normalize reminder type for comparison
   const normalizeType = (type) => {
@@ -124,126 +132,107 @@ export function ReminderPage() {
   };
 
   useEffect(() => {
-    
-    
-    // Filter reminders based on selected category
     let filteredReminders = [...orderRem];
-    
+
     if (selectedCategory === "pending") {
-      // Show only pending reminders
       filteredReminders = orderRem.filter(
         reminder => reminder.status.toLowerCase() === 'pending'
       );
-    
+
     } else if (selectedCategory !== "all") {
       // Normalize the selected category
       const normalizedSelectedCategory = normalizeType(selectedCategory);
-     
-      
+
+
       // Filter by reminder type
       filteredReminders = orderRem.filter(reminder => {
         const reminderType = reminder.reminder_type || '';
         const reminderTypeLabel = reminder.reminder_type_label || '';
-        
+
         // Normalize both for comparison
         const normalizedReminderType = normalizeType(reminderType);
         const normalizedReminderTypeLabel = normalizeType(reminderTypeLabel);
-        
-     
+
+
         // Check for matches
         const matchesType = normalizedReminderType.includes(normalizedSelectedCategory) ||
-                           normalizedSelectedCategory.includes(normalizedReminderType);
-        
+          normalizedSelectedCategory.includes(normalizedReminderType);
+
         const matchesLabel = normalizedReminderTypeLabel.includes(normalizedSelectedCategory) ||
-                            normalizedSelectedCategory.includes(normalizedReminderTypeLabel);
-        
+          normalizedSelectedCategory.includes(normalizedReminderTypeLabel);
+
         return matchesType || matchesLabel;
       });
-      
-    
-      
+
+
+
       // If no matches found with type filtering, show pending of all types
       if (filteredReminders.length === 0) {
-      
+
         filteredReminders = orderRem.filter(
           reminder => reminder.status.toLowerCase() === 'pending'
         );
       }
     }
-    
+
     // Apply search filter if any
     if (topsearch) {
       const searchLower = topsearch.toLowerCase();
-      filteredReminders = filteredReminders.filter(reminder => 
+      filteredReminders = filteredReminders.filter(reminder =>
         reminder.real_name?.toLowerCase().includes(searchLower) ||
         reminder.reminder_type?.toLowerCase().includes(searchLower) ||
         reminder.reminder_type_label?.toLowerCase().includes(searchLower)
       );
     }
-    
     setReminders(filteredReminders);
-  }, [selectedCategory, orderRem, topsearch]);
+  }, [selectedCategory, orderRem, state?.email, topsearch]);
 
   const getDisplayLabel = (type) => {
-    
-    
+
+
     // Handle URL filter types that might not be in dropdown
     if (type && type.includes('_')) {
       const label = type.replace(/_/g, ' ') + ' Reminders';
-      
+
       return label;
     }
-    
-    const option = enhancedDropdownOptions.find((option) => 
-      option.value === type || 
+
+    const option = enhancedDropdownOptions.find((option) =>
+      option.value === type ||
       option.label.toLowerCase().includes(type?.toLowerCase() || '')
     );
-    
+
     const result = option ? option.label : (type || 'All Reminders');
-   
+
     return result;
   };
 
   // Calculate stats
-  const pendingCount = orderRem.filter(order => 
+  const pendingCount = orderRem.filter(order =>
     order.status.toLowerCase() === 'pending'
   ).length;
-  
-  const sentCount = orderRem.filter(order => 
+
+  const sentCount = orderRem.filter(order =>
     order.status.toLowerCase() === 'sent'
   ).length;
-  
-  const cancelledCount = orderRem.filter(order => 
+
+  const cancelledCount = orderRem.filter(order =>
     order.status.toLowerCase() === 'cancel'
   ).length;
 
-  const filterOptions = [
-    { value: "asc", label: "A to Z" },
-    { value: "desc", label: "Z to A" },
-    { value: "newest", label: "Newest First" },
-    { value: "oldest", label: "Oldest First" },
-  ];
 
   const handleFilterApply = (filters) => {
-   
+
   };
 
   const handleSearchChange = (value) => {
-    
     setTopsearch(value);
   };
 
   const handleCategoryChange = (value) => {
-   
     setSelectedCategory(value);
   };
-
-  const handleSortChange = (value) => {
-    setSelectedSort(value);
-  };
-
   const handleDownload = () => {
-  
   };
 
   // Check if we came from timeline
@@ -357,7 +346,7 @@ export function ReminderPage() {
             </a>
           </div>
         </div>
-        
+
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -432,13 +421,12 @@ export function ReminderPage() {
                       {order.scheduled_time || 'N/A'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        order.status.toLowerCase() === 'pending' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : order.status.toLowerCase() === 'sent'
+                      <span className={`px-2 py-1 rounded-full text-xs ${order.status.toLowerCase() === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : order.status.toLowerCase() === 'sent'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
-                      }`}>
+                        }`}>
                         {order.status}
                       </span>
                     </td>
@@ -448,11 +436,10 @@ export function ReminderPage() {
                       ) : (
                         <button
                           className={`px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm
-                            ${
-                              order.status === "Sent" ||
+                            ${order.status === "Sent" ||
                               order.status === "cancel"
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
                             }
                           `}
                           onClick={() => sendReminder(order.id)}
@@ -475,7 +462,7 @@ export function ReminderPage() {
             </tbody>
           </table>
         </div>
-        
+
         {!loading && reminders.length > 0 && (
           <Pagination slice={"orderRem"} fn={getOrderRem} />
         )}

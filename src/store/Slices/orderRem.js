@@ -46,7 +46,7 @@ export const getOrderRem = (email, page) => {
         `${getState().user.crmEndpoint
         }&type=all_reminders&filter=${getState().ladger.timeline}${email ? `&email=${email}` : ""}&page=${page}&page_size=50`
       );
-      console.log(`Orders Rem`, data);
+      console.log(`Reminders`, data);
       dispatch(
         orderRemSlice.actions.getOrderRemSucess({
           count: data.data_count ?? 0,
@@ -64,7 +64,7 @@ export const getOrderRem = (email, page) => {
       dispatch(orderRemSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        orderRemSlice.actions.getOrderRemFailed("Fetching Orders Rem  Failed")
+        orderRemSlice.actions.getOrderRemFailed("Fetching  Reminders  Failed")
       );
     }
   };
