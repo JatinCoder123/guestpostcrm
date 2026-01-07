@@ -5,12 +5,17 @@ import {
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { getEvents } from "../../store/Slices/eventSlice";
+import { extractEmail } from "../../assets/assets";
+import { PageContext } from "../../context/pageContext";
+import { useNavigate } from "react-router-dom";
 
 export function RecentEntry() {
   const dispatch = useDispatch();
   const { events, loading } = useSelector((state) => state.events);
+    const { setEnteredEmail, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
+     const navigateTo = useNavigate();
 
   useEffect(() => {
     dispatch(getEvents("all"));
@@ -59,7 +64,14 @@ export function RecentEntry() {
               className="grid grid-cols-4 py-5 border-b text-gray-800 hover:bg-gray-50 transition"
             >
               {/* Date */}
-              <div className="flex items-center gap-3 text-[17px]">
+              <div className="flex items-center gap-3 text-[17px]" onClick={() => {
+                      const input = extractEmail(event.name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
+                      navigateTo("/");
+                    }}>
                 <CalendarDays size={20} className="text-green-700" />
                 {event.date_entered ?? "—"}
               </div>
@@ -68,18 +80,44 @@ export function RecentEntry() {
 
 
               {/* Email */}
-              <div className="flex items-center gap-3 text-[17px] text-blue-600  cursor-pointer">
+              <div className="flex items-center gap-3 text-[17px] text-blue-600  cursor-pointer" 
+              onClick={() => {
+                      const input = extractEmail(event.name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
+                      navigateTo("/contacts");
+                    }}>
+
                
                 {event.real_name?.split("<")[0].trim() ?? "—"}
               </div>
 
-               <div className="flex items-center gap-3 text-[17px] text-blue-600 underline cursor-pointer">
+               <div className="flex items-center gap-3 text-[17px] text-blue-600 underline cursor-pointer"
+               onClick={() => {
+                      const input = extractEmail(event.name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
+                      navigateTo("/");
+                    }}
+               >
                 <Mail size={20} className="text-blue-600" />
                 {event.name?.split("<")[0].trim() ?? "—"}
               </div>
 
               {/* Recent Activity */}
-              <div className="flex items-center gap-3 text-[17px] truncate max-w-[600px]">
+              <div className="flex items-center gap-3 text-[17px] truncate max-w-[600px]"
+              onClick={() => {
+                      const input = extractEmail(event.name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
+                      navigateTo("/");
+                    }}>
                 <Activity size={20} className="text-purple-600" />
                 {event.recent_activity ?? "—"}
               </div>
