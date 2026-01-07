@@ -17,9 +17,13 @@ import { useSelector, useDispatch } from "react-redux";
 import Pagination from "../Pagination";
 import { getTags, tagActions } from "../../store/Slices/tag";
 import CreateTag from "./CreateTag";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 export function TagManagerpage() {
   const dispatch = useDispatch();
+   const navigate = useNavigate();
   const { tags, count, creating } = useSelector((state) => state.tag);
   
   const [topsearch, setTopsearch] = useState('');
@@ -157,6 +161,13 @@ export function TagManagerpage() {
           {/* Header with Create Button */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
+                      {/* Back Button */}
+  <button
+    onClick={() => navigate(-1)}
+    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm "
+  >
+    <ArrowLeft className="w-5 h-5 text-green-700" />
+  </button>
               <TagIcon className="w-6 h-6 text-green-600" />
               <h2 className="text-xl text-gray-900">Tag Manager</h2>
               <a 
