@@ -1,5 +1,5 @@
 import { Pencil, Trash } from "lucide-react";
-import { FiLink, FiTag, FiLayers, FiAlertTriangle } from "react-icons/fi";
+import { FiLink, FiTag, FiLayers, FiAlertTriangle, FiHash} from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -142,6 +142,12 @@ export function TheirLink({ data }) {
 
       {/* META INFO */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <p className="text-xs text-slate-500">Backlink ID</p>
+            <p className="text-sm text-slate-700 font-medium break-all">
+              {data.backlink_id || "-"}
+            </p>
+          </div>
         {/* Anchor Text */}
           {data.type == "li" && 
           <div className="flex items-start gap-2">
