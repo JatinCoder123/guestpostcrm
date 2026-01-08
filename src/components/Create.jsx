@@ -91,7 +91,7 @@ export default function Create({
               d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]
             ).trim() !== "" &&
             Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) >
-              0 &&
+            0 &&
             String(d[websiteKey]).trim() !== ""
         );
       } else if (type == "offers") {
@@ -139,11 +139,10 @@ export default function Create({
                   >
                     <MoveLeft size={16} />
                   </button>
-                  <h3 className="text-2xl font-semibold">{`${
-                    pageType == "view"
-                      ? ""
-                      : pageType.charAt(0).toUpperCase() + pageType.slice(1)
-                  } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
+                  <h3 className="text-2xl font-semibold">{`${pageType == "view"
+                    ? ""
+                    : pageType.charAt(0).toUpperCase() + pageType.slice(1)
+                    } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                 </div>
                 {pageType == "view" && type !== "orders" && (
                   <div className="flex items-center gap-3">
@@ -183,9 +182,8 @@ export default function Create({
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.98 }}
-                          className={`bg-white relative border border-gray-100 p-6 ${
-                            pageType == "edit" && "pb-15"
-                          } rounded-2xl shadow-sm `}
+                          className={`bg-white relative border border-gray-100 p-6 ${pageType == "edit" && "pb-15"
+                            } rounded-2xl shadow-sm `}
                         >
                           {pageType == "view" && (
                             <button
@@ -194,9 +192,8 @@ export default function Create({
                                   state: { email },
                                 })
                               }
-                              className={`flex items-center right-2 absolute ${
-                                !showPreview ? "z-[100]" : ""
-                              } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
+                              className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
+                                } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
                             >
                               <Pencil size={16} />
                             </button>
@@ -221,23 +218,21 @@ export default function Create({
                             <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
                               <button
                                 onClick={() => navigate(-1)}
-                                disabled={updating}
-                                className={`flex items-center gap-2 px-3 py-1.5 ${
-                                  updating ? "cursor-not-allowed" : ""
-                                } bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition`}
+                                disabled={updating || sending}
+                                className={`flex items-center gap-2 px-3 py-1.5 ${(updating || sending) ? "cursor-not-allowed" : ""
+                                  } bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition`}
                               >
                                 Cancel
                               </button>
                               <button
                                 onClick={() => handleUpdate(item)}
-                                disabled={updating}
-                                className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${
-                                  !updating
-                                    ? "bg-green-500 hover:bg-green-600"
-                                    : "bg-green-300 cursor-not-allowed"
-                                }`}
+                                disabled={updating || sending}
+                                className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending)
+                                  ? "bg-green-300 cursor-not-allowed"
+                                  : "bg-green-500 hover:bg-green-600"
+                                  }`}
                               >
-                                {updating ? "Updating..." : "Update"}
+                                {(updating || sending) ? "Updating..." : "Update"}
                               </button>
                             </div>
                           )}
@@ -328,34 +323,20 @@ export default function Create({
 
                   <div className="mt-4 flex gap-3">
                     {pageType == "view" ? (
-                      <>
-                        <button
-                          disabled={data.length === 0}
-                          onClick={() => sendHandler()}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${
-                            sending
-                              ? "bg-green-300 cursor-not-allowed"
-                              : "bg-green-600 hover:bg-green-700"
-                          }`}
-                        >
-                          {sending ? "Sending..." : "Send"}
-                        </button>
-                        <button
-                          onClick={() => setShowPreview(true)}
-                          className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
-                        >
-                          Preview
-                        </button>
-                      </>
+                      <button
+                        onClick={() => setShowPreview(true)}
+                        className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
+                      >
+                        Preview
+                      </button>
                     ) : (
                       <button
                         disabled={data.length === 0 || !valid}
                         onClick={handleSubmit}
-                        className={`w-full px-3 py-2 rounded-lg text-white ${
-                          data.length === 0 || !valid
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700"
-                        }`}
+                        className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700"
+                          }`}
                       >
                         {creating ? "Submitting..." : "Submit"}
                       </button>
@@ -422,11 +403,10 @@ function InputField({
       className={`${inputType === "number" ? "w-30" : "w-full"} max-w-[300px]`}
     >
       <label
-        className={`block mb-1 ${
-          pageType === "view"
-            ? "text-gray-500 text-sm"
-            : "text-xs text-gray-600"
-        } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
+        className={`block mb-1 ${pageType === "view"
+          ? "text-gray-500 text-sm"
+          : "text-xs text-gray-600"
+          } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
       >
         {label}
       </label>
@@ -437,11 +417,10 @@ function InputField({
           value={value}
           onChange={onChange}
           disabled={isDisabled}
-          className={`w-full rounded-xl px-3 py-2 ${
-            pageType === "view" || isDisabled
-              ? "bg-gray-100"
-              : "bg-white border"
-          }`}
+          className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
+            ? "bg-gray-100"
+            : "bg-white border"
+            }`}
         >
           <option value="" disabled>
             Select {label}
@@ -450,15 +429,15 @@ function InputField({
           {/* Order Status (object → key/value) */}
           {label === "Order Status"
             ? Object.entries(statusLists).map(([key, val]) => (
-                <option key={key} value={key}>
-                  {val}
-                </option>
-              ))
+              <option key={key} value={key}>
+                {val}
+              </option>
+            ))
             : websiteLists.map((opt, idx) => (
-                <option key={idx} value={opt}>
-                  {opt}
-                </option>
-              ))}
+              <option key={idx} value={opt}>
+                {opt}
+              </option>
+            ))}
         </select>
       )}
 
@@ -470,11 +449,10 @@ function InputField({
           placeholder={placeholder}
           disabled={isDisabled}
           rows={4}
-          className={`w-full rounded-xl px-3 py-2 resize-none ${
-            pageType === "view" || isDisabled
-              ? "bg-gray-100"
-              : "bg-white border"
-          }`}
+          className={`w-full rounded-xl px-3 py-2 resize-none ${pageType === "view" || isDisabled
+            ? "bg-gray-100"
+            : "bg-white border"
+            }`}
         />
       )}
 
@@ -491,11 +469,10 @@ function InputField({
               type={inputType}
               disabled={isDisabled}
               inputMode={inputType === "number" ? "numeric" : undefined}
-              className={`w-full rounded-xl px-3 py-2 ${
-                pageType === "view" || isDisabled
-                  ? "bg-gray-100"
-                  : "bg-white border"
-              }`}
+              className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
+                ? "bg-gray-100"
+                : "bg-white border"
+                }`}
             />
           </div>
         )}

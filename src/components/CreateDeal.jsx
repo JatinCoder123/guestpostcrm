@@ -101,8 +101,8 @@ export default function CreateDeal() {
       const currentOfferWithoutDeal =
         currentOffers.length > 0
           ? currentOffers.filter(
-              (o) => !currentDeals.some((d) => d.website_c == o.website)
-            )
+            (o) => !currentDeals.some((d) => d.website_c == o.website)
+          )
           : [];
       if (currentOfferWithoutDeal.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
@@ -170,7 +170,7 @@ export default function CreateDeal() {
                 amountKey="dealamount"
               />
             ),
-            "Deal Send Successfully"
+            "Deal Updated and Send Successfully", "Deal Updated But Not Sent!"
           )
         );
         setNonEditDeals([]);
@@ -186,14 +186,14 @@ export default function CreateDeal() {
                 amountKey="dealamount"
               />
             ),
-            "Deal Send Successfully"
+            "Deal Created and Send Successfully", "Deal Created But Not Sent!"
           )
         );
       }
 
-      toast.success(message);
+      // toast.success(message);
       dispatch(dealsAction.clearAllMessages());
-      navigate(-1);
+      // navigate(-1);
     }
     if (error) {
       toast.error(error);
@@ -206,7 +206,7 @@ export default function CreateDeal() {
       }));
       toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
-      navigate(-1);
+      navigate(-2);
     }
     if (sendError) {
       toast.error(sendError);

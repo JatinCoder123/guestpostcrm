@@ -204,7 +204,7 @@ export const editContact = (contactData) => {
   };
 };
 
-export const sendEmail = (reply, message = null) => {
+export const sendEmail = (reply, message = null, error = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
     const threadId = getState().viewEmail.threadId;

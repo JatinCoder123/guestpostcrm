@@ -15,12 +15,6 @@ import { getLadgerWithOutLoading } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
 const fields = [
-  {
-    name: "website_c",
-    label: "Website",
-    type: "select",
-    options: websiteLists,
-  },
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
   { name: "order_status", label: "Order Status", type: "select" },
@@ -109,15 +103,14 @@ export default function CreateOrder() {
             amountKey="total_amount_c"
           />
         ),
-        "Order Send Successfully"
+        "Order Updated and Send Successfully", "Order Updated But Not Sent!"
       ));
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),
       }));
-      toast.success(message);
+      // toast.success(message);
       dispatch(orderAction.clearAllMessages());
-      navigate(-1);
     }
     if (error) {
       toast.error(error);
@@ -129,8 +122,8 @@ export default function CreateOrder() {
         refreshUnreplied: Date.now(),
       }));
       toast.success(sendMessage);
+      navigate(-2);
       dispatch(viewEmailAction.clearAllMessage());
-      navigate(-1);
     }
 
     if (updateLinkMessage) {
