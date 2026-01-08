@@ -164,7 +164,8 @@ export function TopNav() {
               bg-blue-600 text-white rounded-lg
               hover:bg-blue-700
             "
-          >
+          
+          >    
             <Search className="w-4 h-4" />
 
           </button>
