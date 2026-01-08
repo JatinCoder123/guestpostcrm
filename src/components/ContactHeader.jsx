@@ -92,15 +92,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                             </div>
                         </div>
 
-                         <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                            <div className="text-sm">
-                                <div className="text-gray-500 text-xs">Status</div>
-                                <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                                <div className="text-gray-800 font-medium">
-                                    {status ?? "N/A"}
-                                </div>
-                            </div>
-                        </div>
+                   
 
 
                         <div className="w-px h-10 bg-gray-200">
@@ -127,6 +119,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
     <span className="relative z-10 text-xs text-white font-semibold tracking-wide">
       Max Deal
     </span>
+
 
     <span className="relative z-10 bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold shadow">
       $ {maxDeal.toLocaleString()}
