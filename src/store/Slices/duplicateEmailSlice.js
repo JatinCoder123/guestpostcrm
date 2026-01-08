@@ -6,11 +6,11 @@ const duplicateEmailSlice = createSlice({
     name: "duplicateEmails",
     initialState: {
         loading: false,
-        duplicateEmails: [],
+        duplicateEmail: {},
         count: 0,
         error: null,
-        lastResetTime: null, 
-        shouldIgnoreUpdates: false, 
+        lastResetTime: null,
+        shouldIgnoreUpdates: false,
     },
     reducers: {
         getDuplicateEmailsRequest(state) {
@@ -19,8 +19,8 @@ const duplicateEmailSlice = createSlice({
         },
         getDuplicateEmailsSuccess(state, action) {
             state.loading = false;
-            state.duplicateEmails = action.payload.emails;
-            
+            state.duplicateEmail = action.payload.emails;
+
             if (!state.shouldIgnoreUpdates) {
                 state.count = action.payload.count;
             }
@@ -32,14 +32,14 @@ const duplicateEmailSlice = createSlice({
         clearDuplicateEmailErrors(state) {
             state.error = null;
         },
-        
+
         updateDuplicateCount(state, action) {
-            
+
             if (!state.shouldIgnoreUpdates) {
                 state.count = action.payload;
             }
         },
-        
+
         resetDuplicateCount(state) {
             state.count = 0;
             state.shouldIgnoreUpdates = true;
@@ -48,31 +48,26 @@ const duplicateEmailSlice = createSlice({
 
         enableDuplicateUpdates(state) {
             state.shouldIgnoreUpdates = false;
-            
+
         },
         setDuplicateCount(state, action) {
             state.count = action.payload;
-            
+
         },
     },
 });
 
-
-
-// ✅ GET: Fetch duplicate emails (full data) - DON'T UPDATE COUNT AFTER RESET
 export const getDuplicateEmails = () => {
     return async (dispatch, getState) => {
         dispatch(duplicateEmailSlice.actions.getDuplicateEmailsRequest());
 
         try {
-            const domain = getState().user.crmEndpoint.split("?")[0];
-            const url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate&email=${getState().ladger.email}`;
-
+            const url = `${getState().user.crmEndpoint}&type=get_duplicate&email=${getState().ladger.email}`;
             const { data } = await axios.get(url);
-
+            console.log(data)
             dispatch(
                 duplicateEmailSlice.actions.getDuplicateEmailsSuccess({
-                    emails: data?.data ?? [],
+                    emails: data?.data,
                     count: data?.data_count ?? 0,
                 })
             );
@@ -92,15 +87,15 @@ export const getDuplicateCount = () => {
     return async (dispatch, getState) => {
         try {
             const state = getState();
-            
+
             if (state.duplicateEmails.shouldIgnoreUpdates) {
-                
+
                 return;
             }
-            
+
             const domain = state.user.crmEndpoint.split("?")[0];
             let url;
-            
+
             if (state.ladger.email) {
                 url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate&email=${state.ladger.email}`;
             } else {
@@ -124,7 +119,7 @@ export const checkForDuplicates = () => {
         try {
             const state = getState();
             const domain = state.user.crmEndpoint.split("?")[0];
-            
+
             let url;
             if (state.ladger.email) {
                 url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate&email=${state.ladger.email}`;
@@ -134,9 +129,9 @@ export const checkForDuplicates = () => {
 
             const { data } = await axios.get(url);
             const newCount = data?.data_count ?? 0;
-            
-            
-            
+
+
+
             if (!state.duplicateEmails.shouldIgnoreUpdates) {
                 dispatch(duplicateEmailSlice.actions.updateDuplicateCount(newCount));
             }
@@ -165,20 +160,20 @@ export const fetchDuplicateCount = createAsyncThunk(
     'duplicateEmails/fetchCount',
     async (_, { getState }) => {
         const state = getState();
-        
+
         if (state.duplicateEmails.shouldIgnoreUpdates) {
             return state.duplicateEmails.count;
         }
-        
+
         const domain = state.user.crmEndpoint.split("?")[0];
         let url;
-        
+
         if (state.ladger.email) {
             url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate&email=${state.ladger.email}`;
         } else {
             url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate`;
         }
-        
+
         const { data } = await axios.get(url);
         return data?.data_count ?? 0;
     }

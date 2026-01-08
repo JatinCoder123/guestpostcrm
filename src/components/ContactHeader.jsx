@@ -47,8 +47,6 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                                 </div>
                             </div>
                         </div>
-
-                        <div className="w-px h-10 bg-gray-200"></div>
                         {/* STAGE */}
                         <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
                             <div className="text-sm">
@@ -80,8 +78,6 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                         </div>
 
                         <div className="w-px h-10 bg-gray-200"></div>
-
-
                     </div>
                 </div>}
                 <SocialButtons />

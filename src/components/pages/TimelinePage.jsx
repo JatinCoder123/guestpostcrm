@@ -1,4 +1,4 @@
-import { Reply } from "lucide-react";
+import { Mail, Reply } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -259,7 +259,7 @@ export function TimelinePage() {
                     <div className="mb-3">
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                         {mailersSummary == null ||
-                        mailersSummary?.ai_response == ""
+                          mailersSummary?.ai_response == ""
                           ? "No AI reply generated."
                           : mailersSummary?.ai_response}
                       </p>
@@ -297,27 +297,51 @@ export function TimelinePage() {
 
                 {/* Latest Message */}
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto shadow-sm">
-                  <div className="flex items-center justify-start mb-2">
-                    <h3 className="text-yellow-700 font-semibold">
-                      Latest Message
-                    </h3>
-                    <motion.button
-                      whileHover={{ scale: 1.15 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                      className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
-                      onClick={() => {
-                        if (emails.length > 0) {
-                          setShowThread(true);
-                        } else {
-                          setShowEmail(true);
-                        }
-                      }}
-                    >
-                      <Reply className="w-6 h-6 text-yellow-700" />
-                    </motion.button>
-                    <div className="ml-10 flex items-center gap-2">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto custom-scrollbar shadow-sm">
+                  <div className="flex flex-col justify-center mb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-yellow-700 font-semibold">
+                          Latest Message
+                        </h3>
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
+                          onClick={() => {
+                            if (emails.length > 0) {
+                              setShowThread(true);
+                            } else {
+                              setShowEmail(true);
+                            }
+                          }}
+                        >
+                          <Reply className="w-6 h-6 text-yellow-700" />
+                        </motion.button>
+                      </div>
+
+                      {viewEmail?.length > 0 && (
+
+                        <div
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
+    `}
+                        >
+                          <Mail className="w-4 h-4" />
+
+                          {viewEmail[viewEmail.length - 1].from_email === email
+                            ? "Client Mail"
+                            : "Our Mail"}
+                        </div>
+                      )}
+
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       {viewEmail?.length > 0 && (
                         <>
                           <span className="text-xs text-gray-500">
@@ -356,14 +380,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  threadId={currentThreadId}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    threadId={currentThreadId}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (
