@@ -6,7 +6,7 @@ import SocialButtons from './SocialButtons'
 
 const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
     const { email } = useSelector((state) => state.ladger)
-    const { contactInfo, contactLoading, stage, status } = useSelector((state) => state.viewEmail)
+    const { contactInfo, contactLoading, stage, status} = useSelector((state) => state.viewEmail)
     const { emails } = useSelector((state) => state.unreplied)
 
     return (
@@ -66,6 +66,15 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                                 <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
                                 <div className="text-gray-800 font-medium">
                                     {status ?? "N/A"}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+                            <div className="text-sm">
+                                <div className="text-gray-500 text-xs">Customer Type</div>
+                                <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+                                <div className="text-gray-800 font-medium">
+                                    {contactInfo?.customer_type ?? "N/A"}
                                 </div>
                             </div>
                         </div>
