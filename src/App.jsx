@@ -108,7 +108,7 @@ const router = createBrowserRouter([
         element: <RecentEntry />,
       },
       {
-        path: "Duplicate",
+        path: "duplicates",
         element: <Duplicate />,
       },
 

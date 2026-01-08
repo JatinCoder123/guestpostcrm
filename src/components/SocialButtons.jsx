@@ -37,7 +37,7 @@ const SocialButtons = () => {
   const handleDuplicateClick = () => {
     setHasBeenClicked(true);
     dispatch(resetDuplicateCount());
-    navigate("/Duplicate");
+    navigate("/duplicates");
   };
 
 
