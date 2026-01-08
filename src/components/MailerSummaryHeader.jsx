@@ -170,7 +170,11 @@ function TD({ data, type, setData, loading }) {
         <LoadingChase />
       ) : (
         <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
-          {data?.length > 0 ? `${data?.length} ${type}` : `No ${type}`}
+          {/* {data?.length > 0 ? `${data?.length} ${type}` : `No ${type}`} */}
+          {data?.length > 0
+  ? `${data.length} ${data.length === 1 ? type.slice(0, -1) : type}`
+  : `No ${type}`}
+
           <button onClick={handleClick}>
             <img
               className="ml-2"

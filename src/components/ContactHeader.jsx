@@ -1,12 +1,34 @@
 import { LoadingAll, LoadingChase } from './Loading'
 import { useSelector } from 'react-redux'
-import { Mail, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Mail, ChevronLeft, ChevronRight, Handshake } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import SocialButtons from './SocialButtons'
+// start
+import { useNavigate } from "react-router-dom";
+
+
+
 
 const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
+    const navigate = useNavigate();
+    const goToDeal = () => {
+        navigate("/deals");
+    };
     const { email } = useSelector((state) => state.ladger)
     const { contactInfo, contactLoading, stage, status } = useSelector((state) => state.viewEmail)
+
+
+    const { deals } = useSelector((state) => state.deals)
+    const maxDeal =
+        deals?.length > 0
+            ? Math.max(
+                ...deals.map(d =>
+                    Number(String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""))
+                )
+            )
+            : 0;
+    // end
+
     const { emails } = useSelector((state) => state.unreplied)
 
     return (
@@ -68,11 +90,51 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                             </div>
                         </div>
 
-                        <div className="w-px h-10 bg-gray-200"></div>
+
+
+
+                        <div className="w-px h-10 bg-gray-200">
+
+                        </div>
+
+
                     </div>
+
+                    {/* start by kjl */}
+                    <div className="flex items-center">
+                        <div
+                            onClick={goToDeal}
+                            className="relative flex items-center gap-2 px-4 py-2 rounded-full
+             bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600
+             border border-purple-400 shadow-md animate-pulse cursor-pointer
+             hover:scale-105 transition-transform duration-200"
+                        >
+
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500 to-blue-500 blur-lg opacity-50"></div>
+
+                            <Handshake size={25} className="relative z-10 text-white" />
+
+                            <span className="relative z-10 text-xs text-white font-semibold tracking-wide">
+                                Max Deal
+                            </span>
+
+
+                            <span className="relative z-10 bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold shadow">
+                                $ {maxDeal.toLocaleString()}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* end by kjl */}
+
+
                 </div>}
                 <SocialButtons />
+
+
+
             </div>
+
 
             {/* 🔘 PREV + NEXT BUTTONS */}
             <div className="flex items-center gap-3">
@@ -104,3 +166,5 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
 }
 
 export default ContactHeader
+
+

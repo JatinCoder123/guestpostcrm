@@ -112,7 +112,7 @@ export function TopNav() {
           src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/png%20(1).png"
           className="w-72 h-10 object-contain cursor-pointer"
           onClick={() => navigateTo("")}
-        />
+        /> 
 
         {/* SEARCH AREA */}
         <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export function TopNav() {
                 focus:outline-none focus:ring-2 focus:ring-purple-500/20
                 focus:border-purple-500
               "
-            />
+            />  
 
             {/* ❌ CLEAR INSIDE INPUT */}
             {search && (
@@ -153,8 +153,8 @@ export function TopNav() {
               >
                 <X className="w-4 h-4" />
               </motion.button>
-            )}
-          </div>
+            )}  
+          </div>  
 
           {/* 🔍 SEARCH BUTTON OUTSIDE */}
           <button
@@ -164,29 +164,57 @@ export function TopNav() {
               bg-blue-600 text-white rounded-lg
               hover:bg-blue-700
             "
-          >
+          
+          >    
             <Search className="w-4 h-4" />
 
-          </button>
+          </button>  
 
           <DropDown
             options={periodOptions}
             handleSelectOption={handleSelectPeriod}
-          />
+          />  
         </div>
       </div>
 
       {/* RIGHT */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigateTo("hot-records")}
-          className="relative p-4 bg-orange-500 text-white rounded-full"
-        >
-          <Flame />
-          <span className="absolute -top-1 -right-1 bg-orange-800 text-xs w-5 h-5 rounded-full flex items-center justify-center">
-            {count}
-          </span>
-        </button>
+      {/* start by kjl */}
+<motion.button
+  onClick={() => navigateTo("hot-records")}
+  animate={
+    count > 0
+      ? {
+          scale: [1, 1.12, 1],
+          boxShadow: [
+            "0 0 0px rgba(59,130,246,0)",   
+            "0 0 18px rgba(59,130,246,0.9)",
+            "0 0 18px rgba(239, 68, 213, 0.9)", 
+            "0 0 0px rgba(239,68,68,0)",    
+          ],
+        }
+      : {}
+  }
+  transition={
+    count > 0
+      ? {
+          repeat: Infinity,
+          duration: 1.6, // normal speed
+          ease: "easeInOut",
+        }
+      : {}
+  }
+  className="relative p-4 bg-orange-500 text-white rounded-full"
+>
+  <Flame />
+
+  {count > 0 && (
+    <span className="absolute -top-1 -right-1 bg-orange-800 text-xs w-5 h-5 rounded-full flex items-center justify-center">
+      {count}
+    </span>
+  )}
+</motion.button>
+{/* end */}
 
         <button
           onClick={() => navigateTo("avatars")}
