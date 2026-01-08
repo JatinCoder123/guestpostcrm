@@ -6,13 +6,13 @@ import { deleteOffer, getOffers, offersAction, } from "../../store/Slices/offers
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
 import { useNavigate } from "react-router-dom";
-import { excludeEmail, extractEmail } from "../../assets/assets";
+import { excludeEmail, excludeName, extractEmail } from "../../assets/assets";
 import { LoadingChase, LoadingSpin } from "../Loading";
 import { PageContext } from "../../context/pageContext";
 
 export function OffersPage() {
   const { offers, count, loading, error, deleting, deleteOfferId } = useSelector((state) => state.offers);
-  const {setSearch,setEnteredEmail} = useContext(PageContext)
+  const { setSearch, setEnteredEmail } = useContext(PageContext)
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
@@ -271,21 +271,21 @@ export function OffersPage() {
                   className="border-b border-gray-100 hover:bg-pink-50 transition"
                 >
                   <td className="px-6 py-4 text-gray-600 cursor-pointer" onClick={() => {
-                                        const input = extractEmail(offer.real_name);
-                                        localStorage.setItem("email", input);
-                                        setSearch(input);
-                                        setEnteredEmail(input);
-                                        navigateTo("/");
-                                      }}
-                                      ><div className="flex items-center gap-2 text-gray-600">
+                    const input = excludeEmail(offer.real_name);
+                    localStorage.setItem("email", input);
+                    setSearch(input);
+                    setEnteredEmail(input);
+                    navigateTo("/");
+                  }}
+                  ><div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>{offer.date_entered}</span>
                     </div></td>
-                    
-                 
+
+
                   <td
                     onClick={() => {
-                      const input = extractEmail(offer.real_name);
+                      const input = excludeName(offer.real_name);
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
@@ -293,9 +293,9 @@ export function OffersPage() {
                     }}
                     className="px-6 py-4 text-gray-900 cursor-pointer"
                   >
-                    {offer.real_name?.split("<")[0].trim()}
+                    {excludeName(offer.real_name)}
                   </td>
-                  <td className="px-6 py-4 text-blue-600">{offer.real_name}</td>
+                  <td className="px-6 py-4 text-blue-600">{excludeEmail(offer.real_name)}</td>
 
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>

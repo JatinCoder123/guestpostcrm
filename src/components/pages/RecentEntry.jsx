@@ -3,7 +3,6 @@ import {
   Mail,
   Activity,
 } from "lucide-react";
-
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useContext } from "react";
 import { getEvents } from "../../store/Slices/eventSlice";

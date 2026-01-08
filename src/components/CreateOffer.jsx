@@ -76,7 +76,7 @@ export default function CreateOffer() {
   useEffect(() => {
     let offer = offers.filter(
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email
-    );
+    ).filter((d) => d.offer_status !== "expire");
     if (type == "edit" && id !== undefined) {
       setNonEditOffers(offer.filter((d) => d.id !== id));
       offer = offer.filter((d) => d.id == id);
