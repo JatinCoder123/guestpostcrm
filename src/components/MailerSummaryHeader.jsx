@@ -48,7 +48,7 @@ const MailerSummaryHeader = () => {
   useEffect(() => {
     const offer = offers?.filter(
       (o) => excludeEmail(o.real_name ?? o.email) == email
-    ).filter((d) => d.offer_status !== "expire");
+    ).filter((d) => d.offer_status == "active");
     setEmailData((prev) => ({
       ...prev,
       offers: offer,

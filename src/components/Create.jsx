@@ -173,94 +173,88 @@ export default function Create({
                 )}
               </div>
               <div className="space-y-4">
-                <AnimatePresence>
-                  {data.length > 0 &&
-                    data.map((item, itemIndex) => (
-                      <div key={item.id} index={itemIndex}>
-                        <motion.div
-                          layout
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.98 }}
-                          className={`bg-white relative border border-gray-100 p-6 ${pageType == "edit" && "pb-15"
-                            } rounded-2xl shadow-sm `}
-                        >
-                          {pageType == "view" && (
+                {data.length > 0 &&
+                  data.map((item, itemIndex) => (
+                    <div key={item.id} index={itemIndex}>
+                      <div
+                        className={`bg-white relative border border-gray-100 p-6 ${pageType == "edit" && "pb-15"
+                          } rounded-2xl shadow-sm `}
+                      >
+                        {pageType == "view" && (
+                          <button
+                            onClick={() =>
+                              navigate(`/${type}/edit/${item.id}`, {
+                                state: { email },
+                              })
+                            }
+                            className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
+                              } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
+                          >
+                            <Pencil size={16} />
+                          </button>
+                        )}
+                        {pageType !== "edit" && type !== "orders" && (
+                          <button
+                            onClick={() => {
+                              pageType == "create"
+                                ? removeData(item.id)
+                                : handleDelete(item.id);
+                            }}
+                            className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
+                          >
+                            {deleting && deleteId == item.id ? (
+                              <LoadingChase size="20" color="white" />
+                            ) : (
+                              <Trash size={16} />
+                            )}
+                          </button>
+                        )}
+                        {pageType == "edit" && (
+                          <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
                             <button
-                              onClick={() =>
-                                navigate(`/${type}/edit/${item.id}`, {
-                                  state: { email },
-                                })
-                              }
-                              className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
-                                } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
+                              onClick={() => navigate(-1)}
+                              disabled={updating || sending}
+                              className={`flex items-center gap-2 px-3 py-1.5 ${(updating || sending) ? "cursor-not-allowed" : ""
+                                } bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition`}
                             >
-                              <Pencil size={16} />
+                              Cancel
                             </button>
-                          )}
-                          {pageType !== "edit" && type !== "orders" && (
                             <button
-                              onClick={() => {
-                                pageType == "create"
-                                  ? removeData(item.id)
-                                  : handleDelete(item.id);
-                              }}
-                              className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
+                              onClick={() => handleUpdate(item)}
+                              disabled={updating || sending}
+                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending)
+                                ? "bg-green-300 cursor-not-allowed"
+                                : "bg-green-500 hover:bg-green-600"
+                                }`}
                             >
-                              {deleting && deleteId == item.id ? (
-                                <LoadingChase size="20" color="white" />
-                              ) : (
-                                <Trash size={16} />
-                              )}
+                              {(updating || sending) ? "Updating..." : "Update"}
                             </button>
-                          )}
-                          {pageType == "edit" && (
-                            <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
-                              <button
-                                onClick={() => navigate(-1)}
-                                disabled={updating || sending}
-                                className={`flex items-center gap-2 px-3 py-1.5 ${(updating || sending) ? "cursor-not-allowed" : ""
-                                  } bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition`}
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => handleUpdate(item)}
-                                disabled={updating || sending}
-                                className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending)
-                                  ? "bg-green-300 cursor-not-allowed"
-                                  : "bg-green-500 hover:bg-green-600"
-                                  }`}
-                              >
-                                {(updating || sending) ? "Updating..." : "Update"}
-                              </button>
+                          </div>
+                        )}
+                        {type == "orders" && pageType == "view" ? (
+                          <OrderView data={item} />
+                        ) : (
+                          <>
+                            {" "}
+                            <div className="mt-4 flex flex-wrap gap-3">
+                              {fields.map((field, fieldIndex) => (
+                                <InputField
+                                  key={fieldIndex}
+                                  pageType={pageType}
+                                  {...field}
+                                  data={item}
+                                  onChange={(e) =>
+                                    handelChange(itemIndex, field.name, e)
+                                  }
+                                  websiteLists={validWebsite}
+                                />
+                              ))}
                             </div>
-                          )}
-                          {type == "orders" && pageType == "view" ? (
-                            <OrderView data={item} />
-                          ) : (
-                            <>
-                              {" "}
-                              <div className="mt-4 flex flex-wrap gap-3">
-                                {fields.map((field, fieldIndex) => (
-                                  <InputField
-                                    key={fieldIndex}
-                                    pageType={pageType}
-                                    {...field}
-                                    data={item}
-                                    onChange={(e) =>
-                                      handelChange(itemIndex, field.name, e)
-                                    }
-                                    websiteLists={validWebsite}
-                                  />
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </motion.div>
+                          </>
+                        )}
                       </div>
-                    ))}
-                </AnimatePresence>
+                    </div>
+                  ))}
               </div>
 
               {/* Footer */}
@@ -376,7 +370,7 @@ export default function Create({
             </div>
           </div>
         )}
-      </div>
+      </div >
     </>
   );
 }
