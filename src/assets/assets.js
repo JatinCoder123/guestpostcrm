@@ -76,7 +76,7 @@ export function excludeEmail(str) {
   return str;
 }
 export function excludeName(str) {
-  if (str.includes("<")) {
+  if (str?.includes("<")) {
     return str.split("<")[0];
   }
   return str;
