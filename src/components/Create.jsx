@@ -423,7 +423,7 @@ function InputField({
           {/* Order Status (object → key/value) */}
           {label === "Order Status"
             ? Object.entries(statusLists).map(([key, val]) => (
-              <option key={key} value={val}>
+              <option key={key} value={key}>
                 {val}
               </option>
             ))
