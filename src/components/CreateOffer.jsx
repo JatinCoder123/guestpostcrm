@@ -23,8 +23,8 @@ import {
 } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
-import { getLadgerWithOutLoading } from "../store/Slices/ladger";
 import { SocketContext } from "../context/SocketContext";
+import { getLadger } from "../store/Slices/ladger";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
   {
@@ -129,13 +129,13 @@ export default function CreateOffer() {
   };
   const okHandler = () => {
     if (enteredEmail) {
-      dispatch(getLadgerWithOutLoading(enteredEmail, search));
+      dispatch(getLadger({ email: enteredEmail, search }));
     } else if (unrepliedEmails.length > 0) {
       const firstEmail =
         unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
-      dispatch(getLadgerWithOutLoading(firstEmail, search));
+      dispatch(getLadger({ email: firstEmail, search }));
     } else {
-      dispatch(getLadgerWithOutLoading(state?.email, search));
+      dispatch(getLadger({ email: state?.email, search }));
     }
   };
 

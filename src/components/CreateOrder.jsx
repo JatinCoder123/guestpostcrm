@@ -11,7 +11,7 @@ import Preview from "./Preview";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
-import { getLadgerWithOutLoading } from "../store/Slices/ladger";
+import { getLadger } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
 const fields = [
@@ -82,12 +82,12 @@ export default function CreateOrder() {
   };
   const okHandler = () => {
     if (enteredEmail) {
-      dispatch(getLadgerWithOutLoading(enteredEmail, search));
+      dispatch(getLadger({ email: enteredEmail, search }));
     } else if (unrepliedEmails.length > 0) {
       const firstEmail = unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
-      dispatch(getLadgerWithOutLoading(firstEmail, search));
+      dispatch(getLadger({ email: firstEmail, search }));
     } else {
-      dispatch(getLadgerWithOutLoading(state?.email, search));
+      dispatch(getLadger({ email: state?.email, search }));
     }
   }
   useEffect(() => {
