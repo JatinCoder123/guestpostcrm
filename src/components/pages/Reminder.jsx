@@ -272,7 +272,10 @@ export function ReminderPage() {
         showDownload={true}
         className="mb-6"
       />
-      {id && open && <ViewReminder onClose={() => setOpen(false)} loading={loading} reminder={reminders.find((reminder) => reminder.thread_id === id)} />}
+      {id && open && <ViewReminder onSend={(id) => {
+        setOpen(false);
+        sendReminder(id)
+      }} onClose={() => setOpen(false)} loading={loading} reminder={reminders.find((reminder) => reminder.thread_id === id)} />}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

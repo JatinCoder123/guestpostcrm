@@ -206,7 +206,7 @@ export default function CreateDeal() {
       }));
       toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
-      navigate(-2);
+      navigate("/");
     }
     if (sendError) {
       toast.error(sendError);

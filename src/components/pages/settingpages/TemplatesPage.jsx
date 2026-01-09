@@ -16,8 +16,6 @@ export default function TemplatesPage() {
   const [isChanged, setIsChanged] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { crmEndpoint } = useSelector((state) => state.user);
-
-
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newDescription, setNewDescription] = useState("");

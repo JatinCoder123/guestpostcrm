@@ -123,7 +123,7 @@ export default function CreateOrder() {
         refreshUnreplied: Date.now(),
       }));
       toast.success(sendMessage);
-      navigate(-2);
+      navigate("/");
       dispatch(viewEmailAction.clearAllMessage());
     }
 

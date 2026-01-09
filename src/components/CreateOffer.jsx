@@ -198,7 +198,7 @@ export default function CreateOffer() {
       }));
       toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
-      navigate(-2);
+      navigate("/");
     }
 
     if (sendError) {
