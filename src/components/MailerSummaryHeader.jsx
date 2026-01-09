@@ -30,7 +30,7 @@ const MailerSummaryHeader = () => {
   useEffect(() => {
     const order = orders?.filter(
       (o) => excludeEmail(o.real_name ?? o.email) == email
-    );
+    ).filter((d) => d.order_status !== "Wrong" && d.order_status !== "Rejected-NonTechnical");
     setEmailData((prev) => ({
       ...prev,
       orders: order,
@@ -172,8 +172,8 @@ function TD({ data, type, setData, loading }) {
         <span className="borderpx-4 py-3 font-semibold text-gray-900 flex items-center justify-center">
           {/* {data?.length > 0 ? `${data?.length} ${type}` : `No ${type}`} */}
           {data?.length > 0
-  ? `${data.length} ${data.length === 1 ? type.slice(0, -1) : type}`
-  : `No ${type}`}
+            ? `${data.length} ${data.length === 1 ? type.slice(0, -1) : type}`
+            : `No ${type}`}
 
           <button onClick={handleClick}>
             <img

@@ -44,6 +44,7 @@ export default function CreateOrder() {
     (state) => state.viewEmail
   );
   const { crmEndpoint } = useSelector((state) => state.user);
+  const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   const { setNotificationCount } = useContext(SocketContext)
   const { enteredEmail, search } = useContext(PageContext)
 
@@ -51,7 +52,7 @@ export default function CreateOrder() {
   const navigate = useNavigate();
   const [currentOrders, setCurrentOrders] = useState([]);
   useEffect(() => {
-    let order = orders.filter((d) => excludeEmail(d.real_name) == state?.email);
+    let order = orders.filter((o) => excludeEmail(o.real_name) == state?.email && !(o.order_status == "Wrong" || o.order_status == "Rejected-NonTechnical"));
     if (type == "edit" && id !== undefined) {
       order = order.filter((d) => d.id == id);
     }
