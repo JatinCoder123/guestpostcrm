@@ -259,6 +259,7 @@ export function OffersPage() {
                   CLIENT OFFER
                 </th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
+                <th className="px-6 py-4 text-left">STAGE</th>
 
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
@@ -300,7 +301,11 @@ export function OffersPage() {
 
                   <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
                   <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
-
+                  <td className="px-6 py-4">
+                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+                      {offer.offer_status}
+                    </span>
+                  </td>
 
 
                   <td className="pl-9 py-4">

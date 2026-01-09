@@ -157,7 +157,7 @@ export default function CreateOffer() {
                 amountKey="our_offer_c"
               />
             ),
-            "Offer Send Successfully"
+            "Offer Updated and Send Successfully", "Offer Updated But Not Sent!"
           )
         );
         setNewOffers([]);
@@ -175,15 +175,15 @@ export default function CreateOffer() {
                 amountKey="our_offer_c"
               />
             ),
-            "Offer Send Successfully"
+            "Offer Craeted and Send Successfully", "Offer Created But Not Sent!"
           )
         );
         setNewOffers([]);
       }
 
-      toast.success(message);
+      // toast.success(message);
       dispatch(offersAction.clearAllMessages());
-      navigate(-1);
+      // navigate(-1);
     }
 
     if (error) {
@@ -198,7 +198,7 @@ export default function CreateOffer() {
       }));
       toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
-      navigate(-1);
+      navigate(-2);
     }
 
     if (sendError) {
