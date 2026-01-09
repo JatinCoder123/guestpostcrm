@@ -42,6 +42,7 @@
     "@tailwindcss/vite": "^4.1.17",
     "@tinymce/tinymce-react": "^6.3.0",
     "axios": "^1.13.2",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "*",
     "cmdk": "^1.1.1",
