@@ -73,12 +73,13 @@ export function OffersPage() {
     }
 
     // Convert Objects → CSV rows
-    const headers = ["DATE", "CONTACT", "EMAIL", "CLIENT OFFER", "OUR OFFER"];
+    const headers = ["DATE", "CONTACT", "EMAIL", "STATUS", "CLIENT OFFER", "OUR OFFER"];
 
     const rows = filteredoffers.map((email) => [
       email.date_entered,
       email.real_name?.split("<")[0].trim(),
       email.name,
+      email.status,
       email.client_offer_c,
       email.our_offer_c
 
