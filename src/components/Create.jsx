@@ -419,7 +419,6 @@ function InputField({
           <option value="" disabled>
             Select {label}
           </option>
-          {console.log(value)}
 
           {/* Order Status (object → key/value) */}
           {label === "Order Status"

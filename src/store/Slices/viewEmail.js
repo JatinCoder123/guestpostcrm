@@ -12,6 +12,7 @@ const viewEmailSlice = createSlice({
     status: null,
     viewEmail: [],
     contactInfo: null,
+    customer_type: null,
     accountInfo: null,
     sending: false,
     dealInfo: null,
@@ -48,10 +49,11 @@ const viewEmailSlice = createSlice({
       state.error = null;
     },
     getContactSucess(state, action) {
-      const { contactInfo, accountInfo, dealInfo, stage, status } = action.payload;
+      const { contactInfo, accountInfo, dealInfo, stage, status, customer_type } = action.payload;
       state.contactLoading = false;
       state.stage = stage;
       state.status = status;
+      state.customer_type = customer_type;
       state.contactInfo = contactInfo;
       state.accountInfo = accountInfo;
       state.dealInfo = dealInfo;
@@ -148,6 +150,7 @@ export const getContact = (email = null) => {
           status: data.status,
           contactInfo: data.contact ?? null,
           accountInfo: data.account ?? null,
+          customer_type: data.customer_type ?? null,
           dealInfo: data.deal_fetch ?? null,
         })
       );

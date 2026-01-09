@@ -3,6 +3,7 @@ import useModule from "../hooks/useModule";
 import Loading from "./Loading";
 import { useSelector } from "react-redux";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
+import { excludeName } from "../assets/assets";
 
 /* helper (keep if already exists globally) */
 const base64ToUtf8 = (str) => {
@@ -105,7 +106,7 @@ export const ViewReminder = ({ reminder, onSend, loading, onClose }) => {
                             <div className="border-t my-5" />
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                                <Detail label="Recipient" value={reminder?.real_name} />
+                                <Detail label="Recipient" value={excludeName(reminder?.real_name)} />
                                 <Detail label="Recipient Email" value={reminder?.recipient} />
                                 <Detail label="Sender" value={reminder?.sender} />
                                 <Detail label="Scheduled Time" value={reminder?.scheduled_time} />
