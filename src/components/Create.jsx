@@ -317,12 +317,22 @@ export default function Create({
 
                   <div className="mt-4 flex gap-3">
                     {pageType == "view" ? (
-                      <button
+                      <><button
+                        disabled={data.length === 0}
+                        onClick={() => sendHandler()}
+                        className={`w-full px-3 py-2 rounded-lg text-white ${sending
+                          ? "bg-green-300 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700"
+                          }`}
+                      >
+                        {sending ? "Sending..." : "Send"}
+                      </button><button
                         onClick={() => setShowPreview(true)}
                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                       >
-                        Preview
-                      </button>
+                          Preview
+                        </button></>
+
                     ) : (
                       <button
                         disabled={data.length === 0 || !valid}

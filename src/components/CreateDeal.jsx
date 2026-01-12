@@ -163,7 +163,7 @@ export default function CreateDeal() {
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={[...nonEditDeals, ...currentDeals]}
+                data={[...currentDeals]}
                 type="Deals"
                 userEmail={state?.email}
                 websiteKey="website_c"

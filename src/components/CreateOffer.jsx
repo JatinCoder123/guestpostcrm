@@ -148,7 +148,7 @@ export default function CreateOffer() {
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={[...nonEditOffers, ...currentOffers].filter(
+                data={[...currentOffers].filter(
                   (o) => o.website !== ""
                 )}
                 type="Offers"
