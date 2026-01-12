@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { motion } from "framer-motion";
@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
-  const { email } = useSelector((state) => state.ladger);
+  const { state } = useLocation();
   const { crmEndpoint } = useSelector((state) => state.user);
   const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
@@ -26,6 +26,7 @@ export function MachineLearningPage() {
       "x-api-key": `${CREATE_DEAL_API_KEY}`,
       "Content-Type": "application/json",
     },
+    name: "Machine Learning",
   });
 
   const rows = Array.isArray(data) ? data : [];
@@ -49,7 +50,15 @@ export function MachineLearningPage() {
       },
     });
   };
-
+  useEffect(() => {
+    // console.log(state?.promptId);
+    if (state?.promptId && data) {
+      const item = data.find((item) => item.id === state.promptId);
+      if (item) {
+        setEditItem(item);
+      }
+    }
+  }, [state?.promptId, data]);
   return (
     <div className="p-8">
       {/* Header */}
