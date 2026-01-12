@@ -2,7 +2,7 @@ import { Mail, Reply } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { getLadgerEmail, ladgerAction } from "../../store/Slices/ladger";
+import { getLadger, ladgerAction } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
 import { viewEmailAction } from "../../store/Slices/viewEmail";
 import ContactBox from "../ContactBox";
@@ -95,7 +95,7 @@ export function TimelinePage() {
     }
   }, [dispatch, error, sendError, message, threadError, threadMessage]);
   const handleMoveSuccess = () => {
-    dispatch(getLadgerEmail(email));
+    dispatch(getLadger({ email }));
   };
   const handleActionBtnClick = (btnBody) => {
     if (emails.length == 0) {

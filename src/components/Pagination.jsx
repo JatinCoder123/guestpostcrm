@@ -5,10 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 function Pagination({ slice, fn }) {
   const dispatch = useDispatch();
-
   let { pageCount, pageIndex } = useSelector((state) => state[slice]);
-  let { timeline } = useSelector((state) => state.ladger);
-
   const [gotoValue, setGotoValue] = useState("");
 
   useEffect(() => {
@@ -20,21 +17,21 @@ function Pagination({ slice, fn }) {
 
   const handlePrev = useCallback(() => {
     if (pageIndex > 1) {
-      dispatch(fn(timeline, pageIndex - 1));
+      dispatch(fn(pageIndex - 1));
     }
-  }, [pageIndex, dispatch, timeline]);
+  }, [pageIndex, dispatch]);
 
   const handleNext = useCallback(() => {
     if (pageIndex < pageCount) {
-      dispatch(fn(timeline, Number(pageIndex) + 1));
+      dispatch(fn(Number(pageIndex) + 1));
     }
-  }, [pageIndex, dispatch, pageCount, timeline]);
+  }, [pageIndex, dispatch, pageCount]);
 
   const goToPage = useCallback(
     (p) => {
-      dispatch(fn(timeline, p));
+      dispatch(fn(p));
     },
-    [dispatch, timeline]
+    [dispatch]
   );
 
   // --- Build pagination numbers ---
@@ -95,11 +92,10 @@ function Pagination({ slice, fn }) {
                 key={p * Math.random()}
                 onClick={() => goToPage(p)}
                 className={`w-12 h-12 flex items-center justify-center cursor-pointer rounded-full text-lg font-semibold transition
-                ${
-                  p == pageIndex
+                ${p == pageIndex
                     ? "bg-cyan-600 text-white scale-110 shadow-md"
                     : "bg-cyan-100 text-cyan-700 hover:bg-cyan-200"
-                }
+                  }
               `}
               >
                 {p}

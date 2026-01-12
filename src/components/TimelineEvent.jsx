@@ -1,6 +1,4 @@
-import React from "react";
 import Pagination from "./Pagination";
-import { getLadgerEmail } from "../store/Slices/ladger";
 import { useSelector } from "react-redux";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -296,8 +294,7 @@ const TimelineEvent = () => {
           </div>
         </div>
       </div>
-
-      <Pagination slice={"ladger"} fn={getLadgerEmail} />
+      {/* <Pagination slice={"ladger"} fn={getLadger} /> */}
     </>
   );
 };
