@@ -7,7 +7,7 @@ import { excludeEmail } from "../assets/assets";
 import { websiteLists } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
-import Preview from "./Preview";
+import PreviewOrder from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
@@ -68,7 +68,7 @@ export default function CreateOrder() {
     dispatch(
       sendEmail(
         renderToStaticMarkup(
-          <Preview
+          <PreviewOrder
             data={currentOrders}
             type="Orders"
             userEmail={state?.email}
@@ -98,10 +98,7 @@ export default function CreateOrder() {
         renderToStaticMarkup(
           <Preview
             data={currentOrders}
-            type="Orders"
             userEmail={state?.email}
-            websiteKey="website_c"
-            amountKey="total_amount_c"
           />
         ),
         "Order Updated and Send Successfully", "Order Updated But Not Sent!"
@@ -152,12 +149,9 @@ export default function CreateOrder() {
       sendHandler={sendHandler}
       fields={fields}
       renderPreview={({ data, email }) => (
-        <Preview
+        <PreviewOrder
           data={data}
-          type="Orders"
           userEmail={email}
-          orderId="order_id"
-          amountKey="total_amount_c"
         />
       )}
       amountKey={"total_amount_c"}
