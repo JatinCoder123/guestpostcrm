@@ -235,7 +235,7 @@ export const getOrdersWithoutLoading = () => {
   };
 };
 
-export const updateOrder = (order) => {
+export const updateOrder = (order, send) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
     console.log("Update Order", order);
@@ -258,6 +258,7 @@ export const updateOrder = (order) => {
         }
       );
       console.log(`Update Order`, data);
+      console.log(`Update Order`, send);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.id === order.id) {
           return order;
@@ -265,7 +266,7 @@ export const updateOrder = (order) => {
         return o;
       });
       dispatch(
-        ordersSlice.actions.updateOrderSuccess({ orders: updatedOrders, message: "Order Updated Successfully" })
+        ordersSlice.actions.updateOrderSuccess({ orders: updatedOrders, message: `Order Updated ${send ? "and Send Successfully" : "Successfully"}` })
       );
 
       dispatch(ordersSlice.actions.clearAllErrors());

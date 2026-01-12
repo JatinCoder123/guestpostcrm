@@ -154,8 +154,9 @@ export default function CreateDeal() {
   useEffect(() => {
     if (message) {
       dispatch(getDeals());
-      ManualSideCall(crmEndpoint, state?.email, message, 2, okHandler);
       if (message.includes("Updated")) {
+        ManualSideCall(crmEndpoint, state?.email, "Our Deal Updated Successfully", 2, okHandler);
+
         if (message.includes("Send")) {
           dispatch(
             sendEmail(
@@ -180,7 +181,10 @@ export default function CreateDeal() {
           navigate(-1);
 
         }
+
       } else {
+        ManualSideCall(crmEndpoint, state?.email, "Our Deal Created Successfully", 2, okHandler);
+
         dispatch(
           sendEmail(
             renderToStaticMarkup(

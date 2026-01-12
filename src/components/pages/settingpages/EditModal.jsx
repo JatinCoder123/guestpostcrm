@@ -50,7 +50,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50  flex items-center justify-center z-50"
         >
           <motion.div
             key="modal-content"
@@ -58,7 +58,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 40 }}
             transition={{ duration: 0.25 }}
-            className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl relative"
+            className="bg-white rounded-2xl  p-4 w-full max-w-[700px] shadow-xl relative"
           >
             {/* Close Button */}
             <button
@@ -71,54 +71,61 @@ export default function EditModal({ item, onClose, handleUpdate }) {
             <h2 className="text-2xl font-semibold mb-4">Edit Item</h2>
 
             <div className="space-y-4">
-              {/* NAME */}
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Name
-                </label>
-                <input
-                  value={form.name}
-                  disabled
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
-                />
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-4">
+                  {/* NAME */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Name
+                    </label>
+                    <input
+                      value={form.name}
+                      disabled
+                      className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
+                    />
+                  </div>
+
+                  {/* MOTIVE */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Motive
+                    </label>
+                    <input
+                      value={form.motive}
+                      disabled
+                      className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
+                    />
+                  </div>
+
+                  {/* TYPE */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Type
+                    </label>
+                    <input
+                      value={form.type}
+                      disabled
+                      className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
+                    />
+                  </div>
+                </div>
+
+
+
+                {/* DESCRIPTION */}
+                <div className=" h-[300px] ">
+                  <label className="text-sm font-medium text-gray-600">
+                    Description
+                  </label>
+                  <textarea
+                    value={form.description}
+                    onChange={(e) => updateField("description", e.target.value)}
+                    rows={10}
+                    className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
+                  />
+                </div>
               </div>
 
-              {/* MOTIVE */}
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Motive
-                </label>
-                <input
-                  value={form.motive}
-                  disabled
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
-                />
-              </div>
-
-              {/* TYPE */}
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Type
-                </label>
-                <input
-                  value={form.type}
-                  disabled
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
-                />
-              </div>
-
-              {/* DESCRIPTION */}
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Description
-                </label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => updateField("description", e.target.value)}
-                  rows={4}
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
-                />
-              </div>
 
               {/* Save Button */}
               <button

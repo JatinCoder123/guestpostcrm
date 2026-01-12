@@ -143,9 +143,10 @@ export default function CreateOffer() {
 
   useEffect(() => {
     if (message) {
-      ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
       dispatch(getOffers());
       if (message.includes("Updated")) {
+        ManualSideCall(crmEndpoint, state?.email, "Our Offer Updated Successfully", 1, okHandler);
+
         if (message.includes("Send")) {
           dispatch(
             sendEmail(
@@ -173,7 +174,10 @@ export default function CreateOffer() {
           navigate(-1);
         }
 
+
       } else {
+        ManualSideCall(crmEndpoint, state?.email, "Our Offer Created Successfully", 1, okHandler);
+
         dispatch(
           sendEmail(
             renderToStaticMarkup(
@@ -191,6 +195,7 @@ export default function CreateOffer() {
           )
         );
         setNewOffers([]);
+
         dispatch(offersAction.clearAllMessages());
       }
     }
