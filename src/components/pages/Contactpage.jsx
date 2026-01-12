@@ -17,7 +17,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { editContact, viewEmailAction } from "../../store/Slices/viewEmail";
+import { editContact, getContact, viewEmailAction } from "../../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 
 export default function Contactpage() {
@@ -134,6 +134,7 @@ export default function Contactpage() {
   useEffect(() => {
     if (message) {
       toast.success(message);
+      dispatch(getContact());
       dispatch(viewEmailAction.clearAllMessage());
     }
     if (error) {
@@ -429,8 +430,23 @@ export default function Contactpage() {
               <button onClick={handleCancel} className="text-gray-500 hover:text-gray-700">
                 <X size={24} />
               </button>
+              
             </div>
-
+  {/* Action Buttons */}
+            <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={handleCancel}
+                className="px-6 py-2 text-gray-600 font-semibold border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white font-semibold rounded-xl hover:from-[#7e22ce] hover:to-[#2563eb] transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
             {/* Edit form content */}
             <div className="space-y-8">
               {/* Contact Information */}
@@ -624,21 +640,7 @@ export default function Contactpage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-              <button
-                onClick={handleCancel}
-                className="px-6 py-2 text-gray-600 font-semibold border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white font-semibold rounded-xl hover:from-[#7e22ce] hover:to-[#2563eb] transition-colors"
-              >
-                Save Changes
-              </button>
-            </div>
+          
           </div>
         </div>
       )}
