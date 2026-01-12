@@ -151,7 +151,7 @@ export const updateOffer = (offer) => {
         return o;
       });
       dispatch(
-        offersSlice.actions.updateOfferSuccess({ offers: updatedOffers, message: "Offer Updated Successfully" })
+        offersSlice.actions.updateOfferSuccess({ offers: updatedOffers, message: "Our Offer Updated Successfully" })
       );
 
       dispatch(offersSlice.actions.clearAllErrors());

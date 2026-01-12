@@ -9,170 +9,177 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 
 const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
-    const navigate = useNavigate();
-    const goToDeal = () => {
-        navigate("/deals");
-    };
-    const { email } = useSelector((state) => state.ladger);
-    const { contactInfo, customer_type, contactLoading, stage, status } = useSelector(
-        (state) => state.viewEmail
-    );
+  const navigate = useNavigate();
+  const goToDeal = () => {
+    navigate("/deals");
+  };
+  const { email } = useSelector((state) => state.ladger);
+  const { contactInfo, contactLoading, stage, status } = useSelector(
+    (state) => state.viewEmail
+  );
 
-    const { deals } = useSelector((state) => state.deals);
+  const { deals } = useSelector((state) => state.deals);
 
-    const CountUpWithBlast = ({ value }) => {
-        const [count, setCount] = useState(0);
-        const hasBlasted = useRef(false);
-        const amountRef = useRef(null);
+  const CountUpWithBlast = ({ value, email }) => {
+    const storageKey = `maxDealAnimated_${email}`;
+    const hasAnimatedBefore = sessionStorage.getItem(storageKey);
 
-        useEffect(() => {
-            const duration = 900;
-            const startTime = performance.now();
+    const [count, setCount] = useState(hasAnimatedBefore ? value : 0);
 
-            const animate = (now) => {
-                const progress = Math.min((now - startTime) / duration, 1);
-                const current = Math.floor(progress * value);
-                setCount(current);
+    const hasBlasted = useRef(false);
+    const amountRef = useRef(null);
 
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else if (!hasBlasted.current && amountRef.current) {
-                    hasBlasted.current = true;
+    useEffect(() => {
+      if (hasAnimatedBefore) return;
 
-                    // 🎯 LOCAL ORIGIN (amount only)
-                    const rect = amountRef.current.getBoundingClientRect();
-                    const x = (rect.left + rect.width / 2) / window.innerWidth;
-                    const y = (rect.top + rect.height / 2) / window.innerHeight;
+      const duration = 900;
+      const startTime = performance.now();
 
-                    confetti({
-                        particleCount: 35,
-                        spread: 45,
-                        startVelocity: 18,
-                        gravity: 0.8,
-                        origin: { x, y },
-                        colors: ["#0f172a", "#2563eb", "#22c55e"],
-                    });
-                }
-            };
+      const animate = (now) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const current = Math.floor(progress * value);
+        setCount(current);
 
-            requestAnimationFrame(animate);
-        }, [value]);
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else if (!hasBlasted.current && amountRef.current) {
+          hasBlasted.current = true;
 
-        return (
-            <span ref={amountRef}>
-                {count.toLocaleString()}
-            </span>
-        );
-    };
-    const emailDeals = deals?.filter((d) => {
-        const dealEmail = (
-            d.email ||
-            d.contact_email ||
-            d.email1 ||
-            ""
-        ).toLowerCase();
+          // ✅ mark animation as done
+          sessionStorage.setItem(storageKey, "true");
 
-        return email && dealEmail === email;
-    });
+          // 🎯 confetti only on amount
+          const rect = amountRef.current.getBoundingClientRect();
+          const x = (rect.left + rect.width / 2) / window.innerWidth;
+          const y = (rect.top + rect.height / 2) / window.innerHeight;
 
-    const maxDeal =
-        emailDeals?.length > 0
-            ? Math.max(
-                ...emailDeals.map((d) =>
-                    Number(
-                        String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
-                    )
-                )
+          confetti({
+            particleCount: 28,
+            spread: 40,
+            startVelocity: 16,
+            gravity: 0.9,
+            origin: { x, y },
+            colors: ["#0f172a", "#2563eb"],
+          });
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }, [value, email, hasAnimatedBefore]);
+
+    return <span ref={amountRef}>{count.toLocaleString()}</span>;
+  };
+
+  const emailDeals = deals?.filter((d) => {
+    const dealEmail = (
+      d.email ||
+      d.contact_email ||
+      d.email1 ||
+      ""
+    ).toLowerCase();
+
+    return email && dealEmail === email;
+  });
+
+  const maxDeal =
+    emailDeals?.length > 0
+      ? Math.max(
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
             )
-            : 0;
-    // end
+          )
+        )
+      : 0;
+  // end
 
-    const { emails } = useSelector((state) => state.unreplied);
+  const { emails } = useSelector((state) => state.unreplied);
 
-    return (
-        <div className="flex items-start justify-between w-full">
-            {/* LEFT SIDE CONTENT */}
-            <div
-                className={`flex  gap-4 ${contactLoading ? "items-center" : "item-start"
-                    }`}
-            >
-                {contactLoading && <LoadingChase size="30" color="blue" />}
-                {!contactLoading && (
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                                <Mail className="w-5 h-5 text-gray-600" />
-                            </div>
+  return (
+    <div className="flex items-start justify-between w-full">
+      {/* LEFT SIDE CONTENT */}
+      <div
+        className={`flex  gap-4 ${
+          contactLoading ? "items-center" : "item-start"
+        }`}
+      >
+        {contactLoading && <LoadingChase size="30" color="blue" />}
+        {!contactLoading && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                <Mail className="w-5 h-5 text-gray-600" />
+              </div>
 
-                            <Link
-                                to="/contacts"
-                                className="text-gray-800 text-lg font-semibold"
-                            >
-                                {contactInfo?.full_name === "" ? email : contactInfo?.full_name}
-                            </Link>
-                            <img
-                                width="50"
-                                height="50"
-                                src="https://img.icons8.com/bubbles/100/verified-account.png"
-                                alt="verified"
-                            />
-                        </div>
-                        <div className="ml-4 flex items-center gap-4">
-                            {/* TYPE */}
-                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
-                                <div className="text-sm">
-                                    <div className="text-gray-500 text-xs">Type</div>
-                                    <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                                    <div className="text-gray-800 font-medium">
-                                        {contactInfo?.type ?? "N/A"}
-                                    </div>
-                                </div>
-                            </div>
-                            {/* STAGE */}
-                            <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                                <div className="text-sm">
-                                    <div className="text-gray-500 text-xs">Stage</div>
-                                    <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                                    <div className="text-gray-800 font-medium">
-                                        {stage ?? "N/A"}
-                                    </div>
-                                </div>
-                            </div>
-                            {/* STATUS */}
-                            <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                                <div className="text-sm">
-                                    <div className="text-gray-500 text-xs">Status</div>
-                                    <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                                    <div className="text-gray-800 font-medium">
-                                        {status ?? "N/A"}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                                <div className="text-sm">
-                                    <div className="text-gray-500 text-xs">Customer Type</div>
-                                    <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                                    <div className="text-gray-800 font-medium">
-                                        {customer_type ?? "N/A"}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="w-px h-10 bg-gray-200"></div>
-                        </div>
-                    </div>
-                )}
-                <SocialButtons />
+              <Link
+                to="/contacts"
+                className="text-gray-800 text-lg font-semibold"
+              >
+                {contactInfo?.full_name === "" ? email : contactInfo?.full_name}
+              </Link>
+              <img
+                width="50"
+                height="50"
+                src="https://img.icons8.com/bubbles/100/verified-account.png"
+                alt="verified"
+              />
             </div>
+            <div className="ml-4 flex items-center gap-4">
+              {/* TYPE */}
+              <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
+                <div className="text-sm">
+                  <div className="text-gray-500 text-xs">Type</div>
+                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+                  <div className="text-gray-800 font-medium">
+                    {contactInfo?.type ?? "N/A"}
+                  </div>
+                </div>
+              </div>
+              {/* STAGE */}
+              <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+                <div className="text-sm">
+                  <div className="text-gray-500 text-xs">Stage</div>
+                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+                  <div className="text-gray-800 font-medium">
+                    {stage ?? "N/A"}
+                  </div>
+                </div>
+              </div>
+              {/* STATUS */}
+              <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+                <div className="text-sm">
+                  <div className="text-gray-500 text-xs">Status</div>
+                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+                  <div className="text-gray-800 font-medium">
+                    {status ?? "N/A"}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+                <div className="text-sm">
+                  <div className="text-gray-500 text-xs">Customer Type</div>
+                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+                  <div className="text-gray-800 font-medium">
+                    {contactInfo?.customer_type ?? "N/A"}
+                  </div>
+                </div>
+              </div>
 
-            {/* 🔘 PREV + NEXT BUTTONS */}
-            <div className="flex items-center gap-3">
-                {/* start by kjl */}
-                {emailDeals?.length > 0 && (
-                    <div className="flex items-center">
-                        <div
-                            onClick={goToDeal}
-                            className="
+              <div className="w-px h-10 bg-gray-200"></div>
+            </div>
+          </div>
+        )}
+        <SocialButtons />
+      </div>
+
+      {/* 🔘 PREV + NEXT BUTTONS */}
+      <div className="flex items-center gap-3">
+        {/* start by kjl */}
+        {emailDeals?.length > 0 && (
+          <div className="flex items-center">
+            <div
+              onClick={goToDeal}
+              className="
         flex items-center gap-4
         p-2
         rounded-xl
@@ -184,49 +191,51 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
         hover:-translate-y-0.5
         transition-all
       "
-                        >
-                            <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-slate-900">
-                                <Handshake size={22} className="text-white" />
-                            </div>
+            >
+              <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-slate-900">
+                <Handshake size={22} className="text-white" />
+              </div>
 
-                            <span className="text-2xl font-semibold text-slate-900">
-                                $<CountUpWithBlast value={maxDeal} />
-                            </span>
-                        </div>
-                    </div>
-                )}
-                {/* end by kjl */}
-
-                {/* PREV BUTTON (Disable if index is 0) */}
-                <button
-                    onClick={onPrev}
-                    disabled={currentIndex === 0}
-                    className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${currentIndex === 0
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }
-                    `}
-                >
-                    <ChevronLeft className="w-5 h-5 text-gray-700" />
-                </button>
-
-                {/* NEXT BUTTON (Disable if last email) */}
-                <button
-                    onClick={onNext}
-                    disabled={currentIndex === emails.length - 1}
-                    className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${currentIndex === emails.length - 1
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }
-                    `}
-                >
-                    <ChevronRight className="w-5 h-5 text-gray-700" />
-                </button>
+              <span className="text-2xl font-semibold text-slate-900">
+                $<CountUpWithBlast value={maxDeal} />
+              </span>
             </div>
-        </div>
-    );
+          </div>
+        )}
+        {/* end by kjl */}
+
+        {/* PREV BUTTON (Disable if index is 0) */}
+        <button
+          onClick={onPrev}
+          disabled={currentIndex === 0}
+          className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
+                        ${
+                          currentIndex === 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:bg-gray-100"
+                        }
+                    `}
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-700" />
+        </button>
+
+        {/* NEXT BUTTON (Disable if last email) */}
+        <button
+          onClick={onNext}
+          disabled={currentIndex === emails.length - 1}
+          className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
+                        ${
+                          currentIndex === emails.length - 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:bg-gray-100"
+                        }
+                    `}
+        >
+          <ChevronRight className="w-5 h-5 text-gray-700" />
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default ContactHeader;
