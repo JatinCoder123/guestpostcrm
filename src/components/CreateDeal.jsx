@@ -196,6 +196,8 @@ export default function CreateDeal() {
           )
         );
         setNewDeals([]);
+        dispatch(dealsAction.clearAllMessages());
+
       }
     }
     if (error) {
