@@ -50,9 +50,7 @@ export default function CreateDeal() {
   const [validWebsite, setValidWebsite] = useState([]);
   const [currentDeals, setCurrentDeals] = useState([]);
   const [currentOffers, setCurrentOffers] = useState([]);
-  const [nonEditDeals, setNonEditDeals] = useState([]);
   const { enteredEmail, search } = useContext(PageContext);
-
   const [newDeals, setNewDeals] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -73,7 +71,6 @@ export default function CreateDeal() {
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email
     );
     if (type == "edit" && id !== undefined) {
-      setNonEditDeals(deal.filter((d) => d.id !== id));
       deal = deal.filter((d) => d.id == id);
     }
     setCurrentDeals(() => [...deal]);
@@ -143,8 +140,8 @@ export default function CreateDeal() {
       )
     );
   };
-  const handleUpdate = (item) => {
-    dispatch(updateDeal(item));
+  const handleUpdate = (item, shouldSend) => {
+    dispatch(updateDeal(item, shouldSend));
   };
   const handleDelete = (id) => {
     dispatch(deleteDeal(id));
@@ -159,21 +156,30 @@ export default function CreateDeal() {
       dispatch(getDeals());
       ManualSideCall(crmEndpoint, state?.email, message, 2, okHandler);
       if (message.includes("Updated")) {
-        dispatch(
-          sendEmail(
-            renderToStaticMarkup(
-              <Preview
-                data={[...currentDeals]}
-                type="Deals"
-                userEmail={state?.email}
-                websiteKey="website_c"
-                amountKey="dealamount"
-              />
-            ),
-            "Deal Updated and Send Successfully", "Deal Updated But Not Sent!"
-          )
-        );
-        setNonEditDeals([]);
+        if (message.includes("Send")) {
+          dispatch(
+            sendEmail(
+              renderToStaticMarkup(
+                <Preview
+                  data={[...currentDeals]}
+                  type="Deals"
+                  userEmail={state?.email}
+                  websiteKey="website_c"
+                  amountKey="dealamount"
+                />
+              ),
+              "Deal Updated and Send Successfully", "Deal Updated But Not Sent!"
+            )
+          );
+          dispatch(dealsAction.clearAllMessages());
+
+        }
+        else {
+          toast.success(message);
+          dispatch(dealsAction.clearAllMessages());
+          navigate(-1);
+
+        }
       } else {
         dispatch(
           sendEmail(
@@ -189,11 +195,8 @@ export default function CreateDeal() {
             "Deal Created and Send Successfully", "Deal Created But Not Sent!"
           )
         );
+        setNewDeals([]);
       }
-
-      // toast.success(message);
-      dispatch(dealsAction.clearAllMessages());
-      // navigate(-1);
     }
     if (error) {
       toast.error(error);

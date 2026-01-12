@@ -25,6 +25,7 @@ import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
 import { getLadger } from "../store/Slices/ladger";
+import { dealsAction } from "../store/Slices/deals";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
   {
@@ -72,6 +73,7 @@ export default function CreateOffer() {
     deleteOfferId,
   } = useSelector((state) => state.offers);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
+  dispatch(dealsAction.clearAllMessages());
 
   useEffect(() => {
     let offer = offers.filter(
@@ -118,8 +120,8 @@ export default function CreateOffer() {
       )
     );
   };
-  const handleUpdate = (offer) => {
-    dispatch(updateOffer(offer));
+  const handleUpdate = (offer, send) => {
+    dispatch(updateOffer(offer, send));
   };
   const handleDelete = (id) => {
     dispatch(deleteOffer(id));
@@ -144,23 +146,33 @@ export default function CreateOffer() {
       ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
       dispatch(getOffers());
       if (message.includes("Updated")) {
-        dispatch(
-          sendEmail(
-            renderToStaticMarkup(
-              <Preview
-                data={[...currentOffers].filter(
-                  (o) => o.website !== ""
-                )}
-                type="Offers"
-                userEmail={state?.email}
-                websiteKey="website"
-                amountKey="our_offer_c"
-              />
-            ),
-            "Offer Updated and Send Successfully", "Offer Updated But Not Sent!"
-          )
-        );
-        setNewOffers([]);
+        if (message.includes("Send")) {
+          dispatch(
+            sendEmail(
+              renderToStaticMarkup(
+                <Preview
+                  data={[...currentOffers].filter(
+                    (o) => o.website !== ""
+                  )}
+                  type="Offers"
+                  userEmail={state?.email}
+                  websiteKey="website"
+                  amountKey="our_offer_c"
+                />
+              ),
+              "Offer Updated and Send Successfully", "Offer Updated But Not Sent!"
+            )
+          );
+          setNonEditOffers([]);
+          dispatch(offersAction.clearAllMessages());
+        }
+        else {
+          setNonEditOffers([]);
+          toast.success(message);
+          dispatch(offersAction.clearAllMessages());
+          navigate(-1);
+        }
+
       } else {
         dispatch(
           sendEmail(
@@ -179,11 +191,8 @@ export default function CreateOffer() {
           )
         );
         setNewOffers([]);
+        dispatch(offersAction.clearAllMessages());
       }
-
-      // toast.success(message);
-      dispatch(offersAction.clearAllMessages());
-      // navigate(-1);
     }
 
     if (error) {

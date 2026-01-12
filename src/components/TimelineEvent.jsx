@@ -1,6 +1,6 @@
 import Pagination from "./Pagination";
 import { useSelector } from "react-redux";
-import { Eye } from "lucide-react";
+import { Eye, SparkleIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const TimelineEvent = () => {
@@ -239,9 +239,17 @@ const TimelineEvent = () => {
                         </span>
                       </span>
 
-                      <span className="text-gray-500 text-sm">
-                        {event.date_entered}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {event.prompt_id.trim() !== "" && event.prompt_id.toLowerCase() !== "na" && (
+                          <button onClick={() => navigateTo("/settings/machine-learning", { state: { promptId: event.prompt_id } })} className="text-blue-600 hover:text-blue-700 cursor-pointer">
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                        <span className="text-gray-500 text-sm">
+                          {event.date_entered}
+                        </span>
+                      </div>
+
                     </div>
 
                     {/* Event subject */}

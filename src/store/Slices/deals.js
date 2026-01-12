@@ -166,7 +166,7 @@ export const createDeal = (deals = []) => {
     }
   };
 };
-export const updateDeal = (deal) => {
+export const updateDeal = (deal, send) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.updateDealRequest());
     try {
@@ -195,7 +195,7 @@ export const updateDeal = (deal) => {
         }
         return d;
       });
-      dispatch(dealsSlice.actions.updateDealSucess({ message: "Deal Updated Successfully", deals: updatedDeals }));
+      dispatch(dealsSlice.actions.updateDealSucess({ message: `Deal Updated ${send ? "and Send Successfully" : "Successfully"}`, deals: updatedDeals }));
       dispatch(dealsSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(dealsSlice.actions.updateDealFailed("Deal Update Failed"));
