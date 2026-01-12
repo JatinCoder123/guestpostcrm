@@ -98,7 +98,7 @@ export default function CreateOrder() {
       if (message.includes("Send")) {
         dispatch(sendEmail(
           renderToStaticMarkup(
-            <Preview
+            <PreviewOrder
               data={currentOrders}
               type="Orders"
               userEmail={state?.email}
