@@ -15,197 +15,125 @@ export default function PreviewOrder({ data = [], userEmail }) {
     );
   }
 
-const order = data[0];
+  const order = data[0];
+  const status = String(order.order_status || "").toLowerCase();
 
-const status = String(order.order_status || "")
-  .trim()
-  .toLowerCase();
+  const rawName = order.real_name || "";
+  const userName = rawName.split("<")[0].trim() || "Customer";
 
+  const backlinks = Array.isArray(order.seo_backlinks)
+    ? order.seo_backlinks
+    : [];
+
+  const gpBacklinks = backlinks.filter(
+    (b) => String(b.type_c || "").toUpperCase() === "GP"
+  );
+
+  const liBacklinks = backlinks.filter(
+    (b) => String(b.type_c || "").toUpperCase() === "LI"
+  );
 
   return (
-    <table
-  width="745"
-  cellPadding="0"
-  cellSpacing="0"
-  style={{
-    width: "745px",
-    margin: "auto",
-    border: "1px solid #e5e7eb",
-    borderRadius: "12px",
-    backgroundColor: "#ffffff",
-    fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
-    lineHeight: "1.5",
-    WebkitFontSmoothing: "antialiased",
-    MozOsxFontSmoothing: "grayscale",
-  }}
->
-
-    
+    <table width="745" align="center" cellPadding="0" cellSpacing="0" style={container}>
       <tbody>
         <tr>
-          <td align="center">
+          <td>
 
-            {/* HEADER */}
-            <table
-              width="100%"
-              cellPadding="0"
-              cellSpacing="0"
-              style={{
-                background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)",
-                padding: "24px 0",
-                marginBottom: "32px",
-                borderRadius: "10px",
-              }}
-            >
+            {/* ================= HEADER ================= */}
+            <table width="100%" cellPadding="0" cellSpacing="0" style={header}>
               <tbody>
                 <tr>
                   <td align="center">
-                    <div style={{ fontSize: "32px", fontWeight: "800", color: "#fff" }}>
-                      Order #{order.order_id || "N/A"}
-                    </div>
-
-                    {order.date_entered_formatted && (
-                      <div style={{ fontSize: "16px", color: "#e5e7eb", marginTop: "8px" }}>
-                        {order.date_entered_formatted}
-                      </div>
-                    )}
+                    
+                    <div style={headerTitle}>OrderID #{order.order_id}</div>
+                    <div style={headerUser}>👤 {userName}</div>
+                    <div style={headerDate}>{order.date_entered_formatted}</div>
                   </td>
                 </tr>
               </tbody>
             </table>
 
-            {/* BODY */}
-            <table width="100%" cellPadding="0" cellSpacing="0" style={{ maxWidth: "700px" }}>
+            {/* ================= ORDER SUMMARY ================= */}
+            <table width="100%" cellPadding="0" cellSpacing="0">
               <tbody>
-
-                {/* Client */}
                 <tr>
-                  <td style={{ padding: "0 24px 32px" }}>
-                    <div style={{ fontSize: "16px", fontWeight: "600", color: "#4b5563" }}>
-                      Client Information
-                    </div>
+                  <td style={sectionPadding}>
+                    <div style={card}>
+                      <div style={cardTitle}>
+                        🧾 Order Summary
+                        {/* <span style={statusBadge(order.order_status)}>
+                          {order.order_status}
+                        </span> */}
+                      </div>
 
-                    <div
-                      style={{
-                        fontSize: "18px",
-                        background: "#f3f4f6",
-                        padding: "16px",
-                        borderRadius: "10px",
-                        fontWeight: "700",
-                      }}
+                      <table width="100%">
+                        <tbody>
+                          <tr>
+                            <td style={label}>Status</td>
+                            <td style={value}>{order.order_status || OrderStatus}</td>
+                          </tr>
+                          <tr>
+                            <td style={label}>Client Email</td>
+                            <td style={value}>{order.client_email || userEmail}</td>
+                          </tr>
+                          <tr>
+                            <td style={label}>Website</td>
+                            <td style={value}>{order.website_c}</td>
+                          </tr>
+                          <tr>
+                            <td style={label}>Order Type</td>
+                            <td style={value}>{order.order_type}</td>
+                          </tr>
+                          <tr>
+                            <td style={label}>Total Amount</td>
+                            <td style={value}>${order.total_amount_c}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+
+                {/* ================= GP BACKLINKS ================= */}
+                {gpBacklinks.length > 0 && (
+                  <tr>
+                    <td style={sectionPadding}>
+                      <h3 style={gpTitle}>📝 Guest Posts (GP)</h3>
+                      {gpBacklinks.map((link, i) => (
+                        <BacklinkRow key={i} link={link} />
+                      ))}
+                    </td>
+                  </tr>
+                )}
+
+                {/* ================= LI BACKLINKS ================= */}
+                {liBacklinks.length > 0 && (
+                  <tr>
+                    <td style={sectionPadding}>
+                      <h3 style={liTitle}>🔗 Link Insertions (LI)</h3>
+                      {liBacklinks.map((link, i) => (
+                        <BacklinkRow key={i} link={link} />
+                      ))}
+                    </td>
+                  </tr>
+                )}
+
+                {/* ================= INVOICE ================= */}
+                <tr>
+                  <td align="center" style={{ padding: "32px" }}>
+                    <a
+                      href={order.invoice_link_c}
+                      target="_blank"
+                      style={invoiceBtn}
                     >
-                      {order.client_email || userEmail || "No email provided"}
-                    </div>
-                  </td>
-                </tr>      
-
-                {/* Order Details */}
-                <tr>
-                  <td style={{ padding: "0 24px" }}>
-                    <div style={{ fontSize: "22px", fontWeight: "800", marginBottom: "16px" }}>
-                      Order Details
-                    </div>
-
-                    <table width="100%">
-                      <tbody>
-                        <tr>
-                          <td width="50%" style={{ paddingRight: "10px" }}>
-                            <div style={detailBox}>
-                              <div style={detailLabel}>Status</div>
-                              <span style={statusPill(order.order_status)}>
-                                {order.order_status || "pending"}
-                              </span>
-                            </div>
-                          </td>
-
-                          <td width="50%" style={{ paddingLeft: "10px" }}>
-                            <div style={detailBox}>
-                              <div style={detailLabel}>Total Amount</div>
-                              <div style={amountValue}>
-                                ${order.total_amount_c || "0.00"}
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                    <div style={{ marginTop: "20px" }}>
-                      <div style={infoItem}>
-                        <b>Order Type:</b> {order.order_type || "-"}
-                      </div>
-                      <div style={infoItem}>
-                        <b>Website:</b> {order.website_c || "-"}
-                      </div>
-                      <div style={infoItem}>
-                        <b>Anchor:</b> {order.anchor_text_c || "-"}
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Dates */}
-                <tr>
-                  <td style={{ padding: "24px" }}>
-                    <div style={{ fontSize: "18px", fontWeight: "700" }}>Dates</div>
-                    <div style={infoItem}>
-                      Created: {order.date_entered_formatted || "-"}
-                    </div>
-                    <div style={infoItem}>
-                      Updated: {order.date_modified_formatted || "-"}
-                    </div>
-                    {order.expiry_date && (
-                      <div style={infoItem}>
-                        Expiry: {order.expiry_date}
-                      </div>
-                    )}
-                  </td>
-                </tr>
-
-           
-                <tr>
-                  <td align="center" style={{ paddingBottom: "40px" }}>
-                    {/* {order.invoice_link_c ? ( */}
-                    {/* //   <a
-                    //     href={order.invoice_link_c}
-                    //     target="_blank"
-                    //     rel="noopener noreferrer"
-                    //     style={invoiceBtn}
-                    //   >
-                    //     📄 View Invoice
-                    //   </a>
-                    // ) : (
-                    //   <div style={noInvoice}>Invoice not available</div>
-                    // )} */}
-
-{status === "complete" || status === "completed" ? (
-  order.invoice_link_c ? (
-    <a
-      href={order.invoice_link_c}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={invoiceBtn}
-    >
-      📄 View Invoice
-    </a>
-  ) : (
-    <div style={noInvoice}>
-      Invoice is being generated… please check again shortly
-    </div>
-  )
-) : (
-  <div style={noInvoice}>
-    Invoice will be available after payment is completed
-  </div>
-)}
-
-
+                      📄 View Invoice
+                    </a>
                   </td>
                 </tr>
 
               </tbody>
             </table>
+
           </td>
         </tr>
       </tbody>
@@ -213,60 +141,191 @@ const status = String(order.order_status || "")
   );
 }
 
+/* ================= BACKLINK CARD ================= */
+const BacklinkRow = ({ link }) => {
+  const type = String(link.type_c || "").toUpperCase();
+
+  return (
+    <table width="100%" cellPadding="0" cellSpacing="0" style={backlinkCard}>
+      <tbody>
+        <tr>
+          <td style={backlinkTitle}>{link.name}</td>
+          <td align="right">
+            <span style={statusBadge(link.status_c)}>
+              {link.status_c}
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td colSpan="2" style={row}>
+            🔗 <strong>Backlink URL:</strong><br />
+            {link.backlink_url || "N/A"}
+          </td>
+        </tr>
+
+        {/* ✅ ONLY SHOW ANCHOR TEXT FOR LI */}
+        {type === "LI" && (
+          <tr>
+            <td colSpan="2" style={row}>
+              🏷️ <strong>Anchor Text:</strong>{" "}
+              <span style={anchorBadge}>
+                {link.anchor_text_c || "N/A"}
+              </span>
+            </td>
+          </tr>
+        )}
+
+        <tr>
+          <td colSpan="2" style={row}>
+            📄 <strong>Document URL:</strong><br />
+            {link.gp_doc_url_c || "N/A"}
+          </td>
+        </tr>
+
+        <tr>
+          <td colSpan="2" style={row}>
+            💰 <strong>Amount:</strong> {link.link_amount_c}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+};
+
+/* ================= STYLES ================= */
+
+const container = {
+  border: "1px solid #e5e7eb",
+  borderRadius: "16px",
+  background: "#ffffff",
+  fontFamily: "'Inter', Arial, sans-serif",
+};
+
+const header = {
+  background: "linear-gradient(135deg,#1e40af,#2563eb)",
+  padding: "34px 0",
+};
+
+const headerTitle = {
+  fontSize: "30px",
+  color: "#ffffff",
+  fontWeight: "800",
+};
+
+const headerUser = {
+  marginTop: "6px",
+  color: "#dbeafe",
+  fontWeight: "600",
+};
+
+const headerDate = {
+  marginTop: "4px",
+  color: "#bfdbfe",
+  fontSize: "13px",
+};
+
+const sectionPadding = {
+  padding: "22px",
+};
+
+const card = {
+  background: "#f9fafb",
+  border: "1px solid #e5e7eb",
+  borderRadius: "14px",
+  padding: "20px",
+};
+
+const cardTitle = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: "14px",
+  fontWeight: "800",
+  color: "#1e40af",
+};
+
+const label = {
+  padding: "8px 0",
+  color: "#374151",
+  fontWeight: "600",
+};
+
+const value = {
+  padding: "8px 0",
+  textAlign: "right",
+  fontWeight: "700",
+};
+
+const gpTitle = {
+  color: "#1e40af",
+  marginBottom: "10px",
+};
+
+const liTitle = {
+  color: "#1e40af",
+  marginBottom: "10px",
+};
+
+const backlinkCard = {
+  background: "#ffffff",
+  border: "1px solid #e5e7eb",
+  borderRadius: "12px",
+  padding: "14px",
+  marginBottom: "12px",
+};
+
+const backlinkTitle = {
+  fontWeight: "700",
+  color: "#111827",
+};
+
+const row = {
+  padding: "8px",
+  fontSize: "13px",
+  color: "#374151",
+};
+
+const anchorBadge = {
+  background: "#e0f2fe",
+  color: "#075985",
+  padding: "4px 10px",
+  borderRadius: "999px",
+  fontSize: "11px",
+  fontWeight: "700",
+};
+
+const invoiceBtn = {
+  background: "#2563eb",
+  color: "#ffffff",
+  padding: "14px 36px",
+  borderRadius: "10px",
+  textDecoration: "none",
+  fontWeight: "800",
+  display: "inline-block",
+};
+
+const statusBadge = (status) => ({
+  background:
+    String(status).toLowerCase() === "paid" ||
+    String(status).toLowerCase() === "completed" ||
+    String(status).toLowerCase() === "live"
+      ? "#dcfce7"
+      : "#fef3c7",
+  color:
+    String(status).toLowerCase() === "paid" ||
+    String(status).toLowerCase() === "completed" ||
+    String(status).toLowerCase() === "live"
+      ? "#166534"
+      : "#92400e",
+  padding: "4px 12px",
+  borderRadius: "999px",
+  fontSize: "11px",
+  fontWeight: "700",
+});
 
 const noDataStyle = {
   background: "#f9fafb",
   padding: "40px",
   borderRadius: "12px",
-  border: "1px solid #e5e7eb",
-};
-
-const statusPill = (status) => ({
-  padding: "1px 24px",
-  borderRadius: "20px",
-  fontWeight: "700",
-  background:
-    status === "paid" ? "#d1fae5" : status === "new" ? "#fef3c7" : "#fee2e2",
-});
-
-const detailBox = {
-  background: "#f8fafc",
-  padding: "16px",
-  borderRadius: "8px",
-  border: "1px solid #e2e8f0",
-};
-
-const detailLabel = { fontSize: "12px", color: "#6b7280" };
-
-const amountValue = { fontSize: "20px", fontWeight: "800", color: "#059669" };
-
-const infoItem = {
-  padding: "10px",
-  background: "#f9fafb",
-  borderRadius: "8px",
-  marginTop: "8px",
-};
-
-const invoiceBtn = {
-  padding: "14px 32px",
-  background: "#2563eb",
-  color: "#fff",
-  borderRadius: "8px",
-  textDecoration: "none",
-  fontWeight: "700",
-};
-
-// const noInvoice = {
-//   color: "#9ca3af",
-//   background: "#f9fafb",
-//   padding: "12px",
-//   borderRadius: "8px",
-// };
-const noInvoice = {
- color:"#fff",
-    background: "#228464c2",
-    padding: "12px",
-    borderRadius: "8px",
-    fontSize: "15px"
 };
 
