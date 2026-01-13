@@ -52,7 +52,7 @@ import { HotPage } from "./components/pages/HotPage";
 import { ViewReminder } from "./components/ViewReminder";
 // import {PreviewOrder} from "./components/PreviewOrder";
 import PreviewOrder from "./components/PreviewOrder";
-
+import AccountPage from "./components/pages/AccountPage";
 
 const router = createBrowserRouter([
   {
@@ -95,6 +95,10 @@ const router = createBrowserRouter([
       {
         path: "contacts",
         element: <Contactpage />,
+      },
+      {
+        path: "account",
+        element: <AccountPage />,
       },
       {
         path: "unanswered",
@@ -153,7 +157,6 @@ const router = createBrowserRouter([
         element: <ReminderPage />,
       },
 
-
       {
         path: "timeline",
         element: <TimelinePage />,
@@ -191,7 +194,7 @@ const router = createBrowserRouter([
         path: "all-backlinks",
         element: <Allbacklinkspage />,
       },
-      
+
       {
         path: "other",
         element: <OtherPage />,
@@ -206,10 +209,9 @@ const router = createBrowserRouter([
       },
 
       {
-       path: "preview-order",
-       element: <PreviewOrder />,
-     },
-
+        path: "preview-order",
+        element: <PreviewOrder />,
+      },
 
       {
         path: "settings",

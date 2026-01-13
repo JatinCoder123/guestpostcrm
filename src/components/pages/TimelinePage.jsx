@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import { getLadger, ladgerAction } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
 import { viewEmailAction } from "../../store/Slices/viewEmail";
-import ContactBox from "../ContactBox";
 import CreateDeal from "../CreateDeal";
 import { motion } from "framer-motion";
 import { LoadingChase } from "../Loading";
@@ -32,7 +31,6 @@ import { SocketContext } from "../../context/SocketContext";
 export function TimelinePage() {
   const [showEmail, setShowEmail] = useState(false);
   const [showThread, setShowThread] = useState(false);
-  const [showContact, setShowContact] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
   const { currentIndex, setCurrentIndex } = useContext(PageContext);
@@ -185,14 +183,6 @@ export function TimelinePage() {
     );
   }
 
-  if (showContact) {
-    return (
-      <>
-        <ContactBox onClose={() => setShowContact(false)} />
-      </>
-    );
-  }
-
   if (showDeal) {
     return <CreateDeal onClose={() => setShowDeal(false)} />;
   }
@@ -259,7 +249,7 @@ export function TimelinePage() {
                     <div className="mb-3">
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                         {mailersSummary == null ||
-                          mailersSummary?.ai_response == ""
+                        mailersSummary?.ai_response == ""
                           ? "No AI reply generated."
                           : mailersSummary?.ai_response}
                       </p>
@@ -322,13 +312,13 @@ export function TimelinePage() {
                       </div>
 
                       {viewEmail?.length > 0 && (
-
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -338,7 +328,6 @@ export function TimelinePage() {
                             : "Our Mail"}
                         </div>
                       )}
-
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -380,14 +369,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    threadId={currentThreadId}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  threadId={currentThreadId}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (

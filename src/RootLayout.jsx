@@ -3,9 +3,7 @@ import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getLadger,
-} from "./store/Slices/ladger";
+import { getLadger } from "./store/Slices/ladger";
 import {
   checkForDuplicates,
   getDuplicateCount,
@@ -76,7 +74,6 @@ const RootLayout = () => {
     }
   }, [pathname]);
 
-
   // Show avatar when new avatar arrives
   useEffect(() => {
     setShowAvatar(true);
@@ -110,11 +107,11 @@ const RootLayout = () => {
   }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
 
   const firstEmail =
-    emails.length > 0
+    emails?.length > 0
       ? emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
       : null;
   useEffect(() => {
-    if (emails.length > 0) {
+    if (emails?.length > 0) {
       setWelcomeHeaderContent("Unreplied");
     }
   }, [emails]);
@@ -235,8 +232,7 @@ const RootLayout = () => {
         dispatch(getLadger({ email: firstEmail, search }));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
-      }
-      else {
+      } else {
         dispatch(getLadger({ search, isEmail: false }));
         dispatch(getViewEmail());
         dispatch(getContact());
@@ -260,8 +256,9 @@ const RootLayout = () => {
             {/* Main content scrolls independently */}
             <main
               ref={mainRef}
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-                }`}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                collapsed ? "ml-4" : "ml-0"
+              }`}
             >
               <div className="p-6">
                 <WelcomeHeader />

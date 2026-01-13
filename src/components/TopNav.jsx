@@ -1,10 +1,4 @@
-import {
-  Search,
-  Sparkles,
-  Flame,
-  X,
-  User2Icon,
-} from "lucide-react";
+import { Search, Sparkles, Flame, X, User2Icon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
 import { useContext, useEffect, useState, useRef } from "react";
@@ -24,12 +18,8 @@ export function TopNav() {
   const { user, error } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
 
-  const {
-    search,
-    setSearch,
-    setEnteredEmail,
-    setWelcomeHeaderContent,
-  } = useContext(PageContext);
+  const { search, setSearch, setEnteredEmail, setWelcomeHeaderContent } =
+    useContext(PageContext);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
@@ -105,18 +95,16 @@ export function TopNav() {
 
   return (
     <div className="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
           src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/png%20(1).png"
           className="w-72 h-10 object-contain cursor-pointer"
           onClick={() => navigateTo("")}
-        /> 
+        />
 
         {/* SEARCH AREA */}
         <div className="flex items-center gap-2">
-
           {/* INPUT */}
           <div className="relative w-[380px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -130,9 +118,9 @@ export function TopNav() {
                 w-full pl-10 pr-10 py-2
                 bg-gray-50 border border-gray-200 rounded-lg
                 focus:outline-none focus:ring-2 focus:ring-purple-500/20
-                focus:border-purple-500
+                focus:border-purple-500 shadow-lg
               "
-            />  
+            />
 
             {/* ❌ CLEAR INSIDE INPUT */}
             {search && (
@@ -145,16 +133,17 @@ export function TopNav() {
                 className={`
                   absolute right-2 top-1/2 -translate-y-1/2
                   w-6 h-6 flex items-center justify-center rounded-md
-                  ${isBlinking
-                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                    : "bg-gray-300 text-gray-700"
+                  ${
+                    isBlinking
+                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                      : "bg-gray-300 text-gray-700"
                   }
                 `}
               >
                 <X className="w-4 h-4" />
               </motion.button>
-            )}  
-          </div>  
+            )}
+          </div>
 
           {/* 🔍 SEARCH BUTTON OUTSIDE */}
           <button
@@ -164,57 +153,55 @@ export function TopNav() {
               bg-blue-600 text-white rounded-lg
               hover:bg-blue-700
             "
-          
-          >    
+          >
             <Search className="w-4 h-4" />
-
-          </button>  
+          </button>
 
           <DropDown
             options={periodOptions}
             handleSelectOption={handleSelectPeriod}
-          />  
+          />
         </div>
       </div>
 
       {/* RIGHT */}
       <div className="flex items-center gap-3">
-      {/* start by kjl */}
-<motion.button
-  onClick={() => navigateTo("hot-records")}
-  animate={
-    count > 0
-      ? {
-          scale: [1, 1.12, 1],
-          boxShadow: [
-            "0 0 0px rgba(59,130,246,0)",   
-            "0 0 18px rgba(59,130,246,0.9)",
-            "0 0 18px rgba(239, 68, 213, 0.9)", 
-            "0 0 0px rgba(239,68,68,0)",    
-          ],
-        }
-      : {}
-  }
-  transition={
-    count > 0
-      ? {
-          repeat: Infinity,
-          duration: 1.6, // normal speed
-          ease: "easeInOut",
-        }
-      : {}
-  }
-  className="relative p-4 bg-orange-500 text-white rounded-full"
->
-  <Flame />
+        {/* start by kjl */}
+        <motion.button
+          onClick={() => navigateTo("hot-records")}
+          animate={
+            count > 0
+              ? {
+                  scale: [1, 1.12, 1],
+                  boxShadow: [
+                    "0 0 0px rgba(59,130,246,0)",
+                    "0 0 18px rgba(59,130,246,0.9)",
+                    "0 0 18px rgba(239, 68, 213, 0.9)",
+                    "0 0 0px rgba(239,68,68,0)",
+                  ],
+                }
+              : {}
+          }
+          transition={
+            count > 0
+              ? {
+                  repeat: Infinity,
+                  duration: 1.6, // normal speed
+                  ease: "easeInOut",
+                }
+              : {}
+          }
+          className="relative p-4 bg-orange-500 text-white rounded-full"
+        >
+          <Flame />
 
-  {count > 0 && (
-    <span className="absolute -top-1 -right-1 bg-orange-800 text-xs w-5 h-5 rounded-full flex items-center justify-center">
-      {count}
-    </span>
-  )}
-</motion.button>
-{/* end */}
+          {count > 0 && (
+            <span className="absolute -top-1 -right-1 bg-orange-800 text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              {count}
+            </span>
+          )}
+        </motion.button>
+        {/* end */}
 
         <button
           onClick={() => navigateTo("avatars")}

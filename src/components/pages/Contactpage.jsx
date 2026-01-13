@@ -4,9 +4,8 @@ import {
   Phone,
   Mail,
   MapPin,
-  Building2,
-  CreditCard,
   X,
+  Building2,
   ChartSpline,
   Target,
   DollarSign,
@@ -17,50 +16,54 @@ import {
   Calendar,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { editContact, getContact, viewEmailAction } from "../../store/Slices/viewEmail";
+import {
+  editContact,
+  getContact,
+  viewEmailAction,
+} from "../../store/Slices/viewEmail";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 export default function Contactpage() {
-  const { contactInfo, accountInfo, dealInfo, message, error, loading } = useSelector(
+  const { contactInfo, dealInfo, message, error, loading } = useSelector(
     (state) => state.viewEmail
   );
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     contact: {},
-    account: {},
-    deal: []
+    deal: [],
   });
-  
+
   const [totalDealCount, setTotalDealCount] = useState(0);
   const [highestDealAmount, setHighestDealAmount] = useState(0);
   const [highestDealIndex, setHighestDealIndex] = useState(-1);
   const [highestDealDate, setHighestDealDate] = useState("N/A");
-  
+
   const dispatch = useDispatch();
 
   useEffect(() => {
     let dealsArray = [];
-    
+
     if (Array.isArray(dealInfo)) {
       dealsArray = dealInfo;
-    } else if (dealInfo && typeof dealInfo === 'object') {
+    } else if (dealInfo && typeof dealInfo === "object") {
       if (Array.isArray(dealInfo.deal)) {
         dealsArray = dealInfo.deal;
       } else {
-        dealsArray = Object.values(dealInfo).filter(item => item && typeof item === 'object');
+        dealsArray = Object.values(dealInfo).filter(
+          (item) => item && typeof item === "object"
+        );
       }
     }
 
     const newFormData = {
       contact: contactInfo || {},
-      account: accountInfo || {},
-      deal: dealsArray
+      deal: dealsArray,
     };
-    
+
     setFormData(newFormData);
     calculateDealStats(newFormData.deal);
-    
-  }, [contactInfo, accountInfo, dealInfo]);
+  }, [contactInfo, dealInfo]);
 
   const calculateDealStats = (deals) => {
     if (!Array.isArray(deals) || deals.length === 0) {
@@ -70,13 +73,13 @@ export default function Contactpage() {
       setHighestDealDate("N/A");
       return;
     }
-    
+
     setTotalDealCount(deals.length);
-    
+
     let maxAmount = 0;
     let maxIndex = -1;
     let maxDate = "N/A";
-    
+
     deals.forEach((deal, index) => {
       const amount = parseFloat(deal?.dealamount) || 0;
       if (amount > maxAmount) {
@@ -85,7 +88,7 @@ export default function Contactpage() {
         maxDate = deal.date_entered ? formatDate(deal.date_entered) : "N/A";
       }
     });
-    
+
     setHighestDealAmount(maxAmount);
     setHighestDealIndex(maxIndex);
     setHighestDealDate(maxDate);
@@ -93,13 +96,13 @@ export default function Contactpage() {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    
-    const dateOnly = dateString.split(' ')[0];
-    
+
+    const dateOnly = dateString.split(" ")[0];
+
     try {
       const date = new Date(dateOnly);
       if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString('en-GB'); 
+        return date.toLocaleDateString("en-GB");
       }
       return dateOnly;
     } catch (error) {
@@ -113,12 +116,12 @@ export default function Contactpage() {
 
   const handleChange = (e, section) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [name]: value
-      }
+        [name]: value,
+      },
     }));
   };
 
@@ -155,7 +158,7 @@ export default function Contactpage() {
               </div>
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#4ade80] rounded-full border-4 border-white" />
             </div>
-           
+
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#9333ea] to-[#3b82f6] bg-clip-text text-transparent">
                 {contactInfo?.full_name || "No Name"}
@@ -164,16 +167,33 @@ export default function Contactpage() {
                 {contactInfo?.type} {contactInfo?.title}
               </p>
             </div>
-            
-            <div className="editbtn cursor-pointer" onClick={handleEditClick}>
-              <img width="48" height="48" src="https://img.icons8.com/fluency/48/create-new.png" alt="create-new"/>
+
+            <div className="flex gap-3">
+              <Link
+                to="/account"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl
+                            bg-gradient-to-r from-[#ec4899] to-[#9333ea]
+                            text-white font-semibold shadow-lg hover:scale-105 transition"
+              >
+                <Building2 size={18} />
+                View Account
+              </Link>
+
+              <div className="editbtn cursor-pointer" onClick={handleEditClick}>
+                <img
+                  width="48"
+                  height="48"
+                  src="https://img.icons8.com/fluency/48/create-new.png"
+                  alt="edit"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       {/* Main Content Grid */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-1 gap-6">
         {/* Contact Information - 2 columns */}
         <div className="lg:col-span-2 space-y-6">
           {/* Contact Information Card */}
@@ -184,19 +204,51 @@ export default function Contactpage() {
               </div>
               Contact Information
             </h2>
-           
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <GlassInfo icon={<User />} label="Name" value={contactInfo?.full_name} />
-              <GlassInfo icon={<User />} label="Stage" value={contactInfo?.stage} />
-              <GlassInfo icon={<Phone />} label="Phone" value={contactInfo?.phone_mobile} />
-              <GlassInfo icon={<Mail />} label="Email" value={contactInfo?.email1} />
-              <GlassInfo icon={<MapPin />} label="Date Entered" value={contactInfo?.date_entered} />
-              <GlassInfo icon={<User />} label="Customer Type" value={contactInfo?.customer_type} />
-              <GlassInfo icon={<ChartSpline />} label="Status" value={contactInfo?.status} />
-              <GlassInfo icon={<Target />} label="Last Activity" value={contactInfo?.date_modified} />
+              <GlassInfo
+                icon={<User />}
+                label="Name"
+                value={contactInfo?.full_name}
+              />
+              <GlassInfo
+                icon={<User />}
+                label="Stage"
+                value={contactInfo?.stage}
+              />
+              <GlassInfo
+                icon={<Phone />}
+                label="Phone"
+                value={contactInfo?.phone_mobile}
+              />
+              <GlassInfo
+                icon={<Mail />}
+                label="Email"
+                value={contactInfo?.email1}
+              />
+              <GlassInfo
+                icon={<MapPin />}
+                label="Date Entered"
+                value={contactInfo?.date_entered}
+              />
+              <GlassInfo
+                icon={<User />}
+                label="Customer Type"
+                value={contactInfo?.customer_type}
+              />
+              <GlassInfo
+                icon={<ChartSpline />}
+                label="Status"
+                value={contactInfo?.status}
+              />
+              <GlassInfo
+                icon={<Target />}
+                label="Last Activity"
+                value={contactInfo?.date_modified}
+              />
             </div>
           </div>
-          
+
           {/* Deals Information Section - FIXED HEIGHT AND SCROLLABLE */}
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -205,7 +257,7 @@ export default function Contactpage() {
               </div>
               Deals Information
             </h2>
-            
+
             {/* Deals Summary Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
@@ -214,37 +266,49 @@ export default function Contactpage() {
                     <Hash className="text-[#3b82f6]" size={20} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">Total Deals</p>
-                    <p className="text-xl font-bold text-gray-800">{totalDealCount}</p>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
+                      Total Deals
+                    </p>
+                    <p className="text-xl font-bold text-gray-800">
+                      {totalDealCount}
+                    </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#fbbf24]/20 to-[#f97316]/20 flex items-center justify-center">
                     <TrendingUp className="text-[#eab308]" size={20} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">Highest Deal</p>
-                    <p className="text-xl font-bold text-gray-800">${highestDealAmount}</p>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
+                      Highest Deal
+                    </p>
+                    <p className="text-xl font-bold text-gray-800">
+                      ${highestDealAmount}
+                    </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#a855f7]/20 to-[#ec4899]/20 flex items-center justify-center">
                     <Calendar className="text-[#9333ea]" size={20} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">Deal Date</p>
-                    <p className="text-xl font-bold text-gray-800">{highestDealDate}</p>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
+                      Deal Date
+                    </p>
+                    <p className="text-xl font-bold text-gray-800">
+                      {highestDealDate}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Deals Table with Fixed Height and Scrollable */}
             {formData.deal && formData.deal.length > 0 ? (
               <div className="space-y-4">
@@ -270,36 +334,41 @@ export default function Contactpage() {
                       <Globe size={20} /> Website
                     </p>
                   </div>
-                  
                 </div>
-                
+
                 {/* Table Rows with Fixed Height Container */}
-                <div 
+                <div
                   className="space-y-2 h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
                   style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: '#d1d5db transparent'
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#d1d5db transparent",
                   }}
                 >
                   {formData.deal.map((deal, index) => (
                     <div
                       key={index}
                       className={`grid grid-cols-12 gap-4 p-3 backdrop-blur-md bg-white/20 border ${
-                        index === highestDealIndex 
-                          ? 'border-[#f59e0b]/50' 
-                          : 'border-white/40'
+                        index === highestDealIndex
+                          ? "border-[#f59e0b]/50"
+                          : "border-white/40"
                       } rounded-xl items-center transition-all duration-200 hover:scale-101 hover:bg-white/50 hover:border-[#9333ea]/30`}
                     >
                       {/* Serial Number */}
                       <div className="col-span-1">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          index === highestDealIndex 
-                            ? 'bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30' 
-                            : 'bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20'
-                        }`}>
-                          <span className={`text-sm font-bold ${
-                            index === highestDealIndex ? 'text-[#92400e]' : 'text-gray-800'
-                          }`}>
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            index === highestDealIndex
+                              ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
+                              : "bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20"
+                          }`}
+                        >
+                          <span
+                            className={`text-sm font-bold ${
+                              index === highestDealIndex
+                                ? "text-[#92400e]"
+                                : "text-gray-800"
+                            }`}
+                          >
                             {index + 1}
                           </span>
                         </div>
@@ -313,37 +382,52 @@ export default function Contactpage() {
                           </div>
                           <div>
                             <p className="text-sm text-gray-700">
-                              {deal.date_entered ? formatDate(deal.date_entered) : "N/A"}
+                              {deal.date_entered
+                                ? formatDate(deal.date_entered)
+                                : "N/A"}
                             </p>
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Deal Amount */}
                       <div className="col-span-3">
                         <div className="flex items-center gap-2">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            index === highestDealIndex 
-                              ? 'bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30' 
-                              : 'bg-gradient-to-br from-[#4ade80]/20 to-[#10b981]/20'
-                          }`}>
-                            <DollarSign size={16} className={
-                              index === highestDealIndex ? 'text-[#92400e]' : 'text-[#059669]'
-                            } />
+                          <div
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              index === highestDealIndex
+                                ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
+                                : "bg-gradient-to-br from-[#4ade80]/20 to-[#10b981]/20"
+                            }`}
+                          >
+                            <DollarSign
+                              size={16}
+                              className={
+                                index === highestDealIndex
+                                  ? "text-[#92400e]"
+                                  : "text-[#059669]"
+                              }
+                            />
                           </div>
                           <div>
-                            <p className={`text-base font-bold ${
-                              index === highestDealIndex ? 'text-[#92400e]' : 'text-gray-800'
-                            }`}>
+                            <p
+                              className={`text-base font-bold ${
+                                index === highestDealIndex
+                                  ? "text-[#92400e]"
+                                  : "text-gray-800"
+                              }`}
+                            >
                               ${deal.dealamount || "0"}
                             </p>
                             {index === highestDealIndex && (
-                              <p className="text-xs text-[#d97706] font-medium">Highest Deal</p>
+                              <p className="text-xs text-[#d97706] font-medium">
+                                Highest Deal
+                              </p>
                             )}
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Website */}
                       <div className="col-span-5">
                         <div className="flex items-center gap-2">
@@ -357,8 +441,6 @@ export default function Contactpage() {
                           </div>
                         </div>
                       </div>
-                      
-                      
                     </div>
                   ))}
                 </div>
@@ -372,7 +454,7 @@ export default function Contactpage() {
               </div>
             )}
           </div>
-          
+
           {/* Addresses Section */}
           <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -381,38 +463,20 @@ export default function Contactpage() {
               </div>
               Addresses
             </h2>
-           
+
             <div className="space-y-4">
-              <GlassInfo icon={<MapPin />} label="Primary Address" value={contactInfo?.billing_address_street} fullWidth />
-              <GlassInfo icon={<MapPin />} label="Secondary Address" value={contactInfo?.alt_address_street} fullWidth />
-            </div>
-          </div>
-        </div>
-        
-        {/* Account Details - 1 column */}
-        <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f472b6] to-[#a855f7] flex items-center justify-center">
-                <Building2 className="text-white" size={20} />
-              </div>
-              Account
-            </h2>
-           
-            <div className="space-y-4">
-              <GlassInfo icon={<Building2 />} label="Company" value={formData?.contact?.account_name} fullWidth />
-              <GlassInfo icon={<CreditCard />} label="Account ID" value={formData?.contact?.account_id} fullWidth />
-              <GlassInfo icon={<Phone />} label="Phone" value={formData?.contact?.phone_work} fullWidth />
-              <GlassInfo icon={<Building2 />} label="Website" value={accountInfo?.website} fullWidth />
-            </div>
-          </div>
-          
-          {/* Account Addresses */}
-          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Account Addresses</h3>
-            <div className="space-y-4">
-              <GlassInfo icon={<MapPin />} label="Billing" value={accountInfo?.billing_address_street} fullWidth />
-              <GlassInfo icon={<MapPin />} label="Shipping" value={accountInfo?.shipping_address_street} fullWidth />
+              <GlassInfo
+                icon={<MapPin />}
+                label="Primary Address"
+                value={contactInfo?.billing_address_street}
+                fullWidth
+              />
+              <GlassInfo
+                icon={<MapPin />}
+                label="Secondary Address"
+                value={contactInfo?.alt_address_street}
+                fullWidth
+              />
             </div>
           </div>
         </div>
@@ -420,19 +484,26 @@ export default function Contactpage() {
 
       {/* Edit Modal */}
       {isEditing && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCancel}>
-          <div 
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={handleCancel}
+        >
+          <div
             className="backdrop-blur-xl bg-white/90 border border-white/50 rounded-3xl p-8 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold text-gray-800">Edit Contact & Account</h2>
-              <button onClick={handleCancel} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-3xl font-bold text-gray-800">
+                Edit Contact & Account
+              </h2>
+              <button
+                onClick={handleCancel}
+                className="text-gray-500 hover:text-gray-700"
+              >
                 <X size={24} />
               </button>
-              
             </div>
-  {/* Action Buttons */}
+            {/* Action Buttons */}
             <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
               <button
                 onClick={handleCancel}
@@ -457,72 +528,86 @@ export default function Contactpage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">First Name</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      First Name
+                    </label>
                     <input
                       type="text"
                       name="first_name"
-                      value={formData.contact.first_name || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.first_name || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Last Name</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Last Name
+                    </label>
                     <input
                       type="text"
                       name="last_name"
-                      value={formData.contact.last_name || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.last_name || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Stage</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Stage
+                    </label>
                     <input
                       type="text"
                       name="stage"
-                      value={formData.contact.stage || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.stage || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Phone</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Phone
+                    </label>
                     <input
                       type="tel"
                       name="phone_mobile"
-                      value={formData.contact.phone_mobile || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.phone_mobile || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Email</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Email
+                    </label>
                     <input
                       type="email"
                       name="email1"
-                      value={formData.contact.email1 || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.email1 || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Date Entered</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Date Entered
+                    </label>
                     <input
                       type="date"
                       name="date_entered"
-                      value={formData.contact.date_entered || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.date_entered || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Customer Type</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Customer Type
+                    </label>
                     <input
                       type="text"
                       name="customer_type"
-                      value={formData.contact.customer_type || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.customer_type || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                     />
                   </div>
@@ -537,101 +622,25 @@ export default function Contactpage() {
                 </h3>
                 <div className="space-y-4">
                   <div className="col-span-full">
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Primary Address</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Primary Address
+                    </label>
                     <textarea
                       name="billing_address_street"
-                      value={formData.contact.billing_address_street || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
+                      value={formData.contact.billing_address_street || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       rows={3}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
                     />
                   </div>
                   <div className="col-span-full">
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Secondary Address</label>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Secondary Address
+                    </label>
                     <textarea
                       name="alt_address_street"
-                      value={formData.contact.alt_address_street || ''}
-                      onChange={(e) => handleChange(e, 'contact')}
-                      rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Account Information */}
-              <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <Building2 size={20} className="text-[#ec4899]" />
-                  Account Information
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Company</label>
-                    <input
-                      type="text"
-                      name="company"
-                      value={formData.account.company || ''}
-                      onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Account ID</label>
-                    <input
-                      type="text"
-                      name="accountId"
-                      value={formData.account.accountId || ''}
-                      onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Phone</label>
-                    <input
-                      type="tel"
-                      name="phone_office"
-                      value={formData.account.phone_office || ''}
-                      onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Website</label>
-                    <input
-                      type="url"
-                      name="website"
-                      value={formData.account.website || ''}
-                      onChange={(e) => handleChange(e, 'account')}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Account Addresses */}
-              <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <MapPin size={20} className="text-[#3b82f6]" />
-                  Account Addresses
-                </h3>
-                <div className="space-y-4">
-                  <div className="col-span-full">
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Billing Address</label>
-                    <textarea
-                      name="billing_address_street"
-                      value={formData.account.billing_address_street || ''}
-                      onChange={(e) => handleChange(e, 'account')}
-                      rows={3}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                    />
-                  </div>
-                  <div className="col-span-full">
-                    <label className="block text-sm font-semibold text-gray-600 mb-1">Shipping Address</label>
-                    <textarea
-                      name="shipping_address_street"
-                      value={formData.account.shipping_address_street || ''}
-                      onChange={(e) => handleChange(e, 'account')}
+                      value={formData.contact.alt_address_street || ""}
+                      onChange={(e) => handleChange(e, "contact")}
                       rows={3}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
                     />
@@ -639,8 +648,6 @@ export default function Contactpage() {
                 </div>
               </div>
             </div>
-
-          
           </div>
         </div>
       )}
@@ -651,18 +658,22 @@ export default function Contactpage() {
 // Glassmorphic Info Box
 function GlassInfo({ icon, label, value, fullWidth = false }) {
   return (
-    <div className={`
+    <div
+      className={`
       backdrop-blur-md bg-white/30 border border-white/60
       p-4 rounded-2xl flex items-center gap-4
       shadow-lg hover:shadow-xl cursor-pointer hover:scale-103 transition-all duration-200
-      ${fullWidth ? 'col-span-full' : ''}
-    `}>
-      <div className="
+      ${fullWidth ? "col-span-full" : ""}
+    `}
+    >
+      <div
+        className="
         w-12 h-12 flex items-center justify-center rounded-xl
         bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20
         backdrop-blur-sm border border-white/40
         text-[#9333ea] hover:rotate-360 transition-transform duration-600
-      ">
+      "
+      >
         {icon}
       </div>
       <div className="flex-1 min-w-0">
