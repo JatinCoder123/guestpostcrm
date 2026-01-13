@@ -5,8 +5,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getLadger,
-  getLadgerEmail,
-  getLadgerWithOutLoading,
 } from "./store/Slices/ladger";
 import {
   checkForDuplicates,
@@ -124,11 +122,11 @@ const RootLayout = () => {
   // Fetch ladger when email changes
   useEffect(() => {
     if (enteredEmail) {
-      dispatch(getLadgerEmail(enteredEmail, search));
+      dispatch(getLadger({ email: enteredEmail, search }));
     } else if (firstEmail) {
-      dispatch(getLadgerEmail(firstEmail, search));
+      dispatch(getLadger({ email: firstEmail, search }));
     } else {
-      dispatch(getLadger(search));
+      dispatch(getLadger({ search, isEmail: false }));
     }
   }, [enteredEmail, firstEmail, timeline, dispatch]);
 
@@ -145,15 +143,6 @@ const RootLayout = () => {
     if (notificationCount.unreplied_email) {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail, search));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail, search));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      }
       setCurrentIndex(0);
       dispatch(checkForDuplicates());
       setNotificationCount((prev) => ({
@@ -165,19 +154,6 @@ const RootLayout = () => {
     if (notificationCount.refreshUnreplied) {
       dispatch(getUnrepliedEmail(timeline, enteredEmail, true));
       dispatch(getUnansweredEmails(timeline, enteredEmail));
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail, search));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail, search));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      } else {
-        dispatch(getLadger(search, false));
-        dispatch(getViewEmail());
-        dispatch(getContact());
-      }
       setCurrentIndex(0);
       setNotificationCount((prev) => ({
         ...prev,
@@ -187,17 +163,6 @@ const RootLayout = () => {
 
     if (notificationCount.outr_el_process_audit) {
       dispatch(hotAction.updateCount(1));
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail, search));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail, search));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      } else {
-        dispatch(getLadger(search, false));
-      }
       setNotificationCount((prev) => ({
         ...prev,
         outr_el_process_audit: null,
@@ -209,17 +174,6 @@ const RootLayout = () => {
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       dispatch(hotAction.updateCount(1));
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      } else {
-        dispatch(getLadger(search, false));
-      }
       setNotificationCount((prev) => ({
         ...prev,
         outr_deal_fetch: null,
@@ -232,17 +186,6 @@ const RootLayout = () => {
       dispatch(getInvoices());
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail, search));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail, search));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      } else {
-        dispatch(getLadger(search, false));
-      }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -252,17 +195,6 @@ const RootLayout = () => {
 
     if (notificationCount.outr_self_test) {
       dispatch(getInvoices());
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      } else {
-        dispatch(getLadger(search, false));
-      }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -274,17 +206,6 @@ const RootLayout = () => {
       dispatch(getOffers());
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail, search));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail, search));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      } else {
-        dispatch(getLadger(search, false));
-      }
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -300,20 +221,27 @@ const RootLayout = () => {
       }));
     }
     if (notificationCount.refresh_ladger) {
-      if (enteredEmail) {
-        dispatch(getLadgerWithOutLoading(enteredEmail));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
-      } else if (firstEmail) {
-        dispatch(getLadgerWithOutLoading(firstEmail));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      }
       setNotificationCount((prev) => ({
         ...prev,
         refresh_ladger: null,
       }));
     }
+    const refreshLadger = () => {
+      if (enteredEmail) {
+        dispatch(getLadger({ email: enteredEmail, search }));
+        dispatch(getViewEmail(enteredEmail));
+        dispatch(getContact(enteredEmail));
+      } else if (firstEmail) {
+        dispatch(getLadger({ email: firstEmail, search }));
+        dispatch(getViewEmail(firstEmail));
+        dispatch(getContact(firstEmail));
+      }
+      else {
+        dispatch(getLadger({ search, isEmail: false }));
+        dispatch(getViewEmail());
+        dispatch(getContact());
+      }
+    };
   }, [notificationCount, dispatch, setNotificationCount]);
 
   return (

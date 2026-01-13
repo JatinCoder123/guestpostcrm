@@ -106,13 +106,13 @@ const ladgerSlice = createSlice({
   },
 });
 
-export const getLadger = (search = "", loading = true) => {
+export const getLadger = ({ email = null, isEmail = true, search = "", loading = true, page = 1 }) => {
   return async (dispatch, getState) => {
     if (loading) dispatch(ladgerSlice.actions.getLadgerRequest());
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline}&page=1&page_size=50`
+        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
       );
       console.log("Ladger", data);
       dispatch(
@@ -138,68 +138,7 @@ export const getLadger = (search = "", loading = true) => {
   };
 };
 
-export const getLadgerEmail = (email, search = "") => {
-  return async (dispatch, getState) => {
-    dispatch(ladgerSlice.actions.getLadgerRequest());
 
-    try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
-      );
-      console.log("LadgerEmail", data);
-
-      dispatch(
-        ladgerSlice.actions.getLadgerSuccess({
-          search,
-          duplicate: data.duplicate_threads_count,
-          ladger: data.data,
-          mailersSummary: data.mailers_summary,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-          email,
-        })
-      );
-
-      dispatch(ladgerSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        ladgerSlice.actions.getLadgerFailed(
-          error.response?.data?.message
-        )
-      );
-    }
-  };
-};
-
-export const getLadgerWithOutLoading = (email, search = "") => {
-  return async (dispatch, getState) => {
-    try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
-      );
-      console.log("LadgerEmail with out loading", data);
-      dispatch(
-        ladgerSlice.actions.getLadgerSuccess({
-          search,
-          duplicate: data.duplicate_threads_count,
-          ladger: data.data,
-          mailersSummary: data.mailers_summary,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-          email,
-        })
-      );
-
-      dispatch(ladgerSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        ladgerSlice.actions.getLadgerFailed(
-          error.response?.data?.message
-        )
-      );
-    }
-  };
-};
 
 export const getIpWithEmail = () => {
   return async (dispatch, getState) => {

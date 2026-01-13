@@ -33,6 +33,7 @@ export default function Create({
 }) {
   const navigate = useNavigate();
   const { loading, message } = useSelector((state) => state.threadEmail);
+  const [button, setButton] = useState(1);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   useEffect(() => {
@@ -212,22 +213,30 @@ export default function Create({
                         {pageType == "edit" && (
                           <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
                             <button
-                              onClick={() => navigate(-1)}
+                              onClick={() => {
+                                setButton(1)
+                                handleUpdate(item, false)
+                              }}
                               disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5 ${(updating || sending) ? "cursor-not-allowed" : ""
-                                } bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition`}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() => handleUpdate(item)}
-                              disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending)
+                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${((updating || sending) && button == 1)
                                 ? "bg-green-300 cursor-not-allowed"
                                 : "bg-green-500 hover:bg-green-600"
                                 }`}
                             >
-                              {(updating || sending) ? "Updating..." : "Update"}
+                              {button == 1 && updating ? "Updating..." : "Update"}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setButton(2)
+                                handleUpdate(item, true)
+                              }}
+                              disabled={updating || sending}
+                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${((updating || sending) && button == 2)
+                                ? "bg-blue-300 cursor-not-allowed"
+                                : "bg-blue-500 hover:bg-blue-600"
+                                }`}
+                            >
+                              {((updating || sending) && button == 2) ? "Updating..." : "Update & Send"}
                             </button>
                           </div>
                         )}
@@ -317,12 +326,22 @@ export default function Create({
 
                   <div className="mt-4 flex gap-3">
                     {pageType == "view" ? (
-                      <button
+                      <><button
+                        disabled={data.length === 0}
+                        onClick={() => sendHandler()}
+                        className={`w-full px-3 py-2 rounded-lg text-white ${sending
+                          ? "bg-green-300 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700"
+                          }`}
+                      >
+                        {sending ? "Sending..." : "Send"}
+                      </button><button
                         onClick={() => setShowPreview(true)}
                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                       >
-                        Preview
-                      </button>
+                          Preview
+                        </button></>
+
                     ) : (
                       <button
                         disabled={data.length === 0 || !valid}
@@ -423,7 +442,7 @@ function InputField({
           {/* Order Status (object → key/value) */}
           {label === "Order Status"
             ? Object.entries(statusLists).map(([key, val]) => (
-              <option key={key} value={val}>
+              <option key={key} value={key}>
                 {val}
               </option>
             ))

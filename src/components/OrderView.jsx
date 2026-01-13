@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 export const OrderView = ({ data }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage } = useSelector((state) => state.orders);
+  const { creatingLinkMessage, statusLists } = useSelector((state) => state.orders);
   const dispatch = useDispatch();
   const handleAddLink = (link) => {
     dispatch(createLink(item.id, link));
@@ -63,7 +63,7 @@ export const OrderView = ({ data }) => {
               <Field label="Status">
                 <div className="relative inline-flex">
                   <span className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xl bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(234,179,8,0.4)] ">
-                    {data.order_status}
+                    {statusLists[data.order_status]}
                   </span>
                 </div>
               </Field>

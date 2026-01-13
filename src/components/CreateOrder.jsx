@@ -11,7 +11,7 @@ import PreviewOrder from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
-import { getLadgerWithOutLoading } from "../store/Slices/ladger";
+import { getLadger } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
 const fields = [
@@ -52,14 +52,14 @@ export default function CreateOrder() {
   const navigate = useNavigate();
   const [currentOrders, setCurrentOrders] = useState([]);
   useEffect(() => {
-    let order = orders.filter((o) => excludeEmail(o.real_name) == state?.email && !(o.order_status == "Wrong" || o.order_status == "Rejected-NonTechnical"));
+    let order = orders.filter((o) => excludeEmail(o.real_name) == state?.email && !(o.order_status == "wrong" || o.order_status == "rejected_nontechnical" || o.order_status == "completed"));
     if (type == "edit" && id !== undefined) {
       order = order.filter((d) => d.id == id);
     }
     setCurrentOrders(() => [...order]);
   }, [state, orders, type, id]);
-  const handleUpdate = (order) => {
-    dispatch(updateOrder(order));
+  const handleUpdate = (order, send) => {
+    dispatch(updateOrder(order, send));
   };
   const handleDelete = (id) => {
     alert("Work in progress");
@@ -82,32 +82,42 @@ export default function CreateOrder() {
   };
   const okHandler = () => {
     if (enteredEmail) {
-      dispatch(getLadgerWithOutLoading(enteredEmail, search));
+      dispatch(getLadger({ email: enteredEmail, search }));
     } else if (unrepliedEmails.length > 0) {
       const firstEmail = unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
-      dispatch(getLadgerWithOutLoading(firstEmail, search));
+      dispatch(getLadger({ email: firstEmail, search }));
     } else {
-      dispatch(getLadgerWithOutLoading(state?.email, search));
+      dispatch(getLadger({ email: state?.email, search }));
     }
   }
   useEffect(() => {
     if (message) {
-      ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
+      ManualSideCall(crmEndpoint, state?.email, "Our Order Updated Successfully", 1, okHandler);
+
       dispatch(getOrders())
-      dispatch(sendEmail(
-        renderToStaticMarkup(
-          <Preview
-            data={currentOrders}
-            userEmail={state?.email}
-          />
-        ),
-        "Order Updated and Send Successfully", "Order Updated But Not Sent!"
-      ));
+      if (message.includes("Send")) {
+        dispatch(sendEmail(
+          renderToStaticMarkup(
+            <PreviewOrder
+              data={currentOrders}
+              type="Orders"
+              userEmail={state?.email}
+              websiteKey="website_c"
+              amountKey="total_amount_c"
+            />
+          ),
+          "Order Updated and Send Successfully", "Order Updated But Not Sent!"
+        ));
+      }
+      else {
+        toast.success(message);
+        navigate(-1)
+      }
+
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),
       }));
-      // toast.success(message);
       dispatch(orderAction.clearAllMessages());
     }
     if (error) {

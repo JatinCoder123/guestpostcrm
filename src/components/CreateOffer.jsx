@@ -23,8 +23,9 @@ import {
 } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
-import { getLadgerWithOutLoading } from "../store/Slices/ladger";
 import { SocketContext } from "../context/SocketContext";
+import { getLadger } from "../store/Slices/ladger";
+import { dealsAction } from "../store/Slices/deals";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
   {
@@ -72,6 +73,7 @@ export default function CreateOffer() {
     deleteOfferId,
   } = useSelector((state) => state.offers);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
+  dispatch(dealsAction.clearAllMessages());
 
   useEffect(() => {
     let offer = offers.filter(
@@ -118,8 +120,8 @@ export default function CreateOffer() {
       )
     );
   };
-  const handleUpdate = (offer) => {
-    dispatch(updateOffer(offer));
+  const handleUpdate = (offer, send) => {
+    dispatch(updateOffer(offer, send));
   };
   const handleDelete = (id) => {
     dispatch(deleteOffer(id));
@@ -129,39 +131,53 @@ export default function CreateOffer() {
   };
   const okHandler = () => {
     if (enteredEmail) {
-      dispatch(getLadgerWithOutLoading(enteredEmail, search));
+      dispatch(getLadger({ email: enteredEmail, search }));
     } else if (unrepliedEmails.length > 0) {
       const firstEmail =
         unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
-      dispatch(getLadgerWithOutLoading(firstEmail, search));
+      dispatch(getLadger({ email: firstEmail, search }));
     } else {
-      dispatch(getLadgerWithOutLoading(state?.email, search));
+      dispatch(getLadger({ email: state?.email, search }));
     }
   };
 
   useEffect(() => {
     if (message) {
-      ManualSideCall(crmEndpoint, state?.email, message, 1, okHandler);
       dispatch(getOffers());
       if (message.includes("Updated")) {
-        dispatch(
-          sendEmail(
-            renderToStaticMarkup(
-              <Preview
-                data={[...nonEditOffers, ...currentOffers].filter(
-                  (o) => o.website !== ""
-                )}
-                type="Offers"
-                userEmail={state?.email}
-                websiteKey="website"
-                amountKey="our_offer_c"
-              />
-            ),
-            "Offer Updated and Send Successfully", "Offer Updated But Not Sent!"
-          )
-        );
-        setNewOffers([]);
+        ManualSideCall(crmEndpoint, state?.email, "Our Offer Updated Successfully", 1, okHandler);
+
+        if (message.includes("Send")) {
+          dispatch(
+            sendEmail(
+              renderToStaticMarkup(
+                <Preview
+                  data={[...currentOffers].filter(
+                    (o) => o.website !== ""
+                  )}
+                  type="Offers"
+                  userEmail={state?.email}
+                  websiteKey="website"
+                  amountKey="our_offer_c"
+                />
+              ),
+              "Offer Updated and Send Successfully", "Offer Updated But Not Sent!"
+            )
+          );
+          setNonEditOffers([]);
+          dispatch(offersAction.clearAllMessages());
+        }
+        else {
+          setNonEditOffers([]);
+          toast.success(message);
+          dispatch(offersAction.clearAllMessages());
+          navigate(-1);
+        }
+
+
       } else {
+        ManualSideCall(crmEndpoint, state?.email, "Our Offer Created Successfully", 1, okHandler);
+
         dispatch(
           sendEmail(
             renderToStaticMarkup(
@@ -179,11 +195,9 @@ export default function CreateOffer() {
           )
         );
         setNewOffers([]);
-      }
 
-      // toast.success(message);
-      dispatch(offersAction.clearAllMessages());
-      // navigate(-1);
+        dispatch(offersAction.clearAllMessages());
+      }
     }
 
     if (error) {
