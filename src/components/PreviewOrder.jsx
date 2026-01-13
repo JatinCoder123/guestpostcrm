@@ -15,22 +15,33 @@ export default function PreviewOrder({ data = [], userEmail }) {
     );
   }
 
-  const order = data[0];
+const order = data[0];
+
+const status = String(order.order_status || "")
+  .trim()
+  .toLowerCase();
+
 
   return (
     <table
-      width="100%"
-      cellPadding="0"
-      cellSpacing="0"
-      style={{
-        fontFamily:
-          "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
-        backgroundColor: "#ffffff",
-        lineHeight: "1.5",
-        WebkitFontSmoothing: "antialiased",
-        MozOsxFontSmoothing: "grayscale",
-      }}
-    >
+  width="745"
+  cellPadding="0"
+  cellSpacing="0"
+  style={{
+    width: "745px",
+    margin: "auto",
+    border: "1px solid #e5e7eb",
+    borderRadius: "12px",
+    backgroundColor: "#ffffff",
+    fontFamily:
+      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+    lineHeight: "1.5",
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
+  }}
+>
+
+    
       <tbody>
         <tr>
           <td align="center">
@@ -87,7 +98,7 @@ export default function PreviewOrder({ data = [], userEmail }) {
                       {order.client_email || userEmail || "No email provided"}
                     </div>
                   </td>
-                </tr>
+                </tr>      
 
                 {/* Order Details */}
                 <tr>
@@ -155,18 +166,41 @@ export default function PreviewOrder({ data = [], userEmail }) {
            
                 <tr>
                   <td align="center" style={{ paddingBottom: "40px" }}>
-                    {order.invoice_link_c ? (
-                      <a
-                        href={order.invoice_link_c}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={invoiceBtn}
-                      >
-                        📄 View Invoice
-                      </a>
-                    ) : (
-                      <div style={noInvoice}>Invoice not available</div>
-                    )}
+                    {/* {order.invoice_link_c ? ( */}
+                    {/* //   <a
+                    //     href={order.invoice_link_c}
+                    //     target="_blank"
+                    //     rel="noopener noreferrer"
+                    //     style={invoiceBtn}
+                    //   >
+                    //     📄 View Invoice
+                    //   </a>
+                    // ) : (
+                    //   <div style={noInvoice}>Invoice not available</div>
+                    // )} */}
+
+{status === "complete" || status === "completed" ? (
+  order.invoice_link_c ? (
+    <a
+      href={order.invoice_link_c}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={invoiceBtn}
+    >
+      📄 View Invoice
+    </a>
+  ) : (
+    <div style={noInvoice}>
+      Invoice is being generated… please check again shortly
+    </div>
+  )
+) : (
+  <div style={noInvoice}>
+    Invoice will be available after payment is completed
+  </div>
+)}
+
+
                   </td>
                 </tr>
 
@@ -188,7 +222,7 @@ const noDataStyle = {
 };
 
 const statusPill = (status) => ({
-  padding: "6px 14px",
+  padding: "1px 24px",
   borderRadius: "20px",
   fontWeight: "700",
   background:
@@ -222,9 +256,17 @@ const invoiceBtn = {
   fontWeight: "700",
 };
 
+// const noInvoice = {
+//   color: "#9ca3af",
+//   background: "#f9fafb",
+//   padding: "12px",
+//   borderRadius: "8px",
+// };
 const noInvoice = {
-  color: "#9ca3af",
-  background: "#f9fafb",
-  padding: "12px",
-  borderRadius: "8px",
+ color:"#fff",
+    background: "#228464c2",
+    padding: "12px",
+    borderRadius: "8px",
+    fontSize: "15px"
 };
+
