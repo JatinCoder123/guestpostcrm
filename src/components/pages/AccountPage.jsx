@@ -163,7 +163,9 @@ export default function AccountPage() {
 
               <button
                 onClick={() => {
-                  // dispatch(editAccount(formData.account));
+                  dispatch(editAccount(formData.account));
+                  setIsEditing(false);
+                  toast.success("Account updated successfully");
                   setIsEditing(false);
                 }}
                 className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white rounded-xl"
