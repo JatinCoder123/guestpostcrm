@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Building2, Phone, Globe, MapPin, X, Edit3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-// import { editAccount } from "../../store/Slices/accountSlice";
+import { editAccount } from "../../store/Slices/viewEmail";
 
 export default function AccountPage() {
   const dispatch = useDispatch();

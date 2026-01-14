@@ -83,6 +83,21 @@ const viewEmailSlice = createSlice({
       state.message = null;
       state.error = action.payload;
     },
+    editAccountRequest(state) {
+      state.contactLoading = true;
+      state.message = null;
+      state.error = null;
+    },
+    editAccountSucess(state, action) {
+      state.contactLoading = false;
+      state.message = "Account updated successfully";
+      state.error = null;
+    },
+    editAccountFailed(state, action) {
+      state.contactLoading = false;
+      state.message = null;
+      state.error = action.payload;
+    },
     sendEmailRequest(state) {
       state.sending = true;
       state.message = null;
@@ -207,6 +222,50 @@ export const editContact = (contactData) => {
   };
 };
 
+export const editAccount = (accountData) => {
+  return async (dispatch, getState) => {
+    dispatch(viewEmailSlice.actions.editAccountRequest());
+
+    const domain = getState().user.crmEndpoint.split("?")[0];
+
+    try {
+      // Base payload (always send parent_bean)
+      const payload = {
+        parent_bean: {
+          module: "Contacts",
+          ...accountData.account,
+        },
+      };
+
+      // ✅ Only add child_bean if account_id exists
+      if (accountData?.account?.account_id) {
+        payload.child_bean = {
+          module: "Contacts",
+          ...accountData.account,
+        };
+      }
+
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+        payload,
+        {
+          headers: {
+            "X-Api-Key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json", // typo fixed
+          },
+        }
+      );
+
+      console.log("account", data);
+      dispatch(viewEmailSlice.actions.editAccountSucess());
+      dispatch(viewEmailSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        viewEmailSlice.actions.editAccountFailed("Update Account failed")
+      );
+    }
+  };
+};
 export const sendEmail = (reply, message = null, error = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
