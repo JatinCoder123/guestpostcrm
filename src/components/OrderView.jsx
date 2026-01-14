@@ -1,25 +1,33 @@
-import { Plus } from "lucide-react";
+import { Plus, CheckCircle, XCircle, PackageCheck } from "lucide-react";
 import SeoBacklinkList from "./SeoBacklinks";
 import { useEffect, useState } from "react";
 import UpdatePopup from "./UpdatePopup";
 import { useDispatch } from "react-redux";
-import { createLink, orderAction } from "../store/Slices/orders";
+import { createLink, getOrders, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
-
 export const OrderView = ({ data }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, statusLists } = useSelector((state) => state.orders);
+  const { creatingLinkMessage, statusLists, message } = useSelector((state) => state.orders);
   const dispatch = useDispatch();
   const handleAddLink = (link) => {
     dispatch(createLink(item.id, link));
   };
+  const handleStatusChange = (status) => {
+    dispatch(updateOrder({ ...data, order_status: status }));
+  };
+
   useEffect(() => {
     if (creatingLinkMessage) {
       setOpen(false);
       dispatch(orderAction.clearAllMessages());
     }
-  }, [creatingLinkMessage]);
+    if (message) {
+      console.log(message);
+      dispatch(getOrders())
+      dispatch(orderAction.clearAllMessages());
+    }
+  }, [creatingLinkMessage, message]);
 
   return (
     <>
@@ -53,7 +61,7 @@ export const OrderView = ({ data }) => {
         />
       )}
       <div className="w-full relative mt-3">
-        <OrderId order_id={data.order_id} />
+        <OrderHeader order_id={data.order_id} handleStatusChange={handleStatusChange} />
         <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -146,33 +154,75 @@ function Field({ label, value, link, children, title }) {
     </div>
   );
 }
-function OrderId({ order_id }) {
+
+function OrderHeader({ order_id, handleStatusChange }) {
   return (
     <div className="w-full mb-3">
-      {/* 3D Card Container */}
       <div className="relative group">
-        {/* Main card */}
-        <div className="relative rounded-2xl  overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
-          {/* Content */}
-          <div className="relative z-10 flex items-center justify-center">
+        <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
+          <div className="relative z-10 flex flex-col items-center justify-center gap-5">
+
+            {/* Order Label */}
             <div className="text-center">
-              {/* Label */}
-              <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                   Order ID
                 </span>
               </div>
 
-              {/* Order ID with metallic effect */}
-              <div className="relative inline-block">
-                <h2 className="text-2xl font-black  bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight ">
-                  {order_id}
-                </h2>
-              </div>
+              <h2 className="text-2xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
+                {order_id}
+              </h2>
             </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 flex-wrap justify-center">
+
+              {/* Accept */}
+              <button
+                onClick={() => handleStatusChange("accepted")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                           bg-emerald-500/90 text-white font-semibold
+                           shadow-md shadow-emerald-500/30
+                           hover:bg-emerald-500 hover:shadow-lg
+                           active:scale-95 transition-all"
+              >
+                <CheckCircle size={18} />
+                Accept
+              </button>
+
+              {/* Reject */}
+              <button
+                onClick={() => handleStatusChange("rejected_nontechnical")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                           bg-red-500/90 text-white font-semibold
+                           shadow-md shadow-red-500/30
+                           hover:bg-red-500 hover:shadow-lg
+                           active:scale-95 transition-all"
+              >
+                <XCircle size={18} />
+                Reject
+              </button>
+
+              {/* Complete */}
+              <button
+                onClick={() => handleStatusChange("completed")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                           bg-blue-500/90 text-white font-semibold
+                           shadow-md shadow-blue-500/30
+                           hover:bg-blue-500 hover:shadow-lg
+                           active:scale-95 transition-all"
+              >
+                <PackageCheck size={18} />
+                Complete
+              </button>
+
+            </div>
+
           </div>
         </div>
       </div>
     </div>
   );
 }
+

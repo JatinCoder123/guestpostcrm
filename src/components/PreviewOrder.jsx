@@ -44,7 +44,7 @@ export default function PreviewOrder({ data = [], userEmail }) {
               <tbody>
                 <tr>
                   <td align="center">
-                    
+
                     <div style={headerTitle}>OrderID #{order.order_id}</div>
                     <div style={headerUser}>👤 {userName}</div>
                     <div style={headerDate}>{order.date_entered_formatted}</div>
@@ -121,13 +121,14 @@ export default function PreviewOrder({ data = [], userEmail }) {
                 {/* ================= INVOICE ================= */}
                 <tr>
                   <td align="center" style={{ padding: "32px" }}>
-                    <a
+                    {console.log(order.invoice_link_c)}
+                    {/* <a
                       href={order.invoice_link_c}
                       target="_blank"
                       style={invoiceBtn}
                     >
                       📄 View Invoice
-                    </a>
+                    </a> */}
                   </td>
                 </tr>
 
@@ -307,14 +308,14 @@ const invoiceBtn = {
 const statusBadge = (status) => ({
   background:
     String(status).toLowerCase() === "paid" ||
-    String(status).toLowerCase() === "completed" ||
-    String(status).toLowerCase() === "live"
+      String(status).toLowerCase() === "completed" ||
+      String(status).toLowerCase() === "live"
       ? "#dcfce7"
       : "#fef3c7",
   color:
     String(status).toLowerCase() === "paid" ||
-    String(status).toLowerCase() === "completed" ||
-    String(status).toLowerCase() === "live"
+      String(status).toLowerCase() === "completed" ||
+      String(status).toLowerCase() === "live"
       ? "#166534"
       : "#92400e",
   padding: "4px 12px",

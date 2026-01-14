@@ -14,7 +14,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
     navigate("/deals");
   };
   const { email } = useSelector((state) => state.ladger);
-  const { contactInfo, contactLoading, stage, status , customer_type} = useSelector(
+  const { contactInfo, contactLoading, stage, status, customer_type } = useSelector(
     (state) => state.viewEmail
   );
 
@@ -84,12 +84,12 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-          ...emailDeals.map((d) =>
-            Number(
-              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
-            )
+        ...emailDeals.map((d) =>
+          Number(
+            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
           )
         )
+      )
       : 0;
   // end
 
@@ -99,9 +99,8 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
     <div className="flex items-start justify-between w-full">
       {/* LEFT SIDE CONTENT */}
       <div
-        className={`flex  gap-4 ${
-          contactLoading ? "items-center" : "item-start"
-        }`}
+        className={`flex  gap-4 ${contactLoading ? "items-center" : "item-start"
+          }`}
       >
         {contactLoading && <LoadingChase size="30" color="blue" />}
         {!contactLoading && (
@@ -209,11 +208,10 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
           onClick={onPrev}
           disabled={currentIndex === 0}
           className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${
-                          currentIndex === 0
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }
+                        ${currentIndex === 0
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100"
+            }
                     `}
         >
           <ChevronLeft className="w-5 h-5 text-gray-700" />
@@ -222,13 +220,12 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
         {/* NEXT BUTTON (Disable if last email) */}
         <button
           onClick={onNext}
-          disabled={currentIndex === emails.length - 1}
+          disabled={currentIndex === emails?.length - 1}
           className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${
-                          currentIndex === emails.length - 1
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }
+                        ${currentIndex === emails?.length - 1
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100"
+            }
                     `}
         >
           <ChevronRight className="w-5 h-5 text-gray-700" />

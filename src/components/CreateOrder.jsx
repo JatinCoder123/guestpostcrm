@@ -9,11 +9,12 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
 import PreviewOrder from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
+import { PreviewTemplate } from "./PreviewTemplate";
 const fields = [
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
@@ -47,7 +48,7 @@ export default function CreateOrder() {
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   const { setNotificationCount } = useContext(SocketContext)
   const { enteredEmail, search } = useContext(PageContext)
-
+  const [editorContent, setEditorContent] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [currentOrders, setCurrentOrders] = useState([]);
@@ -90,6 +91,13 @@ export default function CreateOrder() {
       dispatch(getLadger({ email: state?.email, search }));
     }
   }
+  const handleSubmit = () => {
+    dispatch(
+      sendEmail(
+        editorContent, "Order Send Successfully"
+      )
+    );
+  };
   useEffect(() => {
     if (message) {
       ManualSideCall(crmEndpoint, state?.email, "Our Order Updated Successfully", 1, okHandler);
@@ -158,12 +166,14 @@ export default function CreateOrder() {
       type="orders"
       sendHandler={sendHandler}
       fields={fields}
-      renderPreview={({ data, email }) => (
-        <PreviewOrder
+      renderPreview={({ data, email, onClose }) => {
+        const html = renderToString(<PreviewOrder
           data={data}
           userEmail={email}
-        />
-      )}
+        />)
+        return <PreviewTemplate editorContent={editorContent ? editorContent : html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
+
+      }}
       amountKey={"total_amount_c"}
       pageType={type}
     />
