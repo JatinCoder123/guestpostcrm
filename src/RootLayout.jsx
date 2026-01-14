@@ -3,9 +3,7 @@ import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getLadger,
-} from "./store/Slices/ladger";
+import { getLadger } from "./store/Slices/ladger";
 import {
   checkForDuplicates,
   getDuplicateCount,
@@ -76,7 +74,6 @@ const RootLayout = () => {
       });
     }
   }, [pathname]);
-
 
   // Show avatar when new avatar arrives
   useEffect(() => {
@@ -150,15 +147,14 @@ const RootLayout = () => {
         dispatch(getLadger({ email: firstEmail, search }));
         dispatch(getViewEmail(firstEmail));
         dispatch(getContact(firstEmail));
-      }
-      else {
+      } else {
         dispatch(getLadger({ search, isEmail: false }));
         dispatch(getViewEmail());
         dispatch(getContact());
       }
     };
     if (notificationCount.unreplied_email) {
-      refreshLadger()
+      refreshLadger();
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
       setCurrentIndex(0);
@@ -170,7 +166,7 @@ const RootLayout = () => {
     }
 
     if (notificationCount.refreshUnreplied) {
-      refreshLadger()
+      refreshLadger();
 
       dispatch(getUnrepliedEmail(timeline, enteredEmail, true));
       dispatch(getUnansweredEmails(timeline, enteredEmail));
@@ -182,7 +178,7 @@ const RootLayout = () => {
     }
 
     if (notificationCount.outr_el_process_audit) {
-      refreshLadger()
+      refreshLadger();
 
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -192,7 +188,7 @@ const RootLayout = () => {
     }
 
     if (notificationCount.outr_deal_fetch) {
-      refreshLadger()
+      refreshLadger();
 
       dispatch(getDeals());
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
@@ -208,7 +204,7 @@ const RootLayout = () => {
     if (notificationCount.outr_order_gp_li) {
       dispatch(getOrders());
       dispatch(getInvoices());
-      refreshLadger()
+      refreshLadger();
 
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
       dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
@@ -220,7 +216,7 @@ const RootLayout = () => {
     }
 
     if (notificationCount.outr_self_test) {
-      refreshLadger()
+      refreshLadger();
 
       dispatch(getInvoices());
       dispatch(hotAction.updateCount(1));
@@ -231,7 +227,7 @@ const RootLayout = () => {
     }
 
     if (notificationCount.outr_offer) {
-      refreshLadger()
+      refreshLadger();
 
       dispatch(getOffers());
       dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
@@ -244,7 +240,7 @@ const RootLayout = () => {
     }
 
     if (notificationCount.outr_recent_activity) {
-      refreshLadger()
+      refreshLadger();
 
       dispatch(eventActions.updateCount(1));
       setNotificationCount((prev) => ({
@@ -253,13 +249,12 @@ const RootLayout = () => {
       }));
     }
     if (notificationCount.refresh_ladger) {
-      refreshLadger()
+      refreshLadger();
       setNotificationCount((prev) => ({
         ...prev,
         refresh_ladger: null,
       }));
     }
-
   }, [notificationCount, dispatch, setNotificationCount]);
 
   return (
@@ -279,8 +274,9 @@ const RootLayout = () => {
               {/* Main content scrolls independently */}
               <main
                 ref={mainRef}
-                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-                  }`}
+                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                  collapsed ? "ml-4" : "ml-0"
+                }`}
               >
                 <div className="p-6">
                   <WelcomeHeader />
@@ -309,7 +305,6 @@ const RootLayout = () => {
           </div> */}
           </div>
         </ErrorBoundary>
-
       )}
     </AnimatePresence>
   );

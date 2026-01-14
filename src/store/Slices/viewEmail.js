@@ -143,7 +143,7 @@ export const getContact = (email = null) => {
         `${getState().user.crmEndpoint
         }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`
       );
-      console.log(`contact`, data);
+      console.log(`Get contact`, data);
       dispatch(
         viewEmailSlice.actions.getContactSucess({
           stage: data.stage,
@@ -166,6 +166,8 @@ export const editContact = (contactData) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.editContactRequest());
 
+    console.log("contactData", contactData);
+
     const domain = getState().user.crmEndpoint.split("?")[0];
 
     try {
@@ -177,13 +179,11 @@ export const editContact = (contactData) => {
         },
       };
 
-      // ✅ Only add child_bean if account_id exists
-      if (contactData?.contact?.account_id) {
-        payload.child_bean = {
-          module: "Accounts",
-          ...contactData.account,
-        };
-      }
+
+      payload.child_bean = {
+        module: "Accounts",
+        ...contactData.account,
+      };
 
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
@@ -206,7 +206,6 @@ export const editContact = (contactData) => {
     }
   };
 };
-
 export const sendEmail = (reply, message = null, error = null) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
