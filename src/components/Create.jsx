@@ -362,29 +362,12 @@ export default function Create({
         </div>
         {/* PREVIEW MODAL */}
         {showPreview && (
-          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-2">
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-100 p-2">
             {/* OUTER WRAPPER (WIDER + ROUNDED) */}
             <div className="bg-white w-full max-w-[800px] rounded-2xl shadow-2xl overflow-hidden relative">
               {/* SCROLLABLE CONTENT */}
-              <div className="max-h-[80vh] overflow-y-auto p-6">
-                {renderPreview({ data, email })}
-              </div>
-
-              {/* FOOTER BUTTONS */}
-              <div className="p-4 border-t flex items-center justify-between bg-white">
-                <button
-                  onClick={() => sendHandler()}
-                  className="px-[26px] py-[12px] bg-gradient-to-br from-[#4e79ff] to-[#6db6ff] text-white rounded-lg border-none cursor-pointer text-base font-bold shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
-                >
-                  {loading ? "Submitting..." : "Submit " + type}
-                </button>
-
-                <button
-                  className="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition"
-                  onClick={() => setShowPreview(false)}
-                >
-                  Close
-                </button>
+              <div className="max-h-[60vh] overflow-y-auto p-6">
+                {renderPreview({ data, email, onClose: () => { setShowPreview(false) } })}
               </div>
             </div>
           </div>

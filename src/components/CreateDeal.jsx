@@ -10,7 +10,7 @@ import {
   updateDeal,
 } from "../store/Slices/deals";
 import { excludeEmail, websiteLists } from "../assets/assets";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -24,6 +24,8 @@ import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
 import { getLadger } from "../store/Slices/ladger";
 import { SocketContext } from "../context/SocketContext";
+import { getOffers } from "../store/Slices/offers";
+import { PreviewTemplate } from "./PreviewTemplate";
 
 const fields = [
   {
@@ -50,6 +52,8 @@ export default function CreateDeal() {
   const [validWebsite, setValidWebsite] = useState([]);
   const [currentDeals, setCurrentDeals] = useState([]);
   const [currentOffers, setCurrentOffers] = useState([]);
+  const [editorContent, setEditorContent] = useState("")
+
   const { enteredEmail, search } = useContext(PageContext);
   const [newDeals, setNewDeals] = useState([]);
   const navigate = useNavigate();
@@ -58,7 +62,7 @@ export default function CreateDeal() {
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
-    } else if (unrepliedEmails.length > 0) {
+    } else if (unrepliedEmails?.length > 0) {
       const firstEmail =
         unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
       dispatch(getLadger({ email: firstEmail, search }));
@@ -96,12 +100,12 @@ export default function CreateDeal() {
   useEffect(() => {
     if (type == "create") {
       const currentOfferWithoutDeal =
-        currentOffers.length > 0
+        currentOffers?.length > 0
           ? currentOffers.filter(
             (o) => !currentDeals.some((d) => d.website_c == o.website)
           )
           : [];
-      if (currentOfferWithoutDeal.length > 0) {
+      if (currentOfferWithoutDeal?.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
           website_c: offer.website,
           dealamount: offer.our_offer_c,
@@ -151,9 +155,17 @@ export default function CreateDeal() {
       navigate("/");
     }
   }, [state, type]);
+  const handleSubmit = () => {
+    dispatch(
+      sendEmail(
+        editorContent, "Deal Send Successfully"
+      )
+    );
+  };
   useEffect(() => {
     if (message) {
       dispatch(getDeals());
+      dispatch(getOffers());
       if (message.includes("Updated")) {
         ManualSideCall(crmEndpoint, state?.email, "Our Deal Updated Successfully", 2, okHandler);
 
@@ -244,15 +256,18 @@ export default function CreateDeal() {
       type="deals"
       submitData={submitHandler}
       fields={fields}
-      renderPreview={({ data, email }) => (
-        <Preview
+      renderPreview={({ data, email, onClose }) => {
+        const html = renderToString(<Preview
           data={data}
           type="Deals"
           userEmail={email}
           websiteKey="website_c"
           amountKey="dealamount"
-        />
-      )}
+        />);
+
+        return <PreviewTemplate editorContent={editorContent ? editorContent : html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
+
+      }}
     />
   );
 }
