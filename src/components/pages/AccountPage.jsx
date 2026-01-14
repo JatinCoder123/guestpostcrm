@@ -1,23 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useState } from "react";
 import { Building2, Phone, Globe, MapPin, X, Edit3 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import { editAccount } from "../../store/Slices/viewEmail";
 
-export default function AccountPage() {
-  const dispatch = useDispatch();
-  const { accountInfo } = useSelector((state) => state.viewEmail);
-
+export default function AccountPage({
+  setAccountShow,
+  formData,
+  setFormData,
+  handleSave,
+}) {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ account: {} });
-
-  useEffect(() => {
-    if (accountInfo) {
-      setFormData({ account: accountInfo });
-    }
-  }, [accountInfo]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#faf5ff] to-[#fdf2f8] p-8">
       <div className="max-w-5xl mx-auto">
@@ -39,12 +29,12 @@ export default function AccountPage() {
               Edit Account
             </button>
 
-            <Link
-              to="/contacts"
+            <button
+              onClick={() => setAccountShow(false)}
               className="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Back
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -52,23 +42,27 @@ export default function AccountPage() {
         <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl space-y-4">
           <Info
             label="Company"
-            value={accountInfo?.name}
+            value={formData?.account?.name}
             icon={<Building2 />}
           />
           <Info
             label="Phone"
-            value={accountInfo?.phone_office}
+            value={formData?.account?.phone_office}
             icon={<Phone />}
           />
-          <Info label="Website" value={accountInfo?.website} icon={<Globe />} />
+          <Info
+            label="Website"
+            value={formData?.account?.website}
+            icon={<Globe />}
+          />
           <Info
             label="Billing Address"
-            value={accountInfo?.billing_address_street}
+            value={formData?.account?.billing_address_street}
             icon={<MapPin />}
           />
           <Info
             label="Shipping Address"
-            value={accountInfo?.shipping_address_street}
+            value={formData?.account?.shipping_address_street}
             icon={<MapPin />}
           />
         </div>
@@ -96,9 +90,10 @@ export default function AccountPage() {
                 label="Company"
                 value={formData.account.name || ""}
                 onChange={(e) =>
-                  setFormData({
+                  setFormData((prev) => ({
+                    ...prev,
                     account: { ...formData.account, name: e.target.value },
-                  })
+                  }))
                 }
               />
 
@@ -106,12 +101,13 @@ export default function AccountPage() {
                 label="Phone"
                 value={formData.account.phone_office || ""}
                 onChange={(e) =>
-                  setFormData({
+                  setFormData((prev) => ({
+                    ...prev,
                     account: {
                       ...formData.account,
                       phone_office: e.target.value,
                     },
-                  })
+                  }))
                 }
               />
 
@@ -119,36 +115,39 @@ export default function AccountPage() {
                 label="Website"
                 value={formData.account.website || ""}
                 onChange={(e) =>
-                  setFormData({
+                  setFormData((prev) => ({
+                    ...prev,
                     account: {
                       ...formData.account,
                       website: e.target.value,
                     },
-                  })
+                  }))
                 }
               />
               <Input
                 label="Billing Address"
                 value={formData.account.billing_address_street || ""}
                 onChange={(e) =>
-                  setFormData({
+                  setFormData((prev) => ({
+                    ...prev,
                     account: {
                       ...formData.account,
                       billing_address_street: e.target.value,
                     },
-                  })
+                  }))
                 }
               />
               <Input
                 label="Shipping Address"
                 value={formData.account.shipping_address_street || ""}
                 onChange={(e) =>
-                  setFormData({
+                  setFormData((prev) => ({
+                    ...prev,
                     account: {
                       ...formData.account,
                       shipping_address_street: e.target.value,
                     },
-                  })
+                  }))
                 }
               />
             </div>
@@ -163,9 +162,7 @@ export default function AccountPage() {
 
               <button
                 onClick={() => {
-                  dispatch(editAccount(formData.account));
-                  setIsEditing(false);
-                  toast.success("Account updated successfully");
+                  handleSave();
                   setIsEditing(false);
                 }}
                 className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white rounded-xl"

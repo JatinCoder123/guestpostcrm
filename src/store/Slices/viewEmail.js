@@ -83,21 +83,6 @@ const viewEmailSlice = createSlice({
       state.message = null;
       state.error = action.payload;
     },
-    editAccountRequest(state) {
-      state.contactLoading = true;
-      state.message = null;
-      state.error = null;
-    },
-    editAccountSucess(state, action) {
-      state.contactLoading = false;
-      state.message = "Account updated successfully";
-      state.error = null;
-    },
-    editAccountFailed(state, action) {
-      state.contactLoading = false;
-      state.message = null;
-      state.error = action.payload;
-    },
     sendEmailRequest(state) {
       state.sending = true;
       state.message = null;
@@ -158,7 +143,7 @@ export const getContact = (email = null) => {
         `${getState().user.crmEndpoint
         }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`
       );
-      console.log(`contact`, data);
+      console.log(`Get contact`, data);
       dispatch(
         viewEmailSlice.actions.getContactSucess({
           stage: data.stage,
@@ -181,6 +166,8 @@ export const editContact = (contactData) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.editContactRequest());
 
+    console.log("contactData", contactData);
+
     const domain = getState().user.crmEndpoint.split("?")[0];
 
     try {
@@ -192,13 +179,11 @@ export const editContact = (contactData) => {
         },
       };
 
-      // ✅ Only add child_bean if account_id exists
-      if (contactData?.contact?.account_id) {
-        payload.child_bean = {
-          module: "Accounts",
-          ...contactData.account,
-        };
-      }
+
+      payload.child_bean = {
+        module: "Accounts",
+        ...contactData.account,
+      };
 
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
@@ -217,51 +202,6 @@ export const editContact = (contactData) => {
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed")
-      );
-    }
-  };
-};
-
-export const editAccount = (accountData) => {
-  return async (dispatch, getState) => {
-    dispatch(viewEmailSlice.actions.editAccountRequest());
-
-    const domain = getState().user.crmEndpoint.split("?")[0];
-
-    try {
-      // Base payload (always send parent_bean)
-      const payload = {
-        parent_bean: {
-          module: "Contacts",
-          ...accountData.account,
-        },
-      };
-
-      // ✅ Only add child_bean if account_id exists
-      if (accountData?.account?.account_id) {
-        payload.child_bean = {
-          module: "Contacts",
-          ...accountData.account,
-        };
-      }
-
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-        payload,
-        {
-          headers: {
-            "X-Api-Key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json", // typo fixed
-          },
-        }
-      );
-
-      console.log("account", data);
-      dispatch(viewEmailSlice.actions.editAccountSucess());
-      dispatch(viewEmailSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        viewEmailSlice.actions.editAccountFailed("Update Account failed")
       );
     }
   };
