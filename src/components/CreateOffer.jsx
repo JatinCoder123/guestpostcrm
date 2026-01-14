@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useContext } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
 import { excludeEmail, websiteLists } from "../assets/assets";
@@ -26,6 +26,7 @@ import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
 import { getLadger } from "../store/Slices/ladger";
 import { dealsAction } from "../store/Slices/deals";
+import { PreviewTemplate } from "./PreviewTemplate";
 const fields = [
   { name: "website", label: "Website", type: "select", options: websiteLists },
   {
@@ -50,7 +51,7 @@ export default function CreateOffer() {
   const [currentOffers, setCurrentOffers] = useState([]);
   const { enteredEmail, search } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
-  const [nonEditOffers, setNonEditOffers] = useState([]);
+  const [editorContent, setEditorContent] = useState("")
   const [validWebsite, setValidWebsite] = useState([]);
   const [newOffers, setNewOffers] = useState([
     {
@@ -80,7 +81,6 @@ export default function CreateOffer() {
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email
     ).filter((d) => d.offer_status == "active");
     if (type == "edit" && id !== undefined) {
-      setNonEditOffers(offer.filter((d) => d.id !== id));
       offer = offer.filter((d) => d.id == id);
     }
     setCurrentOffers(() => [...offer]);
@@ -117,6 +117,13 @@ export default function CreateOffer() {
           />
         ),
         "Offer Send Successfully"
+      )
+    );
+  };
+  const handleSubmit = () => {
+    dispatch(
+      sendEmail(
+        editorContent, "Offer Send Successfully"
       )
     );
   };
@@ -164,11 +171,9 @@ export default function CreateOffer() {
               "Offer Updated and Send Successfully", "Offer Updated But Not Sent!"
             )
           );
-          setNonEditOffers([]);
           dispatch(offersAction.clearAllMessages());
         }
         else {
-          setNonEditOffers([]);
           toast.success(message);
           dispatch(offersAction.clearAllMessages());
           navigate(-1);
@@ -241,15 +246,20 @@ export default function CreateOffer() {
       sendHandler={sendHandler}
       fields={fields}
       amountKey={"our_offer_c"}
-      renderPreview={({ data, email }) => (
-        <Preview
-          data={data}
-          type="Offers"
-          userEmail={email}
-          websiteKey="website"
-          amountKey="our_offer_c"
-        />
-      )}
+      renderPreview={({ data, email, onClose }) => {
+        const html = renderToString(
+          <Preview
+            data={data}
+            type="Offers"
+            userEmail={email}
+            websiteKey="website"
+            amountKey="our_offer_c"
+          />
+        );
+
+        return <PreviewTemplate editorContent={editorContent ? editorContent : html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
+      }}
+
     />
   );
 }

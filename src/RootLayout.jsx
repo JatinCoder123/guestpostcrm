@@ -40,6 +40,7 @@ import { hotAction } from "./store/Slices/hotSlice";
 import { eventActions } from "./store/Slices/eventSlice";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
+import Avatar from "./components/Avatar";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
@@ -137,92 +138,6 @@ const RootLayout = () => {
 
   // Handle socket notifications
   useEffect(() => {
-    if (notificationCount.unreplied_email) {
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      setCurrentIndex(0);
-      dispatch(checkForDuplicates());
-      setNotificationCount((prev) => ({
-        ...prev,
-        unreplied_email: null,
-      }));
-    }
-
-    if (notificationCount.refreshUnreplied) {
-      dispatch(getUnrepliedEmail(timeline, enteredEmail, true));
-      dispatch(getUnansweredEmails(timeline, enteredEmail));
-      setCurrentIndex(0);
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: null,
-      }));
-    }
-
-    if (notificationCount.outr_el_process_audit) {
-      dispatch(hotAction.updateCount(1));
-      setNotificationCount((prev) => ({
-        ...prev,
-        outr_el_process_audit: null,
-      }));
-    }
-
-    if (notificationCount.outr_deal_fetch) {
-      dispatch(getDeals());
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      dispatch(hotAction.updateCount(1));
-      setNotificationCount((prev) => ({
-        ...prev,
-        outr_deal_fetch: null,
-      }));
-    }
-
-    // ✅ FIXED: Changed outr_order_gp_li to outr_order_gp_list (matches SocketContext)
-    if (notificationCount.outr_order_gp_li) {
-      dispatch(getOrders());
-      dispatch(getInvoices());
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      dispatch(hotAction.updateCount(1));
-      setNotificationCount((prev) => ({
-        ...prev,
-        outr_order_gp_li: null,
-      }));
-    }
-
-    if (notificationCount.outr_self_test) {
-      dispatch(getInvoices());
-      dispatch(hotAction.updateCount(1));
-      setNotificationCount((prev) => ({
-        ...prev,
-        outr_self_test: null,
-      }));
-    }
-
-    if (notificationCount.outr_offer) {
-      dispatch(getOffers());
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
-      dispatch(hotAction.updateCount(1));
-      setNotificationCount((prev) => ({
-        ...prev,
-        outr_offer: null,
-      }));
-    }
-
-    if (notificationCount.outr_recent_activity) {
-      dispatch(eventActions.updateCount(1));
-      setNotificationCount((prev) => ({
-        ...prev,
-        outr_recent_activity: null,
-      }));
-    }
-    if (notificationCount.refresh_ladger) {
-      setNotificationCount((prev) => ({
-        ...prev,
-        refresh_ladger: null,
-      }));
-    }
     const refreshLadger = () => {
       if (enteredEmail) {
         dispatch(getLadger({ email: enteredEmail, search }));
@@ -238,6 +153,108 @@ const RootLayout = () => {
         dispatch(getContact());
       }
     };
+    if (notificationCount.unreplied_email) {
+      refreshLadger();
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      setCurrentIndex(0);
+      dispatch(checkForDuplicates());
+      setNotificationCount((prev) => ({
+        ...prev,
+        unreplied_email: null,
+      }));
+    }
+
+    if (notificationCount.refreshUnreplied) {
+      refreshLadger();
+
+      dispatch(getUnrepliedEmail(timeline, enteredEmail, true));
+      dispatch(getUnansweredEmails(timeline, enteredEmail));
+      setCurrentIndex(0);
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: null,
+      }));
+    }
+
+    if (notificationCount.outr_el_process_audit) {
+      refreshLadger();
+
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_el_process_audit: null,
+      }));
+    }
+
+    if (notificationCount.outr_deal_fetch) {
+      refreshLadger();
+
+      dispatch(getDeals());
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_deal_fetch: null,
+      }));
+    }
+
+    // ✅ FIXED: Changed outr_order_gp_li to outr_order_gp_list (matches SocketContext)
+    if (notificationCount.outr_order_gp_li) {
+      dispatch(getOrders());
+      dispatch(getInvoices());
+      refreshLadger();
+
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_order_gp_li: null,
+      }));
+    }
+
+    if (notificationCount.outr_self_test) {
+      refreshLadger();
+
+      dispatch(getInvoices());
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_self_test: null,
+      }));
+    }
+
+    if (notificationCount.outr_offer) {
+      refreshLadger();
+
+      dispatch(getOffers());
+      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_offer: null,
+      }));
+    }
+
+    if (notificationCount.outr_recent_activity) {
+      refreshLadger();
+
+      dispatch(eventActions.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_recent_activity: null,
+      }));
+    }
+    if (notificationCount.refresh_ladger) {
+      refreshLadger();
+      setNotificationCount((prev) => ({
+        ...prev,
+        refresh_ladger: null,
+      }));
+    }
   }, [notificationCount, dispatch, setNotificationCount]);
 
   return (
@@ -245,39 +262,40 @@ const RootLayout = () => {
       {displayIntro ? (
         <DisplayIntro key="intro" />
       ) : (
-        <div className="min-h-screen bg-[#F8FAFC] ">
-          <TopNav setShowAvatar={setShowAvatar} />
-          <div className="flex h-[calc(100vh-100px)] ">
-            {/* Sidebar scrolls independently */}
-            <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-              <Sidebar />
-            </div>
+        <ErrorBoundary>
+          <div className="min-h-screen bg-[#F8FAFC] ">
+            <TopNav setShowAvatar={setShowAvatar} />
+            <div className="flex h-[calc(100vh-100px)] ">
+              {/* Sidebar scrolls independently */}
+              <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
+                <Sidebar />
+              </div>
 
-            {/* Main content scrolls independently */}
-            <main
-              ref={mainRef}
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                collapsed ? "ml-4" : "ml-0"
-              }`}
-            >
-              <div className="p-6">
-                <WelcomeHeader />
-                <ErrorBoundary>
+              {/* Main content scrolls independently */}
+              <main
+                ref={mainRef}
+                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                  collapsed ? "ml-4" : "ml-0"
+                }`}
+              >
+                <div className="p-6">
+                  <WelcomeHeader />
+
                   <Outlet />
-                </ErrorBoundary>
-                {/* {showAvatar && currentAvatar && (
+
+                  {/* {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}
                     avatarUrl={currentAvatar?.url}
                     mute={currentAvatar}
                   />
                 )} */}
-              </div>
-              <Footer />
-            </main>
-          </div>
+                </div>
+                <Footer />
+              </main>
+            </div>
 
-          {/* <div className="fixed bottom-1 right-2 cursor-pointer">
+            {/* <div className="fixed bottom-1 right-2 cursor-pointer">
             <img
               width="80"
               height="80"
@@ -285,7 +303,8 @@ const RootLayout = () => {
               alt="whatsapp-logo"
             />
           </div> */}
-        </div>
+          </div>
+        </ErrorBoundary>
       )}
     </AnimatePresence>
   );
