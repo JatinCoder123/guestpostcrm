@@ -30,7 +30,7 @@ const MailerSummaryHeader = () => {
   useEffect(() => {
     const order = orders?.filter(
       (o) => excludeEmail(o.real_name ?? o.email) == email
-    ).filter((d) => d.order_status !== "wrong" && d.order_status !== "rejected_nontechnical");
+    ).filter((d) => d.order_status !== "wrong" && d.order_status !== "rejected_nontechnical" && d.order_status !== "completed");
     setEmailData((prev) => ({
       ...prev,
       orders: order,

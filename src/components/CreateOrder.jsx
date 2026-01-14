@@ -52,7 +52,7 @@ export default function CreateOrder() {
   const navigate = useNavigate();
   const [currentOrders, setCurrentOrders] = useState([]);
   useEffect(() => {
-    let order = orders.filter((o) => excludeEmail(o.real_name) == state?.email && !(o.order_status == "wrong" || o.order_status == "rejected_nontechnical"));
+    let order = orders.filter((o) => excludeEmail(o.real_name) == state?.email && !(o.order_status == "wrong" || o.order_status == "rejected_nontechnical" || o.order_status == "completed"));
     if (type == "edit" && id !== undefined) {
       order = order.filter((d) => d.id == id);
     }

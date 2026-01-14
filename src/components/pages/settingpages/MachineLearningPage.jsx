@@ -11,13 +11,15 @@ import ErrorBox from "./ErrorBox";
 import EditModal from "./EditModal";
 import { useSelector } from "react-redux";
 
-
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
   const { state } = useLocation();
   const { crmEndpoint } = useSelector((state) => state.user);
+  const [close, setClose] = useState(false);
   const { loading, data, error, setData, refetch, add, update } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    url: `${
+      crmEndpoint.split("?")[0]
+    }?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "outr_machine_learning",
@@ -32,11 +34,16 @@ export function MachineLearningPage() {
   const rows = Array.isArray(data) ? data : [];
 
   const handleUpdate = (updatedItem) => {
+    // Update UI instantly
     setData((prev) =>
       prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
     );
+
+    // Fire API update
     update({
-      url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+      url: `${
+        crmEndpoint.split("?")[0]
+      }?entryPoint=get_post_all&action_type=post_data`,
       method: "POST",
       body: {
         parent_bean: {
@@ -49,10 +56,15 @@ export function MachineLearningPage() {
         "Content-Type": "application/json",
       },
     });
+
+    // ✅ CLOSE MODAL ALWAYS
+    setEditItem(null);
+    setClose(true);
   };
+
   useEffect(() => {
     // console.log(state?.promptId);
-    if (state?.promptId && data) {
+    if (state?.promptId && data && !close) {
       const item = data.find((item) => item.id === state.promptId);
       if (item) {
         setEditItem(item);
@@ -126,7 +138,10 @@ export function MachineLearningPage() {
 
                   <td className="p-4 text-right">
                     <button
-                      onClick={() => setEditItem(item)}
+                      onClick={() => {
+                        setClose(false);
+                        setEditItem(item);
+                      }}
                       className="flex items-center gap-2 justify-end px-4 py-2 bg-blue-600 text-white 
                       rounded-xl shadow-sm hover:bg-blue-700 transition w-fit ml-auto"
                     >
