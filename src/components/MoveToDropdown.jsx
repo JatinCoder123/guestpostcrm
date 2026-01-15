@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getMoveOptions, moveData } from '../services/moveService';
 import { toast } from 'react-toastify';
 import { addEvent } from '../store/Slices/eventSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import { SocketContext } from '../context/SocketContext';
 
 const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [labels, setLabels] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { getMoveOptions, moveData } = useContext(SocketContext);
   const [moveLoading, setMoveLoading] = useState(null);
   const dispatch = useDispatch();
   const { email } = useSelector((state) => state.ladger);

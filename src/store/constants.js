@@ -4,5 +4,4 @@ export const CREATE_DEAL_URL =
 export const CREATE_DEAL_API_KEY = "FldBjAIfoBo2UTcBAezvTOQg9";
 export const TINY_EDITOR_API_KEY =
   "2kf8gyd7ms1x661uenztdjekg8v7b9iw4eageav7rlqiekjg";
-export const MOVE_END_POINT = "https://errika.guestpostcrm.com/index.php";
 export const LOCAL_KEY = "create_deals_draft_v1";

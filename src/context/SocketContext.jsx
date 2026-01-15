@@ -1,10 +1,15 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
+
 const socket = io("https://server.guestpostcrm.com");
 export const SocketContext = createContext();
-export const SocketContextProvider = (props) => {
+
+export const SocketContextProvider = ({ children }) => {
   const [currentAvatar, setCurrentAvatar] = useState();
-  const [crm, setCrm] = useState("")
+  const [crm, setCrm] = useState("");
+
+  const crmRef = useRef(""); // ✅ IMPORTANT
+
   const [notificationCount, setNotificationCount] = useState({
     outr_offer: null,
     outr_recent_activity: null,
@@ -15,17 +20,45 @@ export const SocketContextProvider = (props) => {
     outr_self_test: null,
     refresh_ladger: null,
     refreshUnreplied: null,
-
   });
+  const getMoveOptions = async () => {
+    try {
+      const response = await axios.get(`${crm}/index.php?entryPoint=move`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching move options:', error);
+      throw error;
+    }
+  };
+
+
+  const moveData = async (threadId, labelId) => {
+    try {
+      const response = await axios.post(
+        `${crm}/index.php?entryPoint=move&threadid=${threadId}&lblid=${labelId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error moving data:', error);
+      throw error;
+    }
+  };
+  // ✅ Keep ref always updated
+  useEffect(() => {
+    crmRef.current = crm;
+    console.log("CRM updated:", crm);
+  }, [crm]);
 
   useEffect(() => {
     const newAvatarHandler = (data) => {
-      console.log("new avatar", data);
-      setCurrentAvatar({ url: data.avatar_url.split("html/")[1], mute: false });
+      setCurrentAvatar({
+        url: data.avatar_url.split("html/")[1],
+        mute: false,
+      });
     };
 
+
     const latestAvatarHandler = (avatar) => {
-      console.log("Most recent avatar:", avatar);
       setCurrentAvatar({
         url: avatar.avatar_url.split("html/")[1],
         mute: true,
@@ -33,10 +66,11 @@ export const SocketContextProvider = (props) => {
     };
 
     const newMailHandler = (data) => {
+      console.log("OUR CRM:", crmRef.current);
+      console.log("Mail site:", data.site_url);
       console.log("new mail", data);
-      console.log("crm", crm);
-      console.log("data", data.site_url);
-      if (data?.site_url === crm) {
+
+      if (data?.site_url === crmRef.current) {
         setNotificationCount((prev) => ({
           ...prev,
           [data.name]: Date.now(),
@@ -55,18 +89,20 @@ export const SocketContextProvider = (props) => {
     };
   }, []);
 
-  const value = {
-    currentAvatar,
-    setCurrentAvatar,
-    crm,
-    setCrm,
-    notificationCount,
-    setNotificationCount,
-  };
-
   return (
-    <SocketContext.Provider value={value}>
-      {props.children}
+    <SocketContext.Provider
+      value={{
+        currentAvatar,
+        setCurrentAvatar,
+        crm,
+        setCrm,
+        getMoveOptions,
+        moveData,
+        notificationCount,
+        setNotificationCount,
+      }}
+    >
+      {children}
     </SocketContext.Provider>
   );
 };
