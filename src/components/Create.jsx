@@ -12,30 +12,6 @@ import { previewBtn } from "../assets/assets";
 
 
 
-
-const Tooltip = ({ text, children }) => {
-  return (
-    <div className="relative group inline-block">
-      {children}
-      <div
-        className="
-          absolute top-full left-1/2 -translate-x-1/2 mt-2
-          whitespace-nowrap
-          bg-black text-white text-xs px-2 py-1 rounded
-          opacity-0 group-hover:opacity-100
-          transition
-          pointer-events-none
-          z-50
-        "
-      >
-        {text}
-      </div>
-    </div>
-  );
-};
-
-
-
 export default function Create({
   data,
   email,
@@ -354,39 +330,56 @@ export default function Create({
 
 
 {/* by kjl */}
-                  <div className="mt-4 flex gap-3">
+                  {/* <div className="mt-4 flex gap-3"> */}
+             <div className="mt-3 grid grid-cols-2 gap-3 w-full">
+
+
+
+
                     {pageType == "view" ? (
                       <>
-                      
-                     <Tooltip text="Send email to client">
+    
   <button
-    // disabled={data.length === 0}
     disabled={data.length === 0 || loading}
-
-    onClick={() => sendHandler()}
-    className={`w-full px-3 py-2 rounded-lg text-white ${sending}`}
+    onClick={sendHandler}
+    className={`
+      w-full h-[46px]
+      flex items-center justify-center
+      rounded-lg
+      hover:scale-120
+      
+      cursor-pointer
+            transition-all duration-200 ease-in-out
+      ${loading ? "opacity-60 cursor-not-allowed" : ""}
+    `}
   >
-    {sending ? "Sending..." : (
-      <img src={sendEmailBtn} alt="send" className="w-[40px] h-[35px] mx-auto" />
+    {loading ? (
+      <span className="text-xs font-semibold text-gray-600">
+        Sending…
+      </span>
+    ) : (
+      <img src={sendEmailBtn} alt="send" className="w-10 h-11" />
     )}
   </button>
-</Tooltip>
-
-                      
-                      
-                      
-                     <Tooltip text="Preview email before sending">
+               
+      
   <button
     onClick={() => setShowPreview(true)}
-    className="px-3 py-2"
+    className="
+      w-full h-[46px]
+      flex items-center justify-center
+    hover:scale-120
+        cursor-pointer
+       transition-all duration-200 ease-in-out
+      
+    "
   >
-    <img
-      src={previewBtn}
-      alt="preview"
-      className="w-[40px] h-[35px] mx-auto"
-    />
+    <img src={previewBtn} alt="preview" className="w-10" />
   </button>
-</Tooltip>
+
+
+
+
 
 </>
 

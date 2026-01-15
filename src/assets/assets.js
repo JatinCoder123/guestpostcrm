@@ -150,13 +150,6 @@ export const extractEmail = (str) => {
 }
 
 
-// export const sendEmailBtn = <img width="64" height="64" src="https://img.icons8.com/arcade/64/send-mass-email.png" alt="send-mass-email"/>
-// export const sendEmailBtn =
-//   "https://img.icons8.com/arcade/64/send-mass-email.png";
-
-  
-// export const  previewBtn=
-// "https://img.icons8.com/?size=100&id=24969&format=png&color=000000";
 
 export const sendEmailBtn = send;
 export const previewBtn = preview;
