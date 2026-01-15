@@ -240,7 +240,7 @@ const RootLayout = () => {
     }
 
     if (notificationCount.outr_recent_activity) {
-      refreshLadger();
+      // refreshLadger();
 
       dispatch(eventActions.updateCount(1));
       setNotificationCount((prev) => ({

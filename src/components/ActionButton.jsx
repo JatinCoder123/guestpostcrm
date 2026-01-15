@@ -18,20 +18,15 @@ import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
 import { addEvent } from "../store/Slices/eventSlice";
 import { PageContext } from "../context/pageContext";
-import {
-  linkExchange,
-  linkExchangeaction,
-} from "../store/Slices/linkExchange";
+import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { quickActionBtnActions } from "../store/Slices/quickActionBtn";
 import { getTags, applyTag } from "../store/Slices/markTagSlice";
 import { SocketContext } from "../context/SocketContext";
-import { getUnrepliedEmailWithOutLoading } from "../store/Slices/unrepliedEmails";
-import { getUnansweredEmailWithOutLoading } from "../store/Slices/unansweredEmails";
+import { motion } from "framer-motion";
+import { Heart } from "lucide-react";
 
 /* 🔹 Separator Component */
-const Separator = () => (
-  <div className="h-8 w-[1px] bg-gray-500 mx-2" />
-);
+const Separator = () => <div className="h-8 w-[1px] bg-gray-500 mx-2" />;
 
 const ActionButton = ({
   handleMoveSuccess,
@@ -45,7 +40,6 @@ const ActionButton = ({
   const [showTags, setShowTags] = useState(false);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
 
-
   /* 🔥 ADDED: First Reply states */
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
@@ -58,8 +52,11 @@ const ActionButton = ({
   const { sending } = useSelector((s) => s.threadEmail);
   const { email } = useSelector((s) => s.ladger);
 
-  const { forward, error: forwardError, message: forwardMessage } =
-    useSelector((s) => s.forwarded);
+  const {
+    forward,
+    error: forwardError,
+    message: forwardMessage,
+  } = useSelector((s) => s.forwarded);
 
   const {
     buttons,
@@ -74,6 +71,7 @@ const ActionButton = ({
   } = useSelector((s) => s.linkExchange);
 
   const {
+    emails: favEmails,
     favourite,
     error: favouriteError,
     message: favouriteMessage,
@@ -138,6 +136,29 @@ const ActionButton = ({
     } finally {
       setFrLoading(false);
     }
+  };
+
+  const FavIcon = () => {
+    const isFav = favEmails.some((e) => e.email_address === email);
+
+    return (
+      <motion.div
+        animate={{
+          color: isFav ? "#ef4444" : "#9ca3af", // red → gray
+        }}
+        transition={{
+          duration: 0.18,
+          ease: "easeInOut",
+        }}
+        className="flex items-center justify-center"
+      >
+        <Heart
+          size={22}
+          strokeWidth={1.8}
+          fill={isFav ? "#ef4444" : "transparent"}
+        />
+      </motion.div>
+    );
   };
 
   /* 🔹 Side Effects (UNCHANGED) */
@@ -240,45 +261,81 @@ const ActionButton = ({
   /* 🔹 Static Buttons (UNCHANGED) */
   const actionButtons = [
     {
-      icon: <img width="40" height="40" src="https://img.icons8.com/keek/100/new-post.png" alt="new-post" />,
+      icon: (
+        <img
+          width="40"
+          height="40"
+          src="https://img.icons8.com/keek/100/new-post.png"
+          alt="new-post"
+        />
+      ),
       label: "Email",
       action: () => setShowEmails(true),
     },
     {
-      icon: <img width="30" height="30" src="https://img.icons8.com/fluency/48/ip-address.png" alt="ip-address" />,
+      icon: (
+        <img
+          width="30"
+          height="30"
+          src="https://img.icons8.com/fluency/48/ip-address.png"
+          alt="ip-address"
+        />
+      ),
       label: "IP",
       action: () => setShowIP(true),
     },
     {
-      icon: favourite ? <LoadingChase /> : (
-        <img src="https://img.icons8.com/color/48/filled-like.png" className="w-6 h-6" alt="fav" />
-      ),
+      icon: favourite ? <LoadingChase /> : <FavIcon />,
       label: "Favourite",
       action: () => dispatch(favEmail(threadId)),
     },
     {
-      icon: forward ? <LoadingChase /> : (
-        <img src="https://img.icons8.com/color/48/redo.png" className="w-6 h-6" alt="forward" />
+      icon: forward ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/color/48/redo.png"
+          className="w-6 h-6"
+          alt="forward"
+        />
       ),
       label: "Assign",
       action: () => setShowUsers((p) => !p),
     },
     {
-      icon: marking ? <LoadingChase /> : (
-        <img src="https://img.icons8.com/color/48/bursts.png" className="w-6 h-6" alt="bulk" />
+      icon: marking ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/color/48/bursts.png"
+          className="w-6 h-6"
+          alt="bulk"
+        />
       ),
       label: "Mark Bulk",
       action: () => dispatch(markingEmail(threadId)),
     },
     {
-      icon: exchanging ? <LoadingChase /> : (
-        <img src="https://img.icons8.com/office/40/link.png" className="w-6 h-6" alt="link" />
+      icon: exchanging ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/office/40/link.png"
+          className="w-6 h-6"
+          alt="link"
+        />
       ),
       label: "Link Exchange",
       action: () => dispatch(linkExchange(threadId)),
     },
     {
-      icon: <img src="https://img.icons8.com/color/48/tags--v1.png" className="w-6 h-6" alt="tag" />,
+      icon: (
+        <img
+          src="https://img.icons8.com/color/48/tags--v1.png"
+          className="w-6 h-6"
+          alt="tag"
+        />
+      ),
       label: "Mark Tag",
       action: () => {
         setShowTags((p) => !p);
@@ -301,9 +358,11 @@ const ActionButton = ({
             hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
           >
             {btn.icon}
-            <span className="absolute -bottom-9 left-1/2 -translate-x-1/2
+            <span
+              className="absolute -bottom-9 left-1/2 -translate-x-1/2
             bg-black text-white text-xs px-2 py-1 rounded opacity-0
-            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
+            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
+            >
               {btn.label}
             </span>
           </button>
@@ -374,9 +433,11 @@ const ActionButton = ({
                 alt="first-reply"
               />
             )}
-            <span className="absolute -bottom-9 left-1/2 -translate-x-1/2
+            <span
+              className="absolute -bottom-9 left-1/2 -translate-x-1/2
             bg-black text-white text-xs px-2 py-1 rounded opacity-0
-            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20">
+            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
+            >
               Send First Reply
             </span>
           </button>
