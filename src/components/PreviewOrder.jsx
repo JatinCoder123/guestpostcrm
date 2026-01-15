@@ -45,14 +45,14 @@ export default function PreviewOrder({ data = [], userEmail }) {
                 <tr>
                   <td align="center">
                     
-                    <div style={headerTitle}>OrderID #{order.order_id}</div>
+                    <div style={headerTitle}>Order#{order.order_id}</div>
                     <div style={headerUser}>👤 {userName}</div>
                     <div style={headerDate}>{order.date_entered_formatted}</div>
                   </td>
                 </tr>
               </tbody>
-            </table>
-
+            </table>    
+                      
             {/* ================= ORDER SUMMARY ================= */}
             <table width="100%" cellPadding="0" cellSpacing="0">
               <tbody>
@@ -71,7 +71,7 @@ export default function PreviewOrder({ data = [], userEmail }) {
                           <tr>
                             <td style={label}>Status</td>
                             <td style={value}>{order.order_status || OrderStatus}</td>
-                          </tr>
+                          </tr> 
                           <tr>
                             <td style={label}>Client Email</td>
                             <td style={value}>{order.client_email || userEmail}</td>
@@ -83,12 +83,12 @@ export default function PreviewOrder({ data = [], userEmail }) {
                           <tr>
                             <td style={label}>Order Type</td>
                             <td style={value}>{order.order_type}</td>
-                          </tr>
+                          </tr>  
                           <tr>
                             <td style={label}>Total Amount</td>
                             <td style={value}>${order.total_amount_c}</td>
-                          </tr>
-                        </tbody>
+                          </tr>   
+                        </tbody>  
                       </table>
                     </div>
                   </td>
@@ -114,9 +114,12 @@ export default function PreviewOrder({ data = [], userEmail }) {
                       {liBacklinks.map((link, i) => (
                         <BacklinkRow key={i} link={link} />
                       ))}
-                    </td>
+                    </td>  
                   </tr>
                 )}
+
+
+
 
                 {/* ================= INVOICE ================= */}
                 <tr>
@@ -127,7 +130,7 @@ export default function PreviewOrder({ data = [], userEmail }) {
                       style={invoiceBtn}
                     >
                       📄 View Invoice
-                    </a>
+                    </a>  
                   </td>
                 </tr>
 
@@ -173,8 +176,8 @@ const BacklinkRow = ({ link }) => {
                 {link.anchor_text_c || "N/A"}
               </span>
             </td>
-          </tr>
-        )}
+          </tr>                  
+        )}     
 
         <tr>
           <td colSpan="2" style={row}>
@@ -190,8 +193,12 @@ const BacklinkRow = ({ link }) => {
         </tr>
       </tbody>
     </table>
+
+    
   );
 };
+
+
 
 /* ================= STYLES ================= */
 
@@ -302,7 +309,7 @@ const invoiceBtn = {
   textDecoration: "none",
   fontWeight: "800",
   display: "inline-block",
-};
+};  
 
 const statusBadge = (status) => ({
   background:

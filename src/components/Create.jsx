@@ -7,6 +7,34 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LoadingChase } from "./Loading";
 import { OrderView } from "./OrderView";
+import { sendEmailBtn } from "../assets/assets";
+import { previewBtn } from "../assets/assets";
+
+
+
+
+const Tooltip = ({ text, children }) => {
+  return (
+    <div className="relative group inline-block">
+      {children}
+      <div
+        className="
+          absolute top-full left-1/2 -translate-x-1/2 mt-2
+          whitespace-nowrap
+          bg-black text-white text-xs px-2 py-1 rounded
+          opacity-0 group-hover:opacity-100
+          transition
+          pointer-events-none
+          z-50
+        "
+      >
+        {text}
+      </div>
+    </div>
+  );
+};
+
+
 
 export default function Create({
   data,
@@ -324,24 +352,45 @@ export default function Create({
                     </div>
                   </div>
 
+
+{/* by kjl */}
                   <div className="mt-4 flex gap-3">
                     {pageType == "view" ? (
-                      <><button
-                        disabled={data.length === 0}
-                        onClick={() => sendHandler()}
-                        className={`w-full px-3 py-2 rounded-lg text-white ${sending
-                          ? "bg-green-300 cursor-not-allowed"
-                          : "bg-green-600 hover:bg-green-700"
-                          }`}
-                      >
-                        {sending ? "Sending..." : "Send"}
-                      </button><button
-                        onClick={() => setShowPreview(true)}
-                        className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
-                      >
-                          Preview
-                        </button></>
+                      <>
+                      
+                     <Tooltip text="Send email to client">
+  <button
+    // disabled={data.length === 0}
+    disabled={data.length === 0 || loading}
 
+    onClick={() => sendHandler()}
+    className={`w-full px-3 py-2 rounded-lg text-white ${sending}`}
+  >
+    {sending ? "Sending..." : (
+      <img src={sendEmailBtn} alt="send" className="w-[40px] h-[35px] mx-auto" />
+    )}
+  </button>
+</Tooltip>
+
+                      
+                      
+                      
+                     <Tooltip text="Preview email before sending">
+  <button
+    onClick={() => setShowPreview(true)}
+    className="px-3 py-2"
+  >
+    <img
+      src={previewBtn}
+      alt="preview"
+      className="w-[40px] h-[35px] mx-auto"
+    />
+  </button>
+</Tooltip>
+
+</>
+
+// end
                     ) : (
                       <button
                         disabled={data.length === 0 || !valid}
