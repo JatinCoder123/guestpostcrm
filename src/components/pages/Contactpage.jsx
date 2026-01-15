@@ -184,15 +184,6 @@ export default function Contactpage() {
             </div>
 
             <div className="editbtn cursor-pointer" onClick={handleEditClick}>
-              <button
-                onClick={() => setAccountShow(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl
-                            bg-gradient-to-r from-[#ec4899] to-[#9333ea]
-                            text-white font-semibold shadow-lg hover:scale-105 transition"
-              >
-                <Building2 size={18} />
-                View Account
-              </button>
               <img
                 width="48"
                 height="48"
@@ -200,6 +191,15 @@ export default function Contactpage() {
                 alt="create-new"
               />
             </div>
+            <button
+              onClick={() => setAccountShow(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl
+                            bg-gradient-to-r from-[#ec4899] to-[#9333ea]
+                            text-white font-semibold shadow-lg hover:scale-105 transition"
+            >
+              <Building2 size={18} />
+              View Account
+            </button>
           </div>
         </div>
       </div>

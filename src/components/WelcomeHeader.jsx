@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useContext } from "react";
 import { PageContext } from "../context/pageContext";
+import wolfImg from "../assets/wolf-5.gif";
 
 const WelcomeHeader = () => {
   const { email, timeline, loading } = useSelector((state) => state.ladger);
@@ -46,7 +47,6 @@ const WelcomeHeader = () => {
             <span className="font-bold text-gray-900">
               {time?.replace(/_/g, " ")}
             </span>
-
             {email && !loading && (
               <>
                 {" • "}
@@ -107,7 +107,7 @@ const WelcomeHeader = () => {
         {/* Wolf GIF */}
         <div className="flex-shrink-0 pr-2">
           <img
-            src="https://errika.guestpostcrm.com/images/wolf-5.gif"
+            src={wolfImg}
             alt="Wolf"
             className="h-14 w-auto object-contain drop-shadow-md"
           />
