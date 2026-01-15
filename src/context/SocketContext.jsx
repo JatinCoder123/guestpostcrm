@@ -4,6 +4,7 @@ const socket = io("https://server.guestpostcrm.com");
 export const SocketContext = createContext();
 export const SocketContextProvider = (props) => {
   const [currentAvatar, setCurrentAvatar] = useState();
+  const [crm, setCrm] = useState("")
   const [notificationCount, setNotificationCount] = useState({
     outr_offer: null,
     outr_recent_activity: null,
@@ -33,10 +34,14 @@ export const SocketContextProvider = (props) => {
 
     const newMailHandler = (data) => {
       console.log("new mail", data);
-      setNotificationCount((prev) => ({
-        ...prev,
-        [data.name]: Date.now(),
-      }));
+      console.log("crm", crm);
+      console.log("data", data.site_url);
+      if (data?.site_url === crm) {
+        setNotificationCount((prev) => ({
+          ...prev,
+          [data.name]: Date.now(),
+        }));
+      }
     };
 
     socket.on("new_avatar", newAvatarHandler);
@@ -53,6 +58,8 @@ export const SocketContextProvider = (props) => {
   const value = {
     currentAvatar,
     setCurrentAvatar,
+    crm,
+    setCrm,
     notificationCount,
     setNotificationCount,
   };

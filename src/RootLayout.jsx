@@ -41,11 +41,13 @@ import { eventActions } from "./store/Slices/eventSlice";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
 import Avatar from "./components/Avatar";
+import { getDomain } from "./assets/assets";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
+  const { crmEndpoint } = useSelector((state) => state.user);
   const {
     displayIntro,
     setActivePage,
@@ -57,7 +59,7 @@ const RootLayout = () => {
     collapsed,
   } = useContext(PageContext);
 
-  const { currentAvatar, notificationCount, setNotificationCount } =
+  const { currentAvatar, setCrm, notificationCount, setNotificationCount } =
     useContext(SocketContext);
 
   const dispatch = useDispatch();
@@ -74,7 +76,12 @@ const RootLayout = () => {
       });
     }
   }, [pathname]);
-
+  useEffect(() => {
+    if (crmEndpoint) {
+      // console.log("crmEndpoint", getDomain(crmEndpoint));
+      setCrm(getDomain(crmEndpoint))
+    }
+  }, [crmEndpoint])
   // Show avatar when new avatar arrives
   useEffect(() => {
     setShowAvatar(true);
@@ -240,8 +247,6 @@ const RootLayout = () => {
     }
 
     if (notificationCount.outr_recent_activity) {
-      refreshLadger();
-
       dispatch(eventActions.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -274,9 +279,8 @@ const RootLayout = () => {
               {/* Main content scrolls independently */}
               <main
                 ref={mainRef}
-                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                  collapsed ? "ml-4" : "ml-0"
-                }`}
+                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+                  }`}
               >
                 <div className="p-6">
                   <WelcomeHeader />

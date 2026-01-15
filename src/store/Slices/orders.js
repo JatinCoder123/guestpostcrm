@@ -32,6 +32,7 @@ const ordersSlice = createSlice({
       state.orders = orders;
       state.statusLists = statusLists;
       state.count = count;
+      state.updateId = null
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.error = null;
@@ -96,6 +97,7 @@ const ordersSlice = createSlice({
       state.updateLinkLoading = false;
       state.orders = action.payload.orders;
       state.updateLinkMessage = action.payload.message;
+      state.updateId = action.payload.id;
       state.error = null;
     },
     updateLinkFailed(state, action) {
@@ -136,6 +138,9 @@ const ordersSlice = createSlice({
       state.message = null;
       state.updateLinkMessage = null;
       state.creatingLinkMessage = null;
+    },
+    resetUpdateId(state) {
+      state.updateId = null;
     },
     setUpdateOrder(state, action) {
       state.orders = action.payload;
@@ -235,7 +240,7 @@ export const getOrdersWithoutLoading = () => {
   };
 };
 
-export const updateOrder = (order, send) => {
+export const updateOrder = (order, send = true, id = null) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
     console.log("Update Order", order);
@@ -258,7 +263,6 @@ export const updateOrder = (order, send) => {
         }
       );
       console.log(`Update Order`, data);
-      console.log(`Update Order`, send);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.id === order.id) {
           return order;
@@ -266,7 +270,7 @@ export const updateOrder = (order, send) => {
         return o;
       });
       dispatch(
-        ordersSlice.actions.updateOrderSuccess({ orders: updatedOrders, message: `Order Updated ${send ? "and Send Successfully" : "Successfully"}` })
+        ordersSlice.actions.updateOrderSuccess({ orders: updatedOrders, message: `Order Updated ${send ? "and Send Successfully" : "Successfully"}`, id: id })
       );
 
       dispatch(ordersSlice.actions.clearAllErrors());

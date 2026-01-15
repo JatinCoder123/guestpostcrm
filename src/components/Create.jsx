@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useMemo } from "react";
 import { MoveLeft, Pencil, Plus, Trash } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -241,7 +240,7 @@ export default function Create({
                           </div>
                         )}
                         {type == "orders" && pageType == "view" ? (
-                          <OrderView data={item} />
+                          <OrderView data={item} setData={setData} sending={sending} />
                         ) : (
                           <>
                             {" "}
@@ -335,12 +334,14 @@ export default function Create({
                           }`}
                       >
                         {sending ? "Sending..." : "Send"}
+
                       </button><button
                         onClick={() => setShowPreview(true)}
                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                       >
                           Preview
-                        </button></>
+                        </button>
+                      </>
 
                     ) : (
                       <button

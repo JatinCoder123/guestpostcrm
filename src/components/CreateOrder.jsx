@@ -39,6 +39,7 @@ export default function CreateOrder() {
     error,
     message,
     updateLinkMessage,
+    updateId,
     creatingLinkMessage,
   } = useSelector((state) => state.orders);
   const { message: sendMessage, sending } = useSelector(
@@ -107,7 +108,7 @@ export default function CreateOrder() {
         dispatch(sendEmail(
           renderToStaticMarkup(
             <PreviewOrder
-              data={currentOrders}
+              data={updateId ? currentOrders.filter((d) => d.order_id == updateId) : currentOrders}
               type="Orders"
               userEmail={state?.email}
               websiteKey="website_c"
@@ -116,6 +117,9 @@ export default function CreateOrder() {
           ),
           "Order Updated and Send Successfully", "Order Updated But Not Sent!"
         ));
+        if (updateId) {
+          dispatch(orderAction.resetUpdateId());
+        }
       }
       else {
         toast.success(message);

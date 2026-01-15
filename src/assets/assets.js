@@ -11,6 +11,13 @@ export const websiteLists = [
   "https://www.mailsextract.com/",
   "https://www.guestpostcrm.com/",
 ];
+export const getDomain = (url) => {
+  if (!url) return "";
+  if (url.includes("/index.php")) {
+    return url.split("/index.php")[0];
+  }
+  return url;
+}
 
 export const periodOptions = [
   { period: "today", title: "Today" },

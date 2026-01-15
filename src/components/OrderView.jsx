@@ -5,29 +5,32 @@ import UpdatePopup from "./UpdatePopup";
 import { useDispatch } from "react-redux";
 import { createLink, getOrders, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
-export const OrderView = ({ data }) => {
+import { LoadingChase } from "./Loading";
+export const OrderView = ({ data, setData, sending }) => {
   const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState(null);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, statusLists, message } = useSelector((state) => state.orders);
+  const { creatingLinkMessage, statusLists, updating } = useSelector((state) => state.orders);
   const dispatch = useDispatch();
   const handleAddLink = (link) => {
     dispatch(createLink(item.id, link));
   };
-  const handleStatusChange = (status) => {
-    dispatch(updateOrder({ ...data, order_status: status }));
-  };
 
+  useEffect(() => {
+    if (status) {
+      dispatch(updateOrder({ ...data, order_status: status }, true, data.order_id));
+      setData((prev) => {
+        const next = prev.map((d) => (d?.order_id === data?.order_id ? { ...d, order_status: status } : d));
+        return next;
+      });
+    }
+  }, [status])
   useEffect(() => {
     if (creatingLinkMessage) {
       setOpen(false);
       dispatch(orderAction.clearAllMessages());
     }
-    if (message) {
-      console.log(message);
-      dispatch(getOrders())
-      dispatch(orderAction.clearAllMessages());
-    }
-  }, [creatingLinkMessage, message]);
+  }, [creatingLinkMessage]);
 
   return (
     <>
@@ -60,8 +63,9 @@ export const OrderView = ({ data }) => {
           onUpdate={(link) => handleAddLink(link)}
         />
       )}
+      {(updating || sending) && <PageLoader />}
       <div className="w-full relative mt-3">
-        <OrderHeader order_id={data.order_id} handleStatusChange={handleStatusChange} />
+        <OrderHeader order_id={data.order_id} setStatus={setStatus} />
         <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -155,7 +159,7 @@ function Field({ label, value, link, children, title }) {
   );
 }
 
-function OrderHeader({ order_id, handleStatusChange }) {
+function OrderHeader({ order_id, setStatus }) {
   return (
     <div className="w-full mb-3">
       <div className="relative group">
@@ -180,7 +184,7 @@ function OrderHeader({ order_id, handleStatusChange }) {
 
               {/* Accept */}
               <button
-                onClick={() => handleStatusChange("accepted")}
+                onClick={() => setStatus("accepted")}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
@@ -193,7 +197,7 @@ function OrderHeader({ order_id, handleStatusChange }) {
 
               {/* Reject */}
               <button
-                onClick={() => handleStatusChange("rejected_nontechnical")}
+                onClick={() => setStatus("rejected_nontechnical")}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30
@@ -206,7 +210,7 @@ function OrderHeader({ order_id, handleStatusChange }) {
 
               {/* Complete */}
               <button
-                onClick={() => handleStatusChange("completed")}
+                onClick={() => setStatus("completed")}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-blue-500/90 text-white font-semibold
                            shadow-md shadow-blue-500/30
@@ -226,3 +230,19 @@ function OrderHeader({ order_id, handleStatusChange }) {
   );
 }
 
+function PageLoader() {
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      {/* Blur + dark overlay */}
+      <div className="absolute inset-0 bg-black/10 backdrop-blur-sm" />
+
+      {/* Loader */}
+      <div className="relative z-10 flex flex-col items-center gap-4">
+        <LoadingChase />
+        <p className="text-black font-semibold tracking-wide">
+          Updating order...
+        </p>
+      </div>
+    </div>
+  );
+}

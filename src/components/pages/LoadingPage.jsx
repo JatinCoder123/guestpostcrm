@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import logo from "../../assets/assets";
- 
+
 export default function LoadingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-100 to-white flex items-center justify-center p-4">
@@ -17,7 +17,7 @@ export default function LoadingPage() {
             ease: "linear",
           }}
         />
- 
+
         {/* Text Content */}
         <div className="flex flex-col items-center gap-4">
           <motion.h2
@@ -26,18 +26,8 @@ export default function LoadingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            Wait a moment
+            Please wait...
           </motion.h2>
- 
-          <motion.p
-            className="text-gray-600 text-lg"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            We are verifying you
-          </motion.p>
- 
           {/* Animated Dots */}
           <div className="flex gap-2 mt-2">
             {[0, 1, 2].map((i) => (
@@ -57,7 +47,7 @@ export default function LoadingPage() {
             ))}
           </div>
         </div>
- 
+
         {/* Progress bar */}
         <div className="w-64 h-1 bg-gray-300 rounded-full overflow-hidden">
           <motion.div
@@ -75,4 +65,3 @@ export default function LoadingPage() {
     </div>
   );
 }
- 
