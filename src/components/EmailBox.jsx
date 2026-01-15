@@ -22,7 +22,7 @@ import {
 } from "../store/constants";
 import { LoadingChase } from "./Loading";
 import { toast } from "react-toastify";
-import { base64ToUtf8 } from "../assets/assets";
+import { base64ToUtf8, getDomain } from "../assets/assets";
 import useModule from "../hooks/useModule";
 
 export default function EmailBox({ onClose, view, threadId, tempEmail }) {
@@ -51,21 +51,21 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
 
   // FETCH BUTTONS
   const { loading, data: buttons } = useModule({
-    url: `https://errika.guestpostcrm.com/index.php?entryPoint=get_buttons&type=regular&email=${tempEmail}`,
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_buttons&type=regular&email=${tempEmail}`,
     name: "BUTTONS",
     dependencies: [tempEmail],
   });
 
   // DEFAULT TEMPLATE
   const { loading: defTemplateLoading, data: defaultTemplate } = useModule({
-    url: `https://errika.guestpostcrm.com/?entryPoint=updateOffer&email=${tempEmail}`,
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=updateOffer&email=${tempEmail}`,
     name: "DEFAULT TEMPLATE",
     dependencies: [tempEmail],
   });
 
   // SELECTED TEMPLATE
   const { loading: templateLoading, data: template } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "EmailTemplates",
