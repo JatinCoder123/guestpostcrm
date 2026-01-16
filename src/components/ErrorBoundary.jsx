@@ -24,22 +24,26 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
-          <div className="w-full rounded-2xl bg-white shadow-xl border border-gray-200 p-8 text-center">
+        <div className="inset-0 z-[9999] flex items-center justify-center  px-4 h-[100vh]">
+          <div className="w-full rounded-2xl bg-white p-8 text-center items-center justify-center">
             {/* Icon */}
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
-              <span className="text-3xl">⚠️</span>
+            <div className="mx-auto flex h-14 w-100 mt-14 items-center justify-center">
+              <img
+                src="https://example.guestpostcrm.com/images/image__53_-removebg-preview.png"
+                alt=""
+                className="w-100"
+              />
             </div>
 
             {/* Title */}
             <h2 className="mt-4 text-2xl font-semibold text-gray-900">
-              Something went wrong
+              Server Busy
             </h2>
 
             {/* Description */}
-            <p className="mt-2 text-sm text-gray-600">
-              An unexpected error occurred. Please refresh the page or try again
-              later.
+            <p className="mt-2 text-lg text-gray-600">
+              Our Servers are currently experiencing high traffic. <br /> Please
+              try again in a few moments.
             </p>
 
             {/* Action */}
@@ -47,7 +51,7 @@ class ErrorBoundary extends React.Component {
               onClick={this.handleReset}
               className="mt-6 inline-flex items-center justify-center rounded-xl bg-red-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
             >
-              Reload Page
+              Try Again
             </button>
 
             {/* Dev-only error details */}

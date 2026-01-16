@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { AUTH_URL } from "../../store/constants.js";
 
@@ -12,6 +12,12 @@ export default function Login() {
   const handleLoginWithMicrosoft = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin`;
   };
+  const videos = [
+    "https://example.guestpostcrm.com/images/LOGIN-ODOPR%20FINAL%201.mp4",
+    "https://example.guestpostcrm.com/images/GP%20LI%203.mp4",
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-[#e8f0ff] via-[#f3fffa] to-[#f8fff5]">
@@ -78,19 +84,24 @@ export default function Login() {
         transition={{ duration: 0.6 }}
         className="hidden lg:flex flex-1 items-center justify-center p-6"
       >
-        <div className="w-full h-[88vh] rounded-[30px] overflow-hidden shadow-xl">
-          <video
-            className="w-full h-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
-          >
-            <source
-              src="https://dev.outrightcrm.in/dev/demokjl1/wp-content/nov20_test/Login%20G-Bot%20second%201.mp4"
-              type="video/mp4"
+        <div className="w-full h-[88vh] rounded-[30px] overflow-hidden shadow-xl relative">
+          <AnimatePresence mode="wait">
+            <motion.video
+              key={videos[currentIndex]}
+              className="absolute w-full h-full object-cover"
+              src={videos[currentIndex]}
+              autoPlay
+              muted
+              playsInline
+              onEnded={() =>
+                setCurrentIndex((prev) => (prev + 1) % videos.length)
+              }
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "-100%", opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
             />
-          </video>
+          </AnimatePresence>
         </div>
       </motion.div>
     </div>
