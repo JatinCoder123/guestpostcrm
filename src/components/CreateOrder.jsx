@@ -123,7 +123,7 @@ export default function CreateOrder() {
       }
       else {
         toast.success(message);
-        navigate(-1)
+        // navigate(-1)
       }
 
       setNotificationCount((prev) => ({

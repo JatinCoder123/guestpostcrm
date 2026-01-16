@@ -7,6 +7,7 @@ export const SocketContext = createContext();
 export const SocketContextProvider = ({ children }) => {
   const [currentAvatar, setCurrentAvatar] = useState();
   const [crm, setCrm] = useState("");
+  const [invoiceOrderId, setInvoiceOrderId] = useState(null);
 
   const crmRef = useRef(""); // ✅ IMPORTANT
 
@@ -20,6 +21,8 @@ export const SocketContextProvider = ({ children }) => {
     outr_self_test: null,
     refresh_ladger: null,
     refreshUnreplied: null,
+    // paypal_status_sent: null
+    outr_paypal_invoice_links: null
   });
   const getMoveOptions = async () => {
     try {
@@ -71,10 +74,16 @@ export const SocketContextProvider = ({ children }) => {
       console.log("new mail", data);
 
       if (data?.site_url === crmRef.current) {
-        setNotificationCount((prev) => ({
-          ...prev,
-          [data.name]: Date.now(),
-        }));
+        if (data.name === "paypal_status_sent") {
+          setInvoiceOrderId(data.order_id);
+        }
+        else {
+          setNotificationCount((prev) => ({
+            ...prev,
+            [data.name]: Date.now(),
+          }));
+        }
+
       }
     };
 
@@ -96,6 +105,8 @@ export const SocketContextProvider = ({ children }) => {
         setCurrentAvatar,
         crm,
         setCrm,
+        invoiceOrderId,
+        setInvoiceOrderId,
         getMoveOptions,
         moveData,
         notificationCount,

@@ -245,6 +245,13 @@ const RootLayout = () => {
         outr_offer: null,
       }));
     }
+    if (notificationCount.outr_paypal_invoice_links) {
+      dispatch(hotAction.updateCount(1));
+      setNotificationCount((prev) => ({
+        ...prev,
+        outr_paypal_invoice_links: null,
+      }));
+    }
 
     if (notificationCount.outr_recent_activity) {
       dispatch(eventActions.updateCount(1));
