@@ -16,9 +16,9 @@ const hotSlice = createSlice({
       state.hots = [];
     },
     getAllhotsucess(state, action) {
-        const { count, hots } = action.payload;
+      const { count, hots } = action.payload;
       state.loading = false;
-        state.count = count;
+      state.count = count;
       state.hots = hots;
       state.error = null;
     },
@@ -30,12 +30,12 @@ const hotSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
-    updateCount(state,action){
-        if(action.payload===1){
-            state.count+=1;
-            return;
-        }
-        state.count=0;
+    updateCount(state, action) {
+      if (action.payload === 1) {
+        state.count += 1;
+        return;
+      }
+      state.count = 0;
 
     }
   },
@@ -48,7 +48,7 @@ export const getAllHot = () => {
     try {
       const { data } = await axios.get(`${domain}?entryPoint=fetch_gpc&type=get_alerts&filter=${getState().ladger.timeline}&page=1&page_size=50&label=hot`);
       console.log(`hot data`, data);
-      dispatch(hotSlice.actions.getAllhotsucess({   count: 0, hots: data.data }));
+      dispatch(hotSlice.actions.getAllhotsucess({ count: 0, hots: data.data ?? [] }));
       dispatch(hotSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(

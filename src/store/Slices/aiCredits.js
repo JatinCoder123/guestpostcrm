@@ -44,8 +44,7 @@ export const getAiCredits = (filter, index = 1) => {
 
     try {
       const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
+        `${getState().user.crmEndpoint
         }&type=get_credits&filter=${filter}&page=${index}&page_size=50`
       );
       console.log(`aiCredits`, data);
@@ -53,7 +52,7 @@ export const getAiCredits = (filter, index = 1) => {
         aiCreditsSlice.actions.getAiCreditsSucess({
           count: data.data_count,
           balance: data.credit_balance,
-          aiCredits: data.data,
+          aiCredits: data.data ?? [],
           pageIndex: data.current_page,
           pageCount: data.total_pages,
         })

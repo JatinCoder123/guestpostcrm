@@ -119,7 +119,7 @@ export const getLadger = ({ email = null, isEmail = true, search = "", loading =
         ladgerSlice.actions.getLadgerSuccess({
           search,
           duplicate: data.duplicate_threads_count,
-          ladger: data.data,
+          ladger: data.data ?? [],
           mailersSummary: data.mailers_summary,
           email: data.mailers_summary?.email,
           pageCount: data.total_pages,

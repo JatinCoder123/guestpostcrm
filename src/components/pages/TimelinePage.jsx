@@ -1,4 +1,4 @@
-import { Mail, Reply } from "lucide-react";
+import { Mail, Pencil, Reply } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -28,8 +28,11 @@ import { unrepliedAction } from "../../store/Slices/unrepliedEmails";
 import NewEmailBanner from "../NewEmailBanner";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
+import UpdatePopup from "../UpdatePopup";
 export function TimelinePage() {
   const [showEmail, setShowEmail] = useState(false);
+  const [showUpdateAiReply, setShowUpdateAiReply] = useState(false);
+  const [aiReply, setAiReply] = useState("")
   const [showThread, setShowThread] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
@@ -92,6 +95,11 @@ export function TimelinePage() {
       dispatch(threadEmailAction.clearAllMessage());
     }
   }, [dispatch, error, sendError, message, threadError, threadMessage]);
+  useEffect(() => {
+    if (mailersSummary?.ai_response) {
+      setAiReply(mailersSummary?.ai_response);
+    }
+  }, [mailersSummary]);
   const handleMoveSuccess = () => {
     dispatch(getLadger({ email }));
   };
@@ -118,7 +126,7 @@ export function TimelinePage() {
           emails[currentIndex]?.thread_id
             ? emails[currentIndex]?.thread_id
             : threadId,
-          mailersSummary?.ai_response
+          aiReply
         )
       );
       dispatch(
@@ -194,6 +202,18 @@ export function TimelinePage() {
   return (
     <>
       <NewEmailBanner show={showNewEmailBanner} />
+      {/* <UpdatePopup open={showUpdateAiReply} onClose={() => setShowUpdateAiReply(false)} fields={[{
+        label: "Ai Reply",
+        name: "ai_reply",
+        type: "textarea",
+        value: aiReply,
+      }]}
+        buttonLabel="Send"
+        loading={aiReplySentLoading}
+        onSubmit={(data) => {
+          handleAiAutoReply(data.ai_reply);
+          setShowUpdateAiReply(false);
+        }} /> */}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
@@ -213,10 +233,16 @@ export function TimelinePage() {
               <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* AI SUMMARY */}
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
-                  <div className="flex items-center justify-start gap-3 mb-2">
+                  <div className="flex items-center justify-start gap-2 mb-2">
                     <h3 className="text-green-700 font-semibold">
                       Quick Reply
                     </h3>
+                    {/* <button
+                      onClick={() => setShowUpdateAiReply(true)}
+                      className=" text-green-700 hover:text-green-800 cursor-pointer hover:scael-120 transition-all mr-4"
+                    >
+                      <Pencil size={20} />
+                    </button> */}
                     {/* Send AI Reply Button - Moved to top right */}
                     {aiReplySentLoading ? (
                       <div className="flex justify-center">
@@ -243,15 +269,14 @@ export function TimelinePage() {
                         />
                       </motion.button>
                     )}
+
                   </div>
+
 
                   {!sending && (
                     <div className="mb-3">
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                        {mailersSummary == null ||
-                        mailersSummary?.ai_response == ""
-                          ? "No AI reply generated."
-                          : mailersSummary?.ai_response}
+                        {aiReply}
                       </p>
                     </div>
                   )}
@@ -314,11 +339,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -369,14 +393,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  threadId={currentThreadId}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    threadId={currentThreadId}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (
