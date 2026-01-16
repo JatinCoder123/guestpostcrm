@@ -1,24 +1,32 @@
 import { Plus, CheckCircle, XCircle, PackageCheck } from "lucide-react";
 import SeoBacklinkList from "./SeoBacklinks";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import UpdatePopup from "./UpdatePopup";
 import { useDispatch } from "react-redux";
 import { createLink, getOrders, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
+import { SocketContext } from "../context/SocketContext";
 export const OrderView = ({ data, setData, sending }) => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null);
   const [item, setItem] = useState(null);
   const { creatingLinkMessage, statusLists, updating } = useSelector((state) => state.orders);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [showConsent, setShowConsent] = useState(false);
+  const { invoiceOrderId } = useContext(SocketContext);
   const dispatch = useDispatch();
   const handleAddLink = (link) => {
     dispatch(createLink(item.id, link));
   };
+  const onCompleteHandler = () => {
+    setShowConsent(true);
+  };
+
 
   useEffect(() => {
     if (status) {
-      dispatch(updateOrder({ ...data, order_status: status }, true, data.order_id));
+      dispatch(updateOrder({ ...data, order_status: status }, status !== "accepted" ? true : false, data.order_id));
       setData((prev) => {
         const next = prev.map((d) => (d?.order_id === data?.order_id ? { ...d, order_status: status } : d));
         return next;
@@ -31,6 +39,17 @@ export const OrderView = ({ data, setData, sending }) => {
       dispatch(orderAction.clearAllMessages());
     }
   }, [creatingLinkMessage]);
+  useEffect(() => {
+    if (
+      processingPayment &&
+      invoiceOrderId &&
+      invoiceOrderId === data.order_id
+    ) {
+      setProcessingPayment(false);
+      setStatus("completed");
+    }
+  }, [invoiceOrderId, processingPayment, data.order_id]);
+
 
   return (
     <>
@@ -63,9 +82,23 @@ export const OrderView = ({ data, setData, sending }) => {
           onUpdate={(link) => handleAddLink(link)}
         />
       )}
+
+      {/* PAYPAL CONSENT */}
+      <PayPalConsent
+        open={showConsent}
+        onCancel={() => setShowConsent(false)}
+        onProceed={() => {
+          setShowConsent(false);
+          setProcessingPayment(true);
+          window.open(data.invoice_link_c, "_blank", "noopener,noreferrer");
+        }}
+      />
+
+      {/* PROCESSING PAYPAL */}
+      {processingPayment && <ProcessingLoader />}
       {(updating || sending) && <PageLoader />}
       <div className="w-full relative mt-3">
-        <OrderHeader order_id={data.order_id} setStatus={setStatus} />
+        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} />
         <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -158,8 +191,18 @@ function Field({ label, value, link, children, title }) {
     </div>
   );
 }
-
-function OrderHeader({ order_id, setStatus }) {
+function ProcessingLoader() {
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+      <div className="relative z-10 flex flex-col items-center gap-4">
+        <LoadingChase />
+        <p className="font-semibold">Processing your PayPal payment…</p>
+      </div>
+    </div>
+  );
+}
+function OrderHeader({ data, setStatus, onCompleteHandler }) {
   return (
     <div className="w-full mb-3">
       <div className="relative group">
@@ -175,7 +218,7 @@ function OrderHeader({ order_id, setStatus }) {
               </div>
 
               <h2 className="text-2xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
-                {order_id}
+                {data.order_id}
               </h2>
             </div>
 
@@ -183,50 +226,56 @@ function OrderHeader({ order_id, setStatus }) {
             <div className="flex gap-3 flex-wrap justify-center">
 
               {/* Accept */}
-              <button
-                onClick={() => setStatus("accepted")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+              {data.order_status !== "accepted" && (
+                <>
+                  <button
+                    onClick={() => setStatus("accepted")}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
                            hover:bg-emerald-500 hover:shadow-lg
                            active:scale-95 transition-all"
-              >
-                <CheckCircle size={18} />
-                Accept
-              </button>
-
-              {/* Reject */}
-              <button
-                onClick={() => setStatus("rejected_nontechnical")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                  >
+                    <CheckCircle size={18} />
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => setStatus("rejected_nontechnical")}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30
                            hover:bg-red-500 hover:shadow-lg
                            active:scale-95 transition-all"
-              >
-                <XCircle size={18} />
-                Reject
-              </button>
+                  >
+                    <XCircle size={18} />
+                    Reject
+                  </button></>
+
+              )}
 
               {/* Complete */}
-              <button
-                onClick={() => setStatus("completed")}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-                           bg-blue-500/90 text-white font-semibold
-                           shadow-md shadow-blue-500/30
-                           hover:bg-blue-500 hover:shadow-lg
-                           active:scale-95 transition-all"
-              >
-                <PackageCheck size={18} />
-                Complete
-              </button>
+              {data.order_status == "accepted" && (
+                <button
+                  onClick={onCompleteHandler}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+              bg-blue-500/90 text-white font-semibold
+              shadow-md shadow-blue-500/30
+              hover:bg-blue-500 hover:shadow-lg
+              active:scale-95 transition-all"
+                >
+                  <PackageCheck size={18} />
+                  Complete
+                </button>
+
+
+              )}
 
             </div>
 
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
@@ -242,6 +291,38 @@ function PageLoader() {
         <p className="text-black font-semibold tracking-wide">
           Updating order...
         </p>
+      </div>
+    </div>
+  );
+}
+function PayPalConsent({ open, onCancel, onProceed }) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+        <h3 className="text-xl font-bold mb-2">Confirm Payment</h3>
+        <p className="text-gray-600 mb-6">
+          You’ll be redirected to PayPal to complete the invoice payment.
+          Once payment is confirmed, the order will be completed automatically.
+        </p>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg border text-gray-700 hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onProceed}
+            className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Proceed to PayPal
+          </button>
+        </div>
       </div>
     </div>
   );

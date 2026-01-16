@@ -122,13 +122,13 @@ export default function PreviewOrder({ data = [], userEmail }) {
                 <tr>
                   <td align="center" style={{ padding: "32px" }}>
                     {console.log(order.invoice_link_c)}
-                    {/* <a
+                    <a
                       href={order.invoice_link_c}
                       target="_blank"
                       style={invoiceBtn}
                     >
-                      📄 View Invoice
-                    </a> */}
+                      Pay Now
+                    </a>
                   </td>
                 </tr>
 
