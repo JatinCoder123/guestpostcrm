@@ -32,7 +32,7 @@ import UpdatePopup from "../UpdatePopup";
 export function TimelinePage() {
   const [showEmail, setShowEmail] = useState(false);
   const [showUpdateAiReply, setShowUpdateAiReply] = useState(false);
-  const [aiReply, setAiReply] = useState("")
+  const [aiReply, setAiReply] = useState("");
   const [showThread, setShowThread] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
@@ -202,9 +202,6 @@ export function TimelinePage() {
 
   return (
     <>
-<<<<<<< HEAD
-      {!search?.trim() != "" && <NewEmailBanner show={showNewEmailBanner} />}
-=======
       <NewEmailBanner show={showNewEmailBanner} />
       {/* <UpdatePopup open={showUpdateAiReply} onClose={() => setShowUpdateAiReply(false)} fields={[{
         label: "Ai Reply",
@@ -218,7 +215,6 @@ export function TimelinePage() {
           handleAiAutoReply(data.ai_reply);
           setShowUpdateAiReply(false);
         }} /> */}
->>>>>>> e2a4dd65540e62d41c437175e55d041e2440404d
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
@@ -274,9 +270,7 @@ export function TimelinePage() {
                         />
                       </motion.button>
                     )}
-
                   </div>
-
 
                   {!sending && (
                     <div className="mb-3">
@@ -344,10 +338,11 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -398,14 +393,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    threadId={currentThreadId}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  threadId={currentThreadId}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (
