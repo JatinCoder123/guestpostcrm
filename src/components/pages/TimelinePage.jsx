@@ -33,7 +33,8 @@ export function TimelinePage() {
   const [showThread, setShowThread] = useState(false);
   const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
-  const { currentIndex, setCurrentIndex } = useContext(PageContext);
+  const { currentIndex, setCurrentIndex, enterEmail, search } =
+    useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
@@ -151,7 +152,7 @@ export function TimelinePage() {
       const timer = setTimeout(() => {
         setCurrentIndex(0); // 🔥 redirect to latest email
         dispatch(unrepliedAction.setShowNewEmailBanner(false));
-      }, 3000);
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
@@ -193,7 +194,7 @@ export function TimelinePage() {
 
   return (
     <>
-      <NewEmailBanner show={showNewEmailBanner} />
+      {!search?.trim() != "" && <NewEmailBanner show={showNewEmailBanner} />}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (

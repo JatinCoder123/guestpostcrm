@@ -4,8 +4,14 @@ export default function PreviewOrder({ data = [], userEmail }) {
       <table width="100%" cellPadding="0" cellSpacing="0" style={noDataStyle}>
         <tbody>
           <tr>
-            <td align="center" style={{ padding: "40px" }}>
-              <div style={{ fontSize: "18px", color: "#6b7280", fontWeight: "600" }}>
+            <td align="center" style={{}}>
+              <div
+                style={{
+                  fontSize: "18px",
+                  color: "#6b7280",
+                  fontWeight: "600",
+                }}
+              >
                 No order data available
               </div>
             </td>
@@ -34,17 +40,21 @@ export default function PreviewOrder({ data = [], userEmail }) {
   );
 
   return (
-    <table width="745" align="center" cellPadding="0" cellSpacing="0" style={container}>
+    <table
+      width="100%"
+      align="center"
+      cellPadding="0"
+      cellSpacing="0"
+      style={container}
+    >
       <tbody>
         <tr>
           <td>
-
             {/* ================= HEADER ================= */}
             <table width="100%" cellPadding="0" cellSpacing="0" style={header}>
               <tbody>
                 <tr>
                   <td align="center">
-
                     <div style={headerTitle}>OrderID #{order.order_id}</div>
                     <div style={headerUser}>👤 {userName}</div>
                     <div style={headerDate}>{order.date_entered_formatted}</div>
@@ -70,11 +80,15 @@ export default function PreviewOrder({ data = [], userEmail }) {
                         <tbody>
                           <tr>
                             <td style={label}>Status</td>
-                            <td style={value}>{order.order_status || OrderStatus}</td>
+                            <td style={value}>
+                              {order.order_status || OrderStatus}
+                            </td>
                           </tr>
                           <tr>
                             <td style={label}>Client Email</td>
-                            <td style={value}>{order.client_email || userEmail}</td>
+                            <td style={value}>
+                              {order.client_email || userEmail}
+                            </td>
                           </tr>
                           <tr>
                             <td style={label}>Website</td>
@@ -131,10 +145,8 @@ export default function PreviewOrder({ data = [], userEmail }) {
                     </a>
                   </td>
                 </tr>
-
               </tbody>
             </table>
-
           </td>
         </tr>
       </tbody>
@@ -152,15 +164,14 @@ const BacklinkRow = ({ link }) => {
         <tr>
           <td style={backlinkTitle}>{link.name}</td>
           <td align="right">
-            <span style={statusBadge(link.status_c)}>
-              {link.status_c}
-            </span>
+            <span style={statusBadge(link.status_c)}>{link.status_c}</span>
           </td>
         </tr>
 
         <tr>
           <td colSpan="2" style={row}>
-            🔗 <strong>Backlink URL:</strong><br />
+            🔗 <strong>Backlink URL:</strong>
+            <br />
             {link.backlink_url || "N/A"}
           </td>
         </tr>
@@ -170,16 +181,15 @@ const BacklinkRow = ({ link }) => {
           <tr>
             <td colSpan="2" style={row}>
               🏷️ <strong>Anchor Text:</strong>{" "}
-              <span style={anchorBadge}>
-                {link.anchor_text_c || "N/A"}
-              </span>
+              <span style={anchorBadge}>{link.anchor_text_c || "N/A"}</span>
             </td>
           </tr>
         )}
 
         <tr>
           <td colSpan="2" style={row}>
-            📄 <strong>Document URL:</strong><br />
+            📄 <strong>Document URL:</strong>
+            <br />
             {link.gp_doc_url_c || "N/A"}
           </td>
         </tr>
@@ -308,14 +318,14 @@ const invoiceBtn = {
 const statusBadge = (status) => ({
   background:
     String(status).toLowerCase() === "paid" ||
-      String(status).toLowerCase() === "completed" ||
-      String(status).toLowerCase() === "live"
+    String(status).toLowerCase() === "completed" ||
+    String(status).toLowerCase() === "live"
       ? "#dcfce7"
       : "#fef3c7",
   color:
     String(status).toLowerCase() === "paid" ||
-      String(status).toLowerCase() === "completed" ||
-      String(status).toLowerCase() === "live"
+    String(status).toLowerCase() === "completed" ||
+    String(status).toLowerCase() === "live"
       ? "#166534"
       : "#92400e",
   padding: "4px 12px",
@@ -329,4 +339,3 @@ const noDataStyle = {
   padding: "40px",
   borderRadius: "12px",
 };
-
