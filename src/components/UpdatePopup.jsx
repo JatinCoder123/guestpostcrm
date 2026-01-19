@@ -12,15 +12,13 @@ export default function UpdatePopup({
   onClose,
 }) {
   const [formData, setFormData] = useState({});
-
-  // Initialize form values
   useEffect(() => {
     const initial = {};
     fields.forEach((f) => {
       initial[f.name] = f.value ?? "";
     });
     setFormData(initial);
-  }, []);
+  }, [fields]);
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));

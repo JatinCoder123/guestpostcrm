@@ -12,7 +12,7 @@ export default function PreviewOrder({ data = [], userEmail }) {
                   fontWeight: "600",
                 }}
               >
-                No order data available
+                No order data availablew
               </div>
             </td>
           </tr>

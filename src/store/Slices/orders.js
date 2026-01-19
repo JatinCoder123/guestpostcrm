@@ -285,7 +285,7 @@ export const updateOrder = (order, send = true, id = null) => {
 export const updateSeoLink = (orderId, link) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateLinkRequest());
-    // console.log("Update Seo Link", link);
+    console.log("Update Seo Link", link);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       const { data } = await axios.post(

@@ -1,5 +1,11 @@
 import { Pencil, Trash } from "lucide-react";
-import { FiLink, FiTag, FiLayers, FiAlertTriangle, FiHash } from "react-icons/fi";
+import {
+  FiLink,
+  FiTag,
+  FiLayers,
+  FiAlertTriangle,
+  FiHash,
+} from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,6 +20,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const [linkId, setLinkId] = useState(null);
   const dispatch = useDispatch();
   const handleUpdate = (data) => {
+    // console.log(data);
     dispatch(updateSeoLink(orderId, { ...item, ...data }));
   };
   useEffect(() => {
@@ -35,13 +42,12 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
           loading={updateLinkLoading}
           onClose={() => setOpen(false)}
           title="Update Backlink"
-          data={item}
           fields={[
             {
               label: "Link Amount",
-              name: "link_amount",
+              name: "link_amount_c",
               type: "number",
-              value: item.link_amount,
+              value: item.link_amount_c.split("$")[1],
             },
             {
               label: "Their Link",
@@ -51,9 +57,9 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             {
               label: "Our Link",
-              name: "target_url",
+              name: "target_url_c",
               type: "text",
-              value: item.target_url || "",
+              value: item.target_url_c || "",
             },
           ]}
           onUpdate={handleUpdate}
@@ -143,7 +149,7 @@ export function TheirLink({ data }) {
       {/* META INFO */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Anchor Text */}
-        {data.type_c == "LI" &&
+        {data.type_c == "LI" && (
           <div className="flex items-start gap-2">
             <FiTag className="text-slate-400 mt-0.5" size={14} />
             <div>
@@ -152,8 +158,8 @@ export function TheirLink({ data }) {
                 {data.anchor_text_c || "-"}
               </p>
             </div>
-          </div>}
-
+          </div>
+        )}
 
         {/* Link Amount */}
         <div className="flex items-start gap-2">
