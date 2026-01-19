@@ -24,6 +24,9 @@ import { getTags, applyTag } from "../store/Slices/markTagSlice";
 import { SocketContext } from "../context/SocketContext";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
+import UpdatePopup from "./UpdatePopup";
+import { PreviewTemplate } from "./PreviewTemplate";
+import { threadEmailAction } from "../store/Slices/threadEmail";
 
 /* 🔹 Separator Component */
 const Separator = () => <div className="h-8 w-[1px] bg-gray-500 mx-2" />;
@@ -39,6 +42,7 @@ const ActionButton = ({
   const [showUsers, setShowUsers] = useState(false);
   const [showTags, setShowTags] = useState(false);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
 
   /* 🔥 ADDED: First Reply states */
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
@@ -49,8 +53,10 @@ const ActionButton = ({
   const { setNotificationCount } = useContext(SocketContext);
 
   const { contactInfo, count } = useSelector((s) => s.viewEmail);
-  const { sending } = useSelector((s) => s.threadEmail);
+  const { sending, message, error } = useSelector((s) => s.threadEmail);
+  const { crmEndpoint } = useSelector((s) => s.user);
   const { email } = useSelector((s) => s.ladger);
+  const [editorContent, setEditorContent] = useState("");
 
   const {
     forward,
@@ -89,6 +95,7 @@ const ActionButton = ({
     dispatch(forwardEmail(contactInfo.id, to, threadId));
   };
 
+
   /* 🔥 ADDED: Check FR button visibility */
   useEffect(() => {
     if (!email) return;
@@ -123,7 +130,7 @@ const ActionButton = ({
       setFrLoading(true);
 
       await fetch(
-        `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=send_reminder&reminder_id=${reminderId}`
+        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`
       );
       setNotificationCount((prev) => ({
         ...prev,
@@ -241,6 +248,15 @@ const ActionButton = ({
     if (!sending) {
       setClickedActionBtn(null);
     }
+    if (error) {
+      toast.error(error);
+      dispatch(threadEmailAction.clearAllErrors());
+    }
+    if (message) {
+      // toast.success(message);
+      setShowUpdatePopup(false);
+      dispatch(threadEmailAction.clearAllMessage());
+    }
   }, [
     dispatch,
     forwardError,
@@ -345,145 +361,149 @@ const ActionButton = ({
   ];
 
   return (
-    <div className="mt-4 flex items-center flex-wrap gap-2">
-      {actionButtons.map((btn, i) => (
-        <div key={i} className="flex items-center relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              btn.action();
-            }}
-            className="group flex items-center justify-center w-12 h-12
-            bg-white rounded-xl shadow-md border border-gray-200
-            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
-          >
-            {btn.icon}
-            <span
-              className="absolute -bottom-9 left-1/2 -translate-x-1/2
-            bg-black text-white text-xs px-2 py-1 rounded opacity-0
-            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
-            >
-              {btn.label}
-            </span>
-          </button>
-
-          {btn.label === "Email" && (
-            <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-              {count}
-            </span>
-          )}
-
-          {showUsers && btn.label === "Assign" && (
-            <UserDropdown
-              forwardHandler={handleForward}
-              onClose={() => setShowUsers(false)}
-            />
-          )}
-
-          {showTags && btn.label === "Mark Tag" && (
-            <div className="absolute top-14 right-0 w-60 z-40">
-              <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
-                {tagLoading ? (
-                  <div className="py-6 flex justify-center">
-                    <LoadingChase />
-                  </div>
-                ) : (
-                  tags.map((tag) => (
-                    <button
-                      key={tag.name}
-                      onClick={() => {
-                        dispatch(applyTag(tag.name));
-                        setShowTags(false);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm font-semibold
-                      text-gray-700 border-b last:border-b-0
-                      hover:bg-indigo-50 hover:text-indigo-600 transition"
-                    >
-                      {tag.name}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          <Separator />
-        </div>
-      ))}
-
-      {/* 🔥 SEND FIRST REPLY BUTTON (NEW, SAFE, SAME CSS) */}
-      {showFirstReplyBtn && (
-        <>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSendFirstReply();
-            }}
-            disabled={frLoading}
-            className="group flex items-center justify-center w-12 h-12
-            bg-white rounded-xl shadow-md border border-gray-200
-            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
-          >
-            {frLoading ? (
-              <LoadingChase size="20" />
-            ) : (
-              <img
-                src="https://img.icons8.com/color/48/reply.png"
-                className="w-6 h-6"
-                alt="first-reply"
-              />
-            )}
-            <span
-              className="absolute -bottom-9 left-1/2 -translate-x-1/2
-            bg-black text-white text-xs px-2 py-1 rounded opacity-0
-            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
-            >
-              Send First Reply
-            </span>
-          </button>
-          <Separator />
-        </>
-      )}
-
-      <MoveToDropdown
-        currentThreadId={threadId}
-        onMoveSuccess={handleMoveSuccess}
-      />
-      <Separator />
-
-      {buttonsLoading ? (
-        <LoadingChase size="30" />
-      ) : (
-        buttons?.map((btn, i) => (
-          <div key={i} className="flex items-center">
+    <>
+      {showUpdatePopup && <PreviewTemplate editorContent={editorContent} setEditorContent={setEditorContent} onClose={() => setShowUpdatePopup(false)} onSubmit={() => { handleActionBtnClick(editorContent) }} loading={sending} />}
+      <div className="mt-4 flex items-center flex-wrap gap-2">
+        {actionButtons.map((btn, i) => (
+          <div key={i} className="flex items-center relative">
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleActionBtnClick(btn.body);
-                setClickedActionBtn(btn.id);
+                btn.action();
               }}
-              disabled={sending}
               className="group flex items-center justify-center w-12 h-12
-              bg-white rounded-xl shadow-md border border-gray-200
-              hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
+            bg-white rounded-xl shadow-md border border-gray-200
+            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
             >
-              {clickedActionBtn === btn.id && sending ? (
+              {btn.icon}
+              <span
+                className="absolute -bottom-9 left-1/2 -translate-x-1/2
+            bg-black text-white text-xs px-2 py-1 rounded opacity-0
+            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
+              >
+                {btn.label}
+              </span>
+            </button>
+
+            {btn.label === "Email" && (
+              <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                {count}
+              </span>
+            )}
+
+            {showUsers && btn.label === "Assign" && (
+              <UserDropdown
+                forwardHandler={handleForward}
+                onClose={() => setShowUsers(false)}
+              />
+            )}
+
+            {showTags && btn.label === "Mark Tag" && (
+              <div className="absolute top-14 right-0 w-60 z-40">
+                <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
+                  {tagLoading ? (
+                    <div className="py-6 flex justify-center">
+                      <LoadingChase />
+                    </div>
+                  ) : (
+                    tags.map((tag) => (
+                      <button
+                        key={tag.name}
+                        onClick={() => {
+                          dispatch(applyTag(tag.name));
+                          setShowTags(false);
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm font-semibold
+                      text-gray-700 border-b last:border-b-0
+                      hover:bg-indigo-50 hover:text-indigo-600 transition"
+                      >
+                        {tag.name}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            <Separator />
+          </div>
+        ))}
+
+        {/* 🔥 SEND FIRST REPLY BUTTON (NEW, SAFE, SAME CSS) */}
+        {showFirstReplyBtn && (
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSendFirstReply();
+              }}
+              disabled={frLoading}
+              className="group flex items-center justify-center w-12 h-12
+            bg-white rounded-xl shadow-md border border-gray-200
+            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
+            >
+              {frLoading ? (
                 <LoadingChase size="20" />
               ) : (
-                <img src={btn.icon} alt={btn.name} className="w-8 h-8" />
+                <img
+                  src="https://img.icons8.com/color/48/reply.png"
+                  className="w-6 h-6"
+                  alt="first-reply"
+                />
               )}
-              <div
-                dangerouslySetInnerHTML={{ __html: btn.body }}
+              <span
                 className="absolute -bottom-9 left-1/2 -translate-x-1/2
+            bg-black text-white text-xs px-2 py-1 rounded opacity-0
+            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
+              >
+                Send First Reply
+              </span>
+            </button>
+            <Separator />
+          </>
+        )}
+
+        <MoveToDropdown
+          currentThreadId={threadId}
+          onMoveSuccess={handleMoveSuccess}
+        />
+        <Separator />
+
+        {buttonsLoading ? (
+          <LoadingChase size="30" />
+        ) : (
+          buttons?.map((btn, i) => (
+            <div key={i} className="flex items-center">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUpdatePopup(true);
+                  setEditorContent(btn.body_html)
+                  setClickedActionBtn(btn.id);
+                }}
+                disabled={sending}
+                className="group flex items-center justify-center w-12 h-12
+              bg-white rounded-xl shadow-md border border-gray-200
+              hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
+              >
+                {clickedActionBtn === btn.id && sending ? (
+                  <LoadingChase size="20" />
+                ) : (
+                  <img src={btn.icon} alt={btn.name} className="w-8 h-8" />
+                )}
+                <div
+                  dangerouslySetInnerHTML={{ __html: btn.body }}
+                  className="absolute -bottom-9 left-1/2 -translate-x-1/2
                 bg-black text-white text-xs px-2 py-1 rounded opacity-0
                 group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
-              />
-            </button>
-            {i < buttons.length - 1 && <Separator />}
-          </div>
-        ))
-      )}
-    </div>
+                />
+              </button>
+              {i < buttons.length - 1 && <Separator />}
+            </div>
+          ))
+        )}
+      </div>
+    </>
   );
 };
 

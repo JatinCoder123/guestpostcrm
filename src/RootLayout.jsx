@@ -47,7 +47,7 @@ const RootLayout = () => {
 
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
-  const { crmEndpoint } = useSelector((state) => state.user);
+  const { crmEndpoint, currentScore } = useSelector((state) => state.user);
   const {
     displayIntro,
     setActivePage,
