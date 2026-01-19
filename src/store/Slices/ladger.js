@@ -95,6 +95,12 @@ const ladgerSlice = createSlice({
       state.loading = false;
       state.error = action.payload || "Something went wrong";
     },
+    manualScanSuccess(state, action) {
+      state.message = action.payload;
+    },
+    manualScanFailed(state, action) {
+      state.error = action.payload || "Something went wrong";
+    },
 
     clearAllErrors(state) {
       state.error = null;
@@ -202,6 +208,32 @@ export const getNoSearchResultData = (search) => {
     }
   };
 };
+export const manualEmailScan = (messageId) => {
+  return async (dispatch, getState) => {
+    try {
+      const crmDomain = getState().user.crmEndpoint.split("?")[0];
+
+      const response = await axios.get(
+        `${crmDomain}?entryPoint=manual_email_scanning&message_id=${messageId}`
+      );
+
+      dispatch(
+        ladgerSlice.actions.manualScanSuccess(response.data)
+      );
+
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        ladgerSlice.actions.manualScanSuccess({
+          status: 404,
+          message: error.response?.data?.message || "Not Found",
+        })
+      );
+    }
+  };
+};
+
+
 
 export const ladgerAction = ladgerSlice.actions;
 export default ladgerSlice.reducer;

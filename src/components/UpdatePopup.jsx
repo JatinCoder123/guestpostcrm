@@ -12,8 +12,6 @@ export default function UpdatePopup({
   onClose,
 }) {
   const [formData, setFormData] = useState({});
-
-  // Initialize form values
   useEffect(() => {
     const initial = {};
     fields.forEach((f) => {
