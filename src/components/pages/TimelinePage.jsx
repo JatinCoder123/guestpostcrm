@@ -119,7 +119,7 @@ export function TimelinePage() {
     );
   };
 
-  const handleAiAutoReply = async () => {
+  const handleAiAutoReply = async (updatedAiReply) => {
     setAiReplySentLoading(true);
     try {
       dispatch(
@@ -127,7 +127,7 @@ export function TimelinePage() {
           emails[currentIndex]?.thread_id
             ? emails[currentIndex]?.thread_id
             : threadId,
-          aiReply
+          updatedAiReply ?? aiReply
         )
       );
       dispatch(
@@ -203,7 +203,7 @@ export function TimelinePage() {
   return (
     <>
       <NewEmailBanner show={showNewEmailBanner} />
-      {/* <UpdatePopup open={showUpdateAiReply} onClose={() => setShowUpdateAiReply(false)} fields={[{
+      <UpdatePopup open={showUpdateAiReply} onClose={() => setShowUpdateAiReply(false)} fields={[{
         label: "Ai Reply",
         name: "ai_reply",
         type: "textarea",
@@ -211,10 +211,12 @@ export function TimelinePage() {
       }]}
         buttonLabel="Send"
         loading={aiReplySentLoading}
-        onSubmit={(data) => {
+        onUpdate={(data) => {
+          console.log(data);
+          setAiReply(data.ai_reply);
           handleAiAutoReply(data.ai_reply);
           setShowUpdateAiReply(false);
-        }} /> */}
+        }} />
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
@@ -238,12 +240,12 @@ export function TimelinePage() {
                     <h3 className="text-green-700 font-semibold">
                       Quick Reply
                     </h3>
-                    {/* <button
+                    <button
                       onClick={() => setShowUpdateAiReply(true)}
                       className=" text-green-700 hover:text-green-800 cursor-pointer hover:scael-120 transition-all mr-4"
                     >
                       <Pencil size={20} />
-                    </button> */}
+                    </button>
                     {/* Send AI Reply Button - Moved to top right */}
                     {aiReplySentLoading ? (
                       <div className="flex justify-center">
