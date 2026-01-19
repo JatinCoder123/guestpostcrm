@@ -94,7 +94,7 @@ export const getInvoices = (email = null) => {
       dispatch(
         invoicesSlice.actions.getInvoicesSucess({
           count: data.data_count ?? 0,
-          invoices: data.data,
+          invoices: data.data ?? [],
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })

@@ -43,14 +43,12 @@ export const getDetection = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=spam_detection&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=spam_detection&filter=${filter}&page=1&page_size=50`
         );
       }
@@ -59,7 +57,7 @@ export const getDetection = (filter, email) => {
       dispatch(
         detectionSlice.actions.getDetectionSucess({
           count: data.data_count ?? 0,
-          detection: data.data,
+          detection: data.data ?? [],
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })

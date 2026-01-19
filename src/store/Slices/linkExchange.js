@@ -71,14 +71,12 @@ export const getLinkExchange = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=exchange&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=exchange&filter=${filter}&page=1&page_size=50`
         );
       }
@@ -87,7 +85,7 @@ export const getLinkExchange = (filter, email) => {
       dispatch(
         exchangeSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
-          emails: data.data,
+          emails: data.data ?? [],
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })
@@ -118,7 +116,7 @@ export const linkExchange = () => {  // Assuming 'id' is the email/contact ident
       dispatch(
         exchangeSlice.actions.exchangingSucess(message)
       );
-      
+
       dispatch(exchangeSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(exchangeSlice.actions.exchangingFailed(error.message));

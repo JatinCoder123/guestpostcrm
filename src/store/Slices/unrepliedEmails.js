@@ -70,7 +70,7 @@ export const getUnrepliedEmail = (filter, email) => {
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
-          emails: data.data,
+          emails: data.data ?? [],
         })
       );
       dispatch(unrepliedSlice.actions.clearAllErrors());
@@ -104,7 +104,7 @@ export const getUnrepliedEmailWithOutLoading = (filter, email, newEmail = false)
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
-          emails: data.data,
+          emails: data.data ?? [],
         })
       );
       if (newEmail) {

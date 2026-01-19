@@ -43,14 +43,12 @@ export const getdefaulterEmails = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_defaulters&filter=${filter}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_defaulters&filter=${filter}&page=1&page_size=50`
         );
       }
@@ -60,7 +58,7 @@ export const getdefaulterEmails = (filter, email) => {
       dispatch(
         defaulterSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
-          emails: data.data,
+          emails: data.data ?? [],
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })
