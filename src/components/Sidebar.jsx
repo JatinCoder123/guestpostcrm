@@ -35,6 +35,8 @@ import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoadingSpin } from "./Loading";
+import { BarChart3 } from "lucide-react";
+
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -213,6 +215,17 @@ export function Sidebar() {
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",
     },
+    {
+  id: "view-reports",         
+  label: "Reports",
+  icon: BarChart3,
+  loading: false,
+  count: null,
+  color: "text-teal-600",
+  hover: "hover:bg-teal-50",
+  countBg: "bg-teal-500 text-white",
+},
+
   ];
 
   return (

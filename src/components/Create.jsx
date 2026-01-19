@@ -9,6 +9,8 @@ import { LoadingChase } from "./Loading";
 import { OrderView } from "./OrderView";
 import { sendEmailBtn } from "../assets/assets";
 import { previewBtn } from "../assets/assets";
+import { updatesentBtn, updateBtn } from "../assets/assets";
+
 
 
 
@@ -215,34 +217,70 @@ export default function Create({
                           </button>
                         )}
                         {pageType == "edit" && (
-                          <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
-                            <button
-                              onClick={() => {
-                                setButton(1)
-                                handleUpdate(item, false)
-                              }}
-                              disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${((updating || sending) && button == 1)
-                                ? "bg-green-300 cursor-not-allowed"
-                                : "bg-green-500 hover:bg-green-600"
-                                }`}
-                            >
-                              {button == 1 && updating ? "Updating..." : "Update"}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setButton(2)
-                                handleUpdate(item, true)
-                              }}
-                              disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${((updating || sending) && button == 2)
-                                ? "bg-blue-300 cursor-not-allowed"
-                                : "bg-blue-500 hover:bg-blue-600"
-                                }`}
-                            >
-                              {((updating || sending) && button == 2) ? "Updating..." : "Update & Send"}
-                            </button>
-                          </div>
+                    <div className="flex absolute right-2 bottom-2 items-center gap-6">
+
+  {/* SAVE / UPDATE */}
+ <button
+  onClick={() => {
+    setButton(1);
+    handleUpdate(item, false);
+  }}
+  disabled={updating || sending}
+  className="
+    w-12 h-12
+    flex items-center justify-center
+    rounded-xl
+    transition-all duration-200 ease-out
+    hover:-translate-y-1
+    active:translate-y-0.5
+    shadow-[0_4px_8px_rgba(128,128,128,0.35)]
+    hover:shadow-[0_8px_16px_rgba(128,128,128,0.45)]
+    active:shadow-[0_3px_6px_rgba(128,128,128,0.25)]
+    disabled:opacity-50 disabled:cursor-not-allowed
+  "
+>
+  <img
+    src={updatesentBtn}
+    alt="Update"
+    className="
+      w-9 h-7 scale-[2]
+     
+    "
+  />
+</button>
+
+
+
+  {/* SAVE & SEND */}
+{/* SAVE & SEND */}
+<button
+  className="
+    w-12 h-12
+    flex items-center justify-center
+    rounded-xl
+    transition-all duration-200 ease-out
+    hover:-translate-y-1
+    active:translate-y-0.5
+    shadow-[0_4px_8px_rgba(128,128,128,0.35)]
+    hover:shadow-[0_8px_16px_rgba(128,128,128,0.45)]
+    active:shadow-[0_3px_6px_rgba(128,128,128,0.25)]
+    disabled:opacity-50 disabled:cursor-not-allowed
+  "
+>
+  <img
+    src={updateBtn}
+    alt="Update & Send"
+    className="
+      w-9 h-8 scale-[2]
+      // drop-shadow-[0_3px_5px_rgba(128,128,128,0.45)]
+    "
+  />
+</button>
+
+
+
+</div>
+
                         )}
                         {type == "orders" && pageType == "view" ? (
                           <OrderView data={item} />
@@ -363,6 +401,7 @@ export default function Create({
   </button>
                
       
+      
   <button
     onClick={() => setShowPreview(true)}
     className="
@@ -376,7 +415,6 @@ export default function Create({
   >
     <img src={previewBtn} alt="preview" className="w-10" />
   </button>
-
 
 
 

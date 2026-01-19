@@ -13,7 +13,7 @@ export const OrderView = ({ data }) => {
   const dispatch = useDispatch();
   const handleAddLink = (link) => {
     dispatch(createLink(item.id, link));
-  };
+  };  
   useEffect(() => {
     if (creatingLinkMessage) {
       setOpen(false);
@@ -146,6 +146,7 @@ function Field({ label, value, link, children, title }) {
     </div>
   );
 }
+
 function OrderId({ order_id }) {
   return (
     <div className="w-full mb-3">
@@ -175,4 +176,4 @@ function OrderId({ order_id }) {
       </div>
     </div>
   );
-}
+}    

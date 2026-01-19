@@ -52,6 +52,8 @@ import { HotPage } from "./components/pages/HotPage";
 import { ViewReminder } from "./components/ViewReminder";
 // import {PreviewOrder} from "./components/PreviewOrder";
 import PreviewOrder from "./components/PreviewOrder";
+import ViewReports from "./components/ViewReports";
+
 
 
 const router = createBrowserRouter([
@@ -153,6 +155,11 @@ const router = createBrowserRouter([
         element: <ReminderPage />,
       },
 
+
+{
+    path: "view-reports/:id?",
+    element: <ViewReports />,
+  },
 
       {
         path: "timeline",
@@ -288,3 +295,5 @@ export default function App() {
     </>
   );
 }
+
+
