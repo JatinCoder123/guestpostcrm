@@ -52,7 +52,9 @@ import { HotPage } from "./components/pages/HotPage";
 import { ViewReminder } from "./components/ViewReminder";
 // import {PreviewOrder} from "./components/PreviewOrder";
 import PreviewOrder from "./components/PreviewOrder";
-import AccountPage from "./components/pages/AccountPage";
+import ViewReports from "./components/ViewReports";
+
+
 
 const router = createBrowserRouter([
   {
@@ -155,6 +157,12 @@ const router = createBrowserRouter([
       {
         path: "reminders/:id?",
         element: <ReminderPage />,
+      },
+
+
+      {
+        path: "view-reports/:id?",
+        element: <ViewReports />,
       },
 
       {
@@ -290,3 +298,5 @@ export default function App() {
     </>
   );
 }
+
+

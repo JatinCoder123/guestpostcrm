@@ -318,14 +318,14 @@ const invoiceBtn = {
 const statusBadge = (status) => ({
   background:
     String(status).toLowerCase() === "paid" ||
-    String(status).toLowerCase() === "completed" ||
-    String(status).toLowerCase() === "live"
+      String(status).toLowerCase() === "completed" ||
+      String(status).toLowerCase() === "live"
       ? "#dcfce7"
       : "#fef3c7",
   color:
     String(status).toLowerCase() === "paid" ||
-    String(status).toLowerCase() === "completed" ||
-    String(status).toLowerCase() === "live"
+      String(status).toLowerCase() === "completed" ||
+      String(status).toLowerCase() === "live"
       ? "#166534"
       : "#92400e",
   padding: "4px 12px",
