@@ -55,12 +55,19 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
               type: "text",
               value: item.backlink_url,
             },
-            {
-              label: "Our Link",
-              name: "target_url_c",
-              type: "text",
-              value: item.target_url_c || "",
-            },
+            item.type_c === "LI"
+              ? {
+                  label: "Our Link",
+                  name: "target_url_c",
+                  type: "text",
+                  value: item.target_url_c || "",
+                }
+              : {
+                  label: "Doc Link",
+                  name: "gp_doc_url_c",
+                  type: "text",
+                  value: item.gp_doc_url_c || "",
+                },
           ]}
           onUpdate={handleUpdate}
         />
