@@ -204,6 +204,16 @@ export function Sidebar() {
       countBg: "bg-blue-500 text-white",
     },
     {
+      id: "report",
+      label: "Report",
+      icon: RectangleEllipsis,
+      loading: orderRemLoading,
+      count: null,
+      color: "text-cyan-600",
+      hover: "hover:bg-cyan-50",
+      countBg: "bg-cyan-500 text-white",
+    },
+    {
       id: "reminders",
       label: "Reminders",
       icon: BellRing,

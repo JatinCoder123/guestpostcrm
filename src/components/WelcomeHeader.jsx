@@ -63,7 +63,9 @@ const WelcomeHeader = () => {
                 <Link2 className="w-4 h-4 text-purple-600 group-hover:scale-125 transition-transform duration-300" />
                 <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-64 transition-all duration-600">
                   CRM:{" "}
-                  <span className="font-bold text-purple-700">{crmDomain}</span>
+                  <span className="font-bold text-purple-700">
+                    {crmDomain?.split(".")[0]}
+                  </span>
                 </span>
               </div>
             )}
