@@ -63,6 +63,7 @@
                      $businessEmail = $verifyJson['email'] ?? null;
                      $id=$verifyJson['current_user']['id'] ?? null;
                     $description = $verifyJson['domain'] ?? null;
+                    $current_score = $verifyJson['current_score']['data'] ?? null;
 
                     if (!$description) {
                         http_response_code(401);
@@ -77,7 +78,8 @@
                         "user" => $decoded->data,
                         "businessEmail" => $businessEmail,
                         "crmEndpoint" => $crmEndpoint,
-                        "id" => $id
+                        "id" => $id,
+                        "current_score"=>$current_score
                     ]);
                     return;
                 }
