@@ -30,7 +30,6 @@ import TemplatesPage from "./components/pages/settingpages/TemplatesPage";
 import WebsitesPage from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
-import ReportPage from "./components/pages/Reportpage";
 import { ForwardedPage } from "./components/pages/ForwardedPage";
 import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -98,10 +97,10 @@ const router = createBrowserRouter([
         path: "contacts",
         element: <Contactpage />,
       },
-      {
-        path: "account",
-        element: <AccountPage />,
-      },
+      // {
+      //   path: "account",
+      //   element: <AccountPage />,
+      // },
       {
         path: "unanswered",
         element: <UnansweredPage />,
@@ -172,10 +171,6 @@ const router = createBrowserRouter([
       {
         path: "contacts",
         element: <Contactpage />,
-      },
-      {
-        path: "all-report",
-        element: <ReportPage />,
       },
 
       {

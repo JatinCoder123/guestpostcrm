@@ -206,16 +206,6 @@ export function Sidebar() {
       countBg: "bg-blue-500 text-white",
     },
     {
-      id: "report",
-      label: "Report",
-      icon: RectangleEllipsis,
-      loading: orderRemLoading,
-      count: null,
-      color: "text-cyan-600",
-      hover: "hover:bg-cyan-50",
-      countBg: "bg-cyan-500 text-white",
-    },
-    {
       id: "reminders",
       label: "Reminders",
       icon: BellRing,
@@ -226,15 +216,15 @@ export function Sidebar() {
       countBg: "bg-cyan-500 text-white",
     },
     {
-  id: "view-reports",         
-  label: "Reports",
-  icon: BarChart3,
-  loading: false,
-  count: null,
-  color: "text-teal-600",
-  hover: "hover:bg-teal-50",
-  countBg: "bg-teal-500 text-white",
-},
+      id: "view-reports",
+      label: "Reports",
+      icon: BarChart3,
+      loading: false,
+      count: null,
+      color: "text-teal-600",
+      hover: "hover:bg-teal-50",
+      countBg: "bg-teal-500 text-white",
+    },
 
   ];
 
@@ -250,9 +240,8 @@ export function Sidebar() {
         {/* COLLAPSE BUTTON */}
         <button
           onClick={() => setSidebarCollapsed(!collapsed)}
-          className={`fixed ${
-            collapsed ? "left-23" : "left-62"
-          } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
+          className={`fixed ${collapsed ? "left-23" : "left-62"
+            } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
                      rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}
@@ -265,10 +254,9 @@ export function Sidebar() {
             navigateTo("");
           }}
           className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-            ${
-              activePage === ""
-                ? "bg-green-500 text-white"
-                : "bg-green-50 text-green-700"
+            ${activePage === ""
+              ? "bg-green-500 text-white"
+              : "bg-green-50 text-green-700"
             }`}
         >
           <Radio className="w-5 h-5 animate-pulse" />
@@ -287,30 +275,28 @@ export function Sidebar() {
               }}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer
                 ${collapsed ? "justify-center" : ""}
-                    ${
-                      activePage === item.id
-                        ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-sm scale-[1.01]"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }
+                    ${activePage === item.id
+                  ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-sm scale-[1.01]"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }
                 ${item.hover}`}
             >
               {/* FIXED ICON SIZE ALWAYS */}
               <item.icon
                 className={`w-5 h-5 transition-all duration-300 ease-out
-    ${
-      activePage === item.id
-        ? `
+    ${activePage === item.id
+                    ? `
          
           translate-x-0
           scale-130
           drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]
         `
-        : `
+                    : `
           text-gray-500
           translate-x-0
           scale-100
         `
-    }`}
+                  }`}
               />
 
               {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
