@@ -9,7 +9,7 @@ import {
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
+import { deleteLink, getOrders, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const { updateLinkLoading, deleting, updateLinkMessage } = useSelector(
@@ -20,7 +20,6 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const [linkId, setLinkId] = useState(null);
   const dispatch = useDispatch();
   const handleUpdate = (data) => {
-    // console.log(data);
     dispatch(updateSeoLink(orderId, { ...item, ...data }));
   };
   useEffect(() => {
@@ -57,17 +56,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                  label: "Our Link",
-                  name: "target_url_c",
-                  type: "text",
-                  value: item.target_url_c || "",
-                }
+                label: "Our Link",
+                name: "target_url_c",
+                type: "text",
+                value: item.target_url_c || "",
+              }
               : {
-                  label: "Doc Link",
-                  name: "gp_doc_url_c",
-                  type: "text",
-                  value: item.gp_doc_url_c || "",
-                },
+                label: "Doc Link",
+                name: "gp_doc_url_c",
+                type: "text",
+                value: item.gp_doc_url_c || "",
+              },
           ]}
           onUpdate={handleUpdate}
         />

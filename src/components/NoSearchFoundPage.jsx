@@ -11,12 +11,11 @@ import { LoadingChase } from "./Loading";
 import { Calendar, Import } from "lucide-react";
 
 export const NoSearchFoundPage = () => {
-  const { search } = useContext(PageContext);
-  const { noSearchResultData, noSearchFoundLoading, error, message: scanResponse } = useSelector(
+  const { noSearchResultData, noSearchFoundLoading, error, manualScanResponse } = useSelector(
     (state) => state.ladger
   );
-
-  const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
+  const [currentMessageId, setCurrentMessageId] = useState(null);
+  const { setSearch, search, setEnteredEmail } = useContext(PageContext);
   const [popup, setPopup] = useState({
     open: false,
     status: null,
@@ -35,9 +34,13 @@ export const NoSearchFoundPage = () => {
       toast.error(error);
       dispatch(ladgerAction.clearAllErrors());
     }
-  }, [error, dispatch]);
+    if (manualScanResponse && manualScanResponse?.message_id == currentMessageId?.message_id) {
+      setSearch(currentMessageId.customer_email)
+      setEnteredEmail(currentMessageId.customer_email)
+    }
+  }, [error, manualScanResponse, dispatch]);
 
-  if (noSearchFoundLoading || unrepliedLoading) {
+  if (noSearchFoundLoading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
         <LoadingChase />
@@ -72,9 +75,12 @@ export const NoSearchFoundPage = () => {
             </div>
 
             <div>
-              <p className="text-sm font-medium text-gray-800">
+              <button onClick={() => {
+                setCurrentMessageId(item)
+                dispatch(manualEmailScan(item.message_id));
+              }} className="text-sm font-medium text-gray-800 hover:underline cursor-pointer">
                 {item.customer_email}
-              </p>
+              </button>
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Calendar className="w-3 h-3" />
                 {item.date_created}
@@ -101,18 +107,18 @@ export const NoSearchFoundPage = () => {
           </button>
         </div>
       ))}
-      {popup.open && scanResponse && (
+      {popup.open && manualScanResponse && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-[420px] p-5 space-y-4">
             <h2 className="text-lg font-semibold">Scan Result</h2>
 
             {/* MESSAGE */}
-            <p className="text-gray-700">{scanResponse.message}</p>
+            <p className="text-gray-700">{manualScanResponse.message}</p>
 
             {/* CLOSE */}
-            {(scanResponse.status === "skipped" ||
-              scanResponse.status === 404 ||
-              scanResponse.status === "success") && (
+            {(manualScanResponse.status === "skipped" ||
+              manualScanResponse.status === 404 ||
+              manualScanResponse.status === "success") && (
                 <button
                   className="w-full bg-gray-200 py-2 rounded-lg"
                   onClick={() => setPopup({ open: false })}

@@ -19,6 +19,8 @@ const ladgerSlice = createSlice({
     duplicate: 0,
     searchNotFound: false,
     noSearchFoundLoading: false,
+    manualScanResponse: null,
+    manualScanLoading: false,
   },
   reducers: {
     getLadgerRequest(state) {
@@ -97,10 +99,17 @@ const ladgerSlice = createSlice({
       state.noSearchResultData = null;
       state.error = action.payload || "Something went wrong";
     },
+    manualScanRequest(state) {
+      state.manualScanLoading = true;
+      state.manualScanResponse = null;
+      state.error = null;
+    },
     manualScanSuccess(state, action) {
-      state.message = action.payload;
+      state.manualScanLoading = false;
+      state.manualScanResponse = action.payload;
     },
     manualScanFailed(state, action) {
+      state.manualScanLoading = false;
       state.error = action.payload || "Something went wrong";
     },
 
@@ -213,13 +222,14 @@ export const getNoSearchResultData = (search) => {
 };
 export const manualEmailScan = (messageId) => {
   return async (dispatch, getState) => {
+    dispatch(ladgerSlice.actions.manualScanRequest());
     try {
       const crmDomain = getState().user.crmEndpoint.split("?")[0];
 
       const response = await axios.get(
         `${crmDomain}?entryPoint=manual_email_scanning&message_id=${messageId}`
       );
-
+      console.log("ManualScan", response.data);
       dispatch(
         ladgerSlice.actions.manualScanSuccess(response.data)
       );

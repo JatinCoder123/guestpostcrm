@@ -112,6 +112,7 @@ const ordersSlice = createSlice({
     deleteLinkSuccess(state, action) {
       state.deleting = false;
       state.orders = action.payload.orders;
+      state.updateLinkMessage = "Order Deleted Successfully"
       state.error = null;
     },
     deleteLinkFailed(state, action) {
