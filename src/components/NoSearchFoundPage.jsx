@@ -27,9 +27,6 @@ export const NoSearchFoundPage = () => {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(getNoSearchResultData(search));
-  }, [search, dispatch]);
 
   useEffect(() => {
     if (error) {
@@ -46,7 +43,7 @@ export const NoSearchFoundPage = () => {
     );
   }
 
-  if (!noSearchResultData?.length) {
+  if (!noSearchResultData) {
     return (
       <div className="flex justify-center items-center h-[60vh] text-gray-500">
         No Search Found
@@ -56,7 +53,7 @@ export const NoSearchFoundPage = () => {
 
   return (
     <div className="space-y-3 p-4">
-      {noSearchResultData.map((item, index) => (
+      {noSearchResultData?.map((item, index) => (
         <div
           key={index}
           className="flex items-center justify-between gap-4
@@ -114,13 +111,13 @@ export const NoSearchFoundPage = () => {
             {(scanResponse.status === "skipped" ||
               scanResponse.status === 404 ||
               scanResponse.status === "success") && (
-              <button
-                className="w-full bg-gray-200 py-2 rounded-lg"
-                onClick={() => setPopup({ open: false })}
-              >
-                Close
-              </button>
-            )}
+                <button
+                  className="w-full bg-gray-200 py-2 rounded-lg"
+                  onClick={() => setPopup({ open: false })}
+                >
+                  Close
+                </button>
+              )}
           </div>
         </div>
       )}

@@ -93,6 +93,7 @@ const ladgerSlice = createSlice({
 
     getNoSearchResultDataFailed(state, action) {
       state.loading = false;
+      state.noSearchResultData = null;
       state.error = action.payload || "Something went wrong";
     },
     manualScanSuccess(state, action) {
