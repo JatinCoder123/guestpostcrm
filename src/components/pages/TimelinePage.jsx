@@ -127,7 +127,7 @@ export function TimelinePage() {
           emails[currentIndex]?.thread_id
             ? emails[currentIndex]?.thread_id
             : threadId,
-          updatedAiReply ?? aiReply
+          updatedAiReply
         )
       );
       dispatch(
@@ -257,7 +257,7 @@ export function TimelinePage() {
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400 }}
                         className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        onClick={handleAiAutoReply}
+                        onClick={() => handleAiAutoReply(aiReply)}
                         disabled={
                           sending ||
                           mailersSummary == null ||
@@ -340,11 +340,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -395,14 +394,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  threadId={currentThreadId}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    threadId={currentThreadId}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (
