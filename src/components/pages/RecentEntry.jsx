@@ -110,7 +110,7 @@ export function RecentEntry() {
               >
                 <Mail size={20} className="text-blue-600" />
                 {excludeEmail(
-                  event.real_name == `User` ? event.name : event.real_name
+                  event.real_name == `User` ? event.name : event.real_name,
                 ) ?? "—"}
               </div>
 

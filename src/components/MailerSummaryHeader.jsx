@@ -16,10 +16,10 @@ import { PageContext } from "../context/pageContext";
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
   const { orders, loading: ordersLoading } = useSelector(
-    (state) => state.orders
+    (state) => state.orders,
   );
   const { offers, loading: offersLoading } = useSelector(
-    (state) => state.offers
+    (state) => state.offers,
   );
   const { deals, loading: dealsLoading } = useSelector((state) => state.deals);
   const [emailData, setEmailData] = useState({
@@ -28,9 +28,14 @@ const MailerSummaryHeader = () => {
     deals: [],
   });
   useEffect(() => {
-    const order = orders?.filter(
-      (o) => excludeEmail(o.real_name ?? o.email) == email
-    ).filter((d) => d.order_status !== "wrong" && d.order_status !== "rejected_nontechnical" && d.order_status !== "completed");
+    const order = orders
+      ?.filter((o) => excludeEmail(o.real_name ?? o.email) == email)
+      .filter(
+        (d) =>
+          d.order_status !== "wrong" &&
+          d.order_status !== "rejected_nontechnical" &&
+          d.order_status !== "completed",
+      );
     setEmailData((prev) => ({
       ...prev,
       orders: order,
@@ -38,7 +43,7 @@ const MailerSummaryHeader = () => {
   }, [email, orders]);
   useEffect(() => {
     const deal = deals?.filter(
-      (d) => excludeEmail(d.real_name ?? d.email) == email
+      (d) => excludeEmail(d.real_name ?? d.email) == email,
     );
     setEmailData((prev) => ({
       ...prev,
@@ -46,9 +51,9 @@ const MailerSummaryHeader = () => {
     }));
   }, [email, deals]);
   useEffect(() => {
-    const offer = offers?.filter(
-      (o) => excludeEmail(o.real_name ?? o.email) == email
-    ).filter((d) => d.offer_status == "active");
+    const offer = offers
+      ?.filter((o) => excludeEmail(o.real_name ?? o.email) == email)
+      .filter((d) => d.offer_status == "active");
     setEmailData((prev) => ({
       ...prev,
       offers: offer,
@@ -83,12 +88,12 @@ const MailerSummaryHeader = () => {
                   <div className="hover:text-blue-600 transition-colors">
                     {mailersSummary?.subject
                       ? mailersSummary.subject
-                        .split(" ")
-                        .slice(0, 6)
-                        .join(" ") +
-                      (mailersSummary.subject.split(" ").length > 6
-                        ? "..."
-                        : "")
+                          .split(" ")
+                          .slice(0, 6)
+                          .join(" ") +
+                        (mailersSummary.subject.split(" ").length > 6
+                          ? "..."
+                          : "")
                       : "No Subject"}
                   </div>
                 </Titletooltip>
@@ -98,12 +103,12 @@ const MailerSummaryHeader = () => {
                   <div className="hover:text-purple-600 transition-colors">
                     {mailersSummary?.correct_motive
                       ? mailersSummary.correct_motive
-                        .split(" ")
-                        .slice(0, 6)
-                        .join(" ") +
-                      (mailersSummary.correct_motive.split(" ").length > 6
-                        ? "..."
-                        : "")
+                          .split(" ")
+                          .slice(0, 6)
+                          .join(" ") +
+                        (mailersSummary.correct_motive.split(" ").length > 6
+                          ? "..."
+                          : "")
                       : "N/A"}
                   </div>
                 </Titletooltip>{" "}
@@ -180,8 +185,9 @@ function TD({ data, type, setData, loading }) {
               className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"
-                }.png`}
+              src={`https://img.icons8.com/stickers/100/${
+                data?.length > 0 ? "visible" : "add"
+              }.png`}
               alt="add"
             />
           </button>
