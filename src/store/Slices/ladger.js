@@ -18,6 +18,7 @@ const ladgerSlice = createSlice({
     message: null,
     duplicate: 0,
     searchNotFound: false,
+    noSearchFoundLoading: false,
   },
   reducers: {
     getLadgerRequest(state) {
@@ -80,19 +81,19 @@ const ladgerSlice = createSlice({
     },
 
     getNoSearchResultDataRequest(state) {
-      state.loading = true;
+      state.noSearchFoundLoading = true;
       state.noSearchResultData = null;
       state.error = null;
     },
 
     getNoSearchResultDataSuccess(state, action) {
-      state.loading = false;
+      state.noSearchFoundLoading = false;
       state.noSearchResultData = action.payload.noSearchResultData || null;
       state.error = null;
     },
 
     getNoSearchResultDataFailed(state, action) {
-      state.loading = false;
+      state.noSearchFoundLoading = false;
       state.noSearchResultData = null;
       state.error = action.payload || "Something went wrong";
     },
@@ -191,6 +192,7 @@ export const getNoSearchResultData = (search) => {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=live_search&query=${search}`
       );
+
       console.log("NoSearchResultData", data);
 
       dispatch(

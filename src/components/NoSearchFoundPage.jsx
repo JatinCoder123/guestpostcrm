@@ -12,10 +12,9 @@ import { Calendar, Import } from "lucide-react";
 
 export const NoSearchFoundPage = () => {
   const { search } = useContext(PageContext);
-  const { noSearchResultData, loading, error } = useSelector(
+  const { noSearchResultData, noSearchFoundLoading, error, message: scanResponse } = useSelector(
     (state) => state.ladger
   );
-  const { message: scanResponse } = useSelector((state) => state.ladger);
 
   const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
   const [popup, setPopup] = useState({
@@ -26,6 +25,9 @@ export const NoSearchFoundPage = () => {
   });
 
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getNoSearchResultData(search));
+  }, []);
 
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export const NoSearchFoundPage = () => {
     }
   }, [error, dispatch]);
 
-  if (loading || unrepliedLoading) {
+  if (noSearchFoundLoading || unrepliedLoading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
         <LoadingChase />
@@ -43,7 +45,7 @@ export const NoSearchFoundPage = () => {
     );
   }
 
-  if (!noSearchResultData) {
+  if (!noSearchResultData?.length) {
     return (
       <div className="flex justify-center items-center h-[60vh] text-gray-500">
         No Search Found

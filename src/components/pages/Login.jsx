@@ -12,12 +12,7 @@ export default function Login() {
   const handleLoginWithMicrosoft = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin`;
   };
-  const videos = [
-    "https://example.guestpostcrm.com/images/LOGIN-ODOPR%20FINAL%201.mp4",
-    "https://example.guestpostcrm.com/images/GP%20LI%203.mp4",
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const video = "https://example.guestpostcrm.com/images/GP%20LI_1.mp4";
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-[#e8f0ff] via-[#f3fffa] to-[#f8fff5]">
@@ -84,24 +79,15 @@ export default function Login() {
         transition={{ duration: 0.6 }}
         className="hidden lg:flex flex-1 items-center justify-center p-6"
       >
-        <div className="w-full h-[88vh] rounded-[30px] overflow-hidden shadow-xl relative">
-          <AnimatePresence mode="wait">
-            <motion.video
-              key={videos[currentIndex]}
-              className="absolute w-full h-full object-cover"
-              src={videos[currentIndex]}
-              autoPlay
-              muted
-              playsInline
-              onEnded={() =>
-                setCurrentIndex((prev) => (prev + 1) % videos.length)
-              }
-              initial={{ x: "100%", opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "-100%", opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-            />
-          </AnimatePresence>
+        <div className="w-full h-[90vh] rounded-[30px] overflow-hidden shadow-xl relative">
+          <video
+            className="absolute w-full h-full object-cover"
+            src={video}
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
         </div>
       </motion.div>
     </div>
