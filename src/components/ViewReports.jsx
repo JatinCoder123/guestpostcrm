@@ -12,6 +12,8 @@ export default function ViewReports() {
 
   const fetchReports = async () => {
     setLoading(true);
+    
+
 
     try {
       // Default API → yesterday data
@@ -37,6 +39,7 @@ export default function ViewReports() {
 //   useEffect(() => {
 //     fetchReports();
 //   }, []);
+
 useEffect(() => {
   if (timeline) {
     fetchReports();
