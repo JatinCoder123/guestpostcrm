@@ -130,13 +130,6 @@ export function TimelinePage() {
           updatedAiReply
         )
       );
-      dispatch(
-        addEvent({
-          email: email,
-          thread_id: emails[currentIndex]?.thread_id,
-          recent_activity: "AI reply sent",
-        })
-      );
     } catch (error) {
       console.error("❌ Error sending AI reply:", error);
       toast.error("Failed to send AI reply");
