@@ -6,6 +6,8 @@ import {
   DollarSign,
   Calendar,
   User,
+  ShieldCheck,
+  ClipboardCheck
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -287,7 +289,7 @@ export function OrdersPage() {
         </p>
       </div>
       <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-        <ShoppingCart className="w-6 h-6 text-indigo-600" />
+        <ShieldCheck className="w-6 h-6 text-yellow-600" />
       </div>
     </div>
   </div>
@@ -302,7 +304,7 @@ export function OrdersPage() {
         </p>
       </div>
       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-        <Package className="w-6 h-6 text-blue-600" />
+        <ShoppingCart className="w-6 h-6 text-blue-600" />
       </div>
     </div>
   </div>
@@ -332,10 +334,11 @@ export function OrdersPage() {
         </p>
       </div>
       <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-        <DollarSign className="w-6 h-6 text-purple-600" />
+        <ClipboardCheck className="w-6 h-6 text-purple-600" />
       </div>
     </div>
   </div>
+
 
 </div>
 

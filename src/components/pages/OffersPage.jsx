@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { Gift, User, Calendar, DollarSign, Tag, Pen, Trash } from "lucide-react";
+import {CheckCircle, Clock , User, Calendar, DollarSign, Tag, Pen, Trash ,Gift} from "lucide-react";
 import { deleteOffer, getOffers, offersAction, } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
@@ -9,6 +9,10 @@ import { useNavigate } from "react-router-dom";
 import { excludeEmail, excludeName, extractEmail } from "../../assets/assets";
 import { LoadingChase, LoadingSpin } from "../Loading";
 import { PageContext } from "../../context/pageContext";
+import { Sparkles } from "lucide-react";
+
+
+
 
 export function OffersPage() {
   const { offers, count, loading, error, deleting, deleteOfferId ,summary} = useSelector((state) => state.offers);
@@ -158,7 +162,7 @@ export function OffersPage() {
       />
 
       {/* ⭐ Stats Cards (Top Section) */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
   {/* Active Offers */}
   <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
@@ -170,8 +174,9 @@ export function OffersPage() {
         </p>
       </div>
       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-        <Tag className="w-6 h-6 text-blue-600" />
-      </div>
+  <Sparkles className="w-6 h-6 text-blue-600" />
+</div>
+
     </div>
   </div>
 
@@ -185,7 +190,7 @@ export function OffersPage() {
         </p>
       </div>
       <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-        <span className="text-2xl text-green-700">✓</span>
+        <CheckCircle className="w-6 h-6 text-green-600" />
       </div>
     </div>
   </div>
@@ -200,27 +205,16 @@ export function OffersPage() {
         </p>
       </div>
       <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-        <Gift className="w-6 h-6 text-red-600" />
+        <Clock className="w-6 h-6 text-red-600" />
       </div>
     </div>
   </div>
 
-  {/* Summary / Total Pages */}
-  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-gray-500 text-sm">Total Pages</p>
-        <p className="text-2xl text-gray-900 mt-1">
-          {summary?.total_pages ?? 0}
-        </p>
-      </div>
-      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-        <DollarSign className="w-6 h-6 text-purple-600" />
-      </div>
-    </div>
-  </div>     
-
 </div>
+
+
+ 
+
 
 
       {/* ⭐ Offers Section (Header + Table) */}

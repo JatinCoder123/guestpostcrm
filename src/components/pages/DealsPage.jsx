@@ -7,6 +7,8 @@ import {
   Calendar,
   User,
   Trash,
+  Clock,
+  XCircle
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
@@ -181,8 +183,8 @@ export function DealsPage() {
               <p className="text-2xl text-gray-900 mt-1"> {summary?.expire_soon_deals ?? 0}</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
-            </div>
+  <Clock className="w-6 h-6 text-orange-600" />
+</div>
           </div>
         </div>
 
@@ -192,9 +194,9 @@ export function DealsPage() {
               <p className="text-gray-500 text-sm">Expired Deals</p>
               <p className="text-2xl text-gray-900 mt-1"> {summary?.expired_deals ?? 0}</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-purple-600" />
-            </div>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+  <XCircle className="w-6 h-6 text-orange-600" />
+</div>
           </div>
         </div>
       </div>
