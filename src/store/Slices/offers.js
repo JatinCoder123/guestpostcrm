@@ -10,6 +10,7 @@ const offersSlice = createSlice({
     count: 0,
     error: null,
     updating: false,
+    summary:null,
     message: null,
     creating: false,
     deleting: false,
@@ -22,9 +23,10 @@ const offersSlice = createSlice({
       state.error = null;
     },
     getOffersSucess(state, action) {
-      const { count, offers } = action.payload;
+      const { count, offers,summary } = action.payload;
       state.loading = false;
       state.offers = offers;
+      state.summary=summary
       state.count = count;
       state.error = null;
     },
@@ -114,7 +116,8 @@ export const getOffers = (email) => {
       dispatch(
         offersSlice.actions.getOffersSucess({
           count: data.data_count ?? 0,
-          offers: data.data,
+          offers: data.data ?? [],
+          summary:data.summary ?? null
         })
       );
       dispatch(offersSlice.actions.clearAllErrors());

@@ -19,6 +19,7 @@ export default function ViewReports() {
       if (json?.success && Array.isArray(json.data)) {
         setRows(json.data);
       } else {
+        
         setRows([]);
       }
     } catch {
@@ -48,7 +49,7 @@ export default function ViewReports() {
           <h1 className="text-2xl font-semibold">Reports</h1>
         </div>
 
-       
+      
       </div>
 
       {/* Summary Cards */}

@@ -24,7 +24,7 @@ export function OrdersPage() {
   const [selectedSort, setSelectedSort] = useState('');
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null)
-  const { orders, count, loading, error, message, updating } = useSelector(
+  const { orders, count, loading, error, message, updating,summary } = useSelector(
     (state) => state.orders
   );
   const navigateTo = useNavigate()
@@ -275,61 +275,69 @@ export function OrdersPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Pending</p>
-              <p className="text-2xl text-gray-900 mt-1">{count}</p>
-            </div>
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-indigo-600" />
-            </div>
-          </div>
-        </div>
+<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Completed</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {orders.filter(o => o.order_status?.toLowerCase().includes('progress') || o.order_status?.toLowerCase().includes('process')).length}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Package className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Rejected</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {orders.filter(o => o.order_status?.toLowerCase().includes('complete')).length}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">✓</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Paid </p>
-              <p className="text-2xl text-gray-900 mt-1">
-                ${orders.reduce((sum, order) => sum + (parseFloat(order.total_amount_c) || 0), 0).toFixed(2)}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
+  {/* Pending / Under Verification */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">Under Verification</p>
+        <p className="text-2xl text-gray-900 mt-1 font-semibold">
+          {summary?.under_verification_orders ?? 0}
+        </p>
       </div>
+      <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+        <ShoppingCart className="w-6 h-6 text-indigo-600" />
+      </div>
+    </div>
+  </div>
+
+  {/* New Orders */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">New Orders</p>
+        <p className="text-2xl text-gray-900 mt-1 font-semibold">
+          {summary?.new_orders ?? 0}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+        <Package className="w-6 h-6 text-blue-600" />
+      </div>
+    </div>
+  </div>
+
+  {/* Accepted Orders */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">Accepted Orders</p>
+        <p className="text-2xl text-gray-900 mt-1 font-semibold">
+          {summary?.accepted_orders ?? 0}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+        <span className="text-2xl text-green-700">✓</span>
+      </div>
+    </div>
+  </div>
+
+  {/* Completed Orders */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">Completed Orders</p>
+        <p className="text-2xl text-gray-900 mt-1 font-semibold">
+          {summary?.completed_orders ?? 0}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+        <DollarSign className="w-6 h-6 text-purple-600" />
+      </div>
+    </div>
+  </div>
+
+</div>
 
       {/* Orders Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
