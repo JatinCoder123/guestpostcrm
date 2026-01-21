@@ -24,7 +24,7 @@ export function DealsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [selectedSort, setSelectedSort] = useState("");
-  const { count, deals, loading, error, deleting, deleteDealId } = useSelector(
+  const { count, deals, loading, error, deleting, deleteDealId ,summary} = useSelector(
     (state) => state.deals
   );
   const dispatch = useDispatch();
@@ -153,8 +153,8 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">New</p>
-              <p className="text-2xl text-gray-900 mt-1">{count}</p>
+              <p className="text-gray-500 text-sm">Active Deals</p>
+              <p className="text-2xl text-gray-900 mt-1">{summary?.active_deals ?? 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Handshake className="w-6 h-6 text-blue-600" />
@@ -165,8 +165,8 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Expired</p>
-              <p className="text-2xl text-gray-900 mt-1">$10.5K</p>
+              <p className="text-gray-500 text-sm">Active Amount</p>
+              <p className="text-2xl text-gray-900 mt-1">${summary?.active_deal_amount ?? 0}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-green-600" />
@@ -177,8 +177,8 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">No Order</p>
-              <p className="text-2xl text-gray-900 mt-1">58%</p>
+              <p className="text-gray-500 text-sm">Expire Soon</p>
+              <p className="text-2xl text-gray-900 mt-1"> {summary?.expire_soon_deals ?? 0}</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-orange-600" />
@@ -189,8 +189,8 @@ export function DealsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Upcoming Expire</p>
-              <p className="text-2xl text-gray-900 mt-1">$3.5K</p>
+              <p className="text-gray-500 text-sm">Expired Deals</p>
+              <p className="text-2xl text-gray-900 mt-1"> {summary?.expired_deals ?? 0}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-purple-600" />

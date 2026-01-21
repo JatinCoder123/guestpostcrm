@@ -12,6 +12,7 @@ const dealsSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
+    summary:null,
     message: null,
     updating: false,
     deleting: false,
@@ -23,10 +24,11 @@ const dealsSlice = createSlice({
       state.error = null;
     },
     getDealsSucess(state, action) {
-      const { count, deals, pageCount, pageIndex } = action.payload;
+      const { count, deals, pageCount,summary, pageIndex } = action.payload;
       state.loading = false;
       state.deals = deals;
       state.count = count;
+      state.summary= summary;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.error = null;
@@ -122,6 +124,7 @@ export const getDeals = (email) => {
           deals: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
+          summary:data.summary ?? null
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
