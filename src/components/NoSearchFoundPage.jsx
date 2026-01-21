@@ -8,13 +8,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { toast } from "react-toastify";
 import { LoadingChase } from "./Loading";
-import { Calendar, Import } from "lucide-react";
+import { Calendar, Eye, Import } from "lucide-react";
+import EmailBox from "./EmailBox";
 
 export const NoSearchFoundPage = () => {
   const { noSearchResultData, noSearchFoundLoading, error, manualScanResponse } = useSelector(
     (state) => state.ladger
   );
   const [currentMessageId, setCurrentMessageId] = useState(null);
+  const [showThread, setShowThread] = useState(false);
   const { setSearch, search, setEnteredEmail } = useContext(PageContext);
   const [popup, setPopup] = useState({
     open: false,
@@ -39,7 +41,17 @@ export const NoSearchFoundPage = () => {
       setEnteredEmail(currentMessageId.customer_email)
     }
   }, [error, manualScanResponse, dispatch]);
-
+  if (showThread) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+        <EmailBox
+          onClose={() => setShowThread(false)}
+          threadId={currentMessageId?.thread_id}
+          tempEmail={currentMessageId?.customer_email}
+        />
+      </div>
+    );
+  }
   if (noSearchFoundLoading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
@@ -104,6 +116,17 @@ export const NoSearchFoundPage = () => {
             title="Import"
           >
             <Import className="w-5 h-5 text-blue-600" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowThread(true);
+              setCurrentMessageId(item);
+            }}
+            className="p-2 rounded-lg hover:bg-blue-100 transition"
+            title="Import"
+          >
+            <Eye className="w-5 h-5 text-blue-600" />
           </button>
         </div>
       ))}

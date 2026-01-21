@@ -197,9 +197,9 @@ export function TheirLink({ data }) {
           <FiLink className="text-slate-400 mt-0.5" size={14} />
           <div>
             <p className="text-xs text-slate-500">Backlink URL</p>
-            <p className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer">
+            <a href={data.backlink_url} target="_blank" className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer">
               {data.backlink_url}
-            </p>
+            </a>
           </div>
         </div>
 
@@ -231,9 +231,9 @@ export function OurLink({ link, label }) {
         <FiLink className="text-slate-400 mt-0.5" size={14} />
         <div>
           <p className="text-xs text-slate-500">URL</p>
-          <p className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer">
+          <a href={link} target="_blank" className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer">
             {link || "-"}
-          </p>
+          </a>
         </div>
       </div>
     </div>
