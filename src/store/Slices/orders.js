@@ -16,6 +16,7 @@ const ordersSlice = createSlice({
     updating: false,
     deleting: false,
     message: null,
+    summary: null,
     updateLinkLoading: false,
     updateLinkMessage: null,
     creatingLink: false,
@@ -27,12 +28,13 @@ const ordersSlice = createSlice({
       state.error = null;
     },
     getOrdersSucess(state, action) {
-      const { count, orders, pageCount, pageIndex, statusLists } = action.payload;
+      const { count, orders, pageCount, pageIndex, statusLists,summary} = action.payload;
       state.loading = false;
       state.orders = orders;
       state.statusLists = statusLists;
       state.count = count;
       state.updateId = null
+       state.summary=summary;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.error = null;
@@ -174,6 +176,7 @@ export const getOrders = (email) => {
           orders: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
+           summary:data.summary ?? null
         })
       );
       dispatch(ordersSlice.actions.clearAllErrors());
