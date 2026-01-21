@@ -24,17 +24,46 @@ import { LoadingChase } from "./Loading";
 import { toast } from "react-toastify";
 import { base64ToUtf8, getDomain } from "../assets/assets";
 import useModule from "../hooks/useModule";
+const STATIC_TEMPLATES = [
+  {
+    id: 1,
+    name: "Follow Up Email",
+    html: "<p>Hello,</p><p>Just following up on our previous conversation.</p><p>Regards</p>",
+  },
+  {
+    id: 2,
+    name: "Introduction Email",
+    html: "<p>Hello,</p><p>Nice to connect with you. Let me introduce myself...</p>",
+  },
+  {
+    id: 3,
+    name: "Thank You Email",
+    html: "<p>Hi,</p><p>Thank you for your time. Looking forward to hearing from you.</p>",
+  },
+];
 
 export default function EmailBox({ onClose, view, threadId, tempEmail }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
   const dispatch = useDispatch();
 
+
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
-
+  const { loading: templateListLoading, data: templateList, error, refetch } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: { module: "EmailTemplates" },
+    headers: {
+      "x-api-key": CREATE_DEAL_API_KEY,
+      "Content-Type": "application/json",
+    },
+    name: "TEMPLATE LIST",
+    dependencies: [crmEndpoint],
+    enabled: false,
+  });
   const emails = view ? viewEmail : threadEmail;
   useEffect(() => {
     if (!view && threadId) {
@@ -48,6 +77,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
 
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
+  const [showTemplatePopup, setShowTemplatePopup] = useState(false);
 
   // FETCH BUTTONS
   const { loading, data: buttons } = useModule({
@@ -232,6 +262,69 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                   AI Reply
                 </span>
               </motion.button>
+              <AnimatePresence>
+                {showTemplatePopup && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center"
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, y: 20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      exit={{ scale: 0.9, y: 20 }}
+                      className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl"
+                    >
+                      {/* HEADER */}
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          Select Email Template
+                        </h3>
+                        <button
+                          onClick={() => setShowTemplatePopup(false)}
+                          className="p-2 rounded-full hover:bg-gray-100"
+                        >
+                          <X className="w-6 h-6" />
+                        </button>
+                      </div>
+                      {templateListLoading && (
+                        <div className="flex items-center justify-center">
+                          <LoadingChase />
+                        </div>
+                      )}
+                      {/* TEMPLATE LIST */}
+                      {!templateListLoading && (
+                        <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-3">
+                          {templateList.map((tpl) => (
+                            <motion.button
+                              key={tpl.id}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => {
+                                editorRef.current?.setContent(tpl.body_html);
+                                setInput(tpl.body_html);
+                                setTemplateId(tpl.id);
+                                setOpenParent(null);
+                                setShowTemplatePopup(false);
+                              }}
+                              className="w-full text-left px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium"
+                            >
+                              {tpl.name}
+                            </motion.button>
+                          ))}
+                        </div>
+                      )}
+                      {!templateListLoading && templateList.length === 0 && (
+                        <div className="flex items-center justify-center">
+                          <p className="text-gray-500">No templates found</p>
+                        </div>
+                      )}
+
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* DEFAULT TEMPLATE */}
               <motion.button
@@ -246,6 +339,8 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
                     setInput(html);
                     setOpenParent(null);
                   }
+                  setShowTemplatePopup(true);
+                  refetch();
                 }}
               >
                 <Mail className="w-4 h-4" />
