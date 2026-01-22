@@ -1,4 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Download } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -7,7 +12,51 @@ export default function ViewReports() {
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { timeline } = useSelector(state => state.ladger);
+  const { timeline } = useSelector((state) => state.ladger);
+  // ===== EXPORT PDF =====
+  const exportPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(14);
+    doc.text(`Reports (${timeline || "All Time"})`, 14, 15);
+
+    autoTable(doc, {
+      startY: 25,
+      head: [["Action", "Total"]],
+      body: rows.map((r) => [r.action, r.total]),
+      foot: [["Grand Total", grandTotal]],
+    });
+
+    doc.save(`report_${timeline || "all_time"}.pdf`);
+  };
+
+  // ===== EXPORT EXCEL =====
+  const exportExcel = () => {
+    const worksheetData = rows.map((r) => ({
+      Action: r.action,
+      Total: r.total,
+    }));
+
+    worksheetData.push({
+      Action: "Grand Total",
+      Total: grandTotal,
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+
+    saveAs(blob, `report_${timeline || "all_time"}.xlsx`);
+  };
 
   const fetchReports = async () => {
     setLoading(true);
@@ -19,7 +68,6 @@ export default function ViewReports() {
       if (json?.success && Array.isArray(json.data)) {
         setRows(json.data);
       } else {
-        
         setRows([]);
       }
     } catch {
@@ -35,7 +83,7 @@ export default function ViewReports() {
 
   const grandTotal = rows.reduce(
     (sum, row) => sum + (parseInt(row.total) || 0),
-    0
+    0,
   );
 
   return (
@@ -49,7 +97,24 @@ export default function ViewReports() {
           <h1 className="text-2xl font-semibold">Reports</h1>
         </div>
 
-      
+        {/* Export Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={exportPDF}
+            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+          >
+            <Download size={18} />
+            PDF
+          </button>
+
+          <button
+            onClick={exportExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            <Download size={18} />
+            Excel
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -65,26 +130,24 @@ export default function ViewReports() {
         {/* Total Records */}
         <div className="bg-white border rounded-[10px] shadow-sm p-4">
           <p className="text-sm text-gray-500">Total Records</p>
-          <h3 className="text-[18px] font-semibold mt-1">
-            {rows.length}
-          </h3>
+          <h3 className="text-[18px] font-semibold mt-1">{rows.length}</h3>
         </div>
 
         {/* Grand Total */}
         <div className="bg-white border rounded-[10px] shadow-sm p-4">
           <p className="text-sm text-gray-500">Grand Total</p>
-          <h3 className="text-[18px] font-semibold mt-1">
-            {grandTotal}
-          </h3>
+          <h3 className="text-[18px] font-semibold mt-1">{grandTotal}</h3>
         </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-[10px] shadow-md">
-        <div className="border-b px-4 py-3 font-medium text-center text-[18px]
+        <div
+          className="border-b px-4 py-3 font-medium text-center text-[18px]
 bg-gradient-to-r from-sky-200 via-sky-100 to-yellow-100
 rounded-t-[10px]
-">
+"
+        >
           Report Details
         </div>
 
@@ -110,12 +173,8 @@ rounded-t-[10px]
             </tbody>
             <tfoot>
               <tr className="bg-gray-50">
-                <td className="p-3 text-right font-semibold">
-                  Grand Total
-                </td>
-                <td className="p-3 text-right font-semibold">
-                  {grandTotal}
-                </td>
+                <td className="p-3 text-right font-semibold">Grand Total</td>
+                <td className="p-3 text-right font-semibold">{grandTotal}</td>
               </tr>
             </tfoot>
           </table>
