@@ -11,7 +11,7 @@ import { LoadingChase, LoadingSpin } from "../Loading";
 import { PageContext } from "../../context/pageContext";
 
 export function OffersPage() {
-  const { offers, count, loading, error, deleting, deleteOfferId } = useSelector((state) => state.offers);
+  const { offers, count, loading, error, deleting, deleteOfferId ,summary} = useSelector((state) => state.offers);
   const { setSearch, setEnteredEmail } = useContext(PageContext)
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -160,60 +160,68 @@ export function OffersPage() {
       {/* ⭐ Stats Cards (Top Section) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
-        {/* Total Offers */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">New</p>
-              <p className="text-2xl text-gray-900 mt-1">{count}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Gift className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Pending */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Expired</p>
-              <p className="text-2xl text-gray-900 mt-1">{pending}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Tag className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Accepted */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Upcoming Expire</p>
-              <p className="text-2xl text-gray-900 mt-1">{accepted}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl text-green-700">✓</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Value */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Rejected </p>
-              <p className="text-2xl text-gray-900 mt-1">
-                ${offers.reduce((sum, o) => sum + Number(o.amount || 0), 0)}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
+  {/* Active Offers */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">Active Offers</p>
+        <p className="text-2xl text-gray-900 mt-1">
+          {summary?.active_offers ?? 0}
+        </p>
       </div>
+      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+        <Tag className="w-6 h-6 text-blue-600" />
+      </div>
+    </div>
+  </div>
+
+  {/* Accepted Offers */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">Accepted Offers</p>
+        <p className="text-2xl text-gray-900 mt-1">
+          {summary?.accepted_offers ?? 0}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+        <span className="text-2xl text-green-700">✓</span>
+      </div>
+    </div>
+  </div>
+
+  {/* Expired Offers */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">Expired Offers</p>
+        <p className="text-2xl text-gray-900 mt-1">
+          {summary?.expired_offers ?? 0}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+        <Gift className="w-6 h-6 text-red-600" />
+      </div>
+    </div>
+  </div>
+
+  {/* Summary / Total Pages */}
+  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-500 text-sm">Total Pages</p>
+        <p className="text-2xl text-gray-900 mt-1">
+          {summary?.total_pages ?? 0}
+        </p>
+      </div>
+      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+        <DollarSign className="w-6 h-6 text-purple-600" />
+      </div>
+    </div>
+  </div>     
+
+</div>
+
 
       {/* ⭐ Offers Section (Header + Table) */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">

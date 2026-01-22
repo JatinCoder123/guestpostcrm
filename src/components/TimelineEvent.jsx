@@ -83,16 +83,9 @@ const TimelineEvent = () => {
       navigateTo(`/reminders/${event.thread_id_c}`, { state: { email } });
       return;
     }
-
-    // Handle contact events - navigate to single contact view
     if (lowerType.includes("contact")) {
-      if (contactId) {
-        // Navigate to single contact view
-        navigateTo(`/contacts/${contactId}`);
-      } else {
-        // Fallback to contacts list if no ID
-        navigateTo('/contacts');
-      }
+      navigateTo('/contacts');
+
       return;
     }
 

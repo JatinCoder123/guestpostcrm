@@ -30,7 +30,6 @@ import TemplatesPage from "./components/pages/settingpages/TemplatesPage";
 import WebsitesPage from "./components/pages/settingpages/WebsitesPage";
 import { UsersPage } from "./components/pages/settingpages/UsersPage";
 import Contactpage from "./components/pages/Contactpage";
-import ReportPage from "./components/pages/Reportpage";
 import { ForwardedPage } from "./components/pages/ForwardedPage";
 import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -52,7 +51,9 @@ import { HotPage } from "./components/pages/HotPage";
 import { ViewReminder } from "./components/ViewReminder";
 // import {PreviewOrder} from "./components/PreviewOrder";
 import PreviewOrder from "./components/PreviewOrder";
-import AccountPage from "./components/pages/AccountPage";
+import ViewReports from "./components/ViewReports";
+
+
 
 const router = createBrowserRouter([
   {
@@ -95,10 +96,6 @@ const router = createBrowserRouter([
       {
         path: "contacts",
         element: <Contactpage />,
-      },
-      {
-        path: "account",
-        element: <AccountPage />,
       },
       {
         path: "unanswered",
@@ -157,18 +154,17 @@ const router = createBrowserRouter([
         element: <ReminderPage />,
       },
 
+
+      {
+        path: "view-reports/:id?",
+        element: <ViewReports />,
+      },
+
       {
         path: "timeline",
         element: <TimelinePage />,
       },
-      {
-        path: "contacts",
-        element: <Contactpage />,
-      },
-      {
-        path: "all-report",
-        element: <ReportPage />,
-      },
+
 
       {
         path: "forwarded-emails",

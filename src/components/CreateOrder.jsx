@@ -147,6 +147,8 @@ export default function CreateOrder() {
     }
 
     if (updateLinkMessage) {
+      dispatch(getOrders())
+
       toast.success(updateLinkMessage);
     }
     if (creatingLinkMessage) {

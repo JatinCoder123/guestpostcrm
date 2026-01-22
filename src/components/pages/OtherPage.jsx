@@ -22,7 +22,7 @@ import {
   Users,
   Laptop,
   PencilOff
-  
+
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
@@ -57,13 +57,7 @@ export function OtherPage() {
       bg: "bg-green-50",
       link: "/mark-bulk",
     },
-    {
-      title: "Reports",
-      subtitle: "Report will be shown here",
-      icon: <MessageCircle className="w-8 h-8 text-green-600" />,
-      bg: "bg-green-50",
-      link: "/all-report",
-    },
+
     {
       title: "Spam Detection",
       subtitle: "Spam Emails will be shown here",
@@ -79,10 +73,10 @@ export function OtherPage() {
       link: "/tag-manager",
     },
 
-       {
+    {
       title: "System Suggestions",
       subtitle: "Tag manager will be shown here",
-       icon: <Laptop className="w-8 h-8 text-green-600" />,
+      icon: <Laptop className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "/system-suggestion",
     },
@@ -94,7 +88,7 @@ export function OtherPage() {
       link: "/contacts",
     },
 
-        {
+    {
       title: "Draft Invoice",
       subtitle: "Contact tag will be shown here",
       icon: <PencilOff className="w-8 h-8 text-red-500" />,
@@ -108,10 +102,10 @@ export function OtherPage() {
       <div className="flex gap-5">
         <h2 className="text-2xl font-semibold mb-6">Others</h2>
 
-       <a href="https://www.guestpostcrm.com/blog/other-section-in-guestpostcrm/"  target="_blank" 
-  rel="noopener noreferrer">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+        <a href="https://www.guestpostcrm.com/blog/other-section-in-guestpostcrm/" target="_blank"
+          rel="noopener noreferrer">
+          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+        </a>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -42,6 +42,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
 import Avatar from "./components/Avatar";
 import { getDomain } from "./assets/assets";
+import LowCreditWarning from "./components/LowCreditWarning";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
@@ -268,6 +269,7 @@ const RootLayout = () => {
       }));
     }
   }, [notificationCount, dispatch, setNotificationCount]);
+  const isLowCredit = Number(currentScore) < 0;
 
   return (
     <AnimatePresence mode="wait">
@@ -290,9 +292,15 @@ const RootLayout = () => {
                   }`}
               >
                 <div className="p-6">
-                  <WelcomeHeader />
+                  {isLowCredit && (
+                    <LowCreditWarning score={currentScore} />
+                  )}
+                  <div className="p-6">
+                    <WelcomeHeader />
+                    <Outlet />
+                  </div>
 
-                  <Outlet />
+
 
                   {/* {showAvatar && currentAvatar && (
                   <Avatar

@@ -1,5 +1,9 @@
 import logo from "./logo.png";
 import duplicateImg from "./duplicate.png";
+ import send from "./send.png";
+import preview from "./preview.png";
+import onlyupdate from "./onlyupdate.png";
+import update_With_send from "./update_With_send.jpg";
 export default logo;
 export const images = { duplicateImg };
 export const websiteLists = [
@@ -153,3 +157,11 @@ export const extractEmail = (str) => {
   return str;
 
 }
+
+
+
+export const sendEmailBtn = send;
+export const previewBtn = preview;
+export const updatesentBtn = onlyupdate;
+export const updateBtn = update_With_send;
+ 
