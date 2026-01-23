@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Download } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, ChevronDown, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -12,6 +11,8 @@ export default function ViewReports() {
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openExport, setOpenExport] = useState(false);
+
   const { timeline } = useSelector((state) => state.ladger);
   // ===== EXPORT PDF =====
   const exportPDF = () => {
@@ -67,6 +68,7 @@ export default function ViewReports() {
 
       if (json?.success && Array.isArray(json.data)) {
         setRows(json.data);
+        console.log("Report data", json.data);
       } else {
         setRows([]);
       }
@@ -97,23 +99,40 @@ export default function ViewReports() {
           <h1 className="text-2xl font-semibold">Reports</h1>
         </div>
 
-        {/* Export Buttons */}
-        <div className="flex gap-2">
+        {/* Export Dropdown */}
+        <div className="relative">
           <button
-            onClick={exportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            onClick={() => setOpenExport((prev) => !prev)}
+            className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
           >
             <Download size={18} />
-            PDF
+            Export
+            <ChevronDown size={16} />
           </button>
 
-          <button
-            onClick={exportExcel}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            <Download size={18} />
-            Excel
-          </button>
+          {openExport && (
+            <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10">
+              <button
+                onClick={() => {
+                  exportPDF();
+                  setOpenExport(false);
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                📄 Export PDF
+              </button>
+
+              <button
+                onClick={() => {
+                  exportExcel();
+                  setOpenExport(false);
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                📊 Export Excel
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
