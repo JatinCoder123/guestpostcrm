@@ -110,8 +110,6 @@ export default function EditModal({ item, onClose, handleUpdate }) {
                   </div>
                 </div>
 
-
-
                 {/* DESCRIPTION */}
                 <div className=" h-[300px] ">
                   <label className="text-sm font-medium text-gray-600">
@@ -125,7 +123,6 @@ export default function EditModal({ item, onClose, handleUpdate }) {
                   />
                 </div>
               </div>
-
 
               {/* Save Button */}
               <button

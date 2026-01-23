@@ -113,7 +113,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
                   value={form.description}
                   onChange={(e) => updateField("description", e.target.value)}
                   rows={4}
-                  className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
+                  className="w-full mt-1 p-2 border rounded-lg bg-blue-50"
                 />
               </div>
 
