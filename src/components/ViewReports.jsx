@@ -162,7 +162,7 @@ export default function ViewReports() {
       {/* Table */}
       <div className="bg-white rounded-[10px] shadow-md">
         <div
-          className="border-b px-4 py-3 font-medium text-center text-[18px]
+          className="border-b px-4 py-3 font-semibold text-center text-[23px] 
 bg-gradient-to-r from-sky-200 via-sky-100 to-yellow-100
 rounded-t-[10px]
 "
