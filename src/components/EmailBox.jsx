@@ -42,7 +42,7 @@ const STATIC_TEMPLATES = [
   },
 ];
 
-export default function EmailBox({ onClose, view, threadId, tempEmail }) {
+export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
   const dispatch = useDispatch();
