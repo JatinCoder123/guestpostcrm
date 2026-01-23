@@ -66,12 +66,12 @@ export const getForwardedEmails = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=forwarded${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=forwarded${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=forwarded${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=forwarded${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
 

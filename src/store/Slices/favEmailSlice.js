@@ -64,12 +64,12 @@ export const getFavEmails = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       console.log(`favorite emails`, response.data);

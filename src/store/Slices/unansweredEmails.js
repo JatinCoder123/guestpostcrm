@@ -52,12 +52,12 @@ export const getUnansweredEmails = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=replied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
+          }&type=replied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=replied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}`
+          }&type=replied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}`
         );
       }
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-import { ArrowLeft, RefreshCw, ChevronDown, Download } from "lucide-react";
+import { ArrowLeft, ChevronDown, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -14,6 +14,13 @@ export default function ViewReports() {
   const [openExport, setOpenExport] = useState(false);
 
   const { timeline } = useSelector((state) => state.ladger);
+
+  // ===== GRAND TOTAL =====
+  const grandTotal = rows.reduce(
+    (sum, row) => sum + (parseInt(row.total) || 0),
+    0
+  );
+
   // ===== EXPORT PDF =====
   const exportPDF = () => {
     const doc = new jsPDF();
@@ -31,34 +38,42 @@ export default function ViewReports() {
     doc.save(`report_${timeline || "all_time"}.pdf`);
   };
 
-  // ===== EXPORT EXCEL =====
-  const exportExcel = () => {
-    const worksheetData = rows.map((r) => ({
-      Action: r.action,
-      Total: r.total,
-    }));
+  // ===== EXPORT EXCEL (ExcelJS) =====
+  const exportExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Report");
 
-    worksheetData.push({
-      Action: "Grand Total",
-      Total: grandTotal,
+    worksheet.columns = [
+      { header: "Action", key: "action", width: 30 },
+      { header: "Total", key: "total", width: 15 },
+    ];
+
+    rows.forEach((row) => {
+      worksheet.addRow({
+        action: row.action,
+        total: row.total,
+      });
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
+    // Grand Total row
+    worksheet.addRow({});
+    worksheet.addRow({
+      action: "Grand Total",
+      total: grandTotal,
     });
 
-    const blob = new Blob([excelBuffer], {
-      type: "application/octet-stream",
+    worksheet.getRow(1).font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
     saveAs(blob, `report_${timeline || "all_time"}.xlsx`);
   };
 
+  // ===== FETCH REPORTS =====
   const fetchReports = async () => {
     setLoading(true);
     try {
@@ -68,7 +83,6 @@ export default function ViewReports() {
 
       if (json?.success && Array.isArray(json.data)) {
         setRows(json.data);
-        console.log("Report data", json.data);
       } else {
         setRows([]);
       }
@@ -82,11 +96,6 @@ export default function ViewReports() {
   useEffect(() => {
     if (timeline) fetchReports();
   }, [timeline]);
-
-  const grandTotal = rows.reduce(
-    (sum, row) => sum + (parseInt(row.total) || 0),
-    0,
-  );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -138,7 +147,6 @@ export default function ViewReports() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Timeline */}
         <div className="bg-white border rounded-[10px] shadow-sm p-4">
           <p className="text-sm text-gray-500">Timeline</p>
           <h3 className="text-[18px] font-semibold mt-1 capitalize">
@@ -146,13 +154,11 @@ export default function ViewReports() {
           </h3>
         </div>
 
-        {/* Total Records */}
         <div className="bg-white border rounded-[10px] shadow-sm p-4">
           <p className="text-sm text-gray-500">Total Records</p>
           <h3 className="text-[18px] font-semibold mt-1">{rows.length}</h3>
         </div>
 
-        {/* Grand Total */}
         <div className="bg-white border rounded-[10px] shadow-sm p-4">
           <p className="text-sm text-gray-500">Grand Total</p>
           <h3 className="text-[18px] font-semibold mt-1">{grandTotal}</h3>
@@ -161,12 +167,7 @@ export default function ViewReports() {
 
       {/* Table */}
       <div className="bg-white rounded-[10px] shadow-md">
-        <div
-          className="border-b px-4 py-3 font-semibold text-center text-[23px] 
-bg-gradient-to-r from-sky-200 via-sky-100 to-yellow-100
-rounded-t-[10px]
-"
-        >
+        <div className="border-b px-4 py-3 font-semibold text-center text-[23px] bg-gradient-to-r from-sky-200 via-sky-100 to-yellow-100 rounded-t-[10px]">
           Report Details
         </div>
 

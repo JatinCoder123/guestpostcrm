@@ -45,7 +45,7 @@ export const getAiCredits = (index = 1) => {
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=get_credits${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=${index}&page_size=50`
+        }&type=get_credits${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${index}&page_size=50`
       );
       console.log(`aiCredits`, data);
       dispatch(

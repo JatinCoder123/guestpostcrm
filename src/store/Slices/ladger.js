@@ -129,7 +129,7 @@ export const getLadger = ({ email = null, isEmail = true, search = "", loading =
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
+        `${getState().user.crmEndpoint}&type=ledger${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
       );
       console.log("Ladger", data);
       dispatch(
