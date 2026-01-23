@@ -1,10 +1,28 @@
-import Pagination from "./Pagination";
 import { useSelector } from "react-redux";
 import { Eye, SparkleIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
+  const [selectedView, setSelectedView] = useState("all");
+  const [timelineData, setTimelineData] = useState([]);
+  useEffect(() => {
+    if (selectedView === "all") {
+      setTimelineData(ladger);
+    }
+    if (selectedView === "important") {
+      const finalData = ladger.filter(
+        (item) =>
+          !(
+            item.parent_type === "outr_snts" &&
+            item.type_c !== "First Reply Sent" &&
+            item.type_c !== "First Reply Scheduled"
+          ),
+      );
+      setTimelineData(finalData);
+    }
+  }, [selectedView]);
   const navigateTo = useNavigate();
 
   const getContactIdFromEvent = (event) => {
@@ -43,7 +61,7 @@ const TimelineEvent = () => {
       order: "Order_Reminder",
       invoice: "Invoice_Reminder",
       payment: "Payment_Reminder",
-      follow: "Followup_Reminder"
+      follow: "Followup_Reminder",
     };
 
     for (const key in mappings) {
@@ -71,12 +89,12 @@ const TimelineEvent = () => {
 
       // Add filter type if available
       if (filterType) {
-        queryParams.append('filter', filterType);
+        queryParams.append("filter", filterType);
       }
 
       // Add contact ID if available (for single contact filtering)
       if (contactId) {
-        queryParams.append('contact_id', contactId);
+        queryParams.append("contact_id", contactId);
       }
 
       const queryString = queryParams.toString();
@@ -84,7 +102,7 @@ const TimelineEvent = () => {
       return;
     }
     if (lowerType.includes("contact")) {
-      navigateTo('/contacts');
+      navigateTo("/contacts");
 
       return;
     }
@@ -95,11 +113,11 @@ const TimelineEvent = () => {
       { key: "deal", path: "/deals" },
       { key: "order", path: "/orders" },
       { key: "payment", path: "/payments" },
-      { key: "offer", path: "/offers" }
+      { key: "offer", path: "/offers" },
     ];
 
-    const matchedRoute = routeMap.find(route =>
-      lowerType.includes(route.key)
+    const matchedRoute = routeMap.find((route) =>
+      lowerType.includes(route.key),
     );
 
     if (matchedRoute) {
@@ -120,7 +138,8 @@ const TimelineEvent = () => {
   const getTooltipText = (event) => {
     const type = event.type_c || "";
     const contactName = event.contact_name || "";
-    const isReminderEvent = type.toLowerCase().includes("scheduled") ||
+    const isReminderEvent =
+      type.toLowerCase().includes("scheduled") ||
       type.toLowerCase().includes("reminder");
 
     if (isReminderEvent) {
@@ -142,30 +161,38 @@ const TimelineEvent = () => {
         <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-2xl text-center text-white">
           TIMELINE
         </h1>
+        <div className="flex justify-center mt-3">
+          <select
+            value={selectedView}
+            onChange={(e) => setSelectedView(e.target.value)}
+            className="border rounded-lg px-4 py-2 text-sm shadow-sm bg-white"
+          >
+            <option value="all">All Records</option>
+            <option value="important">Important Records</option>
+          </select>
+        </div>
 
         <div className="relative mt-6">
           <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300 rounded-full"></div>
 
           <div className="space-y-6">
-            {ladger.map((event, index) => {
+            {timelineData.map((event, index) => {
               const type = event.type_c || "";
               const lowerType = type.toLowerCase();
-              const isReminderEvent = lowerType.includes("scheduled") ||
+              const isReminderEvent =
+                lowerType.includes("scheduled") ||
                 lowerType.includes("reminder");
               const isContactEvent = lowerType.includes("contact");
-              const filterType = isReminderEvent ? getReminderFilterType(type) : null;
+              const filterType = isReminderEvent
+                ? getReminderFilterType(type)
+                : null;
               const contactId = getContactIdFromEvent(event);
 
               return (
                 <div key={event.id} className="relative flex items-start gap-4">
                   <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">
                     <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center text-white shadow-lg">
-                      <img
-                        width="40"
-                        height="40"
-                        src={event.icon}
-                        alt="icon"
-                      />
+                      <img width="40" height="40" src={event.icon} alt="icon" />
                     </div>
                     <div
                       className="bg-gradient-to-r from-purple-600 to-blue-600 
@@ -174,9 +201,10 @@ const TimelineEvent = () => {
                   </div>
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${index === 0
-                        ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
-                        : "bg-white border-gray-200"
+                      ${
+                        index === 0
+                          ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
+                          : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -188,8 +216,13 @@ const TimelineEvent = () => {
                           <Eye
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110
-                              ${isReminderEvent ? 'text-purple-600' :
-                                isContactEvent ? 'text-green-600' : 'text-blue-600'}`}
+                              ${
+                                isReminderEvent
+                                  ? "text-purple-600"
+                                  : isContactEvent
+                                    ? "text-green-600"
+                                    : "text-blue-600"
+                              }`}
                           />
 
                           {/* Tooltip */}
@@ -206,7 +239,7 @@ const TimelineEvent = () => {
                             {/* Show filter info for reminders */}
                             {isReminderEvent && filterType && (
                               <div className="text-xs text-gray-300 mt-1">
-                                Filter: {filterType.replace(/_/g, ' ')}
+                                Filter: {filterType.replace(/_/g, " ")}
                                 {contactId && " • Single Contact"}
                               </div>
                             )}
@@ -233,27 +266,37 @@ const TimelineEvent = () => {
                       </span>
 
                       <div className="flex items-center gap-2">
-                        {event.prompt_id.trim() !== "" && event.prompt_id.toLowerCase() !== "na" && (
-                          <button onClick={() => navigateTo("/settings/machine-learning", { state: { promptId: event.prompt_id } })} className="text-blue-600 hover:text-blue-700 cursor-pointer">
-                            <SparkleIcon size={20} />
-                          </button>
-                        )}
+                        {event.prompt_id.trim() !== "" &&
+                          event.prompt_id.toLowerCase() !== "na" && (
+                            <button
+                              onClick={() =>
+                                navigateTo("/settings/machine-learning", {
+                                  state: { promptId: event.prompt_id },
+                                })
+                              }
+                              className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                            >
+                              <SparkleIcon size={20} />
+                            </button>
+                          )}
                         <span className="text-gray-500 text-sm">
                           {event.date_entered}
                         </span>
                       </div>
-
                     </div>
 
                     {/* Event subject */}
                     {event.subject && (
-                      <div className="text-sm text-gray-600">{event.subject}</div>
+                      <div className="text-sm text-gray-600">
+                        {event.subject}
+                      </div>
                     )}
 
                     {/* Show contact name if available */}
                     {event.contact_name && (
                       <div className="text-sm text-gray-700 mt-1">
-                        <span className="font-medium">Contact:</span> {event.contact_name}
+                        <span className="font-medium">Contact:</span>{" "}
+                        {event.contact_name}
                       </div>
                     )}
 
@@ -261,8 +304,16 @@ const TimelineEvent = () => {
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                       {event.assigned_user_name && (
                         <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           {event.assigned_user_name}
                         </span>
@@ -270,8 +321,16 @@ const TimelineEvent = () => {
 
                       {event.module && (
                         <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           {event.module}
                         </span>
