@@ -1,9 +1,10 @@
 import logo from "./logo.png";
 import duplicateImg from "./duplicate.png";
- import send from "./send.png";
+import send from "./send.png";
 import preview from "./preview.png";
 import onlyupdate from "./onlyupdate.png";
 import update_With_send from "./update_With_send.jpg";
+import { time } from "framer-motion";
 export default logo;
 export const images = { duplicateImg };
 export const websiteLists = [
@@ -24,6 +25,7 @@ export const getDomain = (url) => {
 }
 
 export const periodOptions = [
+  { period: null, title: "All" },
   { period: "today", title: "Today" },
   { period: "yesterday", title: "Yesterday" },
   { period: "this_week", title: "This week" },
@@ -164,4 +166,3 @@ export const sendEmailBtn = send;
 export const previewBtn = preview;
 export const updatesentBtn = onlyupdate;
 export const updateBtn = update_With_send;
- 

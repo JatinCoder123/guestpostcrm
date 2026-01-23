@@ -43,7 +43,7 @@ const unansweredSlice = createSlice({
   },
 });
 
-export const getUnansweredEmails = (filter, email) => {
+export const getUnansweredEmails = (email) => {
   return async (dispatch, getState) => {
     dispatch(unansweredSlice.actions.getEmailRequest());
 
@@ -52,12 +52,12 @@ export const getUnansweredEmails = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=replied&filter=${filter}&email=${email}`
+          }&type=replied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=replied&filter=${filter}`
+          }&type=replied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}`
         );
       }
 
@@ -80,19 +80,19 @@ export const getUnansweredEmails = (filter, email) => {
     }
   };
 };
-export const getUnansweredEmailWithOutLoading = (filter, email) => {
+export const getUnansweredEmailWithOutLoading = (email) => {
   return async (dispatch, getState) => {
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=replied&filter=${filter}&email=${email}`
+          }&type=replied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=replied&filter=${filter}`
+          }&type=replied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}`
         );
       }
 

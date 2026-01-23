@@ -10,10 +10,11 @@ const offersSlice = createSlice({
     count: 0,
     error: null,
     updating: false,
-    summary:null,
+    summary: null,
     message: null,
     creating: false,
     deleting: false,
+    parent_id: null,
     deleteOfferId: null,
   },
   reducers: {
@@ -23,10 +24,10 @@ const offersSlice = createSlice({
       state.error = null;
     },
     getOffersSucess(state, action) {
-      const { count, offers,summary } = action.payload;
+      const { count, offers, summary } = action.payload;
       state.loading = false;
       state.offers = offers;
-      state.summary=summary
+      state.summary = summary
       state.count = count;
       state.error = null;
     },
@@ -44,6 +45,7 @@ const offersSlice = createSlice({
       state.creating = false;
       state.message = action.payload.message;
       state.offers = action.payload.offers;
+      state.parent_id = action.payload.parent_id;
       state.count = action.payload.count;
       state.error = null;
     },
@@ -60,6 +62,7 @@ const offersSlice = createSlice({
     updateOfferSuccess(state, action) {
       state.updating = false;
       state.message = action.payload.message;
+      state.parent_id = action.payload.parent_id;
       state.offers = action.payload.offers;
       state.error = null;
     },
@@ -87,6 +90,7 @@ const offersSlice = createSlice({
     },
     clearAllMessages(state) {
       state.message = null;
+      state.parent_id = null;
     },
     clearAllErrors(state) {
       state.error = null;
@@ -103,12 +107,12 @@ export const getOffers = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+          }&type=get_offers&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&filter=${getState().ladger.timeline}&page=1&page_size=50`
+          }&type=get_offers&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       const data = response.data;
@@ -117,7 +121,7 @@ export const getOffers = (email) => {
         offersSlice.actions.getOffersSucess({
           count: data.data_count ?? 0,
           offers: data.data ?? [],
-          summary:data.summary ?? null
+          summary: data.summary ?? null
         })
       );
       dispatch(offersSlice.actions.clearAllErrors());

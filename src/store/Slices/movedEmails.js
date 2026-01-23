@@ -35,7 +35,7 @@ const movedSlice = createSlice({
   },
 });
 
-export const getmovedEmails = (filter, email) => {
+export const getmovedEmails = (email) => {
   return async (dispatch, getState) => {
     dispatch(movedSlice.actions.getEmailRequest());
 
@@ -43,15 +43,13 @@ export const getmovedEmails = (filter, email) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
-          }&type=moved_email&filter=${filter}&email=${email}&page=1&page_size=50`
+          `${getState().user.crmEndpoint
+          }&type=moved_email&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
-          }&type=moved_email&filter=${filter}&page=1&page_size=50`
+          `${getState().user.crmEndpoint
+          }&type=moved_email&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
 

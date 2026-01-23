@@ -64,7 +64,7 @@ const exchangeSlice = createSlice({
   },
 });
 
-export const getLinkExchange = (filter, email) => {
+export const getLinkExchange = (email) => {
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.getEmailRequest());
     try {
@@ -72,12 +72,12 @@ export const getLinkExchange = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=exchange&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=exchange${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=exchange&filter=${filter}&page=1&page_size=50`
+          }&type=exchange${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       console.log(`Exchange links data`, response.data);

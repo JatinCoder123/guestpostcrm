@@ -57,7 +57,7 @@ const forwardedSlice = createSlice({
   },
 });
 
-export const getForwardedEmails = (filter, email) => {
+export const getForwardedEmails = (email) => {
   return async (dispatch, getState) => {
     dispatch(forwardedSlice.actions.getEmailRequest());
 
@@ -66,12 +66,12 @@ export const getForwardedEmails = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=forwarded&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=forwarded${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=forwarded&filter=${filter}&page=1&page_size=50`
+          }&type=forwarded${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
 
@@ -102,12 +102,12 @@ export const getForwardedEmailsWithOutLoading = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=forwarded&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+          }&type=forwarded${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=forwarded&filter=${getState().ladger.timeline}&page=1&page_size=50`
+          }&type=forwarded${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
 

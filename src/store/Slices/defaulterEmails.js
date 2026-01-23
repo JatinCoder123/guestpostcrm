@@ -35,7 +35,7 @@ const defaulterSlice = createSlice({
   },
 });
 
-export const getdefaulterEmails = (filter, email) => {
+export const getdefaulterEmails = (email) => {
   return async (dispatch, getState) => {
     dispatch(defaulterSlice.actions.getEmailRequest());
 
@@ -44,12 +44,12 @@ export const getdefaulterEmails = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_defaulters&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=get_defaulters&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_defaulters&filter=${filter}&page=1&page_size=50`
+          }&type=get_defaulters&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
 

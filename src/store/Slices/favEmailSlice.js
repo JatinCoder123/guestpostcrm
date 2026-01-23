@@ -55,7 +55,7 @@ const favSlice = createSlice({
   },
 });
 
-export const getFavEmails = (filter, email) => {
+export const getFavEmails = (email) => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.getEmailRequest());
     console.log("email", email)
@@ -64,12 +64,12 @@ export const getFavEmails = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite&filter=${filter}&page=1&page_size=50`
+          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       console.log(`favorite emails`, response.data);
@@ -96,12 +96,12 @@ export const getFavEmailsWithOutLoading = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite&filter=${getState().ladger.timeline}&page=1&page_size=50`
+          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       console.log(`favorite emails`, response.data);

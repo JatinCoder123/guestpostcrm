@@ -95,20 +95,20 @@ const RootLayout = () => {
 
   // Initial data fetch when timeline or email changes
   useEffect(() => {
-    dispatch(getAiCredits(timeline));
-    dispatch(getUnansweredEmails(timeline, enteredEmail));
-    dispatch(getUnrepliedEmail(timeline, enteredEmail));
-    dispatch(getForwardedEmails(timeline, enteredEmail));
-    dispatch(getFavEmails(timeline, enteredEmail));
-    dispatch(getLinkExchange(timeline, enteredEmail));
-    dispatch(getBulkEmails(timeline, enteredEmail));
+    dispatch(getAiCredits());
+    dispatch(getUnansweredEmails(enteredEmail));
+    dispatch(getUnrepliedEmail(enteredEmail));
+    dispatch(getForwardedEmails(enteredEmail));
+    dispatch(getFavEmails(enteredEmail));
+    dispatch(getLinkExchange(enteredEmail));
+    dispatch(getBulkEmails(enteredEmail));
     dispatch(getOrders(enteredEmail));
     dispatch(getDeals(enteredEmail));
     dispatch(getInvoices(enteredEmail));
     dispatch(getOffers(enteredEmail));
-    dispatch(getDetection(timeline, enteredEmail));
-    dispatch(getdefaulterEmails(timeline, enteredEmail));
-    dispatch(getmovedEmails(timeline, enteredEmail));
+    dispatch(getDetection(enteredEmail));
+    dispatch(getdefaulterEmails(enteredEmail));
+    dispatch(getmovedEmails(enteredEmail));
     dispatch(getAllAvatar());
     dispatch(getQuickActionBtn());
     dispatch(getDuplicateCount());
@@ -163,8 +163,8 @@ const RootLayout = () => {
     };
     if (notificationCount.unreplied_email) {
       refreshLadger();
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, true));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, true));
+      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
       setCurrentIndex(0);
       dispatch(checkForDuplicates());
       setNotificationCount((prev) => ({
@@ -176,8 +176,8 @@ const RootLayout = () => {
     if (notificationCount.refreshUnreplied) {
       refreshLadger();
 
-      dispatch(getUnrepliedEmail(timeline, enteredEmail, true));
-      dispatch(getUnansweredEmails(timeline, enteredEmail));
+      dispatch(getUnrepliedEmail(enteredEmail, true));
+      dispatch(getUnansweredEmails(enteredEmail));
       setCurrentIndex(0);
       setNotificationCount((prev) => ({
         ...prev,
@@ -199,8 +199,8 @@ const RootLayout = () => {
       refreshLadger();
 
       dispatch(getDeals());
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -214,8 +214,8 @@ const RootLayout = () => {
       dispatch(getInvoices());
       refreshLadger();
 
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -238,8 +238,8 @@ const RootLayout = () => {
       refreshLadger();
 
       dispatch(getOffers());
-      dispatch(getUnrepliedEmailWithOutLoading(timeline, enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(timeline, enteredEmail));
+      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, false));
+      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -269,7 +269,7 @@ const RootLayout = () => {
       }));
     }
   }, [notificationCount, dispatch, setNotificationCount]);
-  const isLowCredit = Number(currentScore) < 0;
+  const isLowCredit = Number(currentScore) <= 0;
 
   return (
     <AnimatePresence mode="wait">

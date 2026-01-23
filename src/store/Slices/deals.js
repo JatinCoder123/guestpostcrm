@@ -12,7 +12,7 @@ const dealsSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
-    summary:null,
+    summary: null,
     message: null,
     updating: false,
     deleting: false,
@@ -24,11 +24,11 @@ const dealsSlice = createSlice({
       state.error = null;
     },
     getDealsSucess(state, action) {
-      const { count, deals, pageCount,summary, pageIndex } = action.payload;
+      const { count, deals, pageCount, summary, pageIndex } = action.payload;
       state.loading = false;
       state.deals = deals;
       state.count = count;
-      state.summary= summary;
+      state.summary = summary;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.error = null;
@@ -108,12 +108,12 @@ export const getDeals = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+          }&type=get_deals&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&filter=${getState().ladger.timeline}&page=1&page_size=50`
+          }&type=get_deals&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       const data = response.data;
@@ -124,7 +124,7 @@ export const getDeals = (email) => {
           deals: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
-          summary:data.summary ?? null
+          summary: data.summary ?? null
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());

@@ -38,14 +38,14 @@ const aiCreditsSlice = createSlice({
   },
 });
 
-export const getAiCredits = (filter, index = 1) => {
+export const getAiCredits = (index = 1) => {
   return async (dispatch, getState) => {
     dispatch(aiCreditsSlice.actions.getAiCreditsRequest());
 
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=get_credits&filter=${filter}&page=${index}&page_size=50`
+        }&type=get_credits${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=${index}&page_size=50`
       );
       console.log(`aiCredits`, data);
       dispatch(
