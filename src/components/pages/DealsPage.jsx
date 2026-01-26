@@ -18,13 +18,14 @@ import { deleteDeal, getDeals } from "../../store/Slices/deals";
 import { excludeEmail, extractEmail } from "../../assets/assets";
 import { LoadingChase } from "../Loading";
 import { PageContext } from "../../context/pageContext";
+import { ladgerAction } from "../../store/Slices/ladger";
 
 export function DealsPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [selectedSort, setSelectedSort] = useState("");
-  const { count, deals, loading, error, deleting, deleteDealId ,summary} = useSelector(
+  const { count, deals, loading, error, deleting, deleteDealId, summary } = useSelector(
     (state) => state.deals
   );
   const dispatch = useDispatch();
@@ -263,6 +264,7 @@ export function DealsPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       navigateTo("/");
                     }}
                   >
@@ -278,6 +280,7 @@ export function DealsPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       navigateTo("/contacts");
                     }}
                     className="px-6 py-4 text-gray-900 cursor-pointer"

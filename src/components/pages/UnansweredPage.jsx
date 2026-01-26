@@ -10,7 +10,7 @@ import {
   EqualApproximatelyIcon,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
@@ -21,14 +21,16 @@ import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
 import SearchComponent from "./SearchComponent";
+import { ladgerAction } from "../../store/Slices/ladger";
 
 export function UnansweredPage() {
   const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
   const { count, emails } = useSelector((state) => state.unanswered);
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
   const navigateTo = useNavigate()
+  const dispatch = useDispatch()
   const [
     handleThreadClick,
     showEmail,
@@ -105,8 +107,8 @@ export function UnansweredPage() {
       return 0;
     });
 
-   const dropdownOptions = [
-    
+  const dropdownOptions = [
+
     { value: 'contect', label: 'Contact' },
     { value: 'subject', label: 'Subject' },
   ];
@@ -116,7 +118,7 @@ export function UnansweredPage() {
     { value: 'desc', label: 'Z to A' },
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-   
+
   ];
 
   const handleFilterApply = (filters) => {
@@ -134,88 +136,88 @@ export function UnansweredPage() {
   };
 
   const handleSortChange = (value) => {
-    setSelectedSort(value); 
+    setSelectedSort(value);
     console.log('Sort selected:', value);
   };
 
   const handleDownload = () => {
- if (!filteredEmails || filteredEmails.length === 0) {
-  toast.error("No data available to download");
-  return;
-}
+    if (!filteredEmails || filteredEmails.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
 
-  // Convert Objects → CSV rows
-  const headers = ["Date", "Contact", "Subject", "Count"];
-  
-  const rows = filteredEmails.map((email) => [
-    email.date_entered,
-    email.from.split("<")[0].trim(),
-    email.subject,
-    email.thread_count
-  ]);
+    // Convert Objects → CSV rows
+    const headers = ["Date", "Contact", "Subject", "Count"];
 
-  // Convert to CSV string
-  const csvContent =
-    headers.join(",") +
-    "\n" +
-    rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+    const rows = filteredEmails.map((email) => [
+      email.date_entered,
+      email.from.split("<")[0].trim(),
+      email.subject,
+      email.thread_count
+    ]);
 
-  // Create and auto-download file
-  const blob = new Blob([csvContent], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "unreplied-emails.csv";
-  a.click();
-};
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
+  };
 
 
   return (
     <>
 
-    <SearchComponent
-      
-      dropdownOptions={dropdownOptions}
-      onDropdownChange={handleCategoryChange} 
-      selectedDropdownValue={selectedCategory} 
-      // dropdownPlaceholder="Filter by contact"
-      dropdownPlaceholder="Filter by"
-      
-      
-      onSearchChange={handleSearchChange}
-      searchValue={topsearch}
-      searchPlaceholder="Search here..."
-      
-      
-      onFilterApply={handleFilterApply}
-      filterPlaceholder="Filters"
-      showFilter={true}
-      
-      
-      archiveOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ]}
-      transactionTypeOptions={[
-        { value: 'all', label: 'All Emails' },
-        { value: 'incoming', label: 'Incoming' },
-        { value: 'outgoing', label: 'Outgoing' },
-      ]}
-      currencyOptions={[
-        { value: 'all', label: 'All' },
-        { value: 'usd', label: 'USD' },
-        { value: 'eur', label: 'EUR' },
-      ]}
-      
-      
-      onDownloadClick={handleDownload}
-      showDownload={true}
-      
-      
-      className="mb-6"
-    />
+      <SearchComponent
+
+        dropdownOptions={dropdownOptions}
+        onDropdownChange={handleCategoryChange}
+        selectedDropdownValue={selectedCategory}
+        // dropdownPlaceholder="Filter by contact"
+        dropdownPlaceholder="Filter by"
+
+
+        onSearchChange={handleSearchChange}
+        searchValue={topsearch}
+        searchPlaceholder="Search here..."
+
+
+        onFilterApply={handleFilterApply}
+        filterPlaceholder="Filters"
+        showFilter={true}
+
+
+        archiveOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]}
+        transactionTypeOptions={[
+          { value: 'all', label: 'All Emails' },
+          { value: 'incoming', label: 'Incoming' },
+          { value: 'outgoing', label: 'Outgoing' },
+        ]}
+        currencyOptions={[
+          { value: 'all', label: 'All' },
+          { value: 'usd', label: 'USD' },
+          { value: 'eur', label: 'EUR' },
+        ]}
+
+
+        onDownloadClick={handleDownload}
+        showDownload={true}
+
+
+        className="mb-6"
+      />
 
       {/* Unanswered Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -276,6 +278,8 @@ export function UnansweredPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
+
                       setWelcomeHeaderContent("Replied");
                       navigateTo("/");
                     }}
@@ -291,6 +295,7 @@ export function UnansweredPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       setWelcomeHeaderContent("Replied");
                       navigateTo("/contacts");
                     }}>{email.from.split("<")[0].trim()}</td>
@@ -310,6 +315,8 @@ export function UnansweredPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
+
                       setWelcomeHeaderContent("Replied");
                       navigateTo("/");
                     }}

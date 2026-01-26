@@ -17,6 +17,7 @@ import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
 import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
+import { ladgerAction } from "../../store/Slices/ladger";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
@@ -401,6 +402,7 @@ export function OrdersPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       navigateTo("/");
                     }}
                   >
@@ -415,6 +417,7 @@ export function OrdersPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       navigateTo("/contacts");
                     }}
                     className="px-6 py-4 text-gray-900 cursor-pointer"

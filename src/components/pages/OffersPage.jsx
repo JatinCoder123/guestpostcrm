@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { excludeEmail, excludeName, extractEmail } from "../../assets/assets";
 import { LoadingChase, LoadingSpin } from "../Loading";
 import { PageContext } from "../../context/pageContext";
+import { ladgerAction } from "../../store/Slices/ladger";
 
 export function OffersPage() {
   const { offers, count, loading, error, deleting, deleteOfferId, summary } = useSelector((state) => state.offers);
@@ -285,6 +286,7 @@ export function OffersPage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     navigateTo("/");
                   }}
                   ><div className="flex items-center gap-2 text-gray-600">
@@ -299,6 +301,7 @@ export function OffersPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       navigateTo("/contacts");
                     }}
                     className="px-6 py-4 text-gray-900 cursor-pointer"

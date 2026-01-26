@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
@@ -22,6 +22,7 @@ import SearchComponent from "./SearchComponent";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
+import { ladgerAction } from "../../store/Slices/ladger"
 export function FavouritePage() {
   const { count, emails } = useSelector((state) => state.fav);
   const [
@@ -36,7 +37,7 @@ export function FavouritePage() {
   const [selectedSort, setSelectedSort] = useState('');
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
   const navigateTo = useNavigate()
-
+  const dispatch = useDispatch()
 
   const filteredEmails = emails
     .filter((item) => {
@@ -263,6 +264,7 @@ export function FavouritePage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Favourite");
                     navigateTo("/");
                   }} className="px-6 py-4">
@@ -276,6 +278,7 @@ export function FavouritePage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Favourite");
                     navigateTo("/contacts");
                   }} className="px-6 py-4 text-gray-900">{email.first_name}</td>

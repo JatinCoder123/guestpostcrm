@@ -8,7 +8,7 @@ import {
   MessageCircleDashed,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useContext } from "react";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
@@ -17,6 +17,7 @@ import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import SearchComponent from "./SearchComponent";
+import { ladgerAction } from "../../store/Slices/ladger";
 import { extractEmail } from "../../assets/assets";
 
 
@@ -40,6 +41,7 @@ export function UnrepliedEmailsPage() {
   ] = useThread("unreplied");
 
   const navigateTo = useNavigate();
+  const dispatch = useDispatch();
 
   if (showEmail && currentThreadId && email) {
     return (
@@ -264,6 +266,7 @@ export function UnrepliedEmailsPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       setWelcomeHeaderContent("Unreplied");
                       navigateTo("/");
                     }}
@@ -281,6 +284,7 @@ export function UnrepliedEmailsPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       setWelcomeHeaderContent("Unreplied");
                       navigateTo("/contacts");
                     }}
@@ -306,6 +310,7 @@ export function UnrepliedEmailsPage() {
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null))
                       setWelcomeHeaderContent("Unreplied");
                       navigateTo("/");
                     }}

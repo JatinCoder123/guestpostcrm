@@ -103,7 +103,7 @@ const ActionButton = ({
     const fetchFRButtonStatus = async () => {
       try {
         const res = await fetch(
-          `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=fr_button&email=${email}`
+          `${crmEndpoint}&type=fr_button&email=${email}`
         );
         const data = await res.json();
 

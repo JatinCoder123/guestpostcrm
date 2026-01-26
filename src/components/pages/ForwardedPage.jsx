@@ -21,6 +21,8 @@ import SearchComponent from "./SearchComponent";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
+import { ladgerAction } from "../../store/Slices/ladger";
+import { useDispatch } from "react-redux";
 export function ForwardedPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -36,6 +38,7 @@ export function ForwardedPage() {
 
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
   const navigateTo = useNavigate()
+  const dispatch = useDispatch()
 
   const filteredEmails = emails
     .filter((item) => {
@@ -103,17 +106,17 @@ export function ForwardedPage() {
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-   
+
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    
+
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-   
+
   };
 
 
@@ -268,6 +271,7 @@ export function ForwardedPage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Assigned");
                     navigateTo("/");
                   }} className="px-6 py-4">
@@ -281,6 +285,7 @@ export function ForwardedPage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Assigned");
                     navigateTo("/contacts");
                   }} className="px-6 py-4 text-gray-900">{email.first_name}</td>
@@ -298,6 +303,7 @@ export function ForwardedPage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Assigned");
                     navigateTo("/");
                   }} className="px-6 py-4 text-purple-600">
