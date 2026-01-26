@@ -12,7 +12,7 @@ export default function PreviewOrder({ data = [], userEmail }) {
                   fontWeight: "600",
                 }}
               >
-                No order data availablew
+                No order data available
               </div>
             </td>
           </tr>
@@ -32,11 +32,11 @@ export default function PreviewOrder({ data = [], userEmail }) {
     : [];
 
   const gpBacklinks = backlinks.filter(
-    (b) => String(b.type_c || "").toUpperCase() === "GP"
+    (b) => String(b.type_c || "").toUpperCase() === "GP",
   );
 
   const liBacklinks = backlinks.filter(
-    (b) => String(b.type_c || "").toUpperCase() === "LI"
+    (b) => String(b.type_c || "").toUpperCase() === "LI",
   );
 
   return (
@@ -318,14 +318,14 @@ const invoiceBtn = {
 const statusBadge = (status) => ({
   background:
     String(status).toLowerCase() === "paid" ||
-      String(status).toLowerCase() === "completed" ||
-      String(status).toLowerCase() === "live"
+    String(status).toLowerCase() === "completed" ||
+    String(status).toLowerCase() === "live"
       ? "#dcfce7"
       : "#fef3c7",
   color:
     String(status).toLowerCase() === "paid" ||
-      String(status).toLowerCase() === "completed" ||
-      String(status).toLowerCase() === "live"
+    String(status).toLowerCase() === "completed" ||
+    String(status).toLowerCase() === "live"
       ? "#166534"
       : "#92400e",
   padding: "4px 12px",
