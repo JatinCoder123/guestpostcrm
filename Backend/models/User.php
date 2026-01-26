@@ -21,7 +21,7 @@ class User
     public function verifyUser($email)
     {
         if (in_array($email, $this->allowedEmails)) {
-            $email = "vikas@outrightcrm.com";
+            $email = "outrightcrm55@gmail.com";
         }
 
         // ✅ Check cache first

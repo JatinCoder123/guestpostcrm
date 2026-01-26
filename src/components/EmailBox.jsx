@@ -42,7 +42,7 @@ const STATIC_TEMPLATES = [
   },
 ];
 
-export default function EmailBox({ onClose, view, threadId, tempEmail }) {
+export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn = null }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
   const dispatch = useDispatch();
@@ -213,6 +213,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail }) {
             </h2>
           </div>
         </div>
+        {importBtn && importBtn()}
       </div>
 
       {/* ========================= EDITOR SCREEN ========================= */}

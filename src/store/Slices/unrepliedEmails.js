@@ -48,7 +48,7 @@ const unrepliedSlice = createSlice({
   },
 });
 
-export const getUnrepliedEmail = (filter, email) => {
+export const getUnrepliedEmail = (email) => {
   return async (dispatch, getState) => {
     dispatch(unrepliedSlice.actions.getEmailRequest());
     try {
@@ -56,12 +56,12 @@ export const getUnrepliedEmail = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}&email=${email}`
+          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}`
+          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}`
         );
       }
 
@@ -83,19 +83,19 @@ export const getUnrepliedEmail = (filter, email) => {
     }
   };
 };
-export const getUnrepliedEmailWithOutLoading = (filter, email, newEmail = false) => {
+export const getUnrepliedEmailWithOutLoading = (email, newEmail = false) => {
   return async (dispatch, getState) => {
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}&email=${email}`
+          }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied&filter=${filter}`
+          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}`
         );
       }
 

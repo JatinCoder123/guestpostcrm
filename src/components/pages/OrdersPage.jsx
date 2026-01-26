@@ -456,7 +456,7 @@ export function OrdersPage() {
           </table>
         </div>
 
-        <Pagination slice={"orders"} fn={getOrders} />
+        {/* <Pagination slice={"orders"} fn={getOrders} /> */}
 
         {!loading && filteredorders.length === 0 && (
           <div className="p-12 text-center text-gray-500">

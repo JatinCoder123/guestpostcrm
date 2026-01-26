@@ -39,12 +39,26 @@ export const NoSearchFoundPage = () => {
     if (manualScanResponse && manualScanResponse?.message_id == currentMessageId?.message_id) {
       setSearch(currentMessageId.customer_email)
       setEnteredEmail(currentMessageId.customer_email)
+      dispatch(ladgerAction.setTimeline(null))
     }
   }, [error, manualScanResponse, dispatch]);
   if (showThread) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
         <EmailBox
+          importBtn={() => {
+            return <button
+              onClick={() => {
+                dispatch(manualEmailScan(currentMessageId.message_id));
+                setPopup({ open: true });
+                setShowThread(false);
+              }}
+              className="p-2 rounded-lg hover:bg-blue-500 transition cursor-pointer"
+              title="Import"
+            >
+              <Import className="w-6 h-6 text-white" />
+            </button>
+          }}
           onClose={() => setShowThread(false)}
           threadId={currentMessageId?.thread_id}
           tempEmail={currentMessageId?.customer_email}
@@ -106,27 +120,17 @@ export const NoSearchFoundPage = () => {
           </div>
 
           {/* Right: Action */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              dispatch(manualEmailScan(item.message_id));
-              setPopup({ open: true });
-            }}
-            className="p-2 rounded-lg hover:bg-blue-100 transition"
-            title="Import"
-          >
-            <Import className="w-5 h-5 text-blue-600" />
-          </button>
+
           <button
             onClick={(e) => {
               e.stopPropagation();
               setShowThread(true);
               setCurrentMessageId(item);
             }}
-            className="p-2 rounded-lg hover:bg-blue-100 transition"
-            title="Import"
+            className="p-2 rounded-lg hover:bg-blue-100 transition cursor-pointer"
+            title="View"
           >
-            <Eye className="w-5 h-5 text-blue-600" />
+            <Eye className="w-6 h-6 text-blue-600" />
           </button>
         </div>
       ))}

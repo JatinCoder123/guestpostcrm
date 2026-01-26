@@ -105,32 +105,29 @@ export const getUser = () => {
 
         switch (status) {
           case 404:
-            message = "You are not logged in. Please log in again.";
+            message = null;
             break;
 
           case 401:
-            // Read backend error message and convert to friendly message
             if (backendError.includes("Invalid token")) {
-              message =
-                "Your login session is not valid. Please sign in again.";
+              message = "Your session seems to have expired. Please sign in again.";
             } else if (backendError.includes("Unauthorized user")) {
-              message = "Your account is not authorized to access this system.";
+              message = "You don’t have permission to access this area.";
             } else if (backendError.includes("email missing")) {
-              message =
-                "Something went wrong with your session. Please log in again.";
+              message = "We couldn’t verify your session. Please log in again.";
             } else {
-              // Default fallback for unknown 401 reason
-              message = "Your session has expired. Please log in again.";
+              message = "For security reasons, please sign in again.";
             }
             break;
 
           case 400:
-            message = "Unable to process your request.";
+            message = "We couldn’t complete your request. Please try again.";
             break;
 
           default:
-            message = "An unexpected error occurred. Please try again.";
+            message = "Something went wrong on our side. Please try again in a moment.";
         }
+
       }
 
       dispatch(userSlice.actions.loadUserFailed(message));
