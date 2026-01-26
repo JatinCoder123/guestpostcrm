@@ -72,15 +72,8 @@ export const getEvents = () => {
         try {
             const url =
                 `${getState().user.crmEndpoint}&type=recent_activities&user_id=null${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`;
-            const response = await axios.get(url);
-
-            console.log("🟢 Full API Response:", response);
-            console.log("🟢 Response Data:", response.data);
-
-            const data = response.data;
-
-            console.log("📌 Data Count:", data.data_count);
-            console.log("📌 Events:", data.data);
+            const { data } = await axios.get(url);
+            console.log(`events`, data);
 
             dispatch(
                 eventSlice.actions.getEventsSucess({
