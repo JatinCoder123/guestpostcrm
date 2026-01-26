@@ -9,6 +9,7 @@ const invoicesSlice = createSlice({
     creating: false,
     invoices: [],
     count: 0,
+    summary: null,
     error: null,
     pageCount: 1,
     pageIndex: 1,
@@ -20,12 +21,13 @@ const invoicesSlice = createSlice({
       state.error = null;
     },
     getInvoicesSucess(state, action) {
-      const { count, invoices, pageCount, pageIndex } = action.payload;
+      const { count, invoices, pageCount, pageIndex, summary } = action.payload;
       state.loading = false;
       state.invoices = invoices;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.count = count;
+      state.summary = summary;
       state.error = null;
     },
     getInvoicesFailed(state, action) {
@@ -72,7 +74,7 @@ const invoicesSlice = createSlice({
   },
 });
 
-export const getInvoices = (email = null) => {
+export const getInvoices = (email = null, page = 1) => {
   return async (dispatch, getState) => {
     dispatch(invoicesSlice.actions.getInvoicesRequest());
 
@@ -81,12 +83,12 @@ export const getInvoices = (email = null) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_invoices&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email ?? getState().ladger.email}&page=1&page_size=50`
+          }&type=get_invoices&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email ?? getState().ladger.email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_invoices&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=get_invoices&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
@@ -95,6 +97,7 @@ export const getInvoices = (email = null) => {
         invoicesSlice.actions.getInvoicesSucess({
           count: data.data_count ?? 0,
           invoices: data.data ?? [],
+          summary: data.summary ?? null,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })

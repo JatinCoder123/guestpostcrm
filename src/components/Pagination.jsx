@@ -17,19 +17,19 @@ function Pagination({ slice, fn }) {
 
   const handlePrev = useCallback(() => {
     if (pageIndex > 1) {
-      dispatch(fn(pageIndex - 1));
+      dispatch(fn(null, pageIndex - 1));
     }
   }, [pageIndex, dispatch]);
 
   const handleNext = useCallback(() => {
     if (pageIndex < pageCount) {
-      dispatch(fn(Number(pageIndex) + 1));
+      dispatch(fn(null, Number(pageIndex) + 1));
     }
   }, [pageIndex, dispatch, pageCount]);
 
   const goToPage = useCallback(
     (p) => {
-      dispatch(fn(p));
+      dispatch(fn(null, p));
     },
     [dispatch]
   );
