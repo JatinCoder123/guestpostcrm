@@ -105,7 +105,7 @@ export const getUser = () => {
 
         switch (status) {
           case 404:
-            message = "Looks like you’re not logged in anymore. Please sign in to continue.";
+            message = null;
             break;
 
           case 401:
