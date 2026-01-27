@@ -52,8 +52,7 @@ import { ViewReminder } from "./components/ViewReminder";
 // import {PreviewOrder} from "./components/PreviewOrder";
 import PreviewOrder from "./components/PreviewOrder";
 import ViewReports from "./components/ViewReports";
-
-
+import GpcControllerPage from "./components/pages/GpcControllerPage";
 
 const router = createBrowserRouter([
   {
@@ -154,7 +153,6 @@ const router = createBrowserRouter([
         element: <ReminderPage />,
       },
 
-
       {
         path: "view-reports/:id?",
         element: <ViewReports />,
@@ -164,7 +162,6 @@ const router = createBrowserRouter([
         path: "timeline",
         element: <TimelinePage />,
       },
-
 
       {
         path: "forwarded-emails",
@@ -241,6 +238,10 @@ const router = createBrowserRouter([
             path: "buttons",
             element: <ButtonPage />,
           },
+          {
+            path: "controller",
+            element: <GpcControllerPage />,
+          },
         ],
       },
     ],
@@ -249,7 +250,7 @@ const router = createBrowserRouter([
 export default function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, error } = useSelector(
-    (state) => state.user
+    (state) => state.user,
   );
   useEffect(() => {
     dispatch(getUser());
