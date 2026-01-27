@@ -64,22 +64,20 @@ const bulkSlice = createSlice({
   },
 });
 
-export const getBulkEmails = (filter, email) => {
+export const getBulkEmails = (email) => {
   return async (dispatch, getState) => {
     dispatch(bulkSlice.actions.getEmailRequest());
     try {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
-          }&type=bulk&filter=${filter}&email=${email}&page=1&page_size=50`
+          `${getState().user.crmEndpoint
+          }&type=bulk${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
-          }&type=bulk&filter=${filter}&page=1&page_size=50`
+          `${getState().user.crmEndpoint
+          }&type=bulk${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       console.log(`Bulk emails`, response.data);
@@ -118,7 +116,7 @@ export const markingEmail = () => {  // Assuming 'id' is the email/contact ident
       dispatch(
         bulkSlice.actions.markingSucess(message)
       );
-      
+
       dispatch(bulkSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(bulkSlice.actions.markingFailed(error.message));

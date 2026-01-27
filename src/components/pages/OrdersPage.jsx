@@ -291,7 +291,7 @@ export function OrdersPage() {
       <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
         <ShieldCheck className="w-6 h-6 text-yellow-600" />
       </div>
-    </div>
+    </div>   
   </div>
 
   {/* New Orders */}

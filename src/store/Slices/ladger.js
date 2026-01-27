@@ -18,6 +18,9 @@ const ladgerSlice = createSlice({
     message: null,
     duplicate: 0,
     searchNotFound: false,
+    noSearchFoundLoading: false,
+    manualScanResponse: null,
+    manualScanLoading: false,
   },
   reducers: {
     getLadgerRequest(state) {
@@ -80,25 +83,33 @@ const ladgerSlice = createSlice({
     },
 
     getNoSearchResultDataRequest(state) {
-      state.loading = true;
+      state.noSearchFoundLoading = true;
       state.noSearchResultData = null;
       state.error = null;
     },
 
     getNoSearchResultDataSuccess(state, action) {
-      state.loading = false;
+      state.noSearchFoundLoading = false;
       state.noSearchResultData = action.payload.noSearchResultData || null;
       state.error = null;
     },
 
     getNoSearchResultDataFailed(state, action) {
-      state.loading = false;
+      state.noSearchFoundLoading = false;
+      state.noSearchResultData = null;
       state.error = action.payload || "Something went wrong";
     },
+    manualScanRequest(state) {
+      state.manualScanLoading = true;
+      state.manualScanResponse = null;
+      state.error = null;
+    },
     manualScanSuccess(state, action) {
-      state.message = action.payload;
+      state.manualScanLoading = false;
+      state.manualScanResponse = action.payload;
     },
     manualScanFailed(state, action) {
+      state.manualScanLoading = false;
       state.error = action.payload || "Something went wrong";
     },
 
@@ -118,7 +129,7 @@ export const getLadger = ({ email = null, isEmail = true, search = "", loading =
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger&filter=${getState().ladger.timeline}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
+        `${getState().user.crmEndpoint}&type=ledger${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
       );
       console.log("Ladger", data);
       dispatch(
@@ -190,6 +201,7 @@ export const getNoSearchResultData = (search) => {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=live_search&query=${search}`
       );
+
       console.log("NoSearchResultData", data);
 
       dispatch(
@@ -210,13 +222,14 @@ export const getNoSearchResultData = (search) => {
 };
 export const manualEmailScan = (messageId) => {
   return async (dispatch, getState) => {
+    dispatch(ladgerSlice.actions.manualScanRequest());
     try {
       const crmDomain = getState().user.crmEndpoint.split("?")[0];
 
       const response = await axios.get(
         `${crmDomain}?entryPoint=manual_email_scanning&message_id=${messageId}`
       );
-
+      console.log("ManualScan", response.data);
       dispatch(
         ladgerSlice.actions.manualScanSuccess(response.data)
       );

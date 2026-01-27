@@ -35,7 +35,7 @@ const detectionSlice = createSlice({
   },
 });
 
-export const getDetection = (filter, email) => {
+export const getDetection = (email) => {
   return async (dispatch, getState) => {
     dispatch(detectionSlice.actions.getDetectionRequest());
 
@@ -44,12 +44,12 @@ export const getDetection = (filter, email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=spam_detection&filter=${filter}&email=${email}&page=1&page_size=50`
+          }&type=spam_detection&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=spam_detection&filter=${filter}&page=1&page_size=50`
+          }&type=spam_detection&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       const data = response.data;

@@ -28,13 +28,13 @@ const ordersSlice = createSlice({
       state.error = null;
     },
     getOrdersSucess(state, action) {
-      const { count, orders, pageCount, pageIndex, statusLists,summary} = action.payload;
+      const { count, orders, pageCount, pageIndex, statusLists, summary } = action.payload;
       state.loading = false;
       state.orders = orders;
       state.statusLists = statusLists;
       state.count = count;
       state.updateId = null
-       state.summary=summary;
+      state.summary = summary;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.error = null;
@@ -114,6 +114,7 @@ const ordersSlice = createSlice({
     deleteLinkSuccess(state, action) {
       state.deleting = false;
       state.orders = action.payload.orders;
+      state.updateLinkMessage = "Order Deleted Successfully"
       state.error = null;
     },
     deleteLinkFailed(state, action) {
@@ -159,12 +160,12 @@ export const getOrders = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_orders&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_orders&filter=${getState().ladger.timeline}&page=1&page_size=50`
+          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
       const data = response.data;
@@ -176,7 +177,7 @@ export const getOrders = (email) => {
           orders: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
-           summary:data.summary ?? null
+          summary: data.summary ?? null
         })
       );
       dispatch(ordersSlice.actions.clearAllErrors());
@@ -222,7 +223,7 @@ export const getOrdersWithoutLoading = () => {
       let response;
       response = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=get_orders&filter=${getState().ladger.timeline}&page=1&page_size=50`
+        }&type=get_orders&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
       );
       const data = response.data;
       console.log(`Orders orders`, data);

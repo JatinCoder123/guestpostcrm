@@ -60,36 +60,36 @@ export function Sidebar() {
 
   // Redux counts
   const { count: unrepliedCount, loading: unrepliedLoading } = useSelector(
-    (s) => s.unreplied
+    (s) => s.unreplied,
   );
   const { count: unansweredCount, loading: unansweredLoading } = useSelector(
-    (s) => s.unanswered
+    (s) => s.unanswered,
   );
   const { count: dealCount, loading: dealsLoading } = useSelector(
-    (s) => s.deals
+    (s) => s.deals,
   );
   const { count: offersCount, loading: offersLoading } = useSelector(
-    (s) => s.offers
+    (s) => s.offers,
   );
 
   const { count: invoiceCount, loading: invoicesLoading } = useSelector(
-    (s) => s.invoices
+    (s) => s.invoices,
   );
   const { count: orderCount, loading: ordersLoading } = useSelector(
-    (s) => s.orders
+    (s) => s.orders,
   );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
-    (s) => s.orderRem
+    (s) => s.orderRem,
   );
 
   const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
-    (s) => s.marketplace
+    (s) => s.marketplace,
   );
   const { count: linkExchangeCount, loading: linkExchangeLoading } =
     useSelector((s) => s.linkExchange);
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
   const { count: forwardCount, loading: forwardLoading } = useSelector(
-    (s) => s.forwarded
+    (s) => s.forwarded,
   );
 
   // MENU ITEMS WITH COLORS

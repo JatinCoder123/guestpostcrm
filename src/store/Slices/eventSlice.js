@@ -71,7 +71,7 @@ export const getEvents = () => {
 
         try {
             const url =
-                `${getState().user.crmEndpoint}&type=recent_activities&user_id=null&filter=${getState().ladger.timeline}&page=1&page_size=50`;
+                `${getState().user.crmEndpoint}&type=recent_activities&user_id=null${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`;
             const response = await axios.get(url);
 
             console.log("🟢 Full API Response:", response);

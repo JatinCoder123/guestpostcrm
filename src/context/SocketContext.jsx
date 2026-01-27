@@ -73,7 +73,7 @@ export const SocketContextProvider = ({ children }) => {
       console.log("Mail site:", data.site_url);
       console.log("new mail", data);
 
-      if (data?.site_url === crmRef.current) {
+      if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);
         }

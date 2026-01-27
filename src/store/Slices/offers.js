@@ -26,7 +26,7 @@ const offersSlice = createSlice({
       const { count, offers,summary } = action.payload;
       state.loading = false;
       state.offers = offers;
-      state.summary=summary
+      state.summary=summary;
       state.count = count;
       state.error = null;
     },

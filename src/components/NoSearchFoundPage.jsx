@@ -8,16 +8,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { toast } from "react-toastify";
 import { LoadingChase } from "./Loading";
-import { Calendar, Import } from "lucide-react";
+import { Calendar, Eye, Import } from "lucide-react";
+import EmailBox from "./EmailBox";
 
 export const NoSearchFoundPage = () => {
-  const { search } = useContext(PageContext);
-  const { noSearchResultData, loading, error } = useSelector(
+  const { noSearchResultData, noSearchFoundLoading, error, manualScanResponse } = useSelector(
     (state) => state.ladger
   );
-  const { message: scanResponse } = useSelector((state) => state.ladger);
-
-  const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
+  const [currentMessageId, setCurrentMessageId] = useState(null);
+  const [showThread, setShowThread] = useState(false);
+  const { setSearch, search, setEnteredEmail } = useContext(PageContext);
   const [popup, setPopup] = useState({
     open: false,
     status: null,
@@ -26,19 +26,47 @@ export const NoSearchFoundPage = () => {
   });
 
   const dispatch = useDispatch();
-
   useEffect(() => {
     dispatch(getNoSearchResultData(search));
-  }, [search, dispatch]);
+  }, []);
+
 
   useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(ladgerAction.clearAllErrors());
     }
-  }, [error, dispatch]);
-
-  if (loading || unrepliedLoading) {
+    if (manualScanResponse && manualScanResponse?.message_id == currentMessageId?.message_id) {
+      setSearch(currentMessageId.customer_email)
+      setEnteredEmail(currentMessageId.customer_email)
+      dispatch(ladgerAction.setTimeline(null))
+    }
+  }, [error, manualScanResponse, dispatch]);
+  if (showThread) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
+        <EmailBox
+          importBtn={() => {
+            return <button
+              onClick={() => {
+                dispatch(manualEmailScan(currentMessageId.message_id));
+                setPopup({ open: true });
+                setShowThread(false);
+              }}
+              className="p-2 rounded-lg hover:bg-blue-500 transition cursor-pointer"
+              title="Import"
+            >
+              <Import className="w-6 h-6 text-white" />
+            </button>
+          }}
+          onClose={() => setShowThread(false)}
+          threadId={currentMessageId?.thread_id}
+          tempEmail={currentMessageId?.customer_email}
+        />
+      </div>
+    );
+  }
+  if (noSearchFoundLoading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
         <LoadingChase />
@@ -56,7 +84,7 @@ export const NoSearchFoundPage = () => {
 
   return (
     <div className="space-y-3 p-4">
-      {noSearchResultData.map((item, index) => (
+      {noSearchResultData?.map((item, index) => (
         <div
           key={index}
           className="flex items-center justify-between gap-4
@@ -73,9 +101,12 @@ export const NoSearchFoundPage = () => {
             </div>
 
             <div>
-              <p className="text-sm font-medium text-gray-800">
+              <button onClick={() => {
+                setCurrentMessageId(item)
+                dispatch(manualEmailScan(item.message_id));
+              }} className="text-sm font-medium text-gray-800 hover:underline cursor-pointer">
                 {item.customer_email}
-              </p>
+              </button>
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Calendar className="w-3 h-3" />
                 {item.date_created}
@@ -89,38 +120,39 @@ export const NoSearchFoundPage = () => {
           </div>
 
           {/* Right: Action */}
+
           <button
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(manualEmailScan(item.message_id));
-              setPopup({ open: true });
+              setShowThread(true);
+              setCurrentMessageId(item);
             }}
-            className="p-2 rounded-lg hover:bg-blue-100 transition"
-            title="Import"
+            className="p-2 rounded-lg hover:bg-blue-100 transition cursor-pointer"
+            title="View"
           >
-            <Import className="w-5 h-5 text-blue-600" />
+            <Eye className="w-6 h-6 text-blue-600" />
           </button>
         </div>
       ))}
-      {popup.open && scanResponse && (
+      {popup.open && manualScanResponse && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-[420px] p-5 space-y-4">
             <h2 className="text-lg font-semibold">Scan Result</h2>
 
             {/* MESSAGE */}
-            <p className="text-gray-700">{scanResponse.message}</p>
+            <p className="text-gray-700">{manualScanResponse.message}</p>
 
             {/* CLOSE */}
-            {(scanResponse.status === "skipped" ||
-              scanResponse.status === 404 ||
-              scanResponse.status === "success") && (
-              <button
-                className="w-full bg-gray-200 py-2 rounded-lg"
-                onClick={() => setPopup({ open: false })}
-              >
-                Close
-              </button>
-            )}
+            {(manualScanResponse.status === "skipped" ||
+              manualScanResponse.status === 404 ||
+              manualScanResponse.status === "success") && (
+                <button
+                  className="w-full bg-gray-200 py-2 rounded-lg"
+                  onClick={() => setPopup({ open: false })}
+                >
+                  Close
+                </button>
+              )}
           </div>
         </div>
       )}

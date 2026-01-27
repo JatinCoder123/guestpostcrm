@@ -36,7 +36,7 @@ export function RecentEntry() {
       <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
         {/* Header */}
         <div className="bg-green-600 py-4 px-8">
-          <div className="grid grid-cols-4 text-left text-white text-lg font-semibold">
+          <div className="grid grid-cols-5 text-left text-white text-lg font-semibold">
             <div className="flex items-center gap-2">
               <CalendarDays size={22} /> DATE
             </div>
@@ -47,6 +47,9 @@ export function RecentEntry() {
 
             <div className="flex items-center gap-2">
               <Activity size={22} /> RECENT ACTIVITY
+            </div>
+            <div className="flex items-center gap-2">
+              <Activity size={22} /> KNOW PROMPT
             </div>
           </div>
         </div>
@@ -63,7 +66,7 @@ export function RecentEntry() {
           {events.map((event, index) => (
             <div
               key={index}
-              className="grid grid-cols-4 py-5 border-b text-gray-800 hover:bg-gray-50 transition"
+              className="grid grid-cols-5 py-5 border-b text-gray-800 hover:bg-gray-50 transition"
             >
               {/* Date */}
               <div
@@ -110,7 +113,7 @@ export function RecentEntry() {
               >
                 <Mail size={20} className="text-blue-600" />
                 {excludeEmail(
-                  event.real_name == `User` ? event.name : event.real_name
+                  event.real_name == `User` ? event.name : event.real_name,
                 ) ?? "—"}
               </div>
 
@@ -118,6 +121,12 @@ export function RecentEntry() {
               <div className="flex items-center gap-3 text-[17px] truncate max-w-[600px]">
                 <Activity size={20} className="text-purple-600" />
                 {event.recent_activity ?? "—"}
+              </div>
+
+              {/* Know PROMPT */}
+              <div className="flex items-center gap-3 text-[17px] truncate max-w-[600px]">
+                <Activity size={20} className="text-purple-600" />
+                {event.know_prompt ?? ""}
               </div>
             </div>
           ))}

@@ -235,7 +235,7 @@ const router = createBrowserRouter([
           {
             path: "templates",
             element: <TemplatesPage />,
-          },
+          },             
           {
             path: "websites",
             element: <WebsitesPage />,
