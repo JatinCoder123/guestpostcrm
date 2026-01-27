@@ -258,7 +258,7 @@ export default function CreateOffer() {
           />
         );
 
-        return <PreviewTemplate editorContent={editorContent ? editorContent : html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
+        return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
       }}
 
     />

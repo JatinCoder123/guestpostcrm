@@ -2,7 +2,13 @@ import { motion } from "framer-motion"
 import { TINY_EDITOR_API_KEY } from "../store/constants";
 import { Editor } from "@tinymce/tinymce-react";
 import { X } from "lucide-react";
-export const PreviewTemplate = ({ editorContent, setEditorContent, onClose, onSubmit, loading }) => {
+import { useEffect } from "react";
+export const PreviewTemplate = ({ editorContent, initialContent, setEditorContent, onClose, onSubmit, loading }) => {
+    useEffect(() => {
+        if (initialContent) {
+            setEditorContent(initialContent);
+        }
+    }, []);
     return (
         <div
             className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"

@@ -164,8 +164,8 @@ export default function CreateDeal() {
   };
   useEffect(() => {
     if (message) {
-      dispatch(getDeals({}));
-      dispatch(getOffers({}));
+      dispatch(getDeals({ email: state?.email }));
+      dispatch(getOffers({ email: state?.email }));
       if (message.includes("Updated")) {
         ManualSideCall(crmEndpoint, state?.email, "Our Deal Updated Successfully", 2, okHandler);
 
@@ -196,7 +196,8 @@ export default function CreateDeal() {
 
       } else {
         ManualSideCall(crmEndpoint, state?.email, "Our Deal Created Successfully", 2, okHandler);
-
+        // console.log("newDeals", newDeals);
+        // console.log("currentDeals", currentDeals);
         dispatch(
           sendEmail(
             renderToStaticMarkup(
@@ -265,7 +266,7 @@ export default function CreateDeal() {
           amountKey="dealamount"
         />);
 
-        return <PreviewTemplate editorContent={editorContent ? editorContent : html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
+        return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
 
       }}
     />
