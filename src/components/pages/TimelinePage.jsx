@@ -1,4 +1,4 @@
-import { Mail, Pencil, Reply } from "lucide-react";
+import { Mail, Pencil, Reply, SparkleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -29,7 +29,16 @@ import NewEmailBanner from "../NewEmailBanner";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
 import UpdatePopup from "../UpdatePopup";
+import { useNavigate } from "react-router-dom";
+
+const decodeHTMLEntities = (str = "") => {
+  if (typeof str !== "string") return str;
+  const txt = document.createElement("textarea");
+  txt.innerHTML = str;
+  return txt.value;
+};
 export function TimelinePage() {
+  const navigateTo = useNavigate();
   const [showEmail, setShowEmail] = useState(false);
   const [showUpdateAiReply, setShowUpdateAiReply] = useState(false);
   const [aiReply, setAiReply] = useState("");
@@ -91,7 +100,7 @@ export function TimelinePage() {
           email: email,
           thread_id: currentThreadId,
           recent_activity: threadMessage,
-        })
+        }),
       );
       dispatch(threadEmailAction.clearAllMessage());
     }
@@ -115,7 +124,7 @@ export function TimelinePage() {
         email: email,
         thread_id: emails[currentIndex]?.thread_id,
         recent_activity: "Quick Action Button Reply Sent",
-      })
+      }),
     );
   };
 
@@ -127,8 +136,8 @@ export function TimelinePage() {
           emails[currentIndex]?.thread_id
             ? emails[currentIndex]?.thread_id
             : threadId,
-          updatedAiReply
-        )
+          updatedAiReply,
+        ),
       );
     } catch (error) {
       console.error("❌ Error sending AI reply:", error);
@@ -196,12 +205,17 @@ export function TimelinePage() {
   return (
     <>
       <NewEmailBanner show={showNewEmailBanner} />
-      <UpdatePopup open={showUpdateAiReply} onClose={() => setShowUpdateAiReply(false)} fields={[{
-        label: "Ai Reply",
-        name: "ai_reply",
-        type: "textarea",
-        value: aiReply,
-      }]}
+      <UpdatePopup
+        open={showUpdateAiReply}
+        onClose={() => setShowUpdateAiReply(false)}
+        fields={[
+          {
+            label: "Ai Reply",
+            name: "ai_reply",
+            type: "textarea",
+            value: aiReply,
+          },
+        ]}
         buttonLabel="Send"
         loading={aiReplySentLoading}
         onUpdate={(data) => {
@@ -209,7 +223,8 @@ export function TimelinePage() {
           setAiReply(data.ai_reply);
           handleAiAutoReply(data.ai_reply);
           setShowUpdateAiReply(false);
-        }} />
+        }}
+      />
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
@@ -297,10 +312,29 @@ export function TimelinePage() {
                         alt="Play AI Avatar"
                       />
                     </motion.button>
+                    {/* PROMPT */}
+                    <div className="flex items-center justify-center ml-4">
+                      {mailersSummary?.prompt_id &&
+                        mailersSummary.prompt_id.trim() !== "" &&
+                        mailersSummary.prompt_id.toLowerCase() !== "na" && (
+                          <button
+                            onClick={() =>
+                              navigateTo("/settings/machine-learning", {
+                                state: { promptId: mailersSummary.prompt_id },
+                              })
+                            }
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                    </div>
                   </div>
 
                   <p className="text-gray-700 text-sm leading-relaxed">
-                    {mailersSummary?.summary ?? "No AI summary available."}
+                    {decodeHTMLEntities(
+                      mailersSummary?.summary ?? "No AI summary available.",
+                    )}
                   </p>
                 </div>
 
@@ -333,10 +367,11 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -387,14 +422,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    threadId={currentThreadId}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  threadId={currentThreadId}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (
