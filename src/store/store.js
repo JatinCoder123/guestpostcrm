@@ -31,6 +31,7 @@ import DraftInvoiceReducer from "./Slices/draftInvoice.js";
 import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
 import hotReducer from "./Slices/hotSlice.js";
 import tagReducer from "./Slices/tag.js";
+import gpcControllerReducer from "./Slices/gpcControllerSlice";
 
 export const store = configureStore({
   reducer: {
@@ -67,5 +68,6 @@ export const store = configureStore({
     user: userReducer,
     DraftInvoice: DraftInvoiceReducer,
     tag: tagReducer,
+    gpcController: gpcControllerReducer,
   },
 });
