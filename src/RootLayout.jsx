@@ -174,7 +174,7 @@ const RootLayout = () => {
     if (notificationCount.refreshUnreplied) {
       refreshLadger();
 
-      dispatch(getUnrepliedEmail({ email: enteredEmail, newEmail: true, loading: true }));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: true }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       setCurrentIndex(0);
       setNotificationCount((prev) => ({
@@ -197,7 +197,7 @@ const RootLayout = () => {
       refreshLadger();
 
       dispatch(getDeals({}));
-      dispatch(getUnrepliedEmail({ email: enteredEmail, newEmail: true, loading: false }));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -212,7 +212,7 @@ const RootLayout = () => {
       dispatch(getInvoices({ loading: false }));
       refreshLadger();
 
-      dispatch(getUnrepliedEmail({ email: enteredEmail, newEmail: true, loading: false }));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -236,7 +236,7 @@ const RootLayout = () => {
       refreshLadger();
 
       dispatch(getOffers({}));
-      dispatch(getUnrepliedEmail({ email: enteredEmail, newEmail: true, loading: false }));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
