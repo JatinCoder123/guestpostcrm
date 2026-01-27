@@ -58,12 +58,12 @@ export const getUnrepliedEmail = ({ email = null, page = 1, newEmail = false, lo
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}`
+          }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
+          }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
         );
       }
 
