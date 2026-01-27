@@ -1,4 +1,4 @@
-import { Mail, Pencil, Reply } from "lucide-react";
+import { Mail, Pencil, Reply, SparkleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -29,6 +29,7 @@ import NewEmailBanner from "../NewEmailBanner";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
 import UpdatePopup from "../UpdatePopup";
+import { useNavigate } from "react-router-dom";
 
 const decodeHTMLEntities = (str = "") => {
   if (typeof str !== "string") return str;
@@ -37,6 +38,7 @@ const decodeHTMLEntities = (str = "") => {
   return txt.value;
 };
 export function TimelinePage() {
+  const navigateTo = useNavigate();
   const [showEmail, setShowEmail] = useState(false);
   const [showUpdateAiReply, setShowUpdateAiReply] = useState(false);
   const [aiReply, setAiReply] = useState("");
@@ -310,6 +312,23 @@ export function TimelinePage() {
                         alt="Play AI Avatar"
                       />
                     </motion.button>
+                    {/* PROMPT */}
+                    <div className="flex items-center justify-center ml-4">
+                      {mailersSummary?.prompt_id &&
+                        mailersSummary.prompt_id.trim() !== "" &&
+                        mailersSummary.prompt_id.toLowerCase() !== "na" && (
+                          <button
+                            onClick={() =>
+                              navigateTo("/settings/machine-learning", {
+                                state: { promptId: mailersSummary.prompt_id },
+                              })
+                            }
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                    </div>
                   </div>
 
                   <p className="text-gray-700 text-sm leading-relaxed">
