@@ -12,6 +12,8 @@ const offersSlice = createSlice({
     updating: false,
     summary: null,
     message: null,
+    pageCount: 1,
+    pageIndex: 1,
     creating: false,
     deleting: false,
     parent_id: null,
@@ -24,12 +26,14 @@ const offersSlice = createSlice({
       state.error = null;
     },
     getOffersSucess(state, action) {
-      const { count, offers, summary } = action.payload;
+      const { count, offers, summary, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.offers = offers;
       state.summary = summary
       state.count = count;
       state.error = null;
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
     },
     getOffersFailed(state, action) {
       state.loading = false;
@@ -98,21 +102,23 @@ const offersSlice = createSlice({
   },
 });
 
-export const getOffers = (email) => {
+export const getOffers = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(offersSlice.actions.getOffersRequest());
+    if (loading) {
+      dispatch(offersSlice.actions.getOffersRequest());
+    }
 
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=get_offers&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=get_offers&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
@@ -121,7 +127,9 @@ export const getOffers = (email) => {
         offersSlice.actions.getOffersSucess({
           count: data.data_count ?? 0,
           offers: data.data ?? [],
-          summary: data.summary ?? null
+          summary: data.summary ?? null,
+          pageCount: data.total_pages ?? 1,
+          pageIndex: data.current_page ?? 1,
         })
       );
       dispatch(offersSlice.actions.clearAllErrors());

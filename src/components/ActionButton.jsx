@@ -6,13 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   favAction,
   favEmail,
-  getFavEmailsWithOutLoading,
+  getFavEmails,
 } from "../store/Slices/favEmailSlice";
 import { bulkAction, markingEmail } from "../store/Slices/markBulkSlice";
 import {
   forwardEmail,
-  getForwardedEmailsWithOutLoading,
   forwardedAction,
+  getForwardedEmails,
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
@@ -24,7 +24,6 @@ import { getTags, applyTag } from "../store/Slices/markTagSlice";
 import { SocketContext } from "../context/SocketContext";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
-import UpdatePopup from "./UpdatePopup";
 import { PreviewTemplate } from "./PreviewTemplate";
 import { threadEmailAction } from "../store/Slices/threadEmail";
 
@@ -185,7 +184,7 @@ const ActionButton = ({
         })
       );
       dispatch(forwardedAction.clearAllMessages());
-      dispatch(getForwardedEmailsWithOutLoading(enteredEmail));
+      dispatch(getForwardedEmails({ email: enteredEmail, loading: false }));
     }
 
     if (favouriteError) {
@@ -203,7 +202,7 @@ const ActionButton = ({
         })
       );
       dispatch(favAction.clearAllMessages());
-      dispatch(getFavEmailsWithOutLoading(enteredEmail));
+      dispatch(getFavEmails({ email: enteredEmail, loading: false }));
     }
 
     if (markingError) {

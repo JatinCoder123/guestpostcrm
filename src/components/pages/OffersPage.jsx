@@ -10,6 +10,7 @@ import { excludeEmail, excludeName, extractEmail } from "../../assets/assets";
 import { LoadingChase, LoadingSpin } from "../Loading";
 import { PageContext } from "../../context/pageContext";
 import { ladgerAction } from "../../store/Slices/ladger";
+import TableLoading from "../TableLoading";
 
 export function OffersPage() {
   const { offers, count, loading, error, deleting, deleteOfferId, summary } = useSelector((state) => state.offers);
@@ -44,9 +45,6 @@ export function OffersPage() {
       return 0;
     });
 
-  // Calculate stats
-  const pending = offers.filter((o) => o.status === "Pending").length;
-  const accepted = offers.filter((o) => o.status === "Accepted").length;
 
   const navigateTo = useNavigate()
   const dropdownOptions = [
@@ -274,82 +272,82 @@ export function OffersPage() {
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
             </thead>
-
-            <tbody>
-              {filteredoffers.map((offer, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-100 hover:bg-pink-50 transition"
-                >
-                  <td className="px-6 py-4 text-gray-600 cursor-pointer" onClick={() => {
-                    const input = excludeEmail(offer.real_name);
-                    localStorage.setItem("email", input);
-                    setSearch(input);
-                    setEnteredEmail(input);
-                    dispatch(ladgerAction.setTimeline(null))
-                    navigateTo("/");
-                  }}
-                  ><div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{offer.date_entered}</span>
-                    </div></td>
-
-
-                  <td
-                    onClick={() => {
-                      const input = excludeName(offer.real_name);
+            {loading ? <TableLoading cols={7} /> :
+              <tbody>
+                {filteredoffers.map((offer, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-100 hover:bg-pink-50 transition"
+                  >
+                    <td className="px-6 py-4 text-gray-600 cursor-pointer" onClick={() => {
+                      const input = excludeEmail(offer.real_name);
                       localStorage.setItem("email", input);
                       setSearch(input);
                       setEnteredEmail(input);
                       dispatch(ladgerAction.setTimeline(null))
-                      navigateTo("/contacts");
+                      navigateTo("/");
                     }}
-                    className="px-6 py-4 text-gray-900 cursor-pointer"
-                  >
-                    {excludeName(offer.real_name)}
-                  </td>
-                  <td className="px-6 py-4 text-blue-600">{excludeEmail(offer.real_name)}</td>
-
-                  <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
-                  <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                      {offer.offer_status}
-                    </span>
-                  </td>
+                    ><div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{offer.date_entered}</span>
+                      </div></td>
 
 
-                  <td className="pl-9 py-4">
+                    <td
+                      onClick={() => {
+                        const input = excludeName(offer.real_name);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null))
+                        navigateTo("/contacts");
+                      }}
+                      className="px-6 py-4 text-gray-900 cursor-pointer"
+                    >
+                      {excludeName(offer.real_name)}
+                    </td>
+                    <td className="px-6 py-4 text-blue-600">{excludeEmail(offer.real_name)}</td>
+
+                    <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
+                    <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+                        {offer.offer_status}
+                      </span>
+                    </td>
 
 
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Update Button */}
-                      <button
-                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                        title="Update"
-                        onClick={() => navigateTo(`/offers/edit/${offer.id}`, { state: { email: excludeEmail(offer.real_name) } })}
-                      >
-                        <Pen className="w-5 h-5 text-blue-600" />
-                      </button>
-                      {/* Delete Button */}
-                      {deleting && deleteOfferId === offer.id ? <LoadingChase size="20" color="red" /> : (
+                    <td className="pl-9 py-4">
+
+
+                      <div className="flex items-center justify-center gap-2">
+                        {/* Update Button */}
                         <button
-                          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                          title="Delete"
-                          onClick={() => dispatch(deleteOffer(offer.id))}
+                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                          title="Update"
+                          onClick={() => navigateTo(`/offers/edit/${offer.id}`, { state: { email: excludeEmail(offer.real_name) } })}
                         >
-                          <Trash className="w-5 h-5 text-red-600" />
+                          <Pen className="w-5 h-5 text-blue-600" />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                        {/* Delete Button */}
+                        {deleting && deleteOfferId === offer.id ? <LoadingChase size="20" color="red" /> : (
+                          <button
+                            className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                            title="Delete"
+                            onClick={() => dispatch(deleteOffer(offer.id))}
+                          >
+                            <Trash className="w-5 h-5 text-red-600" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>}
 
           </table>
         </div>
-        {/* {offers.length > 0 && <Pagination slice={"offers"} fn={getOffers} />} */}
+        {offers.length > 0 && <Pagination slice={"offers"} fn={(p) => dispatch(getOffers({ page: p }))} />}
 
         {!loading && filteredoffers.length === 0 && (
           <div className="p-12 text-center">

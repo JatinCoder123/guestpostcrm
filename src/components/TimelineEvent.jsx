@@ -1,12 +1,15 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Eye, SparkleIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Pagination from "./Pagination";
+import { getLadger } from "../store/Slices/ladger";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
   const [selectedView, setSelectedView] = useState("all");
   const [timelineData, setTimelineData] = useState([]);
+  const dispatch = useDispatch();
   useEffect(() => {
     if (selectedView === "all") {
       setTimelineData(ladger);
@@ -201,10 +204,9 @@ const TimelineEvent = () => {
                   </div>
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${
-                        index === 0
-                          ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
-                          : "bg-white border-gray-200"
+                      ${index === 0
+                        ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
+                        : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -216,12 +218,11 @@ const TimelineEvent = () => {
                           <Eye
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110
-                              ${
-                                isReminderEvent
-                                  ? "text-purple-600"
-                                  : isContactEvent
-                                    ? "text-green-600"
-                                    : "text-blue-600"
+                              ${isReminderEvent
+                                ? "text-purple-600"
+                                : isContactEvent
+                                  ? "text-green-600"
+                                  : "text-blue-600"
                               }`}
                           />
 
@@ -354,7 +355,7 @@ const TimelineEvent = () => {
           </div>
         </div>
       </div>
-      {/* <Pagination slice={"ladger"} fn={getLadger} /> */}
+      <Pagination slice={"ladger"} fn={(p) => dispatch(getLadger({ page: p, loading: false }))} />
     </>
   );
 };

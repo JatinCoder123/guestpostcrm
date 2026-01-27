@@ -151,7 +151,7 @@ export default function CreateOffer() {
 
   useEffect(() => {
     if (message) {
-      dispatch(getOffers());
+      dispatch(getOffers({}));
       if (message.includes("Updated")) {
         ManualSideCall(crmEndpoint, state?.email, "Our Offer Updated Successfully", 1, okHandler);
 

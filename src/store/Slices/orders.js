@@ -151,21 +151,21 @@ const ordersSlice = createSlice({
   },
 });
 
-export const getOrders = (email) => {
+export const getOrders = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(ordersSlice.actions.getOrdersRequest());
+    loading && dispatch(ordersSlice.actions.getOrdersRequest());
 
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
@@ -216,33 +216,7 @@ export const createOrder = () => {
     }
   };
 };
-export const getOrdersWithoutLoading = () => {
-  return async (dispatch, getState) => {
-    dispatch(ordersSlice.actions.getOrdersRequest());
-    try {
-      let response;
-      response = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=get_orders&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
-      );
-      const data = response.data;
-      console.log(`Orders orders`, data);
-      dispatch(
-        ordersSlice.actions.getOrdersSucess({
-          count: data.data_count ?? 0,
-          orders: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-        })
-      );
-      dispatch(ordersSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        ordersSlice.actions.getOrdersFailed("Fetching Orders Failed")
-      );
-    }
-  };
-};
+
 
 export const updateOrder = (order, send = true, id = null) => {
   return async (dispatch, getState) => {

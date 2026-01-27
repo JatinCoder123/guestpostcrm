@@ -20,13 +20,14 @@ import Pagination from "../Pagination";
 import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices";
 import EnhancedSearch from "./EnhancedSearch";
 import UpdatePopup from "../UpdatePopup";
+import TableLoading from "../TableLoading";
 import { toast } from "react-toastify";
 import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 
 export function InvoicesPage() {
-  const { invoices, count, summary, message, error, updating } = useSelector((state) => state.invoices);
+  const { invoices, count, summary, loading, message, error, updating } = useSelector((state) => state.invoices);
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [topsearch, setTopsearch] = useState('');
@@ -369,24 +370,8 @@ export function InvoicesPage() {
     }
   }, [dispatch, message, error]);
 
-  // Calculate stats based on filtered data
-  const totalInvoices = filteredinvoices.length;
-  const paidInvoices = filteredinvoices.filter(inv => inv.status_c === "PAID");
-  const pendingInvoices = filteredinvoices.filter(inv => inv.status_c === "DRAFT" || inv.status_c === "SENT");
-  const overdueInvoices = filteredinvoices.filter(inv => {
-    if (inv.status_c === "OVERDUE") return true;
-    // Check if due date is passed and status is not PAID
-    if (inv.due_date && inv.status_c !== "PAID") {
-      const dueDate = new Date(inv.due_date);
-      const today = new Date();
-      return dueDate < today;
-    }
-    return false;
-  });
 
-  const paidAmount = paidInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
-  const pendingAmount = pendingInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
-  const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
+
 
   // Calculate payment method statistics
   const paymentMethodsStats = {};
@@ -616,7 +601,7 @@ export function InvoicesPage() {
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
-            <tbody>
+            {loading ? <TableLoading cols={8} /> : <tbody>
               {filteredinvoices.map((invoice) => (
                 <tr
                   key={invoice.id}
@@ -692,11 +677,11 @@ export function InvoicesPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
           </table>
         </div>
         {filteredinvoices.length > 0 && (
-          <Pagination slice={"invoices"} fn={getInvoices} />
+          <Pagination slice={"invoices"} fn={(p) => dispatch(getInvoices({ page: p }))} />
         )}
         {filteredinvoices.length === 0 && (
           <div className="p-12 text-center">

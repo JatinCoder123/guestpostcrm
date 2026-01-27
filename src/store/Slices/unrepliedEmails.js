@@ -48,54 +48,22 @@ const unrepliedSlice = createSlice({
   },
 });
 
-export const getUnrepliedEmail = (email) => {
+export const getUnrepliedEmail = ({ email = null, page = 1, newEmail = false, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(unrepliedSlice.actions.getEmailRequest());
-    try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}`
-        );
-      }
-
-      console.log(`Unreplied emails`, response.data);
-      const data = response.data;
-      dispatch(
-        unrepliedSlice.actions.getEmailSucess({
-          count: data.data_count ?? 0,
-          emails: data.data ?? [],
-        })
-      );
-      dispatch(unrepliedSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        unrepliedSlice.actions.getEmailFailed(
-          "Fetching Unreplied Emails Failed"
-        )
-      );
+    if (loading) {
+      dispatch(unrepliedSlice.actions.getEmailRequest());
     }
-  };
-};
-export const getUnrepliedEmailWithOutLoading = (email, newEmail = false) => {
-  return async (dispatch, getState) => {
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}`
+          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}`
+          }&type=unreplied${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
         );
       }
 
@@ -105,6 +73,8 @@ export const getUnrepliedEmailWithOutLoading = (email, newEmail = false) => {
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data ?? [],
+          pageCount: data.total_pages ?? 1,
+          pageIndex: data.current_page ?? 1,
         })
       );
       if (newEmail) {
@@ -120,6 +90,7 @@ export const getUnrepliedEmailWithOutLoading = (email, newEmail = false) => {
     }
   };
 };
+
 export const updateUnrepliedEmails = (threadId) => {
   return (dispatch, getState) => {
     console.log("1", getState().unreplied.emails.filter((email) => email.thread_id == threadId))

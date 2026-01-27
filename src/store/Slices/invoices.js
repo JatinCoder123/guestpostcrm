@@ -18,6 +18,7 @@ const invoicesSlice = createSlice({
   reducers: {
     getInvoicesRequest(state) {
       state.loading = true;
+      // state.invoices = [];
       state.error = null;
     },
     getInvoicesSucess(state, action) {
@@ -74,10 +75,9 @@ const invoicesSlice = createSlice({
   },
 });
 
-export const getInvoices = (email = null, page = 1) => {
+export const getInvoices = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(invoicesSlice.actions.getInvoicesRequest());
-
+    if (loading) dispatch(invoicesSlice.actions.getInvoicesRequest());
     try {
       let response;
       if (email) {

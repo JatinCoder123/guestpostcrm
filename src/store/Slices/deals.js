@@ -99,21 +99,23 @@ const dealsSlice = createSlice({
   },
 });
 
-export const getDeals = (email) => {
+export const getDeals = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(dealsSlice.actions.getDealsRequest());
+    if (loading) {
+      dispatch(dealsSlice.actions.getDealsRequest());
+    }
 
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=get_deals&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=get_deals&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
@@ -122,8 +124,8 @@ export const getDeals = (email) => {
         dealsSlice.actions.getDealsSucess({
           count: data.data_count ?? 0,
           deals: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
+          pageCount: data.total_pages ?? 1,
+          pageIndex: data.current_page ?? 1,
           summary: data.summary ?? null
         })
       );

@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { getForwardedEmails } from "../../store/Slices/forwardedEmailSlice";
 import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
@@ -23,11 +22,12 @@ import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
 import { ladgerAction } from "../../store/Slices/ladger";
 import { useDispatch } from "react-redux";
+import TableLoading from "../TableLoading";
 export function ForwardedPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { count, emails } = useSelector((state) => state.forwarded);
+  const { count, emails, loading } = useSelector((state) => state.forwarded);
   const [
     handleThreadClick,
     showEmail,
@@ -259,7 +259,7 @@ export function ForwardedPage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            {loading ? <TableLoading cols={4} /> : <tbody>
               {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
@@ -311,11 +311,11 @@ export function ForwardedPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
           </table>
         </div>
         {filteredEmails.length > 0 && (
-          <Pagination slice={"forwarded"} fn={getForwardedEmails} />
+          <Pagination slice={"forwarded"} fn={(page) => dispatch(getForwardedEmails({ page: page }))} />
         )}
 
         {emails.length === 0 && (

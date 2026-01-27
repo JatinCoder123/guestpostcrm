@@ -22,12 +22,13 @@ import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
 import SearchComponent from "./SearchComponent";
 import { ladgerAction } from "../../store/Slices/ladger";
+import TableLoading from "../TableLoading";
 
 export function UnansweredPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { count, emails } = useSelector((state) => state.unanswered);
+  const { count, emails, loading } = useSelector((state) => state.unanswered);
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
   const navigateTo = useNavigate()
   const dispatch = useDispatch()
@@ -266,7 +267,7 @@ export function UnansweredPage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            {loading ? <TableLoading cols={4} /> : <tbody>
               {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
@@ -325,11 +326,12 @@ export function UnansweredPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
+
           </table>
         </div>
         {emails?.length > 0 && (
-          <Pagination slice={"unanswered"} fn={getUnansweredEmails} />
+          <Pagination slice={"unanswered"} fn={(p) => dispatch(getUnansweredEmails({ page: p }))} />
         )}
         {filteredEmails.length === 0 && (
           <div className="p-12 text-center">

@@ -15,7 +15,6 @@ import { useDispatch, useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { getFavEmails } from "../../store/Slices/favEmailSlice";
 import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
@@ -23,8 +22,9 @@ import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
 import { ladgerAction } from "../../store/Slices/ladger"
+import TableLoading from "../TableLoading";
 export function FavouritePage() {
-  const { count, emails } = useSelector((state) => state.fav);
+  const { count, emails, loading } = useSelector((state) => state.fav);
   const [
     handleThreadClick,
     showEmail,
@@ -251,7 +251,7 @@ export function FavouritePage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            {loading ? <TableLoading cols={4} /> : <tbody>
               {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
@@ -294,10 +294,11 @@ export function FavouritePage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
+
           </table>
         </div>
-        {emails.length > 0 && <Pagination slice={"fav"} fn={getFavEmails} />}
+        {emails.length > 0 && <Pagination slice={"fav"} fn={(page) => dispatch(getFavEmails({ page: page }))} />}
 
         {filteredEmails.length === 0 && (
           <div className="p-12 text-center">

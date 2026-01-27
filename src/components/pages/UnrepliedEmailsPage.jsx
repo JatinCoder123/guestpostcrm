@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import SearchComponent from "./SearchComponent";
 import { ladgerAction } from "../../store/Slices/ladger";
 import { extractEmail } from "../../assets/assets";
+import TableLoading from "../TableLoading";
 
 
 export function UnrepliedEmailsPage() {
@@ -26,7 +27,7 @@ export function UnrepliedEmailsPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
 
   const [selectedSort, setSelectedSort] = useState('');
-  const { count, emails } = useSelector((state) => state.unreplied);
+  const { count, emails, loading } = useSelector((state) => state.unreplied);
 
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
 
@@ -252,8 +253,7 @@ export function UnrepliedEmailsPage() {
                 </th>
               </tr>
             </thead>
-
-            <tbody>
+            {loading ? <TableLoading cols={4} /> : <tbody>
               {/* 🟣 USING filteredEmails NOW (NOT emails) */}
               {filteredEmails.map((email) => (
                 <tr
@@ -320,12 +320,12 @@ export function UnrepliedEmailsPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
           </table>
         </div>
 
         {emails?.length > 0 && (
-          <Pagination slice={"unreplied"} fn={getUnrepliedEmail} />
+          <Pagination slice={"unreplied"} fn={(p) => dispatch(getUnrepliedEmail({ page: p, loading: true }))} />
         )}
 
         {filteredEmails.length === 0 && (

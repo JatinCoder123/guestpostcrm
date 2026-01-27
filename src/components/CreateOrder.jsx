@@ -103,7 +103,7 @@ export default function CreateOrder() {
     if (message) {
       ManualSideCall(crmEndpoint, state?.email, "Our Order Updated Successfully", 1, okHandler);
 
-      dispatch(getOrders())
+      dispatch(getOrders({}))
       if (message.includes("Send")) {
         dispatch(sendEmail(
           renderToStaticMarkup(
@@ -147,7 +147,7 @@ export default function CreateOrder() {
     }
 
     if (updateLinkMessage) {
-      dispatch(getOrders())
+      dispatch(getOrders({}))
 
       toast.success(updateLinkMessage);
     }

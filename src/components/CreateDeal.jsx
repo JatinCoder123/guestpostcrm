@@ -164,8 +164,8 @@ export default function CreateDeal() {
   };
   useEffect(() => {
     if (message) {
-      dispatch(getDeals());
-      dispatch(getOffers());
+      dispatch(getDeals({}));
+      dispatch(getOffers({}));
       if (message.includes("Updated")) {
         ManualSideCall(crmEndpoint, state?.email, "Our Deal Updated Successfully", 2, okHandler);
 

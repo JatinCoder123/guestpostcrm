@@ -60,6 +60,7 @@ const ladgerSlice = createSlice({
 
     setTimeline(state, action) {
       state.timeline = action.payload;
+      localStorage.setItem("timeline", action.payload);
     },
 
     getIpWithEmailRequest(state) {
@@ -126,7 +127,6 @@ const ladgerSlice = createSlice({
 export const getLadger = ({ email = null, isEmail = true, search = "", loading = true, page = 1 }) => {
   return async (dispatch, getState) => {
     if (loading) dispatch(ladgerSlice.actions.getLadgerRequest());
-
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
