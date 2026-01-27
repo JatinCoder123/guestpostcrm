@@ -21,6 +21,10 @@ export default function GpcControllerPage() {
     const currentValue = checkboxes[key] === "1";
     dispatch(updateGpcController(key, !currentValue));
   };
+  const formatLabel = (key) =>
+    key
+      .replace(/^switch_do_not_/, "") // remove prefix only if it exists
+      .replace(/_/g, " ");
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
@@ -46,7 +50,7 @@ export default function GpcControllerPage() {
               }`}
             >
               <span className="text-sm font-medium text-gray-700 capitalize">
-                {key.replace(/_/g, " ")}
+                {formatLabel(key)}
               </span>
 
               {/* Toggle */}
