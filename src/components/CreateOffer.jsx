@@ -80,26 +80,27 @@ export default function CreateOffer() {
     let offer = offers.filter(
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email
     )
+    let valid = [];
+    if (type == "create") {
+      valid = websiteLists.filter(
+        (w) => !offer.some((o) => o.website == w)
+      );
+    }
+    if (type == "edit") {
+      valid = websiteLists.filter((w) =>
+        offer.some((o) => o.id == id || o.website !== w)
+      );
+    }
+    setValidWebsite(valid);
     offer = type == "edit" ? offer : offer.filter((d) => d.offer_status == "active");
     if (type == "edit" && id !== undefined) {
       offer = offer.filter((d) => d.id == id);
     }
     setCurrentOffers(() => [...offer]);
   }, [state, offers, type, id]);
-  useEffect(() => {
-    let valid = [];
-    if (type == "create") {
-      valid = websiteLists.filter(
-        (w) => !currentOffers.some((o) => o.website == w)
-      );
-    }
-    if (type == "edit") {
-      valid = websiteLists.filter((w) =>
-        currentOffers.some((o) => o.id == id || o.website !== w)
-      );
-    }
-    setValidWebsite(valid);
-  }, [currentOffers]);
+  // useEffect(() => {
+
+  // }, [currentOffers]);
   useEffect(() => {
     if (type == "create" && !state) {
       navigate("/");
