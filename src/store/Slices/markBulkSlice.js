@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const bulkSlice = createSlice({
   name: "bulk",
@@ -80,7 +81,7 @@ export const getBulkEmails = (email) => {
           }&type=bulk${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
-      console.log(`Bulk emails`, response.data);
+      showConsole && console.log(`Bulk emails`, response.data);
       const data = response.data;
       dispatch(
         bulkSlice.actions.getEmailSucess({
@@ -106,7 +107,7 @@ export const markingEmail = () => {  // Assuming 'id' is the email/contact ident
         `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
         {}
       );
-      console.log(`Mark Toggle Response`, response.data);
+      showConsole && console.log(`Mark Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
         throw new Error("Toggle failed");

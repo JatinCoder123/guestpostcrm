@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const tagSlice = createSlice({
   name: "tag",
@@ -31,7 +32,7 @@ const tagSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    
+
     // Create tag reducers
     createTagRequest(state) {
       state.creating = true;
@@ -48,7 +49,7 @@ const tagSlice = createSlice({
       state.createSuccess = false;
       state.error = action.payload;
     },
-    
+
     clearAllErrors(state) {
       state.error = null;
     },
@@ -68,10 +69,10 @@ export const getTags = (tag = "", page = 1, pageSize = 50) => {
       const response = await axios.get(
         `${getState().user.crmEndpoint}&entryPoint=add_tag&tag=${tag}&page=${page}&page_size=${pageSize}`
       );
-      
+
       const data = response.data;
-      console.log(`Tag data:`, data);
-      
+      showConsole && console.log(`Tag data:`, data);
+
       dispatch(
         tagSlice.actions.getTagsSuccess({
           count: data.data_count ?? 0,
@@ -98,30 +99,30 @@ export const createTag = (tagName) => {
 
     try {
       const encodedTagName = encodeURIComponent(tagName);
-      
+
       const response = await axios.post(
         `${getState().user.crmEndpoint}&entryPoint=add_tag&field_name=${encodedTagName}`
       );
-      
+
       const data = response.data;
-      console.log(`Create tag response:`, data);
-      
+      showConsole && console.log(`Create tag response:`, data);
+
       if (data.success || data.output?.includes('created successfully')) {
         dispatch(tagSlice.actions.createTagSuccess());
-        console.log(`Tag "${tagName}" created successfully!`);
+        showConsole && console.log(`Tag "${tagName}" created successfully!`);
         return Promise.resolve({ success: true, tagName });
       } else {
         const errorMsg = data.message || data.output || "Failed to create tag";
         dispatch(tagSlice.actions.createTagFailed(errorMsg));
         return Promise.reject(new Error(errorMsg));
       }
-      
+
     } catch (error) {
       console.error("Error creating tag:", error);
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.output || 
-                          error.message || 
-                          "Failed to create tag";
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.output ||
+        error.message ||
+        "Failed to create tag";
       dispatch(tagSlice.actions.createTagFailed(errorMessage));
       return Promise.reject(new Error(errorMessage));
     }

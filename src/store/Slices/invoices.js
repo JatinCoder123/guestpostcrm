@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const invoicesSlice = createSlice({
   name: "invoices",
@@ -92,7 +93,7 @@ export const getInvoices = ({ email = null, page = 1, loading = true }) => {
         );
       }
       const data = response.data;
-      console.log(`invoices`, data);
+      showConsole && console.log(`invoices`, data);
       dispatch(
         invoicesSlice.actions.getInvoicesSucess({
           count: data.data_count ?? 0,
@@ -113,7 +114,7 @@ export const getInvoices = ({ email = null, page = 1, loading = true }) => {
 
 // ✅ UPDATED CREATE INVOICE ACTION
 export const createInvoice = (formData) => {
-  console.log("📝 Form Data:", formData);
+  showConsole && console.log("📝 Form Data:", formData);
 
   return async (dispatch, getState) => {
     dispatch(invoicesSlice.actions.createInvoiceRequest());
@@ -210,7 +211,7 @@ export const updateInvoice = (invoice) => {
           },
         }
       );
-      console.log(`Update Invoice`, data);
+      showConsole && console.log(`Update Invoice`, data);
       const updatedInvoices = getState().invoices.invoices.map((i) => {
         if (i.id === invoice.id) {
           return invoice;

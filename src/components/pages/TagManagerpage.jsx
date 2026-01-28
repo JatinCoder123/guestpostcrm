@@ -23,9 +23,9 @@ import { useNavigate } from "react-router-dom";
 
 export function TagManagerpage() {
   const dispatch = useDispatch();
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const { tags, count, creating } = useSelector((state) => state.tag);
-  
+
   const [topsearch, setTopsearch] = useState('');
   // Initialize with "hot" to show hot tags on load
   const [selectedCategory, setSelectedCategory] = useState('hot');
@@ -34,27 +34,27 @@ export function TagManagerpage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [createdTagName, setCreatedTagName] = useState("");
-  
+
   // Fetch tags on component mount or when selectedTag changes
   useEffect(() => {
     dispatch(getTags(selectedTag));
   }, [dispatch, selectedTag]);
 
-  
+
   useEffect(() => {
     if (showSuccessToast) {
       const timer = setTimeout(() => {
         setShowSuccessToast(false);
         setCreatedTagName("");
       }, 3000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [showSuccessToast]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    
+
     try {
       const date = new Date(dateString);
       return date.toISOString().split('T')[0];
@@ -74,37 +74,34 @@ export function TagManagerpage() {
   };
 
   const handleFilterApply = (filters) => {
-    console.log("Filters applied:", filters);
   };
 
   const handleDownload = () => {
-    console.log("Download handler");
   };
 
 
   const handleConfirmDelete = (id, firstName) => {
-    console.log('delete btn clicked');
   };
 
-  
+
   const handleCreateTagSuccess = (tagName) => {
-    
+
     setCreatedTagName(tagName);
-    
-    
+
+
     setShowSuccessToast(true);
-    
-    
+
+
     setShowCreateForm(false);
-    
-    
+
+
     dispatch(getTags(selectedTag));
-    
-    
+
+
     dispatch(tagActions.resetCreateStatus());
   };
 
-  
+
   const handleClosePopup = () => {
     if (!creating) {
       dispatch(tagActions.resetCreateStatus());
@@ -161,25 +158,25 @@ export function TagManagerpage() {
           {/* Header with Create Button */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
-                      {/* Back Button */}
-  <button
-    onClick={() => navigate(-1)}
-    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm "
-  >
-    <ArrowLeft className="w-5 h-5 text-green-700" />
-  </button>
+              {/* Back Button */}
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm "
+              >
+                <ArrowLeft className="w-5 h-5 text-green-700" />
+              </button>
               <TagIcon className="w-6 h-6 text-green-600" />
               <h2 className="text-xl text-gray-900">Tag Manager</h2>
-              <a 
-                href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/" 
+              <a
+                href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img 
-                  width="30" 
-                  height="30" 
-                  src="https://img.icons8.com/offices/30/info.png" 
-                  alt="info" 
+                <img
+                  width="30"
+                  height="30"
+                  src="https://img.icons8.com/offices/30/info.png"
+                  alt="info"
                 />
               </a>
             </div>
@@ -204,7 +201,7 @@ export function TagManagerpage() {
                       <Calendar className="w-4 h-4" />
                       <span>DATE</span>
                     </div>
-                </th>
+                  </th>
                   <th className="px-6 py-4 text-left">
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4" />
@@ -252,11 +249,11 @@ export function TagManagerpage() {
               </tbody>
             </table>
           </div>
-          
+
           {tags?.length > 0 && (
             <Pagination slice={"tag"} fn={getTags} />
           )}
-          
+
           {(!tags || tags.length === 0) && (
             <div className="p-12 text-center">
               <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -270,11 +267,11 @@ export function TagManagerpage() {
       {showCreateForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/50"
             onClick={handleClosePopup}
           ></div>
-          
+
           {/* Popup Card */}
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
             {/* Header */}
@@ -291,9 +288,9 @@ export function TagManagerpage() {
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            
+
             {/* Form */}
-            <CreateTag 
+            <CreateTag
               onSubmit={handleCreateTagSuccess}
               onCancel={handleClosePopup}
             />

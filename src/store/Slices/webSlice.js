@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { websiteLists } from "../../assets/assets";
+import { showConsole, websiteLists } from "../../assets/assets";
 
 const websiteSlice = createSlice({
     name: "website",
@@ -39,7 +39,7 @@ export const getAllWebsites = () => {
         const domain = getState().user.crmEndpoint.split("?")[0];
         try {
             const { data } = await axios.get(`${domain}?entryPoint=fetch_gpc&type=get_website`);
-            console.log(`website data`, data);
+            showConsole && console.log(`website data`, data);
             dispatch(websiteSlice.actions.getAllWebsitesSuccess({ websites: data.data ?? websiteLists }));
             dispatch(websiteSlice.actions.clearAllErrors());
         } catch (error) {

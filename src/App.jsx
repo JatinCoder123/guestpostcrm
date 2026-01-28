@@ -264,12 +264,14 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <SocketContextProvider>
-          <PageContextProvider>
+
+        <PageContextProvider>
+          <SocketContextProvider>
             <RouterProvider router={router} />
-          </PageContextProvider>
-        </SocketContextProvider>
-      )}
+          </SocketContextProvider>
+        </PageContextProvider>
+      )
+      }
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}
       <ToastContainer

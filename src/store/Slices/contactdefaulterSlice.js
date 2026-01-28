@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const contactdefaulterSlice = createSlice({
   name: "contactdefaulter",
@@ -37,14 +38,14 @@ export const getContactDefaulters = () => {
     try {
       const { data } = await axios.post(
         "https://example.guestpostcrm.com/index.php?entryPoint=get_post_all&action_type=get_data",
-      
+
 
         {
-    "module": "Contacts",
-    "where": {
-        "stage": "defaulter"
-    },
-},
+          "module": "Contacts",
+          "where": {
+            "stage": "defaulter"
+          },
+        },
 
 
         {
@@ -55,14 +56,14 @@ export const getContactDefaulters = () => {
         }
       );
 
-      console.log(" defaulter Contact data:", data);
+      showConsole && console.log(" defaulter Contact data:", data);
 
       dispatch(
         contactdefaulterSlice.actions.getContactDefaulterSuccess({
           contacts: data,
         })
       );
-      
+
     } catch (error) {
       dispatch(
         contactdefaulterSlice.actions.getContactDefaulterFailed(

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 
 const duplicateEmailSlice = createSlice({
@@ -64,7 +65,7 @@ export const getDuplicateEmails = () => {
         try {
             const url = `${getState().user.crmEndpoint}&type=get_duplicate&email=${getState().ladger.email}`;
             const { data } = await axios.get(url);
-            console.log(data)
+            showConsole && console.log(data)
             dispatch(
                 duplicateEmailSlice.actions.getDuplicateEmailsSuccess({
                     emails: data?.data,

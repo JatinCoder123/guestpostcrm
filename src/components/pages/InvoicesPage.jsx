@@ -314,7 +314,6 @@ export function InvoicesPage() {
   };
 
   const handleFilterApply = (appliedFilters) => {
-    console.log('Applied filters:', appliedFilters);
     setFilters(appliedFilters);
   };
 

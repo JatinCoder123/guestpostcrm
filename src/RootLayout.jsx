@@ -78,7 +78,6 @@ const RootLayout = () => {
   }, [pathname]);
   useEffect(() => {
     if (crmEndpoint) {
-      // console.log("crmEndpoint", getDomain(crmEndpoint));
       setCrm(getDomain(crmEndpoint))
     }
   }, [crmEndpoint])

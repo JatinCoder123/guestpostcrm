@@ -7,7 +7,6 @@ import { useEffect, useState, useRef } from "react";
 import confetti from "canvas-confetti";
 // start
 import { useNavigate } from "react-router-dom";
-import FirstReplyButton from "./FirstReplyButton";
 
 const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
   const navigate = useNavigate();
@@ -171,7 +170,6 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
           </div>
         )}
         <SocialButtons />
-        <FirstReplyButton />
       </div>
 
       {/* 🔘 PREV + NEXT BUTTONS */}

@@ -199,9 +199,8 @@ export default function CreateDeal() {
 
       } else {
         ManualSideCall(crmEndpoint, state?.email, "Our Deal Created Successfully", 2, okHandler);
-        console.log("newDeals", newDealsCreated);
-        console.log("currentDeals", currentDeals);
         const data = unionByKey(newDealsCreated, currentDeals, "website_c");
+        setNewDealsCreated([]);
         dispatch(
           sendEmail(
             renderToStaticMarkup(

@@ -183,8 +183,6 @@ export default function CreateOffer() {
 
       } else {
         ManualSideCall(crmEndpoint, state?.email, "Our Offer Created Successfully", 1, okHandler);
-        // console.log("newoffers", newOffers)
-        // console.log("currentoffers", currentOffers)
         const data = unionByKey(newOffers, currentOffers, "website");
         dispatch(
           sendEmail(

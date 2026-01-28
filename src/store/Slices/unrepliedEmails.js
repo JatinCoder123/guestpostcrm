@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const unrepliedSlice = createSlice({
   name: "unreplied",
@@ -67,7 +68,7 @@ export const getUnrepliedEmail = ({ email = null, page = 1, newEmail = false, lo
         );
       }
 
-      console.log(`Unreplied emails`, response.data);
+      showConsole && console.log(`Unreplied emails`, response.data);
       const data = response.data;
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
@@ -93,7 +94,6 @@ export const getUnrepliedEmail = ({ email = null, page = 1, newEmail = false, lo
 
 export const updateUnrepliedEmails = (threadId) => {
   return (dispatch, getState) => {
-    console.log("1", getState().unreplied.emails.filter((email) => email.thread_id == threadId))
     const updatedEmails = getState().unreplied.emails.filter((email) => email.thread_id !== threadId);
     dispatch(unrepliedSlice.actions.updateUnreplied({
       count: getState().unreplied.count - 1,

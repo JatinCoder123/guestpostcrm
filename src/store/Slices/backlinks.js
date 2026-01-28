@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const backlinksSlice = createSlice({
   name: "backlinks",
@@ -74,7 +75,7 @@ export const getBacklinks = () => {
         }
       );
 
-      console.log("Backlinks Data:", data);
+      showConsole && console.log("Backlinks Data:", data);
       dispatch(
         backlinksSlice.actions.getBacklinksSuccess({
           backlinks: data,

@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const defaulterSlice = createSlice({
   name: "defaulter",
@@ -53,7 +54,7 @@ export const getdefaulterEmails = (email) => {
         );
       }
 
-      console.log(`defaulter emails`, response.data);
+      showConsole && console.log(`defaulter emails`, response.data);
       const data = response.data;
       dispatch(
         defaulterSlice.actions.getEmailSucess({
