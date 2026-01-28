@@ -159,6 +159,21 @@ export const extractEmail = (str) => {
   return str;
 
 }
+export function unionByKey(arr1, arr2, key) {
+  const seen = new Set();
+  const result = [];
+
+  for (const item of [...arr1, ...arr2]) {
+    const value = item[key];
+    if (!seen.has(value)) {
+      seen.add(value);
+      result.push(item);
+    }
+  }
+  console.log("result", result)
+
+  return result;
+}
 
 
 

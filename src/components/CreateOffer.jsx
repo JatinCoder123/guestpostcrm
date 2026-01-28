@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
-import { excludeEmail, websiteLists } from "../assets/assets";
+import { excludeEmail, unionByKey } from "../assets/assets";
 import { useParams, useLocation } from "react-router-dom";
 import {
   createOffer,
@@ -27,17 +27,19 @@ import { SocketContext } from "../context/SocketContext";
 import { getLadger } from "../store/Slices/ladger";
 import { dealsAction } from "../store/Slices/deals";
 import { PreviewTemplate } from "./PreviewTemplate";
-const fields = [
-  { name: "website", label: "Website", type: "select", options: websiteLists },
-  {
-    name: "client_offer_c",
-    label: "Client Offer",
-    type: "number",
-    disabled: false,
-  },
-  { name: "our_offer_c", label: "Our Offer", type: "number" },
-];
+
 export default function CreateOffer() {
+  const { websites: websiteLists } = useSelector((state) => state.website);
+  const fields = [
+    { name: "website", label: "Website", type: "select", options: websiteLists },
+    {
+      name: "client_offer_c",
+      label: "Client Offer",
+      type: "number",
+      disabled: false,
+    },
+    { name: "our_offer_c", label: "Our Offer", type: "number" },
+  ];
   const { type, id } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -98,9 +100,6 @@ export default function CreateOffer() {
     }
     setCurrentOffers(() => [...offer]);
   }, [state, offers, type, id]);
-  // useEffect(() => {
-
-  // }, [currentOffers]);
   useEffect(() => {
     if (type == "create" && !state) {
       navigate("/");
@@ -184,12 +183,14 @@ export default function CreateOffer() {
 
       } else {
         ManualSideCall(crmEndpoint, state?.email, "Our Offer Created Successfully", 1, okHandler);
-
+        // console.log("newoffers", newOffers)
+        // console.log("currentoffers", currentOffers)
+        const data = unionByKey(newOffers, currentOffers, "website");
         dispatch(
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={[...newOffers, ...currentOffers].filter(
+                data={data.filter(
                   (o) => o.website !== ""
                 )}
                 type="Offers"

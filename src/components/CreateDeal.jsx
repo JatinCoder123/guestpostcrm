@@ -9,7 +9,7 @@ import {
   getDeals,
   updateDeal,
 } from "../store/Slices/deals";
-import { excludeEmail, websiteLists } from "../assets/assets";
+import { excludeEmail, unionByKey } from "../assets/assets";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
@@ -27,16 +27,18 @@ import { SocketContext } from "../context/SocketContext";
 import { getOffers } from "../store/Slices/offers";
 import { PreviewTemplate } from "./PreviewTemplate";
 
-const fields = [
-  {
-    name: "website_c",
-    label: "Website",
-    type: "select",
-    options: websiteLists,
-  },
-  { name: "dealamount", label: "Deal Amount", type: "number" },
-];
+
 export default function CreateDeal() {
+  const { websites: websiteLists } = useSelector((state) => state.website);
+  const fields = [
+    {
+      name: "website_c",
+      label: "Website",
+      type: "select",
+      options: websiteLists,
+    },
+    { name: "dealamount", label: "Deal Amount", type: "number" },
+  ];
   const { type, id } = useParams();
   const { state } = useLocation();
   const { deals, updating, error, message, creating, deleting, deleteDealId } =
@@ -51,6 +53,7 @@ export default function CreateDeal() {
   const { crmEndpoint } = useSelector((state) => state.user);
   const [validWebsite, setValidWebsite] = useState([]);
   const [currentDeals, setCurrentDeals] = useState([]);
+  const [newDealsCreated, setNewDealsCreated] = useState([]);
   const [currentOffers, setCurrentOffers] = useState([]);
   const [editorContent, setEditorContent] = useState("")
 
@@ -124,8 +127,10 @@ export default function CreateDeal() {
         ]);
     }
   }, [type, currentDeals]);
-  const submitHandler = () => {
-    dispatch(createDeal(newDeals));
+  const submitHandler = (data) => {
+    setNewDealsCreated(data)
+
+    dispatch(createDeal(data));
   };
 
   const sendHandler = () => {
@@ -164,8 +169,6 @@ export default function CreateDeal() {
   };
   useEffect(() => {
     if (message) {
-      dispatch(getDeals({ email: state?.email }));
-      dispatch(getOffers({ email: state?.email }));
       if (message.includes("Updated")) {
         ManualSideCall(crmEndpoint, state?.email, "Our Deal Updated Successfully", 2, okHandler);
 
@@ -196,13 +199,14 @@ export default function CreateDeal() {
 
       } else {
         ManualSideCall(crmEndpoint, state?.email, "Our Deal Created Successfully", 2, okHandler);
-        // console.log("newDeals", newDeals);
-        // console.log("currentDeals", currentDeals);
+        console.log("newDeals", newDealsCreated);
+        console.log("currentDeals", currentDeals);
+        const data = unionByKey(newDealsCreated, currentDeals, "website_c");
         dispatch(
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={[...newDeals, ...currentDeals]}
+                data={data}
                 type="Deals"
                 userEmail={state?.email}
                 websiteKey="website_c"
@@ -216,6 +220,8 @@ export default function CreateDeal() {
         dispatch(dealsAction.clearAllMessages());
 
       }
+      dispatch(getDeals({ email: state?.email }));
+      dispatch(getOffers({ email: state?.email }));
     }
     if (error) {
       toast.error(error);
@@ -245,6 +251,7 @@ export default function CreateDeal() {
       deleteId={deleteDealId}
       pageType={type}
       handleDelete={handleDelete}
+      setNewDealsCreated={setNewDealsCreated}
       websiteLists={websiteLists}
       websiteKey="website_c"
       handleUpdate={handleUpdate}

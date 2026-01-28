@@ -1,5 +1,4 @@
-import { Globe, Mail } from "lucide-react";
-import Loading, { LoadingChase } from "./Loading";
+import { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,7 +20,6 @@ import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { quickActionBtnActions } from "../store/Slices/quickActionBtn";
 import { getTags, applyTag } from "../store/Slices/markTagSlice";
-import { SocketContext } from "../context/SocketContext";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { PreviewTemplate } from "./PreviewTemplate";
@@ -42,18 +40,10 @@ const ActionButton = ({
   const [showTags, setShowTags] = useState(false);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
-
-  /* 🔥 ADDED: First Reply states */
-  const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
-  const [reminderId, setReminderId] = useState(null);
-  const [frLoading, setFrLoading] = useState(false);
-
   const { enteredEmail } = useContext(PageContext);
-  const { setNotificationCount } = useContext(SocketContext);
 
   const { contactInfo, count } = useSelector((s) => s.viewEmail);
   const { sending, message, error } = useSelector((s) => s.threadEmail);
-  const { crmEndpoint } = useSelector((s) => s.user);
   const { email } = useSelector((s) => s.ladger);
   const [editorContent, setEditorContent] = useState("");
 
@@ -94,55 +84,6 @@ const ActionButton = ({
     dispatch(forwardEmail(contactInfo.id, to, threadId));
   };
 
-
-  /* 🔥 ADDED: Check FR button visibility */
-  useEffect(() => {
-    if (!email) return;
-
-    const fetchFRButtonStatus = async () => {
-      try {
-        const res = await fetch(
-          `${crmEndpoint}&type=fr_button&email=${email}`
-        );
-        const data = await res.json();
-
-        if (data?.reminder_id && data.reminder_id !== false) {
-          setReminderId(data.reminder_id);
-          setShowFirstReplyBtn(true);
-        } else {
-          setShowFirstReplyBtn(false);
-          setReminderId(null);
-        }
-      } catch (err) {
-        setShowFirstReplyBtn(false);
-      }
-    };
-
-    fetchFRButtonStatus();
-  }, [email]);
-
-  /* 🔥 ADDED: Send first reply handler */
-  const handleSendFirstReply = async () => {
-    if (!reminderId) return;
-
-    try {
-      setFrLoading(true);
-
-      await fetch(
-        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`
-      );
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
-      toast.success("First reply sent successfully");
-      setShowFirstReplyBtn(false);
-    } catch (err) {
-      toast.error("Failed to send first reply");
-    } finally {
-      setFrLoading(false);
-    }
-  };
 
   const FavIcon = () => {
     const isFav = favEmails.some((e) => e.email_address === email);
@@ -429,39 +370,7 @@ const ActionButton = ({
           </div>
         ))}
 
-        {/* 🔥 SEND FIRST REPLY BUTTON (NEW, SAFE, SAME CSS) */}
-        {showFirstReplyBtn && (
-          <>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSendFirstReply();
-              }}
-              disabled={frLoading}
-              className="group flex items-center justify-center w-12 h-12
-            bg-white rounded-xl shadow-md border border-gray-200
-            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
-            >
-              {frLoading ? (
-                <LoadingChase size="20" />
-              ) : (
-                <img
-                  src="https://img.icons8.com/color/48/reply.png"
-                  className="w-6 h-6"
-                  alt="first-reply"
-                />
-              )}
-              <span
-                className="absolute -bottom-9 left-1/2 -translate-x-1/2
-            bg-black text-white text-xs px-2 py-1 rounded opacity-0
-            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
-              >
-                Send First Reply
-              </span>
-            </button>
-            <Separator />
-          </>
-        )}
+
 
         <MoveToDropdown
           currentThreadId={threadId}
