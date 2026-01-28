@@ -79,7 +79,7 @@ export default function CreateDeal() {
     }
     setCurrentDeals(() => [...deal]);
     let offer = offers.filter(
-      (d) => excludeEmail(d.real_name ?? d.email) == state?.email
+      (d) => excludeEmail(d.real_name ?? d.email) == state?.email && d.offer_status == "active"
     );
     setCurrentOffers(() => [...offer]);
   }, [state, deals, offers, type, id]);

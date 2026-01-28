@@ -44,7 +44,7 @@ export const getOrderRem = (email, page) => {
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=all_reminders&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}${email ? `&email=${email}` : ""}&page=${page}&page_size=50`
+        }&type=all_reminders${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}${email ? `&email=${email}` : ""}&page=${page}&page_size=50`
       );
       console.log(`Reminders`, data);
       dispatch(
