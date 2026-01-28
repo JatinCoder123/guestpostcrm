@@ -27,7 +27,6 @@ import { SocketContext } from "../context/SocketContext";
 import { getOffers } from "../store/Slices/offers";
 import { PreviewTemplate } from "./PreviewTemplate";
 
-
 export default function CreateDeal() {
   const { websites: websiteLists } = useSelector((state) => state.website);
   const fields = [
@@ -130,7 +129,7 @@ export default function CreateDeal() {
     }
   }, [type, currentDeals]);
   const submitHandler = (data) => {
-    setNewDealsCreated(data)
+    setNewDealsCreated(data);
 
     dispatch(createDeal(data));
   };
@@ -199,7 +198,6 @@ export default function CreateDeal() {
           navigate(-1);
         }
       } else {
-<<<<<<< HEAD
         ManualSideCall(
           crmEndpoint,
           state?.email,
@@ -207,13 +205,8 @@ export default function CreateDeal() {
           2,
           okHandler,
         );
-        // console.log("newDeals", newDeals);
-        // console.log("currentDeals", currentDeals);
-=======
-        ManualSideCall(crmEndpoint, state?.email, "Our Deal Created Successfully", 2, okHandler);
         const data = unionByKey(newDealsCreated, currentDeals, "website_c");
         setNewDealsCreated([]);
->>>>>>> d6f1c414926a164c013e3a337ab5bd94d4a9d0e6
         dispatch(
           sendEmail(
             renderToStaticMarkup(
