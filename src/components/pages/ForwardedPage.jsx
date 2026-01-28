@@ -101,7 +101,6 @@ export function ForwardedPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
   };
 
   const handleSearchChange = (value) => {

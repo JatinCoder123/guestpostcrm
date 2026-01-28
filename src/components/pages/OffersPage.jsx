@@ -51,17 +51,14 @@ export function OffersPage() {
     { value: 'contect', label: 'Contact' }
   ];
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
   };
 
 

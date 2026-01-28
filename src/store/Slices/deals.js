@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -119,7 +120,7 @@ export const getDeals = ({ email = null, page = 1, loading = true }) => {
         );
       }
       const data = response.data;
-      console.log(`Deals`, data);
+      showConsole && console.log(`Deals`, data);
       dispatch(
         dealsSlice.actions.getDealsSucess({
           count: data.data_count ?? 0,
@@ -156,7 +157,7 @@ export const createDeal = (deals = []) => {
           },
         }
       );
-      console.log(`Create Deal`, res);
+      showConsole && console.log(`Create Deal`, res);
       const updatedDeals = [...deals, ...getState().deals.deals];
       dispatch(
         dealsSlice.actions.createDealSucess({
@@ -191,7 +192,7 @@ export const updateDeal = (deal, send) => {
           },
         }
       );
-      console.log(`Update Deal`, data);
+      showConsole && console.log(`Update Deal`, data);
       const updatedDeals = getState().deals.deals.map((d) => {
         if (d.id === deal.id) {
           return {
@@ -213,7 +214,7 @@ export const deleteDeal = (id) => {
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`
       );
-      console.log(`Delete Deal`, data);
+      showConsole && console.log(`Delete Deal`, data);
       if (!data.success) {
         throw new Error(data.message);
       }

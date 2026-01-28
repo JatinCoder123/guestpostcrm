@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const gpcControllerSlice = createSlice({
   name: "gpcController",
@@ -58,7 +59,7 @@ export const fetchGpcController = () => {
       const { data } = await axios.get(
         `${domain}?entryPoint=fetch_gpc&type=manage_gpc&get_name=1`
       );
-      console.log(`GPC Data`, data?.data?.available_checkbox);
+      showConsole && console.log(`GPC Data`, data?.data?.available_checkbox);
 
       dispatch(
         gpcControllerSlice.actions.getGpcSuccess(
@@ -82,8 +83,7 @@ export const updateGpcController = (key, value) => {
       const domain = getState().user.crmEndpoint.split("?")[0];
 
       const { data } = await axios.get(
-        `${domain}?entryPoint=fetch_gpc&type=manage_gpc&field=${key}&value=${
-          value ? 1 : 0
+        `${domain}?entryPoint=fetch_gpc&type=manage_gpc&field=${key}&value=${value ? 1 : 0
         }`
       );
 

@@ -31,9 +31,8 @@ export function HotPage() {
   const { hots, loading, error, count } = useSelector((state) => state.hot);
   const dispatch = useDispatch();
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
-     const navigateTo = useNavigate();
+  const navigateTo = useNavigate();
 
-  console.log("hots data:", hots);
   useEffect(() => {
     dispatch(getAllHot());
   }, [currentHot]);
@@ -86,22 +85,18 @@ export function HotPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log("Applied filters from popup:", filters);
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log("Searching for:", value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log("Category selected:", value);
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    console.log("Sort selected:", value);
   };
 
   const handleDownload = () => {
@@ -233,28 +228,28 @@ export function HotPage() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-gray-600"
-                      onClick={() => {
-                      const input = extractEmail(email.email);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/");
-                    }}>
+                        onClick={() => {
+                          const input = extractEmail(email.email);
+                          localStorage.setItem("email", input);
+                          setSearch(input);
+                          setEnteredEmail(input);
+                          setWelcomeHeaderContent("Unreplied");
+                          navigateTo("/");
+                        }}>
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span>{email?.date_entered}</span>
                       </div>
                     </td>
 
                     <td className="px-6 py-4 text-gray-900"
-                    onClick={() => {
-                      const input = extractEmail(email.email);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/contacts");
-                    }}
+                      onClick={() => {
+                        const input = extractEmail(email.email);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        setWelcomeHeaderContent("Unreplied");
+                        navigateTo("/contacts");
+                      }}
                     >{email?.name}</td>
 
                     <td className="px-6 py-4 text-gray-700" onClick={() => {
@@ -268,14 +263,14 @@ export function HotPage() {
                       {email.description}
                     </td>
                     <td className="px-6 py-4 text-purple-600"
-                    onClick={() => {
-                      const input = extractEmail(email.email);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/");
-                    }}>{email.type}</td>
+                      onClick={() => {
+                        const input = extractEmail(email.email);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        setWelcomeHeaderContent("Unreplied");
+                        navigateTo("/");
+                      }}>{email.type}</td>
                   </tr>
                 ))}
               </tbody>

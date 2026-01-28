@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { LoadingChase } from "./Loading";
 import { OrderView } from "./OrderView";
+import PageLoader from "./PageLoader";
 
 export default function Create({
   data,
@@ -29,6 +30,7 @@ export default function Create({
   updating,
   renderPreview,
   amountKey,
+  setNewDealsCreated
 }) {
   const navigate = useNavigate();
   const { loading, message } = useSelector((state) => state.threadEmail);
@@ -121,10 +123,12 @@ export default function Create({
       toast.error(`Please validate all ${type} before submitting.`);
       return;
     }
-    submitData();
+    submitData(data);
   };
   return (
     <>
+      {(updating || sending || creating) && <PageLoader />}
+
       <div className="w-full min-h-[80vh] p-6 bg-gray-50 flex justify-center">
         <div className="w-full flex gap-6">
           {/* LEFT SECTION */}

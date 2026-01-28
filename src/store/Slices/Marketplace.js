@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const marketplaceSlice = createSlice({
   name: "marketplace",
@@ -42,7 +43,7 @@ export const getMarketplace = () => {
       );
 
       const data = response.data;
-      console.log("MARKETPLACE:", data);
+      showConsole && console.log("MARKETPLACE:", data);
 
       dispatch(
         marketplaceSlice.actions.getMarketplaceSuccess({

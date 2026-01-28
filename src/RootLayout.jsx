@@ -41,6 +41,7 @@ import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
 import Avatar from "./components/Avatar";
 import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
+import { getAllWebsites } from "./store/Slices/webSlice";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
@@ -77,7 +78,6 @@ const RootLayout = () => {
   }, [pathname]);
   useEffect(() => {
     if (crmEndpoint) {
-      // console.log("crmEndpoint", getDomain(crmEndpoint));
       setCrm(getDomain(crmEndpoint))
     }
   }, [crmEndpoint])
@@ -98,6 +98,7 @@ const RootLayout = () => {
     dispatch(getUnrepliedEmail({ email: enteredEmail }));
     dispatch(getForwardedEmails({ email: enteredEmail }));
     dispatch(getFavEmails({ email: enteredEmail }));
+    dispatch(getAllWebsites());
     dispatch(getLinkExchange(enteredEmail));
     dispatch(getBulkEmails(enteredEmail));
     dispatch(getOrders({ email: enteredEmail }));

@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import axios from "axios";
 import { AUTH_URL } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const userSlice = createSlice({
   name: "user",
@@ -82,7 +83,7 @@ export const getUser = () => {
         `${AUTH_URL}?controller=auth&action=me`,
         { withCredentials: true }
       );
-      console.log("user", data);
+      showConsole && console.log("user", data);
       dispatch(
         userSlice.actions.loadUserSuccess({
           user: data.user,
@@ -95,7 +96,7 @@ export const getUser = () => {
 
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
-      console.log(error);
+      showConsole && console.log(error);
 
       let message = "Something went wrong. Please try again.";
 

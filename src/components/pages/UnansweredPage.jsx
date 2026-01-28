@@ -123,22 +123,18 @@ export function UnansweredPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    console.log('Sort selected:', value);
   };
 
   const handleDownload = () => {

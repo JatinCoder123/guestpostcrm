@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const threadEmailSlice = createSlice({
   name: "threadEmail",
@@ -66,7 +67,7 @@ export const getThreadEmail = (email, threadId) => {
         `${getState().user.crmEndpoint
         }&type=view_thread&thread_id=${threadId}&email=${email}&page=1&page_size=50`
       );
-      console.log(`threadEmail`, data);
+      showConsole && console.log(`threadEmail`, data);
       dispatch(
         threadEmailSlice.actions.getThreadEmailSucess({
           threadEmail: data.emails,
@@ -98,7 +99,7 @@ export const sendEmailToThread = (threadId, reply) => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      console.log(`Reply Data`, data);
+      showConsole && console.log(`Reply Data`, data);
       dispatch(
         threadEmailSlice.actions.sendEmailSucess({
           message: "Reply To Thread Sent Successfully",

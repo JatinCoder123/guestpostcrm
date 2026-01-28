@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const unansweredSlice = createSlice({
   name: "unanswered",
@@ -61,7 +62,7 @@ export const getUnansweredEmails = ({ email = null, page = 1, loading = true }) 
         );
       }
 
-      console.log(`Unanswered emails`, response.data);
+      showConsole && console.log(`Unanswered emails`, response.data);
       const data = response.data;
       dispatch(
         unansweredSlice.actions.getEmailSucess({

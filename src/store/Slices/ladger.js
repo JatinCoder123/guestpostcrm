@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const ladgerSlice = createSlice({
   name: "ladger",
@@ -131,7 +132,7 @@ export const getLadger = ({ email = null, isEmail = true, search = "", loading =
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=ledger${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
       );
-      console.log("Ladger", data);
+      showConsole && console.log("Ladger", data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
           search,
@@ -202,7 +203,7 @@ export const getNoSearchResultData = (search) => {
         `${getState().user.crmEndpoint}&type=live_search&query=${search}`
       );
 
-      console.log("NoSearchResultData", data);
+      showConsole && console.log("NoSearchResultData", data);
 
       dispatch(
         ladgerSlice.actions.getNoSearchResultDataSuccess({
@@ -229,7 +230,7 @@ export const manualEmailScan = (messageId) => {
       const response = await axios.get(
         `${crmDomain}?entryPoint=manual_email_scanning&message_id=${messageId}`
       );
-      console.log("ManualScan", response.data);
+      showConsole && console.log("ManualScan", response.data);
       dispatch(
         ladgerSlice.actions.manualScanSuccess(response.data)
       );

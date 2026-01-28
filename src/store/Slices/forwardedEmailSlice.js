@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { act } from "react";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const forwardedSlice = createSlice({
   name: "forwarded",
@@ -77,7 +78,7 @@ export const getForwardedEmails = ({ email = null, page = 1, loading = true }) =
         );
       }
 
-      console.log(`forwarded emails`, response.data);
+      showConsole && console.log(`forwarded emails`, response.data);
       const data = response.data;
       dispatch(
         forwardedSlice.actions.getEmailSucess({
@@ -122,7 +123,7 @@ export const forwardEmail = (contactId, to, id) => {
           },
         }
       );
-      console.log("Response while sendig ", response.data);
+      showConsole && console.log("Response while sendig ", response.data);
       dispatch(
         forwardedSlice.actions.forwardEmailSucess(
           "Email Forwarded Successfully"

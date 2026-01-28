@@ -60,7 +60,6 @@ export function OrdersPage() {
 
   // Handle filter application
   const handleFilterApply = (appliedFilters) => {
-    console.log('Applied filters from popup:', appliedFilters);
     setFilters(appliedFilters);
   };
 

@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const avatarSlice = createSlice({
   name: "avatar",
@@ -48,7 +49,7 @@ export const getAllAvatar = () => {
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const { data } = await axios.get(`${domain}?entryPoint=avtar`);
-      console.log(`avatars`, data);
+      showConsole && console.log(`avatars`, data);
       dispatch(avatarSlice.actions.getAllAvatarSucess(data));
       dispatch(avatarSlice.actions.clearAllErrors());
     } catch (error) {
@@ -64,7 +65,7 @@ export const getAvatar = () => {
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       const { data } = await axios.get(`${domain}?entryPoint=avtar&email=${getState().ladger.email}`);
-      console.log(`avatar of email`, data);
+      showConsole && console.log(`avatar of email`, data);
       dispatch(avatarSlice.actions.getAvatarSucess(data.avatar_url));
       dispatch(avatarSlice.actions.clearAllErrors());
     } catch (error) {

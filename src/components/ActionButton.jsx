@@ -26,6 +26,7 @@ import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { PreviewTemplate } from "./PreviewTemplate";
 import { threadEmailAction } from "../store/Slices/threadEmail";
+import { showConsole } from "../assets/assets";
 
 /* 🔹 Separator Component */
 const Separator = () => <div className="h-8 w-[1px] bg-gray-500 mx-2" />;
@@ -127,10 +128,11 @@ const ActionButton = ({
 
     try {
       setFrLoading(true);
-
+      showConsole && console.log(crmEndpoint)
       await fetch(
         `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`
       );
+      showConsole && console.log("First rply send button clicked")
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),
@@ -432,34 +434,50 @@ const ActionButton = ({
         {/* 🔥 SEND FIRST REPLY BUTTON (NEW, SAFE, SAME CSS) */}
         {showFirstReplyBtn && (
           <>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSendFirstReply();
-              }}
-              disabled={frLoading}
-              className="group flex items-center justify-center w-12 h-12
-            bg-white rounded-xl shadow-md border border-gray-200
-            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
+            {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
+            <div
+              className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none"
+                }`}
             >
-              {frLoading ? (
-                <LoadingChase size="20" />
-              ) : (
-                <img
-                  src="https://img.icons8.com/color/48/reply.png"
-                  className="w-6 h-6"
-                  alt="first-reply"
-                />
-              )}
-              <span
-                className="absolute -bottom-9 left-1/2 -translate-x-1/2
-            bg-black text-white text-xs px-2 py-1 rounded opacity-0
-            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSendFirstReply();
+                }}
+                disabled={frLoading}
+                className="group flex items-center justify-center
+      w-12 h-12
+      bg-white rounded-xl shadow-md border border-gray-200
+      hover:shadow-lg active:scale-95 hover:-translate-y-1
+      transition-all"
               >
-                Send First Reply
-              </span>
-            </button>
-            <Separator />
+                <div className="w-6 h-6 flex items-center justify-center">
+                  {frLoading ? (
+                    <LoadingChase size="20" />
+                  ) : (
+                    <img
+                      src="https://img.icons8.com/color/48/reply.png"
+                      className="w-6 h-6"
+                      alt="first-reply"
+                    />
+                  )}
+                </div>
+
+                <span
+                  className="absolute -bottom-9 left-1/2 -translate-x-1/2
+        bg-black text-white text-xs px-2 py-1 rounded
+        opacity-0 group-hover:opacity-100
+        transition-all whitespace-nowrap shadow-lg z-20"
+                >
+                  Send First Reply
+                </span>
+              </button>
+
+              <Separator />
+            </div>
+
           </>
         )}
 

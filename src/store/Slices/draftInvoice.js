@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { getDomain } from "../../assets/assets";
+import { getDomain, showConsole } from "../../assets/assets";
 
 const DraftInvoiceSlice = createSlice({
   name: "DraftInvoice",
@@ -55,7 +55,7 @@ export const getDraftInvoice = () => {
         }
       );
 
-      console.log(" draftInvoice  data:", data);
+      showConsole && console.log(" draftInvoice  data:", data);
 
 
 

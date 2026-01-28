@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const favSlice = createSlice({
   name: "fav",
@@ -58,7 +59,7 @@ const favSlice = createSlice({
 export const getFavEmails = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
     loading && dispatch(favSlice.actions.getEmailRequest());
-    console.log("email", email)
+    showConsole && console.log("email", email)
     try {
       let response;
       if (email) {
@@ -72,7 +73,7 @@ export const getFavEmails = ({ email = null, page = 1, loading = true }) => {
           }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
-      console.log(`favorite emails`, response.data);
+      showConsole && console.log(`favorite emails`, response.data);
       const data = response.data;
       dispatch(
         favSlice.actions.getEmailSucess({
@@ -98,7 +99,7 @@ export const favEmail = () => {
         `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
         {}
       );
-      console.log(`Favourite Toggle Response`, response.data);
+      showConsole && console.log(`Favourite Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
         throw new Error("Toggle failed");

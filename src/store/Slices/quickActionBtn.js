@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const quickActionBtnSlice = createSlice({
     name: "quickActionBtn",
@@ -40,7 +41,7 @@ export const getQuickActionBtn = () => {
             );
 
             const data = response.data;
-            console.log("QUICK ACTION:", data);
+            showConsole && console.log("QUICK ACTION:", data);
 
             dispatch(
                 quickActionBtnSlice.actions.getQuickActionBtnSuccess({

@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const detectionSlice = createSlice({
   name: "detection",
@@ -53,7 +54,7 @@ export const getDetection = (email) => {
         );
       }
       const data = response.data;
-      console.log(`detection`, data);
+      showConsole && console.log(`detection`, data);
       dispatch(
         detectionSlice.actions.getDetectionSucess({
           count: data.data_count ?? 0,

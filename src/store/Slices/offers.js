@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -122,7 +123,7 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
         );
       }
       const data = response.data;
-      console.log(`offers`, data);
+      showConsole && console.log(`offers`, data);
       dispatch(
         offersSlice.actions.getOffersSucess({
           count: data.data_count ?? 0,
@@ -158,7 +159,7 @@ export const updateOffer = (offer, send) => {
           },
         }
       );
-      console.log(`Update Offer`, data);
+      showConsole && console.log(`Update Offer`, data);
       const updatedOffers = getState().offers.offers.map((o) => {
         if (o.id === offer.id) {
           return offer;
@@ -171,7 +172,7 @@ export const updateOffer = (offer, send) => {
 
       dispatch(offersSlice.actions.clearAllErrors());
     } catch (error) {
-      console.log(`Update Offer Error`, error);
+      showConsole && console.log(`Update Offer Error`, error);
       dispatch(
         offersSlice.actions.updateOfferFailed("Updating Offer Failed")
       );
@@ -202,7 +203,7 @@ export const createOffer = (offers = []) => {
           },
         },
       );
-      console.log(`Create Offer`, data);
+      showConsole && console.log(`Create Offer`, data);
       const updatedOffers = [...offers, ...getState().offers.offers];
       dispatch(
         offersSlice.actions.createOfferSuccess({
@@ -223,7 +224,7 @@ export const deleteOffer = (id) => {
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_offer&record_id=${id}`
       );
-      console.log(`Delete Offer`, data);
+      showConsole && console.log(`Delete Offer`, data);
       if (!data.success) {
         throw new Error(data.message);
       }
