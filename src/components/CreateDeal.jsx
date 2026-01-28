@@ -79,13 +79,9 @@ export default function CreateDeal() {
     }
     setCurrentDeals(() => [...deal]);
     let offer = offers.filter(
-<<<<<<< HEAD
       (d) =>
         excludeEmail(d.real_name ?? d.email) == state?.email &&
         d.offer_status == "active",
-=======
-      (d) => excludeEmail(d.real_name ?? d.email) == state?.email && d.offer_status == "active"
->>>>>>> c73225f50b5f5fffe7ee0377aaccd874b194f4c8
     );
     setCurrentOffers(() => [...offer]);
   }, [state, deals, offers, type, id]);
