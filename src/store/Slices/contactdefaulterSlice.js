@@ -32,12 +32,14 @@ const contactdefaulterSlice = createSlice({
 });
 
 export const getContactDefaulters = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(contactdefaulterSlice.actions.getContactDefaulterRequest());
+
+    const { crmEndpoint } = getState().user;
 
     try {
       const { data } = await axios.post(
-        "https://example.guestpostcrm.com/index.php?entryPoint=get_post_all&action_type=get_data",
+        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
 
 
         {

@@ -112,7 +112,6 @@ export const linkExchange = () => {  // Assuming 'id' is the email/contact ident
       if (!data.success) {
         throw new Error("Toggle failed");
       }
-      // Determine message based on new_value
       const message = data.new_value === 1 ? "Email link exchage Successfully" : "Email unlink Successfully";
       dispatch(
         exchangeSlice.actions.exchangingSucess(message)

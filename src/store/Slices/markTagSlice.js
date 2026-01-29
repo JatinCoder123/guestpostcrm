@@ -36,12 +36,12 @@ export const { getTagsRequest, getTagsSuccess, getTagsFail, clearAllErrors } =
 export default markTagSlice.reducer;
 
 // async action
-export const getTags = () => async (dispatch) => {
+export const getTags = () => async (dispatch, getState) => {
   try {
     dispatch(getTagsRequest());
 
     const { data } = await axios.get(
-      "https://example.guestpostcrm.com/index.php?entryPoint=add_tag&get_tag=1"
+      `${getState().user.crmEndpoint.split("?")[0]}?entryPoint=add_tag&get_tag=1`
     );
 
     // API gives: { success, fields: [...] }
@@ -59,8 +59,7 @@ export const applyTag = (selectedTag) => {
       const domain = getState().user.crmEndpoint.split("?")[0];
 
       const response = await axios.get(
-        `${domain}?entryPoint=contactAction&email=${
-          getState().ladger.email
+        `${domain}?entryPoint=contactAction&email=${getState().ladger.email
         }&field=${selectedTag}`
       );
 
