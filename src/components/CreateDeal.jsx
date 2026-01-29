@@ -27,7 +27,6 @@ import { SocketContext } from "../context/SocketContext";
 import { getOffers } from "../store/Slices/offers";
 import { PreviewTemplate } from "./PreviewTemplate";
 
-
 export default function CreateDeal() {
   const { websites: websiteLists } = useSelector((state) => state.website);
   const fields = [
@@ -55,7 +54,7 @@ export default function CreateDeal() {
   const [currentDeals, setCurrentDeals] = useState([]);
   const [newDealsCreated, setNewDealsCreated] = useState([]);
   const [currentOffers, setCurrentOffers] = useState([]);
-  const [editorContent, setEditorContent] = useState("")
+  const [editorContent, setEditorContent] = useState("");
 
   const { enteredEmail, search } = useContext(PageContext);
   const [newDeals, setNewDeals] = useState([]);
@@ -75,14 +74,16 @@ export default function CreateDeal() {
   };
   useEffect(() => {
     let deal = deals.filter(
-      (d) => excludeEmail(d.real_name ?? d.email) == state?.email
+      (d) => excludeEmail(d.real_name ?? d.email) == state?.email,
     );
     if (type == "edit" && id !== undefined) {
       deal = deal.filter((d) => d.id == id);
     }
     setCurrentDeals(() => [...deal]);
     let offer = offers.filter(
-      (d) => excludeEmail(d.real_name ?? d.email) == state?.email && d.offer_status == "active"
+      (d) =>
+        excludeEmail(d.real_name ?? d.email) == state?.email &&
+        d.offer_status == "active",
     );
     setCurrentOffers(() => [...offer]);
   }, [state, deals, offers, type, id]);
@@ -90,12 +91,12 @@ export default function CreateDeal() {
     let valid = [];
     if (type == "create") {
       valid = websiteLists.filter(
-        (w) => !currentDeals.some((d) => d.website_c == w)
+        (w) => !currentDeals.some((d) => d.website_c == w),
       );
     }
     if (type == "edit") {
       valid = websiteLists.filter((w) =>
-        currentDeals.some((d) => d.id == id || d.website_c !== w)
+        currentDeals.some((d) => d.id == id || d.website_c !== w),
       );
     }
     setValidWebsite(valid);
@@ -105,8 +106,8 @@ export default function CreateDeal() {
       const currentOfferWithoutDeal =
         currentOffers?.length > 0
           ? currentOffers.filter(
-            (o) => !currentDeals.some((d) => d.website_c == o.website)
-          )
+              (o) => !currentDeals.some((d) => d.website_c == o.website),
+            )
           : [];
       if (currentOfferWithoutDeal?.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
@@ -128,7 +129,7 @@ export default function CreateDeal() {
     }
   }, [type, currentDeals]);
   const submitHandler = (data) => {
-    setNewDealsCreated(data)
+    setNewDealsCreated(data);
 
     dispatch(createDeal(data));
   };
@@ -143,10 +144,10 @@ export default function CreateDeal() {
             userEmail={state?.email}
             websiteKey="website_c"
             amountKey="dealamount"
-          />
+          />,
         ),
-        "Deal Send Successfully"
-      )
+        "Deal Send Successfully",
+      ),
     );
   };
   const handleUpdate = (item, shouldSend) => {
@@ -161,16 +162,18 @@ export default function CreateDeal() {
     }
   }, [state, type]);
   const handleSubmit = () => {
-    dispatch(
-      sendEmail(
-        editorContent, "Deal Send Successfully"
-      )
-    );
+    dispatch(sendEmail(editorContent, "Deal Send Successfully"));
   };
   useEffect(() => {
     if (message) {
       if (message.includes("Updated")) {
-        ManualSideCall(crmEndpoint, state?.email, "Our Deal Updated Successfully", 2, okHandler);
+        ManualSideCall(
+          crmEndpoint,
+          state?.email,
+          "Our Deal Updated Successfully",
+          2,
+          okHandler,
+        );
 
         if (message.includes("Send")) {
           dispatch(
@@ -182,23 +185,26 @@ export default function CreateDeal() {
                   userEmail={state?.email}
                   websiteKey="website_c"
                   amountKey="dealamount"
-                />
+                />,
               ),
-              "Deal Updated and Send Successfully", "Deal Updated But Not Sent!"
-            )
+              "Deal Updated and Send Successfully",
+              "Deal Updated But Not Sent!",
+            ),
           );
           dispatch(dealsAction.clearAllMessages());
-
-        }
-        else {
+        } else {
           toast.success(message);
           dispatch(dealsAction.clearAllMessages());
           navigate(-1);
-
         }
-
       } else {
-        ManualSideCall(crmEndpoint, state?.email, "Our Deal Created Successfully", 2, okHandler);
+        ManualSideCall(
+          crmEndpoint,
+          state?.email,
+          "Our Deal Created Successfully",
+          2,
+          okHandler,
+        );
         const data = unionByKey(newDealsCreated, currentDeals, "website_c");
         setNewDealsCreated([]);
         dispatch(
@@ -210,14 +216,14 @@ export default function CreateDeal() {
                 userEmail={state?.email}
                 websiteKey="website_c"
                 amountKey="dealamount"
-              />
+              />,
             ),
-            "Deal Created and Send Successfully", "Deal Created But Not Sent!"
-          )
+            "Deal Created and Send Successfully",
+            "Deal Created But Not Sent!",
+          ),
         );
         setNewDeals([]);
         dispatch(dealsAction.clearAllMessages());
-
       }
       dispatch(getDeals({ email: state?.email }));
       dispatch(getOffers({ email: state?.email }));
@@ -264,16 +270,26 @@ export default function CreateDeal() {
       submitData={submitHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
-        const html = renderToString(<Preview
-          data={data}
-          type="Deals"
-          userEmail={email}
-          websiteKey="website_c"
-          amountKey="dealamount"
-        />);
+        const html = renderToString(
+          <Preview
+            data={data}
+            type="Deals"
+            userEmail={email}
+            websiteKey="website_c"
+            amountKey="dealamount"
+          />,
+        );
 
-        return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
-
+        return (
+          <PreviewTemplate
+            editorContent={editorContent}
+            initialContent={html}
+            setEditorContent={setEditorContent}
+            onClose={onClose}
+            onSubmit={handleSubmit}
+            loading={sending}
+          />
+        );
       }}
     />
   );

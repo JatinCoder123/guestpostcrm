@@ -41,7 +41,7 @@ export function RecentEntry() {
       <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
         {/* HEADER */}
         <div className="bg-green-600 py-4 px-8">
-          <div className="grid grid-cols-[220px_220px_300px_220px_80px] text-white text-lg font-semibold">
+          <div className="grid grid-cols-5 text-white text-lg font-semibold">
             <div className="flex items-center gap-2">
               <CalendarDays size={22} /> DATE
             </div>
@@ -60,9 +60,7 @@ export function RecentEntry() {
 
         {/* BODY */}
         <div className="px-8 py-4">
-          {loading && (
-            <p className="text-center py-4 text-lg">Loading...</p>
-          )}
+          {loading && <p className="text-center py-4 text-lg">Loading...</p>}
 
           {!loading && events.length === 0 && (
             <p className="text-center text-lg py-4">No events found</p>
@@ -71,7 +69,7 @@ export function RecentEntry() {
           {events.map((event, index) => (
             <div
               key={index}
-              className="grid grid-cols-[220px_220px_300px_220px_80px] py-5 border-b text-gray-800 hover:bg-gray-50 transition"
+              className="grid grid-cols-5 py-5 border-b text-gray-800 hover:bg-gray-50 transition"
             >
               {/* DATE */}
               <div
@@ -85,13 +83,8 @@ export function RecentEntry() {
                   navigateTo("/");
                 }}
               >
-                <CalendarDays
-                  size={20}
-                  className="text-green-700 shrink-0"
-                />
-                <span className="truncate">
-                  {event.date_entered ?? "—"}
-                </span>
+                <CalendarDays size={20} className="text-green-700 shrink-0" />
+                <span className="truncate">{event.date_entered ?? "—"}</span>
               </div>
 
               {/* CONTACT */}
@@ -126,9 +119,7 @@ export function RecentEntry() {
                 <Mail size={20} className="shrink-0" />
                 <span className="truncate">
                   {excludeEmail(
-                    event.real_name === "User"
-                      ? event.name
-                      : event.real_name
+                    event.real_name === "User" ? event.name : event.real_name,
                   ) ?? "—"}
                 </span>
               </div>
