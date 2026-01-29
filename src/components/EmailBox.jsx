@@ -478,7 +478,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
                       </span>
                     </div>
                     <div
-                      dangerouslySetInnerHTML={{ __html: mail.body }}
+                      dangerouslySetInnerHTML={{ __html: mail.body_html }}
                       className="mail-content text-sm leading-relaxed"
                     />
                   </div>
