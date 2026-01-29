@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 
 export default function ButtonPage() {
   const [editItem, setEditItem] = useState(null);
-  const { crmEndpoint } = useSelector((state) => state.crm);
+  const { crmEndpoint } = useSelector((state) => state.user);
 
   const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { base64ToUtf8 } from "../assets/assets";
+import { base64ToUtf8, showConsole } from "../assets/assets";
 
 const useModule = ({
   url,
