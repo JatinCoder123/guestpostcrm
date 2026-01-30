@@ -53,6 +53,7 @@ import { ViewReminder } from "./components/ViewReminder";
 import PreviewOrder from "./components/PreviewOrder";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
+import ConsoleHandler from "./components/ConsoleHandler";
 
 const router = createBrowserRouter([
   {
@@ -99,6 +100,10 @@ const router = createBrowserRouter([
       {
         path: "unanswered",
         element: <UnansweredPage />,
+      },
+      {
+        path: "console",
+        element: <ConsoleHandler />,
       },
 
       {

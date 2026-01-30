@@ -1,15 +1,14 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import { PageContext } from "./pageContext";
+import { showConsole } from "../assets/assets.js"
 
-const socket = io("https://server.guestpostcrm.com");
+const socket = io("https://socket.guestpostcrm.com");
 export const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
   const [currentAvatar, setCurrentAvatar] = useState();
   const [crm, setCrm] = useState("");
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
-  const { showConsole } = useContext(PageContext);
 
   const crmRef = useRef(""); // ✅ IMPORTANT
 

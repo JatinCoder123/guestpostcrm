@@ -12,7 +12,7 @@ export default function Login() {
   const handleLoginWithMicrosoft = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin`;
   };
-  const video = "https://example.guestpostcrm.com/images/GP%20LI_1.mp4";
+  const video = "https://example.guestpostcrm.com/images/Final%20G-Bot%201.mp4";
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-[#e8f0ff] via-[#f3fffa] to-[#f8fff5]">
