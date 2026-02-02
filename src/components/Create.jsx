@@ -365,7 +365,7 @@ export default function Create({
                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                       >
                           Preview
-                        </button>
+                        </button>  n
                       </>
 
                     ) : (
@@ -394,7 +394,7 @@ export default function Create({
                             : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
                             }`}
                         >
-                          {creating && button == 2 ? "Saving & Sending..." : "Save & Send"}
+                          {creating && button == 2 ? "Sending..." : "Save & Send"}
                         </button>
                       </>
 
