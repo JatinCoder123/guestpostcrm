@@ -1,14 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Eye, SparkleIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Pagination from "./Pagination";
 import { getLadger } from "../store/Slices/ladger";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
-  const [selectedView, setSelectedView] = useState("all");
+  const [selectedView, setSelectedView] = useState("important");
   const [timelineData, setTimelineData] = useState([]);
+
+  const topRef = useRef(null);
+
   const dispatch = useDispatch();
   useEffect(() => {
     if (selectedView === "all") {
@@ -157,26 +160,61 @@ const TimelineEvent = () => {
 
     return event.description || "View details";
   };
+  const scrollToTop = () => {
+    topRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
 
   return (
     <>
-      <div className="py-[2%] px-[30%]">
-        <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-2xl text-center text-white">
+      <div ref={topRef} className="py-[2%] px-[30%]">
+        <h1
+          onClick={scrollToTop}
+          className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 
+             p-2 rounded-2xl text-center text-white
+             cursor-pointer hover:opacity-90 transition-opacity"
+        >
           TIMELINE
         </h1>
-        <div className="flex justify-center mt-3">
-          <select
-            value={selectedView}
-            onChange={(e) => setSelectedView(e.target.value)}
-            className="border rounded-lg px-4 py-2 text-sm shadow-sm bg-white"
-          >
-            <option value="all">All Records</option>
-            <option value="important">Important Records</option>
-          </select>
+
+        <div className="flex justify-center mt-4">
+          <div className="relative flex bg-gray-200 rounded-xl p-1 w-[260px]">
+            {/* Sliding Indicator */}
+            <div
+              className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(50%-4px)]
+        bg-white rounded-xl shadow
+        transition-transform duration-300 ease-in-out
+        ${selectedView === "important" ? "translate-x-full" : "translate-x-0"}`}
+            />
+
+            {/* All Records */}
+            <button
+              onClick={() => setSelectedView("all")}
+              className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300
+        ${selectedView === "all" ? "text-purple-600" : "text-gray-600"}`}
+            >
+              All
+            </button>
+
+            {/* Important Records */}
+            <button
+              onClick={() => setSelectedView("important")}
+              className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300
+        ${selectedView === "important" ? "text-purple-600" : "text-gray-600"}`}
+            >
+              Important
+            </button>
+          </div>
         </div>
 
+
         <div className="relative mt-6">
-          <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300 rounded-full"></div>
+          {timelineData?.length > 0 && (
+            <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300 rounded-full"></div>
+          )}
 
           <div className="space-y-6">
             {timelineData.map((event, index) => {
@@ -341,21 +379,26 @@ const TimelineEvent = () => {
                 </div>
               );
             })}
-
-            <div className="relative flex gap-4 mt-6">
-              <div className="relative z-10 w-16 flex-shrink-0">
-                <div className="w-12 h-12 flex items-center justify-center">
-                  <img
-                    src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
-                    alt="end"
-                  />
+            {timelineData?.length === 0 ? (
+              <div className="text-center text-gray-500">No events found</div>
+            ) : (
+              <div className="relative flex gap-4 mt-6">
+                <div className="relative z-10 w-16 flex-shrink-0">
+                  <div className="w-12 h-12 flex items-center justify-center">
+                    <img
+                      src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
+                      alt="end"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
-      <Pagination slice={"ladger"} fn={(p) => dispatch(getLadger({ page: p, loading: false }))} />
+      {timelineData?.length > 0 && (
+        <Pagination slice={"ladger"} fn={(p) => dispatch(getLadger({ page: p, loading: false }))} />
+      )}
     </>
   );
 };

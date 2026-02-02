@@ -140,7 +140,7 @@ export function MachineLearningPage() {
                         setEditItem(item);
                       }}
                       className="flex items-center gap-2 justify-end px-4 py-2 bg-blue-600 text-white 
-                      rounded-xl shadow-sm hover:bg-blue-700 transition w-fit ml-auto"
+                      rounded-xl shadow-sm hover:bg-blue-700 transition w-fit ml-auto cursor-pointer"
                     >
                       <Edit3 size={18} />
                       Edit
