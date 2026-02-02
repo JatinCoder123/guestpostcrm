@@ -203,7 +203,7 @@ export default function CreateOffer() {
           );
         }
         setNewOffers([]);
-
+        navigate("/");
         dispatch(offersAction.clearAllMessages());
       }
     }

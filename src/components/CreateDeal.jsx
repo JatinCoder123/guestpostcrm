@@ -192,11 +192,11 @@ export default function CreateDeal() {
             ),
           );
           dispatch(dealsAction.clearAllMessages());
-        } else {
-          toast.success(message);
-          dispatch(dealsAction.clearAllMessages());
-          navigate(-1);
         }
+        toast.success(message);
+        dispatch(dealsAction.clearAllMessages());
+        navigate("/");
+
       } else {
         ManualSideCall(
           crmEndpoint,
