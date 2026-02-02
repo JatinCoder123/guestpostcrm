@@ -6,6 +6,8 @@ import {
   DollarSign,
   Calendar,
   User,
+  ShieldCheck,
+  ClipboardCheck
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";

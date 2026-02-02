@@ -17,7 +17,6 @@ const offersSlice = createSlice({
     pageIndex: 1,
     creating: false,
     deleting: false,
-    parent_id: null,
     deleteOfferId: null,
   },
   reducers: {
@@ -30,7 +29,7 @@ const offersSlice = createSlice({
       const { count, offers, summary, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.offers = offers;
-      state.summary = summary
+      state.summary = summary;
       state.count = count;
       state.error = null;
       state.pageCount = pageCount;
@@ -50,7 +49,6 @@ const offersSlice = createSlice({
       state.creating = false;
       state.message = action.payload.message;
       state.offers = action.payload.offers;
-      state.parent_id = action.payload.parent_id;
       state.count = action.payload.count;
       state.error = null;
     },
@@ -67,7 +65,6 @@ const offersSlice = createSlice({
     updateOfferSuccess(state, action) {
       state.updating = false;
       state.message = action.payload.message;
-      state.parent_id = action.payload.parent_id;
       state.offers = action.payload.offers;
       state.error = null;
     },
@@ -95,7 +92,6 @@ const offersSlice = createSlice({
     },
     clearAllMessages(state) {
       state.message = null;
-      state.parent_id = null;
     },
     clearAllErrors(state) {
       state.error = null;

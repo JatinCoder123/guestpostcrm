@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { Gift, User, Calendar, DollarSign, Tag, Pen, Trash } from "lucide-react";
+import { CheckCircle, Clock, User, Calendar, DollarSign, Tag, Pen, Trash, Gift } from "lucide-react";
 import { deleteOffer, getOffers, offersAction, } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
@@ -154,7 +154,7 @@ export function OffersPage() {
       />
 
       {/* ⭐ Stats Cards (Top Section) */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
         {/* Active Offers */}
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
@@ -217,6 +217,10 @@ export function OffersPage() {
         </div>
 
       </div>
+
+
+
+
 
 
       {/* ⭐ Offers Section (Header + Table) */}
