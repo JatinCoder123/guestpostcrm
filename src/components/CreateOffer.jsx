@@ -134,8 +134,8 @@ export default function CreateOffer() {
   const handleDelete = (id) => {
     dispatch(deleteOffer(id));
   };
-  const submitHandler = () => {
-    dispatch(createOffer(newOffers));
+  const submitHandler = (_, send = false) => {
+    dispatch(createOffer(newOffers, send));
   };
   const okHandler = () => {
     if (enteredEmail) {
@@ -183,23 +183,25 @@ export default function CreateOffer() {
 
       } else {
         ManualSideCall(crmEndpoint, state?.email, "Our Offer Created Successfully", 1, okHandler);
-        const data = unionByKey(newOffers, currentOffers, "website");
-        dispatch(
-          sendEmail(
-            renderToStaticMarkup(
-              <Preview
-                data={data.filter(
-                  (o) => o.website !== ""
-                )}
-                type="Offers"
-                userEmail={state?.email}
-                websiteKey="website"
-                amountKey="our_offer_c"
-              />
-            ),
-            "Offer Craeted and Send Successfully", "Offer Created But Not Sent!"
-          )
-        );
+        if (message.includes("Send")) {
+          const data = unionByKey(newOffers, currentOffers, "website");
+          dispatch(
+            sendEmail(
+              renderToStaticMarkup(
+                <Preview
+                  data={data.filter(
+                    (o) => o.website !== ""
+                  )}
+                  type="Offers"
+                  userEmail={state?.email}
+                  websiteKey="website"
+                  amountKey="our_offer_c"
+                />
+              ),
+              "Offer Craeted and Send Successfully", "Offer Created But Not Sent!"
+            )
+          );
+        }
         setNewOffers([]);
 
         dispatch(offersAction.clearAllMessages());

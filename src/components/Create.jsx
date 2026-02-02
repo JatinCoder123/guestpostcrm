@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { MoveLeft, Pencil, Plus, Trash } from "lucide-react";
+import { Eye, MoveLeft, Pencil, Plus, ShoppingBasket, ShoppingCart, Trash } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
@@ -114,7 +114,7 @@ export default function Create({
     }
   }, [message]);
 
-  const handleSubmit = () => {
+  const handleSubmit = (send = false) => {
     if (data.length === 0) {
       toast.error(`No ${type} to submit.`);
       return;
@@ -123,7 +123,7 @@ export default function Create({
       toast.error(`Please validate all ${type} before submitting.`);
       return;
     }
-    submitData(data);
+    submitData(data, send);
   };
   return (
     <>
@@ -148,21 +148,42 @@ export default function Create({
                     : pageType.charAt(0).toUpperCase() + pageType.slice(1)
                     } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                 </div>
-                {pageType == "view" && type !== "orders" && (
+                {pageType == "view" && (
                   <div className="flex items-center gap-3">
-                    <button
-                      onClick={() =>
-                        navigate(`/${type}/create`, { state: { email } })
-                      }
-                      className="inline-flex items-center gap-2 "
-                    >
-                      <img
-                        width="40"
-                        height="40"
-                        src="https://img.icons8.com/arcade/64/plus.png"
-                        alt="plus"
-                      />{" "}
-                    </button>
+                    {type == "orders" ? (
+                      <>
+                        <button
+                          onClick={() => navigate("/orders", { state: { email } })}
+                          className="px-3 py-2 bg-green-100 text-green-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
+                        >
+                          <ShoppingCart />
+                        </button>
+                        <button
+                          onClick={() => setShowPreview(true)}
+                          className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
+                        >
+                          <Eye />
+                        </button>
+
+
+                      </>
+
+                    ) : (
+                      <button
+                        onClick={() =>
+                          navigate(`/${type}/create`, { state: { email } })
+                        }
+                        className="inline-flex items-center gap-2 "
+                      >
+                        <img
+                          width="40"
+                          height="40"
+                          src="https://img.icons8.com/arcade/64/plus.png"
+                          alt="plus"
+                        />{" "}
+                      </button>
+                    )}
+
                   </div>
                 )}
                 {pageType == "create" && (
@@ -281,7 +302,7 @@ export default function Create({
           </div>
 
           {/* RIGHT SIDEBAR */}
-          {pageType !== "edit" && (
+          {pageType !== "edit" && type !== "orders" && (
             <div className="col-span-12 lg:col-span-4">
               <div className="sticky top-6 space-y-4">
                 <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
@@ -348,16 +369,35 @@ export default function Create({
                       </>
 
                     ) : (
-                      <button
-                        disabled={data.length === 0 || !valid}
-                        onClick={handleSubmit}
-                        className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                          ? "bg-gray-300 cursor-not-allowed"
-                          : "bg-green-600 hover:bg-green-700"
-                          }`}
-                      >
-                        {creating ? "Submitting..." : "Submit"}
-                      </button>
+                      <>
+                        <button
+                          disabled={data.length === 0 || !valid}
+                          onClick={() => {
+                            setButton(1)
+                            handleSubmit(false)
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-green-600 hover:bg-green-700 cursor-pointer"
+                            }`}
+                        >
+                          {creating && button == 1 ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          disabled={data.length === 0 || !valid}
+                          onClick={() => {
+                            setButton(2)
+                            handleSubmit(true)
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                            }`}
+                        >
+                          {creating && button == 2 ? "Saving & Sending..." : "Save & Send"}
+                        </button>
+                      </>
+
                     )}
                   </div>
                 </div>

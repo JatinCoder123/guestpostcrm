@@ -106,8 +106,8 @@ export default function CreateDeal() {
       const currentOfferWithoutDeal =
         currentOffers?.length > 0
           ? currentOffers.filter(
-              (o) => !currentDeals.some((d) => d.website_c == o.website),
-            )
+            (o) => !currentDeals.some((d) => d.website_c == o.website),
+          )
           : [];
       if (currentOfferWithoutDeal?.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
@@ -128,10 +128,10 @@ export default function CreateDeal() {
         ]);
     }
   }, [type, currentDeals]);
-  const submitHandler = (data) => {
+  const submitHandler = (data, send = false) => {
     setNewDealsCreated(data);
 
-    dispatch(createDeal(data));
+    dispatch(createDeal(data, send));
   };
 
   const sendHandler = () => {
@@ -205,23 +205,25 @@ export default function CreateDeal() {
           2,
           okHandler,
         );
-        const data = unionByKey(newDealsCreated, currentDeals, "website_c");
-        setNewDealsCreated([]);
-        dispatch(
-          sendEmail(
-            renderToStaticMarkup(
-              <Preview
-                data={data}
-                type="Deals"
-                userEmail={state?.email}
-                websiteKey="website_c"
-                amountKey="dealamount"
-              />,
+        if (message.includes("Send")) {
+          const data = unionByKey(newDealsCreated, currentDeals, "website_c");
+          setNewDealsCreated([]);
+          dispatch(
+            sendEmail(
+              renderToStaticMarkup(
+                <Preview
+                  data={data}
+                  type="Deals"
+                  userEmail={state?.email}
+                  websiteKey="website_c"
+                  amountKey="dealamount"
+                />,
+              ),
+              "Deal Created and Send Successfully",
+              "Deal Created But Not Sent!",
             ),
-            "Deal Created and Send Successfully",
-            "Deal Created But Not Sent!",
-          ),
-        );
+          );
+        }
         setNewDeals([]);
         dispatch(dealsAction.clearAllMessages());
       }
