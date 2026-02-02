@@ -179,7 +179,7 @@ export const updateOffer = (offer, send) => {
     }
   };
 };
-export const createOffer = (offers = []) => {
+export const createOffer = (offers = [], send = false) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
@@ -207,7 +207,7 @@ export const createOffer = (offers = []) => {
       const updatedOffers = [...offers, ...getState().offers.offers];
       dispatch(
         offersSlice.actions.createOfferSuccess({
-          message: "Offers Created Successfully",
+          message: send ? "Offers Created and Send Successfully" : "Offers Created Successfully",
           offers: updatedOffers,
           count: updatedOffers.length,
         })

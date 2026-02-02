@@ -234,7 +234,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
                            hover:bg-emerald-500 hover:shadow-lg
-                           active:scale-95 transition-all"
+                           active:scale-95 transition-all cursor-pointer"
                   >
                     <CheckCircle size={18} />
                     Accept
@@ -245,7 +245,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30
                            hover:bg-red-500 hover:shadow-lg
-                           active:scale-95 transition-all"
+                           active:scale-95 transition-all cursor-pointer"
                   >
                     <XCircle size={18} />
                     Reject
@@ -261,7 +261,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
               bg-blue-500/90 text-white font-semibold
               shadow-md shadow-blue-500/30
               hover:bg-blue-500 hover:shadow-lg
-              active:scale-95 transition-all"
+              active:scale-95 transition-all cursor-pointer"
                 >
                   <PackageCheck size={18} />
                   Complete
