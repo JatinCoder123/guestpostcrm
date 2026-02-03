@@ -11,7 +11,7 @@ const offersSlice = createSlice({
     count: 0,
     error: null,
     updating: false,
-    summary:null,
+    summary: null,
     message: null,
     pageCount: 1,
     pageIndex: 1,
@@ -26,10 +26,10 @@ const offersSlice = createSlice({
       state.error = null;
     },
     getOffersSucess(state, action) {
-      const { count, offers,summary } = action.payload;
+      const { count, offers, summary, pageCount, pageIndex } = action.payload;
       state.loading = false;
       state.offers = offers;
-      state.summary=summary;
+      state.summary = summary;
       state.count = count;
       state.error = null;
       state.pageCount = pageCount;
@@ -110,12 +110,12 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&filter=${getState().ladger.timeline}&email=${email}&page=1&page_size=50`
+          }&type=get_offers${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_offers&filter=${getState().ladger.timeline}&page=1&page_size=50`
+          }&type=get_offers${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
@@ -124,7 +124,9 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
         offersSlice.actions.getOffersSucess({
           count: data.data_count ?? 0,
           offers: data.data ?? [],
-          summary:data.summary ?? null
+          summary: data.summary ?? null,
+          pageCount: data.total_pages ?? 1,
+          pageIndex: data.current_page ?? 1,
         })
       );
       dispatch(offersSlice.actions.clearAllErrors());
@@ -173,7 +175,7 @@ export const updateOffer = (offer, send) => {
     }
   };
 };
-export const createOffer = (offers = []) => {
+export const createOffer = (offers = [], send = false) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
@@ -201,7 +203,7 @@ export const createOffer = (offers = []) => {
       const updatedOffers = [...offers, ...getState().offers.offers];
       dispatch(
         offersSlice.actions.createOfferSuccess({
-          message: "Offers Created Successfully",
+          message: send ? "Offers Created and Send Successfully" : "Offers Created Successfully",
           offers: updatedOffers,
           count: updatedOffers.length,
         })

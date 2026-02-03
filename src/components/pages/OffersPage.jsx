@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import {CheckCircle, Clock , User, Calendar, DollarSign, Tag, Pen, Trash ,Gift} from "lucide-react";
+import { CheckCircle, Clock, User, Calendar, DollarSign, Tag, Pen, Trash, Gift } from "lucide-react";
 import { deleteOffer, getOffers, offersAction, } from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
@@ -9,7 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { excludeEmail, excludeName, extractEmail } from "../../assets/assets";
 import { LoadingChase, LoadingSpin } from "../Loading";
 import { PageContext } from "../../context/pageContext";
-import { Sparkles } from "lucide-react";
+import { ladgerAction } from "../../store/Slices/ladger";
+import TableLoading from "../TableLoading";
 
 export function OffersPage() {
   const { offers, count, loading, error, deleting, deleteOfferId, summary } = useSelector((state) => state.offers);
@@ -159,7 +160,7 @@ export function OffersPage() {
       />
 
       {/* ⭐ Stats Cards (Top Section) */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
         {/* Active Offers */}
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
@@ -224,7 +225,7 @@ export function OffersPage() {
       </div>
 
 
- 
+
 
 
 

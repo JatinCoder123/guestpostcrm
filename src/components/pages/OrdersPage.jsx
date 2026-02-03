@@ -7,13 +7,13 @@ import {
   Calendar,
   User,
   ShieldCheck,
-  ClipboardCheck
+  ClipboardCheck,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../Pagination";
 import { getOrders, orderAction, updateOrder } from "../../store/Slices/orders";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
@@ -21,41 +21,43 @@ import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
-
+const getStatusColor = (status) => {
+  switch (status) {
+    case "Completed":
+      return "bg-green-100 text-green-700";
+    case "In Progress":
+      return "bg-blue-100 text-blue-700";
+    case "Pending":
+      return "bg-yellow-100 text-yellow-700";
+    case "Cancelled":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
 export function OrdersPage() {
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSort, setSelectedSort] = useState('');
-  const { setSearch, setEnteredEmail } = useContext(PageContext);
-  const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null)
-  const { orders, count, loading, error, message, updating,summary } = useSelector(
-    (state) => state.orders
-  );
-  const navigateTo = useNavigate()
-  const dispatch = useDispatch()
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSort, setSelectedSort] = useState("");
+  const [isExternalSearch, setIsExternalSearch] = useState(false);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-100 text-green-700";
-      case "In Progress":
-        return "bg-blue-100 text-blue-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Cancelled":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
+  const { state } = useLocation();
+  const { setSearch, setEnteredEmail } = useContext(PageContext);
+  const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null);
+  const [actualOrder, setActualOrder] = useState([]);
+  const { email } = useSelector((state) => state.ladger);
+  const { orders, count, loading, error, message, updating, summary } =
+    useSelector((state) => state.orders);
+  const navigateTo = useNavigate();
+  const dispatch = useDispatch();
 
   // Add state for filter values
   const [filters, setFilters] = useState({
-    archive: 'all',
-    transactionType: 'all',
-    dateRange: '30',
-    currency: 'all',
-    status: 'all',
+    archive: "all",
+    transactionType: "all",
+    dateRange: "30",
+    currency: "all",
+    status: "all",
     minAmount: 0,
     maxAmount: 0,
   });
@@ -68,39 +70,45 @@ export function OrdersPage() {
   // Debug: Log order statuses to see what we have
   useEffect(() => {
     if (orders.length > 0) {
-      const uniqueStatuses = [...new Set(orders.map(order => order.order_status))];
+      const uniqueStatuses = [
+        ...new Set(orders.map((order) => order.order_status)),
+      ];
     }
   }, [orders]);
 
   // Updated filteredOrders function with proper status matching
-  const filteredorders = orders
+  const filteredorders = actualOrder
     .filter((item) => {
+      const status = item.order_status?.toLowerCase().trim();
+      // If email came from another page → show ONLY matching email
+      if (isExternalSearch) return true;
+
+      // Always show ONLY New & Pending
+      if (!isExternalSearch && selectedCategory !== "search") {
+        return status === "new" || status === "pending";
+      }
+
       // Apply search filter first
-      const searchValue = topsearch.toLowerCase();
-      if (searchValue) {
-        const contact = item.real_name?.split("<")[0]?.trim().toLowerCase() || "";
+      // SEARCH MODE → allow ALL records
+      if (selectedCategory === "search") {
+        const searchValue = topsearch.toLowerCase();
+
+        if (!searchValue) return true;
+
+        const contact =
+          item.real_name?.split("<")[0]?.trim().toLowerCase() || "";
         const orderId = item.order_id?.toLowerCase() || "";
-        const date = item.date_entered?.toLowerCase() || "";
 
-        // If category selected
-        if (selectedCategory === "contect" || selectedCategory === "contact") {
-          return contact.includes(searchValue);
-        }
-        if (selectedCategory === "subject") {
-          return orderId.includes(searchValue);
-        }
-
-        // Default search: search in both contact and order ID
         return contact.includes(searchValue) || orderId.includes(searchValue);
       }
-      return true; // No search value → show all
     })
     .filter((item) => {
       // Apply status filter
-      if (filters.status && filters.status !== 'all') {
+      if (filters.status && filters.status !== "all") {
         // Check if the order_status matches the selected filter
         // Handle case-insensitive matching and partial matches
-        const orderStatus = item.order_status?.toString().toLowerCase().trim() || "";
+        const orderStatus =
+          item.order_status?.toString().toLowerCase().trim() || "";
         const filterStatus = filters.status.toLowerCase().trim();
 
         // Try exact match first
@@ -109,23 +117,31 @@ export function OrdersPage() {
         }
 
         // Try partial match (e.g., "In process" vs "In Process")
-        if (orderStatus.includes(filterStatus) || filterStatus.includes(orderStatus)) {
+        if (
+          orderStatus.includes(filterStatus) ||
+          filterStatus.includes(orderStatus)
+        ) {
           return true;
         }
 
         // Try to match common variations
         const statusVariations = {
-          'new': ['new', 'pending', 'received'],
-          'in process': ['in process', 'in progress', 'processing', 'in-progress'],
-          'completed': ['completed', 'finished', 'done', 'delivered'],
-          'accepted': ['accepted', 'approved', 'confirmed'],
-          'duplicate': ['duplicate', 'copied'],
+          new: ["new", "pending", "received"],
+          "in process": [
+            "in process",
+            "in progress",
+            "processing",
+            "in-progress",
+          ],
+          completed: ["completed", "finished", "done", "delivered"],
+          accepted: ["accepted", "approved", "confirmed"],
+          duplicate: ["duplicate", "copied"],
         };
 
         // Check if any variation matches
         if (statusVariations[filterStatus]) {
-          return statusVariations[filterStatus].some(variation =>
-            orderStatus.includes(variation)
+          return statusVariations[filterStatus].some((variation) =>
+            orderStatus.includes(variation),
           );
         }
 
@@ -148,11 +164,15 @@ export function OrdersPage() {
       if (!selectedSort) return 0;
 
       if (selectedSort === "asc") {
-        return (a.real_name?.split("<")[0]?.trim() || "").localeCompare(b.real_name?.split("<")[0]?.trim() || "");
+        return (a.real_name?.split("<")[0]?.trim() || "").localeCompare(
+          b.real_name?.split("<")[0]?.trim() || "",
+        );
       }
 
       if (selectedSort === "desc") {
-        return (b.real_name?.split("<")[0]?.trim() || "").localeCompare(a.real_name?.split("<")[0]?.trim() || "");
+        return (b.real_name?.split("<")[0]?.trim() || "").localeCompare(
+          a.real_name?.split("<")[0]?.trim() || "",
+        );
       }
 
       if (selectedSort === "oldest") {
@@ -163,8 +183,9 @@ export function OrdersPage() {
     });
 
   const dropdownOptions = [
-    { value: 'contect', label: 'Contact' },
-    { value: 'subject', label: 'Order id' },
+    { value: "contect", label: "Contact" },
+    { value: "subject", label: "Order id" },
+    { value: "search", label: "Search" },
   ];
 
   const handleSearchChange = (value) => {
@@ -177,7 +198,7 @@ export function OrdersPage() {
 
   // Function to handle status filter change (if you want to add it separately)
   const handleStatusChange = (status) => {
-    setFilters(prev => ({ ...prev, status }));
+    setFilters((prev) => ({ ...prev, status }));
   };
 
   const handleDownload = () => {
@@ -186,14 +207,21 @@ export function OrdersPage() {
       return;
     }
 
-    const headers = ["DATE", "CONTACT", "AMOUNT", "STATUS", "DELIVERY DATE", "ORDER ID"];
+    const headers = [
+      "DATE",
+      "CONTACT",
+      "AMOUNT",
+      "STATUS",
+      "DELIVERY DATE",
+      "ORDER ID",
+    ];
     const rows = filteredorders.map((order) => [
       order.date_entered,
       order.real_name?.split("<")[0]?.trim() || "",
       order.total_amount_c,
       order.order_status,
       order.complete_date,
-      order.order_id
+      order.order_id,
     ]);
 
     const csvContent =
@@ -209,6 +237,18 @@ export function OrdersPage() {
     a.download = "orders.csv";
     a.click();
   };
+  useEffect(() => {
+    if (state?.email) {
+      const specificOrder = orders.filter(
+        (order) =>
+          excludeEmail(order?.real_name).toLowerCase() ===
+          state.email.toLowerCase(),
+      );
+      setActualOrder(specificOrder);
+    } else {
+      setActualOrder(orders);
+    }
+  }, [state?.email, orders]);
 
   return (
     <>
@@ -217,9 +257,24 @@ export function OrdersPage() {
           open={!!currentUpdateOrder}
           title="Update Order"
           fields={[
-            { name: "total_amount_c", label: "Order Amount", type: "number", value: currentUpdateOrder.total_amount_c },
-            { name: "website_c", label: "Website", type: "text", value: currentUpdateOrder.website_c },
-            { name: "client_email", label: "Client Email", type: "email", value: currentUpdateOrder.client_email },
+            {
+              name: "total_amount_c",
+              label: "Order Amount",
+              type: "number",
+              value: currentUpdateOrder.total_amount_c,
+            },
+            {
+              name: "website_c",
+              label: "Website",
+              type: "text",
+              value: currentUpdateOrder.website_c,
+            },
+            {
+              name: "client_email",
+              label: "Client Email",
+              type: "email",
+              value: currentUpdateOrder.client_email,
+            },
           ]}
           loading={updating}
           onUpdate={(data) => updateOrderHandler(currentUpdateOrder, data)}
@@ -238,19 +293,19 @@ export function OrdersPage() {
         filterPlaceholder="Filters"
         showFilter={true}
         archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
+          { value: "all", label: "All" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
         ]}
         transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
+          { value: "all", label: "All Emails" },
+          { value: "incoming", label: "Incoming" },
+          { value: "outgoing", label: "Outgoing" },
         ]}
         currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
+          { value: "all", label: "All" },
+          { value: "usd", label: "USD" },
+          { value: "eur", label: "EUR" },
         ]}
         onDownloadClick={handleDownload}
         showDownload={true}
@@ -261,14 +316,14 @@ export function OrdersPage() {
       <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
         <div className="flex gap-4">
           <span>Active Filters:</span>
-          {filters.status !== 'all' && (
+          {filters.status !== "all" && (
             <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
               Status: {filters.status}
             </span>
           )}
           {(filters.minAmount > 0 || filters.maxAmount > 0) && (
             <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-              Amount: ${filters.minAmount} - ${filters.maxAmount || '∞'}
+              Amount: ${filters.minAmount} - ${filters.maxAmount || "∞"}
             </span>
           )}
           <span className="ml-auto">
@@ -278,70 +333,69 @@ export function OrdersPage() {
       </div>
 
       {/* Stats Cards */}
-<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {/* Pending / Under Verification */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Under Verification</p>
+              <p className="text-2xl text-gray-900 mt-1 font-semibold">
+                {summary?.under_verification_orders ?? 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <ShoppingCart className="w-6 h-6 text-indigo-600" />
+            </div>
+          </div>
+        </div>
 
-  {/* Pending / Under Verification */}
-  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-gray-500 text-sm">Under Verification</p>
-        <p className="text-2xl text-gray-900 mt-1 font-semibold">
-          {summary?.under_verification_orders ?? 0}
-        </p>
-      </div>
-      <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-        <ShieldCheck className="w-6 h-6 text-yellow-600" />
-      </div>
-    </div>   
-  </div>
+        {/* New Orders */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">New Orders</p>
+              <p className="text-2xl text-gray-900 mt-1 font-semibold">
+                {summary?.new_orders ?? 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Package className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
 
-  {/* New Orders */}
-  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-gray-500 text-sm">New Orders</p>
-        <p className="text-2xl text-gray-900 mt-1 font-semibold">
-          {summary?.new_orders ?? 0}
-        </p>
-      </div>
-      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-        <ShoppingCart className="w-6 h-6 text-blue-600" />
-      </div>
-    </div>
-  </div>
+        {/* Accepted Orders */}
+        <div               onClick={() => navigateTo("/orders/view", { state: { email } })}
+ className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div
+            >
+              <p className="text-gray-500 text-sm">Pending Orders</p>
+              <p className="text-2xl text-gray-900 mt-1 font-semibold">
+                {summary?.pending_orders ?? 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl text-green-700">✓</span>
+            </div>
+          </div>
+        </div>
 
-  {/* Accepted Orders */}
-  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-gray-500 text-sm">Accepted Orders</p>
-        <p className="text-2xl text-gray-900 mt-1 font-semibold">
-          {summary?.accepted_orders ?? 0}
-        </p>
+        {/* Completed Orders */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm">Completed Orders</p>
+              <p className="text-2xl text-gray-900 mt-1 font-semibold">
+                {summary?.completed_orders ?? 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-purple-600" />
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-        <span className="text-2xl text-green-700">✓</span>
-      </div>
-    </div>
-  </div>
-
-  {/* Completed Orders */}
-  <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-gray-500 text-sm">Completed Orders</p>
-        <p className="text-2xl text-gray-900 mt-1 font-semibold">
-          {summary?.completed_orders ?? 0}
-        </p>
-      </div>
-      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-        <ClipboardCheck className="w-6 h-6 text-purple-600" />
-      </div>
-    </div>
-  </div>
-
-
-</div>
 
       {/* Orders Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -350,14 +404,21 @@ export function OrdersPage() {
             <Package className="w-6 h-6 text-green-600" />
             <h2 className="text-xl font-semibold text-gray-800">ORDERS</h2>
             <a href="">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <div className="relative group">
-            <span className="absolute left-1/2 -bottom-3 -translate-x-1/2 
+            <span
+              className="absolute left-1/2 -bottom-3 -translate-x-1/2 
                    bg-gray-800 text-white text-sm px-3 py-1 rounded-md 
                    opacity-0 group-hover:opacity-100 transition 
-                   pointer-events-none whitespace-nowrap shadow-md">
+                   pointer-events-none whitespace-nowrap shadow-md"
+            >
               Create Order
             </span>
           </div>
@@ -392,7 +453,9 @@ export function OrdersPage() {
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
-            {loading ? <TableLoading cols={7} /> : (
+            {loading ? (
+              <TableLoading cols={7} />
+            ) : (
               <tbody>
                 {filteredorders.map((order) => (
                   <tr
@@ -406,7 +469,7 @@ export function OrdersPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null))
+                        dispatch(ladgerAction.setTimeline(null));
                         navigateTo("/");
                       }}
                     >
@@ -421,7 +484,7 @@ export function OrdersPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null))
+                        dispatch(ladgerAction.setTimeline(null));
                         navigateTo("/contacts");
                       }}
                       className="px-6 py-4 text-gray-900 cursor-pointer"
@@ -434,7 +497,7 @@ export function OrdersPage() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                          order.order_status
+                          order.order_status,
                         )}`}
                       >
                         {order.order_status || "Unknown"}
@@ -449,7 +512,11 @@ export function OrdersPage() {
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => navigateTo(`/orders/edit/${order.id}`, { state: { email: excludeEmail(order.real_name) } })}
+                          onClick={() =>
+                            navigateTo(`/orders/edit/${order.id}`, {
+                              state: { email: excludeEmail(order.real_name) },
+                            })
+                          }
                           className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                           title="Update"
                         >
@@ -459,11 +526,15 @@ export function OrdersPage() {
                     </td>
                   </tr>
                 ))}
-              </tbody>)}
+              </tbody>
+            )}
           </table>
         </div>
 
-        <Pagination slice={"orders"} fn={getOrders} />
+        <Pagination
+          slice={"orders"}
+          fn={(p) => dispatch(getOrders({ page: p }))}
+        />
 
         {!loading && filteredorders.length === 0 && (
           <div className="p-12 text-center text-gray-500">

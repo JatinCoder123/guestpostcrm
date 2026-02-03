@@ -171,10 +171,6 @@ const router = createBrowserRouter([
         path: "timeline",
         element: <TimelinePage />,
       },
-      {
-        path: "contacts",
-        element: <Contactpage />,
-      },
 
       {
         path: "forwarded-emails",
@@ -238,7 +234,7 @@ const router = createBrowserRouter([
           {
             path: "templates",
             element: <TemplatesPage />,
-          },             
+          },
           {
             path: "websites",
             element: <WebsitesPage />,

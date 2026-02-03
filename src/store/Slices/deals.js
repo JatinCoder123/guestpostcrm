@@ -136,7 +136,7 @@ export const getDeals = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const createDeal = (deals = []) => {
+export const createDeal = (deals = [], send = false) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
@@ -161,7 +161,7 @@ export const createDeal = (deals = []) => {
       const updatedDeals = [...deals, ...getState().deals.deals];
       dispatch(
         dealsSlice.actions.createDealSucess({
-          message: "Deals Created Successfully",
+          message: send ? "Deals Created and Send Successfully" : "Deals Created Successfully",
           deals: updatedDeals,
           count: updatedDeals.length,
         })
