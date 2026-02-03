@@ -90,7 +90,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
               {/* WEBSITE TYPE (Select Input) */}
               <div>
                 <label className="text-sm font-medium text-gray-600">
-                  Website Type
+                  Website Budget
                 </label>
                 <select
                   value={form.website_type}

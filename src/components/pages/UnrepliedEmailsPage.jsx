@@ -21,15 +21,15 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import { extractEmail } from "../../assets/assets";
 import TableLoading from "../TableLoading";
 
-
 export function UnrepliedEmailsPage() {
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  const [selectedSort, setSelectedSort] = useState('');
+  const [selectedSort, setSelectedSort] = useState("");
   const { count, emails, loading } = useSelector((state) => state.unreplied);
 
-  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
+  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+    useContext(PageContext);
 
   const [
     handleThreadClick,
@@ -108,22 +108,20 @@ export function UnrepliedEmailsPage() {
 
   // ------------------------------------------------------------------
 
-
   const dropdownOptions = [
-
-    { value: 'contect', label: 'Contact' },
-    { value: 'subject', label: 'Subject' },
+    { value: "contect", label: "Contact" },
+    { value: "subject", label: "Subject" },
   ];
 
   const filterOptions = [
-    { value: 'asc', label: 'A to Z' },
-    { value: 'desc', label: 'Z to A' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
+    { value: "asc", label: "A to Z" },
+    { value: "desc", label: "Z to A" },
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
   ];
 
   const handleFilterApply = (filters) => {
-    setSelectedSort(filters.sort || '');
+    setSelectedSort(filters.sort || "");
   };
 
   const handleSearchChange = (value) => setTopsearch(value);
@@ -142,7 +140,7 @@ export function UnrepliedEmailsPage() {
       email.date_entered,
       email.from?.split("<")[0].trim(),
       email.subject,
-      email.thread_count
+      email.thread_count,
     ]);
 
     // Convert to CSV string
@@ -161,49 +159,37 @@ export function UnrepliedEmailsPage() {
     a.click();
   };
 
-
   return (
     <>
       <SearchComponent
-
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         // dropdownPlaceholder="Filter by Status"
         dropdownPlaceholder="Filter by"
-
-
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
         searchPlaceholder="Search here..."
-
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
-
         archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
+          { value: "all", label: "All" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
         ]}
         transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
+          { value: "all", label: "All Emails" },
+          { value: "incoming", label: "Incoming" },
+          { value: "outgoing", label: "Outgoing" },
         ]}
         currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
+          { value: "all", label: "All" },
+          { value: "usd", label: "USD" },
+          { value: "eur", label: "EUR" },
         ]}
-
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
-
         className="mb-6"
       />
 
@@ -212,9 +198,19 @@ export function UnrepliedEmailsPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Mail className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900">UNREPLIED EMAILS</h2>
-            <a href="https://www.guestpostcrm.com/blog/unreplied-and-unanswered-emails-in-guestpostcrm/" target="_blank">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            <h2 className="text-xl font-semibold text-gray-900">
+              UNREPLIED EMAILS
+            </h2>
+            <a
+              href="https://www.guestpostcrm.com/blog/unreplied-and-unanswered-emails-in-guestpostcrm/"
+              target="_blank"
+            >
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
@@ -253,79 +249,86 @@ export function UnrepliedEmailsPage() {
                 </th>
               </tr>
             </thead>
-            {loading ? <TableLoading cols={4} /> : <tbody>
-              {/* 🟣 USING filteredEmails NOW (NOT emails) */}
-              {filteredEmails.map((email) => (
-                <tr
-                  key={email.thread_id}
-                  className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
-                >
-                  <td
-                    onClick={() => {
-                      const input = extractEmail(email.from);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      dispatch(ladgerAction.setTimeline(null))
-                      setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/");
-                    }}
-                    className="px-6 py-4"
+            {loading ? (
+              <TableLoading cols={4} />
+            ) : (
+              <tbody>
+                {/* 🟣 USING filteredEmails NOW (NOT emails) */}
+                {filteredEmails.map((email) => (
+                  <tr
+                    key={email.thread_id}
+                    className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_entered}</span>
-                    </div>
-                  </td>
+                    <td
+                      onClick={() => {
+                        const input = extractEmail(email.from);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null));
+                        setWelcomeHeaderContent("Unreplied");
+                        navigateTo("/");
+                      }}
+                      className="px-6 py-4"
+                    >
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{email.date_entered}</span>
+                      </div>
+                    </td>
 
-                  <td
-                    onClick={() => {
-                      const input = extractEmail(email.from);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      dispatch(ladgerAction.setTimeline(null))
-                      setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/contacts");
-                    }}
-                    className="px-6 py-4 text-gray-900"
-                  >
-                    {email.from.split("<")[0].trim()}
-                  </td>
+                    <td
+                      onClick={() => {
+                        const input = extractEmail(email.from);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null));
+                        setWelcomeHeaderContent("Unreplied");
+                        navigateTo("/contacts");
+                      }}
+                      className="px-6 py-4 text-gray-900"
+                    >
+                      {email.from.split("<")[0].trim()}
+                    </td>
 
-                  <td
-                    onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
-                      setEmail(extractEmail(email.from));
-                    }}
-                    className="px-6 py-4 text-purple-600"
-                  >
-                    {email.subject}
-                  </td>
+                    <td
+                      onClick={() => {
+                        setCurrentThreadId(email.thread_id);
+                        handleThreadClick(email.from, email.thread_id);
+                        setEmail(extractEmail(email.from));
+                      }}
+                      className="px-6 py-4 text-purple-600"
+                    >
+                      {email.subject}
+                    </td>
 
-                  <td
-                    onClick={() => {
-                      const input = extractEmail(email.from);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      dispatch(ladgerAction.setTimeline(null))
-                      setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/");
-                    }}
-                    className="px-6 py-4 text-purple-600"
-                  >
-                    {email.thread_count}
-                  </td>
-                </tr>
-              ))}
-            </tbody>}
+                    <td
+                      onClick={() => {
+                        const input = extractEmail(email.from);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null));
+                        setWelcomeHeaderContent("Unreplied");
+                        navigateTo("/");
+                      }}
+                      className="px-6 py-4 text-purple-600"
+                    >
+                      {email.thread_count}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
           </table>
         </div>
 
         {emails?.length > 0 && (
-          <Pagination slice={"unreplied"} fn={(p) => dispatch(getUnrepliedEmail({ page: p, loading: true }))} />
+          <Pagination
+            slice={"unreplied"}
+            fn={(p) => dispatch(getUnrepliedEmail({ page: p, loading: true }))}
+          />
         )}
 
         {filteredEmails.length === 0 && (
