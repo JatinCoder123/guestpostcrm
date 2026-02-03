@@ -561,9 +561,7 @@ const TimelineEvent = () => {
             <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
               <div className="flex items-center gap-4">
                 <h2 className="text-2xl font-bold">{templateData.name || "Template Preview"}</h2>
-                <span className="text-sm opacity-90">
-                  ID: {templateData.id}
-                </span>
+                
               </div>
 
               <button
@@ -608,11 +606,7 @@ const TimelineEvent = () => {
               />
             </div>
 
-            <div className="flex justify-center items-center px-6 py-3 bg-gray-50 border-t text-sm text-gray-600">
-              <div>
-                 Template ID: <strong>{templateData.id}</strong> • This is a preview of the email template
-              </div>
-            </div>
+          
           </motion.div>
         </div>
       )}
