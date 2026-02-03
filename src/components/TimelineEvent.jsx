@@ -1,14 +1,24 @@
 import { useDispatch, useSelector } from "react-redux";
-import { Eye, SparkleIcon } from "lucide-react";
+import { Eye, SparkleIcon, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import Pagination from "./Pagination";
 import { getLadger } from "../store/Slices/ladger";
+import { motion } from "framer-motion";
+import { X } from "lucide-react";
+import { Editor } from "@tinymce/tinymce-react";
+import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
+  const { crmEndpoint } = useSelector((state) => state.user);
   const [selectedView, setSelectedView] = useState("important");
   const [timelineData, setTimelineData] = useState([]);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [templateContent, setTemplateContent] = useState("");
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const [templateData, setTemplateData] = useState(null);
 
   const topRef = useRef(null);
 
@@ -140,6 +150,106 @@ const TimelineEvent = () => {
     navigateTo("/");
   };
 
+  // Function to handle template icon click
+  const handleTemplateClick = async (templateId, event) => {
+    if (!templateId || templateId.trim() === "") return;
+    
+    setLoadingTemplate(true);
+    setSelectedTemplate({
+      id: templateId,
+      eventData: event
+    });
+    
+    try {
+      // Fetch the email template from EmailTemplates module
+      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`, {
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          module: "EmailTemplates",
+          id: templateId
+        }),
+      });
+      
+      const responseText = await response.text();
+      let result;
+
+      try {
+        result = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        result = {};
+      }
+
+      if (response.ok) {
+        // Check different response structures
+        let templateData;
+        
+        if (Array.isArray(result)) {
+          // If result is an array, find the template with matching ID
+          templateData = result.find(t => t.id === templateId);
+        } else if (result.data && Array.isArray(result.data)) {
+          templateData = result.data.find(t => t.id === templateId);
+        } else if (result.parent_bean) {
+          templateData = result.parent_bean;
+        } else {
+          templateData = result;
+        }
+        
+        if (templateData && templateData.body_html) {
+          setTemplateData(templateData);
+          setTemplateContent(templateData.body_html || "");
+          setShowTemplateModal(true);
+        } else {
+          throw new Error("Template content not found");
+        }
+      } else {
+        throw new Error(`Failed to fetch template: ${result.error || result.message || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Error fetching template:", error);
+      
+      // Fallback: Create a simple template data object
+      setTemplateData({
+        id: templateId,
+        name: "Template Preview",
+        body_html: `
+          <div style="padding: 20px; font-family: Arial, sans-serif;">
+            <h2>Template Preview</h2>
+            <p>Template ID: ${templateId}</p>
+            <p><strong>Event Type:</strong> ${event.type_c || "N/A"}</p>
+            <p><strong>Subject:</strong> ${event.subject_c || event.subject || "N/A"}</p>
+            <p><strong>Contact:</strong> ${event.name || "N/A"}</p>
+            <p>Error loading template: ${error.message}</p>
+          </div>
+        `
+      });
+      setTemplateContent(`
+        <div style="padding: 20px; font-family: Arial, sans-serif;">
+          <h2>Template Preview</h2>
+          <p>Template ID: ${templateId}</p>
+          <p><strong>Event Type:</strong> ${event.type_c || "N/A"}</p>
+          <p><strong>Subject:</strong> ${event.subject_c || event.subject || "N/A"}</p>
+          <p><strong>Contact:</strong> ${event.name || "N/A"}</p>
+          <p>Error loading template: ${error.message}</p>
+        </div>
+      `);
+      setShowTemplateModal(true);
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
+
+  // Function to close template modal
+  const closeTemplateModal = () => {
+    setShowTemplateModal(false);
+    setSelectedTemplate(null);
+    setTemplateData(null);
+    setTemplateContent("");
+  };
+
   // Function to get tooltip text based on event type and contact
   const getTooltipText = (event) => {
     const type = event.type_c || "";
@@ -160,13 +270,13 @@ const TimelineEvent = () => {
 
     return event.description || "View details";
   };
+
   const scrollToTop = () => {
     topRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
   };
-
 
   return (
     <>
@@ -210,7 +320,6 @@ const TimelineEvent = () => {
           </div>
         </div>
 
-
         <div className="relative mt-6">
           {timelineData?.length > 0 && (
             <div className="absolute left-[19px] top-0 bottom-0 w-[10px] bg-gray-300 rounded-full"></div>
@@ -228,6 +337,7 @@ const TimelineEvent = () => {
                 ? getReminderFilterType(type)
                 : null;
               const contactId = getContactIdFromEvent(event);
+              const hasTemplate = event.template_id && event.template_id.trim() !== "";
 
               return (
                 <div key={event.id} className="relative flex items-start gap-4">
@@ -242,9 +352,10 @@ const TimelineEvent = () => {
                   </div>
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${index === 0
-                        ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
-                        : "bg-white border-gray-200"
+                      ${
+                        index === 0
+                          ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
+                          : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -256,9 +367,10 @@ const TimelineEvent = () => {
                           <Eye
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110
-                              ${isReminderEvent
-                                ? "text-purple-600"
-                                : isContactEvent
+                              ${
+                                isReminderEvent
+                                  ? "text-purple-600"
+                                  : isContactEvent
                                   ? "text-green-600"
                                   : "text-blue-600"
                               }`}
@@ -305,6 +417,35 @@ const TimelineEvent = () => {
                       </span>
 
                       <div className="flex items-center gap-2">
+                        {/* Template Icon - Only show if template_id exists */}
+                        {hasTemplate && (
+                          <button
+                            onClick={() => handleTemplateClick(event.template_id, event)}
+                            className="text-green-600 hover:text-green-700 cursor-pointer relative group"
+                            title={`Preview Template: ${event.template_id}`}
+                            disabled={loadingTemplate && selectedTemplate?.id === event.template_id}
+                          >
+                            <FileText size={20} />
+                            {loadingTemplate && selectedTemplate?.id === event.template_id && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                              </div>
+                            )}
+                            
+                            {/* Tooltip for template */}
+                            <div className="absolute left-1/2 -translate-x-1/2 -top-8
+                                          whitespace-nowrap px-2 py-1 text-xs
+                                          bg-gray-900 text-white rounded-md
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                          pointer-events-none z-50">
+                              Preview Template
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full
+                                            w-2 h-2 bg-gray-900 rotate-45" />
+                            </div>
+                          </button>
+                        )}
+
                         {event.prompt_id.trim() !== "" &&
                           event.prompt_id.toLowerCase() !== "na" && (
                             <button
@@ -397,7 +538,83 @@ const TimelineEvent = () => {
         </div>
       </div>
       {timelineData?.length > 0 && (
-        <Pagination slice={"ladger"} fn={(p) => dispatch(getLadger({ page: p, loading: false }))} />
+        <Pagination
+          slice={"ladger"}
+          fn={(p) => dispatch(getLadger({ page: p, loading: false }))}
+        />
+      )}
+
+      {/* Template Modal */}
+      {showTemplateModal && templateData && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={closeTemplateModal}
+        >
+          <motion.div
+            initial={{ scale: 0.93, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 25 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+              <div className="flex items-center gap-4">
+                <h2 className="text-2xl font-bold">{templateData.name || "Template Preview"}</h2>
+                <span className="text-sm opacity-90">
+                  ID: {templateData.id}
+                </span>
+              </div>
+
+              <button
+                onClick={closeTemplateModal}
+                className="p-2 hover:bg-white/20 rounded-full transition"
+              >
+                <X size={28} />
+              </button>
+            </div>
+
+            {/* Editor Content */}
+            <div className="flex-1 overflow-hidden">
+              <Editor
+                apiKey={TINY_EDITOR_API_KEY}
+                value={templateContent}
+                onEditorChange={setTemplateContent}
+                init={{
+                  height: "100%",
+                  menubar: false,
+                  plugins:
+                    "preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media table charmap pagebreak nonbreaking anchor insertdatetime lists wordcount advlist code help",
+                  toolbar:
+                    "undo redo | formatselect | bold italic underline strikethrough | \
+                    alignleft aligncenter alignright alignjustify | \
+                    bullist numlist outdent indent | link image media | \
+                    preview fullscreen | code",
+                  toolbar_mode: "sliding",
+                  content_style: `
+                    body { 
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+                      font-size: 15px; 
+                      line-height: 1.6; 
+                      color: #333; 
+                    }
+                    img { max-width: 100%; height: auto; }
+                    table { border-collapse: collapse; }
+                  `,
+                  preview_styles:
+                    "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
+                  readonly: true // Make it read-only for viewing only
+                }}
+              />
+            </div>
+
+            <div className="flex justify-center items-center px-6 py-3 bg-gray-50 border-t text-sm text-gray-600">
+              <div>
+                 Template ID: <strong>{templateData.id}</strong> • This is a preview of the email template
+              </div>
+            </div>
+          </motion.div>
+        </div>
       )}
     </>
   );
