@@ -7,7 +7,7 @@ import {
   Calendar,
   User,
   ShieldCheck,
-  ClipboardCheck
+  ClipboardCheck,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -21,7 +21,20 @@ import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
-
+const getStatusColor = (status) => {
+  switch (status) {
+    case "Completed":
+      return "bg-green-100 text-green-700";
+    case "In Progress":
+      return "bg-blue-100 text-blue-700";
+    case "Pending":
+      return "bg-yellow-100 text-yellow-700";
+    case "Cancelled":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -31,25 +44,12 @@ export function OrdersPage() {
   const { state } = useLocation();
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null);
+  const [actualOrder, setActualOrder] = useState([]);
+  const { email } = useSelector((state) => state.ladger);
   const { orders, count, loading, error, message, updating, summary } =
     useSelector((state) => state.orders);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-100 text-green-700";
-      case "In Progress":
-        return "bg-blue-100 text-blue-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Cancelled":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
 
   // Add state for filter values
   const [filters, setFilters] = useState({
@@ -77,7 +77,7 @@ export function OrdersPage() {
   }, [orders]);
 
   // Updated filteredOrders function with proper status matching
-  const filteredorders = orders
+  const filteredorders = actualOrder
     .filter((item) => {
       const status = item.order_status?.toLowerCase().trim();
       // If email came from another page → show ONLY matching email
@@ -239,14 +239,16 @@ export function OrdersPage() {
   };
   useEffect(() => {
     if (state?.email) {
-      const email = state.email.toLowerCase();
-      setTopsearch(email);
-      setIsExternalSearch(true);
-      setSelectedCategory("search");
+      const specificOrder = orders.filter(
+        (order) =>
+          excludeEmail(order?.real_name).toLowerCase() ===
+          state.email.toLowerCase(),
+      );
+      setActualOrder(specificOrder);
     } else {
-      setIsExternalSearch(false);
+      setActualOrder(orders);
     }
-  }, [state?.email]);
+  }, [state?.email, orders]);
 
   return (
     <>
@@ -363,9 +365,11 @@ export function OrdersPage() {
         </div>
 
         {/* Accepted Orders */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+        <div               onClick={() => navigateTo("/orders/view", { state: { email } })}
+ className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
           <div className="flex items-center justify-between">
-            <div>
+            <div
+            >
               <p className="text-gray-500 text-sm">Pending Orders</p>
               <p className="text-2xl text-gray-900 mt-1 font-semibold">
                 {summary?.pending_orders ?? 0}
