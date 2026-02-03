@@ -79,11 +79,7 @@ export function OrdersPage() {
     .filter((item) => {
       const status = item.order_status?.toLowerCase().trim();
       // If email came from another page → show ONLY matching email
-      if (isExternalSearch) {
-        const contact =
-          item.real_name?.split("<")[0]?.trim().toLowerCase() || "";
-        return contact.includes(topsearch.toLowerCase());
-      }
+      if (isExternalSearch) return true;
 
       // Always show ONLY New & Pending
       if (!isExternalSearch && selectedCategory !== "search") {
@@ -241,9 +237,12 @@ export function OrdersPage() {
   };
   useEffect(() => {
     if (state?.email) {
-      setTopsearch(state.email);
-      setSelectedCategory("search");
+      const email = state.email.toLowerCase();
+      setTopsearch(email);
       setIsExternalSearch(true);
+      setSelectedCategory("search");
+    } else {
+      setIsExternalSearch(false);
     }
   }, [state?.email]);
 
