@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const aiReplySlice = createSlice({
   name: "aiReply",
@@ -37,7 +38,7 @@ export const getAiReply = (threadId) => {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=ai_reply&thread_id=${threadId}`
       );
-      console.log(`aiReply`, data);
+      showConsole && console.log(`aiReply`, data);
       dispatch(
         aiReplySlice.actions.getAiReplySucess({
           aiReply: data.reply_suggestion,

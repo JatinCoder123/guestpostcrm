@@ -181,7 +181,7 @@ export default function Contactpage() {
               <p className="text-lg text-gray-600 mt-2">
                 {contactInfo?.type} {contactInfo?.title}
               </p>
-            </div>
+            </div>     
 
             <div className="editbtn cursor-pointer" onClick={handleEditClick}>
               <img
@@ -189,7 +189,7 @@ export default function Contactpage() {
                 height="48"
                 src="https://img.icons8.com/fluency/48/create-new.png"
                 alt="create-new"
-              />
+              />  
             </div>
             <button
               onClick={() => setAccountShow(true)}
@@ -215,14 +215,14 @@ export default function Contactpage() {
                 <User className="text-white" size={20} />
               </div>
               Contact Information
-            </h2>
+            </h2>   
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <GlassInfo
                 icon={<User />}
                 label="Name"
                 value={contactInfo?.full_name}
-              />
+              />   
               <GlassInfo
                 icon={<User />}
                 label="Stage"
@@ -340,6 +340,7 @@ export default function Contactpage() {
                     <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
                       <DollarSign size={20} /> Deal Amount
                     </p>
+
                   </div>
                   <div className="col-span-5">
                     <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">

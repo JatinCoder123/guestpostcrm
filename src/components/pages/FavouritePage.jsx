@@ -11,19 +11,20 @@ import {
 } from "lucide-react";
 
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { getFavEmails } from "../../store/Slices/favEmailSlice";
 import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
+import { ladgerAction } from "../../store/Slices/ladger"
+import TableLoading from "../TableLoading";
 export function FavouritePage() {
-  const { count, emails } = useSelector((state) => state.fav);
+  const { count, emails, loading } = useSelector((state) => state.fav);
   const [
     handleThreadClick,
     showEmail,
@@ -36,7 +37,7 @@ export function FavouritePage() {
   const [selectedSort, setSelectedSort] = useState('');
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
   const navigateTo = useNavigate()
-
+  const dispatch = useDispatch()
 
   const filteredEmails = emails
     .filter((item) => {
@@ -96,22 +97,18 @@ export function FavouritePage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-    console.log('Sort selected:', value);
   };
 
 
@@ -250,7 +247,7 @@ export function FavouritePage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            {loading ? <TableLoading cols={4} /> : <tbody>
               {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
@@ -263,6 +260,7 @@ export function FavouritePage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Favourite");
                     navigateTo("/");
                   }} className="px-6 py-4">
@@ -276,6 +274,7 @@ export function FavouritePage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Favourite");
                     navigateTo("/contacts");
                   }} className="px-6 py-4 text-gray-900">{email.first_name}</td>
@@ -291,10 +290,11 @@ export function FavouritePage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
+
           </table>
         </div>
-        {emails.length > 0 && <Pagination slice={"fav"} fn={getFavEmails} />}
+        {emails.length > 0 && <Pagination slice={"fav"} fn={(page) => dispatch(getFavEmails({ page: page }))} />}
 
         {filteredEmails.length === 0 && (
           <div className="p-12 text-center">

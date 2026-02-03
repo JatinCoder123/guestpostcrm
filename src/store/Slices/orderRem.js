@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const orderRemSlice = createSlice({
   name: "orderRem",
@@ -44,9 +45,9 @@ export const getOrderRem = (email, page) => {
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=all_reminders&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}${email ? `&email=${email}` : ""}&page=${page}&page_size=50`
+        }&type=all_reminders${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}${email ? `&email=${email}` : ""}&page=${page}&page_size=50`
       );
-      console.log(`Reminders`, data);
+      showConsole && console.log(`Reminders`, data);
       dispatch(
         orderRemSlice.actions.getOrderRemSucess({
           count: data.data_count ?? 0,

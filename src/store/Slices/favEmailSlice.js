@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const favSlice = createSlice({
   name: "fav",
@@ -55,24 +56,24 @@ const favSlice = createSlice({
   },
 });
 
-export const getFavEmails = (email) => {
+export const getFavEmails = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(favSlice.actions.getEmailRequest());
-    console.log("email", email)
+    loading && dispatch(favSlice.actions.getEmailRequest());
+    showConsole && console.log("email", email)
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
-      console.log(`favorite emails`, response.data);
+      showConsole && console.log(`favorite emails`, response.data);
       const data = response.data;
       dispatch(
         favSlice.actions.getEmailSucess({
@@ -88,39 +89,6 @@ export const getFavEmails = (email) => {
     }
   };
 };
-export const getFavEmailsWithOutLoading = (email) => {
-  return async (dispatch, getState) => {
-    console.log("email", email)
-    try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=favorite${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
-        );
-      }
-      console.log(`favorite emails`, response.data);
-      const data = response.data;
-      dispatch(
-        favSlice.actions.getEmailSucess({
-          count: data.data_count ?? 0,
-          emails: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-        })
-      );
-      dispatch(favSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(favSlice.actions.getEmailFailed("Fetching Fav Emails Failed"));
-    }
-  };
-};
-
 export const favEmail = () => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.favouriteEmailRequest());
@@ -131,7 +99,7 @@ export const favEmail = () => {
         `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
         {}
       );
-      console.log(`Favourite Toggle Response`, response.data);
+      showConsole && console.log(`Favourite Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
         throw new Error("Toggle failed");

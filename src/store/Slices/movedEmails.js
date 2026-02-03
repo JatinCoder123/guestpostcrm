@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const movedSlice = createSlice({
   name: "moved",
@@ -53,7 +54,7 @@ export const getmovedEmails = (email) => {
         );
       }
 
-      console.log(`moved emails`, response.data);
+      showConsole && console.log(`moved emails`, response.data);
       const data = response.data;
       dispatch(
         movedSlice.actions.getEmailSucess({

@@ -206,8 +206,16 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
           >
             <ChevronLeft className="w-5 h-5" />
           </motion.button>
-          <div className="flex items-center gap-3">
-            <Send className="w-5 h-5" />
+  <div
+  className="flex items-center gap-3 cursor-pointer"
+  onClick={() =>
+    window.open(
+      `https://mail.google.com/mail/u/0/#inbox/${view ? viewThreadId : threadId}`,
+      "_blank"
+    )
+  }
+>
+         <Send className="w-5 h-5" />
             <h2 className="text-xl font-bold tracking-tight">
               {showEditorScreen ? "Compose Email" : "Email Thread"}
             </h2>
@@ -478,7 +486,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
                       </span>
                     </div>
                     <div
-                      dangerouslySetInnerHTML={{ __html: mail.body }}
+                      dangerouslySetInnerHTML={{ __html: mail.body_html ? mail.body_html : mail.body }}
                       className="mail-content text-sm leading-relaxed"
                     />
                   </div>

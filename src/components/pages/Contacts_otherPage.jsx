@@ -39,7 +39,7 @@ export function Contacts_otherPage() {
   const handleFilterApply = (filters) => { };
 
   const handleDownload = () => {
-    console.log("download handler");
+    alert("download handler");
   };
 
   // ✅ Dispatch API call

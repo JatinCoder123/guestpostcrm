@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const exchangeSlice = createSlice({
   name: "exchange",
@@ -80,7 +81,7 @@ export const getLinkExchange = (email) => {
           }&type=exchange${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
         );
       }
-      console.log(`Exchange links data`, response.data);
+      showConsole && console.log(`Exchange links data`, response.data);
       const data = response.data;
       dispatch(
         exchangeSlice.actions.getEmailSucess({
@@ -106,12 +107,11 @@ export const linkExchange = () => {  // Assuming 'id' is the email/contact ident
         `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=exchange`,
         {}
       );
-      console.log(`Exchange Toggle Response`, response.data);
+      showConsole && console.log(`Exchange Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
         throw new Error("Toggle failed");
       }
-      // Determine message based on new_value
       const message = data.new_value === 1 ? "Email link exchage Successfully" : "Email unlink Successfully";
       dispatch(
         exchangeSlice.actions.exchangingSucess(message)

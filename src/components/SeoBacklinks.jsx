@@ -9,7 +9,7 @@ import {
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteLink, getOrders, orderAction, updateSeoLink } from "../store/Slices/orders";
+import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const { updateLinkLoading, deleting, updateLinkMessage } = useSelector(

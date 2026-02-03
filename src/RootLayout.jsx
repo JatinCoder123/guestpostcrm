@@ -10,11 +10,9 @@ import {
 } from "./store/Slices/duplicateEmailSlice";
 import {
   getUnansweredEmails,
-  getUnansweredEmailWithOutLoading,
 } from "./store/Slices/unansweredEmails";
 import {
   getUnrepliedEmail,
-  getUnrepliedEmailWithOutLoading,
 } from "./store/Slices/unrepliedEmails";
 import { getOrders } from "./store/Slices/orders";
 import { getDeals } from "./store/Slices/deals";
@@ -43,6 +41,7 @@ import { getQuickActionBtn } from "./store/Slices/quickActionBtn";
 import Avatar from "./components/Avatar";
 import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
+import { getAllWebsites } from "./store/Slices/webSlice";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
@@ -79,7 +78,6 @@ const RootLayout = () => {
   }, [pathname]);
   useEffect(() => {
     if (crmEndpoint) {
-      // console.log("crmEndpoint", getDomain(crmEndpoint));
       setCrm(getDomain(crmEndpoint))
     }
   }, [crmEndpoint])
@@ -96,16 +94,17 @@ const RootLayout = () => {
   // Initial data fetch when timeline or email changes
   useEffect(() => {
     dispatch(getAiCredits());
-    dispatch(getUnansweredEmails(enteredEmail));
-    dispatch(getUnrepliedEmail(enteredEmail));
-    dispatch(getForwardedEmails(enteredEmail));
-    dispatch(getFavEmails(enteredEmail));
+    dispatch(getUnansweredEmails({ email: enteredEmail }));
+    dispatch(getUnrepliedEmail({ email: enteredEmail }));
+    dispatch(getForwardedEmails({ email: enteredEmail }));
+    dispatch(getFavEmails({ email: enteredEmail }));
+    dispatch(getAllWebsites());
     dispatch(getLinkExchange(enteredEmail));
     dispatch(getBulkEmails(enteredEmail));
-    dispatch(getOrders(enteredEmail));
-    dispatch(getDeals(enteredEmail));
-    dispatch(getInvoices(enteredEmail));
-    dispatch(getOffers(enteredEmail));
+    dispatch(getOrders({ email: enteredEmail }));
+    dispatch(getDeals({ email: enteredEmail }));
+    dispatch(getInvoices({ email: enteredEmail }));
+    dispatch(getOffers({ email: enteredEmail }));
     dispatch(getDetection(enteredEmail));
     dispatch(getdefaulterEmails(enteredEmail));
     dispatch(getmovedEmails(enteredEmail));
@@ -163,8 +162,8 @@ const RootLayout = () => {
     };
     if (notificationCount.unreplied_email) {
       refreshLadger();
-      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, true));
-      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, newEmail: true, loading: false }));
+      dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       setCurrentIndex(0);
       dispatch(checkForDuplicates());
       setNotificationCount((prev) => ({
@@ -176,8 +175,8 @@ const RootLayout = () => {
     if (notificationCount.refreshUnreplied) {
       refreshLadger();
 
-      dispatch(getUnrepliedEmail(enteredEmail, true));
-      dispatch(getUnansweredEmails(enteredEmail));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: true }));
+      dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       setCurrentIndex(0);
       setNotificationCount((prev) => ({
         ...prev,
@@ -198,9 +197,9 @@ const RootLayout = () => {
     if (notificationCount.outr_deal_fetch) {
       refreshLadger();
 
-      dispatch(getDeals());
-      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
+      dispatch(getDeals({}));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
+      dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -210,12 +209,12 @@ const RootLayout = () => {
 
     // ✅ FIXED: Changed outr_order_gp_li to outr_order_gp_list (matches SocketContext)
     if (notificationCount.outr_order_gp_li) {
-      dispatch(getOrders());
-      dispatch(getInvoices());
+      dispatch(getOrders({}));
+      dispatch(getInvoices({ loading: false }));
       refreshLadger();
 
-      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
+      dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -226,7 +225,7 @@ const RootLayout = () => {
     if (notificationCount.outr_self_test) {
       refreshLadger();
 
-      dispatch(getInvoices());
+      dispatch(getInvoices({ loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -237,9 +236,9 @@ const RootLayout = () => {
     if (notificationCount.outr_offer) {
       refreshLadger();
 
-      dispatch(getOffers());
-      dispatch(getUnrepliedEmailWithOutLoading(enteredEmail, false));
-      dispatch(getUnansweredEmailWithOutLoading(enteredEmail));
+      dispatch(getOffers({}));
+      dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
+      dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,

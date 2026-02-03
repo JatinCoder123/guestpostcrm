@@ -52,8 +52,8 @@ import { ViewReminder } from "./components/ViewReminder";
 // import {PreviewOrder} from "./components/PreviewOrder";
 import PreviewOrder from "./components/PreviewOrder";
 import ViewReports from "./components/ViewReports";
-
-
+import GpcControllerPage from "./components/pages/GpcControllerPage";
+import ConsoleHandler from "./components/ConsoleHandler";
 
 const router = createBrowserRouter([
   {
@@ -104,6 +104,10 @@ const router = createBrowserRouter([
       {
         path: "unanswered",
         element: <UnansweredPage />,
+      },
+      {
+        path: "console",
+        element: <ConsoleHandler />,
       },
 
       {
@@ -157,7 +161,6 @@ const router = createBrowserRouter([
         path: "reminders/:id?",
         element: <ReminderPage />,
       },
-
 
       {
         path: "view-reports/:id?",
@@ -248,6 +251,10 @@ const router = createBrowserRouter([
             path: "buttons",
             element: <ButtonPage />,
           },
+          {
+            path: "controller",
+            element: <GpcControllerPage />,
+          },
         ],
       },
     ],
@@ -256,7 +263,7 @@ const router = createBrowserRouter([
 export default function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, error } = useSelector(
-    (state) => state.user
+    (state) => state.user,
   );
   useEffect(() => {
     dispatch(getUser());
@@ -270,12 +277,14 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <SocketContextProvider>
-          <PageContextProvider>
+
+        <PageContextProvider>
+          <SocketContextProvider>
             <RouterProvider router={router} />
-          </PageContextProvider>
-        </SocketContextProvider>
-      )}
+          </SocketContextProvider>
+        </PageContextProvider>
+      )
+      }
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}
       <ToastContainer

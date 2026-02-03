@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { getDomain, showConsole } from "../../assets/assets";
 
 const DraftInvoiceSlice = createSlice({
   name: "DraftInvoice",
@@ -17,11 +18,11 @@ const DraftInvoiceSlice = createSlice({
       state.error = null;
     },
 
-  getDraftInvoiceSuccess(state, action) {
-  state.detection = action.payload;
-  state.count = action.payload.length;
-  state.loading = false;
-},
+    getDraftInvoiceSuccess(state, action) {
+      state.detection = action.payload;
+      state.count = action.payload.length;
+      state.loading = false;
+    },
 
 
     getDraftInvoiceFailed(state, action) {
@@ -32,18 +33,18 @@ const DraftInvoiceSlice = createSlice({
 });
 
 export const getDraftInvoice = () => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(DraftInvoiceSlice.actions.getDraftInvoiceRequest());
 
     try {
       const { data } = await axios.post(
-        "https://example.guestpostcrm.com/index.php?entryPoint=get_post_all&action_type=get_data",
-      
+        `${getDomain(getState().user.crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
+
 
         {
-    "module": "outr_self_test",
-   
-},
+          "module": "outr_self_test",
+
+        },
 
 
         {
@@ -54,15 +55,15 @@ export const getDraftInvoice = () => {
         }
       );
 
-      console.log(" draftInvoice  data:", data);
+      showConsole && console.log(" draftInvoice  data:", data);
 
-     
+
 
       dispatch(
-  DraftInvoiceSlice.actions.getDraftInvoiceSuccess(data)
-);
+        DraftInvoiceSlice.actions.getDraftInvoiceSuccess(data)
+      );
 
-      
+
     } catch (error) {
       dispatch(
         DraftInvoiceSlice.actions.getDraftInvoiceFailed(

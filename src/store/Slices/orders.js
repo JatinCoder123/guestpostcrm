@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -151,25 +152,25 @@ const ordersSlice = createSlice({
   },
 });
 
-export const getOrders = (email) => {
+export const getOrders = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(ordersSlice.actions.getOrdersRequest());
+    loading && dispatch(ordersSlice.actions.getOrdersRequest());
 
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=get_orders${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_orders&${getState().ladger.timeline ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=get_orders${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
-      console.log(`Orders orders`, data);
+      showConsole && console.log(`Orders orders`, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({
           count: data.data_count ?? 0,
@@ -197,14 +198,14 @@ export const createOrder = () => {
       let response;
       response = await axios.get(`${domain}?entryPoint=manual_order&email=${getState().ladger.email}`);
       const data = response.data;
-      console.log(`Orders created`, data);
+      showConsole && console.log(`Orders created`, data);
       if (!data.order.response) {
         dispatch(
           ordersSlice.actions.createOrderFailed(data.order)
         );
         return;
       }
-      console.log(`Orders created`, data);
+      showConsole && console.log(`Orders created`, data);
       dispatch(
         ordersSlice.actions.createOrderSuccess("Order Created Successfully")
       );
@@ -216,38 +217,12 @@ export const createOrder = () => {
     }
   };
 };
-export const getOrdersWithoutLoading = () => {
-  return async (dispatch, getState) => {
-    dispatch(ordersSlice.actions.getOrdersRequest());
-    try {
-      let response;
-      response = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=get_orders&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
-      );
-      const data = response.data;
-      console.log(`Orders orders`, data);
-      dispatch(
-        ordersSlice.actions.getOrdersSucess({
-          count: data.data_count ?? 0,
-          orders: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-        })
-      );
-      dispatch(ordersSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        ordersSlice.actions.getOrdersFailed("Fetching Orders Failed")
-      );
-    }
-  };
-};
+
 
 export const updateOrder = (order, send = true, id = null) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
-    console.log("Update Order", order);
+    showConsole && console.log("Update Order", order);
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
@@ -266,7 +241,7 @@ export const updateOrder = (order, send = true, id = null) => {
           },
         }
       );
-      console.log(`Update Order`, data);
+      showConsole && console.log(`Update Order`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.id === order.id) {
           return order;
@@ -279,7 +254,7 @@ export const updateOrder = (order, send = true, id = null) => {
 
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
-      console.log(error);
+      showConsole && console.log(error);
       dispatch(
         ordersSlice.actions.updateOrderFailed("Updating Order Failed")
       );
@@ -289,7 +264,7 @@ export const updateOrder = (order, send = true, id = null) => {
 export const updateSeoLink = (orderId, link) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateLinkRequest());
-    console.log("Update Seo Link", link);
+    showConsole && console.log("Update Seo Link", link);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       const { data } = await axios.post(
@@ -311,7 +286,7 @@ export const updateSeoLink = (orderId, link) => {
           },
         }
       );
-      console.log(`Update Order Link`, data);
+      showConsole && console.log(`Update Order Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.id === orderId) {
           return {
@@ -328,7 +303,7 @@ export const updateSeoLink = (orderId, link) => {
       );
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
-      console.log(error);
+      showConsole && console.log(error);
       dispatch(
         ordersSlice.actions.updateLinkFailed("Updating Order Link Failed")
       );
@@ -341,7 +316,7 @@ export const deleteLink = (orderId, linkId) => {
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_seo_backlinks&record_id=${linkId}`
       );
-      console.log(`Delete Order Link`, data);
+      showConsole && console.log(`Delete Order Link`, data);
       if (!data.success) {
         throw new Error(data.message);
       }
@@ -386,7 +361,7 @@ export const createLink = (orderId, link) => {
           },
         },
       );
-      console.log(`Create Link`, data);
+      showConsole && console.log(`Create Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.id === orderId) {
           return {

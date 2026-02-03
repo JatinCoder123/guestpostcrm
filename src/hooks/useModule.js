@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { base64ToUtf8 } from "../assets/assets";
+import { base64ToUtf8, showConsole } from "../assets/assets";
 
 const useModule = ({
   url,
@@ -27,7 +27,7 @@ const useModule = ({
         data: body,
         headers,
       });
-      console.log(name, response);
+      showConsole && console.log(name, response);
       let data = response.data;
       setData(data);
     } catch (err) {
@@ -47,7 +47,7 @@ const useModule = ({
         data: body,
         headers,
       });
-      console.log(`${Object.entries(body)} : `, response.data);
+      showConsole && console.log(`${Object.entries(body)} : `, response.data);
     } catch (err) {
       setError(err);
     } finally {
@@ -65,7 +65,7 @@ const useModule = ({
         data: body,
         headers,
       });
-      console.log(`${Object.entries(body)} : `, response.data);
+      showConsole && console.log(`${Object.entries(body)} : `, response.data);
     } catch (err) {
       setError(err);
     } finally {

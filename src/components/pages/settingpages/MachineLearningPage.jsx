@@ -17,9 +17,8 @@ export function MachineLearningPage() {
   const { crmEndpoint } = useSelector((state) => state.user);
   const [close, setClose] = useState(false);
   const { loading, data, error, setData, refetch, add, update } = useModule({
-    url: `${
-      crmEndpoint.split("?")[0]
-    }?entryPoint=get_post_all&action_type=get_data`,
+    url: `${crmEndpoint.split("?")[0]
+      }?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "outr_machine_learning",
@@ -41,9 +40,8 @@ export function MachineLearningPage() {
 
     // Fire API update
     update({
-      url: `${
-        crmEndpoint.split("?")[0]
-      }?entryPoint=get_post_all&action_type=post_data`,
+      url: `${crmEndpoint.split("?")[0]
+        }?entryPoint=get_post_all&action_type=post_data`,
       method: "POST",
       body: {
         parent_bean: {
@@ -63,7 +61,6 @@ export function MachineLearningPage() {
   };
 
   useEffect(() => {
-    // console.log(state?.promptId);
     if (state?.promptId && data && !close) {
       const item = data.find((item) => item.id === state.promptId);
       if (item) {
@@ -143,7 +140,7 @@ export function MachineLearningPage() {
                         setEditItem(item);
                       }}
                       className="flex items-center gap-2 justify-end px-4 py-2 bg-blue-600 text-white 
-                      rounded-xl shadow-sm hover:bg-blue-700 transition w-fit ml-auto"
+                      rounded-xl shadow-sm hover:bg-blue-700 transition w-fit ml-auto cursor-pointer"
                     >
                       <Edit3 size={18} />
                       Edit

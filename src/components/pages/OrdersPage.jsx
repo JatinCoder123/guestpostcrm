@@ -19,6 +19,8 @@ import SearchComponent from "./SearchComponent";
 import { toast } from "react-toastify";
 import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
+import { ladgerAction } from "../../store/Slices/ladger";
+import TableLoading from "../TableLoading";
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState('');
@@ -60,7 +62,6 @@ export function OrdersPage() {
 
   // Handle filter application
   const handleFilterApply = (appliedFilters) => {
-    console.log('Applied filters from popup:', appliedFilters);
     setFilters(appliedFilters);
   };
 
@@ -391,71 +392,74 @@ export function OrdersPage() {
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
-            <tbody>
-              {filteredorders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
-                >
-                  <td
-                    className="px-6 py-4 text-gray-600 cursor-pointer"
-                    onClick={() => {
-                      const input = extractEmail(order.real_name);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      navigateTo("/");
-                    }}
+            {loading ? <TableLoading cols={7} /> : (
+              <tbody>
+                {filteredorders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{order.date_entered}</span>
-                    </div>
-                  </td>
-                  <td
-                    onClick={() => {
-                      const input = extractEmail(order.real_name);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      navigateTo("/contacts");
-                    }}
-                    className="px-6 py-4 text-gray-900 cursor-pointer"
-                  >
-                    {order.real_name?.split("<")[0]?.trim() || "N/A"}
-                  </td>
-                  <td className="px-6 py-4 text-green-600">
-                    ${order.total_amount_c || "0.00"}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                        order.order_status
-                      )}`}
+                    <td
+                      className="px-6 py-4 text-gray-600 cursor-pointer"
+                      onClick={() => {
+                        const input = extractEmail(order.real_name);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null))
+                        navigateTo("/");
+                      }}
                     >
-                      {order.order_status || "Unknown"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {order.complete_date || "N/A"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {order.order_id || "N/A"}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => navigateTo(`/orders/edit/${order.id}`, { state: { email: excludeEmail(order.real_name) } })}
-                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                        title="Update"
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{order.date_entered}</span>
+                      </div>
+                    </td>
+                    <td
+                      onClick={() => {
+                        const input = extractEmail(order.real_name);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null))
+                        navigateTo("/contacts");
+                      }}
+                      className="px-6 py-4 text-gray-900 cursor-pointer"
+                    >
+                      {order.real_name?.split("<")[0]?.trim() || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 text-green-600">
+                      ${order.total_amount_c || "0.00"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
+                          order.order_status
+                        )}`}
                       >
-                        <Pen className="w-5 h-5 text-blue-600" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                        {order.order_status || "Unknown"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {order.complete_date || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {order.order_id || "N/A"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigateTo(`/orders/edit/${order.id}`, { state: { email: excludeEmail(order.real_name) } })}
+                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                          title="Update"
+                        >
+                          <Pen className="w-5 h-5 text-blue-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>)}
           </table>
         </div>
 

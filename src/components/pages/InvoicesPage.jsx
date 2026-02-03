@@ -14,21 +14,22 @@ import {
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import {useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { CreateInvoice } from "../CreateInvoice";
 import Pagination from "../Pagination";
 import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices";
 import EnhancedSearch from "./EnhancedSearch";
 import UpdatePopup from "../UpdatePopup";
+import TableLoading from "../TableLoading";
 import { toast } from "react-toastify";
-import { excludeEmail ,extractEmail} from "../../assets/assets";
+import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 
 export function InvoicesPage() {
-  const { invoices, count, message, error, updating } = useSelector((state) => state.invoices);
+  const { invoices, count, summary, loading, message, error, updating } = useSelector((state) => state.invoices);
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
-  const {setSearch,setEnteredEmail} = useContext(PageContext);
+  const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
@@ -313,7 +314,6 @@ export function InvoicesPage() {
   };
 
   const handleFilterApply = (appliedFilters) => {
-    console.log('Applied filters:', appliedFilters);
     setFilters(appliedFilters);
   };
 
@@ -369,24 +369,8 @@ export function InvoicesPage() {
     }
   }, [dispatch, message, error]);
 
-  // Calculate stats based on filtered data
-  const totalInvoices = filteredinvoices.length;
-  const paidInvoices = filteredinvoices.filter(inv => inv.status_c === "PAID");
-  const pendingInvoices = filteredinvoices.filter(inv => inv.status_c === "DRAFT" || inv.status_c === "SENT");
-  const overdueInvoices = filteredinvoices.filter(inv => {
-    if (inv.status_c === "OVERDUE") return true;
-    // Check if due date is passed and status is not PAID
-    if (inv.due_date && inv.status_c !== "PAID") {
-      const dueDate = new Date(inv.due_date);
-      const today = new Date();
-      return dueDate < today;
-    }
-    return false;
-  });
 
-  const paidAmount = paidInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
-  const pendingAmount = pendingInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
-  const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount_c) || 0), 0);
+
 
   // Calculate payment method statistics
   const paymentMethodsStats = {};
@@ -496,12 +480,12 @@ export function InvoicesPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Invoices</p>
-              <p className="text-2xl text-gray-900 mt-1">{totalInvoices}</p>
+              <p className="text-2xl text-gray-900 mt-1">{count}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-yellow-600" />
@@ -513,7 +497,7 @@ export function InvoicesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Paid</p>
-              <p className="text-2xl text-gray-900 mt-1">${paidAmount.toFixed(2)}</p>
+              <p className="text-2xl text-gray-900 mt-1">{summary?.paid_count}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-green-600" />
@@ -524,8 +508,8 @@ export function InvoicesPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Pending</p>
-              <p className="text-2xl text-gray-900 mt-1">${pendingAmount.toFixed(2)}</p>
+              <p className="text-gray-500 text-sm">Sent</p>
+              <p className="text-2xl text-gray-900 mt-1">{summary?.sent_count}</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <span className="text-2xl">⏳</span>
@@ -536,28 +520,11 @@ export function InvoicesPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Overdue</p>
-              <p className="text-2xl text-gray-900 mt-1">${overdueAmount.toFixed(2)}</p>
+              <p className="text-gray-500 text-sm">Paid Amount</p>
+              <p className="text-2xl text-gray-900 mt-1">${summary?.total_paid_amount}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">⚠️</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Top Payment Method</p>
-              <p className="text-lg text-gray-900 mt-1">
-                {topPaymentMethod[0] !== 'None'
-                  ? `${topPaymentMethod[0].replace('_', ' ').toUpperCase()}`
-                  : 'None'}
-              </p>
-              <p className="text-sm text-gray-500">${topPaymentMethod[1].amount.toFixed(2)}</p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-purple-600" />
+              <span className="text-2xl">💸</span>
             </div>
           </div>
         </div>
@@ -629,31 +596,31 @@ export function InvoicesPage() {
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
                 <th className="px-6 py-4 text-left">DUE DATE</th>
-              
+
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
-            <tbody>
+            {loading ? <TableLoading cols={8} /> : <tbody>
               {filteredinvoices.map((invoice) => (
                 <tr
                   key={invoice.id}
                   className="border-b border-gray-100 hover:bg-yellow-50 transition-colors cursor-pointer"
                 >
                   <td
-                                      className="px-6 py-4 text-gray-600 cursor-pointer"
-                                      onClick={() => {
-                                        const input = extractEmail(invoice.email_c);
-                                        localStorage.setItem("email", input);
-                                        setSearch(input);
-                                        setEnteredEmail(input);
-                                        navigateTo("/");
-                                      }}
-                                    >
-                                      <div className="flex items-center gap-2 text-gray-600">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        <span>{invoice.date_entered}</span>
-                                      </div>
-                                    </td>
+                    className="px-6 py-4 text-gray-600 cursor-pointer"
+                    onClick={() => {
+                      const input = extractEmail(invoice.email_c);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/");
+                    }}
+                  >
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{invoice.date_entered}</span>
+                    </div>
+                  </td>
                   <td className="px-6 py-4 text-yellow-600">
                     {invoice.invoice_id?.slice(0, 4)}
                   </td>
@@ -662,7 +629,7 @@ export function InvoicesPage() {
                       View Invoice
                     </a>
                   </td>
-                  
+
                   <td
                     onClick={() => {
                       const input = extractEmail(invoice.email_c);
@@ -695,7 +662,7 @@ export function InvoicesPage() {
                   <td className="px-6 py-4 text-gray-600">
                     {invoice.due_date || "PENDING"}
                   </td>
-                
+
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       <button
@@ -709,11 +676,11 @@ export function InvoicesPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
           </table>
         </div>
         {filteredinvoices.length > 0 && (
-          <Pagination slice={"invoices"} fn={getInvoices} />
+          <Pagination slice={"invoices"} fn={(p) => dispatch(getInvoices({ page: p }))} />
         )}
         {filteredinvoices.length === 0 && (
           <div className="p-12 text-center">

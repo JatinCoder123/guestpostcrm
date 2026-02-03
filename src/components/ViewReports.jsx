@@ -12,6 +12,7 @@ export default function ViewReports() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openExport, setOpenExport] = useState(false);
+  const { crmEndpoint } = useSelector(state => state.user);
 
   const { timeline } = useSelector((state) => state.ladger);
 
@@ -77,7 +78,7 @@ export default function ViewReports() {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const url = `https://example.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=report&duration=${timeline}`;
+      const url = `${crmEndpoint}&type=report&duration=${timeline}`;
       const res = await fetch(url);
       const json = await res.json();
 

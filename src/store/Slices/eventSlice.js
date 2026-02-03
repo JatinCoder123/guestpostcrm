@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const eventSlice = createSlice({
     name: "events",
@@ -72,15 +73,8 @@ export const getEvents = () => {
         try {
             const url =
                 `${getState().user.crmEndpoint}&type=recent_activities&user_id=null${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`;
-            const response = await axios.get(url);
-
-            console.log("🟢 Full API Response:", response);
-            console.log("🟢 Response Data:", response.data);
-
-            const data = response.data;
-
-            console.log("📌 Data Count:", data.data_count);
-            console.log("📌 Events:", data.data);
+            const { data } = await axios.get(url);
+            showConsole && console.log(`events`, data);
 
             dispatch(
                 eventSlice.actions.getEventsSucess({
@@ -91,7 +85,7 @@ export const getEvents = () => {
 
             dispatch(eventSlice.actions.clearAllErrors());
         } catch (error) {
-            console.error("❌ Fetch Error:", error);
+            showConsole && console.error("❌ Fetch Error:", error);
             dispatch(eventSlice.actions.getEventsFailed("Fetching Event Failed"));
         }
     };
@@ -104,7 +98,7 @@ export const addEvent = (event) => {
     return async (dispatch, getState) => {
         dispatch(eventSlice.actions.addEventRequest());
         try {
-            console.log(event);
+            showConsole && console.log(event);
             const domain = getState().user.crmEndpoint.split("?")[0];
             const { data } = await axios.post(
                 `${domain}?entryPoint=get_post_all&action_type=post_data`,
@@ -125,7 +119,7 @@ export const addEvent = (event) => {
                     },
                 }
             );
-            console.log(`Add Event`, data);
+            showConsole && console.log(`Add Event`, data);
             dispatch(eventSlice.actions.updateCount(1));
 
             dispatch(

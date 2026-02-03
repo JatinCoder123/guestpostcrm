@@ -1,7 +1,8 @@
-import { createContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
+import { showConsole } from "../assets/assets.js"
 
-const socket = io("https://server.guestpostcrm.com");
+const socket = io("https://socket.guestpostcrm.com");
 export const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
@@ -49,7 +50,6 @@ export const SocketContextProvider = ({ children }) => {
   // ✅ Keep ref always updated
   useEffect(() => {
     crmRef.current = crm;
-    console.log("CRM updated:", crm);
   }, [crm]);
 
   useEffect(() => {
@@ -69,9 +69,9 @@ export const SocketContextProvider = ({ children }) => {
     };
 
     const newMailHandler = (data) => {
-      console.log("OUR CRM:", crmRef.current);
-      console.log("Mail site:", data.site_url);
-      console.log("new mail", data);
+      showConsole && console.log("OUR CRM:", crmRef.current);
+      showConsole && console.log("Mail site:", data.site_url);
+      showConsole && console.log("new mail", data);
 
       if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {

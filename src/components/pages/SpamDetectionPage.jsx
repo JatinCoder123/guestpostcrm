@@ -31,15 +31,14 @@ export function SpamDetectionPage() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleDownload = () => {
-    console.log("download handler");
   };
 
   return (
     <>
-    
+
 
       {/* 🔍 Search / Filters */}
       <SearchComponent
@@ -65,14 +64,14 @@ export function SpamDetectionPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
 
-  {/* 🔙 Back Button */}
-       <button
-    onClick={() => navigate(-1)}
-    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm"
-    title="Go back"
-  >
-    <ArrowLeft className="w-5 h-5 text-green-700" />
-  </button>
+            {/* 🔙 Back Button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm"
+              title="Go back"
+            >
+              <ArrowLeft className="w-5 h-5 text-green-700" />
+            </button>
             <AlertTriangle className="w-6 h-6 text-orange-600" />
             <h2 className="text-xl text-gray-900">SPAM DETECTION</h2>
             <a
@@ -96,7 +95,7 @@ export function SpamDetectionPage() {
         {/* 📊 Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
- 
+
             <tbody>
               {detection?.length > 0 &&
                 detection.map((spam) => (
@@ -114,7 +113,7 @@ export function SpamDetectionPage() {
                     <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
                     <td className="px-6 py-4 text-gray-900">
                       {spam.thread_count}
-                    </td> 
+                    </td>
                   </tr>
                 ))}
             </tbody>

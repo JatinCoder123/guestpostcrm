@@ -8,7 +8,7 @@ import {
   Shield,
   TagIcon,
   Laptop
-  
+
 } from "lucide-react";
 
 import SearchComponent from "./SearchComponent";
@@ -27,40 +27,39 @@ export function SystemSuggestionsPage() {
 
 
 
-  
-    const [topsearch, setTopsearch] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('');
-  
-  
-   
-  
-    
-        const handleSearchChange = (value) => {
-          setTopsearch(value);
-          
-        };
-      
-        const handleCategoryChange = (value) => {
-          setSelectedCategory(value);
-          
-        };
-      
-        const handleFilterApply = (filters) => {
-         
-        };
-      
-      
-        const handleDownload = () => {
-         console.log("download handeler");
-        };
-  
+
+  const [topsearch, setTopsearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+
+
+
+
+  const handleSearchChange = (value) => {
+    setTopsearch(value);
+
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+
+  };
+
+  const handleFilterApply = (filters) => {
+
+  };
+
+
+  const handleDownload = () => {
+  };
+
 
 
 
 
   return (
     <>
-     <SearchComponent
+      <SearchComponent
         dropdownOptions={[
           { value: "all", label: "Contact" },
 
@@ -90,13 +89,13 @@ export function SystemSuggestionsPage() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-                    {/* Back Button */}
-  <button
-    onClick={() => navigate(-1)}
-    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm "
-  >
-    <ArrowLeft className="w-5 h-5 text-green-700" />
-  </button>
+            {/* Back Button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm "
+            >
+              <ArrowLeft className="w-5 h-5 text-green-700" />
+            </button>
             <Laptop className="w-6 h-6 text-green-600" />
             <h2 className="text-xl text-gray-900">System Suggestions</h2>
             <a href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/" target="_blank"

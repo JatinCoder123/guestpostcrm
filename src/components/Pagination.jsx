@@ -1,13 +1,11 @@
 import { m } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 function Pagination({ slice, fn }) {
-  const dispatch = useDispatch();
   let { pageCount, pageIndex } = useSelector((state) => state[slice]);
   const [gotoValue, setGotoValue] = useState("");
-
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -15,24 +13,22 @@ function Pagination({ slice, fn }) {
     });
   }, [pageIndex]);
 
-  const handlePrev = useCallback(() => {
+  const handlePrev = () => {
     if (pageIndex > 1) {
-      dispatch(fn(pageIndex - 1));
+      fn(pageIndex - 1);
     }
-  }, [pageIndex, dispatch]);
+  };
 
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     if (pageIndex < pageCount) {
-      dispatch(fn(Number(pageIndex) + 1));
+      fn(Number(pageIndex) + 1);
     }
-  }, [pageIndex, dispatch, pageCount]);
+  };
 
-  const goToPage = useCallback(
+  const goToPage =
     (p) => {
-      dispatch(fn(p));
-    },
-    [dispatch]
-  );
+      fn(p);
+    };
 
   // --- Build pagination numbers ---
   const pagesToShow = [];

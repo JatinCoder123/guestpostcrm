@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const contactOtherSlice = createSlice({
   name: "contact_other",
@@ -48,10 +49,8 @@ export const getContacts = () => {
         }
       );
 
-      console.log("Contact_other data:", data);
 
-      console.log("Contact_other data:");
-      console.log("Contact_other data:", data);
+      showConsole && console.log("Contact_other data:", data);
 
       dispatch(
         contactOtherSlice.actions.getContactsSuccess({

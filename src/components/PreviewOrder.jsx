@@ -12,7 +12,7 @@ export default function PreviewOrder({ data = [], userEmail }) {
                   fontWeight: "600",
                 }}
               >
-                No order data availablew
+                No order data available
               </div>
             </td>
           </tr>
@@ -32,11 +32,11 @@ export default function PreviewOrder({ data = [], userEmail }) {
     : [];
 
   const gpBacklinks = backlinks.filter(
-    (b) => String(b.type_c || "").toUpperCase() === "GP"
+    (b) => String(b.type_c || "").toUpperCase() === "GP",
   );
 
   const liBacklinks = backlinks.filter(
-    (b) => String(b.type_c || "").toUpperCase() === "LI"
+    (b) => String(b.type_c || "").toUpperCase() === "LI",
   );
 
   return (
@@ -135,7 +135,6 @@ export default function PreviewOrder({ data = [], userEmail }) {
                 {/* ================= INVOICE ================= */}
                 <tr>
                   <td align="center" style={{ padding: "32px" }}>
-                    {console.log(order.invoice_link_c)}
                     <a
                       href={order.invoice_link_c}
                       target="_blank"

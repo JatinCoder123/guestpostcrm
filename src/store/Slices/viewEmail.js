@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -116,7 +117,7 @@ export const getViewEmail = (email = null) => {
         `${getState().user.crmEndpoint}&type=view_email&email=${email ?? getState().ladger.email
         }`
       );
-      console.log(`viewEmail`, data);
+      showConsole && console.log(`viewEmail`, data);
       dispatch(
         viewEmailSlice.actions.getViewEmailSucess({
           viewEmail: data.emails,
@@ -143,7 +144,7 @@ export const getContact = (email = null) => {
         `${getState().user.crmEndpoint
         }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`
       );
-      console.log(`Get contact`, data);
+      showConsole && console.log(`Get contact`, data);
       dispatch(
         viewEmailSlice.actions.getContactSucess({
           stage: data.stage,
@@ -166,7 +167,7 @@ export const editContact = (contactData) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.editContactRequest());
 
-    console.log("contactData", contactData);
+    showConsole && console.log("contactData", contactData);
 
     const domain = getState().user.crmEndpoint.split("?")[0];
 
@@ -196,7 +197,7 @@ export const editContact = (contactData) => {
         }
       );
 
-      console.log("contact", data);
+      showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess());
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
@@ -223,7 +224,7 @@ export const sendEmail = (reply, message = null, error = null) => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      console.log(`Reply Data`, data);
+      showConsole && console.log(`Reply Data`, data);
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: message ?? data.message,
@@ -232,7 +233,7 @@ export const sendEmail = (reply, message = null, error = null) => {
       dispatch(viewEmailSlice.actions.clearAllErrors());
       dispatch(getViewEmail());
     } catch (error) {
-      console.log(error);
+      showConsole && console.log(error);
       dispatch(
         viewEmailSlice.actions.sendEmailFailed("Error while sending email")
       );

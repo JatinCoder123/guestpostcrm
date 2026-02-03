@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -99,31 +100,33 @@ const dealsSlice = createSlice({
   },
 });
 
-export const getDeals = (email) => {
+export const getDeals = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(dealsSlice.actions.getDealsRequest());
+    if (loading) {
+      dispatch(dealsSlice.actions.getDealsRequest());
+    }
 
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=get_deals${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_deals&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=get_deals${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
-      console.log(`Deals`, data);
+      showConsole && console.log(`Deals`, data);
       dispatch(
         dealsSlice.actions.getDealsSucess({
           count: data.data_count ?? 0,
           deals: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
+          pageCount: data.total_pages ?? 1,
+          pageIndex: data.current_page ?? 1,
           summary: data.summary ?? null
         })
       );
@@ -154,7 +157,7 @@ export const createDeal = (deals = []) => {
           },
         }
       );
-      console.log(`Create Deal`, res);
+      showConsole && console.log(`Create Deal`, res);
       const updatedDeals = [...deals, ...getState().deals.deals];
       dispatch(
         dealsSlice.actions.createDealSucess({
@@ -189,7 +192,7 @@ export const updateDeal = (deal, send) => {
           },
         }
       );
-      console.log(`Update Deal`, data);
+      showConsole && console.log(`Update Deal`, data);
       const updatedDeals = getState().deals.deals.map((d) => {
         if (d.id === deal.id) {
           return {
@@ -211,7 +214,7 @@ export const deleteDeal = (id) => {
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`
       );
-      console.log(`Delete Deal`, data);
+      showConsole && console.log(`Delete Deal`, data);
       if (!data.success) {
         throw new Error(data.message);
       }

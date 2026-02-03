@@ -14,18 +14,20 @@ import { useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
 import { getForwardedEmails } from "../../store/Slices/forwardedEmailSlice";
 import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
+import { ladgerAction } from "../../store/Slices/ladger";
+import { useDispatch } from "react-redux";
+import TableLoading from "../TableLoading";
 export function ForwardedPage() {
   const [topsearch, setTopsearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
-  const { count, emails } = useSelector((state) => state.forwarded);
+  const { count, emails, loading } = useSelector((state) => state.forwarded);
   const [
     handleThreadClick,
     showEmail,
@@ -36,6 +38,7 @@ export function ForwardedPage() {
 
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
   const navigateTo = useNavigate()
+  const dispatch = useDispatch()
 
   const filteredEmails = emails
     .filter((item) => {
@@ -98,22 +101,21 @@ export function ForwardedPage() {
   ];
 
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-   
+
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    
+
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-   
+
   };
 
 
@@ -256,7 +258,7 @@ export function ForwardedPage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            {loading ? <TableLoading cols={4} /> : <tbody>
               {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
@@ -268,6 +270,7 @@ export function ForwardedPage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Assigned");
                     navigateTo("/");
                   }} className="px-6 py-4">
@@ -281,6 +284,7 @@ export function ForwardedPage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Assigned");
                     navigateTo("/contacts");
                   }} className="px-6 py-4 text-gray-900">{email.first_name}</td>
@@ -298,6 +302,7 @@ export function ForwardedPage() {
                     localStorage.setItem("email", input);
                     setSearch(input);
                     setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null))
                     setWelcomeHeaderContent("Assigned");
                     navigateTo("/");
                   }} className="px-6 py-4 text-purple-600">
@@ -305,11 +310,11 @@ export function ForwardedPage() {
                   </td>
                 </tr>
               ))}
-            </tbody>
+            </tbody>}
           </table>
         </div>
         {filteredEmails.length > 0 && (
-          <Pagination slice={"forwarded"} fn={getForwardedEmails} />
+          <Pagination slice={"forwarded"} fn={(page) => dispatch(getForwardedEmails({ page: page }))} />
         )}
 
         {emails.length === 0 && (

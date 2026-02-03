@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
 import Preview from "./Preview";
-import { excludeEmail, websiteLists } from "../assets/assets";
+import { excludeEmail, unionByKey } from "../assets/assets";
 import { useParams, useLocation } from "react-router-dom";
 import {
   createOffer,
@@ -27,17 +27,19 @@ import { SocketContext } from "../context/SocketContext";
 import { getLadger } from "../store/Slices/ladger";
 import { dealsAction } from "../store/Slices/deals";
 import { PreviewTemplate } from "./PreviewTemplate";
-const fields = [
-  { name: "website", label: "Website", type: "select", options: websiteLists },
-  {
-    name: "client_offer_c",
-    label: "Client Offer",
-    type: "number",
-    disabled: false,
-  },
-  { name: "our_offer_c", label: "Our Offer", type: "number" },
-];
+
 export default function CreateOffer() {
+  const { websites: websiteLists } = useSelector((state) => state.website);
+  const fields = [
+    { name: "website", label: "Website", type: "select", options: websiteLists },
+    {
+      name: "client_offer_c",
+      label: "Client Offer",
+      type: "number",
+      disabled: false,
+    },
+    { name: "our_offer_c", label: "Our Offer", type: "number" },
+  ];
   const { type, id } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -80,26 +82,24 @@ export default function CreateOffer() {
     let offer = offers.filter(
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email
     )
+    let valid = [];
+    if (type == "create") {
+      valid = websiteLists.filter(
+        (w) => !offer.some((o) => o.website == w)
+      );
+    }
+    if (type == "edit") {
+      valid = websiteLists.filter((w) =>
+        offer.some((o) => o.id == id || o.website !== w)
+      );
+    }
+    setValidWebsite(valid);
     offer = type == "edit" ? offer : offer.filter((d) => d.offer_status == "active");
     if (type == "edit" && id !== undefined) {
       offer = offer.filter((d) => d.id == id);
     }
     setCurrentOffers(() => [...offer]);
   }, [state, offers, type, id]);
-  useEffect(() => {
-    let valid = [];
-    if (type == "create") {
-      valid = websiteLists.filter(
-        (w) => !currentOffers.some((o) => o.website == w)
-      );
-    }
-    if (type == "edit") {
-      valid = websiteLists.filter((w) =>
-        currentOffers.some((o) => o.id == id || o.website !== w)
-      );
-    }
-    setValidWebsite(valid);
-  }, [currentOffers]);
   useEffect(() => {
     if (type == "create" && !state) {
       navigate("/");
@@ -151,7 +151,7 @@ export default function CreateOffer() {
 
   useEffect(() => {
     if (message) {
-      dispatch(getOffers());
+      dispatch(getOffers({}));
       if (message.includes("Updated")) {
         ManualSideCall(crmEndpoint, state?.email, "Our Offer Updated Successfully", 1, okHandler);
 
@@ -183,12 +183,12 @@ export default function CreateOffer() {
 
       } else {
         ManualSideCall(crmEndpoint, state?.email, "Our Offer Created Successfully", 1, okHandler);
-
+        const data = unionByKey(newOffers, currentOffers, "website");
         dispatch(
           sendEmail(
             renderToStaticMarkup(
               <Preview
-                data={[...newOffers, ...currentOffers].filter(
+                data={data.filter(
                   (o) => o.website !== ""
                 )}
                 type="Offers"
@@ -258,7 +258,7 @@ export default function CreateOffer() {
           />
         );
 
-        return <PreviewTemplate editorContent={editorContent ? editorContent : html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
+        return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
       }}
 
     />

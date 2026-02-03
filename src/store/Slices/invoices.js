@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { showConsole } from "../../assets/assets";
 
 const invoicesSlice = createSlice({
   name: "invoices",
@@ -9,6 +10,7 @@ const invoicesSlice = createSlice({
     creating: false,
     invoices: [],
     count: 0,
+    summary: null,
     error: null,
     pageCount: 1,
     pageIndex: 1,
@@ -17,15 +19,17 @@ const invoicesSlice = createSlice({
   reducers: {
     getInvoicesRequest(state) {
       state.loading = true;
+      // state.invoices = [];
       state.error = null;
     },
     getInvoicesSucess(state, action) {
-      const { count, invoices, pageCount, pageIndex } = action.payload;
+      const { count, invoices, pageCount, pageIndex, summary } = action.payload;
       state.loading = false;
       state.invoices = invoices;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.count = count;
+      state.summary = summary;
       state.error = null;
     },
     getInvoicesFailed(state, action) {
@@ -72,29 +76,29 @@ const invoicesSlice = createSlice({
   },
 });
 
-export const getInvoices = (email = null) => {
+export const getInvoices = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    dispatch(invoicesSlice.actions.getInvoicesRequest());
-
+    if (loading) dispatch(invoicesSlice.actions.getInvoicesRequest());
     try {
       let response;
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_invoices&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email ?? getState().ladger.email}&page=1&page_size=50`
+          }&type=get_invoices${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email ?? getState().ladger.email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=get_invoices&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=get_invoices${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
       const data = response.data;
-      console.log(`invoices`, data);
+      showConsole && console.log(`invoices`, data);
       dispatch(
         invoicesSlice.actions.getInvoicesSucess({
           count: data.data_count ?? 0,
           invoices: data.data ?? [],
+          summary: data.summary ?? null,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         })
@@ -110,7 +114,7 @@ export const getInvoices = (email = null) => {
 
 // ✅ UPDATED CREATE INVOICE ACTION
 export const createInvoice = (formData) => {
-  console.log("📝 Form Data:", formData);
+  showConsole && console.log("📝 Form Data:", formData);
 
   return async (dispatch, getState) => {
     dispatch(invoicesSlice.actions.createInvoiceRequest());
@@ -207,7 +211,7 @@ export const updateInvoice = (invoice) => {
           },
         }
       );
-      console.log(`Update Invoice`, data);
+      showConsole && console.log(`Update Invoice`, data);
       const updatedInvoices = getState().invoices.invoices.map((i) => {
         if (i.id === invoice.id) {
           return invoice;

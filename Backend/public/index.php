@@ -18,6 +18,10 @@ switch ($controller) {
             $auth->googleLogin();
         } elseif ($action === 'googleCallback') {
             $auth->googleCallback();
+        } elseif ($action === 'microsoftLogin') {
+            $auth->microsoftLogin();
+        } elseif ($action === 'microsoftCallback') {
+            $auth->microsoftCallback();
         } elseif ($action === 'me') {
             $auth->me();
         } elseif ($action === 'logout') {

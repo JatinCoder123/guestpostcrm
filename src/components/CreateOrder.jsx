@@ -4,7 +4,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import Create from "./Create";
 import { excludeEmail } from "../assets/assets";
-import { websiteLists } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
 import PreviewOrder from "./PreviewOrder";
@@ -31,6 +30,7 @@ const lists = [
   { name: "their_links", label: "Their Link" },
 ];
 export default function CreateOrder() {
+  const { websites: websiteLists } = useSelector((state) => state.website);
   const { type, id } = useParams();
   const { state } = useLocation();
   const {
@@ -103,7 +103,7 @@ export default function CreateOrder() {
     if (message) {
       ManualSideCall(crmEndpoint, state?.email, "Our Order Updated Successfully", 1, okHandler);
 
-      dispatch(getOrders())
+      dispatch(getOrders({}))
       if (message.includes("Send")) {
         dispatch(sendEmail(
           renderToStaticMarkup(
@@ -147,7 +147,7 @@ export default function CreateOrder() {
     }
 
     if (updateLinkMessage) {
-      dispatch(getOrders())
+      dispatch(getOrders({}))
 
       toast.success(updateLinkMessage);
     }
@@ -177,7 +177,7 @@ export default function CreateOrder() {
           data={data}
           userEmail={email}
         />)
-        return <PreviewTemplate editorContent={editorContent ? editorContent : html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
+        return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
 
       }}
       amountKey={"total_amount_c"}

@@ -9,6 +9,7 @@ class User
         "adityadav1119@gmail.com",
         "kushwahakajal861@gmail.com",
         "qu4079161@gmail.com",
+        "verma.jatin@outrightsystems.org",
         // "ashish@outrightcrm.com",
         "kamaluniyal19@gmail.com",
         "outrightnk9999@gmail.com",

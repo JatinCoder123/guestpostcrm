@@ -4,6 +4,7 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
+  const [showConsole, setShowConsole] = useState(localStorage.getItem("showConsole") || false);
   const [displayIntro, setDisplayIntro] = useState(true);
   const [collapsed, setSidebarCollapsed] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -21,6 +22,7 @@ export const PageContextProvider = (props) => {
     const firstPart = path.split("/")[1];
     setActivePage(firstPart || "");
     setSidebarCollapsed(true);
+    localStorage.setItem("showConsole", showConsole);
   }, []);
 
   const value = {

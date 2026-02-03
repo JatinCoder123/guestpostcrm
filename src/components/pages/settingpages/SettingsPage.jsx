@@ -6,6 +6,7 @@ import {
   Gamepad2,
   GamepadIcon,
   Globe,
+  Joystick,
   Phone,
   Settings2Icon,
   Users,
@@ -69,6 +70,13 @@ export function SettingsPage() {
       icon: <Phone className="w-8 h-8 text-pink-600" />,
       bg: "bg-pink-50",
       link: "users",
+    },
+    {
+      title: "GPC Controller",
+      subtitle: "Manage entire GPC",
+      icon: <Joystick className="w-8 h-8 text-pink-600" />,
+      bg: "bg-pink-50",
+      link: "controller",
     },
   ];
 

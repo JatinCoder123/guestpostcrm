@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { showConsole } from "../../assets/assets";
 
 const aiCreditsSlice = createSlice({
   name: "aiCredits",
@@ -47,7 +48,7 @@ export const getAiCredits = (index = 1) => {
         `${getState().user.crmEndpoint
         }&type=get_credits${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${index}&page_size=50`
       );
-      console.log(`aiCredits`, data);
+      showConsole && console.log(`aiCredits`, data);
       dispatch(
         aiCreditsSlice.actions.getAiCreditsSucess({
           count: data.data_count,

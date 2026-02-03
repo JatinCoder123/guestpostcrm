@@ -11,9 +11,6 @@ import { LoadingChase, LoadingSpin } from "../Loading";
 import { PageContext } from "../../context/pageContext";
 import { Sparkles } from "lucide-react";
 
-
-
-
 export function OffersPage() {
   const { offers, count, loading, error, deleting, deleteOfferId, summary } = useSelector((state) => state.offers);
   const { setSearch, setEnteredEmail } = useContext(PageContext)
@@ -106,7 +103,7 @@ export function OffersPage() {
     a.click();
   };
 
-  useEffect(() => {
+  useEffect(() => { 
     if (error) {
       toast.error(error)
       dispatch(offersAction.clearAllErrors())

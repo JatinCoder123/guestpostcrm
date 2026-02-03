@@ -2,12 +2,13 @@ import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Eye, X, Save, RotateCcw, Plus } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import { Editor } from "@tinymce/tinymce-react";
 import { useSelector } from "react-redux";
+import { PageContext } from "../../../context/pageContext";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -21,6 +22,7 @@ export default function TemplatesPage() {
   const [newDescription, setNewDescription] = useState("");
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const { showConsole } = useContext(PageContext);
 
   const { loading, data, error, refetch } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
@@ -140,7 +142,7 @@ export default function TemplatesPage() {
         }
       };
 
-      console.log("Creating new template:", requestBody);
+      showConsole && console.log("Creating new template:", requestBody);
 
       const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`, {
         method: "POST",
@@ -160,7 +162,7 @@ export default function TemplatesPage() {
         result = {};
       }
 
-      console.log("Create response:", result);
+      showConsole && console.log("Create response:", result);
 
       if (response.ok && (result.parent_updated === true || result.parent_id || result.id)) {
         alert("✅ New template created successfully!");

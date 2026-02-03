@@ -12,9 +12,12 @@ import { Calendar, Eye, Import } from "lucide-react";
 import EmailBox from "./EmailBox";
 
 export const NoSearchFoundPage = () => {
-  const { noSearchResultData, noSearchFoundLoading, error, manualScanResponse } = useSelector(
-    (state) => state.ladger
-  );
+  const {
+    noSearchResultData,
+    noSearchFoundLoading,
+    error,
+    manualScanResponse,
+  } = useSelector((state) => state.ladger);
   const [currentMessageId, setCurrentMessageId] = useState(null);
   const [showThread, setShowThread] = useState(false);
   const { setSearch, search, setEnteredEmail } = useContext(PageContext);
@@ -30,16 +33,18 @@ export const NoSearchFoundPage = () => {
     dispatch(getNoSearchResultData(search));
   }, []);
 
-
   useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(ladgerAction.clearAllErrors());
     }
-    if (manualScanResponse && manualScanResponse?.message_id == currentMessageId?.message_id) {
-      setSearch(currentMessageId.customer_email)
-      setEnteredEmail(currentMessageId.customer_email)
-      dispatch(ladgerAction.setTimeline(null))
+    if (
+      manualScanResponse &&
+      manualScanResponse?.message_id == currentMessageId?.message_id
+    ) {
+      setSearch(currentMessageId.customer_email);
+      setEnteredEmail(currentMessageId.customer_email);
+      dispatch(ladgerAction.setTimeline(null));
     }
   }, [error, manualScanResponse, dispatch]);
   if (showThread) {
@@ -47,17 +52,19 @@ export const NoSearchFoundPage = () => {
       <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
         <EmailBox
           importBtn={() => {
-            return <button
-              onClick={() => {
-                dispatch(manualEmailScan(currentMessageId.message_id));
-                setPopup({ open: true });
-                setShowThread(false);
-              }}
-              className="p-2 rounded-lg hover:bg-blue-500 transition cursor-pointer"
-              title="Import"
-            >
-              <Import className="w-6 h-6 text-white" />
-            </button>
+            return (
+              <button
+                onClick={() => {
+                  dispatch(manualEmailScan(currentMessageId.message_id));
+                  setPopup({ open: true });
+                  setShowThread(false);
+                }}
+                className="p-2 rounded-lg hover:bg-blue-500 transition cursor-pointer"
+                title="Import"
+              >
+                <Import className="w-6 h-6 text-white" />
+              </button>
+            );
           }}
           onClose={() => setShowThread(false)}
           threadId={currentMessageId?.thread_id}
@@ -84,6 +91,9 @@ export const NoSearchFoundPage = () => {
 
   return (
     <div className="space-y-3 p-4">
+      <h1 className="text-center font-semibold text-gray-500">
+        TimeLine Does not exists, Results from Live Search
+      </h1>
       {noSearchResultData?.map((item, index) => (
         <div
           key={index}
@@ -101,10 +111,13 @@ export const NoSearchFoundPage = () => {
             </div>
 
             <div>
-              <button onClick={() => {
-                setCurrentMessageId(item)
-                dispatch(manualEmailScan(item.message_id));
-              }} className="text-sm font-medium text-gray-800 hover:underline cursor-pointer">
+              <button
+                onClick={() => {
+                  setCurrentMessageId(item);
+                  dispatch(manualEmailScan(item.message_id));
+                }}
+                className="text-sm font-medium text-gray-800 hover:underline cursor-pointer"
+              >
                 {item.customer_email}
               </button>
               <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -146,13 +159,13 @@ export const NoSearchFoundPage = () => {
             {(manualScanResponse.status === "skipped" ||
               manualScanResponse.status === 404 ||
               manualScanResponse.status === "success") && (
-                <button
-                  className="w-full bg-gray-200 py-2 rounded-lg"
-                  onClick={() => setPopup({ open: false })}
-                >
-                  Close
-                </button>
-              )}
+              <button
+                className="w-full bg-gray-200 py-2 rounded-lg"
+                onClick={() => setPopup({ open: false })}
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
       )}

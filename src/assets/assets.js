@@ -102,7 +102,7 @@ export function daysUntil(dateString) {
   const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   return days;
 }
-
+export const showConsole = localStorage.getItem("showConsole") === "true";
 
 export function formatExpiryLabel(dateString) {
   const days = daysUntil(dateString) ?? 2;
@@ -158,6 +158,20 @@ export const extractEmail = (str) => {
   }
   return str;
 
+}
+export function unionByKey(arr1, arr2, key) {
+  const seen = new Set();
+  const result = [];
+
+  for (const item of [...arr1, ...arr2]) {
+    const value = item[key];
+    if (!seen.has(value)) {
+      seen.add(value);
+      result.push(item);
+    }
+  }
+
+  return result;
 }
 
 
