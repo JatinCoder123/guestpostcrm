@@ -24,6 +24,7 @@ export default function WebsitesPage() {
       "x-api-key": `${CREATE_DEAL_API_KEY}`,
       "Content-Type": "application/json",
     },
+    name: "websites",
   });
   const handleCreate = (updatedItem) => {
     setData((prev) => [{ id: Math.random(), ...updatedItem }, ...prev]);
