@@ -365,7 +365,7 @@ export default function Create({
                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                       >
                           Preview
-                        </button>  n
+                        </button>  
                       </>
 
                     ) : (
