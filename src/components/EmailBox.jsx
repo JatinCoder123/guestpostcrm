@@ -13,13 +13,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
-import { getThreadEmail, sendEmailToThread, threadEmailAction } from "../store/Slices/threadEmail";
+import {
+  getThreadEmail,
+  sendEmailToThread,
+  threadEmailAction,
+} from "../store/Slices/threadEmail";
 import { getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
-import {
-  CREATE_DEAL_API_KEY,
-  TINY_EDITOR_API_KEY,
-} from "../store/constants";
+import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
 import { LoadingChase } from "./Loading";
 import { toast } from "react-toastify";
 import { base64ToUtf8, getDomain } from "../assets/assets";
@@ -42,17 +43,27 @@ const STATIC_TEMPLATES = [
   },
 ];
 
-export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn = null }) {
+export default function EmailBox({
+  onClose,
+  view,
+  threadId,
+  tempEmail,
+  importBtn = null,
+}) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
   const dispatch = useDispatch();
-
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
-  const { loading: templateListLoading, data: templateList, error, refetch } = useModule({
+  const {
+    loading: templateListLoading,
+    data: templateList,
+    error,
+    refetch,
+  } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: { module: "EmailTemplates" },
@@ -67,7 +78,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
   const emails = view ? viewEmail : threadEmail;
   useEffect(() => {
     if (!view && threadId) {
-      dispatch(getThreadEmail(tempEmail, threadId))
+      dispatch(getThreadEmail(tempEmail, threadId));
     }
   }, [threadId, view]);
   const [messageLimit, setMessageLimit] = useState(3);
@@ -113,7 +124,8 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
   // LOAD TEMPLATE INTO EDITOR
   useEffect(() => {
     if ((template || defaultTemplate) && editorReady && editorRef.current) {
-      const htmlContent = template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
+      const htmlContent =
+        template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
       if (htmlContent) {
         editorRef.current.setContent(htmlContent);
         setInput(htmlContent);
@@ -161,9 +173,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
       return;
     }
 
-    const contentToSend =
-      editorRef.current?.getContent() ||
-      input;
+    const contentToSend = editorRef.current?.getContent() || input;
 
     if (view) dispatch(sendEmail(contentToSend));
     else dispatch(sendEmailToThread(threadId, contentToSend));
@@ -206,19 +216,36 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
           >
             <ChevronLeft className="w-5 h-5" />
           </motion.button>
-  <div
-  className="flex items-center gap-3 cursor-pointer"
-  onClick={() =>
-    window.open(
-      `https://mail.google.com/mail/u/0/#inbox/${view ? viewThreadId : threadId}`,
-      "_blank"
-    )
-  }
->
-         <Send className="w-5 h-5" />
-            <h2 className="text-xl font-bold tracking-tight">
-              {showEditorScreen ? "Compose Email" : "Email Thread"}
-            </h2>
+          <div className="flex items-center gap-3">
+            {/* OPEN GMAIL */}
+            <div
+              className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
+              onClick={() =>
+                window.open(
+                  `https://mail.google.com/mail/u/0/#inbox/${view ? viewThreadId : threadId}`,
+                  "_blank",
+                )
+              }
+            >
+              <Send className="w-5 h-5" />
+              <h2 className="text-xl font-bold tracking-tight">
+                {showEditorScreen ? "Compose Email" : "Email Thread"}
+              </h2>
+            </div>
+
+            {/* COPY LINK */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // ⛔ prevent opening gmail
+                const link = `https://mail.google.com/mail/u/0/#inbox/${view ? viewThreadId : threadId}`;
+                navigator.clipboard.writeText(link);
+                toast.success("Email thread link copied!");
+              }}
+              title="Copy Gmail link"
+              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
+            >
+              <Globe className="w-4 h-4" />
+            </button>
           </div>
         </div>
         {importBtn && importBtn()}
@@ -329,7 +356,6 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
                           <p className="text-gray-500">No templates found</p>
                         </div>
                       )}
-
                     </motion.div>
                   </motion.div>
                 )}
@@ -466,27 +492,44 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
                   className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${isUser
-                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                      }`}
+                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${
+                      isUser
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                    }`}
                   >
-                    <div className="flex items-center justify-between mb-3">
-                      <span
-                        className={`text-xs font-medium ${isUser ? "opacity-90" : "text-gray-500"
-                          }`}
-                      >
-                        {isUser ? "You" : mail.from_name || "Sender"}
-                      </span>
-                      <span className="text-xs opacity-70">
-                        {mail.date_created}
-                        <div className="ml-0">
-                          {mail.date_created_ago}
-                        </div>
-                      </span>
-                    </div>
                     <div
-                      dangerouslySetInnerHTML={{ __html: mail.body_html ? mail.body_html : mail.body }}
+                      className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
+                        isUser
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700 border border-gray-200"
+                      }`}
+                    >
+                      {/* NAME */}
+                      <div className="flex items-center gap-2 font-semibold">
+                        <User className="w-3.5 h-3.5 opacity-70" />
+                        <span>
+                          {isUser ? "You" : mail.from_name || "Sender"}
+                        </span>
+                      </div>
+
+                      {/* DATE & TIME */}
+                      <div className="flex flex-col text-right leading-tight">
+                        <span
+                          className={`${isUser ? "opacity-90" : "text-gray-500"}`}
+                        >
+                          {mail.date_created}
+                        </span>
+                        <span className="text-[10px] opacity-70">
+                          {mail.date_created_ago}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: mail.body_html ? mail.body_html : mail.body,
+                      }}
                       className="mail-content text-sm leading-relaxed"
                     />
                   </div>
@@ -507,8 +550,7 @@ export default function EmailBox({ onClose, view, threadId, tempEmail, importBtn
             </motion.button>
           </div>
         </>
-      )
-      }
-    </motion.div >
+      )}
+    </motion.div>
   );
 }
