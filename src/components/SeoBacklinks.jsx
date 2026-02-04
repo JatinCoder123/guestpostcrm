@@ -13,7 +13,7 @@ import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const { updateLinkLoading, deleting, updateLinkMessage } = useSelector(
-    (state) => state.orders
+    (state) => state.orders,
   );
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
@@ -56,17 +56,23 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                label: "Our Link",
-                name: "target_url_c",
-                type: "text",
-                value: item.target_url_c || "",
-              }
+                  label: "Our Link",
+                  name: "target_url_c",
+                  type: "text",
+                  value: item.target_url_c || "",
+                }
               : {
-                label: "Doc Link",
-                name: "gp_doc_url_c",
-                type: "text",
-                value: item.gp_doc_url_c || "",
-              },
+                  label: "Doc Link",
+                  name: "gp_doc_url_c",
+                  type: "text",
+                  value: item.gp_doc_url_c || "",
+                },
+            {
+              label: "Website",
+              name: "name",
+              type: "text",
+              value: item.name || "",
+            },
           ]}
           onUpdate={handleUpdate}
         />
@@ -110,22 +116,27 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                 </div>
 
                 {/* Links Box */}
-                <div
-                  key={item.id}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-6  rounded-lg p-4"
-                >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg p-4">
                   <TheirLink data={item} />
 
-                  <div className="flex items-center gap-4">
-                    {/* Connector */}
-                    <img
-                      width="30"
-                      height="30"
-                      src="https://img.icons8.com/external-kiranshastry-lineal-color-kiranshastry/64/external-chain-automobile-kiranshastry-lineal-color-kiranshastry-1.png"
-                      alt="chain"
-                    />
+                  <div className="relative z-10 p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
+                    {/* HEADER */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                        Website
+                      </h3>
+                    </div>
 
-                    {/* Our link */}
+                    {/* WEBSITE NAME */}
+                    <div className="flex items-start gap-2">
+                      <FiHash className="text-slate-400 mt-0.5" size={14} />
+                      <p className="text-sm text-slate-700 font-medium break-all">
+                        {item.name || "-"}
+                      </p>
+                    </div>
+
+                    {/* OUR / DOC LINK */}
                     {item.type_c === "LI" ? (
                       <OurLink link={item.target_url_c} label="Our Link" />
                     ) : (
@@ -197,7 +208,11 @@ export function TheirLink({ data }) {
           <FiLink className="text-slate-400 mt-0.5" size={14} />
           <div>
             <p className="text-xs text-slate-500">Backlink URL</p>
-            <a href={data.backlink_url} target="_blank" className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer">
+            <a
+              href={data.backlink_url}
+              target="_blank"
+              className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer"
+            >
               {data.backlink_url}
             </a>
           </div>
@@ -231,7 +246,11 @@ export function OurLink({ link, label }) {
         <FiLink className="text-slate-400 mt-0.5" size={14} />
         <div>
           <p className="text-xs text-slate-500">URL</p>
-          <a href={link} target="_blank" className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer">
+          <a
+            href={link}
+            target="_blank"
+            className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer"
+          >
             {link || "-"}
           </a>
         </div>
