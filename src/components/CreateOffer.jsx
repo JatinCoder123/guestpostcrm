@@ -281,7 +281,7 @@ export default function CreateOffer() {
       amountKey={"our_offer_c"}
       renderPreview={({ data, email, onClose }) => {
         let html = templateData?.[0]?.body_html || "";
-        const tableHtml = buildTable(data, "Offers", "website_c", "our_offer_c");
+        const tableHtml = buildTable(data, "Offers", "website", "our_offer_c");
 
         html = html
           .replace("{{USER_EMAIL}}", email)
