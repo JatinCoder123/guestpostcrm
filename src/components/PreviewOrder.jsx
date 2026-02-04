@@ -22,21 +22,21 @@ export default function PreviewOrder({ data = [], userEmail }) {
   }
 
   const order = data[0];
-  const status = String(order.order_status || "").toLowerCase();
+  const status = String(order?.order_status || "").toLowerCase();
 
-  const rawName = order.real_name || "";
+  const rawName = order?.real_name || "";
   const userName = rawName.split("<")[0].trim() || "Customer";
 
-  const backlinks = Array.isArray(order.seo_backlinks)
+  const backlinks = Array.isArray(order?.seo_backlinks)
     ? order.seo_backlinks
     : [];
 
   const gpBacklinks = backlinks.filter(
-    (b) => String(b.type_c || "").toUpperCase() === "GP",
+    (b) => String(b?.type_c || "").toUpperCase() === "GP",
   );
 
   const liBacklinks = backlinks.filter(
-    (b) => String(b.type_c || "").toUpperCase() === "LI",
+    (b) => String(b?.type_c || "").toUpperCase() === "LI",
   );
 
   return (
@@ -55,9 +55,9 @@ export default function PreviewOrder({ data = [], userEmail }) {
               <tbody>
                 <tr>
                   <td align="center">
-                    <div style={headerTitle}>OrderID #{order.order_id}</div>
+                    <div style={headerTitle}>OrderID #{order?.order_id}</div>
                     <div style={headerUser}>👤 {userName}</div>
-                    <div style={headerDate}>{order.date_entered_formatted}</div>
+                    <div style={headerDate}>{order?.date_entered_formatted}</div>
                   </td>
                 </tr>
               </tbody>
@@ -81,26 +81,26 @@ export default function PreviewOrder({ data = [], userEmail }) {
                           <tr>
                             <td style={label}>Status</td>
                             <td style={value}>
-                              {order.order_status || OrderStatus}
+                              {order?.order_status || OrderStatus}
                             </td>
                           </tr>
                           <tr>
                             <td style={label}>Client Email</td>
                             <td style={value}>
-                              {order.client_email || userEmail}
+                              {order?.client_email || userEmail}
                             </td>
                           </tr>
                           <tr>
                             <td style={label}>Website</td>
-                            <td style={value}>{order.website_c}</td>
+                            <td style={value}>{order?.website_c}</td>
                           </tr>
                           <tr>
                             <td style={label}>Order Type</td>
-                            <td style={value}>{order.order_type}</td>
+                            <td style={value}>{order?.order_type}</td>
                           </tr>
                           <tr>
                             <td style={label}>Total Amount</td>
-                            <td style={value}>${order.total_amount_c}</td>
+                            <td style={value}>${order?.total_amount_c}</td>
                           </tr>
                         </tbody>
                       </table>

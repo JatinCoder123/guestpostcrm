@@ -21,6 +21,7 @@ export default function Create({
   sending,
   fields,
   lists = [],
+  setCurrentOrderIDSend,
   submitData,
   sendHandler,
   handleDelete,
@@ -158,14 +159,6 @@ export default function Create({
                         >
                           <ShoppingCart />
                         </button>
-                        <button
-                          onClick={() => setShowPreview(true)}
-                          className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
-                        >
-                          <Eye />
-                        </button>
-
-
                       </>
 
                     ) : (
@@ -206,17 +199,29 @@ export default function Create({
                           } rounded-2xl shadow-sm `}
                       >
                         {pageType == "view" && (
-                          <button
-                            onClick={() =>
-                              navigate(`/${type}/edit/${item.id}`, {
-                                state: { email },
-                              })
-                            }
-                            className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
-                              } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
-                          >
-                            <Pencil size={16} />
-                          </button>
+                          <>
+                            <button
+                              onClick={() =>
+                                navigate(`/${type}/edit/${item.id}`, {
+                                  state: { email },
+                                })
+                              }
+                              className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
+                                } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setCurrentOrderIDSend(item.order_id);
+                                setShowPreview(true)
+                              }}
+                              className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
+                            >
+                              <Eye />
+                            </button></>
+
+
                         )}
                         {pageType !== "edit" && type !== "orders" && (
                           <button
@@ -265,7 +270,7 @@ export default function Create({
                           </div>
                         )}
                         {type == "orders" && pageType == "view" ? (
-                          <OrderView data={item} setData={setData} sending={sending} />
+                          <OrderView data={item} setData={setData} sending={sending} setCurrentOrderIDSend={setCurrentOrderIDSend} />
                         ) : (
                           <>
                             {" "}
@@ -365,7 +370,7 @@ export default function Create({
                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                       >
                           Preview
-                        </button>  
+                        </button>
                       </>
 
                     ) : (

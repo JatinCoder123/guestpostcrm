@@ -47,6 +47,7 @@ export default function CreateOrder() {
   );
   const { crmEndpoint } = useSelector((state) => state.user);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
+  const [currentOrderIDSend, setCurrentOrderIDSend] = useState(null);
   const { setNotificationCount } = useContext(SocketContext)
   const { enteredEmail, search } = useContext(PageContext)
   const [editorContent, setEditorContent] = useState(null);
@@ -166,6 +167,7 @@ export default function CreateOrder() {
       orderId="order_id"
       handleDelete={handleDelete}
       handleUpdate={handleUpdate}
+      setCurrentOrderIDSend={setCurrentOrderIDSend}
       updating={updating}
       lists={lists}
       sending={sending}
@@ -173,9 +175,12 @@ export default function CreateOrder() {
       sendHandler={sendHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
+        const order = data.filter((item) => item.order_id === currentOrderIDSend);
+        console.log(order);
         const html = renderToString(<PreviewOrder
-          data={data}
+          data={order}
           userEmail={email}
+          currentOrderIDSend={currentOrderIDSend}
         />)
         return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
 
