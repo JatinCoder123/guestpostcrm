@@ -11,6 +11,7 @@ const unrepliedSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
+    unread: 0,
     showNewEmailBanner: false,
   },
   reducers: {
@@ -48,7 +49,13 @@ const unrepliedSlice = createSlice({
       state.showNewEmailBanner = action.payload;
     },
     updateUnread(state, action) {
-      state.unread = action.payload;
+      state.unread = state.unread-1;
+      state.emails = state.emails.map((email) => {
+        if (email.thread_id === action.payload.thread_id) {
+          email.is_seen = 1;
+        }
+        return email;
+      });
     }
   },
 });

@@ -13,7 +13,10 @@ import { useState, useEffect, useContext } from "react";
 import useThread from "../../hooks/useThread";
 import EmailBox from "../EmailBox";
 import Pagination from "../Pagination";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails";
+import {
+  getUnrepliedEmail,
+  unrepliedAction,
+} from "../../store/Slices/unrepliedEmails";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import SearchComponent from "./SearchComponent";
@@ -311,7 +314,7 @@ export function UnrepliedEmailsPage() {
                       }}
                       className="px-6 py-4 text-gray-900"
                     >
-                      {email.from.split("<")[0].trim()}
+                      {email.from?.split("<")[0].trim()}
                     </td>
 
                     <td
@@ -319,9 +322,13 @@ export function UnrepliedEmailsPage() {
                         setCurrentThreadId(email.thread_id);
                         handleThreadClick(email.from, email.thread_id);
                         setEmail(extractEmail(email.from));
-                        dispatch(
-                          getUnrepliedEmail({ page: 1, loading: false }),
-                        );
+                        if (email.is_seen == 0) {
+                          dispatch(
+                            unrepliedAction.updateUnread({
+                              thread_id: email.thread_id,
+                            }),
+                          );
+                        }
                       }}
                       className="px-6 py-4 text-purple-600"
                     >
