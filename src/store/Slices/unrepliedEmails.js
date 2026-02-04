@@ -19,12 +19,13 @@ const unrepliedSlice = createSlice({
       state.error = null;
     },
     getEmailSucess(state, action) {
-      const { count, emails, pageCount, pageIndex } = action.payload;
+      const { count, emails, pageCount, pageIndex ,unread} = action.payload;
       state.loading = false;
       state.emails = emails;
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
+      state.unread = unread;
       state.error = null;
     },
     getEmailFailed(state, action) {
@@ -45,6 +46,9 @@ const unrepliedSlice = createSlice({
     },
     setShowNewEmailBanner(state, action) {
       state.showNewEmailBanner = action.payload;
+    },
+    updateUnread(state, action) {
+      state.unread = action.payload;
     }
   },
 });
@@ -74,6 +78,7 @@ export const getUnrepliedEmail = ({ email = null, page = 1, newEmail = false, lo
         unrepliedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data ?? [],
+          unread: data.unread ?? 0,
           pageCount: data.total_pages ?? 1,
           pageIndex: data.current_page ?? 1,
         })

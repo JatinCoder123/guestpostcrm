@@ -24,9 +24,12 @@ import TableLoading from "../TableLoading";
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
   const [selectedSort, setSelectedSort] = useState("");
-  const { count, emails, loading } = useSelector((state) => state.unreplied);
+  const { count, emails, loading, unread } = useSelector(
+    (state) => state.unreplied,
+  );
 
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
@@ -60,28 +63,27 @@ export function UnrepliedEmailsPage() {
   // ------------------------------------------------------------------
   // ✅ SEARCH + FILTER + SORT LOGIC (ONLY NEW CODE ADDED HERE)
   // ------------------------------------------------------------------
-
   const filteredEmails = emails
     .filter((item) => {
+      // 🔴 UNREAD FILTER
+      if (showUnreadOnly && item.is_seen != 0) {
+        return false;
+      }
+
       const searchValue = topsearch.toLowerCase();
-      if (!searchValue) return true; // no search → show all
+      if (!searchValue) return true;
 
       const contact = item.from?.split("<")[0].trim().toLowerCase();
       const subject = item.subject?.toLowerCase() || "";
-      const date = item.date_entered?.toLowerCase() || "";
 
-      // 🟢 If category selected
       if (selectedCategory === "contect" || selectedCategory === "contact") {
         return contact.includes(searchValue);
       }
+
       if (selectedCategory === "subject") {
         return subject.includes(searchValue);
       }
-      // if (selectedCategory === "date") {
-      //   return date.includes(searchValue);
-      // }
 
-      // 🟢 Default search → CONTACT
       return contact.includes(searchValue);
     })
     .sort((a, b) => {
@@ -94,10 +96,6 @@ export function UnrepliedEmailsPage() {
       if (selectedSort === "desc") {
         return b.from.localeCompare(a.from);
       }
-
-      // if (selectedSort === "newest") {
-      //   return new Date(b.date_entered) - new Date(a.date_entered);
-      // }
 
       if (selectedSort === "oldest") {
         return new Date(a.date_entered) - new Date(b.date_entered);
@@ -204,6 +202,7 @@ export function UnrepliedEmailsPage() {
             <a
               href="https://www.guestpostcrm.com/blog/unreplied-and-unanswered-emails-in-guestpostcrm/"
               target="_blank"
+              rel="noreferrer"
             >
               <img
                 width="30"
@@ -213,9 +212,26 @@ export function UnrepliedEmailsPage() {
               />
             </a>
           </div>
-          <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
-            {count} Unreplied
-          </span>
+
+          {/* Counters */}
+          <div className="flex items-center gap-3">
+            <span className="px-2 py-3 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+              {count} Unreplied
+            </span>
+
+            <span
+              onClick={() => setShowUnreadOnly((prev) => !prev)}
+              className={`px-4 py-3 rounded-full text-sm font-semibold shadow-sm cursor-pointer transition-all
+    ${
+      showUnreadOnly
+        ? "bg-red-600 text-white ring-2 ring-red-300"
+        : "bg-purple-600 text-white hover:bg-purple-700"
+    }
+  `}
+            >
+              {unread} Unread
+            </span>
+          </div>
         </div>
 
         {/* TABLE */}
@@ -257,7 +273,13 @@ export function UnrepliedEmailsPage() {
                 {filteredEmails.map((email) => (
                   <tr
                     key={email.thread_id}
-                    className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
+                    className={`border-b border-gray-100 cursor-pointer transition-colors
+                      ${
+                        email.is_seen == 0
+                          ? "bg-blue-50 hover:bg-blue-100"
+                          : "hover:bg-purple-50"
+                      }
+                    `}
                   >
                     <td
                       onClick={() => {
@@ -297,6 +319,9 @@ export function UnrepliedEmailsPage() {
                         setCurrentThreadId(email.thread_id);
                         handleThreadClick(email.from, email.thread_id);
                         setEmail(extractEmail(email.from));
+                        dispatch(
+                          getUnrepliedEmail({ page: 1, loading: false }),
+                        );
                       }}
                       className="px-6 py-4 text-purple-600"
                     >
