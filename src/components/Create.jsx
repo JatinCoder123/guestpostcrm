@@ -211,15 +211,16 @@ export default function Create({
                             >
                               <Pencil size={16} />
                             </button>
-                            <button
-                              onClick={() => {
-                                setCurrentOrderIDSend(item.order_id);
-                                setShowPreview(true)
-                              }}
-                              className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
-                            >
-                              <Eye />
-                            </button></>
+                            {type == "orders" && (
+                              <button
+                                onClick={() => {
+                                  setCurrentOrderIDSend(item.order_id);
+                                  setShowPreview(true)
+                                }}
+                                className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
+                              >
+                                <Eye />
+                              </button>)}</>
 
 
                         )}
@@ -525,3 +526,26 @@ function InputField({
     </div>
   );
 }
+
+
+
+
+
+
+// <table style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-bottom: 12px;" width="100%" cellspacing="0" cellpadding="0">
+// <tbody>
+// <tr>
+// <td style="font-weight: bold; color: #111827;">https://www.outrightcrm.com/</td>
+// <td align="right"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: bold;">approved</span></td>
+// </tr>
+// <tr>
+// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">🔗 <strong>Backlink URL:</strong><br>https://www.techtarget.com/whatis/definition/metadata</td>
+// </tr>
+// <tr>
+// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">📄 <strong>Document URL:</strong><br>https://docs.google.com/document/d/1uke4dIJo-0JIOdFnyrtDFAs-7asQR7nE/edit#heading=h.rijamkt1xoud</td>
+// </tr>
+// <tr>
+// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">💰 <strong>Amount:</strong> <!-- -->$40</td>
+// </tr>
+// </tbody>
+// </table>
