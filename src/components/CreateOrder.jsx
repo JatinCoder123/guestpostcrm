@@ -6,7 +6,7 @@ import Create from "./Create";
 import { excludeEmail } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
-import PreviewOrder from "./PreviewOrder";
+import PreviewOrder, { createPreviewOrder } from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
@@ -196,8 +196,9 @@ export default function CreateOrder() {
       sendHandler={sendHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
-        const order = data.filter((item) => item.order_id === currentOrderIDSend);
-        console.log(order);
+        const order = data?.filter((item) => item.order_id === currentOrderIDSend);
+        // console.log(order);
+        // const html = createPreviewOrder({ templateData, order: order[0], userEmail: email })
         const html = renderToString(<PreviewOrder
           data={order}
           userEmail={email}
