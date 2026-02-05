@@ -12,7 +12,7 @@ import {
 import { excludeEmail, unionByKey } from "../assets/assets";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
-import Preview from "./Preview";
+import {buildTable} from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   getContact,
@@ -26,9 +26,13 @@ import { getLadger } from "../store/Slices/ladger";
 import { SocketContext } from "../context/SocketContext";
 import { getOffers } from "../store/Slices/offers";
 import { PreviewTemplate } from "./PreviewTemplate";
+import useModule from "../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../store/constants";
+import Preview from "./Preview";
 
 export default function CreateDeal() {
   const { websites: websiteLists } = useSelector((state) => state.website);
+  const { crmEndpoint } = useSelector((state) => state.user);
   const fields = [
     {
       name: "website_c",
@@ -40,6 +44,25 @@ export default function CreateDeal() {
   ];
   const { type, id } = useParams();
   const { state } = useLocation();
+  const {
+    loading: templateLoading,
+    data: templateData,
+    error: templateError,
+  } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "DealORG",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "TemplateData",
+  });
   const { deals, updating, error, message, creating, deleting, deleteDealId } =
     useSelector((state) => state.deals);
   const { offers } = useSelector((state) => state.offers);
@@ -49,7 +72,6 @@ export default function CreateDeal() {
     error: sendError,
   } = useSelector((state) => state.viewEmail);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
-  const { crmEndpoint } = useSelector((state) => state.user);
   const [validWebsite, setValidWebsite] = useState([]);
   const [currentDeals, setCurrentDeals] = useState([]);
   const [newDealsCreated, setNewDealsCreated] = useState([]);
@@ -106,8 +128,8 @@ export default function CreateDeal() {
       const currentOfferWithoutDeal =
         currentOffers?.length > 0
           ? currentOffers.filter(
-            (o) => !currentDeals.some((d) => d.website_c == o.website),
-          )
+              (o) => !currentDeals.some((d) => d.website_c == o.website),
+            )
           : [];
       if (currentOfferWithoutDeal?.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
@@ -139,6 +161,7 @@ export default function CreateDeal() {
       sendEmail(
         renderToStaticMarkup(
           <Preview
+            templateData={templateData}
             data={currentDeals}
             type="Deals"
             userEmail={state?.email}
@@ -180,6 +203,7 @@ export default function CreateDeal() {
             sendEmail(
               renderToStaticMarkup(
                 <Preview
+                templateData={templateData}
                   data={[...currentDeals]}
                   type="Deals"
                   userEmail={state?.email}
@@ -196,7 +220,6 @@ export default function CreateDeal() {
         toast.success(message);
         dispatch(dealsAction.clearAllMessages());
         navigate("/");
-
       } else {
         ManualSideCall(
           crmEndpoint,
@@ -207,11 +230,12 @@ export default function CreateDeal() {
         );
         if (message.includes("Send")) {
           const data = unionByKey(newDealsCreated, currentDeals, "website_c");
-          setNewDealsCreated([]);
+          console.log("DATA", data);
           dispatch(
             sendEmail(
               renderToStaticMarkup(
                 <Preview
+                  templateData={templateData}
                   data={data}
                   type="Deals"
                   userEmail={state?.email}
@@ -272,15 +296,12 @@ export default function CreateDeal() {
       submitData={submitHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
-        const html = renderToString(
-          <Preview
-            data={data}
-            type="Deals"
-            userEmail={email}
-            websiteKey="website_c"
-            amountKey="dealamount"
-          />,
-        );
+     let html = templateData?.[0]?.body_html || "";
+       const tableHtml = buildTable(data, "Deals", "website_c", "dealamount");
+     
+       html = html
+         .replace("{{USER_EMAIL}}", email)
+         .replace("{{TABLE}}", tableHtml);
 
         return (
           <PreviewTemplate

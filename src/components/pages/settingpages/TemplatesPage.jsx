@@ -32,6 +32,7 @@ export default function TemplatesPage() {
       "x-api-key": CREATE_DEAL_API_KEY,
       "Content-Type": "application/json",
     },
+    name: "emailTemplates",
   });
 
 

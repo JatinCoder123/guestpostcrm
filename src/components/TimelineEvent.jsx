@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { Eye, SparkleIcon, FileText } from "lucide-react";
+import { Eye, SparkleIcon, FileText, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import Pagination from "./Pagination";
@@ -19,26 +19,68 @@ const TimelineEvent = () => {
   const [templateContent, setTemplateContent] = useState("");
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [templateData, setTemplateData] = useState(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageContent, setMessageContent] = useState("");
+  // const [loadingMessage, setLoadingMessage] = useState(false);
+  // const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [isMessageLoading, setIsMessageLoading] = useState(false);
+  const [messageMeta, setMessageMeta] = useState({
+  subject: "",
+  from: "",
+  date: "",
+   fromEmail: "",
+  time: ""
+});
+
+
+// const [isMessageLoading
+
+// , setisMessageLoading
+
+// ] = useState(null);
+
 
   const topRef = useRef(null);
 
   const dispatch = useDispatch();
+  // useEffect(() => {
+  //   if (selectedView === "all") {
+  //     setTimelineData(ladger);
+  //   }
+  //   if (selectedView === "important") {
+  //     const finalData = ladger.filter(
+  //       (item) =>
+  //         !(
+  //           item.parent_type === "outr_snts" &&
+  //           item.type_c !== "First Reply Sent" &&
+  //           item.type_c !== "First Reply Scheduled"
+  //         ),
+  //     );
+  //     setTimelineData(finalData);
+  //   }
+  // }, [selectedView]);
+
+// start
   useEffect(() => {
-    if (selectedView === "all") {
-      setTimelineData(ladger);
-    }
-    if (selectedView === "important") {
-      const finalData = ladger.filter(
-        (item) =>
-          !(
-            item.parent_type === "outr_snts" &&
-            item.type_c !== "First Reply Sent" &&
-            item.type_c !== "First Reply Scheduled"
-          ),
-      );
-      setTimelineData(finalData);
-    }
-  }, [selectedView]);
+  if (!ladger) return;
+
+  if (selectedView === "all") {
+    setTimelineData(ladger);
+  } else {
+    const finalData = ladger.filter(
+      (item) =>
+        !(
+          item.parent_type === "outr_snts" &&
+          item.type_c !== "First Reply Sent" &&
+          item.type_c !== "First Reply Scheduled"
+        )
+    );
+
+    setTimelineData(finalData);
+  }
+}, [selectedView, ladger]); // ✅ ADD LADGER
+
+// end
   const navigateTo = useNavigate();
 
   const getContactIdFromEvent = (event) => {
@@ -148,6 +190,106 @@ const TimelineEvent = () => {
 
     // Default fallback
     navigateTo("/");
+  };
+
+
+const handleMessageClick = async (event) => {
+
+  if (!event.message_id_c) return;
+
+  // ✅ open modal FIRST
+  setShowMessageModal(true);
+
+  // ✅ show loader INSIDE MODAL
+  setIsMessageLoading(true);
+
+  try {
+
+    const baseUrl = crmEndpoint.split("?")[0];
+
+    const response = await fetch(
+      `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`
+    );
+
+    const result = await response.json();
+
+    const htmlBody =
+      result.email?.html_body ||
+      result.email?.body_html ||
+      result.email?.content ||
+      result.html_body ||
+      "";
+
+      const subject =
+  result.email?.subject ||
+  event.subject ||
+  "No Subject";
+
+const from =
+  result.email?.from_name ||
+  result.email?.from_addr ||
+  "Unknown Sender";
+
+  const fromEmail =
+  result.email?.from_addr ||
+  result.email?.from_email ||
+  "";
+
+const createdDate = result.email?.date_created || "";
+
+let formattedDate = "";
+let formattedTime = "";
+
+if (createdDate) {
+  const d = new Date(createdDate);
+  formattedDate = d.toLocaleDateString();
+  formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+setMessageMeta({
+  subject,
+  from,
+  fromEmail,
+  date: formattedDate,
+  time: formattedTime
+});
+
+
+    setMessageContent(
+      htmlBody
+        ? cleanHtmlContent(htmlBody)
+        : event.description || event.subject || "No content available"
+    );
+
+  } catch (err) {
+
+    setMessageContent(
+      event.description || event.subject || "No content available"
+    );
+
+  } finally {
+    setIsMessageLoading(false);
+  }
+};
+
+
+  // Function to clean HTML content
+  const cleanHtmlContent = (html) => {
+    // Basic HTML cleanup
+    const cleaned = html
+      .replace(/<style[^>]*>.*?<\/style>/gsi, '') // Remove style tags
+      .replace(/<script[^>]*>.*?<\/script>/gsi, '') // Remove script tags
+      .replace(/<!--.*?-->/g, '') // Remove comments
+      .trim();
+    
+    return cleaned || html;
+  };
+
+  // Function to close message modal
+  const closeMessageModal = () => {
+    setShowMessageModal(false);
+    setMessageContent("");
+    setSelectedMessageId(null);
   };
 
   // Function to handle template icon click
@@ -280,6 +422,151 @@ const TimelineEvent = () => {
 
   return (
     <>
+      <style jsx>{`
+        .message-content h1,
+        .message-content h2,
+        .message-content h3,
+        .message-content h4 {
+          margin-top: 1.5em;
+          margin-bottom: 0.5em;
+          font-weight: 600;
+          color: #1f2937;
+        }
+        
+        .message-content p {
+          margin-bottom: 1em;
+        }
+        
+        .message-content a {
+          color: #3b82f6;
+          text-decoration: underline;
+        }
+        
+        .message-content a:hover {
+          color: #2563eb;
+        }
+        
+        .message-content ul,
+        .message-content ol {
+          margin-left: 1.5em;
+          margin-bottom: 1em;
+        }
+        
+        .message-content li {
+          margin-bottom: 0.5em;
+        }
+        
+        .message-content img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 4px;
+        }
+        
+        .message-content table {
+          border-collapse: collapse;
+          width: 100%;
+          margin-bottom: 1em;
+        }
+        
+        .message-content table th,
+        .message-content table td {
+          border: 1px solid #e5e7eb;
+          padding: 8px 12px;
+          text-align: left;
+        }
+        
+        .message-content table th {
+          background-color: #f9fafb;
+          font-weight: 600;
+        }
+        
+        .message-content blockquote {
+          border-left: 4px solid #e5e7eb;
+          margin: 1em 0;
+          padding-left: 1em;
+          color: #6b7280;
+          font-style: italic;
+        }
+        
+        .message-content code {
+          background-color: #f3f4f6;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 0.9em;
+        }
+        
+        .message-content pre {
+          background-color: #1f2937;
+          color: #f9fafb;
+          padding: 1em;
+          border-radius: 6px;
+          overflow-x: auto;
+          margin: 1em 0;
+        }
+        
+        .message-content pre code {
+          background-color: transparent;
+          color: inherit;
+          padding: 0;
+        }
+        
+        .message-content .cta {
+          margin: 20px 0;
+        }
+        
+        .message-content .emoticon {
+          display: inline-block;
+          vertical-align: middle;
+          width: 20px;
+          height: 20px;
+        }
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .message-icon-pulse {
+          animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 0.8;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        
+        .modal-backdrop {
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+        
+        .message-modal {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+                      0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        .message-content-container {
+          background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.5);
+          box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+      `}</style>
+
       <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
           onClick={scrollToTop}
@@ -338,6 +625,8 @@ const TimelineEvent = () => {
                 : null;
               const contactId = getContactIdFromEvent(event);
               const hasTemplate = event.template_id && event.template_id.trim() !== "";
+              const hasMessageContent = event.description || event.subject;
+              const hasMessageId = event.message_id_c;
 
               return (
                 <div key={event.id} className="relative flex items-start gap-4">
@@ -376,7 +665,7 @@ const TimelineEvent = () => {
                               }`}
                           />
 
-                          {/* Tooltip */}
+                          
                           <div
                             className="absolute left-1/2 -translate-x-1/2 -top-10
                                        whitespace-nowrap px-3 py-1.5 text-xs
@@ -387,7 +676,7 @@ const TimelineEvent = () => {
                           >
                             {getTooltipText(event)}
 
-                            {/* Show filter info for reminders */}
+                      
                             {isReminderEvent && filterType && (
                               <div className="text-xs text-gray-300 mt-1">
                                 Filter: {filterType.replace(/_/g, " ")}
@@ -395,7 +684,6 @@ const TimelineEvent = () => {
                               </div>
                             )}
 
-                            {/* Show contact info for contact events */}
                             {isContactEvent && contactId && (
                               <div className="text-xs text-gray-300 mt-1">
                                 Single Contact View
@@ -417,6 +705,40 @@ const TimelineEvent = () => {
                       </span>
 
                       <div className="flex items-center gap-2">
+                    
+                        {hasMessageId && (
+                          <button
+                            onClick={() => handleMessageClick(event)}
+                            className="text-blue-600 hover:text-blue-700 cursor-pointer relative group message-icon-pulse"
+                            title="View Message"
+                            disabled={isMessageLoading
+
+ === event.message_id_c}
+
+                          >
+                           {isMessageLoading
+
+ === event.message_id_c ? (
+  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+) : (
+  <MessageSquare/>
+)}
+
+
+                            
+                            <div className="absolute left-1/2 -translate-x-1/2 -top-8
+                                          whitespace-nowrap px-2 py-1 text-xs
+                                          bg-gray-900 text-white rounded-md
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                          pointer-events-none z-50">
+                              View Message
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full
+                                            w-2 h-2 bg-gray-900 rotate-45" />
+                            </div>
+                          </button>
+                        )}
+
                         {/* Template Icon - Only show if template_id exists */}
                         {hasTemplate && (
                           <button
@@ -465,21 +787,7 @@ const TimelineEvent = () => {
                       </div>
                     </div>
 
-                    {/* Event subject */}
-                    {event.subject && (
-                      <div className="text-sm text-gray-600">
-                        {event.subject}
-                      </div>
-                    )}
-
-                    {/* Show contact name if available */}
-                    {event.contact_name && (
-                      <div className="text-sm text-gray-700 mt-1">
-                        <span className="font-medium">Contact:</span>{" "}
-                        {event.contact_name}
-                      </div>
-                    )}
-
+                 
                     {/* Additional info about the event */}
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                       {event.assigned_user_name && (
@@ -544,6 +852,102 @@ const TimelineEvent = () => {
         />
       )}
 
+      {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
+      {showMessageModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
+          onClick={closeMessageModal}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ 
+              type: "spring", 
+              damping: 25,
+              stiffness: 300
+            }}
+            className="message-modal rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header with gradient */}
+           <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center">
+
+              <div className="flex items-center gap-3">
+                <MessageSquare size={24} className="text-white" />
+               
+            <div className="flex flex-col leading-tight">
+  
+ 
+  <h2 className="text-lg font-semibold text-white">
+    {messageMeta.from}
+  </h2>
+
+  <span className="text-sm text-blue-100">
+    {messageMeta.fromEmail}
+  </span>
+
+  <span className="text-xs text-blue-200">
+    {messageMeta.date} • {messageMeta.time}
+  </span>
+
+</div>
+
+
+              </div>
+
+             
+<div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
+  <h1 className="text-lg font-semibold text-white truncate">
+    {messageMeta.subject}
+  </h1>
+</div>
+
+              
+              <button
+                onClick={closeMessageModal}
+                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90"
+                title="Close"
+              >
+                <X size={24} className="text-white" />
+              </button>
+            </div>
+
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 min-h-[60vh] flex items-center justify-center">
+              
+              {isMessageLoading ? (
+
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-600 font-medium">Loading message content...</p>
+                </div>
+              ) : messageContent ? (
+                
+                <div className="message-content-container p-8 w-full max-w-4xl mx-auto">
+                  <div 
+                    className="message-content mx-auto"
+                    style={{
+                      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                      fontSize: '15px',
+                      lineHeight: '1.8',
+                      color: '#2d3748'
+                    }}
+                    dangerouslySetInnerHTML={{ __html: messageContent }}
+                  />
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
+                    <MessageSquare size={32} className="text-gray-500" />
+                  </div>
+                  <p className="text-gray-600 text-lg font-medium">No message content available</p>
+                  <p className="text-gray-500 mt-2">This message doesn't contain any readable content.</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* Template Modal */}
       {showTemplateModal && templateData && (
         <div
@@ -561,7 +965,6 @@ const TimelineEvent = () => {
             <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
               <div className="flex items-center gap-4">
                 <h2 className="text-2xl font-bold">{templateData.name || "Template Preview"}</h2>
-                
               </div>
 
               <button
@@ -597,16 +1000,15 @@ const TimelineEvent = () => {
                       color: #333; 
                     }
                     img { max-width: 100%; height: auto; }
+
                     table { border-collapse: collapse; }
                   `,
                   preview_styles:
                     "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
-                  readonly: true // Make it read-only for viewing only
+                  readonly: true
                 }}
               />
             </div>
-
-          
           </motion.div>
         </div>
       )}

@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
-import Preview from "./Preview";
+import Preview, { buildTable } from "./Preview";
 import { excludeEmail, unionByKey } from "../assets/assets";
 import { useParams, useLocation } from "react-router-dom";
 import {
@@ -27,11 +27,18 @@ import { SocketContext } from "../context/SocketContext";
 import { getLadger } from "../store/Slices/ladger";
 import { dealsAction } from "../store/Slices/deals";
 import { PreviewTemplate } from "./PreviewTemplate";
+import useModule from "../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../store/constants";
 
 export default function CreateOffer() {
   const { websites: websiteLists } = useSelector((state) => state.website);
   const fields = [
-    { name: "website", label: "Website", type: "select", options: websiteLists },
+    {
+      name: "website",
+      label: "Website",
+      type: "select",
+      options: websiteLists,
+    },
     {
       name: "client_offer_c",
       label: "Client Offer",
@@ -49,11 +56,29 @@ export default function CreateOffer() {
     error: sendError,
   } = useSelector((state) => state.viewEmail);
   const { crmEndpoint } = useSelector((state) => state.user);
-
+  const {
+    loading: templateLoading,
+    data: templateData,
+    error: templateError,
+  } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "OfferORG",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "TemplateData",
+  });
   const [currentOffers, setCurrentOffers] = useState([]);
   const { enteredEmail, search } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
-  const [editorContent, setEditorContent] = useState("")
+  const [editorContent, setEditorContent] = useState("");
   const [validWebsite, setValidWebsite] = useState([]);
   const [newOffers, setNewOffers] = useState([
     {
@@ -80,21 +105,20 @@ export default function CreateOffer() {
 
   useEffect(() => {
     let offer = offers.filter(
-      (d) => excludeEmail(d.real_name ?? d.email) == state?.email
-    )
+      (d) => excludeEmail(d.real_name ?? d.email) == state?.email,
+    );
     let valid = [];
     if (type == "create") {
-      valid = websiteLists.filter(
-        (w) => !offer.some((o) => o.website == w)
-      );
+      valid = websiteLists.filter((w) => !offer.some((o) => o.website == w));
     }
     if (type == "edit") {
       valid = websiteLists.filter((w) =>
-        offer.some((o) => o.id == id || o.website !== w)
+        offer.some((o) => o.id == id || o.website !== w),
       );
     }
     setValidWebsite(valid);
-    offer = type == "edit" ? offer : offer.filter((d) => d.offer_status == "active");
+    offer =
+      type == "edit" ? offer : offer.filter((d) => d.offer_status == "active");
     if (type == "edit" && id !== undefined) {
       offer = offer.filter((d) => d.id == id);
     }
@@ -110,23 +134,20 @@ export default function CreateOffer() {
       sendEmail(
         renderToStaticMarkup(
           <Preview
+            templateData={templateData}
             data={currentOffers}
             type="Offers"
             userEmail={state?.email}
             websiteKey="website"
             amountKey="our_offer_c"
-          />
+          />,
         ),
-        "Offer Send Successfully"
-      )
+        "Offer Send Successfully",
+      ),
     );
   };
   const handleSubmit = () => {
-    dispatch(
-      sendEmail(
-        editorContent, "Offer Send Successfully"
-      )
-    );
+    dispatch(sendEmail(editorContent, "Offer Send Successfully"));
   };
   const handleUpdate = (offer, send) => {
     dispatch(updateOffer(offer, send));
@@ -153,53 +174,62 @@ export default function CreateOffer() {
     if (message) {
       dispatch(getOffers({}));
       if (message.includes("Updated")) {
-        ManualSideCall(crmEndpoint, state?.email, "Our Offer Updated Successfully", 1, okHandler);
+        ManualSideCall(
+          crmEndpoint,
+          state?.email,
+          "Our Offer Updated Successfully",
+          1,
+          okHandler,
+        );
 
         if (message.includes("Send")) {
           dispatch(
             sendEmail(
               renderToStaticMarkup(
                 <Preview
-                  data={[...currentOffers].filter(
-                    (o) => o.website !== ""
-                  )}
+                  templateData={templateData}
+                  data={[...currentOffers].filter((o) => o.website !== "")}
                   type="Offers"
                   userEmail={state?.email}
                   websiteKey="website"
                   amountKey="our_offer_c"
-                />
+                />,
               ),
-              "Offer Updated and Send Successfully", "Offer Updated But Not Sent!"
-            )
+              "Offer Updated and Send Successfully",
+              "Offer Updated But Not Sent!",
+            ),
           );
           dispatch(offersAction.clearAllMessages());
-        }
-        else {
+        } else {
           toast.success(message);
           dispatch(offersAction.clearAllMessages());
           navigate(-1);
         }
-
-
       } else {
-        ManualSideCall(crmEndpoint, state?.email, "Our Offer Created Successfully", 1, okHandler);
+        ManualSideCall(
+          crmEndpoint,
+          state?.email,
+          "Our Offer Created Successfully",
+          1,
+          okHandler,
+        );
         if (message.includes("Send")) {
           const data = unionByKey(newOffers, currentOffers, "website");
           dispatch(
             sendEmail(
               renderToStaticMarkup(
                 <Preview
-                  data={data.filter(
-                    (o) => o.website !== ""
-                  )}
+                  templateData={templateData}
+                  data={data.filter((o) => o.website !== "")}
                   type="Offers"
                   userEmail={state?.email}
                   websiteKey="website"
                   amountKey="our_offer_c"
-                />
+                />,
               ),
-              "Offer Craeted and Send Successfully", "Offer Created But Not Sent!"
-            )
+              "Offer Craeted and Send Successfully",
+              "Offer Created But Not Sent!",
+            ),
           );
         }
         setNewOffers([]);
@@ -250,19 +280,24 @@ export default function CreateOffer() {
       fields={fields}
       amountKey={"our_offer_c"}
       renderPreview={({ data, email, onClose }) => {
-        const html = renderToString(
-          <Preview
-            data={data}
-            type="Offers"
-            userEmail={email}
-            websiteKey="website"
-            amountKey="our_offer_c"
+        let html = templateData?.[0]?.body_html || "";
+        const tableHtml = buildTable(data, "Offers", "website_c", "our_offer_c");
+
+        html = html
+          .replace("{{USER_EMAIL}}", email)
+          .replace("{{TABLE}}", tableHtml);
+
+        return (
+          <PreviewTemplate
+            editorContent={editorContent}
+            initialContent={html}
+            setEditorContent={setEditorContent}
+            onClose={onClose}
+            onSubmit={handleSubmit}
+            loading={sending}
           />
         );
-
-        return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
       }}
-
     />
   );
 }
