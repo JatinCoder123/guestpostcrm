@@ -147,7 +147,9 @@ export default function CreateOffer() {
     );
   };
   const handleSubmit = () => {
-    dispatch(sendEmail(editorContent, "Offer Send Successfully"));
+    dispatch(
+      sendEmail(editorContent, "Offer Send Successfully"),
+    );
   };
   const handleUpdate = (offer, send) => {
     dispatch(updateOffer(offer, send));
@@ -281,7 +283,7 @@ export default function CreateOffer() {
       amountKey={"our_offer_c"}
       renderPreview={({ data, email, onClose }) => {
         let html = templateData?.[0]?.body_html || "";
-        const tableHtml = buildTable(data, "Offers", "website_c", "our_offer_c");
+        const tableHtml = buildTable(data, "Offers", "website", "our_offer_c");
 
         html = html
           .replace("{{USER_EMAIL}}", email)
@@ -293,6 +295,7 @@ export default function CreateOffer() {
             initialContent={html}
             setEditorContent={setEditorContent}
             onClose={onClose}
+            templateContent={html}
             onSubmit={handleSubmit}
             loading={sending}
           />

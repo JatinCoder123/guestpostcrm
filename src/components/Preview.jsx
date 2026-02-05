@@ -1,6 +1,6 @@
 function addOneWeek(dateStr) {
   // 👉 If dateStr is null/undefined/invalid, use current date & time
-  const date = dateStr ? new Date(dateStr) : new Date();
+  let date = dateStr ? new Date(dateStr) : new Date();
 
   // Extra safety: handle invalid date strings
   if (isNaN(date.getTime())) {
@@ -22,7 +22,7 @@ function addOneWeek(dateStr) {
 }
 
 function addOneMonth(dateStr) {
-  const date = dateStr ? new Date(dateStr) : new Date();
+  let date = dateStr ? new Date(dateStr) : new Date();
 
   // Extra safety: handle invalid date strings
   if (isNaN(date.getTime())) {

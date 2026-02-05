@@ -307,6 +307,7 @@ export default function CreateDeal() {
           <PreviewTemplate
             editorContent={editorContent}
             initialContent={html}
+            templateContent={html}
             setEditorContent={setEditorContent}
             onClose={onClose}
             onSubmit={handleSubmit}

@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 const TABS = [
   { key: "description", label: "Manual Prompt" },
   { key: "role_prompt", label: "Role Prompt" },
-  { key: "output_prompt", label: "Output Prompt" },
+  { key: "output_format", label: "Output Prompt" },
   { key: "overwrite_prompt", label: "Overwrite Prompt" },
 ];
 
@@ -20,7 +20,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
     type: "",
     description: "",
     role_prompt: "",
-    output_prompt: "",
+    output_format: "",
     overwrite_prompt: "",
   });
 
@@ -34,7 +34,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
         type: item.type || "",
         description: item.description || "",
         role_prompt: item.role_prompt || "",
-        output_prompt: item.output_prompt || "",
+        output_format: item.output_format || "",
         overwrite_prompt: item.overwrite_prompt || "",
       });
     }
@@ -89,7 +89,6 @@ export default function EditModal({ item, onClose, handleUpdate }) {
 
             {/* Tabs */}
             <div className="flex gap-2 border-b mb-4 bg-gray-200 rounded-xl p-1">
-
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
@@ -102,14 +101,13 @@ export default function EditModal({ item, onClose, handleUpdate }) {
               ))}
             </div>
 
-
             {/* Single Textarea */}
             <div className="mb-6">
               <textarea
                 value={form[activeTab]}
                 onChange={(e) => updateField(activeTab, e.target.value)}
                 className="w-full h-56 p-3 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={`Enter ${TABS.find(t => t.key === activeTab)?.label}`}
+                placeholder={`Enter ${TABS.find((t) => t.key === activeTab)?.label}`}
               />
             </div>
 

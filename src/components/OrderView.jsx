@@ -7,7 +7,7 @@ import { createLink, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
 import { SocketContext } from "../context/SocketContext";
-export const OrderView = ({ data, setData, sending }) => {
+export const OrderView = ({ data, setData, sending, setCurrentOrderIDSend }) => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null);
   const [item, setItem] = useState(null);
@@ -98,7 +98,7 @@ export const OrderView = ({ data, setData, sending }) => {
       {processingPayment && <ProcessingLoader />}
       {(updating || sending) && <PageLoader />}
       <div className="w-full relative mt-3">
-        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} />
+        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} setCurrentOrderIDSend={setCurrentOrderIDSend} />
         <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -202,7 +202,7 @@ function ProcessingLoader() {
     </div>
   );
 }
-function OrderHeader({ data, setStatus, onCompleteHandler }) {
+function OrderHeader({ data, setStatus, onCompleteHandler, setCurrentOrderIDSend }) {
   return (
     <div className="w-full mb-3">
       <div className="relative group">
@@ -229,7 +229,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
               {data.order_status !== "accepted" && (
                 <>
                   <button
-                    onClick={() => setStatus("accepted")}
+                    onClick={() => { setStatus("accepted"); setCurrentOrderIDSend(data.order_id) }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
@@ -240,7 +240,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
                     Accept
                   </button>
                   <button
-                    onClick={() => setStatus("rejected_nontechnical")}
+                    onClick={() => { setStatus("rejected_nontechnical"); setCurrentOrderIDSend(data.order_id) }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30

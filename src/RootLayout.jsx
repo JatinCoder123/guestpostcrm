@@ -8,12 +8,8 @@ import {
   checkForDuplicates,
   getDuplicateCount,
 } from "./store/Slices/duplicateEmailSlice";
-import {
-  getUnansweredEmails,
-} from "./store/Slices/unansweredEmails";
-import {
-  getUnrepliedEmail,
-} from "./store/Slices/unrepliedEmails";
+import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
+import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
 import { getOrders } from "./store/Slices/orders";
 import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
@@ -47,6 +43,7 @@ const RootLayout = () => {
 
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails } = useSelector((state) => state.unreplied);
+  const [firstEmail, setFirstEmail] = useState(null);
   const { crmEndpoint, currentScore } = useSelector((state) => state.user);
   const {
     displayIntro,
@@ -78,9 +75,9 @@ const RootLayout = () => {
   }, [pathname]);
   useEffect(() => {
     if (crmEndpoint) {
-      setCrm(getDomain(crmEndpoint))
+      setCrm(getDomain(crmEndpoint));
     }
-  }, [crmEndpoint])
+  }, [crmEndpoint]);
   // Show avatar when new avatar arrives
   useEffect(() => {
     setShowAvatar(true);
@@ -113,16 +110,14 @@ const RootLayout = () => {
     dispatch(getDuplicateCount());
     setCurrentIndex(0);
   }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
-
-  const firstEmail =
-    emails?.length > 0
-      ? emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
-      : null;
   useEffect(() => {
     if (emails?.length > 0) {
       setWelcomeHeaderContent("Unreplied");
+      setFirstEmail(
+        emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
+      );
     }
-  }, [emails]);
+  }, [emails, currentIndex]);
 
   // Fetch ladger when email changes
   useEffect(() => {
@@ -162,7 +157,13 @@ const RootLayout = () => {
     };
     if (notificationCount.unreplied_email) {
       refreshLadger();
-      dispatch(getUnrepliedEmail({ email: enteredEmail, newEmail: true, loading: false }));
+      dispatch(
+        getUnrepliedEmail({
+          email: enteredEmail,
+          newEmail: true,
+          loading: false,
+        }),
+      );
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       setCurrentIndex(0);
       dispatch(checkForDuplicates());
@@ -174,7 +175,6 @@ const RootLayout = () => {
 
     if (notificationCount.refreshUnreplied) {
       refreshLadger();
-
       dispatch(getUnrepliedEmail({ email: enteredEmail, loading: true }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       setCurrentIndex(0);
@@ -287,19 +287,16 @@ const RootLayout = () => {
               {/* Main content scrolls independently */}
               <main
                 ref={mainRef}
-                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-                  }`}
+                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                  collapsed ? "ml-4" : "ml-0"
+                }`}
               >
                 <div className="p-6">
-                  {isLowCredit && (
-                    <LowCreditWarning score={currentScore} />
-                  )}
+                  {isLowCredit && <LowCreditWarning score={currentScore} />}
                   <div className="p-6">
                     <WelcomeHeader />
                     <Outlet />
                   </div>
-
-
 
                   {/* {showAvatar && currentAvatar && (
                   <Avatar

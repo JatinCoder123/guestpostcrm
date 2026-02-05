@@ -67,7 +67,7 @@ export default function Login() {
             onClick={() => setIsLogin(!isLogin)}
             className="ml-1 text-purple-600 font-medium hover:underline"
           >
-            Sign Up
+            <a href="https://www.guestpostcrm.com/rightee/intro.php">Sign Up</a>
           </button>
         </p>
       </motion.div>

@@ -33,6 +33,15 @@ const TimelineEvent = () => {
 });
 
 
+const [originalTemplateContent, setOriginalTemplateContent] = useState("");
+const [isTemplateChanged, setIsTemplateChanged] = useState(false);
+const [isTemplateSaving, setIsTemplateSaving] = useState(false);
+
+// ✅ ADD HERE
+useEffect(() => {
+  setIsTemplateChanged(templateContent !== originalTemplateContent);
+}, [templateContent, originalTemplateContent]);
+
 // const [isMessageLoading
 
 // , setisMessageLoading
@@ -62,25 +71,30 @@ const TimelineEvent = () => {
 
 // start
   useEffect(() => {
-  if (!ladger) return;
-
-  if (selectedView === "all") {
-    setTimelineData(ladger);
-  } else {
-    const finalData = ladger.filter(
-      (item) =>
-        !(
-          item.parent_type === "outr_snts" &&
-          item.type_c !== "First Reply Sent" &&
-          item.type_c !== "First Reply Scheduled"
-        )
-    );
-
-    setTimelineData(finalData);
-  }
-}, [selectedView, ladger]); // ✅ ADD LADGER
-
-// end
+    if (selectedView === "all") {
+      setTimelineData(ladger);
+    }
+    if (selectedView === "important") {
+      const finalData = ladger.filter(
+        (item) =>
+          !(
+            item.parent_type === "outr_snts" &&
+            item.type_c !== "First Reply Sent" &&
+            item.type_c !== "First Reply Scheduled"
+          ),
+      );
+      setTimelineData(finalData);
+    }
+    if (selectedView === "orderMain") {
+      const finalData = ladger.filter(
+        (item) =>
+          item.parent_type == "outr_order_gp_li" || // Orders
+          item.parent_type == "outr_paypal_invoice_links", // PayPal Invoices
+      );
+      setTimelineData(finalData);
+      return;
+    }
+  }, [selectedView]);
   const navigateTo = useNavigate();
 
   const getContactIdFromEvent = (event) => {
@@ -295,27 +309,30 @@ setMessageMeta({
   // Function to handle template icon click
   const handleTemplateClick = async (templateId, event) => {
     if (!templateId || templateId.trim() === "") return;
-    
+
     setLoadingTemplate(true);
     setSelectedTemplate({
       id: templateId,
-      eventData: event
+      eventData: event,
     });
-    
+
     try {
       // Fetch the email template from EmailTemplates module
-      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`, {
-        method: "POST",
-        headers: {
-          "x-api-key": CREATE_DEAL_API_KEY,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        {
+          method: "POST",
+          headers: {
+            "x-api-key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            module: "EmailTemplates",
+            id: templateId,
+          }),
         },
-        body: JSON.stringify({ 
-          module: "EmailTemplates",
-          id: templateId
-        }),
-      });
-      
+      );
+
       const responseText = await response.text();
       let result;
 
@@ -328,31 +345,40 @@ setMessageMeta({
       if (response.ok) {
         // Check different response structures
         let templateData;
-        
+
         if (Array.isArray(result)) {
           // If result is an array, find the template with matching ID
-          templateData = result.find(t => t.id === templateId);
+          templateData = result.find((t) => t.id === templateId);
         } else if (result.data && Array.isArray(result.data)) {
-          templateData = result.data.find(t => t.id === templateId);
+          templateData = result.data.find((t) => t.id === templateId);
         } else if (result.parent_bean) {
           templateData = result.parent_bean;
         } else {
           templateData = result;
         }
-        
+
         if (templateData && templateData.body_html) {
           setTemplateData(templateData);
-          setTemplateContent(templateData.body_html || "");
+          const content = templateData.body_html || "";
+
+setTemplateData(templateData);
+setTemplateContent(content);
+setOriginalTemplateContent(content); // ⭐ IMPORTANT
+setIsTemplateChanged(false);
+setShowTemplateModal(true);
+
           setShowTemplateModal(true);
         } else {
           throw new Error("Template content not found");
         }
       } else {
-        throw new Error(`Failed to fetch template: ${result.error || result.message || "Unknown error"}`);
+        throw new Error(
+          `Failed to fetch template: ${result.error || result.message || "Unknown error"}`,
+        );
       }
     } catch (error) {
       console.error("Error fetching template:", error);
-      
+
       // Fallback: Create a simple template data object
       setTemplateData({
         id: templateId,
@@ -366,7 +392,7 @@ setMessageMeta({
             <p><strong>Contact:</strong> ${event.name || "N/A"}</p>
             <p>Error loading template: ${error.message}</p>
           </div>
-        `
+        `,
       });
       setTemplateContent(`
         <div style="padding: 20px; font-family: Arial, sans-serif;">
@@ -384,13 +410,85 @@ setMessageMeta({
     }
   };
 
+
+  // for save by kjl
+const handleTemplateSave = async () => {
+
+  if (!templateData?.id) return;
+  if (!isTemplateChanged) return;
+  if (isTemplateSaving) return;
+
+  setIsTemplateSaving(true);
+
+  try {
+
+    const requestBody = {
+      parent_bean: {
+        module: "EmailTemplates",
+        id: templateData.id,
+        body_html: templateContent,
+        name: templateData.name,
+        description: templateData.description || "",
+        subject: templateData.subject || "",
+        type: templateData.type || "",
+      },
+    };
+
+    const response = await fetch(
+      `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result.error) {
+      throw new Error(result.error || "Failed to update template");
+    }
+
+    // ✅ Mark as saved
+    setOriginalTemplateContent(templateContent);
+    setIsTemplateChanged(false);
+
+    alert("✅ Template updated successfully!");
+
+  } catch (err) {
+
+    alert("❌ Save failed — changes are still unsaved.");
+    console.error(err);
+
+  } finally {
+    setIsTemplateSaving(false);
+  }
+};
+
+
+
+
+
   // Function to close template modal
   const closeTemplateModal = () => {
-    setShowTemplateModal(false);
-    setSelectedTemplate(null);
-    setTemplateData(null);
-    setTemplateContent("");
-  };
+
+  if (isTemplateChanged) {
+    const confirmClose = window.confirm(
+      "You have unsaved changes. Close anyway?"
+    );
+
+    if (!confirmClose) return;
+  }
+
+  setShowTemplateModal(false);
+  setSelectedTemplate(null);
+  setTemplateData(null);
+  setTemplateContent("");
+  setOriginalTemplateContent("");
+};
 
   // Function to get tooltip text based on event type and contact
   const getTooltipText = (event) => {
@@ -577,33 +675,42 @@ setMessageMeta({
           TIMELINE
         </h1>
 
-        <div className="flex justify-center mt-4">
-          <div className="relative flex bg-gray-200 rounded-xl p-1 w-[260px]">
-            {/* Sliding Indicator */}
-            <div
-              className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(50%-4px)]
-        bg-white rounded-xl shadow
-        transition-transform duration-300 ease-in-out
-        ${selectedView === "important" ? "translate-x-full" : "translate-x-0"}`}
+        <div className="flex justify-center mt-6">
+          <div className="relative flex bg-gray-100 rounded-full p-1 w-[360px] shadow-inner">
+            {/* Sliding pill */}
+            <motion.div
+              layout
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(33.333%-4px)]
+        rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
+        ${
+          selectedView === "all"
+            ? "translate-x-0"
+            : selectedView === "important"
+              ? "translate-x-full"
+              : "translate-x-[200%]"
+        }`}
             />
 
-            {/* All Records */}
-            <button
-              onClick={() => setSelectedView("all")}
-              className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300
-        ${selectedView === "all" ? "text-purple-600" : "text-gray-600"}`}
-            >
-              All
-            </button>
-
-            {/* Important Records */}
-            <button
-              onClick={() => setSelectedView("important")}
-              className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300
-        ${selectedView === "important" ? "text-purple-600" : "text-gray-600"}`}
-            >
-              Important
-            </button>
+            {[
+              { key: "all", label: "All" },
+              { key: "important", label: "Important" },
+              { key: "orderMain", label: "Orders" },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setSelectedView(tab.key)}
+                className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
+          transition-colors duration-300
+          ${
+            selectedView === tab.key
+              ? "text-white"
+              : "text-gray-600 hover:text-purple-600"
+          }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -660,8 +767,8 @@ setMessageMeta({
                                 isReminderEvent
                                   ? "text-purple-600"
                                   : isContactEvent
-                                  ? "text-green-600"
-                                  : "text-blue-600"
+                                    ? "text-green-600"
+                                    : "text-blue-600"
                               }`}
                           />
 
@@ -742,28 +849,38 @@ setMessageMeta({
                         {/* Template Icon - Only show if template_id exists */}
                         {hasTemplate && (
                           <button
-                            onClick={() => handleTemplateClick(event.template_id, event)}
+                            onClick={() =>
+                              handleTemplateClick(event.template_id, event)
+                            }
                             className="text-green-600 hover:text-green-700 cursor-pointer relative group"
                             title={`Preview Template: ${event.template_id}`}
-                            disabled={loadingTemplate && selectedTemplate?.id === event.template_id}
+                            disabled={
+                              loadingTemplate &&
+                              selectedTemplate?.id === event.template_id
+                            }
                           >
                             <FileText size={20} />
-                            {loadingTemplate && selectedTemplate?.id === event.template_id && (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                              </div>
-                            )}
-                            
+                            {loadingTemplate &&
+                              selectedTemplate?.id === event.template_id && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
+
                             {/* Tooltip for template */}
-                            <div className="absolute left-1/2 -translate-x-1/2 -top-8
+                            <div
+                              className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
                                           bg-gray-900 text-white rounded-md
                                           opacity-0 group-hover:opacity-100
                                           transition-opacity duration-200
-                                          pointer-events-none z-50">
+                                          pointer-events-none z-50"
+                            >
                               Preview Template
-                              <div className="absolute left-1/2 -translate-x-1/2 top-full
-                                            w-2 h-2 bg-gray-900 rotate-45" />
+                              <div
+                                className="absolute left-1/2 -translate-x-1/2 top-full
+                                            w-2 h-2 bg-gray-900 rotate-45"
+                              />
                             </div>
                           </button>
                         )}
@@ -963,17 +1080,44 @@ setMessageMeta({
           >
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-              <div className="flex items-center gap-4">
-                <h2 className="text-2xl font-bold">{templateData.name || "Template Preview"}</h2>
-              </div>
 
-              <button
-                onClick={closeTemplateModal}
-                className="p-2 hover:bg-white/20 rounded-full transition"
-              >
-                <X size={28} />
-              </button>
-            </div>
+  <h2 className="text-2xl font-bold">
+    {templateData.name || "Template Editor"}
+  </h2>
+
+  <div className="flex gap-3">
+
+    <button
+      onClick={handleTemplateSave}
+      disabled={!isTemplateChanged || isTemplateSaving}
+      className={`px-4 py-2 rounded-lg font-medium transition ${
+        !isTemplateChanged || isTemplateSaving
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-green-600 hover:bg-green-700"
+      }`}
+    >
+      {isTemplateSaving ? "Saving..." : "Save"}
+    </button>
+
+    {isTemplateChanged && (
+      <button
+        onClick={() => setTemplateContent(originalTemplateContent)}
+        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
+      >
+        Cancel
+      </button>
+    )}
+
+    <button
+      onClick={closeTemplateModal}
+      className="p-2 hover:bg-white/20 rounded-full transition"
+    >
+      <X size={28} />
+    </button>
+
+  </div>
+</div>
+
 
             {/* Editor Content */}
             <div className="flex-1 overflow-hidden">
@@ -1005,7 +1149,7 @@ setMessageMeta({
                   `,
                   preview_styles:
                     "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
-                  readonly: true
+                  // readonly: true
                 }}
               />
             </div>

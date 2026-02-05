@@ -25,11 +25,11 @@ import { addEvent } from "../../store/Slices/eventSlice";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { unrepliedAction } from "../../store/Slices/unrepliedEmails";
-import NewEmailBanner from "../NewEmailBanner";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
 import UpdatePopup from "../UpdatePopup";
 import { useNavigate } from "react-router-dom";
+import { PreviewTemplate } from "../PreviewTemplate";
 
 const decodeHTMLEntities = (str = "") => {
   if (typeof str !== "string") return str;
@@ -43,13 +43,14 @@ export function TimelinePage() {
   const [showUpdateAiReply, setShowUpdateAiReply] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showThread, setShowThread] = useState(false);
-  const [showDeal, setShowDeal] = useState(false);
   const [showIP, setShowIP] = useState(false);
   const { currentIndex, setCurrentIndex, enterEmail, search } =
     useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
+  const [editorContent, setEditorContent] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
   const {
     error: sendError,
     message,
@@ -95,6 +96,7 @@ export function TimelinePage() {
         ...prev,
         refreshUnreplied: Date.now(),
       }));
+      setShowPreview(false);
       dispatch(
         addEvent({
           email: email,
@@ -128,7 +130,7 @@ export function TimelinePage() {
     );
   };
 
-  const handleAiAutoReply = async (updatedAiReply) => {
+  const handleAiAutoReply = async () => {
     setAiReplySentLoading(true);
     try {
       dispatch(
@@ -136,7 +138,7 @@ export function TimelinePage() {
           emails[currentIndex]?.thread_id
             ? emails[currentIndex]?.thread_id
             : threadId,
-          updatedAiReply,
+          editorContent,
         ),
       );
     } catch (error) {
@@ -157,16 +159,11 @@ export function TimelinePage() {
     }
   };
 
-  useEffect(() => {
-    if (showNewEmailBanner) {
-      const timer = setTimeout(() => {
-        setCurrentIndex(0); // 🔥 redirect to latest email
-        dispatch(unrepliedAction.setShowNewEmailBanner(false));
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [showNewEmailBanner]);
+  // useEffect(() => {
+  //   if (showNewEmailBanner) {
+  //     setCurrentIndex(0); // 🔥 redirect to latest email
+  //   }
+  // }, [showNewEmailBanner]);
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
@@ -193,9 +190,19 @@ export function TimelinePage() {
       </div>
     );
   }
-
-  if (showDeal) {
-    return <CreateDeal onClose={() => setShowDeal(false)} />;
+  if (showPreview) {
+    return (
+      <PreviewTemplate
+        editorContent={editorContent}
+        initialContent={aiReply}
+        templateContent=""
+        aiReply={aiReply}
+        setEditorContent={setEditorContent}
+        onClose={() => setShowPreview(false)}
+        onSubmit={handleAiAutoReply}
+        loading={sending}
+      />
+    );
   }
 
   if (showIP) {
@@ -204,27 +211,6 @@ export function TimelinePage() {
 
   return (
     <>
-      <NewEmailBanner show={showNewEmailBanner} />
-      <UpdatePopup
-        open={showUpdateAiReply}
-        onClose={() => setShowUpdateAiReply(false)}
-        fields={[
-          {
-            label: "Ai Reply",
-            name: "ai_reply",
-            type: "textarea",
-            value: aiReply,
-          },
-        ]}
-        buttonLabel="Send"
-        loading={aiReplySentLoading}
-        onUpdate={(data) => {
-          console.log(data);
-          setAiReply(data.ai_reply);
-          handleAiAutoReply(data.ai_reply);
-          setShowUpdateAiReply(false);
-        }}
-      />
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
@@ -248,38 +234,27 @@ export function TimelinePage() {
                     <h3 className="text-green-700 font-semibold">
                       Quick Reply
                     </h3>
-                    <button
-                      onClick={() => setShowUpdateAiReply(true)}
-                      className=" text-green-700 hover:text-green-800 cursor-pointer hover:scael-120 transition-all mr-4"
-                    >
-                      <Pencil size={20} />
-                    </button>
                     {/* Send AI Reply Button - Moved to top right */}
-                    {aiReplySentLoading ? (
-                      <div className="flex justify-center">
-                        <LoadingChase size="25" color="blue" type="ping" />
-                      </div>
-                    ) : (
-                      <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        onClick={() => handleAiAutoReply(aiReply)}
-                        disabled={
-                          sending ||
-                          mailersSummary == null ||
-                          mailersSummary?.ai_response?.trim() === ""
-                        }
-                      >
-                        <img
-                          width="33"
-                          height="33"
-                          src="https://img.icons8.com/ultraviolet/40/bot.png"
-                          alt="AI Reply"
-                        />
-                      </motion.button>
-                    )}
+
+                    <motion.button
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400 }}
+                      className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      onClick={() => setShowPreview(true)}
+                      disabled={
+                        sending ||
+                        mailersSummary == null ||
+                        mailersSummary?.ai_response?.trim() === ""
+                      }
+                    >
+                      <img
+                        width="33"
+                        height="33"
+                        src="https://img.icons8.com/ultraviolet/40/bot.png"
+                        alt="AI Reply"
+                      />
+                    </motion.button>
                   </div>
 
                   {!sending && (
