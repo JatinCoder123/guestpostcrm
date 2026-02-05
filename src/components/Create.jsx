@@ -21,6 +21,7 @@ export default function Create({
   sending,
   fields,
   lists = [],
+  setCurrentOrderIDSend,
   submitData,
   sendHandler,
   handleDelete,
@@ -158,14 +159,6 @@ export default function Create({
                         >
                           <ShoppingCart />
                         </button>
-                        <button
-                          onClick={() => setShowPreview(true)}
-                          className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
-                        >
-                          <Eye />
-                        </button>
-
-
                       </>
 
                     ) : (
@@ -206,17 +199,30 @@ export default function Create({
                           } rounded-2xl shadow-sm `}
                       >
                         {pageType == "view" && (
-                          <button
-                            onClick={() =>
-                              navigate(`/${type}/edit/${item.id}`, {
-                                state: { email },
-                              })
-                            }
-                            className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
-                              } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
-                          >
-                            <Pencil size={16} />
-                          </button>
+                          <>
+                            <button
+                              onClick={() =>
+                                navigate(`/${type}/edit/${item.id}`, {
+                                  state: { email },
+                                })
+                              }
+                              className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
+                                } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            {type == "orders" && (
+                              <button
+                                onClick={() => {
+                                  setCurrentOrderIDSend(item.order_id);
+                                  setShowPreview(true)
+                                }}
+                                className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
+                              >
+                                <Eye />
+                              </button>)}</>
+
+
                         )}
                         {pageType !== "edit" && type !== "orders" && (
                           <button
@@ -265,7 +271,7 @@ export default function Create({
                           </div>
                         )}
                         {type == "orders" && pageType == "view" ? (
-                          <OrderView data={item} setData={setData} sending={sending} />
+                          <OrderView data={item} setData={setData} sending={sending} setCurrentOrderIDSend={setCurrentOrderIDSend} />
                         ) : (
                           <>
                             {" "}
@@ -365,7 +371,7 @@ export default function Create({
                         className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                       >
                           Preview
-                        </button>  
+                        </button>
                       </>
 
                     ) : (
@@ -520,3 +526,26 @@ function InputField({
     </div>
   );
 }
+
+
+
+
+
+
+// <table style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-bottom: 12px;" width="100%" cellspacing="0" cellpadding="0">
+// <tbody>
+// <tr>
+// <td style="font-weight: bold; color: #111827;">https://www.outrightcrm.com/</td>
+// <td align="right"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: bold;">approved</span></td>
+// </tr>
+// <tr>
+// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">🔗 <strong>Backlink URL:</strong><br>https://www.techtarget.com/whatis/definition/metadata</td>
+// </tr>
+// <tr>
+// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">📄 <strong>Document URL:</strong><br>https://docs.google.com/document/d/1uke4dIJo-0JIOdFnyrtDFAs-7asQR7nE/edit#heading=h.rijamkt1xoud</td>
+// </tr>
+// <tr>
+// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">💰 <strong>Amount:</strong> <!-- -->$40</td>
+// </tr>
+// </tbody>
+// </table>

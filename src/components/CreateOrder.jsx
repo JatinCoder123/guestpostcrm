@@ -14,6 +14,8 @@ import { getLadger } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
 import { PreviewTemplate } from "./PreviewTemplate";
+import useModule from "../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../store/constants";
 const fields = [
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
@@ -47,12 +49,32 @@ export default function CreateOrder() {
   );
   const { crmEndpoint } = useSelector((state) => state.user);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
+  const [currentOrderIDSend, setCurrentOrderIDSend] = useState(null);
   const { setNotificationCount } = useContext(SocketContext)
   const { enteredEmail, search } = useContext(PageContext)
   const [editorContent, setEditorContent] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [currentOrders, setCurrentOrders] = useState([]);
+  const {
+    loading: templateLoading,
+    data: templateData,
+    error: templateError,
+  } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "OrderORG",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "TemplateData",
+  });
   useEffect(() => {
     let order = orders.filter((o) => excludeEmail(o.real_name) == state?.email && !((o.order_status == "wrong" || o.order_status == "rejected_nontechnical" || o.order_status == "completed") && type != "edit"));
     if (type == "edit" && id !== undefined) {
@@ -166,6 +188,7 @@ export default function CreateOrder() {
       orderId="order_id"
       handleDelete={handleDelete}
       handleUpdate={handleUpdate}
+      setCurrentOrderIDSend={setCurrentOrderIDSend}
       updating={updating}
       lists={lists}
       sending={sending}
@@ -173,9 +196,12 @@ export default function CreateOrder() {
       sendHandler={sendHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
+        const order = data.filter((item) => item.order_id === currentOrderIDSend);
+        console.log(order);
         const html = renderToString(<PreviewOrder
-          data={data}
+          data={order}
           userEmail={email}
+          currentOrderIDSend={currentOrderIDSend}
         />)
         return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
 

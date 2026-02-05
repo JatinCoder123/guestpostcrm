@@ -159,12 +159,7 @@ export function TimelinePage() {
 
   useEffect(() => {
     if (showNewEmailBanner) {
-      const timer = setTimeout(() => {
-        setCurrentIndex(0); // 🔥 redirect to latest email
-        dispatch(unrepliedAction.setShowNewEmailBanner(false));
-      }, 2000);
-
-      return () => clearTimeout(timer);
+      setCurrentIndex(0); // 🔥 redirect to latest email
     }
   }, [showNewEmailBanner]);
   if (searchNotFound) {
@@ -204,7 +199,6 @@ export function TimelinePage() {
 
   return (
     <>
-      <NewEmailBanner show={showNewEmailBanner} />
       <UpdatePopup
         open={showUpdateAiReply}
         onClose={() => setShowUpdateAiReply(false)}
@@ -367,11 +361,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -422,14 +415,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  threadId={currentThreadId}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    threadId={currentThreadId}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (
