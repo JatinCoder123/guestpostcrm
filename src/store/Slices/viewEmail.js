@@ -20,6 +20,8 @@ const viewEmailSlice = createSlice({
     threadId: null,
     message: null,
     error: null,
+    fullMessage: null,
+  fullMessageLoading: false,
   },
   reducers: {
     getViewEmailRequest(state) {
@@ -105,6 +107,35 @@ const viewEmailSlice = createSlice({
     clearAllMessage(state) {
       state.message = null;
     },
+ fetchFullMessageRequest(state) {
+    state.fullMessageLoading = true;
+    state.error = null;
+  },
+
+  fetchFullMessageSuccess(state, action) {
+    const { message_id, body } = action.payload;
+
+    // 🔥 Replace body_html in the existing email list
+    const msg = state.viewEmail.find(
+      (m) => m.message_id === message_id
+    );
+
+    if (msg) {
+      msg.body_html = body; // ✅ overwrite with full HTML
+    }
+
+    state.fullMessage = action.payload;
+    state.fullMessageLoading = false;
+  },
+
+  fetchFullMessageFailed(state, action) {
+    state.fullMessageLoading = false;
+    state.error = action.payload;
+  },
+
+  clearFullMessage(state) {
+    state.fullMessage = null;
+  },
   },
 });
 
@@ -240,6 +271,32 @@ export const sendEmail = (reply, message = null, error = null) => {
     }
   };
 };
+export const fetchFullMessage = (messageId) => {
+  return async (dispatch, getState) => {
+    dispatch(viewEmailSlice.actions.fetchFullMessageRequest());
+
+    try {
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint}&entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}&full=1`
+      );
+
+      dispatch(
+        viewEmailSlice.actions.fetchFullMessageSuccess({
+          message_id: messageId,
+          body: data.email.body, // ✅ FULL HTML COMES FROM HERE
+        })
+      );
+    } catch (error) {
+      dispatch(
+        viewEmailSlice.actions.fetchFullMessageFailed(
+          "Failed to load full message"
+        )
+      );
+    }
+  };
+};
+
+
 
 export const viewEmailAction = viewEmailSlice.actions;
 export default viewEmailSlice.reducer;

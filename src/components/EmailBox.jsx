@@ -8,11 +8,14 @@ import {
   X,
   Sparkles,
   ChevronLeft,
+  MoreVertical,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
+import { fetchFullMessage } from "../store/Slices/viewEmail";
+import { viewEmailAction } from "../store/Slices/viewEmail";
 import {
   getThreadEmail,
   sendEmailToThread,
@@ -53,8 +56,15 @@ export default function EmailBox({
   const scrollRef = useRef();
   const editorRef = useRef(null);
   const dispatch = useDispatch();
+  const [openMsgMenu, setOpenMsgMenu] = useState(null);
+  const [openFullMessage, setOpenFullMessage] = useState(false);
 
-  const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const {
+    viewEmail,
+    threadId: viewThreadId,
+    fullMessage,
+    fullMessageLoading,
+  } = useSelector((s) => s.viewEmail);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
@@ -506,11 +516,13 @@ export default function EmailBox({
                       }`}
                     >
                       {/* NAME */}
-                      <div className="flex items-center gap-2 font-semibold">
-                        <User className="w-3.5 h-3.5 opacity-70" />
-                        <span>
-                          {isUser ? "You" : mail.from_name || "Sender"}
-                        </span>
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2 font-semibold">
+                          <User className="w-3.5 h-3.5 opacity-70" />
+                          <span>
+                            {isUser ? "You" : mail.from_name || "Sender"}
+                          </span>
+                        </div>
                       </div>
 
                       {/* DATE & TIME */}
@@ -532,6 +544,86 @@ export default function EmailBox({
                       }}
                       className="mail-content text-sm leading-relaxed"
                     />
+                    {/* THREE DOT MENU */}
+                    <div className="relative">
+                      <button
+                        onClick={() => {
+                          dispatch(fetchFullMessage(mail.message_id));
+                          setOpenMsgMenu(null);
+                          setOpenFullMessage(true); // 🔥 OPEN MODAL
+                        }}
+                        className="p-1 rounded hover:bg-black/10"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+
+                      <AnimatePresence>
+                        {openMsgMenu === mail.message_id && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -5 }}
+                            className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border z-50"
+                          >
+                            <button
+                              onClick={() => {
+                                dispatch(fetchFullMessage(mail.message_id));
+                                setOpenMsgMenu(null);
+                              }}
+                              className="w-full px-4 py-2 text-sm hover:bg-gray-100 text-left"
+                            >
+                              View full message
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <AnimatePresence>
+                        {openFullMessage && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/60 z-[300] flex items-center justify-center"
+                          >
+                            <motion.div
+                              initial={{ scale: 0.9 }}
+                              animate={{ scale: 1 }}
+                              exit={{ scale: 0.9 }}
+                              className="bg-white w-full max-w-2xl rounded-2xl p-6 shadow-2xl"
+                            >
+                              <div className="flex justify-between items-center mb-4 text-black">
+                                <h3 className="text-lg font-semibold">
+                                  Full Message
+                                </h3>
+                                <button
+                                  onClick={() => {
+                                    setOpenFullMessage(false);
+                                    dispatch(
+                                      viewEmailAction.clearFullMessage(),
+                                    );
+                                  }}
+                                >
+                                  <X />
+                                </button>
+                              </div>
+
+                              {fullMessageLoading ? (
+                                <LoadingChase />
+                              ) : (
+                                <div
+                                  className="max-h-[60vh] overflow-y-auto prose"
+                                  dangerouslySetInnerHTML={{
+                                    __html:
+                                      fullMessage.body_html || fullMessage.body,
+                                  }}
+                                />
+                              )}
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </motion.div>
               );
