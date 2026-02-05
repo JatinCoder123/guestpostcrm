@@ -44,7 +44,7 @@ export const PreviewTemplate = ({
                 </>
               ) : (
                 <>Submit</>
-              )}
+              )}   
             </button>
             <button
               onClick={onClose}
