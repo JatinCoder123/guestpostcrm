@@ -52,6 +52,9 @@ export default function EmailBox({
 }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
+  const firstMessageRef = useRef(null);
+  const lastMessageRef = useRef(null);
+
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
@@ -484,6 +487,7 @@ export default function EmailBox({
         /* ========================= CHAT SCREEN ========================= */
         <>
           <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">
+            {/* LOAD MORE / SHOW ALL (conditional) */}
             {messageLimit < emails?.length && (
               <>
                 <motion.button
@@ -493,12 +497,44 @@ export default function EmailBox({
                 >
                   Load More
                 </motion.button>
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
-                  onClick={() => setMessageLimit(emails?.length)}
+                  onClick={() => setMessageLimit(emails.length)}
                   className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   Show All
+                </motion.button>
+              </>
+            )}
+
+            {/* FIRST / LAST (ALWAYS AVAILABLE) */}
+            {emails?.length > 0 && (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => {
+                    scrollRef.current?.scrollTo({
+                      top: 0,
+                      behavior: "smooth",
+                    });
+                  }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
+                >
+                  First Message
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => {
+                    scrollRef.current?.scrollTo({
+                      top: scrollRef.current.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
+                >
+                  Last Message
                 </motion.button>
               </>
             )}
@@ -510,9 +546,14 @@ export default function EmailBox({
           >
             {visibleMessages?.map((mail, idx) => {
               const isUser = mail.from_email.includes(businessEmail);
+              const isFirst = idx === 0;
+              const isLast = idx === visibleMessages.length - 1;
               return (
                 <motion.div
                   key={mail.message_id || idx}
+                  ref={
+                    isFirst ? firstMessageRef : isLast ? lastMessageRef : null
+                  }
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
@@ -566,7 +607,7 @@ export default function EmailBox({
                         fetchFullMessage(mail.message_id);
                       }}
                       className="
-    absolute bottom-2 right-2
+    absolute bottom-2 left-2
     z-20
     bg-white
     text-black
