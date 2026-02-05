@@ -8,14 +8,11 @@ import {
   X,
   Sparkles,
   ChevronLeft,
-  MoreVertical,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
-import { fetchFullMessage } from "../store/Slices/viewEmail";
-import { viewEmailAction } from "../store/Slices/viewEmail";
 import {
   getThreadEmail,
   sendEmailToThread,
@@ -56,15 +53,8 @@ export default function EmailBox({
   const scrollRef = useRef();
   const editorRef = useRef(null);
   const dispatch = useDispatch();
-  const [openMsgMenu, setOpenMsgMenu] = useState(null);
-  const [openFullMessage, setOpenFullMessage] = useState(false);
 
-  const {
-    viewEmail,
-    threadId: viewThreadId,
-    fullMessage,
-    fullMessageLoading,
-  } = useSelector((s) => s.viewEmail);
+  const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { aiReply } = useSelector((s) => s.aiReply);
@@ -92,6 +82,10 @@ export default function EmailBox({
     }
   }, [threadId, view]);
   const [messageLimit, setMessageLimit] = useState(3);
+  const [openMessageId, setOpenMessageId] = useState(null);
+  const [fullMessage, setFullMessage] = useState(null);
+  const [fullLoading, setFullLoading] = useState(false);
+
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
   const [openParent, setOpenParent] = useState(null);
@@ -160,6 +154,29 @@ export default function EmailBox({
     setTemplateId(null);
     setInput(formatted);
     editorRef.current?.setContent(formatted);
+  };
+  const fetchFullMessage = async (messageId) => {
+    try {
+      setFullLoading(true);
+      setFullMessage(null);
+
+      const res = await fetch(
+        `${getDomain(crmEndpoint)}/index.php?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}&full=1`,
+      );
+
+      const data = await res.json();
+
+      if (data?.success) {
+        setFullMessage(data.email);
+      } else {
+        toast.error("Failed to load full message");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setFullLoading(false);
+    }
   };
 
   const htmlToPlainText = (html) => {
@@ -502,7 +519,7 @@ export default function EmailBox({
                   className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${
+                    className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${
                       isUser
                         ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
                         : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
@@ -516,13 +533,11 @@ export default function EmailBox({
                       }`}
                     >
                       {/* NAME */}
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-2 font-semibold">
-                          <User className="w-3.5 h-3.5 opacity-70" />
-                          <span>
-                            {isUser ? "You" : mail.from_name || "Sender"}
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-2 font-semibold">
+                        <User className="w-3.5 h-3.5 opacity-70" />
+                        <span>
+                          {isUser ? "You" : mail.from_name || "Sender"}
+                        </span>
                       </div>
 
                       {/* DATE & TIME */}
@@ -545,85 +560,34 @@ export default function EmailBox({
                       className="mail-content text-sm leading-relaxed"
                     />
                     {/* THREE DOT MENU */}
-                    <div className="relative">
-                      <button
-                        onClick={() => {
-                          dispatch(fetchFullMessage(mail.message_id));
-                          setOpenMsgMenu(null);
-                          setOpenFullMessage(true); // 🔥 OPEN MODAL
-                        }}
-                        className="p-1 rounded hover:bg-black/10"
+                    <button
+                      onClick={() => {
+                        setOpenMessageId(mail.message_id);
+                        fetchFullMessage(mail.message_id);
+                      }}
+                      className="
+    absolute bottom-2 right-2
+    z-20
+    bg-white
+    text-black
+    p-1.5
+    rounded-full
+    shadow-md
+    hover:bg-gray-100
+  "
+                      title="View full message"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
                       >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-
-                      <AnimatePresence>
-                        {openMsgMenu === mail.message_id && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -5 }}
-                            className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border z-50"
-                          >
-                            <button
-                              onClick={() => {
-                                dispatch(fetchFullMessage(mail.message_id));
-                                setOpenMsgMenu(null);
-                              }}
-                              className="w-full px-4 py-2 text-sm hover:bg-gray-100 text-left"
-                            >
-                              View full message
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      <AnimatePresence>
-                        {openFullMessage && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 z-[300] flex items-center justify-center"
-                          >
-                            <motion.div
-                              initial={{ scale: 0.9 }}
-                              animate={{ scale: 1 }}
-                              exit={{ scale: 0.9 }}
-                              className="bg-white w-full max-w-2xl rounded-2xl p-6 shadow-2xl"
-                            >
-                              <div className="flex justify-between items-center mb-4 text-black">
-                                <h3 className="text-lg font-semibold">
-                                  Full Message
-                                </h3>
-                                <button
-                                  onClick={() => {
-                                    setOpenFullMessage(false);
-                                    dispatch(
-                                      viewEmailAction.clearFullMessage(),
-                                    );
-                                  }}
-                                >
-                                  <X />
-                                </button>
-                              </div>
-
-                              {fullMessageLoading ? (
-                                <LoadingChase />
-                              ) : (
-                                <div
-                                  className="max-h-[60vh] overflow-y-auto prose"
-                                  dangerouslySetInnerHTML={{
-                                    __html:
-                                      fullMessage.body_html || fullMessage.body,
-                                  }}
-                                />
-                              )}
-                            </motion.div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                        <circle cx="12" cy="5" r="2" />
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="12" cy="19" r="2" />
+                      </svg>
+                    </button>
                   </div>
                 </motion.div>
               );
@@ -643,6 +607,71 @@ export default function EmailBox({
           </div>
         </>
       )}
+      <AnimatePresence>
+        {openMessageId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] bg-black/60 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col"
+            >
+              {/* HEADER */}
+              <div className="flex items-center justify-between px-6 py-4 border-b">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {fullMessage?.subject || "Email"}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    {fullMessage?.from_name} &lt;{fullMessage?.from_email}&gt;
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setOpenMessageId(null);
+                    setFullMessage(null);
+                  }}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* BODY */}
+              <iframe
+                title="Email Preview"
+                className="w-[700px] h-[700px] border-0"
+                sandbox=""
+                srcDoc={`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+          body {
+            margin: 0;
+            padding: 16px;
+            background: #ffffff;
+          }
+        </style>
+      </head>
+      <body>
+        ${fullMessage?.body_html || fullMessage?.body || ""}
+      </body>
+    </html>
+  `}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
