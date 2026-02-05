@@ -40,12 +40,13 @@ export default function Create({
   renderPreview,
   amountKey,
   setNewDealsCreated,
+  showPreview,
+  setShowPreview,
 }) {
   const navigate = useNavigate();
   const { loading, message } = useSelector((state) => state.threadEmail);
   const [button, setButton] = useState(1);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
   useEffect(() => {
     if (activeIndex >= data.length && data.length > 0)
       setActiveIndex(data.length - 1);
@@ -382,13 +383,9 @@ export default function Create({
                         <button
                           disabled={data.length === 0}
                           onClick={() => setShowPreview(true)}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${
-                            sending
-                              ? "bg-green-300 cursor-not-allowed"
-                              : "bg-green-600 hover:bg-green-700"
-                          }`}
+                          className={`w-full px-3 py-2 rounded-lg text-white  bg-blue-500`}
                         >
-                          {sending ? "Sending..." : "Send"}
+                          Preview
                         </button>
                       </>
                     ) : (

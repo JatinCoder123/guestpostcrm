@@ -55,6 +55,7 @@ export default function CreateOrder() {
   const [editorContent, setEditorContent] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showPreview, setShowPreview] = useState(false);
   const [currentOrders, setCurrentOrders] = useState([]);
   const {
     loading: templateLoading,
@@ -209,6 +210,8 @@ export default function CreateOrder() {
       setCurrentOrderIDSend={setCurrentOrderIDSend}
       updating={updating}
       lists={lists}
+      showPreview={showPreview}
+      setShowPreview={setShowPreview}
       sending={sending}
       type="orders"
       sendHandler={sendHandler}
