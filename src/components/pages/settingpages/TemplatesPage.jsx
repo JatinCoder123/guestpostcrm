@@ -19,6 +19,10 @@ export default function TemplatesPage() {
   const [originalContent, setOriginalContent] = useState("");
   const [isChanged, setIsChanged] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [stages, setStages] = useState({});
+  const [stageType, setStageType] = useState("");
+  const [stagesLoading, setStagesLoading] = useState(false);
+
   const { crmEndpoint } = useSelector((state) => state.user);
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
@@ -28,13 +32,10 @@ export default function TemplatesPage() {
   const { showConsole } = useContext(PageContext);
 
   const { loading, data, error, refetch } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: { module: "EmailTemplates" },
-    headers: {
-      "x-api-key": CREATE_DEAL_API_KEY,
-      "Content-Type": "application/json",
-    },
+    url: stageType
+      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}`
+      : null,
+    method: "GET",
     name: "emailTemplates",
   });
 
@@ -45,6 +46,38 @@ export default function TemplatesPage() {
       setIsChanged(false);
     }
   }, [editorContent, originalContent]);
+
+  useEffect(() => {
+    const fetchStages = async () => {
+      setStagesLoading(true);
+      try {
+        const response = await fetch(
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=1`,
+        );
+
+        const result = await response.json();
+
+        if (result && typeof result === "object") {
+          setStages(result);
+
+          // Auto-select first stage
+          const firstKey = Object.keys(result)[0];
+          setStageType(firstKey);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stages", err);
+      } finally {
+        setStagesLoading(false);
+      }
+    };
+
+    fetchStages();
+  }, [crmEndpoint]);
+  useEffect(() => {
+    if (stageType) {
+      refetch();
+    }
+  }, [stageType]);
 
   const openViewer = (item) => {
     setViewItem(item);
@@ -65,6 +98,7 @@ export default function TemplatesPage() {
           id: viewItem.id,
           body_html: editorContent,
           name: viewItem.name,
+          stage_type: stageType,
           description: viewItem.description || "",
           subject: viewItem.subject || "",
           type: viewItem.type || "",
@@ -465,6 +499,25 @@ export default function TemplatesPage() {
         handleCreate={() => setShowNewTemplateModal(true)}
         showCreateButton={true}
       />
+      {stagesLoading ? (
+        <div className="mt-6 text-gray-500">Loading stages…</div>
+      ) : (
+        <div className="flex flex-wrap gap-3 mt-6">
+          {Object.entries(stages).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setStageType(key)}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                stageType === key
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loading && <Loading text="Loading templates" />}
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
@@ -485,7 +538,7 @@ export default function TemplatesPage() {
       {data && data.length > 0 && (
         <>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
-            {data.map((item) => (
+            {data.map?.((item) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 30 }}
