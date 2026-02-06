@@ -94,6 +94,7 @@ export const sendEmailToThread = (threadId, reply) => {
           threadId,
           replyBody: reply,
           email: getState().ladger.email,
+          current_email: getState().user.user.email,
         },
         {
           headers: { "Content-Type": "application/json" },

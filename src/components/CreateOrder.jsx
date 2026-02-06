@@ -3,10 +3,10 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import Create from "./Create";
-import { excludeEmail } from "../assets/assets";
+import { excludeEmail, showConsole } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
-import PreviewOrder from "./PreviewOrder";
+import PreviewOrder, { createPreviewOrder } from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
@@ -94,6 +94,7 @@ export default function CreateOrder() {
   }, [state, orders, type, id]);
   const handleUpdate = (order, send) => {
     dispatch(updateOrder(order, send));
+    setCurrentOrderIDSend(order.order_id);
   };
   const handleDelete = (id) => {
     alert("Work in progress");
@@ -140,37 +141,15 @@ export default function CreateOrder() {
 
       dispatch(getOrders({}));
       if (message.includes("Send")) {
-        dispatch(
-          sendEmail(
-            renderToStaticMarkup(
-              <PreviewOrder
-                data={
-                  updateId
-                    ? currentOrders.filter((d) => d.order_id == updateId)
-                    : currentOrders
-                }
-                type="Orders"
-                userEmail={state?.email}
-                websiteKey="website_c"
-                amountKey="total_amount_c"
-              />,
-            ),
-            "Order Updated and Send Successfully",
-            "Order Updated But Not Sent!",
-          ),
-        );
-        if (updateId) {
-          dispatch(orderAction.resetUpdateId());
-        }
+        setShowPreview(true);
       } else {
         toast.success(message);
-        // navigate(-1)
       }
-
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
+      navigate("/orders/view", {
+        state: {
+          email: state?.email,
+        },
+      });
       dispatch(orderAction.clearAllMessages());
     }
     if (error) {
@@ -220,14 +199,12 @@ export default function CreateOrder() {
         const order = data.filter(
           (item) => item.order_id === currentOrderIDSend,
         );
-        console.log(order);
-        const html = renderToString(
-          <PreviewOrder
-            data={order}
-            userEmail={email}
-            currentOrderIDSend={currentOrderIDSend}
-          />,
-        );
+        showConsole && console.log(order);
+        const html = createPreviewOrder({
+          templateData,
+          order: order[0],
+          userEmail: email,
+        })
         return (
           <PreviewTemplate
             editorContent={editorContent}

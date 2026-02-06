@@ -105,6 +105,17 @@ const viewEmailSlice = createSlice({
     clearAllMessage(state) {
       state.message = null;
     },
+    resetViewEmail(state) {
+      state.viewEmail = null;
+      state.threadId = null;
+      state.count = null;
+      state.accountInfo = null;
+      state.contactInfo = null;
+      state.dealInfo = null;
+      state.stage = null;
+      state.status = null;
+      state.customer_type = null;
+    },
   },
 });
 
@@ -219,6 +230,7 @@ export const sendEmail = (reply, message = null, error = null) => {
           threadId,
           replyBody: reply,
           email: getState().ladger.email,
+          current_email: getState().user.user.email,
         },
         {
           headers: { "Content-Type": "application/json" },

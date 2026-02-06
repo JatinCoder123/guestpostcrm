@@ -13,6 +13,7 @@ const aiReplySlice = createSlice({
     getAiReplyRequest(state) {
       state.loading = true;
       state.error = null;
+      state.aiReply = null;
     },
     getAiReplySucess(state, action) {
       const { aiReply } = action.payload;
@@ -23,6 +24,7 @@ const aiReplySlice = createSlice({
     getAiReplyFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
+      state.aiReply = null;
     },
     clearAllErrors(state) {
       state.error = null;
@@ -30,13 +32,13 @@ const aiReplySlice = createSlice({
   },
 });
 
-export const getAiReply = (threadId) => {
+export const getAiReply = (threadId, isNew, message) => {
   return async (dispatch, getState) => {
     dispatch(aiReplySlice.actions.getAiReplyRequest());
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ai_reply&thread_id=${threadId}`
+        `${getState().user.crmEndpoint}&type=ai_reply&thread_id=${threadId}${isNew ? "&new=1" : ""}${message ? `&prompt_body=${message}` : ""}`
       );
       showConsole && console.log(`aiReply`, data);
       dispatch(
