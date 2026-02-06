@@ -52,6 +52,9 @@ export default function EmailBox({
 }) {
   const scrollRef = useRef();
   const editorRef = useRef(null);
+  const firstMessageRef = useRef(null);
+  const lastMessageRef = useRef(null);
+
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
@@ -82,6 +85,10 @@ export default function EmailBox({
     }
   }, [threadId, view]);
   const [messageLimit, setMessageLimit] = useState(3);
+  const [openMessageId, setOpenMessageId] = useState(null);
+  const [fullMessage, setFullMessage] = useState(null);
+  const [fullLoading, setFullLoading] = useState(false);
+
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
   const [openParent, setOpenParent] = useState(null);
@@ -150,6 +157,29 @@ export default function EmailBox({
     setTemplateId(null);
     setInput(formatted);
     editorRef.current?.setContent(formatted);
+  };
+  const fetchFullMessage = async (messageId) => {
+    try {
+      setFullLoading(true);
+      setFullMessage(null);
+
+      const res = await fetch(
+        `${getDomain(crmEndpoint)}/index.php?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}&full=1`,
+      );
+
+      const data = await res.json();
+
+      if (data?.success) {
+        setFullMessage(data.email);
+      } else {
+        toast.error("Failed to load full message");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setFullLoading(false);
+    }
   };
 
   const htmlToPlainText = (html) => {
@@ -457,6 +487,7 @@ export default function EmailBox({
         /* ========================= CHAT SCREEN ========================= */
         <>
           <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">
+            {/* LOAD MORE / SHOW ALL (conditional) */}
             {messageLimit < emails?.length && (
               <>
                 <motion.button
@@ -466,12 +497,44 @@ export default function EmailBox({
                 >
                   Load More
                 </motion.button>
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
-                  onClick={() => setMessageLimit(emails?.length)}
+                  onClick={() => setMessageLimit(emails.length)}
                   className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   Show All
+                </motion.button>
+              </>
+            )}
+
+            {/* FIRST / LAST (ALWAYS AVAILABLE) */}
+            {emails?.length > 0 && (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => {
+                    scrollRef.current?.scrollTo({
+                      top: 0,
+                      behavior: "smooth",
+                    });
+                  }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
+                >
+                  First Message
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => {
+                    scrollRef.current?.scrollTo({
+                      top: scrollRef.current.scrollHeight,
+                      behavior: "smooth",
+                    });
+                  }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
+                >
+                  Last Message
                 </motion.button>
               </>
             )}
@@ -483,16 +546,21 @@ export default function EmailBox({
           >
             {visibleMessages?.map((mail, idx) => {
               const isUser = mail.from_email.includes(businessEmail);
+              const isFirst = idx === 0;
+              const isLast = idx === visibleMessages.length - 1;
               return (
                 <motion.div
                   key={mail.message_id || idx}
+                  ref={
+                    isFirst ? firstMessageRef : isLast ? lastMessageRef : null
+                  }
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
                   className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[70%] p-5 rounded-2xl shadow-lg ${
+                    className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${
                       isUser
                         ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
                         : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
@@ -532,6 +600,35 @@ export default function EmailBox({
                       }}
                       className="mail-content text-sm leading-relaxed"
                     />
+                    {/* THREE DOT MENU */}
+                    <button
+                      onClick={() => {
+                        setOpenMessageId(mail.message_id);
+                        fetchFullMessage(mail.message_id);
+                      }}
+                      className="
+    absolute bottom-2 left-2
+    z-20
+    bg-white
+    text-black
+    p-1.5
+    rounded-full
+    shadow-md
+    hover:bg-gray-100
+  "
+                      title="View full message"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <circle cx="12" cy="5" r="2" />
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="12" cy="19" r="2" />
+                      </svg>
+                    </button>
                   </div>
                 </motion.div>
               );
@@ -551,6 +648,71 @@ export default function EmailBox({
           </div>
         </>
       )}
+      <AnimatePresence>
+        {openMessageId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] bg-black/60 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col"
+            >
+              {/* HEADER */}
+              <div className="flex items-center justify-between px-6 py-4 border-b">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {fullMessage?.subject || "Email"}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    {fullMessage?.from_name} &lt;{fullMessage?.from_email}&gt;
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setOpenMessageId(null);
+                    setFullMessage(null);
+                  }}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* BODY */}
+              <iframe
+                title="Email Preview"
+                className="w-[700px] h-[700px] border-0"
+                sandbox=""
+                srcDoc={`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+          body {
+            margin: 0;
+            padding: 16px;
+            background: #ffffff;
+          }
+        </style>
+      </head>
+      <body>
+        ${fullMessage?.body_html || fullMessage?.body || ""}
+      </body>
+    </html>
+  `}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

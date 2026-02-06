@@ -79,6 +79,7 @@ export default function CreateOffer() {
   const { enteredEmail, search } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [editorContent, setEditorContent] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
   const [validWebsite, setValidWebsite] = useState([]);
   const [newOffers, setNewOffers] = useState([
     {
@@ -183,27 +184,11 @@ export default function CreateOffer() {
         );
 
         if (message.includes("Send")) {
-          dispatch(
-            sendEmail(
-              renderToStaticMarkup(
-                <Preview
-                  templateData={templateData}
-                  data={[...currentOffers].filter((o) => o.website !== "")}
-                  type="Offers"
-                  userEmail={state?.email}
-                  websiteKey="website"
-                  amountKey="our_offer_c"
-                />,
-              ),
-              "Offer Updated and Send Successfully",
-              "Offer Updated But Not Sent!",
-            ),
-          );
-          dispatch(offersAction.clearAllMessages());
+          navigate("/offers/view", { state: { email: state?.email } });
+          setShowPreview(true);
         } else {
           toast.success(message);
-          dispatch(offersAction.clearAllMessages());
-          navigate(-1);
+          navigate("/");
         }
       } else {
         ManualSideCall(
@@ -215,27 +200,15 @@ export default function CreateOffer() {
         );
         if (message.includes("Send")) {
           const data = unionByKey(newOffers, currentOffers, "website");
-          dispatch(
-            sendEmail(
-              renderToStaticMarkup(
-                <Preview
-                  templateData={templateData}
-                  data={data.filter((o) => o.website !== "")}
-                  type="Offers"
-                  userEmail={state?.email}
-                  websiteKey="website"
-                  amountKey="our_offer_c"
-                />,
-              ),
-              "Offer Craeted and Send Successfully",
-              "Offer Created But Not Sent!",
-            ),
-          );
+          console.log("DATA", data);
+          navigate("/offers/view", { state: { email: state?.email } });
+          setShowPreview(true);
+        } else {
+          navigate("/");
         }
         setNewOffers([]);
-        navigate("/");
-        dispatch(offersAction.clearAllMessages());
       }
+      dispatch(offersAction.clearAllMessages());
     }
 
     if (error) {
@@ -277,6 +250,8 @@ export default function CreateOffer() {
       type="offers"
       submitData={submitHandler}
       sendHandler={sendHandler}
+      showPreview={showPreview}
+      setShowPreview={setShowPreview}
       fields={fields}
       amountKey={"our_offer_c"}
       renderPreview={({ data, email, onClose }) => {
@@ -293,6 +268,7 @@ export default function CreateOffer() {
             initialContent={html}
             setEditorContent={setEditorContent}
             onClose={onClose}
+            templateContent={html}
             onSubmit={handleSubmit}
             loading={sending}
           />

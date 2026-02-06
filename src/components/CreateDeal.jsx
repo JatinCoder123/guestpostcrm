@@ -12,7 +12,7 @@ import {
 import { excludeEmail, unionByKey } from "../assets/assets";
 import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
-import {buildTable} from "./Preview";
+import { buildTable } from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   getContact,
@@ -76,6 +76,8 @@ export default function CreateDeal() {
   const [currentDeals, setCurrentDeals] = useState([]);
   const [newDealsCreated, setNewDealsCreated] = useState([]);
   const [currentOffers, setCurrentOffers] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
+
   const [editorContent, setEditorContent] = useState("");
 
   const { enteredEmail, search } = useContext(PageContext);
@@ -197,29 +199,13 @@ export default function CreateDeal() {
           2,
           okHandler,
         );
-
         if (message.includes("Send")) {
-          dispatch(
-            sendEmail(
-              renderToStaticMarkup(
-                <Preview
-                templateData={templateData}
-                  data={[...currentDeals]}
-                  type="Deals"
-                  userEmail={state?.email}
-                  websiteKey="website_c"
-                  amountKey="dealamount"
-                />,
-              ),
-              "Deal Updated and Send Successfully",
-              "Deal Updated But Not Sent!",
-            ),
-          );
-          dispatch(dealsAction.clearAllMessages());
+          navigate("/deals/view", { state: { email: state?.email } });
+          setShowPreview(true);
+        } else {
+          toast.success(message);
+          navigate("/");
         }
-        toast.success(message);
-        dispatch(dealsAction.clearAllMessages());
-        navigate("/");
       } else {
         ManualSideCall(
           crmEndpoint,
@@ -231,26 +217,13 @@ export default function CreateDeal() {
         if (message.includes("Send")) {
           const data = unionByKey(newDealsCreated, currentDeals, "website_c");
           console.log("DATA", data);
-          dispatch(
-            sendEmail(
-              renderToStaticMarkup(
-                <Preview
-                  templateData={templateData}
-                  data={data}
-                  type="Deals"
-                  userEmail={state?.email}
-                  websiteKey="website_c"
-                  amountKey="dealamount"
-                />,
-              ),
-              "Deal Created and Send Successfully",
-              "Deal Created But Not Sent!",
-            ),
-          );
+          navigate("/deals/view", { state: { email: state?.email } });
+          setShowPreview(true);
         }
         setNewDeals([]);
-        dispatch(dealsAction.clearAllMessages());
       }
+      dispatch(dealsAction.clearAllMessages());
+
       dispatch(getDeals({ email: state?.email }));
       dispatch(getOffers({ email: state?.email }));
     }
@@ -295,18 +268,21 @@ export default function CreateDeal() {
       type="deals"
       submitData={submitHandler}
       fields={fields}
+      showPreview={showPreview}
+      setShowPreview={setShowPreview}
       renderPreview={({ data, email, onClose }) => {
-     let html = templateData?.[0]?.body_html || "";
-       const tableHtml = buildTable(data, "Deals", "website_c", "dealamount");
-     
-       html = html
-         .replace("{{USER_EMAIL}}", email)
-         .replace("{{TABLE}}", tableHtml);
+        let html = templateData?.[0]?.body_html || "";
+        const tableHtml = buildTable(data, "Deals", "website_c", "dealamount");
+
+        html = html
+          .replace("{{USER_EMAIL}}", email)
+          .replace("{{TABLE}}", tableHtml);
 
         return (
           <PreviewTemplate
             editorContent={editorContent}
             initialContent={html}
+            templateContent={html}
             setEditorContent={setEditorContent}
             onClose={onClose}
             onSubmit={handleSubmit}

@@ -45,16 +45,17 @@ export default function CreateOrder() {
     creatingLinkMessage,
   } = useSelector((state) => state.orders);
   const { message: sendMessage, sending } = useSelector(
-    (state) => state.viewEmail
+    (state) => state.viewEmail,
   );
   const { crmEndpoint } = useSelector((state) => state.user);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   const [currentOrderIDSend, setCurrentOrderIDSend] = useState(null);
-  const { setNotificationCount } = useContext(SocketContext)
-  const { enteredEmail, search } = useContext(PageContext)
+  const { setNotificationCount } = useContext(SocketContext);
+  const { enteredEmail, search } = useContext(PageContext);
   const [editorContent, setEditorContent] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showPreview, setShowPreview] = useState(false);
   const [currentOrders, setCurrentOrders] = useState([]);
   const {
     loading: templateLoading,
@@ -76,7 +77,16 @@ export default function CreateOrder() {
     name: "TemplateData",
   });
   useEffect(() => {
-    let order = orders.filter((o) => excludeEmail(o.real_name) == state?.email && !((o.order_status == "wrong" || o.order_status == "rejected_nontechnical" || o.order_status == "completed") && type != "edit"));
+    let order = orders.filter(
+      (o) =>
+        excludeEmail(o.real_name) == state?.email &&
+        !(
+          (o.order_status == "wrong" ||
+            o.order_status == "rejected_nontechnical" ||
+            o.order_status == "completed") &&
+          type != "edit"
+        ),
+    );
     if (type == "edit" && id !== undefined) {
       order = order.filter((d) => d.id == id);
     }
@@ -98,52 +108,61 @@ export default function CreateOrder() {
             userEmail={state?.email}
             orderID="order_id"
             amountKey="total_amount_c"
-          />
+          />,
         ),
-        "Order Send Successfully"
-      )
+        "Order Send Successfully",
+      ),
     );
   };
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
     } else if (unrepliedEmails.length > 0) {
-      const firstEmail = unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0]
+      const firstEmail =
+        unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
       dispatch(getLadger({ email: firstEmail, search }));
     } else {
       dispatch(getLadger({ email: state?.email, search }));
     }
-  }
+  };
   const handleSubmit = () => {
-    dispatch(
-      sendEmail(
-        editorContent, "Order Send Successfully"
-      )
-    );
+    dispatch(sendEmail(editorContent, "Order Send Successfully"));
   };
   useEffect(() => {
     if (message) {
-      ManualSideCall(crmEndpoint, state?.email, "Our Order Updated Successfully", 1, okHandler);
+      ManualSideCall(
+        crmEndpoint,
+        state?.email,
+        "Our Order Updated Successfully",
+        1,
+        okHandler,
+      );
 
-      dispatch(getOrders({}))
+      dispatch(getOrders({}));
       if (message.includes("Send")) {
-        dispatch(sendEmail(
-          renderToStaticMarkup(
-            <PreviewOrder
-              data={updateId ? currentOrders.filter((d) => d.order_id == updateId) : currentOrders}
-              type="Orders"
-              userEmail={state?.email}
-              websiteKey="website_c"
-              amountKey="total_amount_c"
-            />
+        dispatch(
+          sendEmail(
+            renderToStaticMarkup(
+              <PreviewOrder
+                data={
+                  updateId
+                    ? currentOrders.filter((d) => d.order_id == updateId)
+                    : currentOrders
+                }
+                type="Orders"
+                userEmail={state?.email}
+                websiteKey="website_c"
+                amountKey="total_amount_c"
+              />,
+            ),
+            "Order Updated and Send Successfully",
+            "Order Updated But Not Sent!",
           ),
-          "Order Updated and Send Successfully", "Order Updated But Not Sent!"
-        ));
+        );
         if (updateId) {
           dispatch(orderAction.resetUpdateId());
         }
-      }
-      else {
+      } else {
         toast.success(message);
         // navigate(-1)
       }
@@ -169,7 +188,7 @@ export default function CreateOrder() {
     }
 
     if (updateLinkMessage) {
-      dispatch(getOrders({}))
+      dispatch(getOrders({}));
 
       toast.success(updateLinkMessage);
     }
@@ -191,21 +210,35 @@ export default function CreateOrder() {
       setCurrentOrderIDSend={setCurrentOrderIDSend}
       updating={updating}
       lists={lists}
+      showPreview={showPreview}
+      setShowPreview={setShowPreview}
       sending={sending}
       type="orders"
       sendHandler={sendHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
-        const order = data?.filter((item) => item.order_id === currentOrderIDSend);
-        // console.log(order);
-        // const html = createPreviewOrder({ templateData, order: order[0], userEmail: email })
-        const html = renderToString(<PreviewOrder
-          data={order}
-          userEmail={email}
-          currentOrderIDSend={currentOrderIDSend}
-        />)
-        return <PreviewTemplate editorContent={editorContent} initialContent={html} setEditorContent={setEditorContent} onClose={onClose} onSubmit={handleSubmit} loading={sending} />;
-
+        const order = data.filter(
+          (item) => item.order_id === currentOrderIDSend,
+        );
+        console.log(order);
+        const html = renderToString(
+          <PreviewOrder
+            data={order}
+            userEmail={email}
+            currentOrderIDSend={currentOrderIDSend}
+          />,
+        );
+        return (
+          <PreviewTemplate
+            editorContent={editorContent}
+            initialContent={html}
+            setEditorContent={setEditorContent}
+            templateContent={html}
+            onClose={onClose}
+            onSubmit={handleSubmit}
+            loading={sending}
+          />
+        );
       }}
       amountKey={"total_amount_c"}
       pageType={type}
