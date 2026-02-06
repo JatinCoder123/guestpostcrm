@@ -69,7 +69,13 @@ const WelcomeHeader = () => {
             className="absolute top-3 right-50 z-50"
           >
             <motion.div
-              animate={{ boxShadow: ["0 0 0 rgba(59,130,246,0)", "0 0 18px rgba(99,102,241,0.45)", "0 0 0 rgba(59,130,246,0)"] }}
+              animate={{
+                boxShadow: [
+                  "0 0 0 rgba(59,130,246,0)",
+                  "0 0 18px rgba(99,102,241,0.45)",
+                  "0 0 0 rgba(59,130,246,0)",
+                ],
+              }}
               transition={{ duration: 2, repeat: Infinity }}
               className="flex items-center gap-3 px-4 py-2 rounded-2xl
         bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
@@ -98,7 +104,6 @@ const WelcomeHeader = () => {
         )}
       </AnimatePresence>
 
-
       <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
         {/* LEFT */}
         <div className="flex items-center gap-5">
@@ -116,6 +121,8 @@ const WelcomeHeader = () => {
                 <button
                   className="font-bold text-blue-600"
                   onClick={() => {
+                    localStorage.setItem("email", email);
+
                     setSearch(email);
                     setEnteredEmail(email);
                   }}
