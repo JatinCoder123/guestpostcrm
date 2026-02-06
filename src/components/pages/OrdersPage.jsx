@@ -364,19 +364,36 @@ export function OrdersPage() {
           </div>
         </div>
 
-        {/* Accepted Orders */}
-        <div               onClick={() => navigateTo("/orders/view", { state: { email } })}
- className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+        {/* Pending Orders – Clickable */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigateTo("/orders/view", { state: { email } })}
+          className="
+    bg-white rounded-xl p-4
+    shadow-sm border-l-4 border-green-500
+    cursor-pointer
+    transition-all duration-200 
+    hover:shadow-md hover:-translate-y-0.5
+    hover:bg-green-50
+    focus:outline-none focus:ring-2 focus:ring-green-400
+  "
+        >
           <div className="flex items-center justify-between">
-            <div
-            >
+            <div>
               <p className="text-gray-500 text-sm">Pending Orders</p>
               <p className="text-2xl text-gray-900 mt-1 font-semibold">
                 {summary?.pending_orders ?? 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl text-green-700">✓</span>
+
+            <div className="flex items-center gap-2">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl text-green-700">✓</span>
+              </div>
+
+              {/* Subtle navigation hint */}
+              <span className="text-gray-400 text-xl">→</span>
             </div>
           </div>
         </div>
