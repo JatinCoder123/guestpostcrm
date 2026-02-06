@@ -23,7 +23,6 @@ export const PreviewTemplate = ({
   const handleClear = () => {
     setEditorContent("");
   };
-console.log("loading state:", loading);
   const handleAiNow = () => {
     const randomTexts = [
       "Hope you’re doing well. Just wanted to quickly follow up on this.",
