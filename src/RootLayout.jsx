@@ -42,7 +42,7 @@ const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
   const { timeline, email } = useSelector((state) => state.ladger);
-  const { emails } = useSelector((state) => state.unreplied);
+  const { emails, loading } = useSelector((state) => state.unreplied);
   const [firstEmail, setFirstEmail] = useState(null);
   const { crmEndpoint, currentScore } = useSelector((state) => state.user);
   const {
@@ -125,7 +125,7 @@ const RootLayout = () => {
       dispatch(getLadger({ email: enteredEmail, search }));
     } else if (firstEmail) {
       dispatch(getLadger({ email: firstEmail, search }));
-    } else {
+    } else if (!loading) {
       dispatch(getLadger({ search, isEmail: false }));
     }
     dispatch(viewEmailAction.resetViewEmail())

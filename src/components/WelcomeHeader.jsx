@@ -116,6 +116,7 @@ const WelcomeHeader = () => {
                 <button
                   className="font-bold text-blue-600"
                   onClick={() => {
+                    localStorage.setItem("email", email);
                     setSearch(email);
                     setEnteredEmail(email);
                   }}
