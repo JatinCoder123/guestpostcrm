@@ -15,7 +15,7 @@ import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
 import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
-import { getContact, getViewEmail } from "./store/Slices/viewEmail";
+import { getContact, getViewEmail, viewEmailAction } from "./store/Slices/viewEmail";
 import { getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
@@ -128,6 +128,7 @@ const RootLayout = () => {
     } else {
       dispatch(getLadger({ search, isEmail: false }));
     }
+    dispatch(viewEmailAction.resetViewEmail())
   }, [enteredEmail, firstEmail, timeline, dispatch]);
 
   // Fetch view email and contact when ladger email is set
@@ -287,9 +288,8 @@ const RootLayout = () => {
               {/* Main content scrolls independently */}
               <main
                 ref={mainRef}
-                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                  collapsed ? "ml-4" : "ml-0"
-                }`}
+                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+                  }`}
               >
                 <div className="p-6">
                   {isLowCredit && <LowCreditWarning score={currentScore} />}

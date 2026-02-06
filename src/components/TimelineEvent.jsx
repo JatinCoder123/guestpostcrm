@@ -21,46 +21,22 @@ const TimelineEvent = () => {
   const [templateData, setTemplateData] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageContent, setMessageContent] = useState("");
-  // const [loadingMessage, setLoadingMessage] = useState(false);
-  // const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [messageMeta, setMessageMeta] = useState({
-  subject: "",
-  from: "",
-  date: "",
-   fromEmail: "",
-  time: ""
-});
+    subject: "",
+    from: "",
+    date: "",
+    fromEmail: "",
+    time: ""
+  });
 
 
-// const [isMessageLoading
-
-// , setisMessageLoading
-
-// ] = useState(null);
 
 
   const topRef = useRef(null);
 
   const dispatch = useDispatch();
-  // useEffect(() => {
-  //   if (selectedView === "all") {
-  //     setTimelineData(ladger);
-  //   }
-  //   if (selectedView === "important") {
-  //     const finalData = ladger.filter(
-  //       (item) =>
-  //         !(
-  //           item.parent_type === "outr_snts" &&
-  //           item.type_c !== "First Reply Sent" &&
-  //           item.type_c !== "First Reply Scheduled"
-  //         ),
-  //     );
-  //     setTimelineData(finalData);
-  //   }
-  // }, [selectedView]);
 
-// start
   useEffect(() => {
     if (selectedView === "all") {
       setTimelineData(ladger);
@@ -198,84 +174,84 @@ const TimelineEvent = () => {
   };
 
 
-const handleMessageClick = async (event) => {
+  const handleMessageClick = async (event) => {
 
-  if (!event.message_id_c) return;
+    if (!event.message_id_c) return;
 
-  // ✅ open modal FIRST
-  setShowMessageModal(true);
+    // ✅ open modal FIRST
+    setShowMessageModal(true);
 
-  // ✅ show loader INSIDE MODAL
-  setIsMessageLoading(true);
+    // ✅ show loader INSIDE MODAL
+    setIsMessageLoading(true);
 
-  try {
+    try {
 
-    const baseUrl = crmEndpoint.split("?")[0];
+      const baseUrl = crmEndpoint.split("?")[0];
 
-    const response = await fetch(
-      `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`
-    );
+      const response = await fetch(
+        `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`
+      );
 
-    const result = await response.json();
+      const result = await response.json();
 
-    const htmlBody =
-      result.email?.html_body ||
-      result.email?.body_html ||
-      result.email?.content ||
-      result.html_body ||
-      "";
+      const htmlBody =
+        result.email?.html_body ||
+        result.email?.body_html ||
+        result.email?.content ||
+        result.html_body ||
+        "";
 
       const subject =
-  result.email?.subject ||
-  event.subject ||
-  "No Subject";
+        result.email?.subject ||
+        event.subject ||
+        "No Subject";
 
-const from =
-  result.email?.from_name ||
-  result.email?.from_addr ||
-  "Unknown Sender";
+      const from =
+        result.email?.from_name ||
+        result.email?.from_addr ||
+        "Unknown Sender";
 
-  const fromEmail =
-  result.email?.from_addr ||
-  result.email?.from_email ||
-  "";
+      const fromEmail =
+        result.email?.from_addr ||
+        result.email?.from_email ||
+        "";
 
-const createdDate = result.email?.date_created || "";
+      const createdDate = result.email?.date_created || "";
 
-let formattedDate = "";
-let formattedTime = "";
+      let formattedDate = "";
+      let formattedTime = "";
 
-if (createdDate) {
-  const d = new Date(createdDate);
-  formattedDate = d.toLocaleDateString();
-  formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
+      if (createdDate) {
+        const d = new Date(createdDate);
+        formattedDate = d.toLocaleDateString();
+        formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
 
-setMessageMeta({
-  subject,
-  from,
-  fromEmail,
-  date: formattedDate,
-  time: formattedTime
-});
+      setMessageMeta({
+        subject,
+        from,
+        fromEmail,
+        date: formattedDate,
+        time: formattedTime
+      });
 
 
-    setMessageContent(
-      htmlBody
-        ? cleanHtmlContent(htmlBody)
-        : event.description || event.subject || "No content available"
-    );
+      setMessageContent(
+        htmlBody
+          ? cleanHtmlContent(htmlBody)
+          : event.description || event.subject || "No content available"
+      );
 
-  } catch (err) {
+    } catch (err) {
 
-    setMessageContent(
-      event.description || event.subject || "No content available"
-    );
+      setMessageContent(
+        event.description || event.subject || "No content available"
+      );
 
-  } finally {
-    setIsMessageLoading(false);
-  }
-};
+    } finally {
+      setIsMessageLoading(false);
+    }
+  };
 
 
   // Function to clean HTML content
@@ -286,7 +262,7 @@ setMessageMeta({
       .replace(/<script[^>]*>.*?<\/script>/gsi, '') // Remove script tags
       .replace(/<!--.*?-->/g, '') // Remove comments
       .trim();
-    
+
     return cleaned || html;
   };
 
@@ -595,13 +571,12 @@ setMessageMeta({
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${
-          selectedView === "all"
-            ? "translate-x-0"
-            : selectedView === "important"
-              ? "translate-x-full"
-              : "translate-x-[200%]"
-        }`}
+        ${selectedView === "all"
+                  ? "translate-x-0"
+                  : selectedView === "important"
+                    ? "translate-x-full"
+                    : "translate-x-[200%]"
+                }`}
             />
 
             {[
@@ -614,11 +589,10 @@ setMessageMeta({
                 onClick={() => setSelectedView(tab.key)}
                 className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${
-            selectedView === tab.key
-              ? "text-white"
-              : "text-gray-600 hover:text-purple-600"
-          }`}
+          ${selectedView === tab.key
+                    ? "text-white"
+                    : "text-gray-600 hover:text-purple-600"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -660,10 +634,9 @@ setMessageMeta({
                   </div>
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${
-                        index === 0
-                          ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
-                          : "bg-white border-gray-200"
+                      ${index === 0
+                        ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
+                        : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -675,16 +648,15 @@ setMessageMeta({
                           <Eye
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110
-                              ${
-                                isReminderEvent
-                                  ? "text-purple-600"
-                                  : isContactEvent
-                                    ? "text-green-600"
-                                    : "text-blue-600"
+                              ${isReminderEvent
+                                ? "text-purple-600"
+                                : isContactEvent
+                                  ? "text-green-600"
+                                  : "text-blue-600"
                               }`}
                           />
 
-                          
+
                           <div
                             className="absolute left-1/2 -translate-x-1/2 -top-10
                                        whitespace-nowrap px-3 py-1.5 text-xs
@@ -695,7 +667,7 @@ setMessageMeta({
                           >
                             {getTooltipText(event)}
 
-                      
+
                             {isReminderEvent && filterType && (
                               <div className="text-xs text-gray-300 mt-1">
                                 Filter: {filterType.replace(/_/g, " ")}
@@ -724,7 +696,7 @@ setMessageMeta({
                       </span>
 
                       <div className="flex items-center gap-2">
-                    
+
                         {hasMessageId && (
                           <button
                             onClick={() => handleMessageClick(event)}
@@ -732,19 +704,19 @@ setMessageMeta({
                             title="View Message"
                             disabled={isMessageLoading
 
- === event.message_id_c}
+                              === event.message_id_c}
 
                           >
-                           {isMessageLoading
+                            {isMessageLoading
 
- === event.message_id_c ? (
-  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-) : (
-  <MessageSquare/>
-)}
+                              === event.message_id_c ? (
+                              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                            ) : (
+                              <MessageSquare />
+                            )}
 
 
-                            
+
                             <div className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
                                           bg-gray-900 text-white rounded-md
@@ -816,7 +788,7 @@ setMessageMeta({
                       </div>
                     </div>
 
-                 
+
                     {/* Additional info about the event */}
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                       {event.assigned_user_name && (
@@ -890,8 +862,8 @@ setMessageMeta({
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ 
-              type: "spring", 
+            transition={{
+              type: "spring",
               damping: 25,
               stiffness: 300
             }}
@@ -899,39 +871,39 @@ setMessageMeta({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header with gradient */}
-           <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center">
+            <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center">
 
               <div className="flex items-center gap-3">
                 <MessageSquare size={24} className="text-white" />
-               
-            <div className="flex flex-col leading-tight">
-  
- 
-  <h2 className="text-lg font-semibold text-white">
-    {messageMeta.from}
-  </h2>
 
-  <span className="text-sm text-blue-100">
-    {messageMeta.fromEmail}
-  </span>
+                <div className="flex flex-col leading-tight">
 
-  <span className="text-xs text-blue-200">
-    {messageMeta.date} • {messageMeta.time}
-  </span>
 
-</div>
+                  <h2 className="text-lg font-semibold text-white">
+                    {messageMeta.from}
+                  </h2>
+
+                  <span className="text-sm text-blue-100">
+                    {messageMeta.fromEmail}
+                  </span>
+
+                  <span className="text-xs text-blue-200">
+                    {messageMeta.date} • {messageMeta.time}
+                  </span>
+
+                </div>
 
 
               </div>
 
-             
-<div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
-  <h1 className="text-lg font-semibold text-white truncate">
-    {messageMeta.subject}
-  </h1>
-</div>
 
-              
+              <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
+                <h1 className="text-lg font-semibold text-white truncate">
+                  {messageMeta.subject}
+                </h1>
+              </div>
+
+
               <button
                 onClick={closeMessageModal}
                 className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90"
@@ -942,7 +914,7 @@ setMessageMeta({
             </div>
 
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 min-h-[60vh] flex items-center justify-center">
-              
+
               {isMessageLoading ? (
 
                 <div className="flex flex-col items-center justify-center py-12">
@@ -950,9 +922,9 @@ setMessageMeta({
                   <p className="text-gray-600 font-medium">Loading message content...</p>
                 </div>
               ) : messageContent ? (
-                
+
                 <div className="message-content-container p-8 w-full max-w-4xl mx-auto">
-                  <div 
+                  <div
                     className="message-content mx-auto"
                     style={{
                       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',

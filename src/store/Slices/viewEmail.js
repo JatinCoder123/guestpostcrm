@@ -105,6 +105,17 @@ const viewEmailSlice = createSlice({
     clearAllMessage(state) {
       state.message = null;
     },
+    resetViewEmail(state) {
+      state.viewEmail = null;
+      state.threadId = null;
+      state.count = null;
+      state.accountInfo = null;
+      state.contactInfo = null;
+      state.dealInfo = null;
+      state.stage = null;
+      state.status = null;
+      state.customer_type = null;
+    },
   },
 });
 
