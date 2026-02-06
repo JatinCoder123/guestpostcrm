@@ -31,7 +31,7 @@ export default function TemplatesPage() {
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const { showConsole } = useContext(PageContext);
-  const {state} = useLocation()
+  const { state } = useLocation()
 
   const { loading, data, error, refetch } = useModule({
     url: stageType
@@ -264,9 +264,8 @@ export default function TemplatesPage() {
     }
     setShowNewTemplateModal(false);
   };
-<<<<<<< HEAD
- useEffect(() => {
-    if (state?.templateId && data ) {
+  useEffect(() => {
+    if (state?.templateId && data) {
       const item = data.find((item) => item.id === state.templateId);
       // console.log(item)
       if (item) {
@@ -274,8 +273,6 @@ export default function TemplatesPage() {
       }
     }
   }, [state?.templateId, data]);
-=======
->>>>>>> 656e90fa5806840886ff7bcbfd9ca4557b2add4a
 
   if (showNewTemplateModal) {
     return (
@@ -300,11 +297,10 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                  isCreating
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isCreating
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700 active:scale-95"
-                }`}
+                  }`}
               >
                 {isCreating ? (
                   <>
@@ -517,11 +513,10 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    isSaving
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                    }`}
                 >
                   {isSaving ? (
                     <>
@@ -699,11 +694,10 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                stageType === key
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
                   ? "bg-indigo-600 text-white shadow-lg"
                   : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
+                }`}
             >
               {label}
             </button>
