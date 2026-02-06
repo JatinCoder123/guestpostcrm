@@ -117,7 +117,9 @@ export default function EmailBox({
       where: { id: templateId },
     },
     headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "x-api-key": `$
+      
+      {CREATE_DEAL_API_KEY}`,
       "Content-Type": "application/json",
     },
     name: `TEMPLATE WITH ID ${templateId}`,

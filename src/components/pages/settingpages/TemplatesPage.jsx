@@ -9,6 +9,7 @@ import ErrorBox from "./ErrorBox";
 import { Editor } from "@tinymce/tinymce-react";
 import { useSelector } from "react-redux";
 import { PageContext } from "../../../context/pageContext";
+import { useLocation } from "react-router-dom";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -23,6 +24,7 @@ export default function TemplatesPage() {
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const { showConsole } = useContext(PageContext);
+  const {state} = useLocation()
 
   const { loading, data, error, refetch } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
@@ -215,7 +217,15 @@ export default function TemplatesPage() {
     }
     setShowNewTemplateModal(false);
   };
-
+ useEffect(() => {
+    if (state?.templateId && data ) {
+      const item = data.find((item) => item.id === state.templateId);
+      // console.log(item)
+      if (item) {
+        openViewer(item);
+      }
+    }
+  }, [state?.templateId, data]);
 
   if (showNewTemplateModal) {
     return (

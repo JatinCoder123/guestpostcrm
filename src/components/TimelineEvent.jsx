@@ -701,7 +701,8 @@ const handleTemplateSave = async () => {
                 key={tab.key}
                 onClick={() => setSelectedView(tab.key)}
                 className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
-          transition-colors duration-300
+          transition-colors duration-300 hover:cursor-pointer hover:opacity-90 transition
+
           ${
             selectedView === tab.key
               ? "text-white"
@@ -757,12 +758,14 @@ const handleTemplateSave = async () => {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-gray-700 flex items-center gap-2">
                         <div
-                          className="relative group cursor-pointer"
+                          className="relative group cursor-pointer hover:cursor-pointer hover:opacity-90 transition-all duration-300
+ "
                           onClick={() => onEyeClick(type, event)}
                         >
                           <Eye
                             size={20}
-                            className={`transition-transform duration-200 group-hover:scale-110
+                            className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
+
                               ${
                                 isReminderEvent
                                   ? "text-purple-600"
@@ -772,7 +775,7 @@ const handleTemplateSave = async () => {
                               }`}
                           />
 
-                          
+
                           <div
                             className="absolute left-1/2 -translate-x-1/2 -top-10
                                        whitespace-nowrap px-3 py-1.5 text-xs
@@ -789,7 +792,7 @@ const handleTemplateSave = async () => {
                                 Filter: {filterType.replace(/_/g, " ")}
                                 {contactId && " • Single Contact"}
                               </div>
-                            )}
+                            )} 
 
                             {isContactEvent && contactId && (
                               <div className="text-xs text-gray-300 mt-1">
@@ -816,23 +819,15 @@ const handleTemplateSave = async () => {
                         {hasMessageId && (
                           <button
                             onClick={() => handleMessageClick(event)}
-                            className="text-blue-600 hover:text-blue-700 cursor-pointer relative group message-icon-pulse"
+                            className="text-blue-600 hover:text-blue-700 hover:cursor-pointer hover:opacity-90 transition-all duration-300
+ relative group message-icon-pulse"
                             title="View Message"
-                            disabled={isMessageLoading
-
- === event.message_id_c}
-
-                          >
-                           {isMessageLoading
-
- === event.message_id_c ? (
-  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-) : (
-  <MessageSquare/>
-)}
-
-
-                            
+                            disabled={isMessageLoading === event.message_id_c}
+                            >
+                           {isMessageLoading === event.message_id_c ? (
+                         <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                          ) : (<MessageSquare/>
+                         )}
                             <div className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
                                           bg-gray-900 text-white rounded-md
@@ -850,8 +845,10 @@ const handleTemplateSave = async () => {
                         {hasTemplate && (
                           <button
                             onClick={() =>
-                              handleTemplateClick(event.template_id, event)
-                            }
+                                navigateTo("/settings/templates", {
+                                  state: { templateId: event.template_id },
+                                })
+                              }
                             className="text-green-600 hover:text-green-700 cursor-pointer relative group"
                             title={`Preview Template: ${event.template_id}`}
                             disabled={
@@ -972,7 +969,8 @@ const handleTemplateSave = async () => {
       {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
       {showMessageModal && (
         <div
-          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
+          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop hover:cursor-pointer hover:opacity-90 transition-all duration-300
+"
           onClick={closeMessageModal}
         >
           <motion.div
@@ -983,7 +981,8 @@ const handleTemplateSave = async () => {
               damping: 25,
               stiffness: 300
             }}
-            className="message-modal rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl"
+            className="message-modal rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl hover:cursor-pointer hover:opacity-90 transition-all duration-300
+"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header with gradient */}
@@ -999,6 +998,7 @@ const handleTemplateSave = async () => {
     {messageMeta.from}
   </h2>
 
+
   <span className="text-sm text-blue-100">
     {messageMeta.fromEmail}
   </span>
@@ -1010,7 +1010,7 @@ const handleTemplateSave = async () => {
 </div>
 
 
-              </div>
+</div>
 
              
 <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
@@ -1018,11 +1018,10 @@ const handleTemplateSave = async () => {
     {messageMeta.subject}
   </h1>
 </div>
-
               
               <button
                 onClick={closeMessageModal}
-                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90"
+                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
                 title="Close"
               >
                 <X size={24} className="text-white" />
@@ -1038,6 +1037,7 @@ const handleTemplateSave = async () => {
                   <p className="text-gray-600 font-medium">Loading message content...</p>
                 </div>
               ) : messageContent ? (
+
                 
                 <div className="message-content-container p-8 w-full max-w-4xl mx-auto">
                   <div 
@@ -1065,33 +1065,37 @@ const handleTemplateSave = async () => {
         </div>
       )}
 
+
       {/* Template Modal */}
       {showTemplateModal && templateData && (
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 hover:cursor-pointer hover:opacity-90 transition-all duration-300
+"
           onClick={closeTemplateModal}
         >
           <motion.div
             initial={{ scale: 0.93, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", damping: 25 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden hover:cursor-pointer hover:opacity-90 transition-all duration-300
+"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
 
-  <h2 className="text-2xl font-bold">
-    {templateData.name || "Template Editor"}
-  </h2>
+              <h2 className="text-2xl font-bold">
+                 {templateData.name || "Template Editor"}
+              </h2>
 
   <div className="flex gap-3">
 
-    <button
-      onClick={handleTemplateSave}
-      disabled={!isTemplateChanged || isTemplateSaving}
-      className={`px-4 py-2 rounded-lg font-medium transition ${
-        !isTemplateChanged || isTemplateSaving
+        <button
+          onClick={handleTemplateSave}
+          disabled={!isTemplateChanged || isTemplateSaving}
+          className={`px-4 py-2 rounded-lg font-medium transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
+ ${
+          !isTemplateChanged || isTemplateSaving
           ? "bg-gray-400 cursor-not-allowed"
           : "bg-green-600 hover:bg-green-700"
       }`}
@@ -1102,7 +1106,8 @@ const handleTemplateSave = async () => {
     {isTemplateChanged && (
       <button
         onClick={() => setTemplateContent(originalTemplateContent)}
-        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
+        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg hover:cursor-pointer hover:opacity-90 transition-all duration-300
+"
       >
         Cancel
       </button>
@@ -1110,7 +1115,8 @@ const handleTemplateSave = async () => {
 
     <button
       onClick={closeTemplateModal}
-      className="p-2 hover:bg-white/20 rounded-full transition"
+      className="p-2 hover:bg-white/20 rounded-full transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
+"
     >
       <X size={28} />
     </button>
