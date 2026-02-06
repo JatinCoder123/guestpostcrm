@@ -617,12 +617,12 @@ const TimelineEvent = () => {
                   height: "100%",
                   menubar: false,
                   plugins:
-                    "preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media table charmap pagebreak nonbreaking anchor insertdatetime lists wordcount advlist code help",
+                    "preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media table charmap pagebreak nonbreaking anchor insertdatetime lists wordcount advlist code help emoticons",
                   toolbar:
                     "undo redo | formatselect | bold italic underline strikethrough | \
                     alignleft aligncenter alignright alignjustify | \
                     bullist numlist outdent indent | link image media | \
-                    preview fullscreen | code",
+                    preview fullscreen | code emoticons",
                   toolbar_mode: "sliding",
                   content_style: `
                     body { 

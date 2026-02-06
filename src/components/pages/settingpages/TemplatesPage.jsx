@@ -1,5 +1,8 @@
 import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../../../store/constants";
+import {
+  CREATE_DEAL_API_KEY,
+  TINY_EDITOR_API_KEY,
+} from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Eye, X, Save, RotateCcw, Plus } from "lucide-react";
 import { useState, useEffect, useContext } from "react";
@@ -35,7 +38,6 @@ export default function TemplatesPage() {
     name: "emailTemplates",
   });
 
-
   useEffect(() => {
     if (editorContent !== originalContent) {
       setIsChanged(true);
@@ -66,18 +68,24 @@ export default function TemplatesPage() {
           description: viewItem.description || "",
           subject: viewItem.subject || "",
           type: viewItem.type || "",
-          date_modified: new Date().toISOString().slice(0, 19).replace('T', ' ')
-        }
+          date_modified: new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " "),
+        },
       };
 
-      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`, {
-        method: "POST",
-        headers: {
-          "x-api-key": CREATE_DEAL_API_KEY,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          method: "POST",
+          headers: {
+            "x-api-key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      });
+      );
 
       const responseText = await response.text();
       let result;
@@ -96,23 +104,21 @@ export default function TemplatesPage() {
         setTimeout(() => {
           refetch();
         }, 1000);
-
       } else {
-        alert(`❌ Save failed: ${result.error || result.message || "Unknown error"}`);
+        alert(
+          `❌ Save failed: ${result.error || result.message || "Unknown error"}`,
+        );
       }
-
     } catch (err) {
       console.error("Save error:", err);
       alert(`❌ Save failed: ${err.message}`);
 
       setOriginalContent(editorContent);
       setIsChanged(false);
-
     } finally {
       setIsSaving(false);
     }
   };
-
 
   const handleCreateNewTemplate = async () => {
     if (!newTemplateName.trim()) {
@@ -138,21 +144,27 @@ export default function TemplatesPage() {
           assigned_user_id: "",
           published: "off",
           text_only: "0",
-          date_entered: new Date().toISOString().slice(0, 19).replace('T', ' '),
-          date_modified: new Date().toISOString().slice(0, 19).replace('T', ' ')
-        }
+          date_entered: new Date().toISOString().slice(0, 19).replace("T", " "),
+          date_modified: new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", " "),
+        },
       };
 
       showConsole && console.log("Creating new template:", requestBody);
 
-      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`, {
-        method: "POST",
-        headers: {
-          "x-api-key": CREATE_DEAL_API_KEY,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          method: "POST",
+          headers: {
+            "x-api-key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      });
+      );
 
       const responseText = await response.text();
       let result;
@@ -165,24 +177,25 @@ export default function TemplatesPage() {
 
       showConsole && console.log("Create response:", result);
 
-      if (response.ok && (result.parent_updated === true || result.parent_id || result.id)) {
+      if (
+        response.ok &&
+        (result.parent_updated === true || result.parent_id || result.id)
+      ) {
         alert("✅ New template created successfully!");
-
 
         setNewTemplateName("");
         setNewDescription("");
         setNewTemplateContent("");
         setShowNewTemplateModal(false);
 
-
         setTimeout(() => {
           refetch();
         }, 1000);
-
       } else {
-        alert(`❌ Failed to create template: ${result.error || result.message || "Unknown error"}`);
+        alert(
+          `❌ Failed to create template: ${result.error || result.message || "Unknown error"}`,
+        );
       }
-
     } catch (err) {
       console.error("Create error:", err);
       alert(`❌ Failed to create template: ${err.message}`);
@@ -199,7 +212,7 @@ export default function TemplatesPage() {
   const handleClose = () => {
     if (isChanged) {
       const confirmClose = window.confirm(
-        "You have unsaved changes. Are you sure you want to close without saving?"
+        "You have unsaved changes. Are you sure you want to close without saving?",
       );
       if (!confirmClose) return;
     }
@@ -209,13 +222,12 @@ export default function TemplatesPage() {
   const handleCloseNewTemplateModal = () => {
     if (newTemplateName.trim() || newTemplateContent.trim()) {
       const confirmClose = window.confirm(
-        "You have unsaved changes. Are you sure you want to close without saving?"
+        "You have unsaved changes. Are you sure you want to close without saving?",
       );
       if (!confirmClose) return;
     }
     setShowNewTemplateModal(false);
   };
-
 
   if (showNewTemplateModal) {
     return (
@@ -240,10 +252,11 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isCreating
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  isCreating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                }`}
               >
                 {isCreating ? (
                   <>
@@ -270,7 +283,6 @@ export default function TemplatesPage() {
           {/* Template Name Input */}
           <div className="px-6 py-4 bg-gray-50 border-b">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Template Name *
@@ -284,7 +296,6 @@ export default function TemplatesPage() {
                   autoFocus
                 />
               </div>
-
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -344,7 +355,6 @@ export default function TemplatesPage() {
     );
   }
 
-
   if (viewItem) {
     return (
       <div
@@ -369,10 +379,11 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 active:scale-95"
+                  }`}
                 >
                   {isSaving ? (
                     <>
@@ -380,9 +391,7 @@ export default function TemplatesPage() {
                       Saving...
                     </>
                   ) : (
-                    <>
-                      Save
-                    </>
+                    <>Save</>
                   )}
                 </button>
               )}
@@ -405,7 +414,6 @@ export default function TemplatesPage() {
               </button>
             </div>
           </div>
-
 
           <div className="flex-1 overflow-hidden">
             <Editor
@@ -441,7 +449,8 @@ export default function TemplatesPage() {
 
           <div className="flex justify-center items-center px-6 py-3 bg-gray-50 border-t text-sm text-gray-600">
             <div>
-              ✨ Use <strong>Preview</strong> to see final email • Use <strong>&lt;&gt; Source code</strong> to edit HTML
+              ✨ Use <strong>Preview</strong> to see final email • Use{" "}
+              <strong>&lt;&gt; Source code</strong> to edit HTML
             </div>
           </div>
         </motion.div>
@@ -449,15 +458,13 @@ export default function TemplatesPage() {
     );
   }
 
-
   return (
     <div className="p-8 min-h-screen bg-gray-50">
-      <Header text="Template Manager"
+      <Header
+        text="Template Manager"
         handleCreate={() => setShowNewTemplateModal(true)}
         showCreateButton={true}
-
       />
-
 
       {loading && <Loading text="Loading templates" />}
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
@@ -510,7 +517,6 @@ export default function TemplatesPage() {
               </motion.div>
             ))}
           </div>
-
 
           <div className="mt-10 text-center">
             <button
