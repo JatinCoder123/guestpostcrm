@@ -148,6 +148,7 @@ export default function CreateOrder() {
       navigate("/orders/view", {
         state: {
           email: state?.email,
+          threadId: state?.threadId,
         },
       });
       dispatch(orderAction.clearAllMessages());
@@ -204,7 +205,7 @@ export default function CreateOrder() {
           templateData,
           order: order[0],
           userEmail: email,
-        })
+        });
         return (
           <PreviewTemplate
             editorContent={editorContent}
@@ -212,6 +213,7 @@ export default function CreateOrder() {
             setEditorContent={setEditorContent}
             templateContent={html}
             onClose={onClose}
+            threadId={state?.threadId}
             onSubmit={handleSubmit}
             loading={sending}
           />

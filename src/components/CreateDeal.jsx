@@ -200,7 +200,9 @@ export default function CreateDeal() {
           okHandler,
         );
         if (message.includes("Send")) {
-          navigate("/deals/view", { state: { email: state?.email } });
+          navigate("/deals/view", {
+            state: { email: state?.email, threadId: state?.threadId },
+          });
           setShowPreview(true);
         } else {
           toast.success(message);
@@ -217,7 +219,9 @@ export default function CreateDeal() {
         if (message.includes("Send")) {
           const data = unionByKey(newDealsCreated, currentDeals, "website_c");
           console.log("DATA", data);
-          navigate("/deals/view", { state: { email: state?.email } });
+          navigate("/deals/view", {
+            state: { email: state?.email, threadId: state?.threadId },
+          });
           setShowPreview(true);
         }
         setNewDeals([]);
@@ -285,6 +289,7 @@ export default function CreateDeal() {
             templateContent={html}
             setEditorContent={setEditorContent}
             onClose={onClose}
+            threadId={state?.threadId}
             onSubmit={handleSubmit}
             loading={sending}
           />

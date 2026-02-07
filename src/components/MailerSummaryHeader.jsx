@@ -4,11 +4,7 @@ import { Titletooltip } from "./TitleTooltip";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { LoadingChase } from "./Loading";
-import {
-  createOrder,
-  getOrders,
-  orderAction,
-} from "../store/Slices/orders";
+import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
 
@@ -21,9 +17,7 @@ const MailerSummaryHeader = () => {
   const { offers, loading: offersLoading } = useSelector(
     (state) => state.offers,
   );
-  const { deals, loading: dealsLoading } = useSelector(
-    (state) => state.deals,
-  );
+  const { deals, loading: dealsLoading } = useSelector((state) => state.deals);
 
   const [emailData, setEmailData] = useState({
     orders: [],
@@ -132,12 +126,12 @@ const MailerSummaryHeader = () => {
                   <div className="hover:text-blue-600 transition-colors">
                     {mailersSummary?.subject
                       ? mailersSummary.subject
-                        .split(" ")
-                        .slice(0, 6)
-                        .join(" ") +
-                      (mailersSummary.subject.split(" ").length > 6
-                        ? "..."
-                        : "")
+                          .split(" ")
+                          .slice(0, 6)
+                          .join(" ") +
+                        (mailersSummary.subject.split(" ").length > 6
+                          ? "..."
+                          : "")
                       : ""}
                   </div>
                 </Titletooltip>
@@ -145,18 +139,16 @@ const MailerSummaryHeader = () => {
 
               {/* MOTIVE */}
               <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                <Titletooltip
-                  content={mailersSummary?.correct_motive || "N/A"}
-                >
+                <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
                   <div className="hover:text-purple-600 transition-colors">
                     {mailersSummary?.correct_motive
                       ? mailersSummary.correct_motive
-                        .split(" ")
-                        .slice(0, 6)
-                        .join(" ") +
-                      (mailersSummary.correct_motive.split(" ").length > 6
-                        ? "..."
-                        : "")
+                          .split(" ")
+                          .slice(0, 6)
+                          .join(" ") +
+                        (mailersSummary.correct_motive.split(" ").length > 6
+                          ? "..."
+                          : "")
                       : ""}
                   </div>
                 </Titletooltip>
@@ -174,11 +166,7 @@ const MailerSummaryHeader = () => {
                 type="offers"
                 loading={offersLoading}
               />
-              <TD
-                data={emailData.deals}
-                type="deals"
-                loading={dealsLoading}
-              />
+              <TD data={emailData.deals} type="deals" loading={dealsLoading} />
             </tr>
           </tbody>
         </table>
@@ -192,6 +180,7 @@ export default MailerSummaryHeader;
 /* ===================== TD ===================== */
 function TD({ data, type, setData, loading }) {
   const { setSidebarCollapsed } = useContext(PageContext);
+  const { threadId } = useSelector((state) => state.viewEmail);
 
   const { creating, message, error } = useSelector((state) => state.orders);
   const { email } = useSelector((state) => state.ladger);
@@ -227,8 +216,8 @@ function TD({ data, type, setData, loading }) {
     }
 
     data?.length > 0
-      ? navigateTo(`/${type}/view`, { state: { email } })
-      : navigateTo(`/${type}/create`, { state: { email } });
+      ? navigateTo(`/${type}/view`, { state: { email, threadId } })
+      : navigateTo(`/${type}/create`, { state: { email, threadId } });
   };
 
   return (
@@ -238,8 +227,7 @@ function TD({ data, type, setData, loading }) {
       ) : (
         <span className="font-semibold text-gray-900 flex items-center justify-center">
           {data?.length > 0
-            ? `${data.length} ${data.length === 1 ? type.slice(0, -1) : type
-            }`
+            ? `${data.length} ${data.length === 1 ? type.slice(0, -1) : type}`
             : `No ${type}`}
 
           <button onClick={handleClick}>
@@ -247,8 +235,9 @@ function TD({ data, type, setData, loading }) {
               className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"
-                }.png`}
+              src={`https://img.icons8.com/stickers/100/${
+                data?.length > 0 ? "visible" : "add"
+              }.png`}
               alt="action"
             />
           </button>
