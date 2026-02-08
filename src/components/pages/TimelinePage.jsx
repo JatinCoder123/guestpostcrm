@@ -152,6 +152,7 @@ export function TimelinePage() {
         initialContent={aiReply}
         templateContent=""
         aiReply={aiReply}
+        threadId={threadId}
         setEditorContent={setEditorContent}
         onClose={() => setShowPreview(false)}
         onSubmit={handleAiAutoReply}
@@ -176,7 +177,6 @@ export function TimelinePage() {
                 onPrev={handlePrev}
                 currentIndex={currentIndex}
               />
-
 
               <MailerSummaryHeader />
 
@@ -295,10 +295,11 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -349,14 +350,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    threadId={currentThreadId}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  threadId={currentThreadId}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (

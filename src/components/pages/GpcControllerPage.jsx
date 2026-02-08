@@ -13,10 +13,6 @@ export default function GpcControllerPage() {
     (state) => state.gpcController,
   );
 
-  useEffect(() => {
-    dispatch(fetchGpcController());
-  }, [dispatch]);
-
   const handleToggle = (key) => {
     const currentValue = checkboxes[key] === "1";
     dispatch(updateGpcController(key, !currentValue));
