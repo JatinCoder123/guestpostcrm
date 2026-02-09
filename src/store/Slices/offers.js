@@ -175,7 +175,7 @@ export const updateOffer = (offer, send) => {
     }
   };
 };
-export const createOffer = (offers = [], send = false) => {
+export const createOffer = (threadId, offers = [], send = false) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
@@ -190,6 +190,7 @@ export const createOffer = (offers = [], send = false) => {
             our_offer_c: offer.our_offer_c,
             website: offer.website,
             email_c: offer.email,
+            thread_id: threadId,
             name: offer.email,
           })),
           child_bean: {

@@ -157,7 +157,7 @@ export default function CreateOffer() {
     dispatch(deleteOffer(id));
   };
   const submitHandler = (_, send = false) => {
-    dispatch(createOffer(newOffers, send));
+    dispatch(createOffer(state?.threadId, newOffers, send));
   };
   const okHandler = () => {
     if (enteredEmail) {
