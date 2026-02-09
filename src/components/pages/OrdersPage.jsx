@@ -531,7 +531,7 @@ export function OrdersPage() {
                         <button
                           onClick={() =>
                             navigateTo(`/orders/edit/${order.id}`, {
-                              state: { email: excludeEmail(order.real_name) },
+                              state: { email: excludeEmail(order.real_name), threadId: order?.thread_id },
                             })
                           }
                           className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
