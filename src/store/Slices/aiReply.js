@@ -46,8 +46,13 @@ export const getAiReply = (threadId = null, isNew = null, message = null) => {
       if (!threadId) {
         throw new Error("Please provide the thread Id");
       }
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ai_reply&thread_id=${threadId}${isNew ? "&new=1" : ""}${message ? `&prompt_body=${message}` : ""}`,
+      const { data } = await axios.post(
+        `${getState().user.crmEndpoint}&type=ai_reply`, {
+        thread_id: threadId,
+        new: isNew,
+        prompt_body: message
+
+      },
       );
       showConsole && console.log(`aiReply`, data);
       dispatch(

@@ -214,12 +214,8 @@ export const PreviewTemplate = ({
                 label="AI Now"
                 gradient="from-fuchsia-500 to-purple-600"
                 onClick={() => {
-                  if (aiNewContent == "") {
-                    dispatch(getAiReply(threadId, 1, ""));
-                  } else {
-                    dispatch(getAiReply(threadId, 1, editorContent));
-                  }
-                  setEditorContent(aiReplyContent);
+                  dispatch(getAiReply(threadId, 1, editorContent));
+                  setEditorContent(editorContent);
                 }}
               />
 

@@ -275,7 +275,7 @@ export default function EmailBox({
 
         {/* ========================= EDITOR SCREEN ========================= */}
         {showEditorScreen ? (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full w-full">
             <div className="flex-1 px-6 pb-4 overflow-hidden">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -435,11 +435,11 @@ export default function EmailBox({
                       getAiReply(
                         view ? viewThreadId : threadId,
                         1,
-                        aiNewContent == "" ? "" : editorContent,
+                        editorContent,
                       ),
                     );
 
-                    insertAiReply(aiNewContent);
+                    insertAiReply(editorContent);
                   }}
                 >
                   <Zap className="w-4 h-4" />
@@ -679,18 +679,16 @@ export default function EmailBox({
                     className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${
-                        isUser
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                      }`}
+                      className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${isUser
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                        }`}
                     >
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
-                          isUser
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
-                        }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700 border border-gray-200"
+                          }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">
