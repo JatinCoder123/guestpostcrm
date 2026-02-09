@@ -98,6 +98,9 @@ export const createPreviewOrder = ({ templateData, order, userEmail }) => {
   const tableHtml = renderToString(
     <BuildOrderLinkTable data={order?.seo_backlinks} />
   );
+  const invoiceBtn = renderToString(
+    <InvoiceButton order={order} />
+  );
 
   html = html
     .replace("{{ORDER_ID}}", order?.order_id)
@@ -109,6 +112,34 @@ export const createPreviewOrder = ({ templateData, order, userEmail }) => {
     .replace("{{CLIENT_EMAIL}}", order?.client_email)
     .replace("{{AMOUNT}}", order?.total_amount_c)
     .replace("{{LINKS}}", tableHtml)
-    .replace("%7B%7BINVOICE_LINK%7D%7D", order.invoice_link_c);
+    .replace("{{INVOICE_BUTTON}}", invoiceBtn)
   return html;
 }
+const InvoiceButton = ({ order }) => {
+  return (
+    <>
+      {(order?.order_status === "rejected_nontechnical" || order?.order_status === "wrong") ? (
+        <p></p>
+      ) : (
+        <tr>
+          <td style={{ padding: "32px" }} align="center">
+            <a
+              style={{
+                background: "#2563eb",
+                color: "#ffffff",
+                padding: "14px 36px",
+                textDecoration: "none",
+                fontWeight: 800,
+              }}
+              href={order?.invoice_link_c}
+            >
+              View Invoice
+            </a>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+};
+
+{/*  */ }
