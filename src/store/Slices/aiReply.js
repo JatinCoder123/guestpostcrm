@@ -40,6 +40,7 @@ const aiReplySlice = createSlice({
 export const getAiReply = (threadId = null, isNew = null, message = null) => {
   return async (dispatch, getState) => {
     dispatch(aiReplySlice.actions.getAiReplyRequest());
+    showConsole && console.log("THREAD ID AND MESSAGE FOR AI REPLY ", threadId, message)
 
     try {
       if (!threadId) {
