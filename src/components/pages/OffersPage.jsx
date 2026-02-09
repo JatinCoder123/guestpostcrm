@@ -104,7 +104,7 @@ export function OffersPage() {
     a.click();
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     if (error) {
       toast.error(error)
       dispatch(offersAction.clearAllErrors())
@@ -330,7 +330,7 @@ export function OffersPage() {
                       <button
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
-                        onClick={() => navigateTo(`/offers/edit/${offer.id}`, { state: { email: excludeEmail(offer.real_name) } })}
+                        onClick={() => navigateTo(`/offers/edit/${offer.id}`, { state: { email: excludeEmail(offer.real_name), threadId: offer?.thread_id } })}
                       >
                         <Pen className="w-5 h-5 text-blue-600" />
                       </button>
