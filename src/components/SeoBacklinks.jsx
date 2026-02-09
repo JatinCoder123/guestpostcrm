@@ -1,4 +1,4 @@
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Trash, Check } from "lucide-react";
 import {
   FiLink,
   FiTag,
@@ -11,6 +11,33 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
+
+function ValidTick() {
+  return (
+    <span className="relative group ml-2 inline-flex items-center">
+      {/* Tick */}
+      <span
+        className="inline-flex items-center justify-center 
+        w-5 h-5 rounded-full 
+        bg-green-100 text-green-600"
+      >
+        <Check size={12} strokeWidth={3} />
+      </span>
+
+      {/* Tooltip */}
+      <span
+        className="absolute -top-7 left-1/2 -translate-x-1/2
+        px-2 py-0.5 rounded-md
+        bg-slate-900 text-white text-[10px]
+        opacity-0 group-hover:opacity-100
+        transition whitespace-nowrap"
+      >
+        Valid
+      </span>
+    </span>
+  );
+}
+
 export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const { updateLinkLoading, deleting, updateLinkMessage } = useSelector(
     (state) => state.orders,
@@ -142,6 +169,29 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                     ) : (
                       <OurLink link={item.gp_doc_url_c} label="Doc Link" />
                     )}
+                    {item.is_content_valid === true && <ValidTick />}
+
+                    {/* Doc Niche */}
+                    {item.type_c === "LI" ? (
+                      ""
+                    ) : (
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                        Doc Niche
+                      </h3>
+                    )}
+
+                    {/*Doc niche  */}
+                    <div className="flex items-start gap-2">
+                      {item.type_c === "LI" ? (
+                        ""
+                      ) : (
+                        <FiHash className="text-slate-400 mt-0.5" size={14} />
+                      )}
+
+                      <p className="text-sm text-slate-700 font-medium break-all">
+                        {item.niche || ""}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -214,6 +264,7 @@ export function TheirLink({ data }) {
             >
               {data.backlink_url}
             </a>
+            {data.is_link_valid == true && <ValidTick />}
           </div>
         </div>
 
@@ -241,17 +292,19 @@ export function OurLink({ link, label }) {
       </div>
 
       {/* LINK */}
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-2 flex-wrap">
         <FiLink className="text-slate-400 mt-0.5" size={14} />
-        <div>
-          <p className="text-xs text-slate-500">URL</p>
+
+        <div className="flex items-center gap-1 flex-wrap">
           <a
             href={link}
             target="_blank"
-            className="text-sm text-blue-600 font-medium break-all hover:underline cursor-pointer"
+            className="text-sm text-blue-600 font-medium break-all hover:underline"
           >
             {link || "-"}
           </a>
+
+          {link && <ValidTick />}
         </div>
       </div>
     </div>
