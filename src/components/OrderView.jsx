@@ -26,11 +26,24 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
 
   useEffect(() => {
     if (status) {
-      dispatch(updateOrder({ ...data, order_status: status }, status !== "accepted" ? true : false, data.order_id));
+      const updatedOrder = {
+        ...data,
+        order_status: status,
+        seo_backlinks:
+          status === "rejected_nontechnical"
+            ? data.seo_backlinks.map(link => ({
+              ...link,
+              status_c: "rejected",
+            }))
+            : [...data.seo_backlinks],
+      }
+      dispatch(updateOrder(updatedOrder, status !== "accepted" ? true : false, data.order_id));
       setData((prev) => {
-        const next = prev.map((d) => (d?.order_id === data?.order_id ? { ...d, order_status: status } : d));
+        const next = prev.map((d) => (d?.order_id === data?.order_id ? updatedOrder : d));
         return next;
       });
+      setCurrentOrderSend(updatedOrder);
+
     }
   }, [status])
   useEffect(() => {
@@ -98,7 +111,7 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
       {processingPayment && <ProcessingLoader />}
       {(updating || sending) && <PageLoader />}
       <div className="w-full relative mt-3">
-        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} setCurrentOrderSend={setCurrentOrderSend} />
+        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} />
         <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -202,7 +215,7 @@ function ProcessingLoader() {
     </div>
   );
 }
-function OrderHeader({ data, setStatus, onCompleteHandler, setCurrentOrderSend }) {
+function OrderHeader({ data, setStatus, onCompleteHandler }) {
   return (
     <div className="w-full mb-3">
       <div className="relative group">
@@ -229,7 +242,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler, setCurrentOrderSend }
               {data.order_status !== "accepted" && (
                 <>
                   <button
-                    onClick={() => { setStatus("accepted"); setCurrentOrderSend(data) }}
+                    onClick={() => { setStatus("accepted"); }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
@@ -240,7 +253,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler, setCurrentOrderSend }
                     Accept
                   </button>
                   <button
-                    onClick={() => { setStatus("rejected_nontechnical"); setCurrentOrderSend(data) }}
+                    onClick={() => { setStatus("rejected_nontechnical"); }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30

@@ -181,8 +181,8 @@ export function DealsPage() {
               <p className="text-2xl text-gray-900 mt-1"> {summary?.expire_soon_deals ?? 0}</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-  <Clock className="w-6 h-6 text-orange-600" />
-</div>
+              <Clock className="w-6 h-6 text-orange-600" />
+            </div>
           </div>
         </div>
 
@@ -193,8 +193,8 @@ export function DealsPage() {
               <p className="text-2xl text-gray-900 mt-1"> {summary?.expired_deals ?? 0}</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-  <XCircle className="w-6 h-6 text-orange-600" />
-</div>
+              <XCircle className="w-6 h-6 text-orange-600" />
+            </div>
           </div>
         </div>
       </div>
@@ -305,7 +305,7 @@ export function DealsPage() {
                         <button
                           onClick={() =>
                             navigateTo(`/deals/edit/${deal.id}`, {
-                              state: { email: excludeEmail(deal.real_name) },
+                              state: { email: excludeEmail(deal.real_name), threadId: deal?.thread_id },
                             })
                           }
                           className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
