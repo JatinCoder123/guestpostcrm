@@ -811,7 +811,7 @@ const handleTemplateSave = async () => {
                           {type
                             ? type.charAt(0).toUpperCase() + type.slice(1)
                             : "Event"}
-                        </span>
+                        </span> 
                       </span>
 
                       <div className="flex items-center gap-2">
