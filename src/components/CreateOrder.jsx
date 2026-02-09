@@ -6,9 +6,8 @@ import Create from "./Create";
 import { excludeEmail, showConsole } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
-import PreviewOrder, { createPreviewOrder } from "./PreviewOrder";
+import { createPreviewOrder } from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
-import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
@@ -100,20 +99,7 @@ export default function CreateOrder() {
     alert("Work in progress");
   };
   const sendHandler = () => {
-    dispatch(
-      sendEmail(
-        renderToStaticMarkup(
-          <PreviewOrder
-            data={currentOrders}
-            type="Orders"
-            userEmail={state?.email}
-            orderID="order_id"
-            amountKey="total_amount_c"
-          />,
-        ),
-        "Order Send Successfully",
-      ),
-    );
+
   };
   const okHandler = () => {
     if (enteredEmail) {
