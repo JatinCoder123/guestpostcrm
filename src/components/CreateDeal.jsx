@@ -266,6 +266,7 @@ export default function CreateDeal() {
       updating={updating}
       creating={creating}
       sending={sending}
+      threadId={state?.threadId}
       setData={type == "create" ? setNewDeals : setCurrentDeals}
       sendHandler={sendHandler}
       amountKey={"dealamount"}

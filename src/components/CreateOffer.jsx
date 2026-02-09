@@ -247,6 +247,7 @@ export default function CreateOffer() {
       creating={creating}
       handleDelete={handleDelete}
       pageType={type}
+      threadId={state?.threadId}
       sending={sending}
       handleUpdate={handleUpdate}
       updating={updating}
