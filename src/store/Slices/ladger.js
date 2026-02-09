@@ -28,6 +28,7 @@ const ladgerSlice = createSlice({
       state.loading = true;
       state.searchNotFound = false;
       state.error = null;
+      state.email = null;
     },
 
     getLadgerSuccess(state, action) {
@@ -125,12 +126,18 @@ const ladgerSlice = createSlice({
   },
 });
 
-export const getLadger = ({ email = null, isEmail = true, search = "", loading = true, page = 1 }) => {
+export const getLadger = ({
+  email = null,
+  isEmail = true,
+  search = "",
+  loading = true,
+  page = 1,
+}) => {
   return async (dispatch, getState) => {
     if (loading) dispatch(ladgerSlice.actions.getLadgerRequest());
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`
+        `${getState().user.crmEndpoint}&type=ledger${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email ?? getState().ladger.email}` : ""}`,
       );
       showConsole && console.log("Ladger", data);
       dispatch(
@@ -142,21 +149,17 @@ export const getLadger = ({ email = null, isEmail = true, search = "", loading =
           email: data.mailers_summary?.email,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
-        })
+        }),
       );
 
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        ladgerSlice.actions.getLadgerFailed(
-          error.response?.data?.message
-        )
+        ladgerSlice.actions.getLadgerFailed(error.response?.data?.message),
       );
     }
   };
 };
-
-
 
 export const getIpWithEmail = () => {
   return async (dispatch, getState) => {
@@ -166,29 +169,29 @@ export const getIpWithEmail = () => {
 
     try {
       const response = await axios.get(
-        `${crmDomain}?entryPoint=tracker&email=${getState().ladger.email}`
+        `${crmDomain}?entryPoint=tracker&email=${getState().ladger.email}`,
       );
 
       const ip = response.data?.records?.[0]?.ip;
       if (!ip) throw new Error("IP not found");
 
       const { data } = await axios.get(
-        `${crmDomain}index.php?entryPoint=tracker&ip=${ip}`
+        `${crmDomain}index.php?entryPoint=tracker&ip=${ip}`,
       );
 
       dispatch(
         ladgerSlice.actions.getIpWithEmailSuccess({
           ip,
           ipWithMails: data,
-        })
+        }),
       );
 
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
         ladgerSlice.actions.getIpWithEmailFailed(
-          error.response?.data?.message || error.message
-        )
+          error.response?.data?.message || error.message,
+        ),
       );
     }
   };
@@ -200,7 +203,7 @@ export const getNoSearchResultData = (search) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=live_search&query=${search}`
+        `${getState().user.crmEndpoint}&type=live_search&query=${search}`,
       );
 
       showConsole && console.log("NoSearchResultData", data);
@@ -208,15 +211,15 @@ export const getNoSearchResultData = (search) => {
       dispatch(
         ladgerSlice.actions.getNoSearchResultDataSuccess({
           noSearchResultData: data.data,
-        })
+        }),
       );
 
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
         ladgerSlice.actions.getNoSearchResultDataFailed(
-          error.response?.data?.message
-        )
+          error.response?.data?.message,
+        ),
       );
     }
   };
@@ -228,12 +231,10 @@ export const manualEmailScan = (messageId) => {
       const crmDomain = getState().user.crmEndpoint.split("?")[0];
 
       const response = await axios.get(
-        `${crmDomain}?entryPoint=manual_email_scanning&message_id=${messageId}`
+        `${crmDomain}?entryPoint=manual_email_scanning&message_id=${messageId}`,
       );
       showConsole && console.log("ManualScan", response.data);
-      dispatch(
-        ladgerSlice.actions.manualScanSuccess(response.data)
-      );
+      dispatch(ladgerSlice.actions.manualScanSuccess(response.data));
 
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
@@ -241,13 +242,11 @@ export const manualEmailScan = (messageId) => {
         ladgerSlice.actions.manualScanSuccess({
           status: 404,
           message: error.response?.data?.message || "Not Found",
-        })
+        }),
       );
     }
   };
 };
-
-
 
 export const ladgerAction = ladgerSlice.actions;
 export default ladgerSlice.reducer;

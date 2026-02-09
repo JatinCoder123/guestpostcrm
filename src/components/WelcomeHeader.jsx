@@ -13,7 +13,7 @@ const WelcomeHeader = () => {
 
   const { email, timeline, loading } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
-  const { welcomeHeaderContent, setEnteredEmail, setSearch } =
+  const { welcomeHeaderContent, setEnteredEmail, setCurrentIndex, setSearch } =
     useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
@@ -68,10 +68,17 @@ const WelcomeHeader = () => {
             }}
             className="absolute top-3 right-50 z-50"
           >
-            <motion.div
-              animate={{ boxShadow: ["0 0 0 rgba(59,130,246,0)", "0 0 18px rgba(99,102,241,0.45)", "0 0 0 rgba(59,130,246,0)"] }}
+            <motion.button
+              animate={{
+                boxShadow: [
+                  "0 0 0 rgba(59,130,246,0)",
+                  "0 0 18px rgba(99,102,241,0.45)",
+                  "0 0 0 rgba(59,130,246,0)",
+                ],
+              }}
+              onClick={() => setCurrentIndex(0)}
               transition={{ duration: 2, repeat: Infinity }}
-              className="flex items-center gap-3 px-4 py-2 rounded-2xl
+              className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:cursor-pointer
         bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
         text-white shadow-xl"
             >
@@ -82,7 +89,7 @@ const WelcomeHeader = () => {
               </span>
 
               {/* Text */}
-              <p className="text-sm font-semibold tracking-wide">
+              <p className="text-sm font-semibold tracking-wide ">
                 New email received
               </p>
 
@@ -93,11 +100,10 @@ const WelcomeHeader = () => {
               >
                 <MailCheck />
               </motion.span>
-            </motion.div>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
-
 
       <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
         {/* LEFT */}
@@ -116,6 +122,7 @@ const WelcomeHeader = () => {
                 <button
                   className="font-bold text-blue-600"
                   onClick={() => {
+                    localStorage.setItem("email", email);
                     setSearch(email);
                     setEnteredEmail(email);
                   }}

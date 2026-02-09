@@ -1,8 +1,5 @@
 import useModule from "../../../hooks/useModule";
-import {
-  CREATE_DEAL_API_KEY,
-  TINY_EDITOR_API_KEY,
-} from "../../../store/constants";
+import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Eye, X, Save, RotateCcw, Plus } from "lucide-react";
 import { useState, useEffect, useContext } from "react";
@@ -12,6 +9,7 @@ import ErrorBox from "./ErrorBox";
 import { Editor } from "@tinymce/tinymce-react";
 import { useSelector } from "react-redux";
 import { PageContext } from "../../../context/pageContext";
+import { useLocation } from "react-router-dom";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -19,10 +17,6 @@ export default function TemplatesPage() {
   const [originalContent, setOriginalContent] = useState("");
   const [isChanged, setIsChanged] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [stages, setStages] = useState({});
-  const [stageType, setStageType] = useState("");
-  const [stagesLoading, setStagesLoading] = useState(false);
-
   const { crmEndpoint } = useSelector((state) => state.user);
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
@@ -30,14 +24,19 @@ export default function TemplatesPage() {
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const { showConsole } = useContext(PageContext);
+  const {state} = useLocation()
 
   const { loading, data, error, refetch } = useModule({
-    url: stageType
-      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}`
-      : null,
-    method: "GET",
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: { module: "EmailTemplates" },
+    headers: {
+      "x-api-key": CREATE_DEAL_API_KEY,
+      "Content-Type": "application/json",
+    },
     name: "emailTemplates",
   });
+
 
   useEffect(() => {
     if (editorContent !== originalContent) {
@@ -46,38 +45,6 @@ export default function TemplatesPage() {
       setIsChanged(false);
     }
   }, [editorContent, originalContent]);
-
-  useEffect(() => {
-    const fetchStages = async () => {
-      setStagesLoading(true);
-      try {
-        const response = await fetch(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=1`,
-        );
-
-        const result = await response.json();
-
-        if (result && typeof result === "object") {
-          setStages(result);
-
-          // Auto-select first stage
-          const firstKey = Object.keys(result)[0];
-          setStageType(firstKey);
-        }
-      } catch (err) {
-        console.error("Failed to fetch stages", err);
-      } finally {
-        setStagesLoading(false);
-      }
-    };
-
-    fetchStages();
-  }, [crmEndpoint]);
-  useEffect(() => {
-    if (stageType) {
-      refetch();
-    }
-  }, [stageType]);
 
   const openViewer = (item) => {
     setViewItem(item);
@@ -98,28 +65,21 @@ export default function TemplatesPage() {
           id: viewItem.id,
           body_html: editorContent,
           name: viewItem.name,
-          stage_type: stageType,
           description: viewItem.description || "",
           subject: viewItem.subject || "",
           type: viewItem.type || "",
-          date_modified: new Date()
-            .toISOString()
-            .slice(0, 19)
-            .replace("T", " "),
-        },
+          date_modified: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        }
       };
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`, {
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(requestBody),
+      });
 
       const responseText = await response.text();
       let result;
@@ -138,21 +98,23 @@ export default function TemplatesPage() {
         setTimeout(() => {
           refetch();
         }, 1000);
+
       } else {
-        alert(
-          `❌ Save failed: ${result.error || result.message || "Unknown error"}`,
-        );
+        alert(`❌ Save failed: ${result.error || result.message || "Unknown error"}`);
       }
+
     } catch (err) {
       console.error("Save error:", err);
       alert(`❌ Save failed: ${err.message}`);
 
       setOriginalContent(editorContent);
       setIsChanged(false);
+
     } finally {
       setIsSaving(false);
     }
   };
+
 
   const handleCreateNewTemplate = async () => {
     if (!newTemplateName.trim()) {
@@ -178,27 +140,21 @@ export default function TemplatesPage() {
           assigned_user_id: "",
           published: "off",
           text_only: "0",
-          date_entered: new Date().toISOString().slice(0, 19).replace("T", " "),
-          date_modified: new Date()
-            .toISOString()
-            .slice(0, 19)
-            .replace("T", " "),
-        },
+          date_entered: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          date_modified: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        }
       };
 
       showConsole && console.log("Creating new template:", requestBody);
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const response = await fetch(`${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`, {
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(requestBody),
+      });
 
       const responseText = await response.text();
       let result;
@@ -211,25 +167,24 @@ export default function TemplatesPage() {
 
       showConsole && console.log("Create response:", result);
 
-      if (
-        response.ok &&
-        (result.parent_updated === true || result.parent_id || result.id)
-      ) {
+      if (response.ok && (result.parent_updated === true || result.parent_id || result.id)) {
         alert("✅ New template created successfully!");
+
 
         setNewTemplateName("");
         setNewDescription("");
         setNewTemplateContent("");
         setShowNewTemplateModal(false);
 
+
         setTimeout(() => {
           refetch();
         }, 1000);
+
       } else {
-        alert(
-          `❌ Failed to create template: ${result.error || result.message || "Unknown error"}`,
-        );
+        alert(`❌ Failed to create template: ${result.error || result.message || "Unknown error"}`);
       }
+
     } catch (err) {
       console.error("Create error:", err);
       alert(`❌ Failed to create template: ${err.message}`);
@@ -246,7 +201,7 @@ export default function TemplatesPage() {
   const handleClose = () => {
     if (isChanged) {
       const confirmClose = window.confirm(
-        "You have unsaved changes. Are you sure you want to close without saving?",
+        "You have unsaved changes. Are you sure you want to close without saving?"
       );
       if (!confirmClose) return;
     }
@@ -256,12 +211,21 @@ export default function TemplatesPage() {
   const handleCloseNewTemplateModal = () => {
     if (newTemplateName.trim() || newTemplateContent.trim()) {
       const confirmClose = window.confirm(
-        "You have unsaved changes. Are you sure you want to close without saving?",
+        "You have unsaved changes. Are you sure you want to close without saving?"
       );
       if (!confirmClose) return;
     }
     setShowNewTemplateModal(false);
   };
+ useEffect(() => {
+    if (state?.templateId && data ) {
+      const item = data.find((item) => item.id === state.templateId);
+      // console.log(item)
+      if (item) {
+        openViewer(item);
+      }
+    }
+  }, [state?.templateId, data]);
 
   if (showNewTemplateModal) {
     return (
@@ -286,11 +250,10 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                  isCreating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isCreating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 active:scale-95"
+                  }`}
               >
                 {isCreating ? (
                   <>
@@ -317,6 +280,7 @@ export default function TemplatesPage() {
           {/* Template Name Input */}
           <div className="px-6 py-4 bg-gray-50 border-b">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Template Name *
@@ -330,6 +294,7 @@ export default function TemplatesPage() {
                   autoFocus
                 />
               </div>
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -389,6 +354,7 @@ export default function TemplatesPage() {
     );
   }
 
+
   if (viewItem) {
     return (
       <div
@@ -413,11 +379,10 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                 >
                   {isSaving ? (
                     <>
@@ -425,7 +390,9 @@ export default function TemplatesPage() {
                       Saving...
                     </>
                   ) : (
-                    <>Save</>
+                    <>
+                      Save
+                    </>
                   )}
                 </button>
               )}
@@ -448,6 +415,7 @@ export default function TemplatesPage() {
               </button>
             </div>
           </div>
+
 
           <div className="flex-1 overflow-hidden">
             <Editor
@@ -483,8 +451,7 @@ export default function TemplatesPage() {
 
           <div className="flex justify-center items-center px-6 py-3 bg-gray-50 border-t text-sm text-gray-600">
             <div>
-              ✨ Use <strong>Preview</strong> to see final email • Use{" "}
-              <strong>&lt;&gt; Source code</strong> to edit HTML
+              ✨ Use <strong>Preview</strong> to see final email • Use <strong>&lt;&gt; Source code</strong> to edit HTML
             </div>
           </div>
         </motion.div>
@@ -492,32 +459,15 @@ export default function TemplatesPage() {
     );
   }
 
+
   return (
     <div className="p-8 min-h-screen bg-gray-50">
-      <Header
-        text="Template Manager"
+      <Header text="Template Manager"
         handleCreate={() => setShowNewTemplateModal(true)}
         showCreateButton={true}
+
       />
-      {stagesLoading ? (
-        <div className="mt-6 text-gray-500">Loading stages…</div>
-      ) : (
-        <div className="flex flex-wrap gap-3 mt-6">
-          {Object.entries(stages).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                stageType === key
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
+
 
       {loading && <Loading text="Loading templates" />}
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
@@ -538,7 +488,7 @@ export default function TemplatesPage() {
       {data && data.length > 0 && (
         <>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
-            {data.map?.((item) => (
+            {data.map((item) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 30 }}
@@ -570,6 +520,7 @@ export default function TemplatesPage() {
               </motion.div>
             ))}
           </div>
+
 
           <div className="mt-10 text-center">
             <button

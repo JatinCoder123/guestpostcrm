@@ -29,7 +29,8 @@ export default function Create({
   sending,
   fields,
   lists = [],
-  setCurrentOrderIDSend,
+  threadId,
+  setCurrentOrderSend,
   submitData,
   sendHandler,
   handleDelete,
@@ -40,12 +41,13 @@ export default function Create({
   renderPreview,
   amountKey,
   setNewDealsCreated,
+  showPreview,
+  setShowPreview,
 }) {
   const navigate = useNavigate();
   const { loading, message } = useSelector((state) => state.threadEmail);
   const [button, setButton] = useState(1);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
   useEffect(() => {
     if (activeIndex >= data.length && data.length > 0)
       setActiveIndex(data.length - 1);
@@ -147,7 +149,15 @@ export default function Create({
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => navigate(-1)}
+                    onClick={() => {
+                      if (pageType == "edit" || pageType == "create") {
+                        navigate(`/${type}/view`, {
+                          state: { threadId, email },
+                        });
+                      } else {
+                        navigate("/");
+                      }
+                    }}
                     className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                   >
                     <MoveLeft size={16} />
@@ -225,7 +235,7 @@ export default function Create({
                             {type == "orders" && (
                               <button
                                 onClick={() => {
-                                  setCurrentOrderIDSend(item.order_id);
+                                  setCurrentOrderSend(item);
                                   setShowPreview(true);
                                 }}
                                 className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
@@ -292,7 +302,7 @@ export default function Create({
                             data={item}
                             setData={setData}
                             sending={sending}
-                            setCurrentOrderIDSend={setCurrentOrderIDSend}
+                            setCurrentOrderSend={setCurrentOrderSend}
                           />
                         ) : (
                           <>
@@ -382,13 +392,9 @@ export default function Create({
                         <button
                           disabled={data.length === 0}
                           onClick={() => setShowPreview(true)}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${
-                            sending
-                              ? "bg-green-300 cursor-not-allowed"
-                              : "bg-green-600 hover:bg-green-700"
-                          }`}
+                          className={`w-full px-3 py-2 rounded-lg text-white  bg-blue-500`}
                         >
-                          {sending ? "Sending..." : "Send"}
+                          Preview
                         </button>
                       </>
                     ) : (
@@ -556,21 +562,3 @@ function InputField({
     </div>
   );
 }
-
-// <table style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-bottom: 12px;" width="100%" cellspacing="0" cellpadding="0">
-// <tbody>
-// <tr>
-// <td style="font-weight: bold; color: #111827;">https://www.outrightcrm.com/</td>
-// <td align="right"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: bold;">approved</span></td>
-// </tr>
-// <tr>
-// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">🔗 <strong>Backlink URL:</strong><br>https://www.techtarget.com/whatis/definition/metadata</td>
-// </tr>
-// <tr>
-// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">📄 <strong>Document URL:</strong><br>https://docs.google.com/document/d/1uke4dIJo-0JIOdFnyrtDFAs-7asQR7nE/edit#heading=h.rijamkt1xoud</td>
-// </tr>
-// <tr>
-// <td style="padding: 8px; font-size: 13px; color: #374151;" colspan="2">💰 <strong>Amount:</strong> <!-- -->$40</td>
-// </tr>
-// </tbody>
-// </table>
