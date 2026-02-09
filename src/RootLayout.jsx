@@ -120,16 +120,12 @@ const RootLayout = () => {
   useEffect(() => {
     if (emails?.length > 0) {
       setWelcomeHeaderContent("Unreplied");
-      checkboxes?.switch_do_not_auto_refresh == "1" && setCurrentIndex(0);
-    }
-  }, [emails?.length, currentIndex]);
-  useEffect(() => {
-    if (emails?.length > 0) {
       setFirstEmail(
         emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
       );
     }
-  }, [emails, currentIndex]);
+  }, [emails?.length, currentIndex]);
+
 
   // Fetch ladger when email changes
   useEffect(() => {
@@ -287,9 +283,8 @@ const RootLayout = () => {
               {/* Main content scrolls independently */}
               <main
                 ref={mainRef}
-                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                  collapsed ? "ml-4" : "ml-0"
-                }`}
+                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+                  }`}
               >
                 <div className="p-6">
                   {isLowCredit && <LowCreditWarning score={currentScore} />}

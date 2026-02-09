@@ -136,7 +136,7 @@ export const getDeals = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const createDeal = (deals = [], send = false) => {
+export const createDeal = (threadId, deals = [], send = false) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
@@ -149,6 +149,7 @@ export const createDeal = (deals = [], send = false) => {
             amount: deal.dealamount,
             email: deal.email,
             website: deal.website_c,
+            thread_id: threadId
           })),
           child_bean: {
             module: "Contacts",

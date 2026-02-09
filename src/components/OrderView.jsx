@@ -47,7 +47,6 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
     }
   }, [status])
   useEffect(() => {
-    ``
     if (creatingLinkMessage) {
       setOpen(false);
       dispatch(orderAction.clearAllMessages());

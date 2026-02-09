@@ -130,8 +130,8 @@ export default function CreateDeal() {
       const currentOfferWithoutDeal =
         currentOffers?.length > 0
           ? currentOffers.filter(
-              (o) => !currentDeals.some((d) => d.website_c == o.website),
-            )
+            (o) => !currentDeals.some((d) => d.website_c == o.website),
+          )
           : [];
       if (currentOfferWithoutDeal?.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
@@ -155,7 +155,7 @@ export default function CreateDeal() {
   const submitHandler = (data, send = false) => {
     setNewDealsCreated(data);
 
-    dispatch(createDeal(data, send));
+    dispatch(createDeal(state?.threadId, data, send));
   };
 
   const sendHandler = () => {
