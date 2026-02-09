@@ -15,7 +15,11 @@ import { getDeals } from "./store/Slices/deals";
 import { getInvoices } from "./store/Slices/invoices";
 import { getOffers } from "./store/Slices/offers";
 import { getDetection } from "./store/Slices/detection";
-import { getContact, getViewEmail, viewEmailAction } from "./store/Slices/viewEmail";
+import {
+  getContact,
+  getViewEmail,
+  viewEmailAction,
+} from "./store/Slices/viewEmail";
 import { getAiCredits } from "./store/Slices/aiCredits";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
@@ -38,11 +42,13 @@ import Avatar from "./components/Avatar";
 import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
 import { getAllWebsites } from "./store/Slices/webSlice";
+import { fetchGpcController } from "./store/Slices/gpcControllerSlice";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
   const { timeline, email } = useSelector((state) => state.ladger);
   const { emails, loading } = useSelector((state) => state.unreplied);
+  const { checkboxes } = useSelector((state) => state.gpcController);
   const [firstEmail, setFirstEmail] = useState(null);
   const { crmEndpoint, currentScore } = useSelector((state) => state.user);
   const {
@@ -103,16 +109,22 @@ const RootLayout = () => {
     dispatch(getInvoices({ email: enteredEmail }));
     dispatch(getOffers({ email: enteredEmail }));
     dispatch(getDetection(enteredEmail));
+    dispatch(fetchGpcController());
     dispatch(getdefaulterEmails(enteredEmail));
     dispatch(getmovedEmails(enteredEmail));
     dispatch(getAllAvatar());
     dispatch(getQuickActionBtn());
     dispatch(getDuplicateCount());
     setCurrentIndex(0);
-  }, [enteredEmail, timeline, dispatch, setCurrentIndex]); // ✅ Added dependencies
+  }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
   useEffect(() => {
     if (emails?.length > 0) {
       setWelcomeHeaderContent("Unreplied");
+      checkboxes?.switch_do_not_auto_refresh == "1" && setCurrentIndex(0);
+    }
+  }, [emails?.length, currentIndex]);
+  useEffect(() => {
+    if (emails?.length > 0) {
       setFirstEmail(
         emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
       );
@@ -128,7 +140,7 @@ const RootLayout = () => {
     } else if (!loading) {
       dispatch(getLadger({ search, isEmail: false }));
     }
-    dispatch(viewEmailAction.resetViewEmail())
+    dispatch(viewEmailAction.resetViewEmail());
   }, [enteredEmail, firstEmail, timeline, dispatch]);
 
   // Fetch view email and contact when ladger email is set
@@ -144,17 +156,12 @@ const RootLayout = () => {
     const refreshLadger = () => {
       if (enteredEmail) {
         dispatch(getLadger({ email: enteredEmail, search }));
-        dispatch(getViewEmail(enteredEmail));
-        dispatch(getContact(enteredEmail));
       } else if (firstEmail) {
         dispatch(getLadger({ email: firstEmail, search }));
-        dispatch(getViewEmail(firstEmail));
-        dispatch(getContact(firstEmail));
-      } else {
+      } else if (!loading) {
         dispatch(getLadger({ search, isEmail: false }));
-        dispatch(getViewEmail());
-        dispatch(getContact());
       }
+      dispatch(viewEmailAction.resetViewEmail());
     };
     if (notificationCount.unreplied_email) {
       refreshLadger();
@@ -166,7 +173,6 @@ const RootLayout = () => {
         }),
       );
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
-      setCurrentIndex(0);
       dispatch(checkForDuplicates());
       setNotificationCount((prev) => ({
         ...prev,
@@ -178,7 +184,6 @@ const RootLayout = () => {
       refreshLadger();
       dispatch(getUnrepliedEmail({ email: enteredEmail, loading: true }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
-      setCurrentIndex(0);
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: null,
@@ -187,7 +192,6 @@ const RootLayout = () => {
 
     if (notificationCount.outr_el_process_audit) {
       refreshLadger();
-
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
         ...prev,
@@ -197,7 +201,6 @@ const RootLayout = () => {
 
     if (notificationCount.outr_deal_fetch) {
       refreshLadger();
-
       dispatch(getDeals({}));
       dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
@@ -213,7 +216,6 @@ const RootLayout = () => {
       dispatch(getOrders({}));
       dispatch(getInvoices({ loading: false }));
       refreshLadger();
-
       dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
       dispatch(hotAction.updateCount(1));
@@ -225,7 +227,6 @@ const RootLayout = () => {
 
     if (notificationCount.outr_self_test) {
       refreshLadger();
-
       dispatch(getInvoices({ loading: false }));
       dispatch(hotAction.updateCount(1));
       setNotificationCount((prev) => ({
@@ -233,10 +234,8 @@ const RootLayout = () => {
         outr_self_test: null,
       }));
     }
-
     if (notificationCount.outr_offer) {
       refreshLadger();
-
       dispatch(getOffers({}));
       dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
       dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
@@ -288,8 +287,9 @@ const RootLayout = () => {
               {/* Main content scrolls independently */}
               <main
                 ref={mainRef}
-                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-                  }`}
+                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                  collapsed ? "ml-4" : "ml-0"
+                }`}
               >
                 <div className="p-6">
                   {isLowCredit && <LowCreditWarning score={currentScore} />}

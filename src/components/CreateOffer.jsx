@@ -91,7 +91,6 @@ export default function CreateOffer() {
     },
   ]);
 
-
   const dispatch = useDispatch();
   const {
     updating,
@@ -185,7 +184,9 @@ export default function CreateOffer() {
         );
 
         if (message.includes("Send")) {
-          navigate("/offers/view", { state: { email: state?.email } });
+          navigate("/offers/view", {
+            state: { email: state?.email, threadId: state?.threadId },
+          });
           setShowPreview(true);
         } else {
           toast.success(message);
@@ -202,7 +203,9 @@ export default function CreateOffer() {
         if (message.includes("Send")) {
           const data = unionByKey(newOffers, currentOffers, "website");
           console.log("DATA", data);
-          navigate("/offers/view", { state: { email: state?.email } });
+          navigate("/offers/view", {
+            state: { email: state?.email, threadId: state?.threadId },
+          });
           setShowPreview(true);
         } else {
           navigate("/");
@@ -244,6 +247,7 @@ export default function CreateOffer() {
       creating={creating}
       handleDelete={handleDelete}
       pageType={type}
+      threadId={state?.threadId}
       sending={sending}
       handleUpdate={handleUpdate}
       updating={updating}
@@ -269,6 +273,7 @@ export default function CreateOffer() {
             initialContent={html}
             setEditorContent={setEditorContent}
             onClose={onClose}
+            threadId={state?.threadId}
             templateContent={html}
             onSubmit={handleSubmit}
             loading={sending}

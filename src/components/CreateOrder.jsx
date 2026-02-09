@@ -49,7 +49,7 @@ export default function CreateOrder() {
   );
   const { crmEndpoint } = useSelector((state) => state.user);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
-  const [currentOrderIDSend, setCurrentOrderIDSend] = useState(null);
+  const [currentOrderSend, setCurrentOrderSend] = useState(null);
   const { setNotificationCount } = useContext(SocketContext);
   const { enteredEmail, search } = useContext(PageContext);
   const [editorContent, setEditorContent] = useState(null);
@@ -94,7 +94,7 @@ export default function CreateOrder() {
   }, [state, orders, type, id]);
   const handleUpdate = (order, send) => {
     dispatch(updateOrder(order, send));
-    setCurrentOrderIDSend(order.order_id);
+    setCurrentOrderSend(order);
   };
   const handleDelete = (id) => {
     alert("Work in progress");
@@ -148,6 +148,7 @@ export default function CreateOrder() {
       navigate("/orders/view", {
         state: {
           email: state?.email,
+          threadId: state?.threadId,
         },
       });
       dispatch(orderAction.clearAllMessages());
@@ -186,9 +187,10 @@ export default function CreateOrder() {
       orderId="order_id"
       handleDelete={handleDelete}
       handleUpdate={handleUpdate}
-      setCurrentOrderIDSend={setCurrentOrderIDSend}
+      setCurrentOrderSend={setCurrentOrderSend}
       updating={updating}
       lists={lists}
+      threadId={state?.threadId}
       showPreview={showPreview}
       setShowPreview={setShowPreview}
       sending={sending}
@@ -196,15 +198,12 @@ export default function CreateOrder() {
       sendHandler={sendHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
-        const order = data.filter(
-          (item) => item.order_id === currentOrderIDSend,
-        );
-        showConsole && console.log(order);
+        showConsole && console.log(currentOrderSend);
         const html = createPreviewOrder({
           templateData,
-          order: order[0],
+          order: currentOrderSend,
           userEmail: email,
-        })
+        });
         return (
           <PreviewTemplate
             editorContent={editorContent}
@@ -212,6 +211,7 @@ export default function CreateOrder() {
             setEditorContent={setEditorContent}
             templateContent={html}
             onClose={onClose}
+            threadId={state?.threadId}
             onSubmit={handleSubmit}
             loading={sending}
           />
