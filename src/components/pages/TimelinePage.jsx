@@ -4,30 +4,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getLadger, ladgerAction } from "../../store/Slices/ladger";
 import EmailBox from "../EmailBox";
-import { viewEmailAction } from "../../store/Slices/viewEmail";
-import CreateDeal from "../CreateDeal";
+import { sendEmail, viewEmailAction } from "../../store/Slices/viewEmail";
 import { motion } from "framer-motion";
-import { LoadingChase } from "../Loading";
-import {
-  sendEmailToThread,
-  threadEmailAction,
-} from "../../store/Slices/threadEmail";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
 import Ip from "../Ip";
 import { getAvatar } from "../../store/Slices/avatarSlice";
 import TimelineEvent from "../TimelineEvent";
 import MailerSummaryHeader from "../MailerSummaryHeader";
-import NoResult from "../NoResult";
 import ContactHeader from "../ContactHeader";
 import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
-import { unrepliedAction } from "../../store/Slices/unrepliedEmails";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
-import UpdatePopup from "../UpdatePopup";
 import { useNavigate } from "react-router-dom";
 import { PreviewTemplate } from "../PreviewTemplate";
 
@@ -40,7 +31,6 @@ const decodeHTMLEntities = (str = "") => {
 export function TimelinePage() {
   const navigateTo = useNavigate();
   const [showEmail, setShowEmail] = useState(false);
-  const [showUpdateAiReply, setShowUpdateAiReply] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showThread, setShowThread] = useState(false);
   const [showIP, setShowIP] = useState(false);
@@ -48,7 +38,6 @@ export function TimelinePage() {
     useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
-  const [aiReplySentLoading, setAiReplySentLoading] = useState(false);
   const [editorContent, setEditorContent] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const {
@@ -56,14 +45,10 @@ export function TimelinePage() {
     message,
     loading: viewEmailLoading,
     viewEmail,
+    sending,
     threadId,
   } = useSelector((state) => state.viewEmail);
 
-  const {
-    error: threadError,
-    message: threadMessage,
-    sending,
-  } = useSelector((state) => state.threadEmail);
   const dispatch = useDispatch();
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
     useSelector((state) => state.ladger);
@@ -84,14 +69,6 @@ export function TimelinePage() {
     }
     if (message) {
       toast.success(message);
-      dispatch(viewEmailAction.clearAllMessage());
-    }
-    if (threadError) {
-      toast.error(threadError);
-      dispatch(threadEmailAction.clearAllErrors());
-    }
-    if (threadMessage) {
-      toast.success(threadMessage);
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),
@@ -101,16 +78,14 @@ export function TimelinePage() {
         addEvent({
           email: email,
           thread_id: currentThreadId,
-          recent_activity: threadMessage,
+          recent_activity: message,
         }),
       );
-      dispatch(threadEmailAction.clearAllMessage());
+      dispatch(viewEmailAction.clearAllMessage());
     }
-  }, [dispatch, error, sendError, message, threadError, threadMessage]);
+  }, [dispatch, error, sendError, message]);
   useEffect(() => {
-    if (mailersSummary?.ai_response) {
-      setAiReply(mailersSummary?.ai_response);
-    }
+    setAiReply(mailersSummary?.ai_response);
   }, [mailersSummary]);
   const handleMoveSuccess = () => {
     dispatch(getLadger({ email }));
@@ -120,7 +95,7 @@ export function TimelinePage() {
       toast.info("No Unreplied Email found");
       return;
     }
-    dispatch(sendEmailToThread(emails[currentIndex]?.thread_id, btnBody));
+    dispatch(sendEmail(btnBody, "Quick Action Button Reply Sent"));
     dispatch(
       addEvent({
         email: email,
@@ -130,23 +105,8 @@ export function TimelinePage() {
     );
   };
 
-  const handleAiAutoReply = async () => {
-    setAiReplySentLoading(true);
-    try {
-      dispatch(
-        sendEmailToThread(
-          emails[currentIndex]?.thread_id
-            ? emails[currentIndex]?.thread_id
-            : threadId,
-          editorContent,
-        ),
-      );
-    } catch (error) {
-      console.error("❌ Error sending AI reply:", error);
-      toast.error("Failed to send AI reply");
-    } finally {
-      setAiReplySentLoading(false);
-    }
+  const handleAiAutoReply = () => {
+    dispatch(sendEmail(editorContent, "Ai Reply Send Successfully"));
   };
   const handleNext = () => {
     if (currentIndex < emails?.length - 1) {
@@ -159,11 +119,6 @@ export function TimelinePage() {
     }
   };
 
-  // useEffect(() => {
-  //   if (showNewEmailBanner) {
-  //     setCurrentIndex(0); // 🔥 redirect to latest email
-  //   }
-  // }, [showNewEmailBanner]);
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
@@ -197,6 +152,7 @@ export function TimelinePage() {
         initialContent={aiReply}
         templateContent=""
         aiReply={aiReply}
+        threadId={threadId}
         setEditorContent={setEditorContent}
         onClose={() => setShowPreview(false)}
         onSubmit={handleAiAutoReply}
@@ -222,11 +178,8 @@ export function TimelinePage() {
                 currentIndex={currentIndex}
               />
 
-              {!mailersSummary || Object.keys(mailersSummary).length === 0 ? (
-                <NoResult />
-              ) : (
-                <MailerSummaryHeader />
-              )}
+              <MailerSummaryHeader />
+
               <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* AI SUMMARY */}
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
@@ -342,11 +295,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -397,14 +349,13 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  threadId={currentThreadId}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (

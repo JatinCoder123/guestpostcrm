@@ -35,7 +35,6 @@ const ActionButton = ({
   handleMoveSuccess,
   setShowEmails,
   setShowIP,
-  threadId,
   handleActionBtnClick,
 }) => {
   const dispatch = useDispatch();
@@ -52,7 +51,7 @@ const ActionButton = ({
   const { enteredEmail } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
 
-  const { contactInfo, count } = useSelector((s) => s.viewEmail);
+  const { contactInfo, count, threadId } = useSelector((s) => s.viewEmail);
   const { sending, message, error } = useSelector((s) => s.threadEmail);
   const { crmEndpoint } = useSelector((s) => s.user);
   const { email } = useSelector((s) => s.ladger);
@@ -364,7 +363,8 @@ const ActionButton = ({
 
   return (
     <>
-      {showUpdatePopup && <PreviewTemplate editorContent={editorContent} setEditorContent={setEditorContent} onClose={() => setShowUpdatePopup(false)} onSubmit={() => { handleActionBtnClick(editorContent) }} loading={sending} />}
+      {showUpdatePopup && <PreviewTemplate editorContent={editorContent} initialContent={editorContent} setEditorContent={setEditorContent} onClose={() => setShowUpdatePopup(false)} onSubmit={() => { handleActionBtnClick(editorContent) }} loading={sending}
+        threadId={threadId} />}
       <div className="mt-4 flex items-center flex-wrap gap-2">
         {actionButtons.map((btn, i) => (
           <div key={i} className="flex items-center relative">

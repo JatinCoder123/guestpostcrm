@@ -25,6 +25,7 @@ const viewEmailSlice = createSlice({
     getViewEmailRequest(state) {
       state.loading = true;
       state.viewEmail = [];
+      state.threadId = null;
       state.error = null;
     },
     getViewEmailSucess(state, action) {
@@ -50,7 +51,14 @@ const viewEmailSlice = createSlice({
       state.error = null;
     },
     getContactSucess(state, action) {
-      const { contactInfo, accountInfo, dealInfo, stage, status, customer_type } = action.payload;
+      const {
+        contactInfo,
+        accountInfo,
+        dealInfo,
+        stage,
+        status,
+        customer_type,
+      } = action.payload;
       state.contactLoading = false;
       state.stage = stage;
       state.status = status;
@@ -105,6 +113,17 @@ const viewEmailSlice = createSlice({
     clearAllMessage(state) {
       state.message = null;
     },
+    resetViewEmail(state) {
+      state.viewEmail = null;
+      state.threadId = null;
+      state.count = null;
+      state.accountInfo = null;
+      state.contactInfo = null;
+      state.dealInfo = null;
+      state.stage = null;
+      state.status = null;
+      state.customer_type = null;
+    },
   },
 });
 
@@ -114,23 +133,24 @@ export const getViewEmail = (email = null) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email ?? getState().ladger.email
-        }`
+        `${getState().user.crmEndpoint}&type=view_email&email=${
+          email ?? getState().ladger.email
+        }`,
       );
       showConsole && console.log(`viewEmail`, data);
       dispatch(
         viewEmailSlice.actions.getViewEmailSucess({
           viewEmail: data.emails,
           threadId: data.thread_id,
-          count: data.total_emails
-        })
+          count: data.total_emails,
+        }),
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.getViewEmailFailed(
-          "Fetching View Emails  Failed"
-        )
+          "Fetching View Emails  Failed",
+        ),
       );
     }
   };
@@ -141,8 +161,9 @@ export const getContact = (email = null) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`
+        `${
+          getState().user.crmEndpoint
+        }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`,
       );
       showConsole && console.log(`Get contact`, data);
       dispatch(
@@ -153,12 +174,12 @@ export const getContact = (email = null) => {
           accountInfo: data.account ?? null,
           customer_type: data.customer_type ?? null,
           dealInfo: data.deal_fetch ?? null,
-        })
+        }),
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getContactFailed("Fetching View Details failed")
+        viewEmailSlice.actions.getContactFailed("Fetching View Details failed"),
       );
     }
   };
@@ -180,7 +201,6 @@ export const editContact = (contactData) => {
         },
       };
 
-
       payload.child_bean = {
         module: "Accounts",
         ...contactData.account,
@@ -194,7 +214,7 @@ export const editContact = (contactData) => {
             "X-Api-Key": CREATE_DEAL_API_KEY,
             "Content-Type": "application/json", // typo fixed
           },
-        }
+        },
       );
 
       showConsole && console.log("contact", data);
@@ -202,7 +222,7 @@ export const editContact = (contactData) => {
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.editContactFailed("Update Contact failed")
+        viewEmailSlice.actions.editContactFailed("Update Contact failed"),
       );
     }
   };
@@ -219,23 +239,24 @@ export const sendEmail = (reply, message = null, error = null) => {
           threadId,
           replyBody: reply,
           email: getState().ladger.email,
+          current_email: getState().user.user.email,
         },
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
       showConsole && console.log(`Reply Data`, data);
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: message ?? data.message,
-        })
+        }),
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
       dispatch(getViewEmail());
     } catch (error) {
       showConsole && console.log(error);
       dispatch(
-        viewEmailSlice.actions.sendEmailFailed("Error while sending email")
+        viewEmailSlice.actions.sendEmailFailed("Error while sending email"),
       );
     }
   };

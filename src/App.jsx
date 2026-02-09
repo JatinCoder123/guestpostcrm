@@ -48,9 +48,6 @@ import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
 import { HotPage } from "./components/pages/HotPage";
-import { ViewReminder } from "./components/ViewReminder";
-// import {PreviewOrder} from "./components/PreviewOrder";
-import PreviewOrder from "./components/PreviewOrder";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
@@ -210,10 +207,7 @@ const router = createBrowserRouter([
         element: <HotPage />,
       },
 
-      {
-        path: "preview-order",
-        element: <PreviewOrder />,
-      },
+
 
       {
         path: "settings",

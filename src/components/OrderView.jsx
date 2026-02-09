@@ -7,7 +7,7 @@ import { createLink, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
 import { SocketContext } from "../context/SocketContext";
-export const OrderView = ({ data, setData, sending, setCurrentOrderIDSend }) => {
+export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null);
   const [item, setItem] = useState(null);
@@ -26,14 +26,28 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderIDSend }) => 
 
   useEffect(() => {
     if (status) {
-      dispatch(updateOrder({ ...data, order_status: status }, status !== "accepted" ? true : false, data.order_id));
+      const updatedOrder = {
+        ...data,
+        order_status: status,
+        seo_backlinks:
+          status === "rejected_nontechnical"
+            ? data.seo_backlinks.map(link => ({
+              ...link,
+              status_c: "rejected",
+            }))
+            : [...data.seo_backlinks],
+      }
+      dispatch(updateOrder(updatedOrder, status !== "accepted" ? true : false, data.order_id));
       setData((prev) => {
-        const next = prev.map((d) => (d?.order_id === data?.order_id ? { ...d, order_status: status } : d));
+        const next = prev.map((d) => (d?.order_id === data?.order_id ? updatedOrder : d));
         return next;
       });
+      setCurrentOrderSend(updatedOrder);
+
     }
   }, [status])
   useEffect(() => {
+    ``
     if (creatingLinkMessage) {
       setOpen(false);
       dispatch(orderAction.clearAllMessages());
@@ -98,7 +112,7 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderIDSend }) => 
       {processingPayment && <ProcessingLoader />}
       {(updating || sending) && <PageLoader />}
       <div className="w-full relative mt-3">
-        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} setCurrentOrderIDSend={setCurrentOrderIDSend} />
+        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} />
         <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -202,7 +216,7 @@ function ProcessingLoader() {
     </div>
   );
 }
-function OrderHeader({ data, setStatus, onCompleteHandler, setCurrentOrderIDSend }) {
+function OrderHeader({ data, setStatus, onCompleteHandler }) {
   return (
     <div className="w-full mb-3">
       <div className="relative group">
@@ -229,7 +243,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler, setCurrentOrderIDSend
               {data.order_status !== "accepted" && (
                 <>
                   <button
-                    onClick={() => { setStatus("accepted"); setCurrentOrderIDSend(data.order_id) }}
+                    onClick={() => { setStatus("accepted"); }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
@@ -240,7 +254,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler, setCurrentOrderIDSend
                     Accept
                   </button>
                   <button
-                    onClick={() => { setStatus("rejected_nontechnical"); setCurrentOrderIDSend(data.order_id) }}
+                    onClick={() => { setStatus("rejected_nontechnical"); }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30
@@ -283,14 +297,11 @@ function PageLoader() {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Blur + dark overlay */}
-      <div className="absolute inset-0 bg-black/10 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/10" />
 
       {/* Loader */}
       <div className="relative z-10 flex flex-col items-center gap-4">
         <LoadingChase />
-        <p className="text-black font-semibold tracking-wide">
-          Updating order...
-        </p>
       </div>
     </div>
   );

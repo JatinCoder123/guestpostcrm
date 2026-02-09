@@ -3,12 +3,11 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch, useSelector } from "react-redux";
 import Create from "./Create";
-import { excludeEmail } from "../assets/assets";
+import { excludeEmail, showConsole } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
-import PreviewOrder from "./PreviewOrder";
+import { createPreviewOrder } from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
-import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
@@ -49,12 +48,13 @@ export default function CreateOrder() {
   );
   const { crmEndpoint } = useSelector((state) => state.user);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
-  const [currentOrderIDSend, setCurrentOrderIDSend] = useState(null);
+  const [currentOrderSend, setCurrentOrderSend] = useState(null);
   const { setNotificationCount } = useContext(SocketContext);
   const { enteredEmail, search } = useContext(PageContext);
   const [editorContent, setEditorContent] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showPreview, setShowPreview] = useState(false);
   const [currentOrders, setCurrentOrders] = useState([]);
   const {
     loading: templateLoading,
@@ -92,26 +92,25 @@ export default function CreateOrder() {
     setCurrentOrders(() => [...order]);
   }, [state, orders, type, id]);
   const handleUpdate = (order, send) => {
+    if (order?.order_status == "rejected_nontechnical" || order?.order_status == "wrong") {
+      order = {
+        ...order,
+        seo_backlinks:
+          order.seo_backlinks.map(link => ({
+            ...link,
+            status_c: "rejected",
+          }))
+
+      }
+    }
     dispatch(updateOrder(order, send));
+    setCurrentOrderSend(order);
   };
   const handleDelete = (id) => {
     alert("Work in progress");
   };
   const sendHandler = () => {
-    dispatch(
-      sendEmail(
-        renderToStaticMarkup(
-          <PreviewOrder
-            data={currentOrders}
-            type="Orders"
-            userEmail={state?.email}
-            orderID="order_id"
-            amountKey="total_amount_c"
-          />,
-        ),
-        "Order Send Successfully",
-      ),
-    );
+
   };
   const okHandler = () => {
     if (enteredEmail) {
@@ -139,37 +138,16 @@ export default function CreateOrder() {
 
       dispatch(getOrders({}));
       if (message.includes("Send")) {
-        dispatch(
-          sendEmail(
-            renderToStaticMarkup(
-              <PreviewOrder
-                data={
-                  updateId
-                    ? currentOrders.filter((d) => d.order_id == updateId)
-                    : currentOrders
-                }
-                type="Orders"
-                userEmail={state?.email}
-                websiteKey="website_c"
-                amountKey="total_amount_c"
-              />,
-            ),
-            "Order Updated and Send Successfully",
-            "Order Updated But Not Sent!",
-          ),
-        );
-        if (updateId) {
-          dispatch(orderAction.resetUpdateId());
-        }
+        setShowPreview(true);
       } else {
         toast.success(message);
-        // navigate(-1)
       }
-
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
+      navigate("/orders/view", {
+        state: {
+          email: state?.email,
+          threadId: state?.threadId,
+        },
+      });
       dispatch(orderAction.clearAllMessages());
     }
     if (error) {
@@ -206,25 +184,23 @@ export default function CreateOrder() {
       orderId="order_id"
       handleDelete={handleDelete}
       handleUpdate={handleUpdate}
-      setCurrentOrderIDSend={setCurrentOrderIDSend}
+      setCurrentOrderSend={setCurrentOrderSend}
       updating={updating}
       lists={lists}
+      threadId={state?.threadId}
+      showPreview={showPreview}
+      setShowPreview={setShowPreview}
       sending={sending}
       type="orders"
       sendHandler={sendHandler}
       fields={fields}
       renderPreview={({ data, email, onClose }) => {
-        const order = data.filter(
-          (item) => item.order_id === currentOrderIDSend,
-        );
-        console.log(order);
-        const html = renderToString(
-          <PreviewOrder
-            data={order}
-            userEmail={email}
-            currentOrderIDSend={currentOrderIDSend}
-          />,
-        );
+        showConsole && console.log(currentOrderSend);
+        const html = createPreviewOrder({
+          templateData,
+          order: currentOrderSend,
+          userEmail: email,
+        });
         return (
           <PreviewTemplate
             editorContent={editorContent}
@@ -232,6 +208,7 @@ export default function CreateOrder() {
             setEditorContent={setEditorContent}
             templateContent={html}
             onClose={onClose}
+            threadId={state?.threadId}
             onSubmit={handleSubmit}
             loading={sending}
           />

@@ -21,55 +21,30 @@ const TimelineEvent = () => {
   const [templateData, setTemplateData] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageContent, setMessageContent] = useState("");
-  // const [loadingMessage, setLoadingMessage] = useState(false);
-  // const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [messageMeta, setMessageMeta] = useState({
-  subject: "",
-  from: "",
-  date: "",
-   fromEmail: "",
-  time: ""
-});
+    subject: "",
+    from: "",
+    date: "",
+    fromEmail: "",
+    time: ""
+  });
 
 
-const [originalTemplateContent, setOriginalTemplateContent] = useState("");
-const [isTemplateChanged, setIsTemplateChanged] = useState(false);
-const [isTemplateSaving, setIsTemplateSaving] = useState(false);
+  const [originalTemplateContent, setOriginalTemplateContent] = useState("");
+  const [isTemplateChanged, setIsTemplateChanged] = useState(false);
+  const [isTemplateSaving, setIsTemplateSaving] = useState(false);
 
-// ✅ ADD HERE
-useEffect(() => {
-  setIsTemplateChanged(templateContent !== originalTemplateContent);
-}, [templateContent, originalTemplateContent]);
+  useEffect(() => {
+    setIsTemplateChanged(templateContent !== originalTemplateContent);
+  }, [templateContent, originalTemplateContent]);
 
-// const [isMessageLoading
-
-// , setisMessageLoading
-
-// ] = useState(null);
 
 
   const topRef = useRef(null);
 
   const dispatch = useDispatch();
-  // useEffect(() => {
-  //   if (selectedView === "all") {
-  //     setTimelineData(ladger);
-  //   }
-  //   if (selectedView === "important") {
-  //     const finalData = ladger.filter(
-  //       (item) =>
-  //         !(
-  //           item.parent_type === "outr_snts" &&
-  //           item.type_c !== "First Reply Sent" &&
-  //           item.type_c !== "First Reply Scheduled"
-  //         ),
-  //     );
-  //     setTimelineData(finalData);
-  //   }
-  // }, [selectedView]);
 
-// start
   useEffect(() => {
     if (selectedView === "all") {
       setTimelineData(ladger);
@@ -207,84 +182,84 @@ useEffect(() => {
   };
 
 
-const handleMessageClick = async (event) => {
+  const handleMessageClick = async (event) => {
 
-  if (!event.message_id_c) return;
+    if (!event.message_id_c) return;
 
-  // ✅ open modal FIRST
-  setShowMessageModal(true);
+    // ✅ open modal FIRST
+    setShowMessageModal(true);
 
-  // ✅ show loader INSIDE MODAL
-  setIsMessageLoading(true);
+    // ✅ show loader INSIDE MODAL
+    setIsMessageLoading(true);
 
-  try {
+    try {
 
-    const baseUrl = crmEndpoint.split("?")[0];
+      const baseUrl = crmEndpoint.split("?")[0];
 
-    const response = await fetch(
-      `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`
-    );
+      const response = await fetch(
+        `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`
+      );
 
-    const result = await response.json();
+      const result = await response.json();
 
-    const htmlBody =
-      result.email?.html_body ||
-      result.email?.body_html ||
-      result.email?.content ||
-      result.html_body ||
-      "";
+      const htmlBody =
+        result.email?.html_body ||
+        result.email?.body_html ||
+        result.email?.content ||
+        result.html_body ||
+        "";
 
       const subject =
-  result.email?.subject ||
-  event.subject ||
-  "No Subject";
+        result.email?.subject ||
+        event.subject ||
+        "No Subject";
 
-const from =
-  result.email?.from_name ||
-  result.email?.from_addr ||
-  "Unknown Sender";
+      const from =
+        result.email?.from_name ||
+        result.email?.from_addr ||
+        "Unknown Sender";
 
-  const fromEmail =
-  result.email?.from_addr ||
-  result.email?.from_email ||
-  "";
+      const fromEmail =
+        result.email?.from_addr ||
+        result.email?.from_email ||
+        "";
 
-const createdDate = result.email?.date_created || "";
+      const createdDate = result.email?.date_created || "";
 
-let formattedDate = "";
-let formattedTime = "";
+      let formattedDate = "";
+      let formattedTime = "";
 
-if (createdDate) {
-  const d = new Date(createdDate);
-  formattedDate = d.toLocaleDateString();
-  formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
+      if (createdDate) {
+        const d = new Date(createdDate);
+        formattedDate = d.toLocaleDateString();
+        formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
 
-setMessageMeta({
-  subject,
-  from,
-  fromEmail,
-  date: formattedDate,
-  time: formattedTime
-});
+      setMessageMeta({
+        subject,
+        from,
+        fromEmail,
+        date: formattedDate,
+        time: formattedTime
+      });
 
 
-    setMessageContent(
-      htmlBody
-        ? cleanHtmlContent(htmlBody)
-        : event.description || event.subject || "No content available"
-    );
+      setMessageContent(
+        htmlBody
+          ? cleanHtmlContent(htmlBody)
+          : event.description || event.subject || "No content available"
+      );
 
-  } catch (err) {
+    } catch (err) {
 
-    setMessageContent(
-      event.description || event.subject || "No content available"
-    );
+      setMessageContent(
+        event.description || event.subject || "No content available"
+      );
 
-  } finally {
-    setIsMessageLoading(false);
-  }
-};
+    } finally {
+      setIsMessageLoading(false);
+    }
+  };
 
 
   // Function to clean HTML content
@@ -295,7 +270,7 @@ setMessageMeta({
       .replace(/<script[^>]*>.*?<\/script>/gsi, '') // Remove script tags
       .replace(/<!--.*?-->/g, '') // Remove comments
       .trim();
-    
+
     return cleaned || html;
   };
 
@@ -361,11 +336,11 @@ setMessageMeta({
           setTemplateData(templateData);
           const content = templateData.body_html || "";
 
-setTemplateData(templateData);
-setTemplateContent(content);
-setOriginalTemplateContent(content); // ⭐ IMPORTANT
-setIsTemplateChanged(false);
-setShowTemplateModal(true);
+          setTemplateData(templateData);
+          setTemplateContent(content);
+          setOriginalTemplateContent(content); // ⭐ IMPORTANT
+          setIsTemplateChanged(false);
+          setShowTemplateModal(true);
 
           setShowTemplateModal(true);
         } else {
@@ -412,61 +387,61 @@ setShowTemplateModal(true);
 
 
   // for save by kjl
-const handleTemplateSave = async () => {
+  const handleTemplateSave = async () => {
 
-  if (!templateData?.id) return;
-  if (!isTemplateChanged) return;
-  if (isTemplateSaving) return;
+    if (!templateData?.id) return;
+    if (!isTemplateChanged) return;
+    if (isTemplateSaving) return;
 
-  setIsTemplateSaving(true);
+    setIsTemplateSaving(true);
 
-  try {
+    try {
 
-    const requestBody = {
-      parent_bean: {
-        module: "EmailTemplates",
-        id: templateData.id,
-        body_html: templateContent,
-        name: templateData.name,
-        description: templateData.description || "",
-        subject: templateData.subject || "",
-        type: templateData.type || "",
-      },
-    };
-
-    const response = await fetch(
-      `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-      {
-        method: "POST",
-        headers: {
-          "x-api-key": CREATE_DEAL_API_KEY,
-          "Content-Type": "application/json",
+      const requestBody = {
+        parent_bean: {
+          module: "EmailTemplates",
+          id: templateData.id,
+          body_html: templateContent,
+          name: templateData.name,
+          description: templateData.description || "",
+          subject: templateData.subject || "",
+          type: templateData.type || "",
         },
-        body: JSON.stringify(requestBody),
+      };
+
+      const response = await fetch(
+        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          method: "POST",
+          headers: {
+            "x-api-key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        throw new Error(result.error || "Failed to update template");
       }
-    );
 
-    const result = await response.json();
+      // ✅ Mark as saved
+      setOriginalTemplateContent(templateContent);
+      setIsTemplateChanged(false);
 
-    if (!response.ok || result.error) {
-      throw new Error(result.error || "Failed to update template");
+      alert("✅ Template updated successfully!");
+
+    } catch (err) {
+
+      alert("❌ Save failed — changes are still unsaved.");
+      console.error(err);
+
+    } finally {
+      setIsTemplateSaving(false);
     }
-
-    // ✅ Mark as saved
-    setOriginalTemplateContent(templateContent);
-    setIsTemplateChanged(false);
-
-    alert("✅ Template updated successfully!");
-
-  } catch (err) {
-
-    alert("❌ Save failed — changes are still unsaved.");
-    console.error(err);
-
-  } finally {
-    setIsTemplateSaving(false);
-  }
-};
+  };
 
 
 
@@ -475,20 +450,20 @@ const handleTemplateSave = async () => {
   // Function to close template modal
   const closeTemplateModal = () => {
 
-  if (isTemplateChanged) {
-    const confirmClose = window.confirm(
-      "You have unsaved changes. Close anyway?"
-    );
+    if (isTemplateChanged) {
+      const confirmClose = window.confirm(
+        "You have unsaved changes. Close anyway?"
+      );
 
-    if (!confirmClose) return;
-  }
+      if (!confirmClose) return;
+    }
 
-  setShowTemplateModal(false);
-  setSelectedTemplate(null);
-  setTemplateData(null);
-  setTemplateContent("");
-  setOriginalTemplateContent("");
-};
+    setShowTemplateModal(false);
+    setSelectedTemplate(null);
+    setTemplateData(null);
+    setTemplateContent("");
+    setOriginalTemplateContent("");
+  };
 
   // Function to get tooltip text based on event type and contact
   const getTooltipText = (event) => {
@@ -624,7 +599,7 @@ const handleTemplateSave = async () => {
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
-          overflow: hidden;
+        
         }
         
         .message-icon-pulse {
@@ -683,13 +658,12 @@ const handleTemplateSave = async () => {
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${
-          selectedView === "all"
-            ? "translate-x-0"
-            : selectedView === "important"
-              ? "translate-x-full"
-              : "translate-x-[200%]"
-        }`}
+        ${selectedView === "all"
+                  ? "translate-x-0"
+                  : selectedView === "important"
+                    ? "translate-x-full"
+                    : "translate-x-[200%]"
+                }`}
             />
 
             {[
@@ -703,11 +677,10 @@ const handleTemplateSave = async () => {
                 className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
           transition-colors duration-300 hover:cursor-pointer hover:opacity-90 transition
 
-          ${
-            selectedView === tab.key
-              ? "text-white"
-              : "text-gray-600 hover:text-purple-600"
-          }`}
+          ${selectedView === tab.key
+                    ? "text-white"
+                    : "text-gray-600 hover:text-purple-600"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -749,10 +722,9 @@ const handleTemplateSave = async () => {
                   </div>
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${
-                        index === 0
-                          ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
-                          : "bg-white border-gray-200"
+                      ${index === 0
+                        ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
+                        : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -766,12 +738,11 @@ const handleTemplateSave = async () => {
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
 
-                              ${
-                                isReminderEvent
-                                  ? "text-purple-600"
-                                  : isContactEvent
-                                    ? "text-green-600"
-                                    : "text-blue-600"
+                              ${isReminderEvent
+                                ? "text-purple-600"
+                                : isContactEvent
+                                  ? "text-green-600"
+                                  : "text-blue-600"
                               }`}
                           />
 
@@ -786,13 +757,13 @@ const handleTemplateSave = async () => {
                           >
                             {getTooltipText(event)}
 
-                      
+
                             {isReminderEvent && filterType && (
                               <div className="text-xs text-gray-300 mt-1">
                                 Filter: {filterType.replace(/_/g, " ")}
                                 {contactId && " • Single Contact"}
                               </div>
-                            )} 
+                            )}
 
                             {isContactEvent && contactId && (
                               <div className="text-xs text-gray-300 mt-1">
@@ -815,7 +786,7 @@ const handleTemplateSave = async () => {
                       </span>
 
                       <div className="flex items-center gap-2">
-                    
+
                         {hasMessageId && (
                           <button
                             onClick={() => handleMessageClick(event)}
@@ -823,11 +794,11 @@ const handleTemplateSave = async () => {
  relative group message-icon-pulse"
                             title="View Message"
                             disabled={isMessageLoading === event.message_id_c}
-                            >
-                           {isMessageLoading === event.message_id_c ? (
-                         <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                          ) : (<MessageSquare/>
-                         )}
+                          >
+                            {isMessageLoading === event.message_id_c ? (
+                              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                            ) : (<MessageSquare />
+                            )}
                             <div className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
                                           bg-gray-900 text-white rounded-md
@@ -845,10 +816,10 @@ const handleTemplateSave = async () => {
                         {hasTemplate && (
                           <button
                             onClick={() =>
-                                navigateTo("/settings/templates", {
-                                  state: { templateId: event.template_id },
-                                })
-                              }
+                              navigateTo("/settings/templates", {
+                                state: { templateId: event.template_id },
+                              })
+                            }
                             className="text-green-600 hover:text-green-700 cursor-pointer relative group"
                             title={`Preview Template: ${event.template_id}`}
                             disabled={
@@ -901,7 +872,7 @@ const handleTemplateSave = async () => {
                       </div>
                     </div>
 
-                 
+
                     {/* Additional info about the event */}
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                       {event.assigned_user_name && (
@@ -966,104 +937,111 @@ const handleTemplateSave = async () => {
         />
       )}
 
-      {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
-      {showMessageModal && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop hover:cursor-pointer hover:opacity-90 transition-all duration-300
-"
-          onClick={closeMessageModal}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ 
-              type: "spring", 
-              damping: 25,
-              stiffness: 300
-            }}
-            className="message-modal rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl hover:cursor-pointer hover:opacity-90 transition-all duration-300
-"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header with gradient */}
-           <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center">
+       {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
+     {showMessageModal && (
+  <div
+    className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
+    onClick={closeMessageModal}
+  >
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0, y: 20 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      transition={{
+        type: "spring",
+        damping: 25,
+        stiffness: 300
+      }}
+      className="message-modal rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl bg-white"
+      onClick={(e) => e.stopPropagation()}
+    >
+      
+      {/* ✅ HEADER (FIXED) */}
+      <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
+        
+        <div className="flex items-center gap-3">
+          <MessageSquare size={24} className="text-white" />
 
-              <div className="flex items-center gap-3">
-                <MessageSquare size={24} className="text-white" />
-               
-            <div className="flex flex-col leading-tight">
-  
- 
-  <h2 className="text-lg font-semibold text-white">
-    {messageMeta.from}
-  </h2>
+          <div className="flex flex-col leading-tight">
+            <h2 className="text-lg font-semibold text-white">
+              {messageMeta.from}
+            </h2>
 
+            <span className="text-sm text-blue-100">
+              {messageMeta.fromEmail}
+            </span>
 
-  <span className="text-sm text-blue-100">
-    {messageMeta.fromEmail}
-  </span>
-
-  <span className="text-xs text-blue-200">
-    {messageMeta.date} • {messageMeta.time}
-  </span>
-
-</div>
-
-
-</div>
-
-             
-<div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
-  <h1 className="text-lg font-semibold text-white truncate">
-    {messageMeta.subject}
-  </h1>
-</div>
-              
-              <button
-                onClick={closeMessageModal}
-                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
-                title="Close"
-              >
-                <X size={24} className="text-white" />
-              </button>
-            </div>
-
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 min-h-[60vh] flex items-center justify-center">
-              
-              {isMessageLoading ? (
-
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-gray-600 font-medium">Loading message content...</p>
-                </div>
-              ) : messageContent ? (
-
-                
-                <div className="message-content-container p-8 w-full max-w-4xl mx-auto">
-                  <div 
-                    className="message-content mx-auto"
-                    style={{
-                      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                      fontSize: '15px',
-                      lineHeight: '1.8',
-                      color: '#2d3748'
-                    }}
-                    dangerouslySetInnerHTML={{ __html: messageContent }}
-                  />
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-                    <MessageSquare size={32} className="text-gray-500" />
-                  </div>
-                  <p className="text-gray-600 text-lg font-medium">No message content available</p>
-                  <p className="text-gray-500 mt-2">This message doesn't contain any readable content.</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
+            <span className="text-xs text-blue-200">
+              {messageMeta.date} • {messageMeta.time}
+            </span>
+          </div>
         </div>
-      )}
+
+        {/* SUBJECT CENTER */}
+        <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
+          <h1 className="text-lg font-semibold text-white truncate">
+            {messageMeta.subject}
+          </h1>
+        </div>
+
+        <button
+          onClick={closeMessageModal}
+          className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
+          title="Close"
+        >
+          <X size={24} className="text-white" />
+        </button>
+      </div>
+
+      {/* ✅ SCROLLABLE BODY */}
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
+        
+        {isMessageLoading ? (
+
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-600 font-medium">
+              Loading message content...
+            </p>
+          </div>
+
+        ) : messageContent ? (
+
+          <div className="message-content-container w-full max-w-4xl mx-auto">
+            <div
+              className="message-content"
+              style={{
+                fontFamily:
+                  'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                fontSize: "15px",
+                lineHeight: "1.8",
+                color: "#2d3748",
+                padding:"20px"
+              }}
+              dangerouslySetInnerHTML={{ __html: messageContent }}
+            />
+          </div>
+
+        ) : (
+
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="w-20 h-20 mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
+              <MessageSquare size={32} className="text-gray-500" />
+            </div>
+
+            <p className="text-gray-600 text-lg font-medium">
+              No message content available
+            </p>
+
+            <p className="text-gray-500 mt-2">
+              This message doesn't contain any readable content.
+            </p>
+          </div>
+
+        )}
+      </div>
+    </motion.div>
+  </div>
+)}
 
 
       {/* Template Modal */}
@@ -1085,44 +1063,43 @@ const handleTemplateSave = async () => {
             <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
 
               <h2 className="text-2xl font-bold">
-                 {templateData.name || "Template Editor"}
+                {templateData.name || "Template Editor"}
               </h2>
 
-  <div className="flex gap-3">
+              <div className="flex gap-3">
 
-        <button
-          onClick={handleTemplateSave}
-          disabled={!isTemplateChanged || isTemplateSaving}
-          className={`px-4 py-2 rounded-lg font-medium transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
- ${
-          !isTemplateChanged || isTemplateSaving
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-green-600 hover:bg-green-700"
-      }`}
-    >
-      {isTemplateSaving ? "Saving..." : "Save"}
-    </button>
+                <button
+                  onClick={handleTemplateSave}
+                  disabled={!isTemplateChanged || isTemplateSaving}
+                  className={`px-4 py-2 rounded-lg font-medium transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
+ ${!isTemplateChanged || isTemplateSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                    }`}
+                >
+                  {isTemplateSaving ? "Saving..." : "Save"}
+                </button>
 
-    {isTemplateChanged && (
-      <button
-        onClick={() => setTemplateContent(originalTemplateContent)}
-        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg hover:cursor-pointer hover:opacity-90 transition-all duration-300
+                {isTemplateChanged && (
+                  <button
+                    onClick={() => setTemplateContent(originalTemplateContent)}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg hover:cursor-pointer hover:opacity-90 transition-all duration-300
 "
-      >
-        Cancel
-      </button>
-    )}
+                  >
+                    Cancel
+                  </button>
+                )}
 
-    <button
-      onClick={closeTemplateModal}
-      className="p-2 hover:bg-white/20 rounded-full transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
+                <button
+                  onClick={closeTemplateModal}
+                  className="p-2 hover:bg-white/20 rounded-full transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
 "
-    >
-      <X size={28} />
-    </button>
+                >
+                  <X size={28} />
+                </button>
 
-  </div>
-</div>
+              </div>
+            </div>
 
 
             {/* Editor Content */}
@@ -1135,12 +1112,12 @@ const handleTemplateSave = async () => {
                   height: "100%",
                   menubar: false,
                   plugins:
-                    "preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media table charmap pagebreak nonbreaking anchor insertdatetime lists wordcount advlist code help",
+                    "preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media table charmap pagebreak nonbreaking anchor insertdatetime lists wordcount advlist code help emoticons",
                   toolbar:
                     "undo redo | formatselect | bold italic underline strikethrough | \
                     alignleft aligncenter alignright alignjustify | \
                     bullist numlist outdent indent | link image media | \
-                    preview fullscreen | code",
+                    preview fullscreen | code emoticons",
                   toolbar_mode: "sliding",
                   content_style: `
                     body { 

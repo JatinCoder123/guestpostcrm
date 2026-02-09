@@ -24,7 +24,7 @@ export default function TemplatesPage() {
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const { showConsole } = useContext(PageContext);
-  const {state} = useLocation()
+  const { state } = useLocation()
 
   const { loading, data, error, refetch } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
@@ -217,8 +217,8 @@ export default function TemplatesPage() {
     }
     setShowNewTemplateModal(false);
   };
- useEffect(() => {
-    if (state?.templateId && data ) {
+  useEffect(() => {
+    if (state?.templateId && data) {
       const item = data.find((item) => item.id === state.templateId);
       // console.log(item)
       if (item) {
@@ -469,7 +469,7 @@ export default function TemplatesPage() {
       />
 
 
-      {loading && <Loading text="Loading templates" />}
+      {loading && <Loading text="templates" />}
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
       {!loading && !error && (!data || data.length === 0) && (

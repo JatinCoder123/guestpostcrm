@@ -27,7 +27,7 @@ import TableLoading from "../TableLoading";
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [selectedView, setSelectedView] = useState("unreplied");
 
   const [selectedSort, setSelectedSort] = useState("");
   const { count, emails, loading, unread } = useSelector(
@@ -69,7 +69,7 @@ export function UnrepliedEmailsPage() {
   const filteredEmails = emails
     .filter((item) => {
       // 🔴 UNREAD FILTER
-      if (showUnreadOnly && item.is_seen != 0) {
+      if (selectedView === "unread" && item.is_seen != 0) {
         return false;
       }
 
@@ -126,6 +126,7 @@ export function UnrepliedEmailsPage() {
   };
 
   const handleSearchChange = (value) => setTopsearch(value);
+
   const handleCategoryChange = (value) => setSelectedCategory(value);
   const handleSortChange = (value) => setSelectedSort(value);
   const handleDownload = () => {
@@ -217,23 +218,34 @@ export function UnrepliedEmailsPage() {
           </div>
 
           {/* Counters */}
-          <div className="flex items-center gap-3">
-            <span className="px-2 py-3 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-              {count} Unreplied
-            </span>
+          <div className="flex justify-center">
+            <div className="relative flex bg-gray-200 rounded-xl p-1 w-[260px]">
+              {/* Sliding Indicator */}
+              <div
+                className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(50%-4px)]
+        bg-white rounded-xl shadow
+        transition-transform duration-300 ease-in-out
+        ${selectedView === "unread" ? "translate-x-full" : "translate-x-0"}`}
+              />
 
-            <span
-              onClick={() => setShowUnreadOnly((prev) => !prev)}
-              className={`px-4 py-3 rounded-full text-sm font-semibold shadow-sm cursor-pointer transition-all
-    ${
-      showUnreadOnly
-        ? "bg-red-600 text-white ring-2 ring-red-300"
-        : "bg-purple-600 text-white hover:bg-purple-700"
-    }
-  `}
-            >
-              {unread} Unread
-            </span>
+              {/* All Records */}
+              <button
+                onClick={() => setSelectedView("unreplied")}
+                className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300
+        ${selectedView === "unreplied" ? "text-purple-600" : "text-gray-600"}`}
+              >
+                {count} Unreplied
+              </button>
+
+              {/* Important Records */}
+              <button
+                onClick={() => setSelectedView("unread")}
+                className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300
+        ${selectedView === "unread" ? "text-purple-600" : "text-gray-600"}`}
+              >
+                {unread} Unread
+              </button>
+            </div>
           </div>
         </div>
 
@@ -277,10 +289,9 @@ export function UnrepliedEmailsPage() {
                   <tr
                     key={email.thread_id}
                     className={`border-b border-gray-100 cursor-pointer transition-colors
-                      ${
-                        email.is_seen == 0
-                          ? "bg-blue-50 hover:bg-blue-100"
-                          : "hover:bg-purple-50"
+                      ${email.is_seen == 0
+                        ? "bg-blue-50 hover:bg-blue-100"
+                        : "hover:bg-purple-50"
                       }
                     `}
                   >
