@@ -514,10 +514,18 @@ export default function EmailBox({
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   onClick={() => {
-                    scrollRef.current?.scrollTo({
-                      top: 0,
-                      behavior: "smooth",
-                    });
+                    // Step 1: show all messages if not already
+                    if (messageLimit < emails.length) {
+                      setMessageLimit(emails.length);
+                    }
+
+                    // Step 2: wait for DOM update, then scroll
+                    setTimeout(() => {
+                      scrollRef.current?.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                      });
+                    }, 50);
                   }}
                   className="px-5 py-2.5 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
                 >
