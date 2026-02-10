@@ -420,7 +420,7 @@ export default function Create({
                         >
                           {creating && button == 2
                             ? "Sending..."
-                            : "Preview & Send"}
+                            : "Save & Send"}
                         </button>
                       </>
                     )}
