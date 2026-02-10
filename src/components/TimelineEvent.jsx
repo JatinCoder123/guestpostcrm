@@ -782,7 +782,7 @@ const TimelineEvent = () => {
                           {type
                             ? type.charAt(0).toUpperCase() + type.slice(1)
                             : "Event"}
-                        </span> 
+                        </span>
                       </span>
 
                       <div className="flex items-center gap-2">
@@ -812,8 +812,8 @@ const TimelineEvent = () => {
                           </button>
                         )}
 
-                        {/* Template Icon - Only show if template_id exists */}
-                        {hasTemplate && (
+                        {/* {hasTemplate && (
+
                           <button
                             onClick={() =>
                               navigateTo("/settings/templates", {
@@ -835,7 +835,6 @@ const TimelineEvent = () => {
                                 </div>
                               )}
 
-                            {/* Tooltip for template */}
                             <div
                               className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
@@ -851,7 +850,7 @@ const TimelineEvent = () => {
                               />
                             </div>
                           </button>
-                        )}
+                        )} */}
 
                         {event.prompt_id.trim() !== "" &&
                           event.prompt_id.toLowerCase() !== "na" && (
@@ -937,111 +936,111 @@ const TimelineEvent = () => {
         />
       )}
 
-       {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
-     {showMessageModal && (
-  <div
-    className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
-    onClick={closeMessageModal}
-  >
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0, y: 20 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{
-        type: "spring",
-        damping: 25,
-        stiffness: 300
-      }}
-      className="message-modal rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl bg-white"
-      onClick={(e) => e.stopPropagation()}
-    >
-      
-      {/* ✅ HEADER (FIXED) */}
-      <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
-        
-        <div className="flex items-center gap-3">
-          <MessageSquare size={24} className="text-white" />
-
-          <div className="flex flex-col leading-tight">
-            <h2 className="text-lg font-semibold text-white">
-              {messageMeta.from}
-            </h2>
-
-            <span className="text-sm text-blue-100">
-              {messageMeta.fromEmail}
-            </span>
-
-            <span className="text-xs text-blue-200">
-              {messageMeta.date} • {messageMeta.time}
-            </span>
-          </div>
-        </div>
-
-        {/* SUBJECT CENTER */}
-        <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
-          <h1 className="text-lg font-semibold text-white truncate">
-            {messageMeta.subject}
-          </h1>
-        </div>
-
-        <button
+      {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
+      {showMessageModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
           onClick={closeMessageModal}
-          className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
-          title="Close"
         >
-          <X size={24} className="text-white" />
-        </button>
-      </div>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{
+              type: "spring",
+              damping: 25,
+              stiffness: 300
+            }}
+            className="message-modal rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
 
-      {/* ✅ SCROLLABLE BODY */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
-        
-        {isMessageLoading ? (
+            {/* ✅ HEADER (FIXED) */}
+            <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
 
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600 font-medium">
-              Loading message content...
-            </p>
-          </div>
+              <div className="flex items-center gap-3">
+                <MessageSquare size={24} className="text-white" />
 
-        ) : messageContent ? (
+                <div className="flex flex-col leading-tight">
+                  <h2 className="text-lg font-semibold text-white">
+                    {messageMeta.from}
+                  </h2>
 
-          <div className="message-content-container w-full max-w-4xl mx-auto">
-            <div
-              className="message-content"
-              style={{
-                fontFamily:
-                  'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                fontSize: "15px",
-                lineHeight: "1.8",
-                color: "#2d3748",
-                padding:"20px"
-              }}
-              dangerouslySetInnerHTML={{ __html: messageContent }}
-            />
-          </div>
+                  <span className="text-sm text-blue-100">
+                    {messageMeta.fromEmail}
+                  </span>
 
-        ) : (
+                  <span className="text-xs text-blue-200">
+                    {messageMeta.date} • {messageMeta.time}
+                  </span>
+                </div>
+              </div>
 
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-20 h-20 mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-              <MessageSquare size={32} className="text-gray-500" />
+              {/* SUBJECT CENTER */}
+              <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
+                <h1 className="text-lg font-semibold text-white truncate">
+                  {messageMeta.subject}
+                </h1>
+              </div>
+
+              <button
+                onClick={closeMessageModal}
+                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
+                title="Close"
+              >
+                <X size={24} className="text-white" />
+              </button>
             </div>
 
-            <p className="text-gray-600 text-lg font-medium">
-              No message content available
-            </p>
+            {/* ✅ SCROLLABLE BODY */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
 
-            <p className="text-gray-500 mt-2">
-              This message doesn't contain any readable content.
-            </p>
-          </div>
+              {isMessageLoading ? (
 
-        )}
-      </div>
-    </motion.div>
-  </div>
-)}
+                <div className="flex flex-col items-center justify-center h-full">
+                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-600 font-medium">
+                    Loading message content...
+                  </p>
+                </div>
+
+              ) : messageContent ? (
+
+                <div className="message-content-container w-full max-w-4xl mx-auto">
+                  <div
+                    className="message-content"
+                    style={{
+                      fontFamily:
+                        'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                      fontSize: "15px",
+                      lineHeight: "1.8",
+                      color: "#2d3748",
+                      padding: "20px"
+                    }}
+                    dangerouslySetInnerHTML={{ __html: messageContent }}
+                  />
+                </div>
+
+              ) : (
+
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <div className="w-20 h-20 mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
+                    <MessageSquare size={32} className="text-gray-500" />
+                  </div>
+
+                  <p className="text-gray-600 text-lg font-medium">
+                    No message content available
+                  </p>
+
+                  <p className="text-gray-500 mt-2">
+                    This message doesn't contain any readable content.
+                  </p>
+                </div>
+
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
 
 
       {/* Template Modal */}
