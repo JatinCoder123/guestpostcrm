@@ -185,7 +185,7 @@ export function Marketplace() {
                     {row.date_entered}
                   </td>
                   <td className="px-6 py-4 text-blue-600">{row.name}</td>
-                  <td className="px-6 py-4 text-blue-600">{row?.description !== "" ? "Brand" : "Non Brand"}</td>
+                  <td className="px-6 py-4 text-blue-600">{row?.description !== null ? "Brand" : "Non Brand"}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2 item-center justify-center">
                       {/* Update Button */}

@@ -208,7 +208,7 @@ const ActionButton = ({
         addEvent({
           email,
           thread_id: threadId,
-          recent_activity: "favourite",
+          recent_activity: favouriteMessage,
         }),
       );
       dispatch(favAction.clearAllMessages());
@@ -226,7 +226,7 @@ const ActionButton = ({
         addEvent({
           email,
           thread_id: threadId,
-          recent_activity: "Add to market place",
+          recent_activity: markingMessage,
         }),
       );
       dispatch(marketplaceActions.clearMessage());
