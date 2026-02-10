@@ -25,7 +25,9 @@ import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { PreviewTemplate } from "./PreviewTemplate";
 import { threadEmailAction } from "../store/Slices/threadEmail";
+import { MdHome, MdOutlineHome } from "react-icons/md";
 import { showConsole } from "../assets/assets";
+import { addMarketPlace, deleteMarketPlace, marketplaceActions } from "../store/Slices/Marketplace";
 
 /* 🔹 Separator Component */
 const Separator = () => <div className="h-8 w-[1px] bg-gray-500 mx-2" />;
@@ -38,6 +40,8 @@ const ActionButton = ({
 }) => {
   const dispatch = useDispatch();
   const [showUsers, setShowUsers] = useState(false);
+  const [isMark, setIsMark] = useState(false);
+
   const [showTags, setShowTags] = useState(false);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
@@ -84,10 +88,13 @@ const ActionButton = ({
   const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
 
   const {
-    marking,
+    adding,
+    deleteMarketPlaceId,
+    deleting,
+    items: marketPlaces,
     error: markingError,
     message: markingMessage,
-  } = useSelector((s) => s.bulk);
+  } = useSelector((s) => s.marketplace);
 
   const handleForward = (to) => {
     dispatch(forwardEmail(contactInfo.id, to, threadId));
@@ -140,6 +147,12 @@ const ActionButton = ({
       setFrLoading(false);
     }
   };
+  useEffect(() => {
+    if (marketPlaces.length > 0) {
+      setIsMark(marketPlaces.find((e) => e.name === email));
+
+    }
+  }, [marketPlaces])
 
   const FavIcon = () => {
     const isFav = favEmails.some((e) => e.email_address === email);
@@ -204,7 +217,7 @@ const ActionButton = ({
 
     if (markingError) {
       toast.error(markingError);
-      dispatch(bulkAction.clearAllErrors());
+      dispatch(marketplaceActions.clearErrors());
     }
 
     if (markingMessage) {
@@ -213,10 +226,10 @@ const ActionButton = ({
         addEvent({
           email,
           thread_id: threadId,
-          recent_activity: "bulk marked",
+          recent_activity: "Add to market place",
         }),
       );
-      dispatch(bulkAction.clearAllMessages());
+      dispatch(marketplaceActions.clearMessage());
     }
 
     if (changeMessage) {
@@ -313,6 +326,16 @@ const ActionButton = ({
       ),
       label: "Assign",
       action: () => setShowUsers((p) => !p),
+    },
+    {
+      icon: (adding || (deleting && deleteMarketPlaceId == isMark.id))
+        ? (
+          <LoadingChase />
+        ) : (
+          isMark ? <MdHome size={25} color="red" /> : <MdOutlineHome size={25} color="red" />
+        ),
+      label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
+      action: () => dispatch(isMark ? deleteMarketPlace(isMark.id) : addMarketPlace(email, contactInfo.type == "Brand")),
     },
     {
       icon: exchanging ? (
@@ -429,11 +452,10 @@ const ActionButton = ({
           <>
             {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
             <div
-              className={`flex items-center transition-opacity duration-200 ${
-                showFirstReplyBtn
-                  ? "opacity-100"
-                  : "opacity-0 pointer-events-none"
-              }`}
+              className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none"
+                }`}
             >
               <button
                 onClick={(e) => {

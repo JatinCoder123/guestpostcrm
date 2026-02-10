@@ -16,12 +16,12 @@ import {
   BarChart4Icon,
   Trash,
 } from "lucide-react";
-import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
+import { deleteMarketPlace, getMarketplace, marketplaceActions } from "../../store/Slices/Marketplace"; // named import
 import { LoadingChase } from "../Loading";
 
 export function Marketplace() {
   const dispatch = useDispatch();
-  const { items, count, loading, deleting } = useSelector((state) => state.marketplace);
+  const { items, error, loading, deleting, message, deleteMarketPlaceId } = useSelector((state) => state.marketplace);
   const [selectedSort, setSelectedSort] = useState("");
 
   const [topsearch, setTopsearch] = useState("");
@@ -88,6 +88,16 @@ export function Marketplace() {
     a.download = "unreplied-emails.csv";
     a.click();
   };
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+      dispatch(marketplaceActions.clearErrors())
+    }
+    if (message) {
+      toast.success(message)
+      dispatch(marketplaceActions.clearMessage())
+    }
+  }, [error, dispatch, message])
 
   return (
     <>
@@ -179,11 +189,11 @@ export function Marketplace() {
                   <td className="px-6 py-4">
                     <div className="flex gap-2 item-center justify-center">
                       {/* Update Button */}
-                      {deleting && "deleteOfferId" === row.id ? <LoadingChase size="20" color="red" /> : (
+                      {deleting && deleteMarketPlaceId === row.id ? <LoadingChase size="20" color="red" /> : (
                         <button
                           className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                           title="Delete"
-                          onClick={() => dispatch(deleteOffer(offer.id))}
+                          onClick={() => dispatch(deleteMarketPlace(row.id))}
                         >
                           <Trash className="w-5 h-5 text-red-600" />
                         </button>
