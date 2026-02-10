@@ -13,12 +13,15 @@ import {
   Pen,
   LinkIcon,
   ActivityIcon,
+  BarChart4Icon,
+  Trash,
 } from "lucide-react";
-import { getMarketplace } from "../../store/Slices/Marketplace"; // named import
+import { deleteMarketPlace, getMarketplace, marketplaceActions } from "../../store/Slices/Marketplace"; // named import
+import { LoadingChase } from "../Loading";
 
 export function Marketplace() {
   const dispatch = useDispatch();
-  const { items, count, loading } = useSelector((state) => state.marketplace);
+  const { items, error, loading, deleting, message, deleteMarketPlaceId } = useSelector((state) => state.marketplace);
   const [selectedSort, setSelectedSort] = useState("");
 
   const [topsearch, setTopsearch] = useState("");
@@ -57,7 +60,7 @@ export function Marketplace() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleDownload = () => {
     if (!filtereditems || filtereditems.length === 0) {
@@ -85,10 +88,16 @@ export function Marketplace() {
     a.download = "unreplied-emails.csv";
     a.click();
   };
-
   useEffect(() => {
-    dispatch(getMarketplace());
-  }, [dispatch]);
+    if (error) {
+      toast.error(error)
+      dispatch(marketplaceActions.clearErrors())
+    }
+    if (message) {
+      toast.success(message)
+      dispatch(marketplaceActions.clearMessage())
+    }
+  }, [error, dispatch, message])
 
   return (
     <>
@@ -130,29 +139,6 @@ export function Marketplace() {
               />
             </a>
           </div>
-          <div className="relative group ">
-            <button
-              onClick={() => alert("work in progress")}
-              className="p-5  cursor-pointer hover:scale-110 flex items-center justify-center transition"
-            >
-              <img
-                width="40"
-                height="40"
-                src="https://img.icons8.com/arcade/64/plus.png"
-                alt="plus"
-              />
-            </button>
-
-            {/* Tooltip */}
-            <span
-              className="absolute left-1/2 -bottom-3 -translate-x-1/2
-                   bg-gray-800 text-white text-sm px-3 py-1 rounded-md
-                   opacity-0 group-hover:opacity-100 transition
-                   pointer-events-none whitespace-nowrap shadow-md"
-            >
-              Create Marketplace
-            </span>
-          </div>
         </div>
 
         {/* Table */}
@@ -170,7 +156,13 @@ export function Marketplace() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <LinkIcon className="w-4 h-4" />
-                    WEBSITES
+                    EMAIL
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <BarChart4Icon className="w-4 h-4" />
+                    TYPE
                   </div>
                 </th>
 
@@ -193,15 +185,19 @@ export function Marketplace() {
                     {row.date_entered}
                   </td>
                   <td className="px-6 py-4 text-blue-600">{row.name}</td>
+                  <td className="px-6 py-4 text-blue-600">{row?.description !== null ? "Brand" : "Non Brand"}</td>
                   <td className="px-6 py-4">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 item-center justify-center">
                       {/* Update Button */}
-                      <button
-                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                        title="Update"
-                      >
-                        <Pen className="w-5 h-5 text-blue-600" />
-                      </button>
+                      {deleting && deleteMarketPlaceId === row.id ? <LoadingChase size="20" color="red" /> : (
+                        <button
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                          title="Delete"
+                          onClick={() => dispatch(deleteMarketPlace(row.id))}
+                        >
+                          <Trash className="w-5 h-5 text-red-600" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -793,8 +793,8 @@ const TimelineEvent = () => {
                           </button>
                         )}
 
-                        {/* Template Icon - Only show if template_id exists */}
-                        {hasTemplate && (
+                        {/* {hasTemplate && (
+
                           <button
                             onClick={() =>
                               navigateTo("/settings/templates", {
@@ -816,7 +816,6 @@ const TimelineEvent = () => {
                                 </div>
                               )}
 
-                            {/* Tooltip for template */}
                             <div
                               className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
@@ -832,7 +831,7 @@ const TimelineEvent = () => {
                               />
                             </div>
                           </button>
-                        )}
+                        )} */}
 
                         {event.prompt_id.trim() !== "" &&
                           event.prompt_id.toLowerCase() !== "na" && (

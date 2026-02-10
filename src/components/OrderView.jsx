@@ -216,79 +216,84 @@ function ProcessingLoader() {
   );
 }
 function OrderHeader({ data, setStatus, onCompleteHandler }) {
+  const [showModel, setShowModel] = useState(null)
   return (
-    <div className="w-full mb-3">
-      <div className="relative group">
-        <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
-          <div className="relative z-10 flex flex-col items-center justify-center gap-5">
+    <>
+      {showModel && <Model setShowModel={setShowModel} showModel={showModel} handleSubmitConfirm={() => { setStatus(showModel), setShowModel(null) }} />}
+      <div className="w-full mb-3">
+        <div className="relative group">
+          <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
+            <div className="relative z-10 flex flex-col items-center justify-center gap-5">
 
-            {/* Order Label */}
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  Order ID
-                </span>
+              {/* Order Label */}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    Order ID
+                  </span>
+                </div>
+
+                <h2 className="text-2xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
+                  {data.order_id}
+                </h2>
               </div>
 
-              <h2 className="text-2xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
-                {data.order_id}
-              </h2>
-            </div>
+              {/* Action Buttons */}
+              <div className="flex gap-3 flex-wrap justify-center">
 
-            {/* Action Buttons */}
-            <div className="flex gap-3 flex-wrap justify-center">
-
-              {/* Accept */}
-              {data.order_status !== "accepted" && (
-                <>
-                  <button
-                    onClick={() => { setStatus("accepted"); }}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                {/* Accept */}
+                {data.order_status !== "accepted" && (
+                  <>
+                    <button
+                      onClick={() => { setShowModel("accepted"); }}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
                            hover:bg-emerald-500 hover:shadow-lg
                            active:scale-95 transition-all cursor-pointer"
-                  >
-                    <CheckCircle size={18} />
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => { setStatus("rejected_nontechnical"); }}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                    >
+                      <CheckCircle size={18} />
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => { setShowModel("rejected_nontechnical"); }}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30
                            hover:bg-red-500 hover:shadow-lg
                            active:scale-95 transition-all cursor-pointer"
-                  >
-                    <XCircle size={18} />
-                    Reject
-                  </button></>
+                    >
+                      <XCircle size={18} />
+                      Reject
+                    </button></>
 
-              )}
+                )}
 
-              {/* Complete */}
-              {data.order_status == "accepted" && (
-                <button
-                  onClick={onCompleteHandler}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                {/* Complete */}
+                {data.order_status == "accepted" && (
+                  <button
+                    onClick={onCompleteHandler}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl
               bg-blue-500/90 text-white font-semibold
               shadow-md shadow-blue-500/30
               hover:bg-blue-500 hover:shadow-lg
               active:scale-95 transition-all cursor-pointer"
-                >
-                  <PackageCheck size={18} />
-                  Complete
-                </button>
+                  >
+                    <PackageCheck size={18} />
+                    Complete
+                  </button>
 
 
-              )}
+                )}
+
+              </div>
 
             </div>
-
           </div>
         </div>
-      </div>
-    </div >
+      </div >
+    </>
+
   );
 }
 
@@ -331,6 +336,38 @@ function PayPalConsent({ open, onCancel, onProceed }) {
             className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
           >
             Proceed to PayPal
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function Model({ setShowModel, showModel, handleSubmitConfirm }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/30 backdrop-blur-sm">
+      <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-md w-full shadow-lg">
+
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          {showModel === "rejected_nontechnical" ? "Reject" : "Accept"} Order
+        </h2>
+
+        <p className="text-gray-600 font-medium mb-6">
+          Are you sure you want to continue?
+        </p>
+
+        <div className="flex justify-end gap-4">
+          <button
+            onClick={() => setShowModel(null)}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+          >
+            No
+          </button>
+
+          <button
+            onClick={handleSubmitConfirm}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Yes
           </button>
         </div>
       </div>
