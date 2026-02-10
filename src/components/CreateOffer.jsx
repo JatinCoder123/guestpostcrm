@@ -101,6 +101,9 @@ export default function CreateOffer() {
     deleting,
     deleteOfferId,
   } = useSelector((state) => state.offers);
+  const {
+    deals
+  } = useSelector((state) => state.deals);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   dispatch(dealsAction.clearAllMessages());
 
@@ -108,13 +111,16 @@ export default function CreateOffer() {
     let offer = offers.filter(
       (d) => excludeEmail(d.real_name ?? d.email) == state?.email,
     );
+    let deal = deals.filter(
+      (d) => excludeEmail(d.real_name ?? d.email) == state?.email,
+    );
     let valid = [];
     if (type == "create") {
-      valid = websiteLists.filter((w) => !offer.some((o) => o.website == w));
+      valid = websiteLists.filter((w) => !(offer.some((o) => o.website == w) || deal.some((o) => o.website_c == w)));
     }
     if (type == "edit") {
       valid = websiteLists.filter((w) =>
-        offer.some((o) => o.id == id || o.website !== w),
+        offer.some((o) => o.id == id || o.website !== w) && !deal.some((o) => o.website_c == w),
       );
     }
     setValidWebsite(valid);
