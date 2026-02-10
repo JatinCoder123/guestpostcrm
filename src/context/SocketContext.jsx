@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import { showConsole } from "../assets/assets.js"
+import { showConsole } from "../assets/assets.js";
+import axios from "axios";
 
 const socket = io("https://socket.guestpostcrm.com");
 export const SocketContext = createContext();
@@ -23,27 +24,26 @@ export const SocketContextProvider = ({ children }) => {
     refresh_ladger: null,
     refreshUnreplied: null,
     // paypal_status_sent: null
-    outr_paypal_invoice_links: null
+    outr_paypal_invoice_links: null,
   });
   const getMoveOptions = async () => {
     try {
       const response = await axios.get(`${crm}/index.php?entryPoint=move`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching move options:', error);
+      console.error("Error fetching move options:", error);
       throw error;
     }
   };
 
-
   const moveData = async (threadId, labelId) => {
     try {
       const response = await axios.post(
-        `${crm}/index.php?entryPoint=move&threadid=${threadId}&lblid=${labelId}`
+        `${crm}/index.php?entryPoint=move&threadid=${threadId}&lblid=${labelId}`,
       );
       return response.data;
     } catch (error) {
-      console.error('Error moving data:', error);
+      console.error("Error moving data:", error);
       throw error;
     }
   };
@@ -60,7 +60,6 @@ export const SocketContextProvider = ({ children }) => {
       });
     };
 
-
     const latestAvatarHandler = (avatar) => {
       setCurrentAvatar({
         url: avatar.avatar_url.split("html/")[1],
@@ -76,14 +75,12 @@ export const SocketContextProvider = ({ children }) => {
       if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);
-        }
-        else {
+        } else {
           setNotificationCount((prev) => ({
             ...prev,
             [data.name]: Date.now(),
           }));
         }
-
       }
     };
 

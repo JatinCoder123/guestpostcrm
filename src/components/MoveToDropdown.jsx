@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-import { addEvent } from '../store/Slices/eventSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { SocketContext } from '../context/SocketContext';
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
+import { addEvent } from "../store/Slices/eventSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { SocketContext } from "../context/SocketContext";
 
 const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,8 +23,8 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Fetch labels when dropdown opens
@@ -35,11 +35,11 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
       if (response.success && response.labels) {
         setLabels(response.labels);
       } else {
-        toast.error('Failed to fetch labels');
+        toast.error("Failed to fetch labels");
       }
     } catch (error) {
-      toast.error('Error fetching labels');
-      console.error('Error:', error);
+      toast.error("Error fetching labels");
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -53,31 +53,30 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   };
 
   const handleMoveClick = async (labelId, labelName) => {
-
-
     if (!currentThreadId) {
-      toast.error('No thread selected');
-      console.error('❌ ERROR: No thread ID available');
+      toast.error("No thread selected");
+      console.error("❌ ERROR: No thread ID available");
       return;
     }
 
     setMoveLoading(labelId);
     try {
-
       await moveData(currentThreadId, labelId);
 
       toast.success(`Moved to ${labelName} successfully!`);
-      dispatch(addEvent({
-        email,
-        thread_id: currentThreadId,
-        recent_activity: "moved",
-      }))
+      dispatch(
+        addEvent({
+          email,
+          thread_id: currentThreadId,
+          recent_activity: "moved",
+        }),
+      );
       onMoveSuccess?.();
       setIsOpen(false);
     } catch (error) {
       // DEBUG: Error case
-      console.error('❌ Move failed:', error);
-      toast.error('Failed to move data');
+      console.error("❌ Move failed:", error);
+      toast.error("Failed to move data");
     } finally {
       setMoveLoading(null);
     }
@@ -86,36 +85,12 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
   // Label type के according color determine करें
   const getLabelColor = (type) => {
     switch (type) {
-      case 'user':
-        return 'bg-green-100 text-green-800';
-      case 'system':
-        return 'bg-blue-100 text-blue-800';
+      case "user":
+        return "bg-green-100 text-green-800";
+      case "system":
+        return "bg-blue-100 text-blue-800";
       default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Label type के according icon determine करें
-  const getLabelIcon = (labelName) => {
-    const iconBaseUrl = "https://img.icons8.com/color/48";
-
-    switch (labelName) {
-      case 'INBOX':
-        return `${iconBaseUrl}/inbox.png`;
-      case 'SENT':
-        return `${iconBaseUrl}/sent.png`;
-      case 'DRAFT':
-        return `${iconBaseUrl}/draft.png`;
-      case 'SPAM':
-        return `${iconBaseUrl}/spam.png`;
-      case 'TRASH':
-        return `${iconBaseUrl}/trash.png`;
-      case 'STARRED':
-        return `${iconBaseUrl}/star.png`;
-      case 'IMPORTANT':
-        return `${iconBaseUrl}/important.png`;
-      default:
-        return `${iconBaseUrl}/folder--v1.png`;
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -176,20 +151,11 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
                     className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex items-center justify-between transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex-shrink-0">
-                        <img
-                          src={getLabelIcon(label.name)}
-                          className="w-5 h-5"
-                          alt={label.name}
-                        />
-                      </div>
-
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-800 truncate">
                             {label.name}
                           </span>
-
                         </div>
                       </div>
                     </div>
@@ -218,7 +184,6 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
             {/* Footer - Updated with better thread ID display */}
             <div className="border-t border-gray-200 p-3 bg-gray-50">
               <div className="flex justify-between items-center text-xs text-gray-500">
-
                 <button
                   onClick={() => setIsOpen(false)}
                   className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer px-3 py-1 bg-white border border-gray-300 rounded-lg"

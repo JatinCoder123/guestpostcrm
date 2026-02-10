@@ -8,7 +8,6 @@ import {
   favEmail,
   getFavEmails,
 } from "../store/Slices/favEmailSlice";
-import { bulkAction, markingEmail } from "../store/Slices/markBulkSlice";
 import {
   forwardEmail,
   forwardedAction,
@@ -94,16 +93,13 @@ const ActionButton = ({
     dispatch(forwardEmail(contactInfo.id, to, threadId));
   };
 
-
   /* 🔥 ADDED: Check FR button visibility */
   useEffect(() => {
     if (!email) return;
 
     const fetchFRButtonStatus = async () => {
       try {
-        const res = await fetch(
-          `${crmEndpoint}&type=fr_button&email=${email}`
-        );
+        const res = await fetch(`${crmEndpoint}&type=fr_button&email=${email}`);
         const data = await res.json();
 
         if (data?.reminder_id && data.reminder_id !== false) {
@@ -127,11 +123,11 @@ const ActionButton = ({
 
     try {
       setFrLoading(true);
-      showConsole && console.log(crmEndpoint)
+      showConsole && console.log(crmEndpoint);
       await fetch(
-        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`
+        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`,
       );
-      showConsole && console.log("First rply send button clicked")
+      showConsole && console.log("First rply send button clicked");
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),
@@ -182,7 +178,7 @@ const ActionButton = ({
           email,
           thread_id: threadId,
           recent_activity: "forwarded",
-        })
+        }),
       );
       dispatch(forwardedAction.clearAllMessages());
       dispatch(getForwardedEmails({ email: enteredEmail, loading: false }));
@@ -200,7 +196,7 @@ const ActionButton = ({
           email,
           thread_id: threadId,
           recent_activity: "favourite",
-        })
+        }),
       );
       dispatch(favAction.clearAllMessages());
       dispatch(getFavEmails({ email: enteredEmail, loading: false }));
@@ -218,7 +214,7 @@ const ActionButton = ({
           email,
           thread_id: threadId,
           recent_activity: "bulk marked",
-        })
+        }),
       );
       dispatch(bulkAction.clearAllMessages());
     }
@@ -230,7 +226,7 @@ const ActionButton = ({
           email,
           thread_id: threadId,
           recent_activity: "link exchange status changed",
-        })
+        }),
       );
       dispatch(linkExchangeaction.clearAllMessages());
     }
@@ -273,7 +269,6 @@ const ActionButton = ({
     threadId,
     enteredEmail,
   ]);
-
 
   /* 🔹 Static Buttons (UNCHANGED) */
   const actionButtons = [
@@ -320,19 +315,6 @@ const ActionButton = ({
       action: () => setShowUsers((p) => !p),
     },
     {
-      icon: marking ? (
-        <LoadingChase />
-      ) : (
-        <img
-          src="https://img.icons8.com/color/48/bursts.png"
-          className="w-6 h-6"
-          alt="bulk"
-        />
-      ),
-      label: "Mark Bulk",
-      action: () => dispatch(markingEmail(threadId)),
-    },
-    {
       icon: exchanging ? (
         <LoadingChase />
       ) : (
@@ -363,8 +345,19 @@ const ActionButton = ({
 
   return (
     <>
-      {showUpdatePopup && <PreviewTemplate editorContent={editorContent} initialContent={editorContent} setEditorContent={setEditorContent} onClose={() => setShowUpdatePopup(false)} onSubmit={() => { handleActionBtnClick(editorContent) }} loading={sending}
-        threadId={threadId} />}
+      {showUpdatePopup && (
+        <PreviewTemplate
+          editorContent={editorContent}
+          initialContent={editorContent}
+          setEditorContent={setEditorContent}
+          onClose={() => setShowUpdatePopup(false)}
+          onSubmit={() => {
+            handleActionBtnClick(editorContent);
+          }}
+          loading={sending}
+          threadId={threadId}
+        />
+      )}
       <div className="mt-4 flex items-center flex-wrap gap-2">
         {actionButtons.map((btn, i) => (
           <div key={i} className="flex items-center relative">
@@ -436,10 +429,11 @@ const ActionButton = ({
           <>
             {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
             <div
-              className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
-                ? "opacity-100"
-                : "opacity-0 pointer-events-none"
-                }`}
+              className={`flex items-center transition-opacity duration-200 ${
+                showFirstReplyBtn
+                  ? "opacity-100"
+                  : "opacity-0 pointer-events-none"
+              }`}
             >
               <button
                 onClick={(e) => {
@@ -477,7 +471,6 @@ const ActionButton = ({
 
               <Separator />
             </div>
-
           </>
         )}
 
@@ -496,7 +489,7 @@ const ActionButton = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowUpdatePopup(true);
-                  setEditorContent(btn.body_html)
+                  setEditorContent(btn.body_html);
                   setClickedActionBtn(btn.id);
                 }}
                 disabled={sending}
