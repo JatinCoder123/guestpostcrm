@@ -225,7 +225,7 @@ export const editContact = (contactData) => {
     }
   };
 };
-export const sendEmail = (reply, message = null, error = null) => {
+export const sendEmail = (reply, message = null, error = null, attachments = [],) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
     const threadId = getState().viewEmail.threadId;
@@ -236,6 +236,7 @@ export const sendEmail = (reply, message = null, error = null) => {
         {
           threadId,
           replyBody: reply,
+          attachments,
           email: getState().ladger.email,
           current_email: getState().user.user.email,
         },

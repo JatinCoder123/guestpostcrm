@@ -9,6 +9,8 @@ import {
   Sparkles,
   ChevronLeft,
   Zap,
+  Link2Icon,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -28,6 +30,7 @@ import { base64ToUtf8, getDomain } from "../assets/assets";
 import useModule from "../hooks/useModule";
 import PageLoader from "./PageLoader";
 import { SocketContext } from "../context/SocketContext";
+import Attachment from "./Attachment";
 export default function EmailBox({
   onClose,
   view,
@@ -45,6 +48,7 @@ export default function EmailBox({
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
   const { setUserIdle, eventQueue } = useContext(SocketContext)
+  const [files, setFiles] = useState([])
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const [aiReplyContent, setAiReplyContent] = useState("");
@@ -134,7 +138,7 @@ export default function EmailBox({
 
   // LOAD TEMPLATE INTO EDITOR
   useEffect(() => {
-    if ((template || defaultTemplate) && editorReady && editorRef.current) {
+    if (template && editorReady && editorRef.current) {
       const htmlContent =
         template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
       if (htmlContent) {
@@ -144,7 +148,7 @@ export default function EmailBox({
         toast.warn("Template is empty—starting with blank editor.");
       }
     }
-  }, [template, defaultTemplate, editorReady]);
+  }, [template, editorReady]);
 
   function insertAiReply(input) {
     setOpenParent(null);
@@ -185,6 +189,7 @@ export default function EmailBox({
       setFullLoading(false);
     }
   };
+  useEffect(() => { console.log("FILES", files) }, [files])
 
   const htmlToPlainText = (html) => {
     const temp = document.createElement("div");
@@ -633,15 +638,19 @@ export default function EmailBox({
               </div>
 
               {/* SEND BUTTON */}
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSendClick}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-              >
-                <Send className="w-5 h-5" />
-                <span>Send Email</span>
-              </motion.button>
+              <div className="flex gap-2 item-center justify-center">
+                <Attachment data={files} onChange={setFiles} />
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSendClick}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  <span>Send Email</span>
+                </motion.button>
+              </div>
+
             </div>
           </div>
         ) : (
