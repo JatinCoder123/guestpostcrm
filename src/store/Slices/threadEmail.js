@@ -83,7 +83,7 @@ export const getThreadEmail = (email, threadId) => {
     }
   };
 };
-export const sendEmailToThread = (threadId, reply) => {
+export const sendEmailToThread = (threadId, reply, attachments = []) => {
   return async (dispatch, getState) => {
     dispatch(threadEmailSlice.actions.sendEmailRequest());
 
@@ -93,11 +93,13 @@ export const sendEmailToThread = (threadId, reply) => {
         {
           threadId,
           replyBody: reply,
+          attachments: attachments.map((file) => file.file),
+
           email: getState().ladger.email,
           current_email: getState().user.user.email,
         },
         {
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
       showConsole && console.log(`Reply Data`, data);

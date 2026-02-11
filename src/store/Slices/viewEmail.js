@@ -225,23 +225,23 @@ export const editContact = (contactData) => {
     }
   };
 };
-export const sendEmail = (reply, message = null, error = null, attachments = [],) => {
+export const sendEmail = (reply, message = null, error = null, attachments = []) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
     const threadId = getState().viewEmail.threadId;
-
+    console.log(attachments)
     try {
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
         {
           threadId,
           replyBody: reply,
-          attachments,
+          attachments: attachments.map((file) => file.file),
           email: getState().ladger.email,
           current_email: getState().user.user.email,
         },
         {
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "multipart/form-data" },
         },
       );
       showConsole && console.log(`Reply Data`, data);
