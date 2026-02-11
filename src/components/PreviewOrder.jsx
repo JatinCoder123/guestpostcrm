@@ -58,19 +58,33 @@ const BuildOrderLinkTable = ({ data }) => {
                 🔗 <strong>Backlink URL:</strong> {item.backlink_url}
               </td>
             </tr>
-
-            <tr>
-              <td
-                colSpan="2"
-                style={{
-                  padding: "8px",
-                  fontSize: "13px",
-                  color: "#374151",
-                }}
-              >
-                📄 <strong>Document URL:</strong> {item.document_url}
-              </td>
-            </tr>
+            {item.type_c == "LI" ? (
+              <tr>
+                <td
+                  colSpan="2"
+                  style={{
+                    padding: "8px",
+                    fontSize: "13px",
+                    color: "#374151",
+                  }}
+                >
+                  🔗 <strong>Target URL:</strong> {item.target_url_c}
+                </td>
+              </tr>
+            ) : (
+              <tr>
+                <td
+                  colSpan="2"
+                  style={{
+                    padding: "8px",
+                    fontSize: "13px",
+                    color: "#374151",
+                  }}
+                >
+                  📄 <strong>Document URL:</strong> {item.document_url}
+                </td>
+              </tr>
+            )}
 
             <tr>
               <td
@@ -91,16 +105,12 @@ const BuildOrderLinkTable = ({ data }) => {
   );
 };
 
-
-
 export const createPreviewOrder = ({ templateData, order, userEmail }) => {
   let html = templateData?.[0]?.body_html || "";
   const tableHtml = renderToString(
-    <BuildOrderLinkTable data={order?.seo_backlinks} />
+    <BuildOrderLinkTable data={order?.seo_backlinks} />,
   );
-  const invoiceBtn = renderToString(
-    <InvoiceButton order={order} />
-  );
+  const invoiceBtn = renderToString(<InvoiceButton order={order} />);
 
   html = html
     .replace("{{ORDER_ID}}", order?.order_id)
@@ -112,13 +122,14 @@ export const createPreviewOrder = ({ templateData, order, userEmail }) => {
     .replace("{{CLIENT_EMAIL}}", order?.client_email)
     .replace("{{AMOUNT}}", order?.total_amount_c)
     .replace("{{LINKS}}", tableHtml)
-    .replace("{{INVOICE_BUTTON}}", invoiceBtn)
+    .replace("{{INVOICE_BUTTON}}", invoiceBtn);
   return html;
-}
+};
 const InvoiceButton = ({ order }) => {
   return (
     <>
-      {(order?.order_status === "rejected_nontechnical" || order?.order_status === "wrong") ? (
+      {order?.order_status === "rejected_nontechnical" ||
+      order?.order_status === "wrong" ? (
         <p></p>
       ) : (
         <tr>
@@ -142,4 +153,6 @@ const InvoiceButton = ({ order }) => {
   );
 };
 
-{/*  */ }
+{
+  /*  */
+}

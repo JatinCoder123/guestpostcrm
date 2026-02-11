@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-
+import { extractEmail } from "../../assets/assets";
+import { PageContext } from "../../context/pageContext";
+import { ladgerAction } from "../../store/Slices/ladger";
 import SearchComponent from "./SearchComponent";
+import { useNavigate } from "react-router-dom";
 
 import {
   Store,
@@ -16,13 +19,24 @@ import {
   BarChart4Icon,
   Trash,
 } from "lucide-react";
-import { deleteMarketPlace, getMarketplace, marketplaceActions } from "../../store/Slices/Marketplace"; // named import
+import {
+  deleteMarketPlace,
+  getMarketplace,
+  marketplaceActions,
+} from "../../store/Slices/Marketplace"; // named import
 import { LoadingChase } from "../Loading";
 
 export function Marketplace() {
   const dispatch = useDispatch();
-  const { items, error, loading, deleting, message, deleteMarketPlaceId } = useSelector((state) => state.marketplace);
+
+  const navigateTo = useNavigate();
+
+  const { items, error, loading, deleting, message, deleteMarketPlaceId } =
+    useSelector((state) => state.marketplace);
   const [selectedSort, setSelectedSort] = useState("");
+
+  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+    useContext(PageContext);
 
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -60,7 +74,7 @@ export function Marketplace() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => { };
+  const handleFilterApply = (filters) => {};
 
   const handleDownload = () => {
     if (!filtereditems || filtereditems.length === 0) {
@@ -90,14 +104,14 @@ export function Marketplace() {
   };
   useEffect(() => {
     if (error) {
-      toast.error(error)
-      dispatch(marketplaceActions.clearErrors())
+      toast.error(error);
+      dispatch(marketplaceActions.clearErrors());
     }
     if (message) {
-      toast.success(message)
-      dispatch(marketplaceActions.clearMessage())
+      toast.success(message);
+      dispatch(marketplaceActions.clearMessage());
     }
-  }, [error, dispatch, message])
+  }, [error, dispatch, message]);
 
   return (
     <>
@@ -184,12 +198,29 @@ export function Marketplace() {
                   <td className="px-6 py-4 text-gray-600">
                     {row.date_entered}
                   </td>
-                  <td className="px-6 py-4 text-blue-600">{row.name}</td>
-                  <td className="px-6 py-4 text-blue-600">{row?.description !== null ? "Brand" : "Non Brand"}</td>
+                  <td
+                    className="px-6 py-4 text-blue-600 cursor-pointer"
+                    onClick={() => {
+                      const input = extractEmail(row.name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      dispatch(ladgerAction.setTimeline(null));
+                      setWelcomeHeaderContent("Unreplied");
+                      navigateTo("/");
+                    }}
+                  >
+                    {row.name}
+                  </td>
+                  <td className="px-6 py-4 text-blue-600">
+                    {row?.description !== null ? "Brand" : "Non Brand"}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2 item-center justify-center">
                       {/* Update Button */}
-                      {deleting && deleteMarketPlaceId === row.id ? <LoadingChase size="20" color="red" /> : (
+                      {deleting && deleteMarketPlaceId === row.id ? (
+                        <LoadingChase size="20" color="red" />
+                      ) : (
                         <button
                           className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                           title="Delete"
