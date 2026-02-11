@@ -81,7 +81,7 @@ const BuildOrderLinkTable = ({ data }) => {
                     color: "#374151",
                   }}
                 >
-                  📄 <strong>Document URL:</strong> {item.document_url}
+                  📄 <strong>Document URL:</strong> {item.gp_doc_url_c}
                 </td>
               </tr>
             )}
