@@ -746,7 +746,6 @@ const TimelineEvent = () => {
                               }`}
                           />
 
-
                           <div
                             className="absolute left-1/2 -translate-x-1/2 -top-10
                                        whitespace-nowrap px-3 py-1.5 text-xs
@@ -815,11 +814,7 @@ const TimelineEvent = () => {
                         {/* Template Icon - Only show if template_id exists */}
                         {hasTemplate && (
                           <button
-                            onClick={() =>
-                              navigateTo("/settings/templates", {
-                                state: { templateId: event.template_id },
-                              })
-                            }
+                            onClick={() => handleTemplateClick(event.template_id, event)}
                             className="text-green-600 hover:text-green-700 cursor-pointer relative group"
                             title={`Preview Template: ${event.template_id}`}
                             disabled={
@@ -827,6 +822,9 @@ const TimelineEvent = () => {
                               selectedTemplate?.id === event.template_id
                             }
                           >
+
+
+
                             <FileText size={20} />
                             {loadingTemplate &&
                               selectedTemplate?.id === event.template_id && (
@@ -835,19 +833,18 @@ const TimelineEvent = () => {
                                 </div>
                               )}
 
-                            {/* Tooltip for template */}
                             <div
                               className="absolute left-1/2 -translate-x-1/2 -top-8
-                                          whitespace-nowrap px-2 py-1 text-xs
-                                          bg-gray-900 text-white rounded-md
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                          pointer-events-none z-50"
+                                        whitespace-nowrap px-2 py-1 text-xs
+                                        bg-gray-900 text-white rounded-md
+                                        opacity-0 group-hover:opacity-100
+                                        transition-opacity duration-200
+                                        pointer-events-none z-50"
                             >
                               Preview Template
                               <div
                                 className="absolute left-1/2 -translate-x-1/2 top-full
-                                            w-2 h-2 bg-gray-900 rotate-45"
+                                          w-2 h-2 bg-gray-900 rotate-45"
                               />
                             </div>
                           </button>

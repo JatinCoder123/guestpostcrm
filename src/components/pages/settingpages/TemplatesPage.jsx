@@ -264,15 +264,15 @@ export default function TemplatesPage() {
     }
     setShowNewTemplateModal(false);
   };
-  useEffect(() => {
-    if (state?.templateId && data) {
-      const item = data.find((item) => item.id === state.templateId);
-      // console.log(item)
-      if (item) {
-        openViewer(item);
-      }
-    }
-  }, [state?.templateId, data]);
+  // useEffect(() => {
+  //   if (state?.templateId && data) {
+  //     const item = data.find((item) => item.id === state.templateId);
+  //     // console.log(item)
+  //     if (item) {
+  //       openViewer(item);
+  //     }
+  //   }
+  // }, [state?.templateId, data]);
 
   if (showNewTemplateModal) {
     return (
