@@ -23,18 +23,31 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
 const getStatusColor = (status) => {
   switch (status) {
+
+    // ✅ GREEN → Completed only
     case "Completed":
       return "bg-green-100 text-green-700";
-    case "In Progress":
-      return "bg-blue-100 text-blue-700";
-    case "Pending":
-      return "bg-yellow-100 text-yellow-700";
+
+    // ✅ RED → All rejected types
+    case "Rejected":
+    case "reject":
+    case "rejected_nontechnical":
+    case "rejected_technical":
     case "Cancelled":
       return "bg-red-100 text-red-700";
+
+    case "In Progress":
+      return "bg-blue-100 text-blue-700";
+
+    case "Pending":
+      return "bg-yellow-100 text-yellow-700";
+
     default:
       return "bg-gray-100 text-gray-700";
   }
 };
+
+
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -50,6 +63,10 @@ export function OrdersPage() {
     useSelector((state) => state.orders);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
+  
+const rejectedCount = orders.filter((order) =>
+  order.order_status?.toLowerCase().trim().includes("reject")
+).length;
 
   // Add state for filter values
   const [filters, setFilters] = useState({
@@ -171,6 +188,7 @@ export function OrdersPage() {
 
       if (selectedSort === "desc") {
         return (b.real_name?.split("<")[0]?.trim() || "").localeCompare(
+
           a.real_name?.split("<")[0]?.trim() || "",
         );
       }
@@ -334,20 +352,24 @@ export function OrdersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        {/* Pending / Under Verification */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Under Verification</p>
-              <p className="text-2xl text-gray-900 mt-1 font-semibold">
-                {summary?.under_verification_orders ?? 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-indigo-600" />
-            </div>
-          </div>
-        </div>
+       
+       {/* Rejected Orders */}
+<div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
+  <div className="flex items-center justify-between">
+    <div>
+      <p className="text-gray-500 text-sm">Rejected Orders</p>
+      <p className="text-2xl text-gray-900 mt-1 font-semibold">
+        {rejectedCount}
+      </p>
+    </div>
+
+
+    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+      <ShieldCheck className="w-6 h-6 text-red-600" />
+    </div>
+  </div>
+</div>
+
 
         {/* New Orders */}
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">

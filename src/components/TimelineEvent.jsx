@@ -385,7 +385,6 @@ const TimelineEvent = () => {
     }
   };
 
-
   // for save by kjl
   const handleTemplateSave = async () => {
 
@@ -396,7 +395,7 @@ const TimelineEvent = () => {
     setIsTemplateSaving(true);
 
     try {
-
+      
       const requestBody = {
         parent_bean: {
           module: "EmailTemplates",
@@ -442,10 +441,6 @@ const TimelineEvent = () => {
       setIsTemplateSaving(false);
     }
   };
-
-
-
-
 
   // Function to close template modal
   const closeTemplateModal = () => {
@@ -508,6 +503,7 @@ const TimelineEvent = () => {
         
         .message-content p {
           margin-bottom: 1em;
+          
         }
         
         .message-content a {
@@ -599,7 +595,7 @@ const TimelineEvent = () => {
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
-        
+
         }
         
         .message-icon-pulse {
@@ -840,7 +836,7 @@ const TimelineEvent = () => {
                                         opacity-0 group-hover:opacity-100
                                         transition-opacity duration-200
                                         pointer-events-none z-50"
-                            >
+                            >     
                               Preview Template
                               <div
                                 className="absolute left-1/2 -translate-x-1/2 top-full
@@ -904,7 +900,7 @@ const TimelineEvent = () => {
                           </svg>
                           {event.module}
                         </span>
-                      )}
+                      )}     
                     </div>
                   </div>
                 </div>
@@ -1039,8 +1035,6 @@ const TimelineEvent = () => {
     </motion.div>
   </div>
 )}
-
-
       {/* Template Modal */}
       {showTemplateModal && templateData && (
         <div
@@ -1058,7 +1052,6 @@ const TimelineEvent = () => {
           >
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-
               <h2 className="text-2xl font-bold">
                 {templateData.name || "Template Editor"}
               </h2>
