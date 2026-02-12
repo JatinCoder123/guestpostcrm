@@ -9,9 +9,11 @@ import {
   Sparkles,
   ChevronLeft,
   Zap,
+  Link2Icon,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
 import {
@@ -27,6 +29,8 @@ import { toast } from "react-toastify";
 import { base64ToUtf8, getDomain } from "../assets/assets";
 import useModule from "../hooks/useModule";
 import PageLoader from "./PageLoader";
+import { SocketContext } from "../context/SocketContext";
+import Attachment from "./Attachment";
 export default function EmailBox({
   onClose,
   view,
@@ -43,6 +47,8 @@ export default function EmailBox({
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const { setUserIdle, eventQueue } = useContext(SocketContext)
+  const [files, setFiles] = useState([])
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const [aiReplyContent, setAiReplyContent] = useState("");
@@ -53,7 +59,13 @@ export default function EmailBox({
     error: aiError,
     message,
   } = useSelector((state) => state.aiReply);
-
+  // useEffect(() => {
+  //   setUserIdle(false)
+  //   return () => {
+  //     setUserIdle(true)
+  //     console.log("EVENTS", eventQueue)
+  //   }
+  // }, [])
   const {
     loading: templateListLoading,
     data: templateList,
@@ -81,6 +93,8 @@ export default function EmailBox({
   const [openMessageId, setOpenMessageId] = useState(null);
   const [fullMessage, setFullMessage] = useState(null);
   const [fullLoading, setFullLoading] = useState(false);
+  const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
+
 
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
@@ -89,6 +103,7 @@ export default function EmailBox({
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
+  const attachmentBoxRef = useRef(null);
 
   // FETCH BUTTONS
   const { loading, data: buttons } = useModule({
@@ -123,7 +138,7 @@ export default function EmailBox({
 
   // LOAD TEMPLATE INTO EDITOR
   useEffect(() => {
-    if ((template || defaultTemplate) && editorReady && editorRef.current) {
+    if (template && editorReady && editorRef.current) {
       const htmlContent =
         template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
       if (htmlContent) {
@@ -133,7 +148,7 @@ export default function EmailBox({
         toast.warn("Template is empty—starting with blank editor.");
       }
     }
-  }, [template, defaultTemplate, editorReady]);
+  }, [template, editorReady]);
 
   function insertAiReply(input) {
     setOpenParent(null);
@@ -141,6 +156,16 @@ export default function EmailBox({
     setInput(input);
     setEditorContent(input);
   }
+  const downloadAttachment = (att) => {
+    const link = document.createElement("a");
+    link.href = att.description; // file URL
+    link.download = att.filename || "attachment";
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const fetchFullMessage = async (messageId) => {
     try {
       setFullLoading(true);
@@ -164,12 +189,14 @@ export default function EmailBox({
       setFullLoading(false);
     }
   };
+  useEffect(() => { console.log("FILES", files) }, [files])
 
   const htmlToPlainText = (html) => {
     const temp = document.createElement("div");
     temp.innerHTML = html || "";
     return temp.textContent || temp.innerText || "";
   };
+
 
   const handleSendClick = () => {
     if (!showEditorScreen) {
@@ -188,11 +215,12 @@ export default function EmailBox({
 
     const contentToSend = editorContent || input;
 
-    if (view) dispatch(sendEmail(contentToSend));
-    else dispatch(sendEmailToThread(threadId, contentToSend));
+    if (view) dispatch(sendEmail(contentToSend, null, null, files));
+    else dispatch(sendEmailToThread(threadId, contentToSend, files));
 
     onClose();
     setInput("");
+    setFiles([])
     setEditorContent("");
   };
 
@@ -209,6 +237,20 @@ export default function EmailBox({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [visibleMessages]);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        attachmentBoxRef.current &&
+        !attachmentBoxRef.current.contains(e.target)
+      ) {
+        setOpenAttachmentsFor(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     if (message && aiResponse) {
       if (message == "User") setAiNewContent(aiResponse);
@@ -597,15 +639,19 @@ export default function EmailBox({
               </div>
 
               {/* SEND BUTTON */}
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSendClick}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-              >
-                <Send className="w-5 h-5" />
-                <span>Send Email</span>
-              </motion.button>
+              <div className="flex gap-2 item-center justify-center">
+                <Attachment data={files} onChange={setFiles} />
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSendClick}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  <span>Send Email</span>
+                </motion.button>
+              </div>
+
             </div>
           </div>
         ) : (
@@ -731,6 +777,69 @@ export default function EmailBox({
                         }}
                         className="mail-content text-sm leading-relaxed"
                       />
+                      {/* ATTACHMENTS BUTTON */}
+                      {mail?.attachment?.length > 0 && (
+                        <button
+                          onClick={() =>
+                            setOpenAttachmentsFor(
+                              openAttachmentsFor === mail.message_id ? null : mail.message_id
+                            )
+                          }
+                          className="mt-3 flex items-center gap-2 text-xs font-medium
+      bg-gray-100 hover:bg-gray-200
+      px-3 py-1.5 rounded-lg
+      text-gray-700 border border-gray-300"
+                        >
+                          📎 Attachments ({mail.attachment.length})
+                        </button>
+                      )}
+                      {/* ATTACHMENT BOX */}
+                      {openAttachmentsFor === mail.message_id && (
+                        <div
+                          ref={attachmentBoxRef}
+                          className="
+      absolute z-30 bottom-14 left-0
+      w-72 max-h-64
+      bg-white border border-gray-200
+      rounded-xl shadow-xl
+      p-2
+      overflow-y-auto
+    "
+                        >
+                          {mail.attachment?.map((att) => (
+                            <button
+                              key={att.id}
+                              onClick={() => downloadAttachment(att)}
+                              className="
+          w-full flex items-center gap-3
+          px-3 py-2
+          rounded-lg
+          hover:bg-gray-100
+          text-left
+          transition
+          overflow-hidden
+        "
+                            >
+                              <div className="text-xl shrink-0">📄</div>
+
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 truncate">
+                                  {att.filename}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">
+                                  {att.file_mime_type}
+                                </p>
+                              </div>
+
+                              <span className="text-xs text-blue-600 font-semibold shrink-0">
+                                Download
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+
                       {/* THREE DOT MENU */}
                       <button
                         onClick={() => {

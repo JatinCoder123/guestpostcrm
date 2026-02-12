@@ -4,7 +4,7 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
-  const [showConsole, setShowConsole] = useState(localStorage.getItem("showConsole") || false);
+  const showConsole = localStorage.getItem("showConsole") || false;
   const [displayIntro, setDisplayIntro] = useState(true);
   const [collapsed, setSidebarCollapsed] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);

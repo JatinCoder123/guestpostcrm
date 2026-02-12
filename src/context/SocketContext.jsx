@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { showConsole } from "../assets/assets.js";
 import axios from "axios";
@@ -10,8 +10,11 @@ export const SocketContextProvider = ({ children }) => {
   const [currentAvatar, setCurrentAvatar] = useState();
   const [crm, setCrm] = useState("");
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
+  const [userIdle, setUserIdle] = useState(true)
+  const [eventQueue, setEventQueue] = useState({})
 
   const crmRef = useRef(""); // ✅ IMPORTANT
+  const userRef = useRef(userIdle); // ✅ IMPORTANT
 
   const [notificationCount, setNotificationCount] = useState({
     outr_offer: null,
@@ -23,7 +26,6 @@ export const SocketContextProvider = ({ children }) => {
     outr_self_test: null,
     refresh_ladger: null,
     refreshUnreplied: null,
-    // paypal_status_sent: null
     outr_paypal_invoice_links: null,
   });
   const getMoveOptions = async () => {
@@ -35,6 +37,7 @@ export const SocketContextProvider = ({ children }) => {
       throw error;
     }
   };
+  // useEffect(() => { })
 
   const moveData = async (threadId, labelId) => {
     try {
@@ -50,8 +53,8 @@ export const SocketContextProvider = ({ children }) => {
   // ✅ Keep ref always updated
   useEffect(() => {
     crmRef.current = crm;
-  }, [crm]);
-
+    userRef.current = userIdle;
+  }, [crm, userIdle]);
   useEffect(() => {
     const newAvatarHandler = (data) => {
       setCurrentAvatar({
@@ -76,13 +79,25 @@ export const SocketContextProvider = ({ children }) => {
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);
         } else {
-          setNotificationCount((prev) => ({
-            ...prev,
-            [data.name]: Date.now(),
-          }));
+          if (userRef.current) {
+            setNotificationCount((prev) => ({
+              ...prev,
+              [data.name]: Date.now(),
+            }))
+          }
+          else {
+            console.log("ADDING TO QUEUE")
+            setEventQueue((prev) => ({
+              ...prev,
+              [data.name]: prev[data.name] ? prev[data.name] + 1 : 1
+            }))
+          }
+
         }
+
       }
-    };
+    }
+
 
     socket.on("new_avatar", newAvatarHandler);
     socket.on("latest_avatar", latestAvatarHandler);
@@ -101,6 +116,10 @@ export const SocketContextProvider = ({ children }) => {
         currentAvatar,
         setCurrentAvatar,
         crm,
+        setUserIdle,
+        userIdle,
+        eventQueue,
+        setEventQueue,
         setCrm,
         invoiceOrderId,
         setInvoiceOrderId,
