@@ -23,7 +23,7 @@ const fields = [
     name: "invoice_link_c",
     label: "Invoice Link",
     type: "text",
-    disabled: true,
+    disabled: false,
   },
 ];
 const lists = [
@@ -92,16 +92,17 @@ export default function CreateOrder() {
     setCurrentOrders(() => [...order]);
   }, [state, orders, type, id]);
   const handleUpdate = (order, send) => {
-    if (order?.order_status == "rejected_nontechnical" || order?.order_status == "wrong") {
+    if (
+      order?.order_status == "rejected_nontechnical" ||
+      order?.order_status == "wrong"
+    ) {
       order = {
         ...order,
-        seo_backlinks:
-          order.seo_backlinks.map(link => ({
-            ...link,
-            status_c: "rejected",
-          }))
-
-      }
+        seo_backlinks: order.seo_backlinks.map((link) => ({
+          ...link,
+          status_c: "rejected",
+        })),
+      };
     }
     dispatch(updateOrder(order, send));
     setCurrentOrderSend(order);
@@ -109,9 +110,7 @@ export default function CreateOrder() {
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => {
-
-  };
+  const sendHandler = () => {};
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
