@@ -104,7 +104,7 @@ export default function Create({
               d[`${type == "deals" ? "dealamount" : "total_amount_c"}`],
             ).trim() !== "" &&
             Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) >
-            0 &&
+              0 &&
             String(d[websiteKey]).trim() !== "",
         );
       } else if (type == "offers") {
@@ -162,10 +162,11 @@ export default function Create({
                   >
                     <MoveLeft size={16} />
                   </button>
-                  <h3 className="text-2xl font-semibold">{`${pageType == "view"
-                    ? ""
-                    : pageType.charAt(0).toUpperCase() + pageType.slice(1)
-                    } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
+                  <h3 className="text-2xl font-semibold">{`${
+                    pageType == "view"
+                      ? ""
+                      : pageType.charAt(0).toUpperCase() + pageType.slice(1)
+                  } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                 </div>
                 {pageType == "view" && (
                   <div className="flex items-center gap-3">
@@ -213,8 +214,9 @@ export default function Create({
                   data.map((item, itemIndex) => (
                     <div key={item.id} index={itemIndex}>
                       <div
-                        className={`bg-white relative border border-gray-100 p-6 ${pageType == "edit" && "pb-15"
-                          } rounded-2xl shadow-sm `}
+                        className={`bg-white relative border border-gray-100 p-6 ${
+                          pageType == "edit" && "pb-15"
+                        } rounded-2xl shadow-sm `}
                       >
                         {pageType == "view" && (
                           <>
@@ -224,8 +226,9 @@ export default function Create({
                                   state: { email },
                                 })
                               }
-                              className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
-                                } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
+                              className={`flex items-center right-2 absolute ${
+                                !showPreview ? "z-[100]" : ""
+                              } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
                             >
                               <Pencil size={16} />
                             </button>
@@ -266,10 +269,11 @@ export default function Create({
                                 handleUpdate(item, false);
                               }}
                               disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending) && button == 1
-                                ? "bg-green-300 cursor-not-allowed"
-                                : "bg-green-500 hover:bg-green-600"
-                                }`}
+                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${
+                                (updating || sending) && button == 1
+                                  ? "bg-green-300 cursor-not-allowed"
+                                  : "bg-green-500 hover:bg-green-600"
+                              }`}
                             >
                               {button == 1 && updating
                                 ? "Updating..."
@@ -281,10 +285,11 @@ export default function Create({
                                 handleUpdate(item, true);
                               }}
                               disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending) && button == 2
-                                ? "bg-blue-300 cursor-not-allowed"
-                                : "bg-blue-500 hover:bg-blue-600"
-                                }`}
+                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${
+                                (updating || sending) && button == 2
+                                  ? "bg-blue-300 cursor-not-allowed"
+                                  : "bg-blue-500 hover:bg-blue-600"
+                              }`}
                             >
                               {(updating || sending) && button == 2
                                 ? "Updating..."
@@ -400,10 +405,11 @@ export default function Create({
                             setButton(1);
                             handleSubmit(false);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700 cursor-pointer"
-                            }`}
+                          className={`w-full px-3 py-2 rounded-lg text-white ${
+                            data.length === 0 || !valid
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-green-600 hover:bg-green-700 cursor-pointer"
+                          }`}
                         >
                           {creating && button == 1 ? "Saving..." : "Save"}
                         </button>
@@ -413,10 +419,11 @@ export default function Create({
                             setButton(2);
                             handleSubmit(true);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                            }`}
+                          className={`w-full px-3 py-2 rounded-lg text-white ${
+                            data.length === 0 || !valid
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                          }`}
                         >
                           {creating && button == 2
                             ? "Sending..."
@@ -475,10 +482,11 @@ function InputField({
       className={`${inputType === "number" ? "w-30" : "w-full"} max-w-[300px]`}
     >
       <label
-        className={`block mb-1 ${pageType === "view"
-          ? "text-gray-500 text-sm"
-          : "text-xs text-gray-600"
-          } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
+        className={`block mb-1 ${
+          pageType === "view"
+            ? "text-gray-500 text-sm"
+            : "text-xs text-gray-600"
+        } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
       >
         {label}
       </label>
@@ -489,10 +497,11 @@ function InputField({
           value={value}
           onChange={onChange}
           disabled={isDisabled}
-          className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-            ? "bg-gray-100"
-            : "bg-white border"
-            }`}
+          className={`w-full rounded-xl px-3 py-2 ${
+            pageType === "view" || isDisabled
+              ? "bg-gray-100"
+              : "bg-white border"
+          }`}
         >
           <option value="" disabled>
             Select {label}
@@ -501,15 +510,15 @@ function InputField({
           {/* Order Status (object → key/value) */}
           {label === "Order Status"
             ? Object.entries(statusLists).map(([key, val]) => (
-              <option key={key} value={key}>
-                {val}
-              </option>
-            ))
+                <option key={key} value={key}>
+                  {val}
+                </option>
+              ))
             : websiteLists.map((opt, idx) => (
-              <option key={idx} value={opt}>
-                {opt}
-              </option>
-            ))}
+                <option key={idx} value={opt}>
+                  {opt}
+                </option>
+              ))}
         </select>
       )}
 
@@ -521,10 +530,11 @@ function InputField({
           placeholder={placeholder}
           disabled={isDisabled}
           rows={4}
-          className={`w-full rounded-xl px-3 py-2 resize-none ${pageType === "view" || isDisabled
-            ? "bg-gray-100"
-            : "bg-white border"
-            }`}
+          className={`w-full rounded-xl px-3 py-2 resize-none ${
+            pageType === "view" || isDisabled
+              ? "bg-gray-100"
+              : "bg-white border"
+          }`}
         />
       )}
 
@@ -541,10 +551,11 @@ function InputField({
               type={inputType}
               disabled={isDisabled}
               inputMode={inputType === "number" ? "numeric" : undefined}
-              className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-                ? "bg-gray-100"
-                : "bg-white border"
-                }`}
+              className={`w-full rounded-xl px-3 py-2 ${
+                pageType === "view" || isDisabled
+                  ? "bg-gray-100"
+                  : "bg-white border"
+              }`}
             />
           </div>
         )}
