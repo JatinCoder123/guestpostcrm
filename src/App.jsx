@@ -51,7 +51,6 @@ import { HotPage } from "./components/pages/HotPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
-import ComposePage from "./components/pages/ComposePage";
 
 const router = createBrowserRouter([
   {
@@ -102,10 +101,6 @@ const router = createBrowserRouter([
       {
         path: "unanswered",
         element: <UnansweredPage />,
-      },
-      {
-        path: "compose",
-        element: <ComposePage />,
       },
       {
         path: "console",

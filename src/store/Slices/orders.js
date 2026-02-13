@@ -22,6 +22,9 @@ const ordersSlice = createSlice({
     updateLinkMessage: null,
     creatingLink: false,
     creatingLinkMessage: null,
+    creatingPost: false,
+postMessage: null,
+
   },
   reducers: {
     getOrdersRequest(state) {
