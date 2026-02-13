@@ -622,7 +622,7 @@ const TimelineEvent = () => {
         }
       `}</style>
 
-      <div ref={topRef} className="py-[2%] px-[30%]">
+      <div ref={topRef} className="relative py-[2%] px-[30%]">
         <h1
           onClick={scrollToTop}
           className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 
@@ -1114,7 +1114,7 @@ const TimelineEvent = () => {
         </div>
       )}
       {timelineData?.length > 8 && (
-        <div className="fixed right-120 bottom-6 flex flex-col gap-3 z-50">
+        <div className="absolute right-4 bottom-6 flex flex-col gap-3 z-50">
           {/* Go to Top */}
           <button
             onClick={scrollToTop}
