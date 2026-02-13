@@ -5,6 +5,8 @@ import {
   FiLayers,
   FiAlertTriangle,
   FiHash,
+  FiGlobe,
+  FiGrid,
 } from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
@@ -154,10 +156,9 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                         Website
                       </h3>
                     </div>
-
                     {/* WEBSITE NAME */}
                     <div className="flex items-start gap-2">
-                      <FiHash className="text-slate-400 mt-0.5" size={14} />
+                      <FiGlobe className="text-slate-400 mt-0.5" size={14} />
                       <p className="text-sm text-slate-700 font-medium break-all">
                         {item.name || "-"}
                       </p>
@@ -185,7 +186,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                       {item.type_c === "LI" ? (
                         ""
                       ) : (
-                        <FiHash className="text-slate-400 mt-0.5" size={14} />
+                        <FiGrid className="text-slate-400 mt-0.5" size={14} />
                       )}
 
                       <p className="text-sm text-slate-700 font-medium break-all">

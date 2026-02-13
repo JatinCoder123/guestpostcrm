@@ -27,9 +27,8 @@ const TimelineEvent = () => {
     from: "",
     date: "",
     fromEmail: "",
-    time: ""
+    time: "",
   });
-
 
   const [originalTemplateContent, setOriginalTemplateContent] = useState("");
   const [isTemplateChanged, setIsTemplateChanged] = useState(false);
@@ -39,17 +38,24 @@ const TimelineEvent = () => {
     setIsTemplateChanged(templateContent !== originalTemplateContent);
   }, [templateContent, originalTemplateContent]);
 
-
-
   const topRef = useRef(null);
+  const bottomRef = useRef(null);
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  };
 
   const dispatch = useDispatch();
 
   useEffect(() => {
+    if (!ladger) return;
+
     if (selectedView === "all") {
       setTimelineData(ladger);
-    }
-    if (selectedView === "important") {
+    } else if (selectedView === "important") {
       const finalData = ladger.filter(
         (item) =>
           !(
@@ -59,17 +65,16 @@ const TimelineEvent = () => {
           ),
       );
       setTimelineData(finalData);
-    }
-    if (selectedView === "orderMain") {
+    } else if (selectedView === "orderMain") {
       const finalData = ladger.filter(
         (item) =>
-          item.parent_type == "outr_order_gp_li" || // Orders
-          item.parent_type == "outr_paypal_invoice_links", // PayPal Invoices
+          item.parent_type === "outr_order_gp_li" ||
+          item.parent_type === "outr_paypal_invoice_links",
       );
       setTimelineData(finalData);
-      return;
     }
-  }, [selectedView]);
+  }, [selectedView, ladger]);
+
   const navigateTo = useNavigate();
 
   const getContactIdFromEvent = (event) => {
@@ -181,9 +186,7 @@ const TimelineEvent = () => {
     navigateTo("/");
   };
 
-
   const handleMessageClick = async (event) => {
-
     if (!event.message_id_c) return;
 
     // ✅ open modal FIRST
@@ -193,11 +196,10 @@ const TimelineEvent = () => {
     setIsMessageLoading(true);
 
     try {
-
       const baseUrl = crmEndpoint.split("?")[0];
 
       const response = await fetch(
-        `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`
+        `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`,
       );
 
       const result = await response.json();
@@ -209,20 +211,13 @@ const TimelineEvent = () => {
         result.html_body ||
         "";
 
-      const subject =
-        result.email?.subject ||
-        event.subject ||
-        "No Subject";
+      const subject = result.email?.subject || event.subject || "No Subject";
 
       const from =
-        result.email?.from_name ||
-        result.email?.from_addr ||
-        "Unknown Sender";
+        result.email?.from_name || result.email?.from_addr || "Unknown Sender";
 
       const fromEmail =
-        result.email?.from_addr ||
-        result.email?.from_email ||
-        "";
+        result.email?.from_addr || result.email?.from_email || "";
 
       const createdDate = result.email?.date_created || "";
 
@@ -232,7 +227,10 @@ const TimelineEvent = () => {
       if (createdDate) {
         const d = new Date(createdDate);
         formattedDate = d.toLocaleDateString();
-        formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        formattedTime = d.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       }
 
       setMessageMeta({
@@ -240,35 +238,30 @@ const TimelineEvent = () => {
         from,
         fromEmail,
         date: formattedDate,
-        time: formattedTime
+        time: formattedTime,
       });
-
 
       setMessageContent(
         htmlBody
           ? cleanHtmlContent(htmlBody)
-          : event.description || event.subject || "No content available"
+          : event.description || event.subject || "No content available",
       );
-
     } catch (err) {
-
       setMessageContent(
-        event.description || event.subject || "No content available"
+        event.description || event.subject || "No content available",
       );
-
     } finally {
       setIsMessageLoading(false);
     }
   };
 
-
   // Function to clean HTML content
   const cleanHtmlContent = (html) => {
     // Basic HTML cleanup
     const cleaned = html
-      .replace(/<style[^>]*>.*?<\/style>/gsi, '') // Remove style tags
-      .replace(/<script[^>]*>.*?<\/script>/gsi, '') // Remove script tags
-      .replace(/<!--.*?-->/g, '') // Remove comments
+      .replace(/<style[^>]*>.*?<\/style>/gis, "") // Remove style tags
+      .replace(/<script[^>]*>.*?<\/script>/gis, "") // Remove script tags
+      .replace(/<!--.*?-->/g, "") // Remove comments
       .trim();
 
     return cleaned || html;
@@ -387,7 +380,6 @@ const TimelineEvent = () => {
 
   // for save by kjl
   const handleTemplateSave = async () => {
-
     if (!templateData?.id) return;
     if (!isTemplateChanged) return;
     if (isTemplateSaving) return;
@@ -395,7 +387,7 @@ const TimelineEvent = () => {
     setIsTemplateSaving(true);
 
     try {
-      
+
       const requestBody = {
         parent_bean: {
           module: "EmailTemplates",
@@ -417,7 +409,7 @@ const TimelineEvent = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestBody),
-        }
+        },
       );
 
       const result = await response.json();
@@ -431,12 +423,9 @@ const TimelineEvent = () => {
       setIsTemplateChanged(false);
 
       alert("✅ Template updated successfully!");
-
     } catch (err) {
-
       alert("❌ Save failed — changes are still unsaved.");
       console.error(err);
-
     } finally {
       setIsTemplateSaving(false);
     }
@@ -444,10 +433,9 @@ const TimelineEvent = () => {
 
   // Function to close template modal
   const closeTemplateModal = () => {
-
     if (isTemplateChanged) {
       const confirmClose = window.confirm(
-        "You have unsaved changes. Close anyway?"
+        "You have unsaved changes. Close anyway?",
       );
 
       if (!confirmClose) return;
@@ -500,55 +488,55 @@ const TimelineEvent = () => {
           font-weight: 600;
           color: #1f2937;
         }
-        
+
         .message-content p {
           margin-bottom: 1em;
           
         }
-        
+
         .message-content a {
           color: #3b82f6;
           text-decoration: underline;
         }
-        
+
         .message-content a:hover {
           color: #2563eb;
         }
-        
+
         .message-content ul,
         .message-content ol {
           margin-left: 1.5em;
           margin-bottom: 1em;
         }
-        
+
         .message-content li {
           margin-bottom: 0.5em;
         }
-        
+
         .message-content img {
           max-width: 100%;
           height: auto;
           border-radius: 4px;
         }
-        
+
         .message-content table {
           border-collapse: collapse;
           width: 100%;
           margin-bottom: 1em;
         }
-        
+
         .message-content table th,
         .message-content table td {
           border: 1px solid #e5e7eb;
           padding: 8px 12px;
           text-align: left;
         }
-        
+
         .message-content table th {
           background-color: #f9fafb;
           font-weight: 600;
         }
-        
+
         .message-content blockquote {
           border-left: 4px solid #e5e7eb;
           margin: 1em 0;
@@ -556,15 +544,15 @@ const TimelineEvent = () => {
           color: #6b7280;
           font-style: italic;
         }
-        
+
         .message-content code {
           background-color: #f3f4f6;
           padding: 2px 6px;
           border-radius: 4px;
-          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
           font-size: 0.9em;
         }
-        
+
         .message-content pre {
           background-color: #1f2937;
           color: #f9fafb;
@@ -573,35 +561,35 @@ const TimelineEvent = () => {
           overflow-x: auto;
           margin: 1em 0;
         }
-        
+
         .message-content pre code {
           background-color: transparent;
           color: inherit;
           padding: 0;
         }
-        
+
         .message-content .cta {
           margin: 20px 0;
         }
-        
+
         .message-content .emoticon {
           display: inline-block;
           vertical-align: middle;
           width: 20px;
           height: 20px;
         }
-        
+
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
-
-        }
         
+        }
+
         .message-icon-pulse {
           animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
           0% {
             transform: scale(1);
@@ -616,18 +604,19 @@ const TimelineEvent = () => {
             opacity: 1;
           }
         }
-        
+
         .modal-backdrop {
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
         }
-        
+
         .message-modal {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
-                      0 0 0 1px rgba(255, 255, 255, 0.1);
+          box-shadow:
+            0 20px 40px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
         }
-        
+
         .message-content-container {
           background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
           border-radius: 12px;
@@ -654,12 +643,13 @@ const TimelineEvent = () => {
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${selectedView === "all"
-                  ? "translate-x-0"
-                  : selectedView === "important"
-                    ? "translate-x-full"
-                    : "translate-x-[200%]"
-                }`}
+        ${
+          selectedView === "all"
+            ? "translate-x-0"
+            : selectedView === "important"
+              ? "translate-x-full"
+              : "translate-x-[200%]"
+        }`}
             />
 
             {[
@@ -673,10 +663,11 @@ const TimelineEvent = () => {
                 className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
           transition-colors duration-300 hover:cursor-pointer hover:opacity-90 transition
 
-          ${selectedView === tab.key
-                    ? "text-white"
-                    : "text-gray-600 hover:text-purple-600"
-                  }`}
+          ${
+            selectedView === tab.key
+              ? "text-white"
+              : "text-gray-600 hover:text-purple-600"
+          }`}
               >
                 {tab.label}
               </button>
@@ -701,7 +692,8 @@ const TimelineEvent = () => {
                 ? getReminderFilterType(type)
                 : null;
               const contactId = getContactIdFromEvent(event);
-              const hasTemplate = event.template_id && event.template_id.trim() !== "";
+              const hasTemplate =
+                event.template_id && event.template_id.trim() !== "";
               const hasMessageContent = event.description || event.subject;
               const hasMessageId = event.message_id_c;
 
@@ -718,9 +710,10 @@ const TimelineEvent = () => {
                   </div>
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${index === 0
-                        ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
-                        : "bg-white border-gray-200"
+                      ${
+                        index === 0
+                          ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
+                          : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -734,11 +727,12 @@ const TimelineEvent = () => {
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
 
-                              ${isReminderEvent
-                                ? "text-purple-600"
-                                : isContactEvent
-                                  ? "text-green-600"
-                                  : "text-blue-600"
+                              ${
+                                isReminderEvent
+                                  ? "text-purple-600"
+                                  : isContactEvent
+                                    ? "text-green-600"
+                                    : "text-blue-600"
                               }`}
                           />
 
@@ -751,7 +745,6 @@ const TimelineEvent = () => {
                                        pointer-events-none z-50"
                           >
                             {getTooltipText(event)}
-
 
                             {isReminderEvent && filterType && (
                               <div className="text-xs text-gray-300 mt-1">
@@ -777,11 +770,10 @@ const TimelineEvent = () => {
                           {type
                             ? type.charAt(0).toUpperCase() + type.slice(1)
                             : "Event"}
-                        </span> 
+                        </span>
                       </span>
 
                       <div className="flex items-center gap-2">
-
                         {hasMessageId && (
                           <button
                             onClick={() => handleMessageClick(event)}
@@ -792,23 +784,28 @@ const TimelineEvent = () => {
                           >
                             {isMessageLoading === event.message_id_c ? (
                               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                            ) : (<MessageSquare />
+                            ) : (
+                              <MessageSquare />
                             )}
-                            <div className="absolute left-1/2 -translate-x-1/2 -top-8
+                            <div
+                              className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
                                           bg-gray-900 text-white rounded-md
                                           opacity-0 group-hover:opacity-100
                                           transition-opacity duration-200
-                                          pointer-events-none z-50">
+                                          pointer-events-none z-50"
+                            >
                               View Message
-                              <div className="absolute left-1/2 -translate-x-1/2 top-full
-                                            w-2 h-2 bg-gray-900 rotate-45" />
+                              <div
+                                className="absolute left-1/2 -translate-x-1/2 top-full
+                                            w-2 h-2 bg-gray-900 rotate-45"
+                              />
                             </div>
                           </button>
                         )}
 
-                        {/* Template Icon - Only show if template_id exists */}
-                        {hasTemplate && (
+                        {/* {hasTemplate && (
+
                           <button
                             onClick={() => handleTemplateClick(event.template_id, event)}
                             className="text-green-600 hover:text-green-700 cursor-pointer relative group"
@@ -844,7 +841,7 @@ const TimelineEvent = () => {
                               />
                             </div>
                           </button>
-                        )}
+                        )} */}
 
                         {event.prompt_id.trim() !== "" &&
                           event.prompt_id.toLowerCase() !== "na" && (
@@ -864,7 +861,6 @@ const TimelineEvent = () => {
                         </span>
                       </div>
                     </div>
-
 
                     {/* Additional info about the event */}
                     <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
@@ -909,7 +905,7 @@ const TimelineEvent = () => {
             {timelineData?.length === 0 ? (
               <div className="text-center text-gray-500">No events found</div>
             ) : (
-              <div className="relative flex gap-4 mt-6">
+              <div ref={bottomRef} className="relative flex gap-4 mt-6">
                 <div className="relative z-10 w-16 flex-shrink-0">
                   <div className="w-12 h-12 flex items-center justify-center">
                     <img
@@ -930,100 +926,92 @@ const TimelineEvent = () => {
         />
       )}
 
-       {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
-     {showMessageModal && (
-  <div
-    className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
-    onClick={closeMessageModal}
-  >
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0, y: 20 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{
-        type: "spring",
-        damping: 25,
-        stiffness: 300
-      }}
-      className="message-modal rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl bg-white"
-      onClick={(e) => e.stopPropagation()}
-    >
-      
-      {/* ✅ HEADER (FIXED) */}
-      <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
-        
-        <div className="flex items-center gap-3">
-          <MessageSquare size={24} className="text-white" />
-
-          <div className="flex flex-col leading-tight">
-            <h2 className="text-lg font-semibold text-white">
-              {messageMeta.from}
-            </h2>
-
-            <span className="text-sm text-blue-100">
-              {messageMeta.fromEmail}
-            </span>
-
-            <span className="text-xs text-blue-200">
-              {messageMeta.date} • {messageMeta.time}
-            </span>
-          </div>
-        </div>
-
-        {/* SUBJECT CENTER */}
-        <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
-          <h1 className="text-lg font-semibold text-white truncate">
-            {messageMeta.subject}
-          </h1>
-        </div>
-
-        <button
+      {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
+      {showMessageModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
           onClick={closeMessageModal}
-          className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
-          title="Close"
         >
-          <X size={24} className="text-white" />
-        </button>
-      </div>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{
+              type: "spring",
+              damping: 25,
+              stiffness: 300,
+            }}
+            className="message-modal rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ✅ HEADER (FIXED) */}
+            <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <MessageSquare size={24} className="text-white" />
 
-      {/* ✅ SCROLLABLE BODY */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
-        
-        {isMessageLoading ? (
+                <div className="flex flex-col leading-tight">
+                  <h2 className="text-lg font-semibold text-white">
+                    {messageMeta.from}
+                  </h2>
 
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600 font-medium">
-              Loading message content...
-            </p>
-          </div>
+                  <span className="text-sm text-blue-100">
+                    {messageMeta.fromEmail}
+                  </span>
 
-        ) : messageContent ? (
+                  <span className="text-xs text-blue-200">
+                    {messageMeta.date} • {messageMeta.time}
+                  </span>
+                </div>
+              </div>
 
-          <div className="message-content-container w-full max-w-4xl mx-auto">
-            <div
-              className="message-content"
-              style={{
-                fontFamily:
-                  'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                fontSize: "15px",
-                lineHeight: "1.8",
-                color: "#2d3748",
-                padding:"20px"
-              }}
-              dangerouslySetInnerHTML={{ __html: messageContent }}
-            />
-          </div>
+              {/* SUBJECT CENTER */}
+              <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
+                <h1 className="text-lg font-semibold text-white truncate">
+                  {messageMeta.subject}
+                </h1>
+              </div>
 
-        ) : (
-
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-20 h-20 mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-              <MessageSquare size={32} className="text-gray-500" />
+              <button
+                onClick={closeMessageModal}
+                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
+                title="Close"
+              >
+                <X size={24} className="text-white" />
+              </button>
             </div>
 
-            <p className="text-gray-600 text-lg font-medium">
-              No message content available
-            </p>
+            {/* ✅ SCROLLABLE BODY */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
+              {isMessageLoading ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-600 font-medium">
+                    Loading message content...
+                  </p>
+                </div>
+              ) : messageContent ? (
+                <div className="message-content-container w-full max-w-4xl mx-auto">
+                  <div
+                    className="message-content"
+                    style={{
+                      fontFamily:
+                        'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                      fontSize: "15px",
+                      lineHeight: "1.8",
+                      color: "#2d3748",
+                      padding: "20px",
+                    }}
+                    dangerouslySetInnerHTML={{ __html: messageContent }}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <div className="w-20 h-20 mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
+                    <MessageSquare size={32} className="text-gray-500" />
+                  </div>
+
+                  <p className="text-gray-600 text-lg font-medium">
+                    No message content available
+                  </p>
 
             <p className="text-gray-500 mt-2">
               This message doesn't contain any readable content.
@@ -1035,6 +1023,8 @@ const TimelineEvent = () => {
     </motion.div>
   </div>
 )}
+
+
       {/* Template Modal */}
       {showTemplateModal && templateData && (
         <div
@@ -1057,15 +1047,15 @@ const TimelineEvent = () => {
               </h2>
 
               <div className="flex gap-3">
-
                 <button
                   onClick={handleTemplateSave}
                   disabled={!isTemplateChanged || isTemplateSaving}
                   className={`px-4 py-2 rounded-lg font-medium transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
- ${!isTemplateChanged || isTemplateSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700"
-                    }`}
+ ${
+   !isTemplateChanged || isTemplateSaving
+     ? "bg-gray-400 cursor-not-allowed"
+     : "bg-green-600 hover:bg-green-700"
+ }`}
                 >
                   {isTemplateSaving ? "Saving..." : "Save"}
                 </button>
@@ -1087,10 +1077,8 @@ const TimelineEvent = () => {
                 >
                   <X size={28} />
                 </button>
-
               </div>
             </div>
-
 
             {/* Editor Content */}
             <div className="flex-1 overflow-hidden">
@@ -1127,6 +1115,29 @@ const TimelineEvent = () => {
               />
             </div>
           </motion.div>
+        </div>
+      )}
+      {timelineData?.length > 8 && (
+        <div className="fixed right-120 bottom-6 flex flex-col gap-3 z-50">
+          {/* Go to Top */}
+          <button
+            onClick={scrollToTop}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↑
+          </button>
+
+          {/* Go to Bottom */}
+          <button
+            onClick={scrollToBottom}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↓
+          </button>
         </div>
       )}
     </>

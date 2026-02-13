@@ -98,32 +98,5 @@ export const getBulkEmails = (email) => {
   };
 };
 
-export const markingEmail = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
-  return async (dispatch, getState) => {
-    dispatch(bulkSlice.actions.markingRequest());
-    const domain = getState().user.crmEndpoint.split("?")[0];
-    try {
-      const response = await axios.get(
-        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=bulk`,
-        {}
-      );
-      showConsole && console.log(`Mark Toggle Response`, response.data);
-      const data = response.data;
-      if (!data.success) {
-        throw new Error("Toggle failed");
-      }
-      // Determine message based on new_value
-      const message = data.new_value === 1 ? "Email Marked Successfully" : "Email Unmarked Successfully";
-      dispatch(
-        bulkSlice.actions.markingSucess(message)
-      );
-
-      dispatch(bulkSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(bulkSlice.actions.markingFailed(error.message));
-    }
-  };
-};
-
 export const bulkAction = bulkSlice.actions;
 export default bulkSlice.reducer;

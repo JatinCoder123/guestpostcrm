@@ -19,12 +19,13 @@ const DropDown = ({ options, handleSelectOption }) => {
   }, []);
 
   // Get selected option
-  const selectedOption = options.find((option) => option.period === timeline) || options[0];
-  
+  const selectedOption =
+    options.find((option) => option.period === timeline) || options[0];
+
   // Format date in "DD MMM YY" format (16 Dec 25)
   const formatDate = (date) => {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "short" });
     const year = date.getFullYear().toString().slice(-2);
     return `${day} ${month} ${year}`;
   };
@@ -33,24 +34,23 @@ const DropDown = ({ options, handleSelectOption }) => {
   const getDateRange = (period) => {
     const today = new Date();
     let startDate = new Date(today);
-    
-    switch(period) {
+
+    switch (period) {
       case "today":
         return {
           start: formatDate(today),
           end: formatDate(today),
-          display: formatDate(today)
+          display: formatDate(today),
         };
-      
+
       case "yesterday":
         startDate.setDate(today.getDate() - 1);
         return {
           start: formatDate(startDate),
           end: formatDate(startDate),
-          display: formatDate(startDate)
+          display: formatDate(startDate),
         };
-        
-      
+
       case "this_week":
         // Get start of week (Monday)
         const startOfWeek = new Date(today);
@@ -60,81 +60,100 @@ const DropDown = ({ options, handleSelectOption }) => {
         return {
           start: formatDate(startOfWeek),
           end: formatDate(today),
-          display: `${formatDate(startOfWeek)} - ${formatDate(today)}`
+          display: `${formatDate(startOfWeek)} - ${formatDate(today)}`,
         };
-      
+
       case "last_7_days":
         startDate.setDate(today.getDate() - 6);
         return {
           start: formatDate(startDate),
           end: formatDate(today),
-          display: `${formatDate(startDate)} - ${formatDate(today)}`
+          display: `${formatDate(startDate)} - ${formatDate(today)}`,
         };
-      
+
       case "last_30_days":
         startDate.setDate(today.getDate() - 29);
         return {
           start: formatDate(startDate),
           end: formatDate(today),
-          display: `${formatDate(startDate)} - ${formatDate(today)}`
+          display: `${formatDate(startDate)} - ${formatDate(today)}`,
         };
-      
+
       case "this_month":
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         return {
           start: formatDate(startOfMonth),
           end: formatDate(today),
-          display: `${formatDate(startOfMonth)} - ${formatDate(today)}`
+          display: `${formatDate(startOfMonth)} - ${formatDate(today)}`,
         };
-      
+
       case "last_month":
-        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        const lastMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          1,
+        );
+        const endOfLastMonth = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          0,
+        );
         return {
           start: formatDate(lastMonth),
           end: formatDate(endOfLastMonth),
-          display: `${formatDate(lastMonth)} - ${formatDate(endOfLastMonth)}`
+          display: `${formatDate(lastMonth)} - ${formatDate(endOfLastMonth)}`,
         };
-      
+
       case "last_3_months":
         startDate.setMonth(today.getMonth() - 2);
         startDate.setDate(1);
-        const endOfThreeMonths = new Date(today.getFullYear(), today.getMonth(), 0);
+        const endOfThreeMonths = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          0,
+        );
         return {
           start: formatDate(startDate),
           end: formatDate(endOfThreeMonths),
-          display: `${formatDate(startDate)} - ${formatDate(endOfThreeMonths)}`
+          display: `${formatDate(startDate)} - ${formatDate(endOfThreeMonths)}`,
         };
-      
+
       case "this_quarter":
         const currentQuarter = Math.floor(today.getMonth() / 3);
         const quarterStartMonth = currentQuarter * 3;
-        const quarterStart = new Date(today.getFullYear(), quarterStartMonth, 1);
-        const quarterEnd = new Date(today.getFullYear(), quarterStartMonth + 3, 0);
+        const quarterStart = new Date(
+          today.getFullYear(),
+          quarterStartMonth,
+          1,
+        );
+        const quarterEnd = new Date(
+          today.getFullYear(),
+          quarterStartMonth + 3,
+          0,
+        );
         return {
           start: formatDate(quarterStart),
           end: formatDate(quarterEnd),
-          display: "This quarter"
+          display: "This quarter",
         };
-      
+
       case "this_year":
         const yearStart = new Date(today.getFullYear(), 0, 1);
         const yearEnd = new Date(today.getFullYear(), 11, 31);
         return {
           start: formatDate(yearStart),
           end: formatDate(yearEnd),
-          display: "This year"
+          display: "This year",
         };
-      
+
       default:
         return {
           start: formatDate(today),
           end: formatDate(today),
-          display: formatDate(today)
         };
     }
   };
-  
+
   // Get date range for selected option
   const selectedDateRange = getDateRange(timeline || "today");
 
@@ -145,11 +164,11 @@ const DropDown = ({ options, handleSelectOption }) => {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
         onClick={() => setOpen(!open)}
-      //   className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white border border-gray-300 
-      //              rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200
-      //              w-[200px] text-left"
-      // >
-      className="
+        //   className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white border border-gray-300
+        //              rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200
+        //              w-[200px] text-left"
+        // >
+        className="
   flex items-center justify-between gap-2
   px-4 py-2.5 w-[200px] text-left
   bg-white border border-gray-300 rounded-lg
@@ -163,8 +182,8 @@ const DropDown = ({ options, handleSelectOption }) => {
   focus:ring-2 focus:ring-blue-500/30
 
   active:border-blue-600
-">
-
+"
+      >
         <div className="flex flex-col flex-1 min-w-0">
           <span className="text-sm font-medium text-gray-900 truncate">
             {selectedOption?.title || "Select"}
@@ -201,14 +220,16 @@ const DropDown = ({ options, handleSelectOption }) => {
                 Time period
               </h3>
             </div> */}
-            
+
             {/* Options List */}
             <div className="max-h-80 overflow-y-auto">
               {options.map((option) => {
                 const dateRange = getDateRange(option.period);
                 const isSelected = timeline === option.period;
-                const showDateRange = !["This year", "This quarter"].includes(option.title);
-                
+                const showDateRange = !["This year", "This quarter"].includes(
+                  option.title,
+                );
+
                 return (
                   <motion.div
                     key={option.period}
@@ -223,9 +244,11 @@ const DropDown = ({ options, handleSelectOption }) => {
                   >
                     <div className="flex flex-col">
                       <div className="flex justify-between items-start">
-                        <span className={`text-sm font-medium ${
-                          isSelected ? "text-blue-600" : "text-gray-900"
-                        }`}>
+                        <span
+                          className={`text-sm font-medium ${
+                            isSelected ? "text-blue-600" : "text-gray-900"
+                          }`}
+                        >
                           {option.title}
                         </span>
                         {!showDateRange && (
@@ -234,7 +257,7 @@ const DropDown = ({ options, handleSelectOption }) => {
                           </span>
                         )}
                       </div>
-                      
+
                       {showDateRange ? (
                         <span className="text-xs text-gray-600 mt-1">
                           {dateRange.display}

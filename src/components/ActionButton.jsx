@@ -8,7 +8,6 @@ import {
   favEmail,
   getFavEmails,
 } from "../store/Slices/favEmailSlice";
-import { bulkAction, markingEmail } from "../store/Slices/markBulkSlice";
 import {
   forwardEmail,
   forwardedAction,
@@ -26,7 +25,9 @@ import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { PreviewTemplate } from "./PreviewTemplate";
 import { threadEmailAction } from "../store/Slices/threadEmail";
+import { MdHome, MdOutlineHome } from "react-icons/md";
 import { showConsole } from "../assets/assets";
+import { addMarketPlace, deleteMarketPlace, marketplaceActions } from "../store/Slices/Marketplace";
 
 /* 🔹 Separator Component */
 const Separator = () => <div className="h-8 w-[1px] bg-gray-500 mx-2" />;
@@ -39,6 +40,8 @@ const ActionButton = ({
 }) => {
   const dispatch = useDispatch();
   const [showUsers, setShowUsers] = useState(false);
+  const [isMark, setIsMark] = useState(false);
+
   const [showTags, setShowTags] = useState(false);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
   const [showUpdatePopup, setShowUpdatePopup] = useState(false);
@@ -85,15 +88,17 @@ const ActionButton = ({
   const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
 
   const {
-    marking,
+    adding,
+    deleteMarketPlaceId,
+    deleting,
+    items: marketPlaces,
     error: markingError,
     message: markingMessage,
-  } = useSelector((s) => s.bulk);
+  } = useSelector((s) => s.marketplace);
 
   const handleForward = (to) => {
     dispatch(forwardEmail(contactInfo.id, to, threadId));
   };
-
 
   /* 🔥 ADDED: Check FR button visibility */
   useEffect(() => {
@@ -101,9 +106,7 @@ const ActionButton = ({
 
     const fetchFRButtonStatus = async () => {
       try {
-        const res = await fetch(
-          `${crmEndpoint}&type=fr_button&email=${email}`
-        );
+        const res = await fetch(`${crmEndpoint}&type=fr_button&email=${email}`);
         const data = await res.json();
 
         if (data?.reminder_id && data.reminder_id !== false) {
@@ -127,11 +130,11 @@ const ActionButton = ({
 
     try {
       setFrLoading(true);
-      showConsole && console.log(crmEndpoint)
+      showConsole && console.log(crmEndpoint);
       await fetch(
-        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`
+        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`,
       );
-      showConsole && console.log("First rply send button clicked")
+      showConsole && console.log("First rply send button clicked");
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),
@@ -144,6 +147,12 @@ const ActionButton = ({
       setFrLoading(false);
     }
   };
+  useEffect(() => {
+    if (marketPlaces.length > 0) {
+      setIsMark(marketPlaces.find((e) => e.name === email));
+
+    }
+  }, [marketPlaces])
 
   const FavIcon = () => {
     const isFav = favEmails.some((e) => e.email_address === email);
@@ -182,7 +191,7 @@ const ActionButton = ({
           email,
           thread_id: threadId,
           recent_activity: "forwarded",
-        })
+        }),
       );
       dispatch(forwardedAction.clearAllMessages());
       dispatch(getForwardedEmails({ email: enteredEmail, loading: false }));
@@ -199,8 +208,8 @@ const ActionButton = ({
         addEvent({
           email,
           thread_id: threadId,
-          recent_activity: "favourite",
-        })
+          recent_activity: favouriteMessage,
+        }),
       );
       dispatch(favAction.clearAllMessages());
       dispatch(getFavEmails({ email: enteredEmail, loading: false }));
@@ -208,7 +217,7 @@ const ActionButton = ({
 
     if (markingError) {
       toast.error(markingError);
-      dispatch(bulkAction.clearAllErrors());
+      dispatch(marketplaceActions.clearErrors());
     }
 
     if (markingMessage) {
@@ -217,10 +226,10 @@ const ActionButton = ({
         addEvent({
           email,
           thread_id: threadId,
-          recent_activity: "bulk marked",
-        })
+          recent_activity: markingMessage,
+        }),
       );
-      dispatch(bulkAction.clearAllMessages());
+      dispatch(marketplaceActions.clearMessage());
     }
 
     if (changeMessage) {
@@ -230,7 +239,7 @@ const ActionButton = ({
           email,
           thread_id: threadId,
           recent_activity: "link exchange status changed",
-        })
+        }),
       );
       dispatch(linkExchangeaction.clearAllMessages());
     }
@@ -273,7 +282,6 @@ const ActionButton = ({
     threadId,
     enteredEmail,
   ]);
-
 
   /* 🔹 Static Buttons (UNCHANGED) */
   const actionButtons = [
@@ -320,17 +328,14 @@ const ActionButton = ({
       action: () => setShowUsers((p) => !p),
     },
     {
-      icon: marking ? (
-        <LoadingChase />
-      ) : (
-        <img
-          src="https://img.icons8.com/color/48/bursts.png"
-          className="w-6 h-6"
-          alt="bulk"
-        />
-      ),
-      label: "Mark Bulk",
-      action: () => dispatch(markingEmail(threadId)),
+      icon: (adding || (deleting && deleteMarketPlaceId == isMark.id))
+        ? (
+          <LoadingChase />
+        ) : (
+          isMark ? <MdHome size={25} color="red" /> : <MdOutlineHome size={25} color="red" />
+        ),
+      label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
+      action: () => dispatch(isMark ? deleteMarketPlace(isMark.id) : addMarketPlace(email, contactInfo.type == "Brand")),
     },
     {
       icon: exchanging ? (
@@ -363,8 +368,19 @@ const ActionButton = ({
 
   return (
     <>
-      {showUpdatePopup && <PreviewTemplate editorContent={editorContent} initialContent={editorContent} setEditorContent={setEditorContent} onClose={() => setShowUpdatePopup(false)} onSubmit={() => { handleActionBtnClick(editorContent) }} loading={sending}
-        threadId={threadId} />}
+      {showUpdatePopup && (
+        <PreviewTemplate
+          editorContent={editorContent}
+          initialContent={editorContent}
+          setEditorContent={setEditorContent}
+          onClose={() => setShowUpdatePopup(false)}
+          onSubmit={() => {
+            handleActionBtnClick(editorContent);
+          }}
+          loading={sending}
+          threadId={threadId}
+        />
+      )}
       <div className="mt-4 flex items-center flex-wrap gap-2">
         {actionButtons.map((btn, i) => (
           <div key={i} className="flex items-center relative">
@@ -477,7 +493,6 @@ const ActionButton = ({
 
               <Separator />
             </div>
-
           </>
         )}
 
@@ -496,7 +511,7 @@ const ActionButton = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowUpdatePopup(true);
-                  setEditorContent(btn.body_html)
+                  setEditorContent(btn.body_html);
                   setClickedActionBtn(btn.id);
                 }}
                 disabled={sending}

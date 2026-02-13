@@ -43,6 +43,7 @@ import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
 import { getAllWebsites } from "./store/Slices/webSlice";
 import { fetchGpcController } from "./store/Slices/gpcControllerSlice";
+import { getMarketplace } from "./store/Slices/Marketplace";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
@@ -103,7 +104,7 @@ const RootLayout = () => {
     dispatch(getFavEmails({ email: enteredEmail }));
     dispatch(getAllWebsites());
     dispatch(getLinkExchange(enteredEmail));
-    dispatch(getBulkEmails(enteredEmail));
+    dispatch(getMarketplace())
     dispatch(getOrders({ email: enteredEmail }));
     dispatch(getDeals({ email: enteredEmail }));
     dispatch(getInvoices({ email: enteredEmail }));

@@ -44,7 +44,7 @@ function addOneMonth(dateStr) {
 
 export function buildTable(data, type, webKey, amtKey) {
   if (!Array.isArray(data) || data.length === 0) {
-    return `<p style="font-size:14px;color:#999;">No deals available</p>`;
+    return `<p style="font-size:14px;color:#999;">No data available</p>`;
   }
 
   const rows = data
