@@ -85,7 +85,7 @@ export function OrdersPage() {
   // Status options for dropdown
   const statusOptions = [
     { value: "all", label: "All Status" },
-     { value: "new", label: "New" },
+    { value: "new", label: "New" },
     { value: "duplicate", label: "Duplicate" },
     { value: "ai_failed", label: "AI Failed" },
     { value: "ai_passed", label: "AI Passed" },
@@ -109,6 +109,13 @@ export function OrdersPage() {
     // Update filters state as well
     setFilters(prev => ({ ...prev, status: e.target.value }));
   };
+
+  // Auto-set search category when status filter is applied
+  useEffect(() => {
+    if (selectedStatusFilter && selectedStatusFilter !== "all") {
+      setSelectedCategory("search");
+    }
+  }, [selectedStatusFilter]);
 
   // Debug: Log order statuses to see what we have
   useEffect(() => {
