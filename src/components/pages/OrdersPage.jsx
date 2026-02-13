@@ -8,6 +8,7 @@ import {
   User,
   ShieldCheck,
   ClipboardCheck,
+  Download,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -355,13 +356,13 @@ export function OrdersPage() {
               { value: "eur", label: "EUR" },
             ]}
             onDownloadClick={handleDownload}
-            showDownload={true}
+            showDownload={false} // Hide download from SearchComponent
           />
         </div>
         
-        {/* Status Dropdown Only - Inline with search */}
+        {/* Status Dropdown and Download Icon - Both on right side */}
         <div className="flex items-center gap-3 shrink-0">
-          {/* <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Status:</span> */}
+        
           <select
             value={selectedStatusFilter}
             onChange={handleStatusFilterChange}
@@ -373,6 +374,18 @@ export function OrdersPage() {
               </option>
             ))}
           </select>
+          
+          {/* Download Icon - Right side after dropdown */}
+          <button
+            onClick={handleDownload}
+            className="p-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors group relative"
+            title="Download CSV"
+          >
+            <Download className="w-5 h-5 text-indigo-600" />
+            <span className="absolute left-1/2 -translate-x-1/2 -bottom-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+              Download CSV
+            </span>
+          </button>
         </div>
       </div>
 
