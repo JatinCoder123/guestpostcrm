@@ -25,17 +25,23 @@ const AvatarPage = () => {
         className="flex items-center gap-2 px-4 py-2 mb-6"
       >
         <div className=" px-4 py-2 flex bg-gray-200 rounded-lg hover:bg-gray-300 transition">
-        <ArrowLeft className="w-5 h-5 " />
-        Back
+          <ArrowLeft className="w-5 h-5 " />
+          Back
         </div>
 
-         <a href="https://www.guestpostcrm.com/blog/guestpostcrm-uses-an-ai-avatar-for-every-reply/"  target="_blank" 
-  rel="noopener noreferrer">
-         <img width="40" height="40" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
+        <a
+          href="https://www.guestpostcrm.com/blog/guestpostcrm-uses-an-ai-avatar-for-every-reply/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            width="40"
+            height="40"
+            src="https://img.icons8.com/offices/30/info.png"
+            alt="info"
+          />
+        </a>
       </motion.button>
-
-     
 
       {/* GRID */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
