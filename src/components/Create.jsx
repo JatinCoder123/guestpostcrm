@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { LoadingChase } from "./Loading";
 import { OrderView } from "./OrderView";
 import PageLoader from "./PageLoader";
+import CreateOrderForm from "./CreateOrderForm";
 
 export default function Create({
   data,
@@ -168,34 +169,34 @@ export default function Create({
                       : pageType.charAt(0).toUpperCase() + pageType.slice(1)
                   } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                 </div>
+                {pageType == "create" && type == "orders" && (
+                  <CreateOrderForm setOrder={setData} order={data} />
+                )}
                 {pageType == "view" && (
                   <div className="flex items-center gap-3">
-                    {type == "orders" ? (
-                      <>
-                        <button
-                          onClick={() =>
-                            navigate("/orders", { state: { email } })
-                          }
-                          className="px-3 py-2 bg-green-100 text-green-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
-                        >
-                          <ShoppingCart />
-                        </button>
-                      </>
-                    ) : (
+                    {type == "orders" && (
                       <button
                         onClick={() =>
-                          navigate(`/${type}/create`, { state: { email } })
+                          navigate("/orders", { state: { email } })
                         }
-                        className="inline-flex items-center gap-2 "
+                        className="px-3 py-2 bg-green-100 text-green-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
                       >
-                        <img
-                          width="40"
-                          height="40"
-                          src="https://img.icons8.com/arcade/64/plus.png"
-                          alt="plus"
-                        />{" "}
+                        <ShoppingCart />
                       </button>
                     )}
+                    <button
+                      onClick={() =>
+                        navigate(`/${type}/create`, { state: { email } })
+                      }
+                      className="inline-flex items-center gap-2 "
+                    >
+                      <img
+                        width="40"
+                        height="40"
+                        src="https://img.icons8.com/arcade/64/plus.png"
+                        alt="plus"
+                      />{" "}
+                    </button>
                   </div>
                 )}
                 {pageType == "create" && (

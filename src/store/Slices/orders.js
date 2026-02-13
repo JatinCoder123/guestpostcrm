@@ -32,12 +32,13 @@ postMessage: null,
       state.error = null;
     },
     getOrdersSucess(state, action) {
-      const { count, orders, pageCount, pageIndex, statusLists, summary } = action.payload;
+      const { count, orders, pageCount, pageIndex, statusLists, summary } =
+        action.payload;
       state.loading = false;
       state.orders = orders;
       state.statusLists = statusLists;
       state.count = count;
-      state.updateId = null
+      state.updateId = null;
       state.summary = summary;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
@@ -118,7 +119,7 @@ postMessage: null,
     deleteLinkSuccess(state, action) {
       state.deleting = false;
       state.orders = action.payload.orders;
-      state.updateLinkMessage = "Order Deleted Successfully"
+      state.updateLinkMessage = "Order Deleted Successfully";
       state.error = null;
     },
     deleteLinkFailed(state, action) {
@@ -163,13 +164,15 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_orders${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
+          `${
+            getState().user.crmEndpoint
+          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`,
         );
       } else {
         response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_orders${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
+          `${
+            getState().user.crmEndpoint
+          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`,
         );
       }
       const data = response.data;
@@ -181,13 +184,13 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
           orders: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
-          summary: data.summary ?? null
-        })
+          summary: data.summary ?? null,
+        }),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        ordersSlice.actions.getOrdersFailed("Fetching Orders orders Failed")
+        ordersSlice.actions.getOrdersFailed("Fetching Orders orders Failed"),
       );
     }
   };
@@ -199,28 +202,61 @@ export const createOrder = () => {
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
       let response;
-      response = await axios.get(`${domain}?entryPoint=manual_order&email=${getState().ladger.email}`);
+      response = await axios.get(
+        `${domain}?entryPoint=manual_order&email=${getState().ladger.email}`,
+      );
       const data = response.data;
       showConsole && console.log(`Orders created`, data);
       if (!data.order.response) {
-        dispatch(
-          ordersSlice.actions.createOrderFailed(data.order)
-        );
+        dispatch(ordersSlice.actions.createOrderFailed(data.order));
         return;
       }
       showConsole && console.log(`Orders created`, data);
       dispatch(
-        ordersSlice.actions.createOrderSuccess("Order Created Successfully")
+        ordersSlice.actions.createOrderSuccess("Order Created Successfully"),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(
-        ordersSlice.actions.createOrderFailed("Creating Order Failed")
-      );
+      dispatch(ordersSlice.actions.createOrderFailed("Creating Order Failed"));
     }
   };
 };
+export const createOrder2 = (order, send) => {
+  return async (dispatch, getState) => {
+    dispatch(ordersSlice.actions.createOrderRequest());
+    try {
+      const domain = getState().user.crmEndpoint.split("?")[0];
+      const { data } = await axios.post(
+        `${domain}?entryPoint=get_post_all&action=post_data`,
 
+        {
+          parent_bean: {
+            module: "outr_order_gp_li",
+            name: "kamaluniyaljii123",
+            order_type: "GUEST POST1",
+            child_bean: {
+              module: "outr_seo_backlinks",
+            },
+          },
+        },
+      );
+      showConsole && console.log(`Create Order Manully`, data);
+      const updatedOrders = [...order, ...getState().order.orders];
+      dispatch(
+        ordersSlice.actions.createOrderSuccess({
+          message: send
+            ? "Offers Created and Send Successfully"
+            : "Offers Created Successfully",
+          orders: updatedOrders,
+          count: updatedOrders.length,
+        }),
+      );
+      dispatch(offersSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));
+    }
+  };
+};
 
 export const updateOrder = (order, send = true, id = null) => {
   return async (dispatch, getState) => {
@@ -242,7 +278,7 @@ export const updateOrder = (order, send = true, id = null) => {
             "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
             "Content-Type": "aplication/json",
           },
-        }
+        },
       );
       showConsole && console.log(`Update Order`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
@@ -252,15 +288,17 @@ export const updateOrder = (order, send = true, id = null) => {
         return o;
       });
       dispatch(
-        ordersSlice.actions.updateOrderSuccess({ orders: updatedOrders, message: `Order Updated ${send ? "and Send Successfully" : "Successfully"}`, id: id })
+        ordersSlice.actions.updateOrderSuccess({
+          orders: updatedOrders,
+          message: `Order Updated ${send ? "and Send Successfully" : "Successfully"}`,
+          id: id,
+        }),
       );
 
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
       showConsole && console.log(error);
-      dispatch(
-        ordersSlice.actions.updateOrderFailed("Updating Order Failed")
-      );
+      dispatch(ordersSlice.actions.updateOrderFailed("Updating Order Failed"));
     }
   };
 };
@@ -287,7 +325,7 @@ export const updateSeoLink = (orderId, link) => {
             "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
             "Content-Type": "aplication/json",
           },
-        }
+        },
       );
       showConsole && console.log(`Update Order Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
@@ -295,20 +333,23 @@ export const updateSeoLink = (orderId, link) => {
           return {
             ...o,
             seo_backlinks: o.seo_backlinks.map((l) =>
-              l.id === link.id ? { ...l, ...link } : l
+              l.id === link.id ? { ...l, ...link } : l,
             ),
           };
         }
         return o;
       });
       dispatch(
-        ordersSlice.actions.updateLinkSuccess({ orders: updatedOrders, message: "Order Link Updated Successfully" })
+        ordersSlice.actions.updateLinkSuccess({
+          orders: updatedOrders,
+          message: "Order Link Updated Successfully",
+        }),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
       showConsole && console.log(error);
       dispatch(
-        ordersSlice.actions.updateLinkFailed("Updating Order Link Failed")
+        ordersSlice.actions.updateLinkFailed("Updating Order Link Failed"),
       );
     }
   };
@@ -317,7 +358,8 @@ export const deleteLink = (orderId, linkId) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.deleteLinkRequest());
     try {
-      const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_seo_backlinks&record_id=${linkId}`
+      const { data } = await axios.post(
+        `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_seo_backlinks&record_id=${linkId}`,
       );
       showConsole && console.log(`Delete Order Link`, data);
       if (!data.success) {
@@ -327,9 +369,7 @@ export const deleteLink = (orderId, linkId) => {
         if (o.id === orderId) {
           return {
             ...o,
-            seo_backlinks: o.seo_backlinks.filter((l) =>
-              l.id !== linkId
-            ),
+            seo_backlinks: o.seo_backlinks.filter((l) => l.id !== linkId),
           };
         }
         return o;
@@ -337,7 +377,7 @@ export const deleteLink = (orderId, linkId) => {
       dispatch(
         ordersSlice.actions.deleteLinkSuccess({
           orders: updatedOrders,
-        })
+        }),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
@@ -369,7 +409,10 @@ export const createLink = (orderId, link) => {
         if (o.id === orderId) {
           return {
             ...o,
-            seo_backlinks: [...o.seo_backlinks, { ...link, id: Date.now().toString() }],
+            seo_backlinks: [
+              ...o.seo_backlinks,
+              { ...link, id: Date.now().toString() },
+            ],
           };
         }
         return o;
@@ -378,7 +421,7 @@ export const createLink = (orderId, link) => {
         ordersSlice.actions.createLinkSuccess({
           message: "Link Created Successfully",
           orders: updatedOrders,
-        })
+        }),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {

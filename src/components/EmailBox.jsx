@@ -215,7 +215,8 @@ export default function EmailBox({
 
     const contentToSend = editorContent || input;
 
-    if (view) dispatch(sendEmail(contentToSend, null, null, files));
+    if (view)
+      dispatch(sendEmail(contentToSend, null, null, files, viewThreadId));
     else dispatch(sendEmailToThread(threadId, contentToSend, files));
 
     onClose();

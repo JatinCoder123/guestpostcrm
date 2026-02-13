@@ -133,7 +133,8 @@ export const getViewEmail = (email = null) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email ?? getState().ladger.email
+        `${getState().user.crmEndpoint}&type=view_email&email=${
+          email ?? getState().ladger.email
         }`,
       );
       showConsole && console.log(`viewEmail`, data);
@@ -160,7 +161,8 @@ export const getContact = (email = null) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint
+        `${
+          getState().user.crmEndpoint
         }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`,
       );
       showConsole && console.log(`Get contact`, data);
@@ -225,16 +227,21 @@ export const editContact = (contactData) => {
     }
   };
 };
-export const sendEmail = (reply, message = null, error = null, attachments = []) => {
+export const sendEmail = (
+  reply,
+  message = null,
+  error = null,
+  attachments = [],
+  threadId = null,
+) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
-    const threadId = getState().viewEmail.threadId;
-    console.log(attachments)
+    console.log(attachments);
     try {
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
         {
-          threadId,
+          threadId: threadId ?? getState().viewEmail.threadId,
           replyBody: reply,
           attachments: attachments.map((file) => file.file),
           email: getState().ladger.email,
