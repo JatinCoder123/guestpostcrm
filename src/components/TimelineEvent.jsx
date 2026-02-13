@@ -39,6 +39,14 @@ const TimelineEvent = () => {
   }, [templateContent, originalTemplateContent]);
 
   const topRef = useRef(null);
+  const bottomRef = useRef(null);
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  };
 
   const dispatch = useDispatch();
 
@@ -895,7 +903,7 @@ const TimelineEvent = () => {
             {timelineData?.length === 0 ? (
               <div className="text-center text-gray-500">No events found</div>
             ) : (
-              <div className="relative flex gap-4 mt-6">
+              <div ref={bottomRef} className="relative flex gap-4 mt-6">
                 <div className="relative z-10 w-16 flex-shrink-0">
                   <div className="w-12 h-12 flex items-center justify-center">
                     <img
@@ -1103,6 +1111,29 @@ const TimelineEvent = () => {
               />
             </div>
           </motion.div>
+        </div>
+      )}
+      {timelineData?.length > 8 && (
+        <div className="fixed right-120 bottom-6 flex flex-col gap-3 z-50">
+          {/* Go to Top */}
+          <button
+            onClick={scrollToTop}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↑
+          </button>
+
+          {/* Go to Bottom */}
+          <button
+            onClick={scrollToBottom}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↓
+          </button>
         </div>
       )}
     </>
