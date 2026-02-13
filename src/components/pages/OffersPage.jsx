@@ -208,7 +208,7 @@ export function OffersPage() {
         </div>
 
         {/* Summary / Total Pages */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+        {/* <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Pages</p>
@@ -220,7 +220,7 @@ export function OffersPage() {
               <DollarSign className="w-6 h-6 text-purple-600" />
             </div>
           </div>
-        </div>
+        </div> */}
 
       </div>
 

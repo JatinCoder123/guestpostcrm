@@ -8,6 +8,7 @@ import {
   User,
   ShieldCheck,
   ClipboardCheck,
+  Download,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -21,20 +22,32 @@ import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
+
 const getStatusColor = (status) => {
   switch (status) {
+    // ✅ GREEN → Completed only
     case "Completed":
       return "bg-green-100 text-green-700";
-    case "In Progress":
-      return "bg-blue-100 text-blue-700";
-    case "Pending":
-      return "bg-yellow-100 text-yellow-700";
+
+    // ✅ RED → All rejected types
+    case "Rejected":
+    case "reject":
+    case "rejected_nontechnical":
+    case "rejected_technical":
     case "Cancelled":
       return "bg-red-100 text-red-700";
+
+    case "In Progress":
+      return "bg-blue-100 text-blue-700";
+
+    case "Pending":
+      return "bg-yellow-100 text-yellow-700";
+
     default:
       return "bg-gray-100 text-gray-700";
   }
 };
+
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -50,6 +63,10 @@ export function OrdersPage() {
     useSelector((state) => state.orders);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
+  
+  const rejectedCount = orders.filter((order) =>
+    order.order_status?.toLowerCase().trim().includes("reject")
+  ).length;
 
   // Add state for filter values
   const [filters, setFilters] = useState({
@@ -62,9 +79,35 @@ export function OrdersPage() {
     maxAmount: 0,
   });
 
-  // Handle filter application
-  const handleFilterApply = (appliedFilters) => {
-    setFilters(appliedFilters);
+  // State for status dropdown
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState("all");
+
+  // Status options for dropdown
+  const statusOptions = [
+    { value: "all", label: "All Status" },
+     { value: "new", label: "New" },
+    { value: "duplicate", label: "Duplicate" },
+    { value: "ai_failed", label: "AI Failed" },
+    { value: "ai_passed", label: "AI Passed" },
+    { value: "in_process", label: "In Process" },
+    { value: "accepted", label: "Accepted" },
+    { value: "completed", label: "Completed" },
+    { value: "published", label: "Published" },
+    { value: "blacklisted", label: "Blacklisted" },
+    { value: "spam_score_high", label: "Spam Score High" },
+    { value: "link_removed", label: "Link Removed" },
+    { value: "rejected_nontechnical", label: "Rejected-NonTechnical" },
+    { value: "previous_payment_due", label: "Previous Payment Due" },
+    { value: "client_side_issue", label: "Client Side Issue" },
+    { value: "reminder_sent", label: "Reminder Sent" },
+    { value: "wrong", label: "Wrong" },
+  ];
+
+  // Handle status filter change
+  const handleStatusFilterChange = (e) => {
+    setSelectedStatusFilter(e.target.value);
+    // Update filters state as well
+    setFilters(prev => ({ ...prev, status: e.target.value }));
   };
 
   // Debug: Log order statuses to see what we have
@@ -103,49 +146,56 @@ export function OrdersPage() {
       }
     })
     .filter((item) => {
-      // Apply status filter
-      if (filters.status && filters.status !== "all") {
-        // Check if the order_status matches the selected filter
-        // Handle case-insensitive matching and partial matches
-        const orderStatus =
-          item.order_status?.toString().toLowerCase().trim() || "";
-        const filterStatus = filters.status.toLowerCase().trim();
-
-        // Try exact match first
-        if (orderStatus === filterStatus) {
-          return true;
+      // Apply status filter from dropdown
+      if (selectedStatusFilter && selectedStatusFilter !== "all") {
+        const orderStatus = item.order_status?.toString().toLowerCase().trim() || "";
+        const filterStatus = selectedStatusFilter.toLowerCase().trim();
+        
+        // Handle special cases
+        if (filterStatus === "in_process") {
+          return orderStatus.includes("in process") || 
+                 orderStatus.includes("in progress") || 
+                 orderStatus.includes("processing");
         }
-
-        // Try partial match (e.g., "In process" vs "In Process")
-        if (
-          orderStatus.includes(filterStatus) ||
-          filterStatus.includes(orderStatus)
-        ) {
-          return true;
+        
+        if (filterStatus === "rejected_nontechnical") {
+          return orderStatus.includes("rejected") || 
+                 orderStatus.includes("reject") || 
+                 orderStatus.includes("nontechnical");
         }
-
-        // Try to match common variations
-        const statusVariations = {
-          new: ["new", "pending", "received"],
-          "in process": [
-            "in process",
-            "in progress",
-            "processing",
-            "in-progress",
-          ],
-          completed: ["completed", "finished", "done", "delivered"],
-          accepted: ["accepted", "approved", "confirmed"],
-          duplicate: ["duplicate", "copied"],
-        };
-
-        // Check if any variation matches
-        if (statusVariations[filterStatus]) {
-          return statusVariations[filterStatus].some((variation) =>
-            orderStatus.includes(variation),
-          );
+        
+        if (filterStatus === "ai_failed") {
+          return orderStatus.includes("ai failed") || 
+                 orderStatus.includes("ai_failed");
         }
-
-        return false;
+        
+        if (filterStatus === "ai_passed") {
+          return orderStatus.includes("ai passed") || 
+                 orderStatus.includes("ai_passed");
+        }
+        
+        if (filterStatus === "spam_score_high") {
+          return orderStatus.includes("spam") || 
+                 orderStatus.includes("score high");
+        }
+        
+        if (filterStatus === "previous_payment_due") {
+          return orderStatus.includes("payment due") || 
+                 orderStatus.includes("previous payment");
+        }
+        
+        if (filterStatus === "client_side_issue") {
+          return orderStatus.includes("client side") || 
+                 orderStatus.includes("client issue");
+        }
+        
+        if (filterStatus === "reminder_sent") {
+          return orderStatus.includes("reminder") || 
+                 orderStatus.includes("sent");
+        }
+        
+        // For other statuses, do a simple includes check
+        return orderStatus.includes(filterStatus);
       }
       return true;
     })
@@ -196,11 +246,6 @@ export function OrdersPage() {
     setSelectedCategory(value);
   };
 
-  // Function to handle status filter change (if you want to add it separately)
-  const handleStatusChange = (status) => {
-    setFilters((prev) => ({ ...prev, status }));
-  };
-
   const handleDownload = () => {
     if (!filteredorders || filteredorders.length === 0) {
       toast.error("No data available to download");
@@ -237,6 +282,7 @@ export function OrdersPage() {
     a.download = "orders.csv";
     a.click();
   };
+  
   useEffect(() => {
     if (state?.email) {
       const specificOrder = orders.filter(
@@ -282,48 +328,74 @@ export function OrdersPage() {
         />
       )}
 
-      <SearchComponent
-        dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory}
-        onSearchChange={handleSearchChange}
-        searchValue={topsearch}
-        searchPlaceholder="Search here..."
-        onFilterApply={handleFilterApply}
-        filterPlaceholder="Filters"
-        showFilter={true}
-        archiveOptions={[
-          { value: "all", label: "All" },
-          { value: "active", label: "Active" },
-          { value: "inactive", label: "Inactive" },
-        ]}
-        transactionTypeOptions={[
-          { value: "all", label: "All Emails" },
-          { value: "incoming", label: "Incoming" },
-          { value: "outgoing", label: "Outgoing" },
-        ]}
-        currencyOptions={[
-          { value: "all", label: "All" },
-          { value: "usd", label: "USD" },
-          { value: "eur", label: "EUR" },
-        ]}
-        onDownloadClick={handleDownload}
-        showDownload={true}
-        className="mb-6"
-      />
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex-1">
+          <SearchComponent
+            dropdownOptions={dropdownOptions}
+            onDropdownChange={handleCategoryChange}
+            selectedDropdownValue={selectedCategory}
+            onSearchChange={handleSearchChange}
+            searchValue={topsearch}
+            searchPlaceholder="Search here..."
+            onFilterApply={() => {}}
+            filterPlaceholder="Filters"
+            showFilter={false}
+            archiveOptions={[
+              { value: "all", label: "All" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+            ]}
+            transactionTypeOptions={[
+              { value: "all", label: "All Emails" },
+              { value: "incoming", label: "Incoming" },
+              { value: "outgoing", label: "Outgoing" },
+            ]}
+            currencyOptions={[
+              { value: "all", label: "All" },
+              { value: "usd", label: "USD" },
+              { value: "eur", label: "EUR" },
+            ]}
+            onDownloadClick={handleDownload}
+            showDownload={false} // Hide download from SearchComponent
+          />
+        </div>
+        
+        {/* Status Dropdown and Download Icon - Both on right side */}
+        <div className="flex items-center gap-3 shrink-0">
+        
+          <select
+            value={selectedStatusFilter}
+            onChange={handleStatusFilterChange}
+            className="px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-gray-700 shadow-sm min-w-[180px] cursor-pointer hover:border-indigo-400 transition-colors"
+          >
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          
+          {/* Download Icon - Right side after dropdown */}
+          <button
+            onClick={handleDownload}
+            className="p-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors group relative"
+            title="Download CSV"
+          >
+            <Download className="w-5 h-5 text-indigo-600" />
+            <span className="absolute left-1/2 -translate-x-1/2 -bottom-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+              Download CSV
+            </span>
+          </button>
+        </div>
+      </div>
 
       {/* Debug Info - Remove in production */}
       <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
         <div className="flex gap-4">
-          <span>Active Filters:</span>
-          {filters.status !== "all" && (
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-              Status: {filters.status}
-            </span>
-          )}
-          {(filters.minAmount > 0 || filters.maxAmount > 0) && (
-            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-              Amount: ${filters.minAmount} - ${filters.maxAmount || "∞"}
+          <span>Active Filter:</span>
+          {selectedStatusFilter !== "all" && (
+            <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
+              Status: {statusOptions.find(opt => opt.value === selectedStatusFilter)?.label || selectedStatusFilter}
             </span>
           )}
           <span className="ml-auto">
@@ -334,17 +406,18 @@ export function OrdersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        {/* Pending / Under Verification */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
+       
+       {/* Rejected Orders */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Under Verification</p>
+              <p className="text-gray-500 text-sm">Rejected Orders</p>
               <p className="text-2xl text-gray-900 mt-1 font-semibold">
-                {summary?.under_verification_orders ?? 0}
+                {rejectedCount}
               </p>
             </div>
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-indigo-600" />
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <ShieldCheck className="w-6 h-6 text-red-600" />
             </div>
           </div>
         </div>
