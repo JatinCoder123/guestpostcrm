@@ -101,9 +101,7 @@ export default function CreateOffer() {
     deleting,
     deleteOfferId,
   } = useSelector((state) => state.offers);
-  const {
-    deals
-  } = useSelector((state) => state.deals);
+  const { deals } = useSelector((state) => state.deals);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   dispatch(dealsAction.clearAllMessages());
 
@@ -116,11 +114,19 @@ export default function CreateOffer() {
     );
     let valid = [];
     if (type == "create") {
-      valid = websiteLists.filter((w) => !(offer.some((o) => o.website == w) || deal.some((o) => o.website_c == w)));
+      valid = websiteLists.filter(
+        (w) =>
+          !(
+            offer.some((o) => o.website == w) ||
+            deal.some((o) => o.website_c == w)
+          ),
+      );
     }
     if (type == "edit") {
-      valid = websiteLists.filter((w) =>
-        offer.some((o) => o.id == id || o.website !== w) && !deal.some((o) => o.website_c == w),
+      valid = websiteLists.filter(
+        (w) =>
+          offer.some((o) => o.id == id || o.website !== w) &&
+          !deal.some((o) => o.website_c == w),
       );
     }
     setValidWebsite(valid);
@@ -150,11 +156,22 @@ export default function CreateOffer() {
           />,
         ),
         "Offer Send Successfully",
+        null,
+        null,
+        state?.threadId,
       ),
     );
   };
   const handleSubmit = () => {
-    dispatch(sendEmail(editorContent, "Offer Send Successfully"));
+    dispatch(
+      sendEmail(
+        editorContent,
+        "Offer Send Successfully",
+        null,
+        null,
+        state?.threadId,
+      ),
+    );
   };
   const handleUpdate = (offer, send) => {
     dispatch(updateOffer(offer, send));

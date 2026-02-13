@@ -130,8 +130,8 @@ export default function CreateDeal() {
       const currentOfferWithoutDeal =
         currentOffers?.length > 0
           ? currentOffers.filter(
-            (o) => !currentDeals.some((d) => d.website_c == o.website),
-          )
+              (o) => !currentDeals.some((d) => d.website_c == o.website),
+            )
           : [];
       if (currentOfferWithoutDeal?.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
@@ -172,6 +172,9 @@ export default function CreateDeal() {
           />,
         ),
         "Deal Send Successfully",
+        null,
+        null,
+        state?.threadId,
       ),
     );
   };
@@ -187,7 +190,15 @@ export default function CreateDeal() {
     }
   }, [state, type]);
   const handleSubmit = () => {
-    dispatch(sendEmail(editorContent, "Deal Send Successfully"));
+    dispatch(
+      sendEmail(
+        editorContent,
+        "Deal Send Successfully",
+        null,
+        null,
+        state?.threadId,
+      ),
+    );
   };
   useEffect(() => {
     if (message) {

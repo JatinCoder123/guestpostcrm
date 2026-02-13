@@ -109,13 +109,15 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_offers${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
+          `${
+            getState().user.crmEndpoint
+          }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`,
         );
       } else {
         response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_offers${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
+          `${
+            getState().user.crmEndpoint
+          }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`,
         );
       }
       const data = response.data;
@@ -127,7 +129,7 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
           summary: data.summary ?? null,
           pageCount: data.total_pages ?? 1,
           pageIndex: data.current_page ?? 1,
-        })
+        }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
     } catch (error) {
@@ -153,7 +155,7 @@ export const updateOffer = (offer, send) => {
             "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
             "Content-Type": "aplication/json",
           },
-        }
+        },
       );
       showConsole && console.log(`Update Offer`, data);
       const updatedOffers = getState().offers.offers.map((o) => {
@@ -163,15 +165,16 @@ export const updateOffer = (offer, send) => {
         return o;
       });
       dispatch(
-        offersSlice.actions.updateOfferSuccess({ offers: updatedOffers, message: `Offer Updated ${send ? "and Send Successfully" : "Successfully"}` })
+        offersSlice.actions.updateOfferSuccess({
+          offers: updatedOffers,
+          message: `Offer Updated ${send ? "and Send Successfully" : "Successfully"}`,
+        }),
       );
 
       dispatch(offersSlice.actions.clearAllErrors());
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
-      dispatch(
-        offersSlice.actions.updateOfferFailed("Updating Offer Failed")
-      );
+      dispatch(offersSlice.actions.updateOfferFailed("Updating Offer Failed"));
     }
   };
 };
@@ -196,7 +199,6 @@ export const createOffer = (threadId, offers = [], send = false) => {
           child_bean: {
             module: "Contacts",
             email1: offers[0].email,
-
           },
         },
       );
@@ -204,10 +206,12 @@ export const createOffer = (threadId, offers = [], send = false) => {
       const updatedOffers = [...offers, ...getState().offers.offers];
       dispatch(
         offersSlice.actions.createOfferSuccess({
-          message: send ? "Offers Created and Send Successfully" : "Offers Created Successfully",
+          message: send
+            ? "Offers Created and Send Successfully"
+            : "Offers Created Successfully",
           offers: updatedOffers,
           count: updatedOffers.length,
-        })
+        }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
     } catch (error) {
@@ -219,18 +223,21 @@ export const deleteOffer = (id) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest(id));
     try {
-      const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_offer&record_id=${id}`
+      const { data } = await axios.post(
+        `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_offer&record_id=${id}`,
       );
       showConsole && console.log(`Delete Offer`, data);
       if (!data.success) {
         throw new Error(data.message);
       }
-      const updatedOffers = getState().offers.offers.filter((offer) => offer.id !== id);
+      const updatedOffers = getState().offers.offers.filter(
+        (offer) => offer.id !== id,
+      );
       dispatch(
         offersSlice.actions.deleteOfferSuccess({
           offers: updatedOffers,
           count: getState().offers.count - 1,
-        })
+        }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
     } catch (error) {

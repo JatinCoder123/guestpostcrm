@@ -47,8 +47,8 @@ export default function EmailBox({
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
-  const { setUserIdle, eventQueue } = useContext(SocketContext)
-  const [files, setFiles] = useState([])
+  const { setUserIdle, eventQueue } = useContext(SocketContext);
+  const [files, setFiles] = useState([]);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const [aiReplyContent, setAiReplyContent] = useState("");
@@ -94,7 +94,6 @@ export default function EmailBox({
   const [fullMessage, setFullMessage] = useState(null);
   const [fullLoading, setFullLoading] = useState(false);
   const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
-
 
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
@@ -189,14 +188,15 @@ export default function EmailBox({
       setFullLoading(false);
     }
   };
-  useEffect(() => { console.log("FILES", files) }, [files])
+  useEffect(() => {
+    console.log("FILES", files);
+  }, [files]);
 
   const htmlToPlainText = (html) => {
     const temp = document.createElement("div");
     temp.innerHTML = html || "";
     return temp.textContent || temp.innerText || "";
   };
-
 
   const handleSendClick = () => {
     if (!showEditorScreen) {
@@ -215,12 +215,13 @@ export default function EmailBox({
 
     const contentToSend = editorContent || input;
 
-    if (view) dispatch(sendEmail(contentToSend, null, null, files));
+    if (view)
+      dispatch(sendEmail(contentToSend, null, null, files, viewThreadId));
     else dispatch(sendEmailToThread(threadId, contentToSend, files));
 
     onClose();
     setInput("");
-    setFiles([])
+    setFiles([]);
     setEditorContent("");
   };
 
@@ -651,7 +652,6 @@ export default function EmailBox({
                   <span>Send Email</span>
                 </motion.button>
               </div>
-
             </div>
           </div>
         ) : (
@@ -739,16 +739,18 @@ export default function EmailBox({
                     className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${isUser
-                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                        }`}
+                      className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${
+                        isUser
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                      }`}
                     >
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
-                          ? "bg-white/20 text-white"
-                          : "bg-gray-100 text-gray-700 border border-gray-200"
-                          }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
+                          isUser
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                        }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">
@@ -782,7 +784,9 @@ export default function EmailBox({
                         <button
                           onClick={() =>
                             setOpenAttachmentsFor(
-                              openAttachmentsFor === mail.message_id ? null : mail.message_id
+                              openAttachmentsFor === mail.message_id
+                                ? null
+                                : mail.message_id,
                             )
                           }
                           className="mt-3 flex items-center gap-2 text-xs font-medium
@@ -838,7 +842,6 @@ export default function EmailBox({
                           ))}
                         </div>
                       )}
-
 
                       {/* THREE DOT MENU */}
                       <button

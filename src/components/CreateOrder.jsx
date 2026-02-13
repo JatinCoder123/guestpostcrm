@@ -5,7 +5,13 @@ import { useDispatch, useSelector } from "react-redux";
 import Create from "./Create";
 import { excludeEmail, showConsole } from "../assets/assets";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getOrders, orderAction, updateOrder } from "../store/Slices/orders";
+import {
+  createOrder,
+  createOrder2,
+  getOrders,
+  orderAction,
+  updateOrder,
+} from "../store/Slices/orders";
 import { createPreviewOrder } from "./PreviewOrder";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
@@ -40,6 +46,7 @@ export default function CreateOrder() {
     error,
     message,
     updateLinkMessage,
+    creating,
     updateId,
     creatingLinkMessage,
   } = useSelector((state) => state.orders);
@@ -52,6 +59,7 @@ export default function CreateOrder() {
   const { setNotificationCount } = useContext(SocketContext);
   const { enteredEmail, search } = useContext(PageContext);
   const [editorContent, setEditorContent] = useState(null);
+  const [newOrder, setNewOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPreview, setShowPreview] = useState(false);
@@ -92,26 +100,29 @@ export default function CreateOrder() {
     setCurrentOrders(() => [...order]);
   }, [state, orders, type, id]);
   const handleUpdate = (order, send) => {
-    if (order?.order_status == "rejected_nontechnical" || order?.order_status == "wrong") {
+    if (
+      order?.order_status == "rejected_nontechnical" ||
+      order?.order_status == "wrong"
+    ) {
       order = {
         ...order,
-        seo_backlinks:
-          order.seo_backlinks.map(link => ({
-            ...link,
-            status_c: "rejected",
-          }))
-
-      }
+        seo_backlinks: order.seo_backlinks.map((link) => ({
+          ...link,
+          status_c: "rejected",
+        })),
+      };
     }
     dispatch(updateOrder(order, send));
     setCurrentOrderSend(order);
   };
+  const handleCreate = (order, send) => {
+    dispatch(createOrder2(setNewOrder, send));
+    setCurrentOrderSend(setNewOrder);
+  };
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => {
-
-  };
+  const sendHandler = () => {};
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -124,19 +135,28 @@ export default function CreateOrder() {
     }
   };
   const handleSubmit = () => {
-    dispatch(sendEmail(editorContent, "Order Send Successfully"));
+    dispatch(
+      sendEmail(
+        editorContent,
+        "Order Send Successfully",
+        null,
+        null,
+        state?.threadId,
+      ),
+    );
   };
   useEffect(() => {
     if (message) {
+      dispatch(getOrders({}));
+
       ManualSideCall(
         crmEndpoint,
         state?.email,
-        "Our Order Updated Successfully",
+        `Our Order ${message.includes("Created") ? "Created" : "Updated"} Successfully`,
         1,
         okHandler,
       );
 
-      dispatch(getOrders({}));
       if (message.includes("Send")) {
         setShowPreview(true);
       } else {
@@ -176,16 +196,18 @@ export default function CreateOrder() {
 
   return (
     <Create
-      data={currentOrders}
+      data={type == "orders" ? setNewOrder : currentOrders}
+      submitData={createOrder}
       validWebsite={websiteLists}
       email={state?.email}
-      setData={setCurrentOrders}
+      setData={type == "orders" ? setNewOrder : setCurrentOrders}
       websiteKey="website_c"
       orderId="order_id"
       handleDelete={handleDelete}
       handleUpdate={handleUpdate}
       setCurrentOrderSend={setCurrentOrderSend}
       updating={updating}
+      creating={creating}
       lists={lists}
       threadId={state?.threadId}
       showPreview={showPreview}
