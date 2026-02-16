@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Editor } from "@tinymce/tinymce-react";
 import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
+import PromptViewerModal from "./PromptViewerModal";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
@@ -33,7 +34,8 @@ const TimelineEvent = () => {
   const [originalTemplateContent, setOriginalTemplateContent] = useState("");
   const [isTemplateChanged, setIsTemplateChanged] = useState(false);
   const [isTemplateSaving, setIsTemplateSaving] = useState(false);
-
+  const [open, setOpen] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState(null);
   useEffect(() => {
     setIsTemplateChanged(templateContent !== originalTemplateContent);
   }, [templateContent, originalTemplateContent]);
@@ -272,110 +274,6 @@ const TimelineEvent = () => {
     setShowMessageModal(false);
     setMessageContent("");
     setSelectedMessageId(null);
-  };
-
-  // Function to handle template icon click
-  const handleTemplateClick = async (templateId, event) => {
-    if (!templateId || templateId.trim() === "") return;
-
-    setLoadingTemplate(true);
-    setSelectedTemplate({
-      id: templateId,
-      eventData: event,
-    });
-
-    try {
-      // Fetch the email template from EmailTemplates module
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            module: "EmailTemplates",
-            id: templateId,
-          }),
-        },
-      );
-
-      const responseText = await response.text();
-      let result;
-
-      try {
-        result = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        result = {};
-      }
-
-      if (response.ok) {
-        // Check different response structures
-        let templateData;
-
-        if (Array.isArray(result)) {
-          // If result is an array, find the template with matching ID
-          templateData = result.find((t) => t.id === templateId);
-        } else if (result.data && Array.isArray(result.data)) {
-          templateData = result.data.find((t) => t.id === templateId);
-        } else if (result.parent_bean) {
-          templateData = result.parent_bean;
-        } else {
-          templateData = result;
-        }
-
-        if (templateData && templateData.body_html) {
-          setTemplateData(templateData);
-          const content = templateData.body_html || "";
-
-          setTemplateData(templateData);
-          setTemplateContent(content);
-          setOriginalTemplateContent(content); // ⭐ IMPORTANT
-          setIsTemplateChanged(false);
-          setShowTemplateModal(true);
-
-          setShowTemplateModal(true);
-        } else {
-          throw new Error("Template content not found");
-        }
-      } else {
-        throw new Error(
-          `Failed to fetch template: ${result.error || result.message || "Unknown error"}`,
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching template:", error);
-
-      // Fallback: Create a simple template data object
-      setTemplateData({
-        id: templateId,
-        name: "Template Preview",
-        body_html: `
-          <div style="padding: 20px; font-family: Arial, sans-serif;">
-            <h2>Template Preview</h2>
-            <p>Template ID: ${templateId}</p>
-            <p><strong>Event Type:</strong> ${event.type_c || "N/A"}</p>
-            <p><strong>Subject:</strong> ${event.subject_c || event.subject || "N/A"}</p>
-            <p><strong>Contact:</strong> ${event.name || "N/A"}</p>
-            <p>Error loading template: ${error.message}</p>
-          </div>
-        `,
-      });
-      setTemplateContent(`
-        <div style="padding: 20px; font-family: Arial, sans-serif;">
-          <h2>Template Preview</h2>
-          <p>Template ID: ${templateId}</p>
-          <p><strong>Event Type:</strong> ${event.type_c || "N/A"}</p>
-          <p><strong>Subject:</strong> ${event.subject_c || event.subject || "N/A"}</p>
-          <p><strong>Contact:</strong> ${event.name || "N/A"}</p>
-          <p>Error loading template: ${error.message}</p>
-        </div>
-      `);
-      setShowTemplateModal(true);
-    } finally {
-      setLoadingTemplate(false);
-    }
   };
 
   // for save by kjl
@@ -621,8 +519,13 @@ const TimelineEvent = () => {
           box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
       `}</style>
-
-      <div ref={topRef} className="relative py-[2%] px-[30%]">
+      {open && (
+        <PromptViewerModal
+          promptDetails={selectedPrompt}
+          onClose={() => setOpen(false)}
+        />
+      )}
+      <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
           onClick={scrollToTop}
           className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 
@@ -801,10 +704,13 @@ const TimelineEvent = () => {
                           </button>
                         )}
 
-                        {/* {hasTemplate && (
-
+                        {hasTemplate && (
                           <button
-                            onClick={() => handleTemplateClick(event.template_id, event)}
+                            onClick={() =>
+                              navigateTo("/settings/templates", {
+                                state: { templateId: event.template_id },
+                              })
+                            }
                             className="text-green-600 hover:text-green-700 cursor-pointer relative group"
                             title={`Preview Template: ${event.template_id}`}
                             disabled={
@@ -812,9 +718,6 @@ const TimelineEvent = () => {
                               selectedTemplate?.id === event.template_id
                             }
                           >
-
-
-
                             <FileText size={20} />
                             {loadingTemplate &&
                               selectedTemplate?.id === event.template_id && (
@@ -825,34 +728,31 @@ const TimelineEvent = () => {
 
                             <div
                               className="absolute left-1/2 -translate-x-1/2 -top-8
-                                        whitespace-nowrap px-2 py-1 text-xs
-                                        bg-gray-900 text-white rounded-md
-                                        opacity-0 group-hover:opacity-100
-                                        transition-opacity duration-200
-                                        pointer-events-none z-50"
-                            >     
+                                          whitespace-nowrap px-2 py-1 text-xs
+                                          bg-gray-900 text-white rounded-md
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                          pointer-events-none z-50"
+                            >
                               Preview Template
                               <div
                                 className="absolute left-1/2 -translate-x-1/2 top-full
-                                          w-2 h-2 bg-gray-900 rotate-45"
+                                            w-2 h-2 bg-gray-900 rotate-45"
                               />
                             </div>
                           </button>
-                        )} */}
-
-                        {event.prompt_id.trim() !== "" &&
-                          event.prompt_id.toLowerCase() !== "na" && (
-                            <button
-                              onClick={() =>
-                                navigateTo("/settings/machine-learning", {
-                                  state: { promptId: event.prompt_id },
-                                })
-                              }
-                              className="text-blue-600 hover:text-blue-700 cursor-pointer"
-                            >
-                              <SparkleIcon size={20} />
-                            </button>
-                          )}
+                        )}
+                        {event.prompt_details && (
+                          <button
+                            onClick={() => {
+                              setSelectedPrompt(event.prompt_details);
+                              setOpen(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
                         <span className="text-gray-500 text-sm">
                           {event.date_entered}
                         </span>

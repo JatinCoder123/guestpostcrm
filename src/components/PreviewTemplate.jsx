@@ -1,12 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Editor } from "@tinymce/tinymce-react";
-import { Brain, Zap, Trash2, Mail, Send, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { TINY_EDITOR_API_KEY } from "../store/constants";
+import { Brain, Zap, Trash2, Mail, Send, X, Sparkle, Eye, List } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { aiReplyAction, getAiReply } from "../store/Slices/aiReply";
 import { toast } from "react-toastify";
 import PageLoader from "./PageLoader";
+import { ViewButton } from "./ViewButton";
+import useModule from "../hooks/useModule";
 
 export const PreviewTemplate = ({
   editorContent,
@@ -29,6 +31,10 @@ export const PreviewTemplate = ({
     error: aiError,
     message,
   } = useSelector((state) => state.aiReply);
+  const {
+    crmEndpoint
+  } = useSelector((state) => state.user);
+  const editorRef = useRef(null)
   const dispatch = useDispatch();
   const [aiReplyContent, setAiReplyContent] = useState(aiReply);
   const [aiNewContent, setAiNewContent] = useState("");
@@ -47,8 +53,28 @@ export const PreviewTemplate = ({
       dispatch(aiReplyAction.clearAllErrors());
     }
   }, [message, aiResponse, dispatch]);
+  const { loading: priceTempLoading, data: priceTemp } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "PRICE_LIST",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "Price Template",
 
-  /* ---------------- UI ---------------- */
+  });
+  const insertTextAtCursor = () => {
+    if (editorRef.current) {
+      editorRef.current.focus(); // ensure cursor is active
+      editorRef.current.insertContent(priceTemp[0]?.body_html ?? "No Content Available");
+    }
+  };
   return (
     <>
       {aiLoading && <PageLoader />}
@@ -76,9 +102,11 @@ export const PreviewTemplate = ({
           <div className="flex-1 overflow-hidden">
             <Editor
               apiKey={TINY_EDITOR_API_KEY}
-              // tinymceScriptSrc="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"
               value={editorContent}
               onEditorChange={setEditorContent}
+              onInit={(e, editor) => {
+                editorRef.current = editor;
+              }}
               init={{
                 height: "100%",
                 menubar: true,
@@ -196,42 +224,60 @@ export const PreviewTemplate = ({
           <div className="p-3 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-wrap">
               {/* AI REPLY */}
-              <ActionButton
-                icon={<Brain />}
-                label="AI Reply"
-                gradient="from-indigo-500 to-blue-600"
-                onClick={() => {
-                  if (aiReplyContent == "") {
-                    dispatch(getAiReply(threadId));
-                  }
-                  setEditorContent(aiReplyContent);
-                }}
-              />
+              <ViewButton Icon={Sparkle}>
+                <ActionButton
+                  Icon={Brain}
+                  label="AI Reply"
+                  gradient="from-indigo-500 to-blue-600"
+                  onClick={() => {
+                    if (aiReplyContent == "") {
+                      dispatch(getAiReply(threadId));
+                    }
+                    setEditorContent(aiReplyContent);
+                  }}
+                />
+              </ViewButton>
+
+
 
               {/* AI NOW */}
-              <ActionButton
-                icon={<Zap />}
-                label="AI Now"
-                gradient="from-fuchsia-500 to-purple-600"
-                onClick={() => {
-                  dispatch(getAiReply(threadId, 1, editorContent));
-                  setEditorContent(editorContent);
-                }}
-              />
+              <ViewButton Icon={Sparkle}>
+                <ActionButton
+                  Icon={Zap}
+                  label="AI Now"
+                  gradient="from-fuchsia-500 to-purple-600"
+                  onClick={() => {
+                    dispatch(getAiReply(threadId, 1, editorContent));
+                    setEditorContent(editorContent);
+                  }}
+                />
+              </ViewButton>
+
 
               {/* TEMPLATE */}
-              <ActionButton
-                icon={<Mail />}
-                label="Templates"
-                gradient="from-slate-600 to-slate-800"
-                onClick={() => {
-                  setEditorContent(templateContent);
-                }}
-              />
+              <ViewButton Icon={Eye}>
+                <ActionButton
+                  Icon={Mail}
+                  label="Templates"
+                  gradient="from-slate-600 to-slate-800"
+                  onClick={() => {
+                    setEditorContent(templateContent);
+                  }}
+                />
+              </ViewButton>
+              <ViewButton Icon={Eye}>
+                <ActionButton
+                  Icon={List}
+                  label="Price"
+                  gradient="from-slate-600 to-slate-800"
+                  onClick={insertTextAtCursor}
+                />
+              </ViewButton>
+
 
               {/* CLEAR */}
               <ActionButton
-                icon={<Trash2 />}
+                Icon={Trash2}
                 label="Clear"
                 gradient="from-rose-500 to-red-600"
                 onClick={() => {
@@ -259,14 +305,13 @@ export const PreviewTemplate = ({
 };
 
 /* ---------------- REUSABLE BUTTON ---------------- */
-const ActionButton = ({ icon, label, gradient, onClick }) => (
+const ActionButton = ({ Icon, label, gradient, onClick }) => (
   <motion.button
     whileHover={{ scale: 1.05, y: -2 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
     className={`bg-gradient-to-r ${gradient} text-white p-3 rounded-2xl shadow-lg hover:shadow-xl cursor-pointer transition-all duration-200 flex items-center gap-2`}
   >
-    {icon}
-    <span className="text-sm font-medium hidden sm:inline">{label}</span>
+    <Icon className="w-4 h-4" />    <span className="text-sm font-medium hidden sm:inline">{label}</span>
   </motion.button>
 );

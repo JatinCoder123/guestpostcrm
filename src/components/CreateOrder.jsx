@@ -116,13 +116,13 @@ export default function CreateOrder() {
     setCurrentOrderSend(order);
   };
   const handleCreate = (order, send) => {
-    dispatch(createOrder2(setNewOrder, send));
-    setCurrentOrderSend(setNewOrder);
+    dispatch(createOrder2(state?.email, order, send));
+    setCurrentOrderSend(order);
   };
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => {};
+  const sendHandler = () => { };
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -196,8 +196,8 @@ export default function CreateOrder() {
 
   return (
     <Create
-      data={type == "orders" ? setNewOrder : currentOrders}
-      submitData={createOrder}
+      data={type == "orders" ? newOrder : currentOrders}
+      submitData={handleCreate}
       validWebsite={websiteLists}
       email={state?.email}
       setData={type == "orders" ? setNewOrder : setCurrentOrders}
