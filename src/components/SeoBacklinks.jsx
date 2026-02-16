@@ -282,6 +282,15 @@ export function TheirLink({ data }) {
             {data.spam_score_c}
           </span>
         </div>
+        <div className="flex items-start gap-2">
+          <FiTag className="text-slate-400 mt-0.5" size={14} />
+          <div>
+            <p className="text-xs text-slate-500">Link Type</p>
+            <p className="text-sm text-slate-700 font-medium break-all">
+              {data.link_type || "-"}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
