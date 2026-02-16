@@ -230,6 +230,7 @@ export function TheirLink({ data }) {
             <p className="text-xs text-slate-500">Anchor Text</p>
             <p className="text-sm text-slate-700 font-medium break-all">
               {data.anchor_text_c || "-"}
+              {data.is_anchor_text_valid == true && <ValidTick />}
             </p>
           </div>
         </div>
