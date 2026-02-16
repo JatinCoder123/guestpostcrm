@@ -11,7 +11,9 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, statusLists, updating } = useSelector((state) => state.orders);
+  const { creatingLinkMessage, statusLists, updating } = useSelector(
+    (state) => state.orders,
+  );
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showConsent, setShowConsent] = useState(false);
   const { invoiceOrderId } = useContext(SocketContext);
@@ -23,7 +25,6 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
     setShowConsent(true);
   };
 
-
   useEffect(() => {
     if (status) {
       const updatedOrder = {
@@ -31,21 +32,28 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
         order_status: status,
         seo_backlinks:
           status === "rejected_nontechnical"
-            ? data.seo_backlinks.map(link => ({
-              ...link,
-              status_c: "rejected",
-            }))
+            ? data.seo_backlinks.map((link) => ({
+                ...link,
+                status_c: "rejected",
+              }))
             : [...data.seo_backlinks],
-      }
-      dispatch(updateOrder(updatedOrder, status !== "accepted" ? true : false, data.order_id));
+      };
+      dispatch(
+        updateOrder(
+          updatedOrder,
+          status !== "accepted" ? true : false,
+          data.order_id,
+        ),
+      );
       setData((prev) => {
-        const next = prev.map((d) => (d?.order_id === data?.order_id ? updatedOrder : d));
+        const next = prev.map((d) =>
+          d?.order_id === data?.order_id ? updatedOrder : d,
+        );
         return next;
       });
       setCurrentOrderSend(updatedOrder);
-
     }
-  }, [status])
+  }, [status]);
   useEffect(() => {
     if (creatingLinkMessage) {
       setOpen(false);
@@ -62,7 +70,6 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
       setStatus("completed");
     }
   }, [invoiceOrderId, processingPayment, data.order_id]);
-
 
   return (
     <>
@@ -111,7 +118,11 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
       {processingPayment && <ProcessingLoader />}
       {(updating || sending) && <PageLoader />}
       <div className="w-full relative mt-3">
-        <OrderHeader data={data} setStatus={setStatus} onCompleteHandler={onCompleteHandler} />
+        <OrderHeader
+          data={data}
+          setStatus={setStatus}
+          onCompleteHandler={onCompleteHandler}
+        />
         <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -216,15 +227,22 @@ function ProcessingLoader() {
   );
 }
 function OrderHeader({ data, setStatus, onCompleteHandler }) {
-  const [showModel, setShowModel] = useState(null)
+  const [showModel, setShowModel] = useState(null);
   return (
     <>
-      {showModel && <Model setShowModel={setShowModel} showModel={showModel} handleSubmitConfirm={() => { setStatus(showModel), setShowModel(null) }} />}
+      {showModel && (
+        <Model
+          setShowModel={setShowModel}
+          showModel={showModel}
+          handleSubmitConfirm={() => {
+            (setStatus(showModel), setShowModel(null));
+          }}
+        />
+      )}
       <div className="w-full mb-3">
         <div className="relative group">
           <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
             <div className="relative z-10 flex flex-col items-center justify-center gap-5">
-
               {/* Order Label */}
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
@@ -240,12 +258,13 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
 
               {/* Action Buttons */}
               <div className="flex gap-3 flex-wrap justify-center">
-
                 {/* Accept */}
                 {data.order_status !== "accepted" && (
                   <>
                     <button
-                      onClick={() => { setShowModel("accepted"); }}
+                      onClick={() => {
+                        setShowModel("accepted");
+                      }}
                       className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-emerald-500/90 text-white font-semibold
                            shadow-md shadow-emerald-500/30
@@ -256,7 +275,9 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
                       Accept
                     </button>
                     <button
-                      onClick={() => { setShowModel("rejected_nontechnical"); }}
+                      onClick={() => {
+                        setShowModel("rejected_nontechnical");
+                      }}
                       className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-red-500/90 text-white font-semibold
                            shadow-md shadow-red-500/30
@@ -265,8 +286,8 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
                     >
                       <XCircle size={18} />
                       Reject
-                    </button></>
-
+                    </button>
+                  </>
                 )}
 
                 {/* Complete */}
@@ -282,18 +303,13 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
                     <PackageCheck size={18} />
                     Complete
                   </button>
-
-
                 )}
-
               </div>
-
             </div>
           </div>
         </div>
-      </div >
+      </div>
     </>
-
   );
 }
 
@@ -320,8 +336,8 @@ function PayPalConsent({ open, onCancel, onProceed }) {
       <div className="relative bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <h3 className="text-xl font-bold mb-2">Confirm Payment</h3>
         <p className="text-gray-600 mb-6">
-          You’ll be redirected to PayPal to complete the invoice payment.
-          Once payment is confirmed, the order will be completed automatically.
+          You’ll be redirected to PayPal to complete the invoice payment. Once
+          payment is confirmed, the order will be completed automatically.
         </p>
 
         <div className="flex justify-end gap-3">
@@ -346,7 +362,6 @@ function Model({ setShowModel, showModel, handleSubmitConfirm }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/30 backdrop-blur-sm">
       <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-md w-full shadow-lg">
-
         <h2 className="text-lg font-semibold text-gray-900 mb-3">
           {showModel === "rejected_nontechnical" ? "Reject" : "Accept"} Order
         </h2>

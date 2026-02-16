@@ -29,7 +29,7 @@ const fields = [
     name: "invoice_link_c",
     label: "Invoice Link",
     type: "text",
-    disabled: true,
+    disabled: false,
   },
 ];
 const lists = [

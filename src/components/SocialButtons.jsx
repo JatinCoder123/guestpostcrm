@@ -3,14 +3,20 @@ import { images } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { SocketContext } from "../context/SocketContext";
-import { resetDuplicateCount, checkForDuplicates, enableDuplicateUpdates } from "../store/Slices/duplicateEmailSlice";
+import {
+  resetDuplicateCount,
+  checkForDuplicates,
+  enableDuplicateUpdates,
+} from "../store/Slices/duplicateEmailSlice";
 
 const SocialButtons = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [animate, setAnimate] = useState(false);
   const [hasBeenClicked, setHasBeenClicked] = useState(false);
-  const duplicateCount = useSelector((state) => state.duplicateEmails?.count || 0);
+  const duplicateCount = useSelector(
+    (state) => state.duplicateEmails?.count || 0,
+  );
   const { notificationCount, setNotificationCount } = useContext(SocketContext);
   useEffect(() => {
     if (duplicateCount > 0) {
@@ -19,7 +25,6 @@ const SocialButtons = () => {
       return () => clearTimeout(timer);
     }
   }, [duplicateCount]);
-
 
   useEffect(() => {
     if (notificationCount.unreplied_email) {
@@ -33,13 +38,11 @@ const SocialButtons = () => {
     }
   }, [notificationCount.unreplied_email, dispatch, setNotificationCount]);
 
-
   const handleDuplicateClick = () => {
     setHasBeenClicked(true);
     dispatch(resetDuplicateCount());
     navigate("/duplicates");
   };
-
 
   const displayCount = hasBeenClicked ? 0 : duplicateCount;
 
@@ -80,7 +83,7 @@ const SocialButtons = () => {
       </button> */}
 
       {/* DUPLICATE BUTTON WITH BADGE */}
-      <button
+      {/* <button
         className="cursor-pointer hover:scale-105 rounded-full p-2 relative"
         onClick={handleDuplicateClick}
       >
@@ -116,7 +119,7 @@ const SocialButtons = () => {
             0
           </div>
         )}
-      </button>
+      </button> */}
     </div>
   );
 };

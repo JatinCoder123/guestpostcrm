@@ -234,10 +234,12 @@ export default function EmailBox({
   };
   const visibleMessages = emails?.slice(-messageLimit);
   useEffect(() => {
-    if (scrollRef.current && visibleMessages?.length <= 3) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [visibleMessages]);
+    if (!scrollRef.current) return;
+
+    // Only scroll when emails length actually changes
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [emails?.length]);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -637,11 +639,11 @@ export default function EmailBox({
                     );
                   })
                 )}
+                <Attachment data={files} onChange={setFiles} />
               </div>
 
               {/* SEND BUTTON */}
               <div className="flex gap-2 item-center justify-center">
-                <Attachment data={files} onChange={setFiles} />
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}
