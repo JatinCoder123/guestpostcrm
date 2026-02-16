@@ -161,14 +161,12 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
       let response;
       if (email) {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`,
         );
       } else {
         response = await axios.get(
-          `${
-            getState().user.crmEndpoint
+          `${getState().user.crmEndpoint
           }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`,
         );
       }
@@ -218,7 +216,7 @@ export const createOrder = () => {
     }
   };
 };
-export const createOrder2 = (order, send) => {
+export const createOrder2 = (email, order, send) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     try {
@@ -229,8 +227,8 @@ export const createOrder2 = (order, send) => {
         {
           parent_bean: {
             module: "outr_order_gp_li",
-            name: "kamaluniyaljii123",
-            order_type: "GUEST POST1",
+            name: email,
+            order_type: order.order_type,
             child_bean: {
               module: "outr_seo_backlinks",
             },
@@ -242,15 +240,15 @@ export const createOrder2 = (order, send) => {
       dispatch(
         ordersSlice.actions.createOrderSuccess({
           message: send
-            ? "Offers Created and Send Successfully"
-            : "Offers Created Successfully",
+            ? "Order Created and Send Successfully"
+            : "Order Created Successfully",
           orders: updatedOrders,
           count: updatedOrders.length,
         }),
       );
-      dispatch(offersSlice.actions.clearAllErrors());
+      dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));
+      dispatch(ordersSlice.actions.createOrderFailed("Order Creation Failed"));
     }
   };
 };
