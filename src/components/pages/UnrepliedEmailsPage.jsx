@@ -257,7 +257,7 @@ export function UnrepliedEmailsPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -289,9 +289,10 @@ export function UnrepliedEmailsPage() {
                   <tr
                     key={email.thread_id}
                     className={`border-b border-gray-100 cursor-pointer transition-colors
-                      ${email.is_seen == 0
-                        ? "bg-blue-50 hover:bg-blue-100"
-                        : "hover:bg-purple-50"
+                      ${
+                        email.is_seen == 0
+                          ? "bg-blue-50 hover:bg-blue-100"
+                          : "hover:bg-purple-50"
                       }
                     `}
                   >

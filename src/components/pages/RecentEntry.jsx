@@ -43,7 +43,7 @@ export function RecentEntry() {
         <div className="bg-green-600 py-4 px-8">
           <div className="grid grid-cols-5 text-white text-lg font-semibold">
             <div className="flex items-center gap-2">
-              <CalendarDays size={22} /> DATE
+              <CalendarDays size={22} /> CREATED AT
             </div>
             <div>CONTACT</div>
             <div className="flex items-center gap-2">

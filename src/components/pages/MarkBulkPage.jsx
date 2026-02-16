@@ -1,4 +1,3 @@
-
 import {
   Mail,
   Calendar,
@@ -20,19 +19,14 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-
-
 export function MarkBulkPage() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const { count, emails } = useSelector((state) => state.bulk);
-  const [selectedSort, setSelectedSort] = useState('');
+  const [selectedSort, setSelectedSort] = useState("");
 
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-
-
-  
   const filteredemails = emails
     .filter((item) => {
       const searchValue = topsearch.toLowerCase();
@@ -58,60 +52,46 @@ export function MarkBulkPage() {
       return 0;
     });
 
-
-
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    
   };
 
-  const handleFilterApply = (filters) => {
-   
-  };
-    
-    
-   
-     const handleDownload = () => {
-       if (!filteredemails || filteredemails.length === 0) {
-         toast.error("No data available to download");
-         return;
-       }
-   
-       // Convert Objects → CSV rows
-       const headers = ["DATE", "CONTACT","SUBJECT"];
-   
-       const rows = filteredemails.map((email) => [
-         email.date_entered,
-         email.first_name,
-         email.subject
-   
-   
-   
-       ]);
-   
-       // Convert to CSV string
-       const csvContent =
-         headers.join(",") +
-         "\n" +
-         rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
-   
-       // Create and auto-download file
-       const blob = new Blob([csvContent], { type: "text/csv" });
-       const url = URL.createObjectURL(blob);
-   
-       const a = document.createElement("a");
-       a.href = url;
-       a.download = "unreplied-emails.csv";
-       a.click();
-     };
-   
-   
+  const handleFilterApply = (filters) => {};
 
+  const handleDownload = () => {
+    if (!filteredemails || filteredemails.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    // Convert Objects → CSV rows
+    const headers = ["DATE", "CONTACT", "SUBJECT"];
+
+    const rows = filteredemails.map((email) => [
+      email.date_entered,
+      email.first_name,
+      email.subject,
+    ]);
+
+    // Convert to CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+
+    // Create and auto-download file
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "unreplied-emails.csv";
+    a.click();
+  };
 
   const [
     handleThreadClick,
@@ -123,12 +103,8 @@ export function MarkBulkPage() {
 
   return (
     <>
-
-    <SearchComponent
-        dropdownOptions={[
-          { value: "all", label: "Contact" },
-
-        ]}
+      <SearchComponent
+        dropdownOptions={[{ value: "all", label: "Contact" }]}
         selectedDropdownValue={selectedCategory}
         onDropdownChange={handleCategoryChange}
         // dropdownPlaceholder="Filter by websites"
@@ -136,18 +112,13 @@ export function MarkBulkPage() {
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Search  here..."
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
         className="mb-6"
       />
-
-
 
       {/* OPEN EMAIL BOX */}
       {showEmail && currentThreadId && (
@@ -165,18 +136,23 @@ export function MarkBulkPage() {
         {/* HEADER */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-             {/* Back Button */}
-  <button
-    onClick={() => navigate(-1)}
-    className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm"
-    title="Go back"
-  >
-    <ArrowLeft className="w-5 h-5 text-green-700" />
-  </button>
+            {/* Back Button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm"
+              title="Go back"
+            >
+              <ArrowLeft className="w-5 h-5 text-green-700" />
+            </button>
             <MessageSquare className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl text-gray-900">BULK EMAILS</h2>
             <a href="">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
@@ -192,7 +168,7 @@ export function MarkBulkPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">

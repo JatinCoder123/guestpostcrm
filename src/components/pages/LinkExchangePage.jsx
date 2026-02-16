@@ -27,11 +27,9 @@ export function LinkExchangePage() {
     currentThreadId,
     setCurrentThreadId,
   ] = useThread();
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSort, setSelectedSort] = useState('');
-
-
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSort, setSelectedSort] = useState("");
 
   const filteredEmails = emails
     .filter((item) => {
@@ -77,44 +75,31 @@ export function LinkExchangePage() {
       return 0;
     });
 
-
-
-
-
-
-
   const dropdownOptions = [
-    { value: 'contect', label: 'Contact' },
-    { value: 'subject', label: 'Subject' },
+    { value: "contect", label: "Contact" },
+    { value: "subject", label: "Subject" },
   ];
 
   const filterOptions = [
-    { value: 'asc', label: 'A to Z' },
-    { value: 'desc', label: 'Z to A' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-
+    { value: "asc", label: "A to Z" },
+    { value: "desc", label: "Z to A" },
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {
-
-  };
+  const handleFilterApply = (filters) => {};
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-
   };
 
   const handleSortChange = (value) => {
     setSelectedSort(value);
-
   };
-
 
   const handleDownload = () => {
     if (!filteredEmails || filteredEmails.length === 0) {
@@ -129,7 +114,7 @@ export function LinkExchangePage() {
       email.date_entered,
       email.first_name.split("<")[0].trim(),
       email.subject,
-      email.thread_count
+      email.thread_count,
     ]);
 
     // Convert to CSV string
@@ -148,50 +133,37 @@ export function LinkExchangePage() {
     a.click();
   };
 
-
-
   return (
     <>
-
       <SearchComponent
-
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         // dropdownPlaceholder="Filter by contact"
 
-
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
         searchPlaceholder="Search here..."
-
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
-
         archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
+          { value: "all", label: "All" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
         ]}
         transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
+          { value: "all", label: "All Emails" },
+          { value: "incoming", label: "Incoming" },
+          { value: "outgoing", label: "Outgoing" },
         ]}
         currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
+          { value: "all", label: "All" },
+          { value: "usd", label: "USD" },
+          { value: "eur", label: "EUR" },
         ]}
-
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
-
         className="mb-6"
       />
 
@@ -210,9 +182,16 @@ export function LinkExchangePage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900">LINK EXCHANGE EMAILS</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              LINK EXCHANGE EMAILS
+            </h2>
             <a href="">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
@@ -228,7 +207,7 @@ export function LinkExchangePage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -268,7 +247,9 @@ export function LinkExchangePage() {
                       <span>{email.date_entered}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{email.first_name}</td>
+                  <td className="px-6 py-4 text-gray-900">
+                    {email.first_name}
+                  </td>
                   <td className="px-6 py-4 text-purple-600">{email.subject}</td>
                   <td className="px-6 py-4 text-purple-600">
                     {email.description}

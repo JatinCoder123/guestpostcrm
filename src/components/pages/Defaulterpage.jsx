@@ -23,12 +23,13 @@ import { getContactDefaulters } from "../../store/Slices/contactdefaulterSlice";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-
 export function DefaulterPage() {
   const navigate = useNavigate();
-  const { loading, detection = [], count } = useSelector(
-    (state) => state.contactdefaulter
-  );
+  const {
+    loading,
+    detection = [],
+    count,
+  } = useSelector((state) => state.contactdefaulter);
 
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -41,7 +42,7 @@ export function DefaulterPage() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => { };
+  const handleFilterApply = (filters) => {};
 
   const handleDownload = () => {
     alert("download handler");
@@ -124,7 +125,7 @@ export function DefaulterPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">

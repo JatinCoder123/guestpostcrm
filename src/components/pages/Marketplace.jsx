@@ -163,7 +163,7 @@ export function Marketplace() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    DATE
+                    CREATED AT
                   </div>
                 </th>
 

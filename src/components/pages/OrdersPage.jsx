@@ -63,9 +63,9 @@ export function OrdersPage() {
     useSelector((state) => state.orders);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  
+
   const rejectedCount = orders.filter((order) =>
-    order.order_status?.toLowerCase().trim().includes("reject")
+    order.order_status?.toLowerCase().trim().includes("reject"),
   ).length;
 
   // Add state for filter values
@@ -107,7 +107,7 @@ export function OrdersPage() {
   const handleStatusFilterChange = (e) => {
     setSelectedStatusFilter(e.target.value);
     // Update filters state as well
-    setFilters(prev => ({ ...prev, status: e.target.value }));
+    setFilters((prev) => ({ ...prev, status: e.target.value }));
   };
 
   // Auto-set search category when status filter is applied
@@ -155,52 +155,67 @@ export function OrdersPage() {
     .filter((item) => {
       // Apply status filter from dropdown
       if (selectedStatusFilter && selectedStatusFilter !== "all") {
-        const orderStatus = item.order_status?.toString().toLowerCase().trim() || "";
+        const orderStatus =
+          item.order_status?.toString().toLowerCase().trim() || "";
         const filterStatus = selectedStatusFilter.toLowerCase().trim();
-        
+
         // Handle special cases
         if (filterStatus === "in_process") {
-          return orderStatus.includes("in process") || 
-                 orderStatus.includes("in progress") || 
-                 orderStatus.includes("processing");
+          return (
+            orderStatus.includes("in process") ||
+            orderStatus.includes("in progress") ||
+            orderStatus.includes("processing")
+          );
         }
-        
+
         if (filterStatus === "rejected_nontechnical") {
-          return orderStatus.includes("rejected") || 
-                 orderStatus.includes("reject") || 
-                 orderStatus.includes("nontechnical");
+          return (
+            orderStatus.includes("rejected") ||
+            orderStatus.includes("reject") ||
+            orderStatus.includes("nontechnical")
+          );
         }
-        
+
         if (filterStatus === "ai_failed") {
-          return orderStatus.includes("ai failed") || 
-                 orderStatus.includes("ai_failed");
+          return (
+            orderStatus.includes("ai failed") ||
+            orderStatus.includes("ai_failed")
+          );
         }
-        
+
         if (filterStatus === "ai_passed") {
-          return orderStatus.includes("ai passed") || 
-                 orderStatus.includes("ai_passed");
+          return (
+            orderStatus.includes("ai passed") ||
+            orderStatus.includes("ai_passed")
+          );
         }
-        
+
         if (filterStatus === "spam_score_high") {
-          return orderStatus.includes("spam") || 
-                 orderStatus.includes("score high");
+          return (
+            orderStatus.includes("spam") || orderStatus.includes("score high")
+          );
         }
-        
+
         if (filterStatus === "previous_payment_due") {
-          return orderStatus.includes("payment due") || 
-                 orderStatus.includes("previous payment");
+          return (
+            orderStatus.includes("payment due") ||
+            orderStatus.includes("previous payment")
+          );
         }
-        
+
         if (filterStatus === "client_side_issue") {
-          return orderStatus.includes("client side") || 
-                 orderStatus.includes("client issue");
+          return (
+            orderStatus.includes("client side") ||
+            orderStatus.includes("client issue")
+          );
         }
-        
+
         if (filterStatus === "reminder_sent") {
-          return orderStatus.includes("reminder") || 
-                 orderStatus.includes("sent");
+          return (
+            orderStatus.includes("reminder") || orderStatus.includes("sent")
+          );
         }
-        
+
         // For other statuses, do a simple includes check
         return orderStatus.includes(filterStatus);
       }
@@ -289,7 +304,7 @@ export function OrdersPage() {
     a.download = "orders.csv";
     a.click();
   };
-  
+
   useEffect(() => {
     if (state?.email) {
       const specificOrder = orders.filter(
@@ -366,10 +381,9 @@ export function OrdersPage() {
             showDownload={false} // Hide download from SearchComponent
           />
         </div>
-        
+
         {/* Status Dropdown and Download Icon - Both on right side */}
         <div className="flex items-center gap-3 shrink-0">
-        
           <select
             value={selectedStatusFilter}
             onChange={handleStatusFilterChange}
@@ -381,7 +395,7 @@ export function OrdersPage() {
               </option>
             ))}
           </select>
-          
+
           {/* Download Icon - Right side after dropdown */}
           <button
             onClick={handleDownload}
@@ -402,7 +416,9 @@ export function OrdersPage() {
           <span>Active Filter:</span>
           {selectedStatusFilter !== "all" && (
             <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
-              Status: {statusOptions.find(opt => opt.value === selectedStatusFilter)?.label || selectedStatusFilter}
+              Status:{" "}
+              {statusOptions.find((opt) => opt.value === selectedStatusFilter)
+                ?.label || selectedStatusFilter}
             </span>
           )}
           <span className="ml-auto">
@@ -413,8 +429,7 @@ export function OrdersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-       
-       {/* Rejected Orders */}
+        {/* Rejected Orders */}
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
           <div className="flex items-center justify-between">
             <div>
@@ -529,7 +544,7 @@ export function OrdersPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -611,7 +626,10 @@ export function OrdersPage() {
                         <button
                           onClick={() =>
                             navigateTo(`/orders/edit/${order.id}`, {
-                              state: { email: excludeEmail(order.real_name), threadId: order?.thread_id },
+                              state: {
+                                email: excludeEmail(order.real_name),
+                                threadId: order?.thread_id,
+                              },
                             })
                           }
                           className="p-2 hover:bg-blue-100 rounded-lg transition-colors"

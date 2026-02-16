@@ -99,7 +99,7 @@ const MailerSummaryHeader = () => {
         <table className="min-w-full border border-blue-400 rounded-xl overflow-hidden text-sm">
           <thead className="bg-blue-50">
             <tr>
-              <TH title="DATE" />
+              <TH title="CREATED AT" />
               <TH title="SUBJECT" />
               <TH title="MOTIVE" />
               <TH title="ORDER" />
