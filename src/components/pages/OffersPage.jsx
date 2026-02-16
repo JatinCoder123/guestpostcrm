@@ -268,7 +268,7 @@ export function OffersPage() {
                   </div>
                 </th>
 
-                <th className="px-6 py-4 text-left">EMAIL</th>
+                <th className="px-6 py-4 text-left">WEBSITE</th>
                 <th className="px-6 py-4 text-left">CLIENT OFFER</th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
                 <th className="px-6 py-4 text-left">STAGE</th>
@@ -312,7 +312,7 @@ export function OffersPage() {
                     {excludeName(offer.real_name)}
                   </td>
                   <td className="px-6 py-4 text-blue-600">
-                    {excludeEmail(offer.real_name)}
+                    {excludeEmail(offer.website)}
                   </td>
 
                   <td className="px-6 py-4 text-green-600">
