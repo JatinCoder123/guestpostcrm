@@ -11,6 +11,7 @@ import {
   Zap,
   Link2Icon,
   Plus,
+  Eye,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -31,6 +32,8 @@ import useModule from "../hooks/useModule";
 import PageLoader from "./PageLoader";
 import { SocketContext } from "../context/SocketContext";
 import Attachment from "./Attachment";
+import { useNavigate } from "react-router-dom";
+import { ViewButton } from "./ViewButton";
 export default function EmailBox({
   onClose,
   view,
@@ -47,6 +50,7 @@ export default function EmailBox({
   const dispatch = useDispatch();
 
   const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const navigate = useNavigate()
   const { setUserIdle, eventQueue } = useContext(SocketContext);
   const [files, setFiles] = useState([]);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
@@ -115,6 +119,22 @@ export default function EmailBox({
   const { loading: defTemplateLoading, data: defaultTemplate } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=updateOffer&email=${tempEmail}`,
     name: "DEFAULT TEMPLATE",
+    dependencies: [tempEmail],
+  });
+  const { loading: priceTempLoading, data: priceTemp } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "PRICE_LIST",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "Price Template",
     dependencies: [tempEmail],
   });
 
@@ -232,6 +252,12 @@ export default function EmailBox({
       onClose();
     }
   };
+  const insertTextAtCursor = () => {
+    if (editorRef.current) {
+      editorRef.current.focus(); // ensure cursor is active
+      editorRef.current.insertContent(priceTemp[0]?.body_html ?? "No Content Available");
+    }
+  };
   const visibleMessages = emails?.slice(-messageLimit);
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -336,7 +362,6 @@ export default function EmailBox({
               >
                 <Editor
                   apiKey={TINY_EDITOR_API_KEY}
-                  // tinymceScriptSrc="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"
                   value={editorContent || input}
                   onEditorChange={setEditorContent}
                   onInit={(e, editor) => {
@@ -461,43 +486,50 @@ export default function EmailBox({
             <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
               <div className="flex items-center gap-3 flex-wrap">
                 {/* AI REPLY BUTTON */}
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-                  onClick={() => {
-                    if (aiReplyContent == "") {
-                      dispatch(getAiReply(view ? viewThreadId : threadId));
-                    }
-                    insertAiReply(aiReplyContent);
-                  }}
-                >
-                  <Brain className="w-4 h-4" />
-                  <span className="text-sm font-medium hidden sm:inline">
-                    AI Reply
-                  </span>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-                  onClick={() => {
-                    dispatch(
-                      getAiReply(
-                        view ? viewThreadId : threadId,
-                        1,
-                        editorContent,
-                      ),
-                    );
+                <ViewButton Icon={Sparkles}>
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    onClick={() => {
+                      if (aiReplyContent == "") {
+                        dispatch(getAiReply(view ? viewThreadId : threadId));
+                      }
+                      insertAiReply(aiReplyContent);
+                    }}
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">
+                      AI Reply
+                    </span>
+                  </motion.button>
+                </ViewButton>
+                <ViewButton Icon={Sparkles}>
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    onClick={() => {
+                      dispatch(
+                        getAiReply(
+                          view ? viewThreadId : threadId,
+                          1,
+                          editorContent,
+                        ),
+                      );
 
-                    insertAiReply(editorContent);
-                  }}
-                >
-                  <Zap className="w-4 h-4" />
-                  <span className="text-sm font-medium hidden sm:inline">
-                    AI Now
-                  </span>
-                </motion.button>
+                      insertAiReply(editorContent);
+                    }}
+                  >
+                    <Zap className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">
+                      AI Now
+                    </span>
+                  </motion.button>
+
+                </ViewButton>
+
+
                 <AnimatePresence>
                   {showTemplatePopup && (
                     <motion.div
@@ -533,21 +565,23 @@ export default function EmailBox({
                         {!templateListLoading && (
                           <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-3">
                             {templateList.map((tpl) => (
-                              <motion.button
-                                key={tpl.id}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => {
-                                  setEditorContent(tpl.body_html);
-                                  setInput(tpl.body_html);
-                                  setTemplateId(tpl.id);
-                                  setOpenParent(null);
-                                  setShowTemplatePopup(false);
-                                }}
-                                className="w-full text-left px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium"
-                              >
-                                {tpl.name}
-                              </motion.button>
+                              <ViewButton key={tpl.id} Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: tpl.id } })}>
+                                <motion.button
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  onClick={() => {
+                                    setEditorContent(tpl.body_html);
+                                    setInput(tpl.body_html);
+                                    setTemplateId(tpl.id);
+                                    setOpenParent(null);
+                                    setShowTemplatePopup(false);
+                                  }}
+                                  className="w-full text-left px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium"
+                                >
+                                  {tpl.name}
+                                </motion.button>
+                              </ViewButton>
+
                             ))}
                           </div>
                         )}
@@ -562,27 +596,31 @@ export default function EmailBox({
                 </AnimatePresence>
 
                 {/* DEFAULT TEMPLATE */}
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-                  onClick={() => {
-                    setTemplateId(null);
-                    if (defaultTemplate && editorRef.current) {
-                      const html = base64ToUtf8(defaultTemplate.html_base64);
-                      setEditorContent(html);
-                      setInput(html);
-                      setOpenParent(null);
-                    }
-                    setShowTemplatePopup(true);
-                    refetch();
-                  }}
-                >
-                  <Mail className="w-4 h-4" />
-                  <span className="text-sm font-medium hidden sm:inline">
-                    Template
-                  </span>
-                </motion.button>
+                {/* onClick={navigate("/settings/templates",{state:{templateId:de}})} */}
+                <ViewButton Icon={Eye} >
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    onClick={() => {
+                      setTemplateId(null);
+                      if (defaultTemplate && editorRef.current) {
+                        const html = base64ToUtf8(defaultTemplate.html_base64);
+                        setEditorContent(html);
+                        setInput(html);
+                        setOpenParent(null);
+                      }
+                      setShowTemplatePopup(true);
+                      refetch();
+                    }}
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">
+                      Template
+                    </span>
+                  </motion.button>
+                </ViewButton>
+
 
                 {/* PARENT + CHILD BUTTONS */}
                 {loading ? (
@@ -596,17 +634,20 @@ export default function EmailBox({
                     return (
                       <div key={i} className="relative">
                         {/* PARENT BUTTON */}
-                        <motion.button
-                          whileHover={{ scale: 1.05, y: -2 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-                          onClick={() => {
-                            setTemplateId(parent.email_template_id);
-                            setOpenParent(isOpen ? null : parent.id);
-                          }}
-                        >
-                          {parent.button_label}
-                        </motion.button>
+                        <ViewButton Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: parent.email_template_id } })}>
+                          <motion.button
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                            onClick={() => {
+                              setTemplateId(parent.email_template_id);
+                              setOpenParent(isOpen ? null : parent.id);
+                            }}
+                          >
+                            {parent.button_label}
+                          </motion.button>
+                        </ViewButton>
+
 
                         {/* CHILDREN LIST */}
                         <AnimatePresence>
@@ -619,18 +660,21 @@ export default function EmailBox({
                               className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2 bg-white p-3 rounded-2xl shadow-2xl border border-gray-200"
                             >
                               {children?.map((child, j) => (
-                                <motion.button
-                                  key={j}
-                                  whileHover={{ scale: 1.03, y: -1 }}
-                                  whileTap={{ scale: 0.98 }}
-                                  onClick={() => {
-                                    setTemplateId(child.email_template_id);
-                                    setOpenParent(null);
-                                  }}
-                                  className="bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap"
-                                >
-                                  {child.button_label}
-                                </motion.button>
+                                <ViewButton Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: child.email_template_id } })}>
+                                  <motion.button
+                                    key={j}
+                                    whileHover={{ scale: 1.03, y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                      setTemplateId(child.email_template_id);
+                                      setOpenParent(null);
+                                    }}
+                                    className="bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap"
+                                  >
+                                    {child.button_label}
+                                  </motion.button>
+                                </ViewButton>
+
                               ))}
                             </motion.div>
                           )}
@@ -639,6 +683,17 @@ export default function EmailBox({
                     );
                   })
                 )}
+                <ViewButton Icon={Eye}>
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                    onClick={insertTextAtCursor}
+                  >
+                    Price
+                  </motion.button>
+                </ViewButton>
+
                 <Attachment data={files} onChange={setFiles} />
               </div>
 
@@ -741,18 +796,16 @@ export default function EmailBox({
                     className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${
-                        isUser
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                      }`}
+                      className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${isUser
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                        : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                        }`}
                     >
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
-                          isUser
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
-                        }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700 border border-gray-200"
+                          }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">
@@ -962,3 +1015,5 @@ export default function EmailBox({
     </>
   );
 }
+
+

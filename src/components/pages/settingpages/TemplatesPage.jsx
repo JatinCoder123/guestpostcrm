@@ -13,6 +13,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { useSelector } from "react-redux";
 import { PageContext } from "../../../context/pageContext";
 import { useLocation } from "react-router-dom";
+import { getDomain } from "../../../assets/assets";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -30,6 +31,7 @@ export default function TemplatesPage() {
   const [newDescription, setNewDescription] = useState("");
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [templateId, setTemplateId] = useState(false)
   const { showConsole } = useContext(PageContext);
   const { state } = useLocation();
 
@@ -39,6 +41,21 @@ export default function TemplatesPage() {
       : null,
     method: "GET",
     name: "emailTemplates",
+  });
+  const { loading: tempLoading, data: temp, error: getTempError, refetch: getTemp } = useModule({
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: { id: templateId },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: `TEMPLATE WITH ID ${templateId}`,
+    dependencies: [templateId],
+    enabled: templateId,
   });
 
   useEffect(() => {
@@ -244,6 +261,17 @@ export default function TemplatesPage() {
     setEditorContent(originalContent);
     setIsChanged(false);
   };
+  useEffect(() => {
+    if (state?.templateId) {
+      setTemplateId(state.templateId)
+    }
+  }, [state?.templateId])
+  useEffect(() => {
+    if (temp) {
+      setViewItem(temp[0])
+    }
+
+  }, [getTempError, temp])
 
   const handleClose = () => {
     if (isChanged) {
@@ -545,6 +573,7 @@ export default function TemplatesPage() {
               // tinymceScriptSrc="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"
               value={editorContent}
               onEditorChange={setEditorContent}
+              initialValue={viewItem.body_html}
               init={{
                 height: "100%",
                 menubar: true,
@@ -668,7 +697,10 @@ export default function TemplatesPage() {
       </div>
     );
   }
+  if (tempLoading) {
+    return <Loading text="template" />
 
+  }
   return (
     <div className="p-8 min-h-screen bg-gray-50">
       <Header
@@ -695,7 +727,7 @@ export default function TemplatesPage() {
         </div>
       )}
 
-      {loading && <Loading text="Loading templates" />}
+      {loading && <Loading text="templates" />}
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
       {!loading && !error && (!data || data.length === 0) && (
