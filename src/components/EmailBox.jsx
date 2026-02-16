@@ -660,9 +660,9 @@ export default function EmailBox({
                               className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2 bg-white p-3 rounded-2xl shadow-2xl border border-gray-200"
                             >
                               {children?.map((child, j) => (
-                                <ViewButton Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: child.email_template_id } })}>
+                                <ViewButton key={j}
+                                  Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: child.email_template_id } })}>
                                   <motion.button
-                                    key={j}
                                     whileHover={{ scale: 1.03, y: -1 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => {

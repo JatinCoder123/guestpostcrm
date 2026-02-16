@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Editor } from "@tinymce/tinymce-react";
 import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
+import PromptViewerModal from "./PromptViewerModal";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
@@ -33,7 +34,8 @@ const TimelineEvent = () => {
   const [originalTemplateContent, setOriginalTemplateContent] = useState("");
   const [isTemplateChanged, setIsTemplateChanged] = useState(false);
   const [isTemplateSaving, setIsTemplateSaving] = useState(false);
-
+  const [open, setOpen] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState(null);
   useEffect(() => {
     setIsTemplateChanged(templateContent !== originalTemplateContent);
   }, [templateContent, originalTemplateContent]);
@@ -475,6 +477,10 @@ const TimelineEvent = () => {
     });
   };
 
+
+
+
+
   return (
     <>
       <style jsx>{`
@@ -621,7 +627,14 @@ const TimelineEvent = () => {
           box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
       `}</style>
-
+      {
+        open && (
+          <PromptViewerModal
+            promptDetails={selectedPrompt}
+            onClose={() => setOpen(false)}
+          />
+        )
+      }
       <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
           onClick={scrollToTop}
@@ -640,13 +653,12 @@ const TimelineEvent = () => {
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${
-          selectedView === "all"
-            ? "translate-x-0"
-            : selectedView === "important"
-              ? "translate-x-full"
-              : "translate-x-[200%]"
-        }`}
+        ${selectedView === "all"
+                  ? "translate-x-0"
+                  : selectedView === "important"
+                    ? "translate-x-full"
+                    : "translate-x-[200%]"
+                }`}
             />
 
             {[
@@ -660,11 +672,10 @@ const TimelineEvent = () => {
                 className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
           transition-colors duration-300 hover:cursor-pointer hover:opacity-90 transition
 
-          ${
-            selectedView === tab.key
-              ? "text-white"
-              : "text-gray-600 hover:text-purple-600"
-          }`}
+          ${selectedView === tab.key
+                    ? "text-white"
+                    : "text-gray-600 hover:text-purple-600"
+                  }`}
               >
                 {tab.label}
               </button>
@@ -707,10 +718,9 @@ const TimelineEvent = () => {
                   </div>
                   <div
                     className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${
-                        index === 0
-                          ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
-                          : "bg-white border-gray-200"
+                      ${index === 0
+                        ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
+                        : "bg-white border-gray-200"
                       }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -724,12 +734,11 @@ const TimelineEvent = () => {
                             size={20}
                             className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
 
-                              ${
-                                isReminderEvent
-                                  ? "text-purple-600"
-                                  : isContactEvent
-                                    ? "text-green-600"
-                                    : "text-blue-600"
+                              ${isReminderEvent
+                                ? "text-purple-600"
+                                : isContactEvent
+                                  ? "text-green-600"
+                                  : "text-blue-600"
                               }`}
                           />
 
@@ -801,7 +810,7 @@ const TimelineEvent = () => {
                           </button>
                         )}
 
-                        {/* {hasTemplate && (
+                        {hasTemplate && (
 
                           <button
                             onClick={() =>
@@ -839,21 +848,20 @@ const TimelineEvent = () => {
                               />
                             </div>
                           </button>
-                        )} */}
+                        )}
 
-                        {event.prompt_id.trim() !== "" &&
-                          event.prompt_id.toLowerCase() !== "na" && (
-                            <button
-                              onClick={() =>
-                                navigateTo("/settings/machine-learning", {
-                                  state: { promptId: event.prompt_id },
-                                })
-                              }
-                              className="text-blue-600 hover:text-blue-700 cursor-pointer"
-                            >
-                              <SparkleIcon size={20} />
-                            </button>
-                          )}
+                        {event.prompt_details && (
+                          <button
+                            onClick={() => {
+                              setSelectedPrompt(event.prompt_details)
+                              setOpen(true)
+                            }
+                            }
+                            className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
                         <span className="text-gray-500 text-sm">
                           {event.date_entered}
                         </span>
@@ -1047,11 +1055,10 @@ const TimelineEvent = () => {
                   onClick={handleTemplateSave}
                   disabled={!isTemplateChanged || isTemplateSaving}
                   className={`px-4 py-2 rounded-lg font-medium transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
- ${
-   !isTemplateChanged || isTemplateSaving
-     ? "bg-gray-400 cursor-not-allowed"
-     : "bg-green-600 hover:bg-green-700"
- }`}
+ ${!isTemplateChanged || isTemplateSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                    }`}
                 >
                   {isTemplateSaving ? "Saving..." : "Save"}
                 </button>
