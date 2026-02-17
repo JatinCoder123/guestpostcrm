@@ -237,7 +237,6 @@ export default function CreateOffer() {
       }
       dispatch(offersAction.clearAllMessages());
     }
-
     if (error) {
       toast.error(error);
       dispatch(offersAction.clearAllErrors());
