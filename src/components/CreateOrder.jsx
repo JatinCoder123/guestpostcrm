@@ -160,7 +160,6 @@ export default function CreateOrder() {
       );
 
       if (message.includes("Send")) {
-        setCurrentOrderSend(newlyOrder)
         setShowPreview(true);
       } else {
         toast.success(message);

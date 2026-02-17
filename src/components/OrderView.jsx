@@ -33,9 +33,9 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
         seo_backlinks:
           status === "rejected_nontechnical"
             ? data.seo_backlinks.map((link) => ({
-                ...link,
-                status_c: "rejected",
-              }))
+              ...link,
+              status_c: "rejected",
+            }))
             : [...data.seo_backlinks],
       };
       dispatch(
@@ -109,7 +109,7 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
         onCancel={() => setShowConsent(false)}
         onProceed={() => {
           setShowConsent(false);
-          setProcessingPayment(true);
+          // setProcessingPayment(true);
           window.open(data.invoice_link_c, "_blank", "noopener,noreferrer");
         }}
       />

@@ -482,7 +482,7 @@ const TimelineEvent = () => {
 
 
   return (
-    <>
+    <div className="relative">
       <style jsx>{`
         .message-content h1,
         .message-content h2,
@@ -635,6 +635,29 @@ const TimelineEvent = () => {
           />
         )
       }
+      {timelineData?.length > 8 && (
+        <div className="sticky right-50 top-30 flex flex-col gap-3 z-50">
+          {/* Go to Top */}
+          <button
+            onClick={scrollToTop}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↑
+          </button>
+
+          {/* Go to Bottom */}
+          <button
+            onClick={scrollToBottom}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↓
+          </button>
+        </div>
+      )}
       <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
           onClick={scrollToTop}
@@ -1120,30 +1143,8 @@ const TimelineEvent = () => {
           </motion.div>
         </div>
       )}
-      {timelineData?.length > 8 && (
-        <div className="fixed right-120 bottom-6 flex flex-col gap-3 z-50">
-          {/* Go to Top */}
-          <button
-            onClick={scrollToTop}
-            className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
-                 text-white shadow-xl flex items-center justify-center 
-                 hover:scale-110 transition-all duration-300"
-          >
-            ↑
-          </button>
 
-          {/* Go to Bottom */}
-          <button
-            onClick={scrollToBottom}
-            className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
-                 text-white shadow-xl flex items-center justify-center 
-                 hover:scale-110 transition-all duration-300"
-          >
-            ↓
-          </button>
-        </div>
-      )}
-    </>
+    </div>
   );
 };
 
