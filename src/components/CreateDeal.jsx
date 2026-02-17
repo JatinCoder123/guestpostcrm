@@ -130,8 +130,8 @@ export default function CreateDeal() {
       const currentOfferWithoutDeal =
         currentOffers?.length > 0
           ? currentOffers.filter(
-              (o) => !currentDeals.some((d) => d.website_c == o.website),
-            )
+            (o) => !currentDeals.some((d) => d.website_c == o.website),
+          )
           : [];
       if (currentOfferWithoutDeal?.length > 0) {
         const newDeals = currentOfferWithoutDeal.map((offer) => ({
@@ -161,20 +161,21 @@ export default function CreateDeal() {
   const sendHandler = () => {
     dispatch(
       sendEmail(
-        renderToStaticMarkup(
-          <Preview
-            templateData={templateData}
-            data={currentDeals}
-            type="Deals"
-            userEmail={state?.email}
-            websiteKey="website_c"
-            amountKey="dealamount"
-          />,
-        ),
-        "Deal Send Successfully",
-        null,
-        null,
-        state?.threadId,
+        {
+          reply: renderToStaticMarkup(
+            <Preview
+              templateData={templateData}
+              data={currentDeals}
+              type="Deals"
+              userEmail={state?.email}
+              websiteKey="website_c"
+              amountKey="dealamount"
+            />,
+          ),
+          message: "Deal Send Successfully",
+          threadId: state?.threadId
+
+        }
       ),
     );
   };
@@ -192,11 +193,11 @@ export default function CreateDeal() {
   const handleSubmit = () => {
     dispatch(
       sendEmail(
-        editorContent,
-        "Deal Send Successfully",
-        null,
-        null,
-        state?.threadId,
+        {
+          reply: editorContent,
+          message: "Deal Send Successfully",
+          threadId: state?.threadId,
+        }
       ),
     );
   };
@@ -251,7 +252,7 @@ export default function CreateDeal() {
         ...prev,
         refreshUnreplied: Date.now(),
       }));
-      toast.success(sendMessage);
+
       dispatch(viewEmailAction.clearAllMessage());
       navigate("/");
     }

@@ -138,11 +138,11 @@ export default function CreateOrder() {
   const handleSubmit = () => {
     dispatch(
       sendEmail(
-        editorContent,
-        "Order Send Successfully",
-        null,
-        null,
-        state?.threadId,
+        {
+          reply: editorContent,
+          message: "Order Send Successfully",
+          threadId: state?.threadId,
+        }
       ),
     );
   };
@@ -182,7 +182,6 @@ export default function CreateOrder() {
         ...prev,
         refreshUnreplied: Date.now(),
       }));
-      toast.success(sendMessage);
       navigate("/");
       dispatch(viewEmailAction.clearAllMessage());
     }

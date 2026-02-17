@@ -2,19 +2,16 @@ import {
   Mail,
   User,
   Globe,
-  Handshake,
   Send,
   Brain,
   X,
   Sparkles,
   ChevronLeft,
   Zap,
-  Link2Icon,
-  Plus,
   Eye,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import {
@@ -28,10 +25,10 @@ import { toast } from "react-toastify";
 import { base64ToUtf8, getDomain } from "../assets/assets";
 import useModule from "../hooks/useModule";
 import PageLoader from "./PageLoader";
-import { SocketContext } from "../context/SocketContext";
 import Attachment from "./Attachment";
 import { useNavigate } from "react-router-dom";
 import { ViewButton } from "./ViewButton";
+import useRefresh from "../hooks/useRefresh";
 export default function EmailBox({
   onClose,
   view,
@@ -44,12 +41,10 @@ export default function EmailBox({
   const [editorContent, setEditorContent] = useState();
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
-
+  useRefresh({ idle: true });
   const dispatch = useDispatch();
-
   const { viewEmail, threadId: viewThreadId, message: sendMessage, sending, error: sendError } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate()
-  const { setUserIdle, eventQueue } = useContext(SocketContext);
   const [files, setFiles] = useState([]);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
@@ -61,13 +56,7 @@ export default function EmailBox({
     error: aiError,
     message,
   } = useSelector((state) => state.aiReply);
-  // useEffect(() => {
-  //   setUserIdle(false)
-  //   return () => {
-  //     setUserIdle(true)
-  //     console.log("EVENTS", eventQueue)
-  //   }
-  // }, [])
+
   const {
     loading: templateListLoading,
     data: templateList,
@@ -231,7 +220,7 @@ export default function EmailBox({
       return;
     }
     const contentToSend = editorContent || input;
-    dispatch(sendEmail(contentToSend, null, null, files, view ? viewThreadId : threadId));
+    dispatch(sendEmail({ reply: contentToSend, attachments: files, threadId: view ? viewThreadId : threadId }));
   };
 
   const handleBackClick = () => {
