@@ -142,6 +142,11 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
                 link
                 title="View Invoice"
               />
+              <Field
+                label="Total Links"
+                value={data.seo_backlinks_count}
+                title="Total Links"
+              />
             </div>
           </div>
           <div>

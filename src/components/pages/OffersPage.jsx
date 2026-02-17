@@ -1,8 +1,22 @@
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { CheckCircle, Clock, User, Calendar, DollarSign, Tag, Pen, Trash, Gift } from "lucide-react";
-import { deleteOffer, getOffers, offersAction, } from "../../store/Slices/offers";
+import {
+  CheckCircle,
+  Clock,
+  User,
+  Calendar,
+  DollarSign,
+  Tag,
+  Pen,
+  Trash,
+  Gift,
+} from "lucide-react";
+import {
+  deleteOffer,
+  getOffers,
+  offersAction,
+} from "../../store/Slices/offers";
 import Pagination from "../Pagination";
 import SearchComponent from "./SearchComponent";
 import { useNavigate } from "react-router-dom";
@@ -13,11 +27,12 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
 
 export function OffersPage() {
-  const { offers, count, loading, error, deleting, deleteOfferId, summary } = useSelector((state) => state.offers);
-  const { setSearch, setEnteredEmail } = useContext(PageContext)
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSort, setSelectedSort] = useState('');
+  const { offers, count, loading, error, deleting, deleteOfferId, summary } =
+    useSelector((state) => state.offers);
+  const { setSearch, setEnteredEmail } = useContext(PageContext);
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSort, setSelectedSort] = useState("");
   const dispatch = useDispatch();
   const filteredoffers = offers
     .filter((item) => {
@@ -49,24 +64,21 @@ export function OffersPage() {
   const pending = offers.filter((o) => o.status === "Pending").length;
   const accepted = offers.filter((o) => o.status === "Accepted").length;
 
-  const navigateTo = useNavigate()
-  const dropdownOptions = [
-    { value: 'contect', label: 'Contact' }
-  ];
+  const navigateTo = useNavigate();
+  const dropdownOptions = [{ value: "contect", label: "Contact" }];
   const handleFilterApply = (filters) => {
-    console.log('Applied filters from popup:', filters);
+    console.log("Applied filters from popup:", filters);
   };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-    console.log('Searching for:', value);
+    console.log("Searching for:", value);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-    console.log('Category selected:', value);
+    console.log("Category selected:", value);
   };
-
 
   const handleDownload = () => {
     if (!filteredoffers || filteredoffers.length === 0) {
@@ -75,7 +87,14 @@ export function OffersPage() {
     }
 
     // Convert Objects → CSV rows
-    const headers = ["DATE", "CONTACT", "EMAIL", "STATUS", "CLIENT OFFER", "OUR OFFER"];
+    const headers = [
+      "DATE",
+      "CONTACT",
+      "EMAIL",
+      "STATUS",
+      "CLIENT OFFER",
+      "OUR OFFER",
+    ];
 
     const rows = filteredoffers.map((email) => [
       email.date_entered,
@@ -83,9 +102,7 @@ export function OffersPage() {
       email.name,
       email.status,
       email.client_offer_c,
-      email.our_offer_c
-
-
+      email.our_offer_c,
     ]);
 
     // Convert to CSV string
@@ -106,62 +123,47 @@ export function OffersPage() {
 
   useEffect(() => {
     if (error) {
-      toast.error(error)
-      dispatch(offersAction.clearAllErrors())
+      toast.error(error);
+      dispatch(offersAction.clearAllErrors());
     }
-  }, [error])
-
-
-
+  }, [error]);
 
   return (
     <>
-
       <SearchComponent
-
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         // dropdownPlaceholder="Filter by contact"
 
-
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
         searchPlaceholder="Search here..."
-
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
-
         archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
+          { value: "all", label: "All" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
         ]}
         transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
+          { value: "all", label: "All Emails" },
+          { value: "incoming", label: "Incoming" },
+          { value: "outgoing", label: "Outgoing" },
         ]}
         currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
+          { value: "all", label: "All" },
+          { value: "usd", label: "USD" },
+          { value: "eur", label: "EUR" },
         ]}
-
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
-
         className="mb-6"
       />
 
       {/* ⭐ Stats Cards (Top Section) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-
         {/* Active Offers */}
         <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
@@ -208,7 +210,7 @@ export function OffersPage() {
         </div>
 
         {/* Summary / Total Pages */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+        {/* <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Pages</p>
@@ -220,24 +222,26 @@ export function OffersPage() {
               <DollarSign className="w-6 h-6 text-purple-600" />
             </div>
           </div>
-        </div>
-
+        </div> */}
       </div>
-
-
-
-
-
 
       {/* ⭐ Offers Section (Header + Table) */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-
           <div className="flex items-center gap-3">
             <Gift className="w-6 h-6 text-yellow-600" />
             <h2 className="text-xl text-gray-900 font-semibold">OFFERS</h2>
-            <a href="https://www.guestpostcrm.com/blog/offers-in-guestpostcrm/" target="_blank" rel="noopener noreferrer">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            <a
+              href="https://www.guestpostcrm.com/blog/offers-in-guestpostcrm/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <div className="px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
@@ -250,13 +254,10 @@ export function OffersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-
-                <th className="px-6 py-4 text-left" >
+                <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-
-                    DATE
-
+                    CREATED AT
                   </div>
                 </th>
 
@@ -267,14 +268,10 @@ export function OffersPage() {
                   </div>
                 </th>
 
-
-                <th className="px-6 py-4 text-left">EMAIL</th>
-                <th className="px-6 py-4 text-left">
-                  CLIENT OFFER
-                </th>
+                <th className="px-6 py-4 text-left">WEBSITE</th>
+                <th className="px-6 py-4 text-left">CLIENT OFFER</th>
                 <th className="px-6 py-4 text-left">OUR OFFER</th>
                 <th className="px-6 py-4 text-left">STAGE</th>
-
 
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
@@ -286,18 +283,21 @@ export function OffersPage() {
                   key={index}
                   className="border-b border-gray-100 hover:bg-pink-50 transition"
                 >
-                  <td className="px-6 py-4 text-gray-600 cursor-pointer" onClick={() => {
-                    const input = excludeEmail(offer.real_name);
-                    localStorage.setItem("email", input);
-                    setSearch(input);
-                    setEnteredEmail(input);
-                    navigateTo("/");
-                  }}
-                  ><div className="flex items-center gap-2 text-gray-600">
+                  <td
+                    className="px-6 py-4 text-gray-600 cursor-pointer"
+                    onClick={() => {
+                      const input = excludeEmail(offer.real_name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      navigateTo("/");
+                    }}
+                  >
+                    <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>{offer.date_entered}</span>
-                    </div></td>
-
+                    </div>
+                  </td>
 
                   <td
                     onClick={() => {
@@ -311,31 +311,43 @@ export function OffersPage() {
                   >
                     {excludeName(offer.real_name)}
                   </td>
-                  <td className="px-6 py-4 text-blue-600">{excludeEmail(offer.real_name)}</td>
+                  <td className="px-6 py-4 text-blue-600">
+                    {excludeEmail(offer.website)}
+                  </td>
 
-                  <td className="px-6 py-4 text-green-600">{offer.client_offer_c}</td>
-                  <td className="px-6 py-4 text-gray-600">{offer.our_offer_c}</td>
+                  <td className="px-6 py-4 text-green-600">
+                    {offer.client_offer_c}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {offer.our_offer_c}
+                  </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
                       {offer.offer_status}
                     </span>
                   </td>
 
-
                   <td className="pl-9 py-4">
-
-
                     <div className="flex items-center justify-center gap-2">
                       {/* Update Button */}
                       <button
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Update"
-                        onClick={() => navigateTo(`/offers/edit/${offer.id}`, { state: { email: excludeEmail(offer.real_name), threadId: offer?.thread_id } })}
+                        onClick={() =>
+                          navigateTo(`/offers/edit/${offer.id}`, {
+                            state: {
+                              email: excludeEmail(offer.real_name),
+                              threadId: offer?.thread_id,
+                            },
+                          })
+                        }
                       >
                         <Pen className="w-5 h-5 text-blue-600" />
                       </button>
                       {/* Delete Button */}
-                      {deleting && deleteOfferId === offer.id ? <LoadingChase size="20" color="red" /> : (
+                      {deleting && deleteOfferId === offer.id ? (
+                        <LoadingChase size="20" color="red" />
+                      ) : (
                         <button
                           className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                           title="Delete"
@@ -349,7 +361,6 @@ export function OffersPage() {
                 </tr>
               ))}
             </tbody>
-
           </table>
         </div>
         {/* {offers.length > 0 && <Pagination slice={"offers"} fn={getOffers} />} */}
@@ -357,7 +368,9 @@ export function OffersPage() {
         {!loading && filteredoffers.length === 0 && (
           <div className="p-12 text-center">
             <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No offers yet. Create your first offer to get started.</p>
+            <p className="text-gray-500">
+              No offers yet. Create your first offer to get started.
+            </p>
           </div>
         )}
       </div>

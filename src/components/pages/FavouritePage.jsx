@@ -21,7 +21,7 @@ import SearchComponent from "./SearchComponent";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
-import { ladgerAction } from "../../store/Slices/ladger"
+import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
 export function FavouritePage() {
   const { count, emails, loading } = useSelector((state) => state.fav);
@@ -32,12 +32,13 @@ export function FavouritePage() {
     currentThreadId,
     setCurrentThreadId,
   ] = useThread();
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSort, setSelectedSort] = useState('');
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } = useContext(PageContext);
-  const navigateTo = useNavigate()
-  const dispatch = useDispatch()
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSort, setSelectedSort] = useState("");
+  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+    useContext(PageContext);
+  const navigateTo = useNavigate();
+  const dispatch = useDispatch();
 
   const filteredEmails = emails
     .filter((item) => {
@@ -84,20 +85,18 @@ export function FavouritePage() {
     });
 
   const dropdownOptions = [
-    { value: 'contect', label: 'Contact' },
-    { value: 'subject', label: 'Subject' },
+    { value: "contect", label: "Contact" },
+    { value: "subject", label: "Subject" },
   ];
 
   const filterOptions = [
-    { value: 'asc', label: 'A to Z' },
-    { value: 'desc', label: 'Z to A' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-
+    { value: "asc", label: "A to Z" },
+    { value: "desc", label: "Z to A" },
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {
-  };
+  const handleFilterApply = (filters) => {};
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -110,7 +109,6 @@ export function FavouritePage() {
   const handleSortChange = (value) => {
     setSelectedSort(value);
   };
-
 
   const handleDownload = () => {
     if (!filteredEmails || filteredEmails.length === 0) {
@@ -125,7 +123,7 @@ export function FavouritePage() {
       email.date_entered,
       email.first_name.split("<")[0].trim(),
       email.subject,
-      email.thread_count
+      email.thread_count,
     ]);
 
     // Convert to CSV string
@@ -144,50 +142,37 @@ export function FavouritePage() {
     a.click();
   };
 
-
-
   return (
     <>
-
       <SearchComponent
-
         dropdownOptions={dropdownOptions}
         onDropdownChange={handleCategoryChange}
         selectedDropdownValue={selectedCategory}
         // dropdownPlaceholder="Filter by contact"
 
-
         onSearchChange={handleSearchChange}
         searchValue={topsearch}
         searchPlaceholder="Search here..."
-
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
-
         archiveOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
+          { value: "all", label: "All" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
         ]}
         transactionTypeOptions={[
-          { value: 'all', label: 'All Emails' },
-          { value: 'incoming', label: 'Incoming' },
-          { value: 'outgoing', label: 'Outgoing' },
+          { value: "all", label: "All Emails" },
+          { value: "incoming", label: "Incoming" },
+          { value: "outgoing", label: "Outgoing" },
         ]}
         currencyOptions={[
-          { value: 'all', label: 'All' },
-          { value: 'usd', label: 'USD' },
-          { value: 'eur', label: 'EUR' },
+          { value: "all", label: "All" },
+          { value: "usd", label: "USD" },
+          { value: "eur", label: "EUR" },
         ]}
-
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
-
         className="mb-6"
       />
 
@@ -206,9 +191,16 @@ export function FavouritePage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900">FAVOURITE EMAILS</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              FAVOURITE EMAILS
+            </h2>
             <a href="">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <span className="px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full">
@@ -224,7 +216,7 @@ export function FavouritePage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -247,54 +239,76 @@ export function FavouritePage() {
                 </th>
               </tr>
             </thead>
-            {loading ? <TableLoading cols={4} /> : <tbody>
-              {filteredEmails.map((email, index) => (
-                <tr
-                  key={index}
-
-
-                  className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
-                >
-                  <td onClick={() => {
-                    const input = extractEmail(email.email_address);
-                    localStorage.setItem("email", input);
-                    setSearch(input);
-                    setEnteredEmail(input);
-                    dispatch(ladgerAction.setTimeline(null))
-                    setWelcomeHeaderContent("Favourite");
-                    navigateTo("/");
-                  }} className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{email.date_entered}</span>
-                    </div>
-                  </td>
-                  <td onClick={() => {
-                    const input = extractEmail(email.email_address);
-                    localStorage.setItem("email", input);
-                    setSearch(input);
-                    setEnteredEmail(input);
-                    dispatch(ladgerAction.setTimeline(null))
-                    setWelcomeHeaderContent("Favourite");
-                    navigateTo("/contacts");
-                  }} className="px-6 py-4 text-gray-900">{email.first_name}</td>
-                  <td onClick={() => {
-                    setCurrentThreadId(email.thread_id);
-                    handleThreadClick(email.from, email.thread_id);
-                  }} className="px-6 py-4 text-purple-600">{email.subject}</td>
-                  <td onClick={() => {
-                    setCurrentThreadId(email.thread_id);
-                    handleThreadClick(email.from, email.thread_id);
-                  }} className="px-6 py-4 text-purple-600">
-                    {email.description}
-                  </td>
-                </tr>
-              ))}
-            </tbody>}
-
+            {loading ? (
+              <TableLoading cols={4} />
+            ) : (
+              <tbody>
+                {filteredEmails.map((email, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
+                  >
+                    <td
+                      onClick={() => {
+                        const input = extractEmail(email.email_address);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null));
+                        setWelcomeHeaderContent("Favourite");
+                        navigateTo("/");
+                      }}
+                      className="px-6 py-4"
+                    >
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{email.date_entered}</span>
+                      </div>
+                    </td>
+                    <td
+                      onClick={() => {
+                        const input = extractEmail(email.email_address);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null));
+                        setWelcomeHeaderContent("Favourite");
+                        navigateTo("/contacts");
+                      }}
+                      className="px-6 py-4 text-gray-900"
+                    >
+                      {email.first_name}
+                    </td>
+                    <td
+                      onClick={() => {
+                        setCurrentThreadId(email.thread_id);
+                        handleThreadClick(email.from, email.thread_id);
+                      }}
+                      className="px-6 py-4 text-purple-600"
+                    >
+                      {email.subject}
+                    </td>
+                    <td
+                      onClick={() => {
+                        setCurrentThreadId(email.thread_id);
+                        handleThreadClick(email.from, email.thread_id);
+                      }}
+                      className="px-6 py-4 text-purple-600"
+                    >
+                      {email.description}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
           </table>
         </div>
-        {emails.length > 0 && <Pagination slice={"fav"} fn={(page) => dispatch(getFavEmails({ page: page }))} />}
+        {emails.length > 0 && (
+          <Pagination
+            slice={"fav"}
+            fn={(page) => dispatch(getFavEmails({ page: page }))}
+          />
+        )}
 
         {filteredEmails.length === 0 && (
           <div className="p-12 text-center">

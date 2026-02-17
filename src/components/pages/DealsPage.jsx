@@ -8,7 +8,7 @@ import {
   User,
   Trash,
   Clock,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
@@ -28,9 +28,8 @@ export function DealsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [selectedSort, setSelectedSort] = useState("");
-  const { count, deals, loading, error, deleting, deleteDealId, summary } = useSelector(
-    (state) => state.deals
-  );
+  const { count, deals, loading, error, deleting, deleteDealId, summary } =
+    useSelector((state) => state.deals);
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
@@ -66,8 +65,7 @@ export function DealsPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {
-  };
+  const handleFilterApply = (filters) => {};
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -154,7 +152,9 @@ export function DealsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Active Deals</p>
-              <p className="text-2xl text-gray-900 mt-1">{summary?.active_deals ?? 0}</p>
+              <p className="text-2xl text-gray-900 mt-1">
+                {summary?.active_deals ?? 0}
+              </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Handshake className="w-6 h-6 text-blue-600" />
@@ -166,7 +166,9 @@ export function DealsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Active Amount</p>
-              <p className="text-2xl text-gray-900 mt-1">${summary?.active_deal_amount ?? 0}</p>
+              <p className="text-2xl text-gray-900 mt-1">
+                ${summary?.active_deal_amount ?? 0}
+              </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-green-600" />
@@ -178,7 +180,10 @@ export function DealsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Expire Soon</p>
-              <p className="text-2xl text-gray-900 mt-1"> {summary?.expire_soon_deals ?? 0}</p>
+              <p className="text-2xl text-gray-900 mt-1">
+                {" "}
+                {summary?.expire_soon_deals ?? 0}
+              </p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <Clock className="w-6 h-6 text-orange-600" />
@@ -190,7 +195,10 @@ export function DealsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Expired Deals</p>
-              <p className="text-2xl text-gray-900 mt-1"> {summary?.expired_deals ?? 0}</p>
+              <p className="text-2xl text-gray-900 mt-1">
+                {" "}
+                {summary?.expired_deals ?? 0}
+              </p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <XCircle className="w-6 h-6 text-orange-600" />
@@ -228,9 +236,8 @@ export function DealsPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span> DATE</span>
+                    <span> CREATED AT</span>
                   </div>
-
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
@@ -250,7 +257,9 @@ export function DealsPage() {
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
-            {loading ? <TableLoading /> :
+            {loading ? (
+              <TableLoading />
+            ) : (
               <tbody>
                 {filtereddeals.map((deal, index) => (
                   <tr
@@ -264,7 +273,7 @@ export function DealsPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null))
+                        dispatch(ladgerAction.setTimeline(null));
                         navigateTo("/");
                       }}
                     >
@@ -280,7 +289,7 @@ export function DealsPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null))
+                        dispatch(ladgerAction.setTimeline(null));
                         navigateTo("/contacts");
                       }}
                       className="px-6 py-4 text-gray-900 cursor-pointer"
@@ -305,7 +314,10 @@ export function DealsPage() {
                         <button
                           onClick={() =>
                             navigateTo(`/deals/edit/${deal.id}`, {
-                              state: { email: excludeEmail(deal.real_name), threadId: deal?.thread_id },
+                              state: {
+                                email: excludeEmail(deal.real_name),
+                                threadId: deal?.thread_id,
+                              },
                             })
                           }
                           className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
@@ -328,10 +340,16 @@ export function DealsPage() {
                     </td>
                   </tr>
                 ))}
-              </tbody>}
+              </tbody>
+            )}
           </table>
         </div>
-        {deals?.length > 0 && <Pagination slice={"deals"} fn={(p) => dispatch(getDeals({ page: p }))} />}
+        {deals?.length > 0 && (
+          <Pagination
+            slice={"deals"}
+            fn={(p) => dispatch(getDeals({ page: p }))}
+          />
+        )}
 
         {!loading && !error && filtereddeals.length === 0 && (
           <div className="p-12 text-center">

@@ -8,7 +8,7 @@ import {
   MoreVertical,
   Plus,
   X,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 
 import SearchComponent from "./SearchComponent";
@@ -20,16 +20,15 @@ import CreateTag from "./CreateTag";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-
 export function TagManagerpage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { tags, count, creating } = useSelector((state) => state.tag);
 
-  const [topsearch, setTopsearch] = useState('');
+  const [topsearch, setTopsearch] = useState("");
   // Initialize with "hot" to show hot tags on load
-  const [selectedCategory, setSelectedCategory] = useState('hot');
-  const [selectedTag, setSelectedTag] = useState('hot'); // For dropdown selection
+  const [selectedCategory, setSelectedCategory] = useState("hot");
+  const [selectedTag, setSelectedTag] = useState("hot"); // For dropdown selection
   const [deletingId, setDeletingId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -39,7 +38,6 @@ export function TagManagerpage() {
   useEffect(() => {
     dispatch(getTags(selectedTag));
   }, [dispatch, selectedTag]);
-
 
   useEffect(() => {
     if (showSuccessToast) {
@@ -57,9 +55,9 @@ export function TagManagerpage() {
 
     try {
       const date = new Date(dateString);
-      return date.toISOString().split('T')[0];
+      return date.toISOString().split("T")[0];
     } catch (error) {
-      const datePart = dateString.split(' ')[0];
+      const datePart = dateString.split(" ")[0];
       return datePart || dateString;
     }
   };
@@ -73,34 +71,23 @@ export function TagManagerpage() {
     setSelectedTag(value);
   };
 
-  const handleFilterApply = (filters) => {
-  };
+  const handleFilterApply = (filters) => {};
 
-  const handleDownload = () => {
-  };
+  const handleDownload = () => {};
 
-
-  const handleConfirmDelete = (id, firstName) => {
-  };
-
+  const handleConfirmDelete = (id, firstName) => {};
 
   const handleCreateTagSuccess = (tagName) => {
-
     setCreatedTagName(tagName);
-
 
     setShowSuccessToast(true);
 
-
     setShowCreateForm(false);
-
 
     dispatch(getTags(selectedTag));
 
-
     dispatch(tagActions.resetCreateStatus());
   };
-
 
   const handleClosePopup = () => {
     if (!creating) {
@@ -126,7 +113,9 @@ export function TagManagerpage() {
   return (
     <>
       {/* Main Container with blur effect */}
-      <div className={`${showCreateForm ? 'filter blur-sm pointer-events-none' : ''} transition-all duration-300`}>
+      <div
+        className={`${showCreateForm ? "filter blur-sm pointer-events-none" : ""} transition-all duration-300`}
+      >
         <SearchComponent
           dropdownOptions={dropdownOptions}
           selectedDropdownValue={selectedCategory} // This will show "hot" as selected on load
@@ -148,7 +137,9 @@ export function TagManagerpage() {
           <div className="fixed top-4 right-4 z-50 animate-slide-in">
             <div className="flex items-center gap-2 px-4 py-3 bg-green-100 text-green-800 rounded-lg shadow-lg border border-green-200">
               <CheckCircle className="w-5 h-5" />
-              <span>Tag "<strong>{createdTagName}</strong>" created successfully!</span>
+              <span>
+                Tag "<strong>{createdTagName}</strong>" created successfully!
+              </span>
             </div>
           </div>
         )}
@@ -199,7 +190,7 @@ export function TagManagerpage() {
                   <th className="px-6 py-4 text-left">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      <span>DATE</span>
+                      <span>CREATED AT</span>
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left">
@@ -217,47 +208,50 @@ export function TagManagerpage() {
                 </tr>
               </thead>
               <tbody>
-                {tags?.length > 0 && tags.map((tagItem) => (
-                  <tr
-                    key={tagItem.thread_id || tagItem.id}
-                    className="border-b border-gray-100 hover:bg-orange-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span>{formatDate(tagItem.date_modified)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-gray-900">
-                        <span>{tagItem.first_name || "Unknown"}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleConfirmDelete()}
-                        disabled={deletingId === (tagItem.thread_id || tagItem.id)}
-                        className={`
+                {tags?.length > 0 &&
+                  tags.map((tagItem) => (
+                    <tr
+                      key={tagItem.thread_id || tagItem.id}
+                      className="border-b border-gray-100 hover:bg-orange-50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span>{formatDate(tagItem.date_modified)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-gray-900">
+                          <span>{tagItem.first_name || "Unknown"}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleConfirmDelete()}
+                          disabled={
+                            deletingId === (tagItem.thread_id || tagItem.id)
+                          }
+                          className={`
                           flex items-center gap-2 px-4 py-2 rounded-lg transition-all bg-red-200 hover:bg-red-300 cursor-pointer
                         `}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
 
-          {tags?.length > 0 && (
-            <Pagination slice={"tag"} fn={getTags} />
-          )}
+          {tags?.length > 0 && <Pagination slice={"tag"} fn={getTags} />}
 
           {(!tags || tags.length === 0) && (
             <div className="p-12 text-center">
               <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No tags found. Select a tag from dropdown to view data.</p>
+              <p className="text-gray-500">
+                No tags found. Select a tag from dropdown to view data.
+              </p>
             </div>
           )}
         </div>
@@ -278,7 +272,9 @@ export function TagManagerpage() {
             <div className="flex items-center justify-between p-6 border-b">
               <div className="flex items-center gap-3">
                 <TagIcon className="w-6 h-6 text-green-600" />
-                <h2 className="text-xl font-semibold text-gray-900">Create New Tag</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Create New Tag
+                </h2>
               </div>
               <button
                 onClick={handleClosePopup}

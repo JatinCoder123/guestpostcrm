@@ -293,7 +293,6 @@ export default function TemplatesPage() {
     setShowNewTemplateModal(false);
   };
 
-
   if (showNewTemplateModal) {
     return (
       <div
@@ -317,10 +316,11 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isCreating
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  isCreating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                }`}
               >
                 {isCreating ? (
                   <>
@@ -532,10 +532,11 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 active:scale-95"
+                  }`}
                 >
                   {isSaving ? (
                     <>
@@ -716,10 +717,11 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
-                ? "bg-indigo-600 text-white shadow-lg"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                stageType === key
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
             >
               {label}
             </button>

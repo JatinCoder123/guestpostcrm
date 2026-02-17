@@ -276,110 +276,6 @@ const TimelineEvent = () => {
     setSelectedMessageId(null);
   };
 
-  // Function to handle template icon click
-  const handleTemplateClick = async (templateId, event) => {
-    if (!templateId || templateId.trim() === "") return;
-
-    setLoadingTemplate(true);
-    setSelectedTemplate({
-      id: templateId,
-      eventData: event,
-    });
-
-    try {
-      // Fetch the email template from EmailTemplates module
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            module: "EmailTemplates",
-            id: templateId,
-          }),
-        },
-      );
-
-      const responseText = await response.text();
-      let result;
-
-      try {
-        result = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        result = {};
-      }
-
-      if (response.ok) {
-        // Check different response structures
-        let templateData;
-
-        if (Array.isArray(result)) {
-          // If result is an array, find the template with matching ID
-          templateData = result.find((t) => t.id === templateId);
-        } else if (result.data && Array.isArray(result.data)) {
-          templateData = result.data.find((t) => t.id === templateId);
-        } else if (result.parent_bean) {
-          templateData = result.parent_bean;
-        } else {
-          templateData = result;
-        }
-
-        if (templateData && templateData.body_html) {
-          setTemplateData(templateData);
-          const content = templateData.body_html || "";
-
-          setTemplateData(templateData);
-          setTemplateContent(content);
-          setOriginalTemplateContent(content); // ⭐ IMPORTANT
-          setIsTemplateChanged(false);
-          setShowTemplateModal(true);
-
-          setShowTemplateModal(true);
-        } else {
-          throw new Error("Template content not found");
-        }
-      } else {
-        throw new Error(
-          `Failed to fetch template: ${result.error || result.message || "Unknown error"}`,
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching template:", error);
-
-      // Fallback: Create a simple template data object
-      setTemplateData({
-        id: templateId,
-        name: "Template Preview",
-        body_html: `
-          <div style="padding: 20px; font-family: Arial, sans-serif;">
-            <h2>Template Preview</h2>
-            <p>Template ID: ${templateId}</p>
-            <p><strong>Event Type:</strong> ${event.type_c || "N/A"}</p>
-            <p><strong>Subject:</strong> ${event.subject_c || event.subject || "N/A"}</p>
-            <p><strong>Contact:</strong> ${event.name || "N/A"}</p>
-            <p>Error loading template: ${error.message}</p>
-          </div>
-        `,
-      });
-      setTemplateContent(`
-        <div style="padding: 20px; font-family: Arial, sans-serif;">
-          <h2>Template Preview</h2>
-          <p>Template ID: ${templateId}</p>
-          <p><strong>Event Type:</strong> ${event.type_c || "N/A"}</p>
-          <p><strong>Subject:</strong> ${event.subject_c || event.subject || "N/A"}</p>
-          <p><strong>Contact:</strong> ${event.name || "N/A"}</p>
-          <p>Error loading template: ${error.message}</p>
-        </div>
-      `);
-      setShowTemplateModal(true);
-    } finally {
-      setLoadingTemplate(false);
-    }
-  };
-
   // for save by kjl
   const handleTemplateSave = async () => {
     if (!templateData?.id) return;
@@ -476,10 +372,6 @@ const TimelineEvent = () => {
       block: "start",
     });
   };
-
-
-
-
 
   return (
     <div className="relative">
@@ -627,36 +519,11 @@ const TimelineEvent = () => {
           box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
       `}</style>
-      {
-        open && (
-          <PromptViewerModal
-            promptDetails={selectedPrompt}
-            onClose={() => setOpen(false)}
-          />
-        )
-      }
-      {timelineData?.length > 8 && (
-        <div className="sticky right-50 top-30 flex flex-col gap-3 z-50">
-          {/* Go to Top */}
-          <button
-            onClick={scrollToTop}
-            className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
-                 text-white shadow-xl flex items-center justify-center 
-                 hover:scale-110 transition-all duration-300"
-          >
-            ↑
-          </button>
-
-          {/* Go to Bottom */}
-          <button
-            onClick={scrollToBottom}
-            className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
-                 text-white shadow-xl flex items-center justify-center 
-                 hover:scale-110 transition-all duration-300"
-          >
-            ↓
-          </button>
-        </div>
+      {open && (
+        <PromptViewerModal
+          promptDetails={selectedPrompt}
+          onClose={() => setOpen(false)}
+        />
       )}
       <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
@@ -667,6 +534,30 @@ const TimelineEvent = () => {
         >
           TIMELINE
         </h1>
+        <div class="flex justify-center mt-10">
+          <div class="relative w-80">
+            <input
+              type="text"
+              placeholder="Search..."
+              class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 
+             focus:outline-none focus:ring-2 focus:ring-blue-500 
+             focus:border-transparent shadow-sm transition duration-300"
+            />
+            <svg
+              class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 21l-4.35-4.35m1.85-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+        </div>
 
         <div className="flex justify-center mt-6">
           <div className="relative flex bg-gray-100 rounded-full p-1 w-[360px] shadow-inner">
@@ -834,7 +725,6 @@ const TimelineEvent = () => {
                         )}
 
                         {hasTemplate && (
-
                           <button
                             onClick={() =>
                               navigateTo("/settings/templates", {
@@ -872,14 +762,12 @@ const TimelineEvent = () => {
                             </div>
                           </button>
                         )}
-
                         {event.prompt_details && (
                           <button
                             onClick={() => {
-                              setSelectedPrompt(event.prompt_details)
-                              setOpen(true)
-                            }
-                            }
+                              setSelectedPrompt(event.prompt_details);
+                              setOpen(true);
+                            }}
                             className="text-blue-600 hover:text-blue-700 cursor-pointer"
                           >
                             <SparkleIcon size={20} />
@@ -1038,10 +926,6 @@ const TimelineEvent = () => {
                     <MessageSquare size={32} className="text-gray-500" />
                   </div>
 
-                  <p className="text-gray-600 text-lg font-medium">
-                    No message content available
-                  </p>
-
                   <p className="text-gray-500 mt-2">
                     This message doesn't contain any readable content.
                   </p>
@@ -1051,7 +935,6 @@ const TimelineEvent = () => {
           </motion.div>
         </div>
       )}
-
       {/* Template Modal */}
       {showTemplateModal && templateData && (
         <div
@@ -1143,7 +1026,29 @@ const TimelineEvent = () => {
           </motion.div>
         </div>
       )}
+      {timelineData?.length > 8 && (
+        <div className="absolute right-4 bottom-6 flex flex-col gap-3 z-50">
+          {/* Go to Top */}
+          <button
+            onClick={scrollToTop}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↑
+          </button>
 
+          {/* Go to Bottom */}
+          <button
+            onClick={scrollToBottom}
+            className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
+                 text-white shadow-xl flex items-center justify-center 
+                 hover:scale-110 transition-all duration-300"
+          >
+            ↓
+          </button>
+        </div>
+      )}
     </div>
   );
 };

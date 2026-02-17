@@ -30,7 +30,8 @@ export function HotPage() {
   const { currentHot } = useContext(PageContext);
   const { hots, loading, error, count } = useSelector((state) => state.hot);
   const dispatch = useDispatch();
-  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } = useContext(PageContext);
+  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+    useContext(PageContext);
   const navigateTo = useNavigate();
 
   useEffect(() => {
@@ -84,8 +85,7 @@ export function HotPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {
-  };
+  const handleFilterApply = (filters) => {};
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -196,7 +196,7 @@ export function HotPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -227,7 +227,8 @@ export function HotPage() {
                     className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-gray-600"
+                      <div
+                        className="flex items-center gap-2 text-gray-600"
                         onClick={() => {
                           const input = extractEmail(email.email);
                           localStorage.setItem("email", input);
@@ -235,13 +236,15 @@ export function HotPage() {
                           setEnteredEmail(input);
                           setWelcomeHeaderContent("Unreplied");
                           navigateTo("/");
-                        }}>
+                        }}
+                      >
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span>{email?.date_entered}</span>
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 text-gray-900"
+                    <td
+                      className="px-6 py-4 text-gray-900"
                       onClick={() => {
                         const input = extractEmail(email.email);
                         localStorage.setItem("email", input);
@@ -250,19 +253,12 @@ export function HotPage() {
                         setWelcomeHeaderContent("Unreplied");
                         navigateTo("/contacts");
                       }}
-                    >{email?.name}</td>
-
-                    <td className="px-6 py-4 text-gray-700" onClick={() => {
-                      const input = extractEmail(email.email);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      setWelcomeHeaderContent("Unreplied");
-                      navigateTo("/");
-                    }}>
-                      {email.description}
+                    >
+                      {email?.name}
                     </td>
-                    <td className="px-6 py-4 text-purple-600"
+
+                    <td
+                      className="px-6 py-4 text-gray-700"
                       onClick={() => {
                         const input = extractEmail(email.email);
                         localStorage.setItem("email", input);
@@ -270,7 +266,23 @@ export function HotPage() {
                         setEnteredEmail(input);
                         setWelcomeHeaderContent("Unreplied");
                         navigateTo("/");
-                      }}>{email.type}</td>
+                      }}
+                    >
+                      {email.description}
+                    </td>
+                    <td
+                      className="px-6 py-4 text-purple-600"
+                      onClick={() => {
+                        const input = extractEmail(email.email);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        setWelcomeHeaderContent("Unreplied");
+                        navigateTo("/");
+                      }}
+                    >
+                      {email.type}
+                    </td>
                   </tr>
                 ))}
               </tbody>

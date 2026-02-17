@@ -40,21 +40,19 @@ export function RecentEntry() {
 
   return (
     <>
-      {
-        open && (
-          <PromptViewerModal
-            promptDetails={selectedPrompt}
-            onClose={() => setOpen(false)}
-          />
-        )
-      }
+      {open && (
+        <PromptViewerModal
+          promptDetails={selectedPrompt}
+          onClose={() => setOpen(false)}
+        />
+      )}
       <div className="p-8">
         <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
           {/* HEADER */}
           <div className="bg-green-600 py-4 px-8">
             <div className="grid grid-cols-5 text-white text-lg font-semibold">
               <div className="flex items-center gap-2">
-                <CalendarDays size={22} /> DATE
+                <CalendarDays size={22} /> CREATED AT
               </div>
               <div>CONTACT</div>
               <div className="flex items-center gap-2">
@@ -136,25 +134,23 @@ export function RecentEntry() {
                 </div>
 
                 {/* RECENT ACTIVITY */}
-                <div className="text-[17px] truncate min-w-0">
+                <div className="text-[17px] truncate min-w-0 ml-6">
                   {event.recent_activity ?? "—"}
                 </div>
 
                 {/* PROMPT */}
                 <div className="flex items-center justify-center">
-                  {event?.prompt_details &&
-                    (
-                      <button
-                        onClick={() => {
-                          setSelectedPrompt(event.prompt_details)
-                          setOpen(true)
-                        }
-                        }
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        <SparkleIcon size={20} />
-                      </button>
-                    )}
+                  {event?.prompt_details && (
+                    <button
+                      onClick={() => {
+                        setSelectedPrompt(event.prompt_details);
+                        setOpen(true);
+                      }}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <SparkleIcon size={20} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -162,6 +158,5 @@ export function RecentEntry() {
         </div>
       </div>
     </>
-
   );
 }

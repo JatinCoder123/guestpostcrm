@@ -188,10 +188,9 @@ const DropDown = ({ options, handleSelectOption }) => {
           <span className="text-sm font-medium text-gray-900 truncate">
             {selectedOption?.title || "Select"}
           </span>
-          {selectedOption?.title !== "All" && <span className="text-xs text-gray-600 truncate">
+          <span className="text-xs text-gray-600 truncate">
             {selectedDateRange.display}
-          </span>}
-
+          </span>
         </div>
 
         {/* Arrow Rotation Animation */}
@@ -246,8 +245,9 @@ const DropDown = ({ options, handleSelectOption }) => {
                     <div className="flex flex-col">
                       <div className="flex justify-between items-start">
                         <span
-                          className={`text-sm font-medium ${isSelected ? "text-blue-600" : "text-gray-900"
-                            }`}
+                          className={`text-sm font-medium ${
+                            isSelected ? "text-blue-600" : "text-gray-900"
+                          }`}
                         >
                           {option.title}
                         </span>

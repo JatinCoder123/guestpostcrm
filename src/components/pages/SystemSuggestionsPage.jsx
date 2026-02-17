@@ -7,8 +7,7 @@ import {
   BarChart,
   Shield,
   TagIcon,
-  Laptop
-
+  Laptop,
 } from "lucide-react";
 
 import SearchComponent from "./SearchComponent";
@@ -19,51 +18,30 @@ import { getDetection } from "../../store/Slices/detection";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-
 export function SystemSuggestionsPage() {
   const navigate = useNavigate();
 
   const { detection, count } = useSelector((state) => state.detection);
 
-
-
-
-  const [topsearch, setTopsearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-
-
-
-
+  const [topsearch, setTopsearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
-
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
-
   };
 
-  const handleFilterApply = (filters) => {
+  const handleFilterApply = (filters) => {};
 
-  };
-
-
-  const handleDownload = () => {
-  };
-
-
-
-
+  const handleDownload = () => {};
 
   return (
     <>
       <SearchComponent
-        dropdownOptions={[
-          { value: "all", label: "Contact" },
-
-        ]}
+        dropdownOptions={[{ value: "all", label: "Contact" }]}
         selectedDropdownValue={selectedCategory}
         onDropdownChange={handleCategoryChange}
         // dropdownPlaceholder="Filter by websites"
@@ -71,18 +49,13 @@ export function SystemSuggestionsPage() {
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Search  here..."
-
         onFilterApply={handleFilterApply}
         filterPlaceholder="Filters"
         showFilter={true}
-
         onDownloadClick={handleDownload}
         showDownload={true}
-
         className="mb-6"
       />
-
-
 
       {/* Spam Detection Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -98,9 +71,17 @@ export function SystemSuggestionsPage() {
             </button>
             <Laptop className="w-6 h-6 text-green-600" />
             <h2 className="text-xl text-gray-900">System Suggestions</h2>
-            <a href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/" target="_blank"
-              rel="noopener noreferrer">
-              <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+            <a
+              href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/offices/30/info.png"
+                alt="info"
+              />
             </a>
           </div>
           <span className="px-4 py-1.5 bg-orange-100 text-orange-700 rounded-full">
@@ -116,7 +97,7 @@ export function SystemSuggestionsPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>DATE</span>
+                    <span>CREATED AT</span>
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">
@@ -141,30 +122,31 @@ export function SystemSuggestionsPage() {
               </tr>
             </thead>
             <tbody>
-              {detection?.length > 0 && detection.map((spam) => (
-                <tr
-                  key={spam.thread_id}
-                  className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{spam.date}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.from}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <span>{spam.thread_count}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {detection?.length > 0 &&
+                detection.map((spam) => (
+                  <tr
+                    key={spam.thread_id}
+                    className="border-b border-gray-100 hover:bg-orange-50 transition-colors cursor-pointer"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{spam.date}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-900">
+                        <span>{spam.from}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-900">{spam.subject}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-900">
+                        <span>{spam.thread_count}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

@@ -157,20 +157,26 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                       </h3>
                     </div>
                     {/* WEBSITE NAME */}
-                    <div className="flex items-start gap-2">
-                      <FiGlobe className="text-slate-400 mt-0.5" size={14} />
-                      <p className="text-sm text-slate-700 font-medium break-all">
-                        {item.name || "-"}
-                      </p>
-                    </div>
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      {/* Website */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FiGlobe className="text-slate-400" size={14} />
+                        <p className="text-sm text-slate-700 font-medium break-all">
+                          {item.name || "-"}
+                        </p>
+                      </div>
 
-                    {/* OUR / DOC LINK */}
-                    {item.type_c === "LI" ? (
-                      <OurLink link={item.target_url_c} label="Our Link" />
-                    ) : (
-                      <OurLink link={item.gp_doc_url_c} label="Doc Link" />
-                    )}
-                    {item.is_content_valid === true && <ValidTick />}
+                      {/* Doc / Our Link */}
+                      <div className="flex items-center gap-2">
+                        {item.type_c === "LI" ? (
+                          <OurLink link={item.target_url_c} label="Our Link" />
+                        ) : (
+                          <OurLink link={item.gp_doc_url_c} label="Doc Link" />
+                        )}
+
+                        {item.is_content_valid === true && <ValidTick />}
+                      </div>
+                    </div>
 
                     {/* Doc Niche */}
                     {item.type_c === "LI" ? (
@@ -216,6 +222,17 @@ export function TheirLink({ data }) {
 
       {/* META INFO */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Backlink id */}
+
+        <div className="flex items-start gap-2">
+          <FiTag className="text-slate-400 mt-0.5" size={14} />
+          <div>
+            <p className="text-xs text-slate-500">Backlink ID</p>
+            <p className="text-sm text-slate-700 font-medium break-all">
+              {data.backlink_id || "-"}
+            </p>
+          </div>
+        </div>
         {/* Anchor Text */}
 
         <div className="flex items-start gap-2">
@@ -224,6 +241,7 @@ export function TheirLink({ data }) {
             <p className="text-xs text-slate-500">Anchor Text</p>
             <p className="text-sm text-slate-700 font-medium break-all">
               {data.anchor_text_c || "-"}
+              {data.is_anchor_text_valid == true && <ValidTick />}
             </p>
           </div>
         </div>
@@ -276,6 +294,15 @@ export function TheirLink({ data }) {
             {data.spam_score_c}
           </span>
         </div>
+        <div className="flex items-start gap-2">
+          <FiTag className="text-slate-400 mt-0.5" size={14} />
+          <div>
+            <p className="text-xs text-slate-500">Link Type</p>
+            <p className="text-sm text-slate-700 font-medium break-all">
+              {data.link_type || "-"}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -283,7 +310,7 @@ export function TheirLink({ data }) {
 
 export function OurLink({ link, label }) {
   return (
-    <div className="relative z-10 p-5 max-h-60 overflow-y-auto overflow-x-hidden custom-scrollbar rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
+    <div className="">
       {/* HEADER */}
       <div className="flex items-center gap-3">
         <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
@@ -294,15 +321,13 @@ export function OurLink({ link, label }) {
 
       {/* LINK */}
       <div className="flex items-start gap-2 flex-wrap">
-        <FiLink className="text-slate-400 mt-0.5" size={14} />
-
         <div className="flex items-center gap-1 flex-wrap">
           <a
             href={link}
             target="_blank"
             className="text-sm text-blue-600 font-medium break-all hover:underline"
           >
-            {link || "-"}
+            {<FiLink className="text-slate-400 mt-0.5" size={14} /> || "-"}
           </a>
 
           {link && <ValidTick />}
