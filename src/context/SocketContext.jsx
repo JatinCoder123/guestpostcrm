@@ -37,7 +37,6 @@ export const SocketContextProvider = ({ children }) => {
       throw error;
     }
   };
-  // useEffect(() => { })
 
   const moveData = async (threadId, labelId) => {
     try {

@@ -45,6 +45,7 @@ export default function CreateOrder() {
     updating,
     error,
     message,
+    newlyOrder,
     updateLinkMessage,
     creating,
     updateId,
@@ -137,18 +138,19 @@ export default function CreateOrder() {
   const handleSubmit = () => {
     dispatch(
       sendEmail(
-        editorContent,
-        "Order Send Successfully",
-        null,
-        null,
-        state?.threadId,
+        {
+          reply: editorContent,
+          message: "Order Send Successfully",
+          threadId: state?.threadId,
+        }
       ),
     );
   };
   useEffect(() => {
     if (message) {
+      // console.log("MESSAGE", message)
+      // console.log("newly", newlyOrder)
       dispatch(getOrders({}));
-
       ManualSideCall(
         crmEndpoint,
         state?.email,
@@ -158,6 +160,7 @@ export default function CreateOrder() {
       );
 
       if (message.includes("Send")) {
+        setCurrentOrderSend(newlyOrder)
         setShowPreview(true);
       } else {
         toast.success(message);
@@ -179,14 +182,12 @@ export default function CreateOrder() {
         ...prev,
         refreshUnreplied: Date.now(),
       }));
-      toast.success(sendMessage);
       navigate("/");
       dispatch(viewEmailAction.clearAllMessage());
     }
 
     if (updateLinkMessage) {
       dispatch(getOrders({}));
-
       toast.success(updateLinkMessage);
     }
     if (creatingLinkMessage) {

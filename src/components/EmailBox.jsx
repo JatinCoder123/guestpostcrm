@@ -2,25 +2,20 @@ import {
   Mail,
   User,
   Globe,
-  Handshake,
   Send,
   Brain,
   X,
   Sparkles,
   ChevronLeft,
   Zap,
-  Link2Icon,
-  Plus,
   Eye,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { sendEmail } from "../store/Slices/viewEmail";
+import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import {
   getThreadEmail,
-  sendEmailToThread,
-  threadEmailAction,
 } from "../store/Slices/threadEmail";
 import { aiReplyAction, getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
@@ -30,10 +25,10 @@ import { toast } from "react-toastify";
 import { base64ToUtf8, getDomain } from "../assets/assets";
 import useModule from "../hooks/useModule";
 import PageLoader from "./PageLoader";
-import { SocketContext } from "../context/SocketContext";
 import Attachment from "./Attachment";
 import { useNavigate } from "react-router-dom";
 import { ViewButton } from "./ViewButton";
+import useRefresh from "../hooks/useRefresh";
 export default function EmailBox({
   onClose,
   view,
@@ -46,12 +41,10 @@ export default function EmailBox({
   const [editorContent, setEditorContent] = useState();
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
-
+  useRefresh({ idle: true });
   const dispatch = useDispatch();
-
-  const { viewEmail, threadId: viewThreadId } = useSelector((s) => s.viewEmail);
+  const { viewEmail, threadId: viewThreadId, message: sendMessage, sending, error: sendError } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate()
-  const { setUserIdle, eventQueue } = useContext(SocketContext);
   const [files, setFiles] = useState([]);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
@@ -63,13 +56,7 @@ export default function EmailBox({
     error: aiError,
     message,
   } = useSelector((state) => state.aiReply);
-  // useEffect(() => {
-  //   setUserIdle(false)
-  //   return () => {
-  //     setUserIdle(true)
-  //     console.log("EVENTS", eventQueue)
-  //   }
-  // }, [])
+
   const {
     loading: templateListLoading,
     data: templateList,
@@ -232,17 +219,8 @@ export default function EmailBox({
       }
       return;
     }
-
     const contentToSend = editorContent || input;
-
-    if (view)
-      dispatch(sendEmail(contentToSend, null, null, files, viewThreadId));
-    else dispatch(sendEmailToThread(threadId, contentToSend, files));
-
-    onClose();
-    setInput("");
-    setFiles([]);
-    setEditorContent("");
+    dispatch(sendEmail({ reply: contentToSend, attachments: files, threadId: view ? viewThreadId : threadId }));
   };
 
   const handleBackClick = () => {
@@ -279,7 +257,18 @@ export default function EmailBox({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
+  useEffect(() => {
+    if (sendMessage) {
+      onClose();
+      setInput("");
+      setFiles([]);
+      setEditorContent("");
+    }
+    if (sendError) {
+      toast.error(sendError);
+      dispatch(viewEmailAction.clearAllErrors());
+    }
+  }, [sendMessage, sendError])
   useEffect(() => {
     if (message && aiResponse) {
       if (message == "User") setAiNewContent(aiResponse);
@@ -703,10 +692,11 @@ export default function EmailBox({
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSendClick}
+                  disabled={loading}
                   className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
                 >
                   <Send className="w-5 h-5" />
-                  <span>Send Email</span>
+                  <span>{sending ? "Sending..." : "Send Email"}</span>
                 </motion.button>
               </div>
             </div>

@@ -22,8 +22,9 @@ const ordersSlice = createSlice({
     updateLinkMessage: null,
     creatingLink: false,
     creatingLinkMessage: null,
+    newlyOrder: null,
     creatingPost: false,
-postMessage: null,
+    postMessage: null,
 
   },
   reducers: {
@@ -57,16 +58,25 @@ postMessage: null,
       state.creating = true;
       state.message = null;
       state.error = null;
+      state.newlyOrder = null;
     },
     createOrderSuccess(state, action) {
       state.creating = false;
       state.message = action.payload;
       state.error = null;
     },
+    createOrder2Success(state, action) {
+      state.creating = false;
+      state.message = action.payload.message;
+      state.newlyOrder = action.payload.order;
+      state.error = null;
+    },
     createOrderFailed(state, action) {
       state.creating = false;
       state.error = action.payload;
       state.message = null;
+      state.newlyOrder = null;
+
     },
     createLinkRequest(state) {
       state.creatingLink = true;
@@ -222,35 +232,69 @@ export const createOrder = () => {
 export const createOrder2 = (email, order, send) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
+    console.log("EMAIL", email)
+    console.log("ORDER", order)
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action=post_data`,
+      const res = await axios.post(
+        `${domain}?entryPoint=get_post_all&action_type=post_data`,
 
         {
           parent_bean: {
             module: "outr_order_gp_li",
             name: email,
             order_type: order.order_type,
-            child_bean: {
-              module: "outr_seo_backlinks",
-            },
           },
         },
+        {
+          headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "aplication/json",
+          },
+        },
+
       );
-      showConsole && console.log(`Create Order Manully`, data);
-      const updatedOrders = [...order, ...getState().order.orders];
+      showConsole && console.log(`Create Order Manully`, res.data);
+      if (res.data?.parent_created) {
+        order.seo_backlinks.map(async (link) => {
+          const res1 = await axios.post(
+            `${domain}?entryPoint=get_post_all&action_type=post_data`,
+
+            {
+              parent_bean: {
+                module: "outr_order_gp_li",
+                id: res.data.parent_id
+              },
+              child_bean: {
+                module: "outr_seo_backlinks",
+                ...link
+              }
+            },
+            {
+              headers: {
+                "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+                "Content-Type": "aplication/json",
+              },
+            },
+
+          );
+          console.log(res1.data)
+        })
+
+      }
+      else {
+        throw new Error("Failed To Create Order")
+      }
       dispatch(
-        ordersSlice.actions.createOrderSuccess({
+        ordersSlice.actions.createOrder2Success({
           message: send
             ? "Order Created and Send Successfully"
             : "Order Created Successfully",
-          orders: updatedOrders,
-          count: updatedOrders.length,
-        }),
-      );
+          order: { ...order, order_status: "new", order_id: res.data.parent_id }
+        }))
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
+      console.log("ERROR", error)
       dispatch(ordersSlice.actions.createOrderFailed("Order Creation Failed"));
     }
   };

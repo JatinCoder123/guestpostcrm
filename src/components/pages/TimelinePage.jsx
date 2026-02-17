@@ -63,12 +63,7 @@ export function TimelinePage() {
       toast.error(error);
       dispatch(ladgerAction.clearAllErrors());
     }
-    if (sendError) {
-      toast.error(sendError);
-      dispatch(viewEmailAction.clearAllErrors());
-    }
     if (message) {
-      toast.success(message);
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),
@@ -95,7 +90,7 @@ export function TimelinePage() {
       toast.info("No Unreplied Email found");
       return;
     }
-    dispatch(sendEmail(btnBody, "Quick Action Button Reply Sent"));
+    dispatch(sendEmail({ reply: btnBody, threadId: "Quick Action Button Reply Sent" }));
     dispatch(
       addEvent({
         email: email,
@@ -106,7 +101,7 @@ export function TimelinePage() {
   };
 
   const handleAiAutoReply = () => {
-    dispatch(sendEmail(editorContent, "Ai Reply Send Successfully"));
+    dispatch(sendEmail({ reply: editorContent, threadId: "Ai Reply Send Successfully" }));
   };
   const handleNext = () => {
     if (currentIndex < emails?.length - 1) {

@@ -145,31 +145,31 @@ export default function CreateOffer() {
   const sendHandler = () => {
     dispatch(
       sendEmail(
-        renderToStaticMarkup(
-          <Preview
-            templateData={templateData}
-            data={currentOffers}
-            type="Offers"
-            userEmail={state?.email}
-            websiteKey="website"
-            amountKey="our_offer_c"
-          />,
-        ),
-        "Offer Send Successfully",
-        null,
-        null,
-        state?.threadId,
+        {
+          reply: renderToStaticMarkup(
+            <Preview
+              templateData={templateData}
+              data={currentOffers}
+              type="Offers"
+              userEmail={state?.email}
+              websiteKey="website"
+              amountKey="our_offer_c"
+            />,
+          ),
+          message: "Offer Send Successfully",
+          threadId: state?.threadId,
+        }
       ),
     );
   };
   const handleSubmit = () => {
     dispatch(
       sendEmail(
-        editorContent,
-        "Offer Send Successfully",
-        null,
-        null,
-        state?.threadId,
+        {
+          reply: editorContent,
+          message: "Offer Send Successfully",
+          threadId: state?.threadId,
+        }
       ),
     );
   };
@@ -237,7 +237,6 @@ export default function CreateOffer() {
       }
       dispatch(offersAction.clearAllMessages());
     }
-
     if (error) {
       toast.error(error);
       dispatch(offersAction.clearAllErrors());
@@ -248,7 +247,6 @@ export default function CreateOffer() {
         ...prev,
         refreshUnreplied: Date.now(),
       }));
-      toast.success(sendMessage);
       dispatch(viewEmailAction.clearAllMessage());
       navigate("/");
     }

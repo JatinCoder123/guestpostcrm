@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import React, { useState } from "react";
 
 const ORDER_TYPES = ["GUEST POST", "LINK INSERTION", "BOTH"];
@@ -70,6 +71,25 @@ const CreateOrderForm = ({
     }));
   };
 
+  /* ---------------- REMOVE LINK (NEW) ---------------- */
+  const removeSeoLink = (index) => {
+    const links = Array.isArray(order.seo_backlinks)
+      ? order.seo_backlinks.filter((_, i) => i !== index)
+      : [];
+
+    const totalAmount = links.reduce(
+      (sum, l) => sum + Number(l.link_amount || 0),
+      0
+    );
+
+    setOrder((prev) => ({
+      ...prev,
+      seo_backlinks: links,
+      total_amount_c: totalAmount.toString(),
+    }));
+  };
+
+  /* ---------------- VALIDATION ---------------- */
   const isFormValid = () => {
     if (!order.order_type) return false;
 
@@ -78,10 +98,7 @@ const CreateOrderForm = ({
 
     for (const link of order.seo_backlinks) {
       if (!link.anchor_text_c?.trim()) return false;
-
-      if (!link.backlink_url?.trim())
-        return false;
-
+      if (!link.backlink_url?.trim()) return false;
       if (!link.link_amount || Number(link.link_amount) <= 0) return false;
 
       if (
@@ -111,7 +128,7 @@ const CreateOrderForm = ({
       <select
         value={order.order_type || ""}
         onChange={(e) => handleChange("order_type", e.target.value)}
-        className="border p-2 rounded w-full"
+        className="border p-2 rounded w-fit"
       >
         <option value="">Select Order Type</option>
         {ORDER_TYPES.map((t) => (
@@ -126,8 +143,17 @@ const CreateOrderForm = ({
         order.seo_backlinks.map((link, index) => (
           <div
             key={index}
-            className="border p-4 rounded-xl space-y-3 bg-gray-50"
+            className="border p-4 rounded-xl space-y-3 bg-gray-50 relative"
           >
+            {/* DELETE BUTTON */}
+            <button
+              type="button"
+              onClick={() => removeSeoLink(index)}
+              className="absolute -top-3 -right-2 bg-red-500 text-sm text-white hover:bg-red-700 cursor-pointer rounded-full p-1"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+
             <input
               placeholder="Anchor Text"
               value={link.anchor_text_c || ""}
@@ -174,45 +200,50 @@ const CreateOrderForm = ({
       <button
         type="button"
         onClick={addSeoLink}
-        className="px-4 py-2 bg-black text-white rounded-lg"
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer ml-5"
       >
         + Add Link
       </button>
 
       {/* TOTAL */}
-      <div className="text-right font-semibold">
-        Order Amount: ${order.total_amount_c || 0}
-      </div>
+
 
       {/* ACTION BUTTONS */}
-      <div className="grid grid-cols-2 gap-3 pt-4">
-        <button
-          disabled={!formValid}
-          onClick={() => {
-            setButton(1);
-            onSubmit(false);
-          }}
-          className={`w-full px-3 py-2 rounded-lg text-white transition ${!formValid
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-green-600 hover:bg-green-700"
-            }`}
-        >
-          {creating && button === 1 ? "Saving..." : "Save"}
-        </button>
+      <div className="flex justify-between item-center">
 
-        <button
-          disabled={!formValid}
-          onClick={() => {
-            setButton(2);
-            onSubmit(true);
-          }}
-          className={`w-full px-3 py-2 rounded-lg text-white transition ${!formValid
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
-            }`}
-        >
-          {creating && button === 2 ? "Sending..." : "Save & Send"}
-        </button>
+        <div className="text-right font-semibold">
+          Order Amount: ${order.total_amount_c || 0}
+        </div>
+        <div className="flex justify-end item-center gap-3 ">
+          <button
+            disabled={!formValid}
+            onClick={() => {
+              setButton(1);
+              onSubmit(false);
+            }}
+            className={`w-fit px-3 py-2 rounded-lg text-white transition ${!formValid
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700"
+              }`}
+          >
+            {creating && button === 1 ? "Saving..." : "Save"}
+          </button>
+
+          <button
+            disabled={!formValid}
+            onClick={() => {
+              setButton(2);
+              onSubmit(true);
+            }}
+            className={`w-fit px-3 py-2 rounded-lg text-white transition ${!formValid
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+              }`}
+          >
+            {creating && button === 2 ? "Sending..." : "Save & Send"}
+          </button>
+        </div>
+
       </div>
     </div>
   );

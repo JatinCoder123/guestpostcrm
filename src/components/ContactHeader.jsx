@@ -113,7 +113,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                 to="/contacts"
                 className="text-gray-800 text-lg font-semibold"
               >
-                {contactInfo?.full_name === "" ? email : contactInfo?.full_name}
+                {(contactInfo?.full_name === "" || contactInfo?.full_name == null) ? email : contactInfo?.full_name}
               </Link>
               {contactInfo?.customer_type === "verified" && (
                 <img

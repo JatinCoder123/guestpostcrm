@@ -148,8 +148,8 @@ const DropDown = ({ options, handleSelectOption }) => {
 
       default:
         return {
-          start: formatDate(today),
-          end: formatDate(today),
+          start: "",
+          end: "",
         };
     }
   };
@@ -188,11 +188,9 @@ const DropDown = ({ options, handleSelectOption }) => {
           <span className="text-sm font-medium text-gray-900 truncate">
             {selectedOption?.title || "Select"}
           </span>
-          {selectedOption?.title !== "All" && (
-            <span className="text-xs text-gray-600 truncate">
-              {selectedDateRange.display}
-            </span>
-          )}
+          <span className="text-xs text-gray-600 truncate">
+            {selectedDateRange.display}
+          </span>
         </div>
 
         {/* Arrow Rotation Animation */}

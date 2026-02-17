@@ -6,7 +6,6 @@ const threadEmailSlice = createSlice({
   name: "threadEmail",
   initialState: {
     loading: false,
-    sending: false,
     threadEmail: [],
     message: null,
     error: null,
@@ -28,26 +27,6 @@ const threadEmailSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
       state.message = null;
-    },
-    sendEmailRequest(state) {
-      state.sending = true;
-      state.loading = true;
-      state.message = null;
-      state.error = null;
-    },
-    sendEmailSucess(state, action) {
-      const { message } = action.payload;
-      state.sending = false;
-
-      state.loading = false;
-      state.message = message;
-      state.error = null;
-    },
-    sendEmailFailed(state, action) {
-      state.sending = false;
-      state.loading = false;
-      state.message = null;
-      state.error = action.payload;
     },
     clearAllErrors(state) {
       state.error = null;
@@ -79,39 +58,6 @@ export const getThreadEmail = (email, threadId) => {
         threadEmailSlice.actions.getThreadEmailFailed(
           "Fetching Thread Email  Failed"
         )
-      );
-    }
-  };
-};
-export const sendEmailToThread = (threadId, reply, attachments = []) => {
-  return async (dispatch, getState) => {
-    dispatch(threadEmailSlice.actions.sendEmailRequest());
-
-    try {
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=thread_reply`,
-        {
-          threadId,
-          replyBody: reply,
-          attachments: attachments.map((file) => file.file),
-
-          email: getState().ladger.email,
-          current_email: getState().user.user.email,
-        },
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      showConsole && console.log(`Reply Data`, data);
-      dispatch(
-        threadEmailSlice.actions.sendEmailSucess({
-          message: "Reply To Thread Sent Successfully",
-        })
-      );
-      dispatch(threadEmailSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        threadEmailSlice.actions.sendEmailFailed("Error while sending email")
       );
     }
   };
