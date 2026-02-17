@@ -195,16 +195,7 @@ export function Sidebar() {
       hover: "hover:bg-yellow-50",
       countBg: "bg-yellow-500 text-white",
     },
-    {
-      id: "other",
-      label: "Others",
-      icon: RectangleEllipsis,
-      loading: orderRemLoading,
-      count: orderRemCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-blue-500 text-white",
-    },
+
     {
       id: "reminders",
       label: "Reminders",
@@ -214,6 +205,16 @@ export function Sidebar() {
       color: "text-cyan-600",
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",
+    },
+    {
+      id: "other",
+      label: "Others",
+      icon: RectangleEllipsis,
+      loading: orderRemLoading,
+      count: orderRemCount,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-blue-500 text-white",
     },
     {
       id: "view-reports",

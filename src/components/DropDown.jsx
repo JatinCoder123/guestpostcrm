@@ -188,9 +188,11 @@ const DropDown = ({ options, handleSelectOption }) => {
           <span className="text-sm font-medium text-gray-900 truncate">
             {selectedOption?.title || "Select"}
           </span>
-          <span className="text-xs text-gray-600 truncate">
-            {selectedDateRange.display}
-          </span>
+          {selectedOption?.title !== "All" && (
+            <span className="text-xs text-gray-600 truncate">
+              {selectedDateRange.display}
+            </span>
+          )}
         </div>
 
         {/* Arrow Rotation Animation */}
