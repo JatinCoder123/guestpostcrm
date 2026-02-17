@@ -12,9 +12,32 @@ const decodeHTML = (text = "") => {
   return textarea.value;
 };
 
+/**
+ * Handle normal JSON + escaped JSON safely
+ */
+const parseSmartJSON = (text) => {
+  if (!text) return null;
+
+  try {
+    // First attempt: normal JSON
+    return JSON.parse(text);
+  } catch {
+    try {
+      // Second attempt: unescape escaped JSON
+      const unescaped = text
+        .replace(/\\"/g, '"')
+        .replace(/^"+|"+$/g, "");
+
+      return JSON.parse(unescaped);
+    } catch {
+      return null;
+    }
+  }
+};
+
 export default function PromptViewerModal({ promptDetails, onClose }) {
   const navigate = useNavigate();
-  const [view, setView] = useState("prompt"); // prompt | response
+  const [view, setView] = useState("prompt");
 
   if (!promptDetails || !promptDetails.length) return null;
 
@@ -26,6 +49,7 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
     prompt_id,
   } = promptDetails[0];
 
+  /* ---------------- PROMPT ---------------- */
   const decodedPrompt = useMemo(() => {
     return decodeHTML(full_prompt)
       .replace(/\r\n/g, "\n")
@@ -33,11 +57,15 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
       .trim();
   }, [full_prompt]);
 
-  const decodedResponse = useMemo(() => {
-    return decodeHTML(response || "")
+  /* ---------------- RESPONSE ---------------- */
+  const parsedResponse = useMemo(() => {
+    const decoded = decodeHTML(response || "")
       .replace(/\r\n/g, "\n")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
+
+    const json = parseSmartJSON(decoded);
+    return json ? json : decoded;
   }, [response]);
 
   return (
@@ -47,7 +75,7 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        onClick={onClose}   // 👈 click outside closes modal
+        onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.95, y: 20 }}
@@ -55,9 +83,9 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
           exit={{ scale: 0.95, y: 20 }}
           transition={{ duration: 0.25 }}
           className="relative w-full max-w-5xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden"
-          onClick={(e) => e.stopPropagation()} // 👈 prevent inside clicks
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* 🔝 HEADER */}
+          {/* HEADER */}
           <div className="flex items-center justify-between px-6 py-4 border-b dark:border-zinc-700">
             <div>
               <h2 className="text-lg font-semibold text-zinc-800 dark:text-white">
@@ -69,7 +97,7 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
             </div>
 
             <div className="flex gap-2">
-              {/* Toggle Prompt / Response */}
+              {/* Toggle */}
               <button
                 onClick={() =>
                   setView((prev) =>
@@ -94,7 +122,7 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
                     state: { promptId: prompt_id },
                   })
                 }
-                className="px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white cursor-pointer"
+                className="px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
               >
                 <Edit className="w-4 h-4" />
                 Edit
@@ -110,7 +138,7 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
             </div>
           </div>
 
-          {/* 📄 CONTENT */}
+          {/* CONTENT */}
           <div className="p-6 max-h-[70vh] overflow-y-auto">
             <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
               {view === "prompt" ? "Full Prompt" : "Model Response"}
@@ -132,9 +160,35 @@ export default function PromptViewerModal({ promptDetails, onClose }) {
                 font-mono
               "
             >
-              {view === "prompt"
-                ? decodedPrompt
-                : decodedResponse || "No response available"}
+              {view === "prompt" ? (
+                decodedPrompt
+              ) : typeof parsedResponse === "object" ? (
+                <div className="space-y-4 font-sans">
+                  {parsedResponse.summary && (
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-zinc-500 mb-1">
+                        Summary
+                      </h4>
+                      <p className="whitespace-pre-wrap text-sm">
+                        {parsedResponse.summary}
+                      </p>
+                    </div>
+                  )}
+
+                  {parsedResponse.reply && (
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-zinc-500 mb-1">
+                        Reply
+                      </h4>
+                      <p className="whitespace-pre-wrap text-sm">
+                        {parsedResponse.reply}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                parsedResponse || "No response available"
+              )}
             </motion.pre>
           </div>
         </motion.div>

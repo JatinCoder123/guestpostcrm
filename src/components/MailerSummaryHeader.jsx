@@ -126,12 +126,12 @@ const MailerSummaryHeader = () => {
                   <div className="hover:text-blue-600 transition-colors">
                     {mailersSummary?.subject
                       ? mailersSummary.subject
-                          .split(" ")
-                          .slice(0, 6)
-                          .join(" ") +
-                        (mailersSummary.subject.split(" ").length > 6
-                          ? "..."
-                          : "")
+                        .split(" ")
+                        .slice(0, 6)
+                        .join(" ") +
+                      (mailersSummary.subject.split(" ").length > 6
+                        ? "..."
+                        : "")
                       : ""}
                   </div>
                 </Titletooltip>
@@ -143,12 +143,12 @@ const MailerSummaryHeader = () => {
                   <div className="hover:text-purple-600 transition-colors">
                     {mailersSummary?.correct_motive
                       ? mailersSummary.correct_motive
-                          .split(" ")
-                          .slice(0, 6)
-                          .join(" ") +
-                        (mailersSummary.correct_motive.split(" ").length > 6
-                          ? "..."
-                          : "")
+                        .split(" ")
+                        .slice(0, 6)
+                        .join(" ") +
+                      (mailersSummary.correct_motive.split(" ").length > 6
+                        ? "..."
+                        : "")
                       : ""}
                   </div>
                 </Titletooltip>
@@ -235,9 +235,8 @@ function TD({ data, type, setData, loading }) {
               className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${
-                data?.length > 0 ? "visible" : "add"
-              }.png`}
+              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"
+                }.png`}
               alt="action"
             />
           </button>

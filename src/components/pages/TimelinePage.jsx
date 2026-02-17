@@ -21,6 +21,7 @@ import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
 import { useNavigate } from "react-router-dom";
 import { PreviewTemplate } from "../PreviewTemplate";
+import PromptViewerModal from "../PromptViewerModal";
 
 const decodeHTMLEntities = (str = "") => {
   if (typeof str !== "string") return str;
@@ -40,6 +41,8 @@ export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [editorContent, setEditorContent] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [open, setOpen] = useState(false)
+  const [selectedPrompt, setSelectedPrompt] = useState(null)
   const {
     error: sendError,
     message,
@@ -162,6 +165,12 @@ export function TimelinePage() {
 
   return (
     <>
+      {open && (
+        <PromptViewerModal
+          promptDetails={selectedPrompt}
+          onClose={() => setOpen(false)}
+        />
+      )}
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
@@ -203,6 +212,22 @@ export function TimelinePage() {
                         alt="AI Reply"
                       />
                     </motion.button>
+                    <div className="flex items-center justify-center ml-4 ">
+                      {mailersSummary?.prompt_details
+                        && (
+                          <button
+                            onClick={() => {
+                              setSelectedPrompt(mailersSummary?.prompt_details
+                              );
+                              setOpen(true);
+                            }
+                            }
+                            className="text-green-600 hover:text-green-700 cursor-pointer"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                    </div>
                   </div>
 
                   {!sending && (
@@ -237,16 +262,16 @@ export function TimelinePage() {
                     </motion.button>
                     {/* PROMPT */}
                     <div className="flex items-center justify-center ml-4">
-                      {mailersSummary?.prompt_id &&
-                        mailersSummary.prompt_id.trim() !== "" &&
-                        mailersSummary.prompt_id.toLowerCase() !== "na" && (
+                      {mailersSummary?.prompt_details
+                        && (
                           <button
-                            onClick={() =>
-                              navigateTo("/settings/machine-learning", {
-                                state: { promptId: mailersSummary.prompt_id },
-                              })
+                            onClick={() => {
+                              setSelectedPrompt(mailersSummary?.prompt_details
+                              );
+                              setOpen(true);
                             }
-                            className="text-blue-600 hover:text-blue-700"
+                            }
+                            className="text-blue-600 hover:text-blue-700 cursor-pointer"
                           >
                             <SparkleIcon size={20} />
                           </button>
@@ -290,11 +315,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -345,13 +369,13 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (

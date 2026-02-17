@@ -359,7 +359,7 @@ export function OrdersPage() {
             onSearchChange={handleSearchChange}
             searchValue={topsearch}
             searchPlaceholder="Search here..."
-            onFilterApply={() => {}}
+            onFilterApply={() => { }}
             filterPlaceholder="Filters"
             showFilter={false}
             archiveOptions={[
