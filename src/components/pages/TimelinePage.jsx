@@ -63,12 +63,7 @@ export function TimelinePage() {
       toast.error(error);
       dispatch(ladgerAction.clearAllErrors());
     }
-    if (sendError) {
-      toast.error(sendError);
-      dispatch(viewEmailAction.clearAllErrors());
-    }
     if (message) {
-      toast.success(message);
       setNotificationCount((prev) => ({
         ...prev,
         refreshUnreplied: Date.now(),

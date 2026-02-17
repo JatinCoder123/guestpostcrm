@@ -44,10 +44,12 @@ import LowCreditWarning from "./components/LowCreditWarning";
 import { getAllWebsites } from "./store/Slices/webSlice";
 import { fetchGpcController } from "./store/Slices/gpcControllerSlice";
 import { getMarketplace } from "./store/Slices/Marketplace";
+import { toast } from "react-toastify";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
 
   const { timeline, email } = useSelector((state) => state.ladger);
+  const { message } = useSelector((state) => state.viewEmail);
   const { emails, loading } = useSelector((state) => state.unreplied);
   const { checkboxes } = useSelector((state) => state.gpcController);
   const [firstEmail, setFirstEmail] = useState(null);
@@ -89,6 +91,10 @@ const RootLayout = () => {
   useEffect(() => {
     setShowAvatar(true);
   }, [currentAvatar]);
+  useEffect(() => {
+    toast.success(message)
+    dispatch(viewEmailAction.clearAllMessage())
+  }, [message]);
 
   // Set active page based on URL
   useEffect(() => {
