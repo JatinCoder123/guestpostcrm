@@ -45,6 +45,7 @@ export default function CreateOrder() {
     updating,
     error,
     message,
+    newlyOrder,
     updateLinkMessage,
     creating,
     updateId,
@@ -147,8 +148,9 @@ export default function CreateOrder() {
   };
   useEffect(() => {
     if (message) {
+      // console.log("MESSAGE", message)
+      // console.log("newly", newlyOrder)
       dispatch(getOrders({}));
-
       ManualSideCall(
         crmEndpoint,
         state?.email,
@@ -158,6 +160,7 @@ export default function CreateOrder() {
       );
 
       if (message.includes("Send")) {
+        setCurrentOrderSend(newlyOrder)
         setShowPreview(true);
       } else {
         toast.success(message);
