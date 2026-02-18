@@ -82,17 +82,6 @@ const MoveToDropdown = ({ currentThreadId, onMoveSuccess }) => {
     }
   };
 
-  // Label type के according color determine करें
-  const getLabelColor = (type) => {
-    switch (type) {
-      case "user":
-        return "bg-green-100 text-green-800";
-      case "system":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   return (
     <div className="relative" ref={dropdownRef}>

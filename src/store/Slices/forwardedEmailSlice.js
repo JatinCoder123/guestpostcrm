@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { act } from "react";
-import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
 
 const forwardedSlice = createSlice({
@@ -11,8 +9,6 @@ const forwardedSlice = createSlice({
     forward: false,
     emails: [],
     count: 0,
-    pageCount: 1,
-    pageIndex: 1,
     error: null,
     message: null,
   },
@@ -22,12 +18,10 @@ const forwardedSlice = createSlice({
       state.error = null;
     },
     getEmailSucess(state, action) {
-      const { count, emails, pageCount, pageIndex } = action.payload;
+      const { count, emails } = action.payload;
       state.loading = false;
       state.emails = emails;
       state.count = count;
-      state.pageCount = pageCount;
-      state.pageIndex = pageIndex;
       state.error = null;
     },
     getEmailFailed(state, action) {
@@ -58,34 +52,24 @@ const forwardedSlice = createSlice({
   },
 });
 
-export const getForwardedEmails = ({ email = null, page = 1, loading = true }) => {
+export const getForwardedEmails = ({ loading = true }) => {
   return async (dispatch, getState) => {
     if (loading) {
       dispatch(forwardedSlice.actions.getEmailRequest());
     }
 
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=forwarded${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=forwarded${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
-        );
-      }
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=forwarded&current_email=${getState().user.user.email}`
+      );
 
-      showConsole && console.log(`forwarded emails`, response.data);
-      const data = response.data;
+
+      showConsole && console.log(`forwarded emails`, data);
       dispatch(
         forwardedSlice.actions.getEmailSucess({
-          count: data.data_count ?? 0,
-          emails: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
+          count: data?.length ?? 0,
+          emails: data,
         })
       );
       dispatch(forwardedSlice.actions.clearAllErrors());
@@ -99,31 +83,18 @@ export const getForwardedEmails = ({ email = null, page = 1, loading = true }) =
   };
 };
 
-export const forwardEmail = (contactId, to, id) => {
+export const forwardEmail = (email, id) => {
   return async (dispatch, getState) => {
     dispatch(forwardedSlice.actions.forwardEmailRequest());
+    showConsole && console.log("EMAIL", email)
+    showConsole && console.log("EMAIL", id)
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const response = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          parent_bean: {
-            id: contactId,
-            module: "Contacts",
-            thread_id: id,
-            assigned_user_id: to,
-            forwarded: 1
-          },
-        },
-        {
-          headers: {
-            "x-api-key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await axios.get(
+        `${domain}?entryPoint=fetch_gpc&type=assigned_task&client_email=${email}&id=${id}`,
       );
-      showConsole && console.log("Response while sendig ", response.data);
+      showConsole && console.log("Assiging  ", response.data);
       dispatch(
         forwardedSlice.actions.forwardEmailSucess(
           "Email Forwarded Successfully"

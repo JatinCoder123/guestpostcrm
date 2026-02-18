@@ -96,8 +96,8 @@ const ActionButton = ({
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
 
-  const handleForward = (to) => {
-    dispatch(forwardEmail(contactInfo.id, to, threadId));
+  const handleForward = (email, id) => {
+    dispatch(forwardEmail(email, id));
   };
 
   /* 🔥 ADDED: Check FR button visibility */
@@ -194,7 +194,7 @@ const ActionButton = ({
         }),
       );
       dispatch(forwardedAction.clearAllMessages());
-      dispatch(getForwardedEmails({ email: enteredEmail, loading: false }));
+      dispatch(getForwardedEmails({ loading: false }));
     }
 
     if (favouriteError) {

@@ -52,7 +52,7 @@ function useRefresh() {
         dispatch(getAiCredits());
         dispatch(getUnansweredEmails({ email: enteredEmail }));
         dispatch(getUnrepliedEmail({ email: enteredEmail }));
-        dispatch(getForwardedEmails({ email: enteredEmail }));
+        dispatch(getForwardedEmails({}));
         dispatch(getFavEmails({ email: enteredEmail }));
         dispatch(getAllWebsites());
         dispatch(getLinkExchange(enteredEmail));

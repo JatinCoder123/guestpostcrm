@@ -8,11 +8,26 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const dropdownRef = useRef(null);
   const { crmEndpoint } = useSelector((state) => state.user);
+  const { email } = useSelector((state) => state.ladger);
   const domain = crmEndpoint.split("?")[0];
   const { loading, data: users } = useModule({
     url: `${domain}?entryPoint=fetch_gpc&type=get_users`,
     name: "USERS",
   });
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   return (
     <div
@@ -20,11 +35,8 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
       onClick={(e) => e.stopPropagation()}
       className="absolute top-14 -right-8 w-72 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-[999]"
     >
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="font-semibold text-gray-700 ">Assign To</h3>
-        <button onClick={onClose}>
-          <X />
-        </button>
+      <div className="flex justify-between items-center mb-2  rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 p-2 text-white ">
+        <h3 className="font-semibold  ">Assign To</h3>
       </div>
 
       {/* User List */}
@@ -44,14 +56,12 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
                   key={index}
                   onClick={() => setSelectedUser(user)}
                   className={`p-2 rounded-lg cursor-pointer border transition-all
-              ${
-                selectedUser?.email === user.email
-                  ? "bg-blue-100 border-blue-400"
-                  : "hover:bg-gray-100 border-transparent"
-              }`}
+              ${selectedUser?.name === user.name
+                      ? "bg-blue-100 border-blue-400"
+                      : "hover:bg-gray-100 border-transparent"
+                    }`}
                 >
                   <p className="font-medium text-gray-700">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
               ))
             )}
@@ -60,15 +70,14 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
           <button
             onClick={() => {
               onClose();
-              selectedUser && forwardHandler(selectedUser.id);
+              selectedUser && forwardHandler(email, selectedUser.id);
             }}
             disabled={!selectedUser}
             className={`w-full mt-3 py-2 rounded-lg text-sm text-white transition-all
-          ${
-            selectedUser
-              ? "bg-blue-600 hover:bg-blue-700 active:scale-95"
-              : "bg-gray-400 cursor-not-allowed"
-          }
+          ${selectedUser
+                ? "bg-blue-600 hover:bg-blue-700 active:scale-95 cursor-pointer"
+                : "bg-gray-400 cursor-not-allowed"
+              }
         `}
           >
             Forward Email
