@@ -7,10 +7,11 @@ import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditUser from "./EditUser";
 import { useSelector } from "react-redux";
+import { getDomain } from "../../../assets/assets";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);
-  const { businessEmail } = useSelector((state) => state.user);
+  const { businessEmail, crmEndpoint } = useSelector((state) => state.user);
 
   const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `https://crm.outrightsystems.org/index.php?entryPoint=get_gpc_users&email=${businessEmail}`,
@@ -23,13 +24,13 @@ export function UsersPage() {
       "Content-Type": "application/json",
     },
   });
-  const handleCreate = (updatedItem) => {
+  const handleCreate = async (updatedItem) => {
     setData((prev) => {
       const updated = { ...prev };
       updated.data = [{ id: Math.random(), ...updatedItem }, ...updated.data];
       return updated;
     });
-    add({
+    await add({
       url: `https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,
       method: "POST",
       body: {
@@ -47,6 +48,10 @@ export function UsersPage() {
         "x-api-key": `${CREATE_DEAL_API_KEY}`,
         "Content-Type": "application/json",
       },
+    });
+    await add({
+      url: `${crmEndpoint.split('?')[0]}?entryPoint=fetch_gpc&type=add_user&email=${updatedItem.email}&name=${updatedItem.name}`,
+      method: "POST",
     });
   };
   const handleUpdate = (updatedItem) => {

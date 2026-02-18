@@ -89,10 +89,6 @@ export function TimelinePage() {
     dispatch(getLadger({ email }));
   };
   const handleActionBtnClick = (btnBody) => {
-    if (emails.length == 0) {
-      toast.info("No Unreplied Email found");
-      return;
-    }
     dispatch(sendEmail({ reply: btnBody, message: "Quick Action Button Reply Sent" }));
     dispatch(
       addEvent({
