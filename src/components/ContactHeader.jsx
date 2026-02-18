@@ -83,12 +83,12 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-        ...emailDeals.map((d) =>
-          Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+            ),
           ),
-        ),
-      )
+        )
       : 0;
   // end
 
@@ -98,8 +98,9 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
     <div className="flex items-start justify-between w-full">
       {/* LEFT SIDE CONTENT */}
       <div
-        className={`flex  gap-4 ${contactLoading ? "items-center" : "item-start"
-          }`}
+        className={`flex  gap-4 ${
+          contactLoading ? "items-center" : "item-start"
+        }`}
       >
         {contactLoading && <LoadingChase size="30" color="blue" />}
         {!contactLoading && (
@@ -113,7 +114,9 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                 to="/contacts"
                 className="text-gray-800 text-lg font-semibold"
               >
-                {(contactInfo?.full_name === "" || contactInfo?.full_name == null) ? email : contactInfo?.full_name}
+                {contactInfo?.full_name === "" || contactInfo?.full_name == null
+                  ? email
+                  : contactInfo?.full_name}
               </Link>
               {contactInfo?.customer_type === "verified" && (
                 <img
@@ -164,6 +167,17 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
                   </div>
                 </div>
               </div>
+              {contactInfo?.moved_label && (
+                <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
+                  <div className="text-sm">
+                    <div className="text-gray-500 text-xs">Email Label</div>
+                    <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
+                    <div className="text-gray-800 font-medium">
+                      {contactInfo?.moved_label ?? "N/A"}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="w-px h-10 bg-gray-200"></div>
             </div>
@@ -209,10 +223,11 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
           onClick={onPrev}
           disabled={currentIndex === 0}
           className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${currentIndex === 0
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-gray-100"
-            }
+                        ${
+                          currentIndex === 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:bg-gray-100"
+                        }
                     `}
         >
           <ChevronLeft className="w-5 h-5 text-gray-700" />
@@ -223,10 +238,11 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
           onClick={onNext}
           disabled={currentIndex === emails?.length - 1}
           className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${currentIndex === emails?.length - 1
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-gray-100"
-            }
+                        ${
+                          currentIndex === emails?.length - 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:bg-gray-100"
+                        }
                     `}
         >
           <ChevronRight className="w-5 h-5 text-gray-700" />
