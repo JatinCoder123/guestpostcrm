@@ -174,6 +174,8 @@ export function TimelinePage() {
             <div className="flex flex-col p-6 border-b border-gray-200">
               <ContactHeader
                 onNext={handleNext}
+                setShowEmails={setShowEmail}
+
                 onPrev={handlePrev}
                 currentIndex={currentIndex}
               />

@@ -288,18 +288,6 @@ const ActionButton = ({
     {
       icon: (
         <img
-          width="40"
-          height="40"
-          src="https://img.icons8.com/keek/100/new-post.png"
-          alt="new-post"
-        />
-      ),
-      label: "Email",
-      action: () => setShowEmails(true),
-    },
-    {
-      icon: (
-        <img
           width="30"
           height="30"
           src="https://img.icons8.com/fluency/48/ip-address.png"

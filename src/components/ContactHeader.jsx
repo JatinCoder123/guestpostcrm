@@ -8,13 +8,13 @@ import confetti from "canvas-confetti";
 // start
 import { useNavigate } from "react-router-dom";
 
-const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
+const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
   const navigate = useNavigate();
   const goToDeal = () => {
     navigate("/deals");
   };
   const { email } = useSelector((state) => state.ladger);
-  const { contactInfo, contactLoading, stage, status, customer_type } =
+  const { contactInfo, contactLoading, stage, status, customer_type, count } =
     useSelector((state) => state.viewEmail);
 
   const { deals } = useSelector((state) => state.deals);
@@ -104,10 +104,20 @@ const ContactHeader = ({ onPrev, onNext, currentIndex }) => {
         {contactLoading && <LoadingChase size="30" color="blue" />}
         {!contactLoading && (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                <Mail className="w-5 h-5 text-gray-600" />
-              </div>
+            <div className="flex items-center gap-2 ">
+              <button onClick={() => setShowEmails(true)} className="w-10 h-10 bg-white bg-white rounded-xl shadow-md border border-gray-200 relative
+            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all  flex items-center justify-center cursor-pointer">
+                <img
+                  width="40"
+                  height="40"
+                  src="https://img.icons8.com/keek/100/new-post.png"
+                  alt="new-post"
+                />
+                {count > 0 && <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  {count}
+                </span>}
+
+              </button>
 
               <Link
                 to="/contacts"
