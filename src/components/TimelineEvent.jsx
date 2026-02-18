@@ -373,6 +373,17 @@ const TimelineEvent = () => {
     });
   };
 
+  const isMinuteGap = (current, previous) => {
+    if (!previous) return false;
+
+    const currTime = new Date(current).getTime();
+    const prevTime = new Date(previous).getTime();
+
+    const diffInMinutes = Math.abs(currTime - prevTime) / (1000 * 60);
+
+    return diffInMinutes >= 1;
+  };
+
   return (
     <div className="relative">
       <style jsx>{`
@@ -606,6 +617,10 @@ const TimelineEvent = () => {
 
           <div className="space-y-6">
             {timelineData.map((event, index) => {
+              const prevEvent = index > 0 && timelineData[index - 1];
+
+              const showSeparator =
+                event.date_entered !== prevEvent?.date_entered && index != 0;
               const type = event.type_c || "";
               const lowerType = type.toLowerCase();
               const isReminderEvent =
@@ -622,34 +637,56 @@ const TimelineEvent = () => {
               const hasMessageId = event.message_id_c;
 
               return (
-                <div key={event.id} className="relative flex items-start gap-4">
-                  <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">
-                    <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center text-white shadow-lg">
-                      <img width="40" height="40" src={event.icon} alt="icon" />
+                <>
+                  {showSeparator && (
+                    <div className="relative flex gap-1 my-1">
+                      <div className="relative z-10 w-16 flex-shrink-0">
+                        <div className="w-12 h-12 flex items-center justify-center">
+                          <img
+                            src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
+                            alt="separator"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    key={event.id}
+                    className="relative flex items-start gap-4"
+                  >
+                    <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">
+                      <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center text-white shadow-lg">
+                        <img
+                          width="40"
+                          height="40"
+                          src={event.icon}
+                          alt="icon"
+                        />
+                      </div>
+                      <div
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 
+                                 absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
+                      />
                     </div>
                     <div
-                      className="bg-gradient-to-r from-purple-600 to-blue-600 
-                                 absolute top-1/2 left-[56px] w-6 h-[7px] rounded-l-full"
-                    />
-                  </div>
-                  <div
-                    className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
+                      className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
                       ${
                         index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
                       }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-700 flex items-center gap-2">
-                        <div
-                          className="relative group cursor-pointer hover:cursor-pointer hover:opacity-90 transition-all duration-300
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-700 flex items-center gap-2">
+                          <div
+                            className="relative group cursor-pointer hover:cursor-pointer hover:opacity-90 transition-all duration-300
  "
-                          onClick={() => onEyeClick(type, event)}
-                        >
-                          <Eye
-                            size={20}
-                            className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
+                            onClick={() => onEyeClick(type, event)}
+                          >
+                            <Eye
+                              size={20}
+                              className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
 
                               ${
                                 isReminderEvent
@@ -658,185 +695,172 @@ const TimelineEvent = () => {
                                     ? "text-green-600"
                                     : "text-blue-600"
                               }`}
-                          />
+                            />
 
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 -top-10
+                            <div
+                              className="absolute left-1/2 -translate-x-1/2 -top-10
                                        whitespace-nowrap px-3 py-1.5 text-xs
                                        bg-gray-900 text-white rounded-md shadow-lg
                                        opacity-0 group-hover:opacity-100
                                        transition-opacity duration-200
                                        pointer-events-none z-50"
-                          >
-                            {getTooltipText(event)}
-
-                            {isReminderEvent && filterType && (
-                              <div className="text-xs text-gray-300 mt-1">
-                                Filter: {filterType.replace(/_/g, " ")}
-                                {contactId && " • Single Contact"}
-                              </div>
-                            )}
-
-                            {isContactEvent && contactId && (
-                              <div className="text-xs text-gray-300 mt-1">
-                                Single Contact View
-                              </div>
-                            )}
-
-                            <div
-                              className="absolute left-1/2 -translate-x-1/2 top-full
-                                         w-2 h-2 bg-gray-900 rotate-45"
-                            />
-                          </div>
-                        </div>
-
-                        <span className="font-medium">
-                          {type
-                            ? type.charAt(0).toUpperCase() + type.slice(1)
-                            : "Event"}
-                        </span>
-                      </span>
-
-                      <div className="flex items-center gap-2">
-                        {hasMessageId && (
-                          <button
-                            onClick={() => handleMessageClick(event)}
-                            className="text-blue-600 hover:text-blue-700 hover:cursor-pointer hover:opacity-90 transition-all duration-300
- relative group message-icon-pulse"
-                            title="View Message"
-                            disabled={isMessageLoading === event.message_id_c}
-                          >
-                            {isMessageLoading === event.message_id_c ? (
-                              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                            ) : (
-                              <MessageSquare />
-                            )}
-                            <div
-                              className="absolute left-1/2 -translate-x-1/2 -top-8
-                                          whitespace-nowrap px-2 py-1 text-xs
-                                          bg-gray-900 text-white rounded-md
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                          pointer-events-none z-50"
                             >
-                              View Message
-                              <div
-                                className="absolute left-1/2 -translate-x-1/2 top-full
-                                            w-2 h-2 bg-gray-900 rotate-45"
-                              />
-                            </div>
-                          </button>
-                        )}
+                              {getTooltipText(event)}
 
-                        {hasTemplate && (
-                          <button
-                            onClick={() =>
-                              navigateTo("/settings/templates", {
-                                state: { templateId: event.template_id },
-                              })
-                            }
-                            className="text-green-600 hover:text-green-700 cursor-pointer relative group"
-                            title={`Preview Template: ${event.template_id}`}
-                            disabled={
-                              loadingTemplate &&
-                              selectedTemplate?.id === event.template_id
-                            }
-                          >
-                            <FileText size={20} />
-                            {loadingTemplate &&
-                              selectedTemplate?.id === event.template_id && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                              {isReminderEvent && filterType && (
+                                <div className="text-xs text-gray-300 mt-1">
+                                  Filter: {filterType.replace(/_/g, " ")}
+                                  {contactId && " • Single Contact"}
                                 </div>
                               )}
 
-                            <div
-                              className="absolute left-1/2 -translate-x-1/2 -top-8
+                              {isContactEvent && contactId && (
+                                <div className="text-xs text-gray-300 mt-1">
+                                  Single Contact View
+                                </div>
+                              )}
+
+                              <div
+                                className="absolute left-1/2 -translate-x-1/2 top-full
+                                         w-2 h-2 bg-gray-900 rotate-45"
+                              />
+                            </div>
+                          </div>
+
+                          <span className="font-medium">
+                            {type
+                              ? type.charAt(0).toUpperCase() + type.slice(1)
+                              : "Event"}
+                          </span>
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          {hasMessageId && (
+                            <button
+                              onClick={() => handleMessageClick(event)}
+                              className="text-blue-600 hover:text-blue-700 hover:cursor-pointer hover:opacity-90 transition-all duration-300
+ relative group message-icon-pulse"
+                              title="View Message"
+                              disabled={isMessageLoading === event.message_id_c}
+                            >
+                              {isMessageLoading === event.message_id_c ? (
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                              ) : (
+                                <MessageSquare />
+                              )}
+                              <div
+                                className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
                                           bg-gray-900 text-white rounded-md
                                           opacity-0 group-hover:opacity-100
                                           transition-opacity duration-200
                                           pointer-events-none z-50"
-                            >
-                              Preview Template
-                              <div
-                                className="absolute left-1/2 -translate-x-1/2 top-full
+                              >
+                                View Message
+                                <div
+                                  className="absolute left-1/2 -translate-x-1/2 top-full
                                             w-2 h-2 bg-gray-900 rotate-45"
+                                />
+                              </div>
+                            </button>
+                          )}
+
+                          {hasTemplate && (
+                            <button
+                              onClick={() =>
+                                navigateTo("/settings/templates", {
+                                  state: { templateId: event.template_id },
+                                })
+                              }
+                              className="text-green-600 hover:text-green-700 cursor-pointer relative group"
+                              title={`Preview Template: ${event.template_id}`}
+                              disabled={
+                                loadingTemplate &&
+                                selectedTemplate?.id === event.template_id
+                              }
+                            >
+                              <FileText size={20} />
+                              {loadingTemplate &&
+                                selectedTemplate?.id === event.template_id && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                  </div>
+                                )}
+
+                              <div
+                                className="absolute left-1/2 -translate-x-1/2 -top-8
+                                          whitespace-nowrap px-2 py-1 text-xs
+                                          bg-gray-900 text-white rounded-md
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                          pointer-events-none z-50"
+                              >
+                                Preview Template
+                                <div
+                                  className="absolute left-1/2 -translate-x-1/2 top-full
+                                            w-2 h-2 bg-gray-900 rotate-45"
+                                />
+                              </div>
+                            </button>
+                          )}
+                          {event.prompt_details && (
+                            <button
+                              onClick={() => {
+                                setSelectedPrompt(event.prompt_details);
+                                setOpen(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                            >
+                              <SparkleIcon size={20} />
+                            </button>
+                          )}
+                          <span className="text-gray-500 text-sm">
+                            {event.date_entered}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Additional info about the event */}
+                      <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+                        {event.assigned_user_name && (
+                          <span className="flex items-center gap-1">
+                            <svg
+                              className="w-3 h-3"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clipRule="evenodd"
                               />
-                            </div>
-                          </button>
+                            </svg>
+                            {event.assigned_user_name}
+                          </span>
                         )}
-                        {event.prompt_details && (
-                          <button
-                            onClick={() => {
-                              setSelectedPrompt(event.prompt_details);
-                              setOpen(true);
-                            }}
-                            className="text-blue-600 hover:text-blue-700 cursor-pointer"
-                          >
-                            <SparkleIcon size={20} />
-                          </button>
+
+                        {event.module && (
+                          <span className="flex items-center gap-1">
+                            <svg
+                              className="w-3 h-3"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            {event.module}
+                          </span>
                         )}
-                        <span className="text-gray-500 text-sm">
-                          {event.date_entered}
-                        </span>
                       </div>
                     </div>
-
-                    {/* Additional info about the event */}
-                    <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                      {event.assigned_user_name && (
-                        <span className="flex items-center gap-1">
-                          <svg
-                            className="w-3 h-3"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {event.assigned_user_name}
-                        </span>
-                      )}
-
-                      {event.module && (
-                        <span className="flex items-center gap-1">
-                          <svg
-                            className="w-3 h-3"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {event.module}
-                        </span>
-                      )}
-                    </div>
                   </div>
-                </div>
+                </>
               );
             })}
-            {timelineData?.length === 0 ? (
-              <div className="text-center text-gray-500">No events found</div>
-            ) : (
-              <div ref={bottomRef} className="relative flex gap-4 mt-6">
-                <div className="relative z-10 w-16 flex-shrink-0">
-                  <div className="w-12 h-12 flex items-center justify-center">
-                    <img
-                      src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/image__7_-removebg-preview.png"
-                      alt="end"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
