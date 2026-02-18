@@ -44,6 +44,7 @@ const CreateOrderForm = ({
           backlink_url: "",
           target_url_c: "",
           link_amount: "",
+          gp_doc_url_c: ""
         },
       ],
     }));
@@ -98,13 +99,14 @@ const CreateOrderForm = ({
 
     for (const link of order.seo_backlinks) {
       if (!link.anchor_text_c?.trim()) return false;
+      if (!link.target_url_c?.trim()) return false;
       if (!link.backlink_url?.trim()) return false;
       if (!link.link_amount || Number(link.link_amount) <= 0) return false;
 
       if (
         (order.order_type === "LINK INSERTION" ||
           order.order_type === "BOTH") &&
-        (!link.target_url_c?.trim())
+        (!link.gp_doc_url_c?.trim())
       ) {
         return false;
       }
@@ -171,14 +173,22 @@ const CreateOrderForm = ({
               }
               className="border p-2 rounded w-full"
             />
+            <input
+              placeholder="Target URL"
+              value={link.target_url_c || ""}
+              onChange={(e) =>
+                updateSeoLink(index, "target_url_c", e.target.value)
+              }
+              className="border p-2 rounded w-full"
+            />
 
-            {(order.order_type === "LINK INSERTION" ||
+            {(order.order_type === "GUEST POST" ||
               order.order_type === "BOTH") && (
                 <input
-                  placeholder="Target URL"
-                  value={link.target_url_c || ""}
+                  placeholder="Doc URL"
+                  value={link.gp_doc_url_c || ""}
                   onChange={(e) =>
-                    updateSeoLink(index, "target_url_c", e.target.value)
+                    updateSeoLink(index, "gp_doc_url_c", e.target.value)
                   }
                   className="border p-2 rounded w-full"
                 />
