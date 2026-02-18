@@ -28,7 +28,7 @@ import PageLoader from "./PageLoader";
 import Attachment from "./Attachment";
 import { useNavigate } from "react-router-dom";
 import { ViewButton } from "./ViewButton";
-import useRefresh from "../hooks/useRefresh";
+import useIdle from "../hooks/useIdle";
 export default function EmailBox({
   onClose,
   view,
@@ -41,7 +41,7 @@ export default function EmailBox({
   const [editorContent, setEditorContent] = useState();
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
-  useRefresh({ idle: true });
+  useIdle({ idle: true });
   const dispatch = useDispatch();
   const { viewEmail, threadId: viewThreadId, message: sendMessage, sending, error: sendError } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate()

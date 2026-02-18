@@ -27,7 +27,7 @@ const RootLayout = () => {
   } = useContext(PageContext);
   const { currentAvatar, setCrm, } =
     useContext(SocketContext);
-  useRefresh({ idle: true })
+  useRefresh()
   const dispatch = useDispatch();
   const location = useLocation().pathname.split("/")[2];
   const pathname = useLocation().pathname;
