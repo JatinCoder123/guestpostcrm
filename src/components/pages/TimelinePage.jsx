@@ -41,8 +41,8 @@ export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [editorContent, setEditorContent] = useState("");
   const [showPreview, setShowPreview] = useState(false);
-  const [open, setOpen] = useState(false)
-  const [selectedPrompt, setSelectedPrompt] = useState(null)
+  const [open, setOpen] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState(null);
   const {
     error: sendError,
     message,
@@ -211,20 +211,17 @@ export function TimelinePage() {
                       />
                     </motion.button>
                     <div className="flex items-center justify-center ml-4 ">
-                      {mailersSummary?.prompt_details
-                        && (
-                          <button
-                            onClick={() => {
-                              setSelectedPrompt(mailersSummary?.prompt_details
-                              );
-                              setOpen(true);
-                            }
-                            }
-                            className="text-green-600 hover:text-green-700 cursor-pointer"
-                          >
-                            <SparkleIcon size={20} />
-                          </button>
-                        )}
+                      {mailersSummary?.prompt_details && (
+                        <button
+                          onClick={() => {
+                            setSelectedPrompt(mailersSummary?.prompt_details);
+                            setOpen(true);
+                          }}
+                          className="text-green-600 hover:text-green-700 cursor-pointer"
+                        >
+                          <SparkleIcon size={20} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -260,20 +257,17 @@ export function TimelinePage() {
                     </motion.button>
                     {/* PROMPT */}
                     <div className="flex items-center justify-center ml-4">
-                      {mailersSummary?.prompt_details
-                        && (
-                          <button
-                            onClick={() => {
-                              setSelectedPrompt(mailersSummary?.prompt_details
-                              );
-                              setOpen(true);
-                            }
-                            }
-                            className="text-blue-600 hover:text-blue-700 cursor-pointer"
-                          >
-                            <SparkleIcon size={20} />
-                          </button>
-                        )}
+                      {mailersSummary?.prompt_details && (
+                        <button
+                          onClick={() => {
+                            setSelectedPrompt(mailersSummary?.prompt_details);
+                            setOpen(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                        >
+                          <SparkleIcon size={20} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
