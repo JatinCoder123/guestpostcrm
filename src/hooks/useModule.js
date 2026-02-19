@@ -47,8 +47,9 @@ const useModule = ({
         data: body,
         headers,
       });
-      showConsole && console.log(`${Object.entries(body)} : `, response.data);
+      showConsole && console.log(response.data);
     } catch (err) {
+      console.log(err)
       setError(err);
     } finally {
       setCreating(false);

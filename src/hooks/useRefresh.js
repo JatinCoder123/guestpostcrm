@@ -33,7 +33,7 @@ import {
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
 
-function useRefresh({ idle }) {
+function useRefresh() {
     const { setUserIdle, eventQueue, notificationCount, setNotificationCount } = useContext(SocketContext);
     const {
         enteredEmail,
@@ -52,7 +52,7 @@ function useRefresh({ idle }) {
         dispatch(getAiCredits());
         dispatch(getUnansweredEmails({ email: enteredEmail }));
         dispatch(getUnrepliedEmail({ email: enteredEmail }));
-        dispatch(getForwardedEmails({ email: enteredEmail }));
+        dispatch(getForwardedEmails({}));
         dispatch(getFavEmails({ email: enteredEmail }));
         dispatch(getAllWebsites());
         dispatch(getLinkExchange(enteredEmail));
@@ -217,13 +217,6 @@ function useRefresh({ idle }) {
             }));
         }
     }, [notificationCount, dispatch, setNotificationCount]);
-    useEffect(() => {
-        setUserIdle(idle)
-        return () => {
-            setUserIdle(true)
-            console.log("EVENTS", eventQueue)
-        }
-    }, [])
     return [];
 }
 

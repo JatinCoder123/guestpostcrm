@@ -97,7 +97,7 @@ export function ForwardedPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -230,12 +230,6 @@ export function ForwardedPage() {
                     <span>SUBJECT</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <BarChart className="w-4 h-4" />
-                    <span>COUNT</span>
-                  </div>
-                </th>
               </tr>
             </thead>
             {loading ? (
@@ -276,7 +270,7 @@ export function ForwardedPage() {
                       }}
                       className="px-6 py-4 text-gray-900"
                     >
-                      {email.first_name}
+                      {email?.first_name} {email?.last_name}
                     </td>
                     <td
                       onClick={() => {
@@ -287,33 +281,13 @@ export function ForwardedPage() {
                     >
                       {email.subject}
                     </td>
-                    <td
-                      onClick={() => {
-                        const input = extractEmail(email.email_address);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null));
-                        setWelcomeHeaderContent("Assigned");
-                        navigateTo("/");
-                      }}
-                      className="px-6 py-4 text-purple-600"
-                    >
-                      {email.thread_count}
-                    </td>
+
                   </tr>
                 ))}
               </tbody>
             )}
           </table>
         </div>
-        {filteredEmails.length > 0 && (
-          <Pagination
-            slice={"forwarded"}
-            fn={(page) => dispatch(getForwardedEmails({ page: page }))}
-          />
-        )}
-
         {emails.length === 0 && (
           <div className="p-12 text-center">
             <MoveRight className="w-16 h-16 text-gray-300 mx-auto mb-4" />

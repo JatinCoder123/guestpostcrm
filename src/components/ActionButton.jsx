@@ -96,8 +96,8 @@ const ActionButton = ({
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
 
-  const handleForward = (to) => {
-    dispatch(forwardEmail(contactInfo.id, to, threadId));
+  const handleForward = (email, id) => {
+    dispatch(forwardEmail(email, id));
   };
 
   /* 🔥 ADDED: Check FR button visibility */
@@ -194,7 +194,7 @@ const ActionButton = ({
         }),
       );
       dispatch(forwardedAction.clearAllMessages());
-      dispatch(getForwardedEmails({ email: enteredEmail, loading: false }));
+      dispatch(getForwardedEmails({ loading: false }));
     }
 
     if (favouriteError) {
@@ -285,18 +285,6 @@ const ActionButton = ({
 
   /* 🔹 Static Buttons (UNCHANGED) */
   const actionButtons = [
-    {
-      icon: (
-        <img
-          width="40"
-          height="40"
-          src="https://img.icons8.com/keek/100/new-post.png"
-          alt="new-post"
-        />
-      ),
-      label: "Email",
-      action: () => setShowEmails(true),
-    },
     {
       icon: (
         <img

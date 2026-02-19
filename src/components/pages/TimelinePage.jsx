@@ -89,13 +89,7 @@ export function TimelinePage() {
     dispatch(getLadger({ email }));
   };
   const handleActionBtnClick = (btnBody) => {
-    if (emails.length == 0) {
-      toast.info("No Unreplied Email found");
-      return;
-    }
-    dispatch(
-      sendEmail({ reply: btnBody, message: "Quick Action Button Reply Sent" }),
-    );
+    dispatch(sendEmail({ reply: btnBody, message: "Quick Action Button Reply Sent" }));
     dispatch(
       addEvent({
         email: email,
@@ -106,12 +100,7 @@ export function TimelinePage() {
   };
 
   const handleAiAutoReply = () => {
-    dispatch(
-      sendEmail({
-        reply: editorContent,
-        message: "Ai Reply Send Successfully",
-      }),
-    );
+    dispatch(sendEmail({ reply: editorContent, message: "Ai Reply Send Successfully" }));
   };
   const handleNext = () => {
     if (currentIndex < emails?.length - 1) {
@@ -185,6 +174,8 @@ export function TimelinePage() {
             <div className="flex flex-col p-6 border-b border-gray-200">
               <ContactHeader
                 onNext={handleNext}
+                setShowEmails={setShowEmail}
+
                 onPrev={handlePrev}
                 currentIndex={currentIndex}
               />
@@ -316,11 +307,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -371,13 +361,13 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (

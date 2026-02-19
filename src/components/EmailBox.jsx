@@ -26,7 +26,7 @@ import PageLoader from "./PageLoader";
 import Attachment from "./Attachment";
 import { useNavigate } from "react-router-dom";
 import { ViewButton } from "./ViewButton";
-import useRefresh from "../hooks/useRefresh";
+import useIdle from "../hooks/useIdle";
 export default function EmailBox({
   onClose,
   view,
@@ -39,7 +39,7 @@ export default function EmailBox({
   const [editorContent, setEditorContent] = useState();
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
-  useRefresh({ idle: true });
+  useIdle({ idle: true });
   const dispatch = useDispatch();
   const {
     viewEmail,
@@ -820,12 +820,22 @@ export default function EmailBox({
                     className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`relative max-w-[70%] p-5 rounded-2xl shadow-lg ${
-                        isUser
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                      }`}
+                      className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
+  ${
+    isUser
+      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+  }
+  ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
+`}
                     >
+                      {isLast && (
+                        <div
+                          className={`absolute -inset-1 rounded-3xl blur-2xl opacity-50 -z-10
+        ${isUser ? "bg-indigo-500" : "bg-blue-400"}
+      `}
+                        />
+                      )}
                       <div
                         className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
                           isUser
