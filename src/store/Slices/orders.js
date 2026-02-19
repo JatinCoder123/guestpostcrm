@@ -243,6 +243,7 @@ export const createOrder2 = (email, order, send) => {
           parent_bean: {
             module: "outr_order_gp_li",
             name: email,
+            client_email: email,
             order_type: order.order_type,
           },
         },

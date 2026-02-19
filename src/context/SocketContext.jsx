@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useId, useRef, useState } from "r
 import { io } from "socket.io-client";
 import { showConsole } from "../assets/assets.js";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { eventActions } from "../store/Slices/eventSlice.js";
+import { unrepliedAction } from "../store/Slices/unrepliedEmails.js";
 
 const socket = io("https://socket.guestpostcrm.com");
 export const SocketContext = createContext();
@@ -10,8 +13,16 @@ export const SocketContextProvider = ({ children }) => {
   const [currentAvatar, setCurrentAvatar] = useState();
   const [crm, setCrm] = useState("");
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
+  const dispatch = useDispatch()
   const [userIdle, setUserIdle] = useState(true)
   const [eventQueue, setEventQueue] = useState({})
+  const eventQueueRef = useRef({});
+
+  useEffect(() => {
+    eventQueueRef.current = eventQueue;
+  }, [eventQueue]);
+
+
 
   const crmRef = useRef(""); // ✅ IMPORTANT
   const userRef = useRef(userIdle); // ✅ IMPORTANT
@@ -24,7 +35,6 @@ export const SocketContextProvider = ({ children }) => {
     outr_deal_fetch: null,
     outr_order_gp_li: null,
     outr_self_test: null,
-    refresh_ladger: null,
     refreshUnreplied: null,
     outr_paypal_invoice_links: null,
   });
@@ -55,6 +65,9 @@ export const SocketContextProvider = ({ children }) => {
     userRef.current = userIdle;
   }, [crm, userIdle]);
   useEffect(() => {
+    console.log(eventQueue)
+  }, [eventQueue]);
+  useEffect(() => {
     const newAvatarHandler = (data) => {
       setCurrentAvatar({
         url: data.avatar_url.split("html/")[1],
@@ -77,7 +90,17 @@ export const SocketContextProvider = ({ children }) => {
       if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);
-        } else {
+        }
+        if (data.name === "paypal_status_sent") {
+          setInvoiceOrderId(data.order_id);
+        }
+        else if (data.name === "outr_recent_activity") {
+          dispatch(eventActions.updateCount(1))
+        }
+        else {
+          if (data.name === "unreplied_email") {
+            dispatch(unrepliedAction.setShowNewEmailBanner(true));
+          }
           if (userRef.current) {
             setNotificationCount((prev) => ({
               ...prev,
@@ -119,6 +142,7 @@ export const SocketContextProvider = ({ children }) => {
         userIdle,
         eventQueue,
         setEventQueue,
+        eventQueueRef,
         setCrm,
         invoiceOrderId,
         setInvoiceOrderId,

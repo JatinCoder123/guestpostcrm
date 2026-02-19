@@ -1,5 +1,5 @@
 import { Mail, Pencil, Reply, SparkleIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getLadger, ladgerAction } from "../../store/Slices/ladger";
@@ -22,6 +22,7 @@ import { SocketContext } from "../../context/SocketContext";
 import { useNavigate } from "react-router-dom";
 import { PreviewTemplate } from "../PreviewTemplate";
 import PromptViewerModal from "../PromptViewerModal";
+import useIdle from "../../hooks/useIdle";
 
 const decodeHTMLEntities = (str = "") => {
   if (typeof str !== "string") return str;
@@ -33,7 +34,6 @@ export function TimelinePage() {
   const navigateTo = useNavigate();
   const [showEmail, setShowEmail] = useState(false);
   const [aiReply, setAiReply] = useState("");
-  const [showThread, setShowThread] = useState(false);
   const [showIP, setShowIP] = useState(false);
   const { currentIndex, setCurrentIndex, enterEmail, search } =
     useContext(PageContext);
@@ -58,19 +58,15 @@ export function TimelinePage() {
   const {
     emails,
     loading: unrepliedLoading,
-    showNewEmailBanner,
   } = useSelector((state) => state.unreplied);
   const currentThreadId = emails?.length > 0 && emails[currentIndex]?.thread_id;
+
   useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(ladgerAction.clearAllErrors());
     }
     if (message) {
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
       setShowPreview(false);
       dispatch(
         addEvent({
@@ -79,7 +75,6 @@ export function TimelinePage() {
           recent_activity: message,
         }),
       );
-      dispatch(viewEmailAction.clearAllMessage());
     }
   }, [dispatch, error, sendError, message]);
   useEffect(() => {
@@ -128,17 +123,7 @@ export function TimelinePage() {
     );
   }
 
-  if (showThread) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-        <EmailBox
-          onClose={() => setShowThread(false)}
-          threadId={currentThreadId}
-          tempEmail={email}
-        />
-      </div>
-    );
-  }
+
   if (showPreview) {
     return (
       <PreviewTemplate
@@ -293,11 +278,7 @@ export function TimelinePage() {
                           transition={{ type: "spring", stiffness: 400 }}
                           className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
                           onClick={() => {
-                            if (emails.length > 0) {
-                              setShowThread(true);
-                            } else {
-                              setShowEmail(true);
-                            }
+                            setShowEmail(true);
                           }}
                         >
                           <Reply className="w-6 h-6 text-yellow-700" />

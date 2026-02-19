@@ -41,7 +41,7 @@ export default function EmailBox({
   const [editorContent, setEditorContent] = useState();
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
-  useIdle({ idle: true });
+  useIdle({ idle: false });
   const dispatch = useDispatch();
   const { viewEmail, threadId: viewThreadId, message: sendMessage, sending, error: sendError } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate()

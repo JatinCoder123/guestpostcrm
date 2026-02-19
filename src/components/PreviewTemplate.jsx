@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import PageLoader from "./PageLoader";
 import { ViewButton } from "./ViewButton";
 import useModule from "../hooks/useModule";
+import useIdle from "../hooks/useIdle";
 
 export const PreviewTemplate = ({
   editorContent,
@@ -25,6 +26,7 @@ export const PreviewTemplate = ({
   useEffect(() => {
     setEditorContent(initialContent || "");
   }, [initialContent]);
+  useIdle({ idle: false })
   const {
     loading: aiLoading,
     aiReply: aiResponse,

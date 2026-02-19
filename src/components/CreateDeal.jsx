@@ -29,6 +29,7 @@ import { PreviewTemplate } from "./PreviewTemplate";
 import useModule from "../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
 import Preview from "./Preview";
+import useIdle from "../hooks/useIdle";
 
 export default function CreateDeal() {
   const { websites: websiteLists } = useSelector((state) => state.website);
@@ -44,6 +45,8 @@ export default function CreateDeal() {
   ];
   const { type, id } = useParams();
   const { state } = useLocation();
+
+  useIdle({ idle: false })
   const {
     loading: templateLoading,
     data: templateData,
@@ -248,12 +251,6 @@ export default function CreateDeal() {
       dispatch(dealsAction.clearAllErrors());
     }
     if (sendMessage) {
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
-
-      dispatch(viewEmailAction.clearAllMessage());
       navigate("/");
     }
     if (sendError) {

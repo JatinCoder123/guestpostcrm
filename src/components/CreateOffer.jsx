@@ -29,6 +29,7 @@ import { dealsAction } from "../store/Slices/deals";
 import { PreviewTemplate } from "./PreviewTemplate";
 import useModule from "../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
+import useIdle from "../hooks/useIdle";
 
 export default function CreateOffer() {
   const { websites: websiteLists } = useSelector((state) => state.website);
@@ -92,6 +93,8 @@ export default function CreateOffer() {
   ]);
 
   const dispatch = useDispatch();
+  useIdle({ idle: false })
+
   const {
     updating,
     error,
@@ -243,11 +246,6 @@ export default function CreateOffer() {
     }
 
     if (sendMessage) {
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
-      dispatch(viewEmailAction.clearAllMessage());
       navigate("/");
     }
 

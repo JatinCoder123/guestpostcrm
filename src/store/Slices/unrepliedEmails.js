@@ -20,7 +20,7 @@ const unrepliedSlice = createSlice({
       state.error = null;
     },
     getEmailSucess(state, action) {
-      const { count, emails, pageCount, pageIndex ,unread} = action.payload;
+      const { count, emails, pageCount, pageIndex, unread } = action.payload;
       state.loading = false;
       state.emails = emails;
       state.count = count;
@@ -49,7 +49,7 @@ const unrepliedSlice = createSlice({
       state.showNewEmailBanner = action.payload;
     },
     updateUnread(state, action) {
-      state.unread = state.unread-1;
+      state.unread = state.unread - 1;
       state.emails = state.emails.map((email) => {
         if (email.thread_id === action.payload.thread_id) {
           email.is_seen = 1;
@@ -60,7 +60,7 @@ const unrepliedSlice = createSlice({
   },
 });
 
-export const getUnrepliedEmail = ({ email = null, page = 1, newEmail = false, loading = true }) => {
+export const getUnrepliedEmail = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
     if (loading) {
       dispatch(unrepliedSlice.actions.getEmailRequest());
@@ -90,9 +90,6 @@ export const getUnrepliedEmail = ({ email = null, page = 1, newEmail = false, lo
           pageIndex: data.current_page ?? 1,
         })
       );
-      if (newEmail) {
-        dispatch(unrepliedSlice.actions.setShowNewEmailBanner(true));
-      }
       dispatch(unrepliedSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(

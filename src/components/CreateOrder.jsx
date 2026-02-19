@@ -21,6 +21,7 @@ import { SocketContext } from "../context/SocketContext";
 import { PreviewTemplate } from "./PreviewTemplate";
 import useModule from "../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
+import useIdle from "../hooks/useIdle";
 const fields = [
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
@@ -63,6 +64,8 @@ export default function CreateOrder() {
   const [newOrder, setNewOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  useIdle({ idle: false })
+
   const [showPreview, setShowPreview] = useState(false);
   const [currentOrders, setCurrentOrders] = useState([]);
   const {
@@ -177,12 +180,7 @@ export default function CreateOrder() {
       dispatch(orderAction.clearAllErrors());
     }
     if (sendMessage) {
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
       navigate("/");
-      dispatch(viewEmailAction.clearAllMessage());
     }
 
     if (updateLinkMessage) {

@@ -25,7 +25,7 @@ const RootLayout = () => {
     setActivePage,
     collapsed,
   } = useContext(PageContext);
-  const { currentAvatar, setCrm, } =
+  const { currentAvatar, setCrm, setNotificationCount } =
     useContext(SocketContext);
   useRefresh()
   const dispatch = useDispatch();
@@ -52,6 +52,10 @@ const RootLayout = () => {
     setShowAvatar(true);
   }, [currentAvatar]);
   useEffect(() => {
+    setNotificationCount((prev) => ({
+      ...prev,
+      refreshUnreplied: Date.now(),
+    }));
     toast.success(message)
     dispatch(viewEmailAction.clearAllMessage())
   }, [message]);
