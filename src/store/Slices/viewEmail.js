@@ -243,7 +243,7 @@ export const sendEmail = (
 
       formData.append(
         "threadId",
-        threadId ?? getState().viewEmail.threadId
+        threadId
       );
       formData.append("replyBody", reply);
       formData.append("email", getState().ladger.email);
@@ -258,7 +258,7 @@ export const sendEmail = (
 
       // existing attachments
       attachments.forEach((file) => {
-        formData.append("attachments", file.file);
+        formData.append("attachments[]", file.file);
       });
 
       const { data } = await axios.post(
