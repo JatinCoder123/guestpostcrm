@@ -42,8 +42,9 @@ export const NoSearchFoundPage = () => {
       manualScanResponse &&
       manualScanResponse?.message_id == currentMessageId?.message_id
     ) {
-      setSearch(currentMessageId.customer_email);
-      setEnteredEmail(currentMessageId.customer_email);
+      setSearch(currentMessageId?.customer_email);
+      setEnteredEmail(currentMessageId?.customer_email);
+      localStorage.setItem("email", currentMessageId?.customer_email)
       dispatch(ladgerAction.setTimeline(null));
     }
   }, [error, manualScanResponse, dispatch]);

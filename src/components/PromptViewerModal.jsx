@@ -38,7 +38,7 @@ const parseSmartJSON = (text) => {
 export default function PromptViewerModal({ promptDetails, onClose }) {
   const navigate = useNavigate();
   const [view, setView] = useState("prompt");
-  // useIdle({ idle: false })
+  useIdle({ idle: false })
 
 
   const {

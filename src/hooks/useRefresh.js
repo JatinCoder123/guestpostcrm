@@ -34,7 +34,7 @@ import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
 
 function useRefresh() {
-    const { eventQueueRef, setEventQueue, notificationCount, setNotificationCount } = useContext(SocketContext);
+    const { notificationCount, setNotificationCount } = useContext(SocketContext);
     const {
         enteredEmail,
         currentIndex,
@@ -182,33 +182,9 @@ function useRefresh() {
             }));
         }
     }, [notificationCount, dispatch, setNotificationCount]);
-    const flushQueue = () => {
-        const queue = eventQueueRef.current; // ✅ THIS IS THE REAL QUEUE
-        console.log("FLUSHING QUEUE", queue);
-        if (!queue || Object.keys(queue).length === 0) return;
-        refreshLadger();
 
-        for (let event in queue) {
-            if (event === "outr_deal_fetch") {
-                dispatch(getDeals({}));
-            }
-            if (event === "outr_order_gp_li") {
-                dispatch(getOrders({}));
-                dispatch(getInvoices({ loading: false }));
-            }
-            if (event === "outr_offer") {
-                dispatch(getOffers({}));
-            }
-            if (event === "outr_self_test") {
-                dispatch(getInvoices({ loading: false }));
-            }
-        }
 
-        setEventQueue({});
-        eventQueueRef.current = {}; // ✅ keep ref in sync
-    };
-
-    return [flushQueue];
+    return [];
 }
 
 export default useRefresh;
