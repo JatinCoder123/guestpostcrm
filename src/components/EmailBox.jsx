@@ -95,6 +95,8 @@ export default function EmailBox({
   const [openParent, setOpenParent] = useState(null);
   const [CC, setCC] = useState([]);
   const [BCC, setBCC] = useState([]);
+  const [showCC, setShowCC] = useState(false);
+  const [showBCC, setShowBCC] = useState(false);
 
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
@@ -488,6 +490,7 @@ export default function EmailBox({
             </div>
 
             {/* ACTION ROW */}
+
             <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
               <div className="flex items-center gap-3 flex-wrap">
                 {/* AI REPLY BUTTON */}
@@ -718,6 +721,62 @@ export default function EmailBox({
                 </ViewButton>
 
                 <Attachment data={files} onChange={setFiles} />
+                <div className="flex items-center gap-2 mb-3">
+                  <button
+                    onClick={() => setShowCC((p) => !p)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
+                  >
+                    CC
+                  </button>
+                  <button
+                    onClick={() => setShowBCC((p) => !p)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
+                  >
+                    BCC
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {showCC && (
+                    <motion.input
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      type="text"
+                      placeholder="CC (comma separated emails)"
+                      className="w-64 px-3 py-2 text-sm border rounded-xl mb-2"
+                      onChange={(e) =>
+                        setCC(
+                          e.target.value
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean),
+                        )
+                      }
+                    />
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {showBCC && (
+                    <motion.input
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      type="text"
+                      placeholder="BCC (comma separated emails)"
+                      className="w-64 px-3 py-2 text-sm border rounded-xl"
+                      onChange={(e) =>
+                        setBCC(
+                          e.target.value
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean),
+                        )
+                      }
+                    />
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* SEND BUTTON */}
@@ -888,6 +947,7 @@ export default function EmailBox({
                           📎 Attachments ({mail.attachment.length})
                         </button>
                       )}
+
                       {/* ATTACHMENT BOX */}
                       {openAttachmentsFor === mail.message_id && (
                         <div

@@ -226,47 +226,71 @@ export const editContact = (contactData) => {
   };
 };
 export const sendEmail = (
-  { reply,
+  {
+    reply,
     message = null,
     attachments = [],
-    cc=[],
-    bcc=[],
+    cc = [],
+    bcc = [],
     threadId = null,
-   }
+  }
 ) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
-    console.log(attachments);
+
     try {
+      const formData = new FormData();
+
+      formData.append(
+        "threadId",
+        threadId ?? getState().viewEmail.threadId
+      );
+      formData.append("replyBody", reply);
+      formData.append("email", getState().ladger.email);
+      formData.append(
+        "current_email",
+        getState().user.user.email
+      );
+
+      // ✅ ADD ONLY THESE TWO
+      formData.append("cc", cc.join(","));
+      formData.append("bcc", bcc.join(","));
+
+      // existing attachments
+      attachments.forEach((file) => {
+        formData.append("attachments", file.file);
+      });
+
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
+        formData,
         {
-          threadId: threadId ?? getState().viewEmail.threadId,
-          replyBody: reply,
-          attachments: attachments.map((file) => file.file),
-          email: getState().ladger.email,
-          current_email: getState().user.user.email,
-        },
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-      showConsole && console.log(`Reply Data`, data);
+
+      showConsole && console.log("Reply Data", data);
+
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: message ?? data.message,
-        }),
+        })
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
       dispatch(getViewEmail());
     } catch (error) {
       showConsole && console.log(error);
       dispatch(
-        viewEmailSlice.actions.sendEmailFailed("Error while sending email"),
+        viewEmailSlice.actions.sendEmailFailed(
+          "Error while sending email"
+        )
       );
     }
   };
 };
+
 
 export const viewEmailAction = viewEmailSlice.actions;
 export default viewEmailSlice.reducer;
