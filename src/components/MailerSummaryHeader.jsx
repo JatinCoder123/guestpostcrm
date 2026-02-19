@@ -225,7 +225,7 @@ function TD({ data, type, setData, loading }) {
       {(creating && type === "orders") || loading ? (
         <LoadingChase />
       ) : (
-        <span className="font-semibold text-gray-900 flex items-center justify-center">
+        <span className="font-semibold text-gray-900 flex items-center justify-center gap-2">
           {data?.length > 0
             ? `${data.length} ${data.length === 1 ? type.slice(0, -1) : type}`
             : `No ${type}`}
@@ -240,9 +240,27 @@ function TD({ data, type, setData, loading }) {
               alt="action"
             />
           </button>
+          {type === "orders" && data.length == 0 &&
+            <button
+              onClick={() =>
+                navigateTo(`/${type}/create`, { state: { email, threadId } })
+              }
+              className="inline-flex items-center gap-2 "
+            >
+              <img
+                width="35"
+                height="35"
+                src="https://img.icons8.com/arcade/64/plus.png"
+                alt="plus"
+              />
+            </button>
+
+          }
+
         </span>
-      )}
-    </td>
+      )
+      }
+    </td >
   );
 }
 
