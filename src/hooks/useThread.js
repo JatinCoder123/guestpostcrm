@@ -31,7 +31,7 @@ function useThread(type) {
       if (type === "unreplied") {
         const newEmail = unrepliedEmails.find((email) => email.thread_id == currentThreadId);
         dispatch(updateUnrepliedEmails(currentThreadId));
-        dispatch(updateUnansweredEmails(newEmail));
+        dispatch(updateUnansweredEmails(c));
 
       }
       dispatch(threadEmailAction.clearAllMessage());

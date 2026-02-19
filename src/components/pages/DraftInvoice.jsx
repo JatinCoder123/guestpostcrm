@@ -1,12 +1,5 @@
 import {
-  Mail,
-  Calendar,
-  User,
-  FileText,
-  AlertTriangle,
-  BarChart,
   Shield,
-  TagIcon,
   Laptop,
 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -30,7 +23,7 @@ export function DraftInvoice() {
 
   const handleSearchChange = (value) => setTopsearch(value);
   const handleCategoryChange = (value) => setSelectedCategory(value);
-  const handleFilterApply = () => {};
+  const handleFilterApply = () => { };
 
   const [selectedSort, setSelectedSort] = useState("");
 
@@ -111,7 +104,6 @@ export function DraftInvoice() {
     dispatch(getDraftInvoice());
   }, [dispatch]);
 
-  // 🔴 SAME LOADING HANDLING AS DEFUALTER
 
   return (
     <>

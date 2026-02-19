@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Edit, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
-
+import useIdle from "../hooks/useIdle.js"
 /**
  * Decode HTML entities like &gt; &quot; &amp; etc.
  */
@@ -38,9 +38,8 @@ const parseSmartJSON = (text) => {
 export default function PromptViewerModal({ promptDetails, onClose }) {
   const navigate = useNavigate();
   const [view, setView] = useState("prompt");
-  useIdle({ idle: false })
+  // useIdle({ idle: false })
 
-  if (!promptDetails || !promptDetails.length) return null;
 
   const {
     full_prompt,
