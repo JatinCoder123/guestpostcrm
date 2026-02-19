@@ -107,29 +107,27 @@ const BuildOrderLinkTable = ({ data }) => {
 
 export const createPreviewOrder = ({ templateData, order, userEmail }) => {
   let html = templateData?.[0]?.body_html || "";
-  const tableHtml = renderToString(
-    <BuildOrderLinkTable data={order?.seo_backlinks} />,
-  );
-  const invoiceBtn = renderToString(<InvoiceButton order={order} />);
-
+  const dofollowLink = order?.seo_backlinks?.find(l => l?.link_type == "dofollow")
   html = html
     .replace("{{ORDER_ID}}", order?.order_id)
     .replace("{{NAME}}", userEmail)
     .replace("{{DATE}}", order?.date_entered_formatted)
     .replace("{{STATUS}}", order?.order_status)
-    .replace("{{WEBSITE}}", order?.website_c)
     .replace("{{ORDER_TYPE}}", order?.order_type)
-    .replace("{{CLIENT_EMAIL}}", order?.client_email)
     .replace("{{AMOUNT}}", order?.total_amount_c)
-    .replace("{{LINKS}}", tableHtml)
-    .replace("{{INVOICE_BUTTON}}", invoiceBtn);
+    .replace("{{LINK_backlink_url}}", dofollowLink?.backlink_url ?? "")
+    .replace("{{LINK_NAME}}", dofollowLink?.name ?? "")
+    .replace("{{LINK_gp_doc_url_c}}", dofollowLink?.gp_doc_url_c ?? "")
+    .replace("{{LINK_target_url_c}}", dofollowLink?.target_url_c ?? "")
+    .replace("{{LINK_anchor_text_c}}", dofollowLink?.anchor_text_c ?? "")
+    .replace("{{Invoice_link}}", order?.invoice_link_c ?? "");
   return html;
 };
 const InvoiceButton = ({ order }) => {
   return (
     <>
       {order?.order_status === "rejected_nontechnical" ||
-      order?.order_status === "wrong" ? (
+        order?.order_status === "wrong" ? (
         <p></p>
       ) : (
         <tr>
