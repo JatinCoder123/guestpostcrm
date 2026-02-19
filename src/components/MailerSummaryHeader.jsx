@@ -94,82 +94,102 @@ const MailerSummaryHeader = () => {
 
   /* ===================== NORMAL UI ===================== */
   return (
-    <div className="mt-4 p-6 bg-cyan-50 rounded-3xl shadow-xl border border-white/40">
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-blue-400 rounded-xl overflow-hidden text-sm">
-          <thead className="bg-blue-50">
-            <tr>
-              <TH title="CREATED AT" />
-              <TH title="SUBJECT" />
-              <TH title="MOTIVE" />
-              <TH title="ORDER" />
-              <TH title="OFFER" />
-              <TH title="DEAL" />
-            </tr>
-          </thead>
+    <div className="mt-0 p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200">
+      {/* TOP INFO */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* CREATED AT */}
+        <div>
+          <div className="text-xs text-gray-500 uppercase font-semibold">
+            Created At
+          </div>
+          <div className="font-semibold text-gray-900 mt-1">
+            {mailersSummary?.date_entered_formatted || ""}
+          </div>
+          <div className="text-xs text-gray-500">
+            {mailersSummary?.date_entered || ""}
+          </div>
+        </div>
 
-          <tbody>
-            <tr className="text-center">
-              {/* DATE */}
-              <td className="border border-blue-400 px-4 py-3">
-                <div className="font-semibold text-gray-900">
-                  {mailersSummary?.date_entered_formatted || ""}
-                </div>
-                <div className="text-xs text-gray-600">
-                  {mailersSummary?.date_entered || ""}
-                </div>
-              </td>
+        {/* SUBJECT */}
+        <div>
+          <div className="text-xs text-gray-500 uppercase font-semibold">
+            Subject
+          </div>
+          <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600">
+              {mailersSummary?.subject
+                ? mailersSummary.subject.split(" ").slice(0, 6).join(" ") +
+                  (mailersSummary.subject.split(" ").length > 6 ? "..." : "")
+                : ""}
+            </div>
+          </Titletooltip>
+        </div>
 
-              {/* SUBJECT */}
-              <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-                  <div className="hover:text-blue-600 transition-colors">
-                    {mailersSummary?.subject
-                      ? mailersSummary.subject
-                        .split(" ")
-                        .slice(0, 6)
-                        .join(" ") +
-                      (mailersSummary.subject.split(" ").length > 6
-                        ? "..."
-                        : "")
-                      : ""}
-                  </div>
-                </Titletooltip>
-              </td>
+        {/* MOTIVE */}
+        <div>
+          <div className="text-xs text-gray-500 uppercase font-semibold">
+            Motive
+          </div>
+          <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-purple-600">
+              {mailersSummary?.correct_motive
+                ? mailersSummary.correct_motive
+                    .split(" ")
+                    .slice(0, 6)
+                    .join(" ") +
+                  (mailersSummary.correct_motive.split(" ").length > 6
+                    ? "..."
+                    : "")
+                : ""}
+            </div>
+          </Titletooltip>
+        </div>
+      </div>
 
-              {/* MOTIVE */}
-              <td className="border border-blue-400 px-4 py-3 font-semibold text-gray-900">
-                <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
-                  <div className="hover:text-purple-600 transition-colors">
-                    {mailersSummary?.correct_motive
-                      ? mailersSummary.correct_motive
-                        .split(" ")
-                        .slice(0, 6)
-                        .join(" ") +
-                      (mailersSummary.correct_motive.split(" ").length > 6
-                        ? "..."
-                        : "")
-                      : ""}
-                  </div>
-                </Titletooltip>
-              </td>
+      {/* STATS CARDS */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="grid md:grid-cols-4 divide-x divide-gray-200">
+          {/* OFFERS */}
+          <div className="p-4 text-center">
+            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+              Offers
+            </div>
+            <TD data={emailData.offers} type="offers" loading={offersLoading} />
+          </div>
 
-              {/* ORDER / OFFER / DEAL */}
-              <TD
-                data={emailData.orders}
-                setData={setEmailData}
-                type="orders"
-                loading={ordersLoading}
-              />
-              <TD
-                data={emailData.offers}
-                type="offers"
-                loading={offersLoading}
-              />
-              <TD data={emailData.deals} type="deals" loading={dealsLoading} />
-            </tr>
-          </tbody>
-        </table>
+          {/* DEALS */}
+          <div className="p-4 text-center">
+            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+              Deals
+            </div>
+            <TD data={emailData.deals} type="deals" loading={dealsLoading} />
+          </div>
+
+          {/* ORDERS */}
+          <div className="p-4 text-center">
+            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+              Orders
+            </div>
+            <TD
+              data={emailData.orders}
+              setData={setEmailData}
+              type="orders"
+              loading={ordersLoading}
+            />
+          </div>
+
+          {/* INVOICES */}
+          <div className="p-4 text-center">
+            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+              Invoices
+            </div>
+            <TD
+              data={emailData.invoice}
+              type="invoice"
+              loading={dealsLoading}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -221,7 +241,7 @@ function TD({ data, type, setData, loading }) {
   };
 
   return (
-    <td className="border border-blue-400 px-4 py-3">
+    <td className="border border-blue-400 px-2 py-2 flex items-center justify-center">
       {(creating && type === "orders") || loading ? (
         <LoadingChase />
       ) : (
@@ -235,8 +255,9 @@ function TD({ data, type, setData, loading }) {
               className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"
-                }.png`}
+              src={`https://img.icons8.com/stickers/100/${
+                data?.length > 0 ? "visible" : "add"
+              }.png`}
               alt="action"
             />
           </button>

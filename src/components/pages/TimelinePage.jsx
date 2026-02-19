@@ -31,6 +31,7 @@ const decodeHTMLEntities = (str = "") => {
 };
 export function TimelinePage() {
   const navigateTo = useNavigate();
+  const [showMore, setShowMore] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showThread, setShowThread] = useState(false);
@@ -89,7 +90,9 @@ export function TimelinePage() {
     dispatch(getLadger({ email }));
   };
   const handleActionBtnClick = (btnBody) => {
-    dispatch(sendEmail({ reply: btnBody, message: "Quick Action Button Reply Sent" }));
+    dispatch(
+      sendEmail({ reply: btnBody, message: "Quick Action Button Reply Sent" }),
+    );
     dispatch(
       addEvent({
         email: email,
@@ -100,7 +103,12 @@ export function TimelinePage() {
   };
 
   const handleAiAutoReply = () => {
-    dispatch(sendEmail({ reply: editorContent, message: "Ai Reply Send Successfully" }));
+    dispatch(
+      sendEmail({
+        reply: editorContent,
+        message: "Ai Reply Send Successfully",
+      }),
+    );
   };
   const handleNext = () => {
     if (currentIndex < emails?.length - 1) {
@@ -175,112 +183,111 @@ export function TimelinePage() {
               <ContactHeader
                 onNext={handleNext}
                 setShowEmails={setShowEmail}
-
                 onPrev={handlePrev}
                 currentIndex={currentIndex}
               />
 
-              <MailerSummaryHeader />
-
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* AI SUMMARY */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-56 overflow-y-auto">
-                  <div className="flex items-center justify-start gap-2 mb-2">
-                    <h3 className="text-green-700 font-semibold">
+                <div>
+                  <MailerSummaryHeader />
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 h-full overflow-y-auto flex ">
+                      <div className="flex flex-col items-center justify-start gap-2 mb-2">
+                        {/* <h3 className="text-green-700 font-semibold">
                       Quick Reply
-                    </h3>
-                    {/* Send AI Reply Button - Moved to top right */}
+                    </h3> */}
+                        {/* Send AI Reply Button - Moved to top right */}
 
-                    <motion.button
-                      whileHover={{ scale: 1.15 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                      className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                      onClick={() => setShowPreview(true)}
-                      disabled={
-                        sending ||
-                        mailersSummary == null ||
-                        mailersSummary?.ai_response?.trim() === ""
-                      }
-                    >
-                      <img
-                        width="33"
-                        height="33"
-                        src="https://img.icons8.com/ultraviolet/40/bot.png"
-                        alt="AI Reply"
-                      />
-                    </motion.button>
-                    <div className="flex items-center justify-center ml-4 ">
-                      {mailersSummary?.prompt_details && (
-                        <button
-                          onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
-                          }}
-                          className="text-green-600 hover:text-green-700 cursor-pointer"
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          onClick={() => setShowPreview(true)}
+                          disabled={
+                            sending ||
+                            mailersSummary == null ||
+                            mailersSummary?.ai_response?.trim() === ""
+                          }
                         >
-                          <SparkleIcon size={20} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                          <img
+                            width="33"
+                            height="33"
+                            src="https://img.icons8.com/ultraviolet/40/bot.png"
+                            alt="AI Reply"
+                          />
+                        </motion.button>
+                        <div className="flex flex-col items-center justify-center ml-4 ">
+                          {mailersSummary?.prompt_details && (
+                            <button
+                              onClick={() => {
+                                setSelectedPrompt(
+                                  mailersSummary?.prompt_details,
+                                );
+                                setOpen(true);
+                              }}
+                              className="text-green-600 hover:text-green-700 cursor-pointer mr-4"
+                            >
+                              <SparkleIcon size={20} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
-                  {!sending && (
+                      {/* {!sending && (
                     <div className="mb-3">
                       <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                         {aiReply}
                       </p>
                     </div>
-                  )}
-                </div>
+                  )} */}
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 h-56 overflow-y-auto">
-                  <div className="flex items-center mb-2">
-                    <h3 className="text-blue-700 font-semibold">AI Summary</h3>
+                      <div className="flex flex-col items-center mb-2 ml-3">
+                        {/* <h3 className="text-blue-700 font-semibold">AI Summary</h3> */}
 
-                    <motion.button
-                      whileHover={{ scale: 1.15 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                      className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2 cursor-pointer"
-                      onClick={() => {
-                        dispatch(getAvatar());
-                        setShowAvatar(true);
-                      }}
-                    >
-                      <img
-                        width="40"
-                        height="40"
-                        src="https://img.icons8.com/office/40/circled-play.png"
-                        alt="Play AI Avatar"
-                      />
-                    </motion.button>
-                    {/* PROMPT */}
-                    <div className="flex items-center justify-center ml-4">
-                      {mailersSummary?.prompt_details && (
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2 cursor-pointer"
                           onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
+                            dispatch(getAvatar());
+                            setShowAvatar(true);
                           }}
-                          className="text-blue-600 hover:text-blue-700 cursor-pointer"
                         >
-                          <SparkleIcon size={20} />
-                        </button>
-                      )}
+                          <img
+                            width="40"
+                            height="40"
+                            src="https://img.icons8.com/office/40/circled-play.png"
+                            alt="Play AI Avatar"
+                          />
+                        </motion.button>
+                        {/* PROMPT */}
+                        <div className="flex items-center justify-center ml-4">
+                          {mailersSummary?.prompt_details && (
+                            <button
+                              onClick={() => {
+                                setSelectedPrompt(
+                                  mailersSummary?.prompt_details,
+                                );
+                                setOpen(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 cursor-pointer mr-4 mt-2"
+                            >
+                              <SparkleIcon size={20} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {decodeHTMLEntities(
-                      mailersSummary?.summary ?? "No AI summary available.",
-                    )}
-                  </p>
                 </div>
 
                 {/* Latest Message */}
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-56 overflow-y-auto custom-scrollbar shadow-sm">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-115 overflow-y-auto custom-scrollbar shadow-sm">
                   <div className="flex flex-col justify-center mb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -307,10 +314,11 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -347,7 +355,9 @@ export function TimelinePage() {
                     />
                   ) : (
                     <div
-                      className="text-gray-700 text-sm leading-relaxed whitespace-pre-line"
+                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
+                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
+                      }`}
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
@@ -356,18 +366,27 @@ export function TimelinePage() {
                       }}
                     />
                   )}
+                  {/* Show More (collapsed state) */}
+                  {viewEmail?.length > 0 && !showMore && (
+                    <button
+                      onClick={() => setShowMore(true)}
+                      className="text-blue-600 text-xs mt-1 hover:underline"
+                    >
+                      Show more
+                    </button>
+                  )}
                 </div>
               </div>
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (
