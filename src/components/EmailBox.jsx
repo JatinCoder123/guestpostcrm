@@ -8,15 +8,13 @@ import {
   Sparkles,
   ChevronLeft,
   Zap,
-  Eye,
+  Edit,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
-import {
-  getThreadEmail,
-} from "../store/Slices/threadEmail";
+import { getThreadEmail } from "../store/Slices/threadEmail";
 import { aiReplyAction, getAiReply } from "../store/Slices/aiReply";
 import { Editor } from "@tinymce/tinymce-react";
 import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
@@ -43,8 +41,14 @@ export default function EmailBox({
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const dispatch = useDispatch();
-  const { viewEmail, threadId: viewThreadId, message: sendMessage, sending, error: sendError } = useSelector((s) => s.viewEmail);
-  const navigate = useNavigate()
+  const {
+    viewEmail,
+    threadId: viewThreadId,
+    message: sendMessage,
+    sending,
+    error: sendError,
+  } = useSelector((s) => s.viewEmail);
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
@@ -89,6 +93,10 @@ export default function EmailBox({
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
   const [openParent, setOpenParent] = useState(null);
+  const [CC, setCC] = useState([]);
+  const [BCC, setBCC] = useState([]);
+  const [showCC, setShowCC] = useState(false);
+  const [showBCC, setShowBCC] = useState(false);
 
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
@@ -220,7 +228,15 @@ export default function EmailBox({
       return;
     }
     const contentToSend = editorContent || input;
-    dispatch(sendEmail({ reply: contentToSend, attachments: files, threadId: view ? viewThreadId : threadId }));
+    dispatch(
+      sendEmail({
+        cc: CC,
+        bcc: BCC,
+        reply: contentToSend,
+        attachments: files,
+        threadId: view ? viewThreadId : threadId,
+      }),
+    );
   };
 
   const handleBackClick = () => {
@@ -233,7 +249,9 @@ export default function EmailBox({
   const insertTextAtCursor = () => {
     if (editorRef.current) {
       editorRef.current.focus(); // ensure cursor is active
-      editorRef.current.insertContent(priceTemp[0]?.body_html ?? "No Content Available");
+      editorRef.current.insertContent(
+        priceTemp[0]?.body_html ?? "No Content Available",
+      );
     }
   };
   const visibleMessages = emails?.slice(-messageLimit);
@@ -268,7 +286,7 @@ export default function EmailBox({
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [sendMessage, sendError])
+  }, [sendMessage, sendError]);
   useEffect(() => {
     if (message && aiResponse) {
       if (message == "User") setAiNewContent(aiResponse);
@@ -472,6 +490,7 @@ export default function EmailBox({
             </div>
 
             {/* ACTION ROW */}
+
             <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
               <div className="flex items-center gap-3 flex-wrap">
                 {/* AI REPLY BUTTON */}
@@ -515,9 +534,7 @@ export default function EmailBox({
                       AI Now
                     </span>
                   </motion.button>
-
                 </ViewButton>
-
 
                 <AnimatePresence>
                   {showTemplatePopup && (
@@ -554,7 +571,15 @@ export default function EmailBox({
                         {!templateListLoading && (
                           <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-3">
                             {templateList.map((tpl) => (
-                              <ViewButton key={tpl.id} Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: tpl.id } })}>
+                              <ViewButton
+                                key={tpl.id}
+                                Icon={Edit}
+                                onClick={() =>
+                                  navigate("/settings/templates", {
+                                    state: { templateId: tpl.id },
+                                  })
+                                }
+                              >
                                 <motion.button
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.98 }}
@@ -570,7 +595,6 @@ export default function EmailBox({
                                   {tpl.name}
                                 </motion.button>
                               </ViewButton>
-
                             ))}
                           </div>
                         )}
@@ -586,7 +610,7 @@ export default function EmailBox({
 
                 {/* DEFAULT TEMPLATE */}
                 {/* onClick={navigate("/settings/templates",{state:{templateId:de}})} */}
-                <ViewButton Icon={Eye} >
+                <ViewButton Icon={Edit}>
                   <motion.button
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.98 }}
@@ -610,7 +634,6 @@ export default function EmailBox({
                   </motion.button>
                 </ViewButton>
 
-
                 {/* PARENT + CHILD BUTTONS */}
                 {loading ? (
                   <LoadingChase className="p-4" />
@@ -623,7 +646,14 @@ export default function EmailBox({
                     return (
                       <div key={i} className="relative">
                         {/* PARENT BUTTON */}
-                        <ViewButton Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: parent.email_template_id } })}>
+                        <ViewButton
+                          Icon={Edit}
+                          onClick={() =>
+                            navigate("/settings/templates", {
+                              state: { templateId: parent.email_template_id },
+                            })
+                          }
+                        >
                           <motion.button
                             whileHover={{ scale: 1.05, y: -2 }}
                             whileTap={{ scale: 0.98 }}
@@ -637,7 +667,6 @@ export default function EmailBox({
                           </motion.button>
                         </ViewButton>
 
-
                         {/* CHILDREN LIST */}
                         <AnimatePresence>
                           {isOpen && children && (
@@ -649,8 +678,17 @@ export default function EmailBox({
                               className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2 bg-white p-3 rounded-2xl shadow-2xl border border-gray-200"
                             >
                               {children?.map((child, j) => (
-                                <ViewButton key={j}
-                                  Icon={Eye} onClick={() => navigate("/settings/templates", { state: { templateId: child.email_template_id } })}>
+                                <ViewButton
+                                  key={j}
+                                  Icon={Edit}
+                                  onClick={() =>
+                                    navigate("/settings/templates", {
+                                      state: {
+                                        templateId: child.email_template_id,
+                                      },
+                                    })
+                                  }
+                                >
                                   <motion.button
                                     whileHover={{ scale: 1.03, y: -1 }}
                                     whileTap={{ scale: 0.98 }}
@@ -663,7 +701,6 @@ export default function EmailBox({
                                     {child.button_label}
                                   </motion.button>
                                 </ViewButton>
-
                               ))}
                             </motion.div>
                           )}
@@ -672,7 +709,7 @@ export default function EmailBox({
                     );
                   })
                 )}
-                <ViewButton Icon={Eye}>
+                <ViewButton Icon={Edit}>
                   <motion.button
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.98 }}
@@ -684,6 +721,62 @@ export default function EmailBox({
                 </ViewButton>
 
                 <Attachment data={files} onChange={setFiles} />
+                <div className="flex items-center gap-2 mb-3">
+                  <button
+                    onClick={() => setShowCC((p) => !p)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
+                  >
+                    CC
+                  </button>
+                  <button
+                    onClick={() => setShowBCC((p) => !p)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
+                  >
+                    BCC
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {showCC && (
+                    <motion.input
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      type="text"
+                      placeholder="CC (comma separated emails)"
+                      className="w-64 px-3 py-2 text-sm border rounded-xl mb-2"
+                      onChange={(e) =>
+                        setCC(
+                          e.target.value
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean),
+                        )
+                      }
+                    />
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {showBCC && (
+                    <motion.input
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      type="text"
+                      placeholder="BCC (comma separated emails)"
+                      className="w-64 px-3 py-2 text-sm border rounded-xl"
+                      onChange={(e) =>
+                        setBCC(
+                          e.target.value
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean),
+                        )
+                      }
+                    />
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* SEND BUTTON */}
@@ -787,14 +880,12 @@ export default function EmailBox({
                   >
                     <div
                       className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${isUser
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                        }
-  ${isLast
-                          ? "shadow-2xl scale-[1]"
-                          : "shadow-lg"
-                        }
+  ${
+    isUser
+      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+  }
+  ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
                     >
                       {isLast && (
@@ -805,10 +896,11 @@ export default function EmailBox({
                         />
                       )}
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
-                          ? "bg-white/20 text-white"
-                          : "bg-gray-100 text-gray-700 border border-gray-200"
-                          }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
+                          isUser
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                        }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">
@@ -855,6 +947,7 @@ export default function EmailBox({
                           📎 Attachments ({mail.attachment.length})
                         </button>
                       )}
+
                       {/* ATTACHMENT BOX */}
                       {openAttachmentsFor === mail.message_id && (
                         <div
@@ -1018,5 +1111,3 @@ export default function EmailBox({
     </>
   );
 }
-
-
