@@ -229,7 +229,10 @@ export const sendEmail = (
   { reply,
     message = null,
     attachments = [],
-    threadId = null, }
+    cc=[],
+    bcc=[],
+    threadId = null,
+   }
 ) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());

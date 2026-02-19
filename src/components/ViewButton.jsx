@@ -1,13 +1,13 @@
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 export function ViewButton({ children, Icon, onClick }) {
-
-    return <div className="relative">
-        {children}
-        <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onClick}
-            className="
+  return (
+    <div className="relative">
+      {children}
+      <motion.button
+        whileHover={{ scale: 1.05, y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onClick}
+        className="
   bg-white/70 dark:bg-black/40
   backdrop-blur-md
   text-gray-900 dark:text-white
@@ -15,12 +15,11 @@ export function ViewButton({ children, Icon, onClick }) {
   shadow-lg hover:shadow-xl
   transition-all duration-200
   flex items-center w-fit
-  absolute -top-3 right-0 cursor-pointer
+ cursor-pointer 
 "
-        >
-            <Icon className="w-4 h-4" />
-        </motion.button>
+      >
+        <Icon className="w-4 h-4" />
+      </motion.button>
     </div>
-
-
+  );
 }
