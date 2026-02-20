@@ -116,11 +116,8 @@ const MailerSummaryHeader = () => {
             Subject
           </div>
           <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600">
-              {mailersSummary?.subject
-                ? mailersSummary.subject.split(" ").slice(0, 6).join(" ") +
-                  (mailersSummary.subject.split(" ").length > 6 ? "..." : "")
-                : ""}
+            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+              {mailersSummary?.subject || ""}
             </div>
           </Titletooltip>
         </div>
@@ -131,16 +128,8 @@ const MailerSummaryHeader = () => {
             Motive
           </div>
           <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
-            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-purple-600">
-              {mailersSummary?.correct_motive
-                ? mailersSummary.correct_motive
-                    .split(" ")
-                    .slice(0, 6)
-                    .join(" ") +
-                  (mailersSummary.correct_motive.split(" ").length > 6
-                    ? "..."
-                    : "")
-                : ""}
+            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+              {mailersSummary?.correct_motive || ""}
             </div>
           </Titletooltip>
         </div>
@@ -255,9 +244,8 @@ function TD({ data, type, setData, loading }) {
               className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${
-                data?.length > 0 ? "visible" : "add"
-              }.png`}
+              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"
+                }.png`}
               alt="action"
             />
           </button>
