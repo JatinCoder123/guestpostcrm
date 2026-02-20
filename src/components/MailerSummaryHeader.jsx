@@ -137,46 +137,54 @@ const MailerSummaryHeader = () => {
 
       {/* STATS CARDS */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="grid md:grid-cols-4 divide-x divide-gray-200">
-          {/* OFFERS */}
-          <div className="p-4 text-center">
-            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-              Offers
+        <div className="grid md:grid-cols-2 divide-x divide-gray-200">
+          <div>
+            {/* OFFERS */}
+            <div className="p-4 text-center">
+              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+                Offers
+              </div>
+              <TD
+                data={emailData.offers}
+                type="offers"
+                loading={offersLoading}
+              />
             </div>
-            <TD data={emailData.offers} type="offers" loading={offersLoading} />
+
+            {/* DEALS */}
+            <div className="p-4 text-center">
+              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+                Deals
+              </div>
+              <TD data={emailData.deals} type="deals" loading={dealsLoading} />
+            </div>
           </div>
 
-          {/* DEALS */}
-          <div className="p-4 text-center">
-            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-              Deals
+          <div>
+            {/* ORDERS */}
+            <div className="p-4 text-center">
+              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+                Orders
+              </div>
+              <TD
+                data={emailData.orders}
+                setData={setEmailData}
+                type="orders"
+                loading={ordersLoading}
+              />
             </div>
-            <TD data={emailData.deals} type="deals" loading={dealsLoading} />
-          </div>
 
-          {/* ORDERS */}
-          <div className="p-4 text-center">
-            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-              Orders
+            {/* INVOICES */}
+            <div className="p-4 text-center">
+              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
+                Invoices
+              </div>
+              <TD
+                data={emailData.invoice}
+                type="invoice"
+                loading={dealsLoading}
+              />
             </div>
-            <TD
-              data={emailData.orders}
-              setData={setEmailData}
-              type="orders"
-              loading={ordersLoading}
-            />
-          </div>
-
-          {/* INVOICES */}
-          <div className="p-4 text-center">
-            <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-              Invoices
-            </div>
-            <TD
-              data={emailData.invoice}
-              type="invoice"
-              loading={dealsLoading}
-            />
           </div>
         </div>
       </div>
@@ -230,7 +238,7 @@ function TD({ data, type, setData, loading }) {
   };
 
   return (
-    <td className="border border-blue-400 px-2 py-2 flex items-center justify-center">
+    <td className="bg-yellow-50 rounded-md border border-blue-400 px-2 py-3 flex items-center justify-center">
       {(creating && type === "orders") || loading ? (
         <LoadingChase />
       ) : (
@@ -244,12 +252,13 @@ function TD({ data, type, setData, loading }) {
               className="ml-2"
               width="20"
               height="20"
-              src={`https://img.icons8.com/stickers/100/${data?.length > 0 ? "visible" : "add"
-                }.png`}
+              src={`https://img.icons8.com/stickers/100/${
+                data?.length > 0 ? "visible" : "add"
+              }.png`}
               alt="action"
             />
           </button>
-          {type === "orders" && data.length == 0 &&
+          {type === "orders" && data.length == 0 && (
             <button
               onClick={() =>
                 navigateTo(`/${type}/create`, { state: { email, threadId } })
@@ -263,13 +272,10 @@ function TD({ data, type, setData, loading }) {
                 alt="plus"
               />
             </button>
-
-          }
-
+          )}
         </span>
-      )
-      }
-    </td >
+      )}
+    </td>
   );
 }
 

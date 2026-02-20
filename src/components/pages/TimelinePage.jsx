@@ -56,10 +56,9 @@ export function TimelinePage() {
   const dispatch = useDispatch();
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
     useSelector((state) => state.ladger);
-  const {
-    emails,
-    loading: unrepliedLoading,
-  } = useSelector((state) => state.unreplied);
+  const { emails, loading: unrepliedLoading } = useSelector(
+    (state) => state.unreplied,
+  );
   const currentThreadId = emails?.length > 0 && emails[currentIndex]?.thread_id;
 
   useEffect(() => {
@@ -86,7 +85,11 @@ export function TimelinePage() {
   };
   const handleActionBtnClick = (btnBody) => {
     dispatch(
-      sendEmail({ reply: btnBody, message: "Quick Action Button Reply Sent" }),
+      sendEmail({
+        reply: btnBody,
+        message: "Quick Action Button Reply Sent",
+        threadId,
+      }),
     );
     dispatch(
       addEvent({
@@ -101,6 +104,7 @@ export function TimelinePage() {
     dispatch(
       sendEmail({
         reply: editorContent,
+        threadId,
         message: "Ai Reply Send Successfully",
       }),
     );
@@ -130,7 +134,6 @@ export function TimelinePage() {
       </div>
     );
   }
-
 
   if (showPreview) {
     return (
@@ -203,9 +206,7 @@ export function TimelinePage() {
                         {mailersSummary?.prompt_details && (
                           <button
                             onClick={() => {
-                              setSelectedPrompt(
-                                mailersSummary?.prompt_details,
-                              );
+                              setSelectedPrompt(mailersSummary?.prompt_details);
                               setOpen(true);
                             }}
                             className="text-green-600 hover:text-green-700 cursor-pointer mr-4"
@@ -249,9 +250,7 @@ export function TimelinePage() {
                         {mailersSummary?.prompt_details && (
                           <button
                             onClick={() => {
-                              setSelectedPrompt(
-                                mailersSummary?.prompt_details,
-                              );
+                              setSelectedPrompt(mailersSummary?.prompt_details);
                               setOpen(true);
                             }}
                             className="text-blue-600 hover:text-blue-700 cursor-pointer mr-4 mt-2"
@@ -289,10 +288,11 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -329,12 +329,15 @@ export function TimelinePage() {
                     />
                   ) : (
                     <div
-                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${showMore ? "max-h-full" : "max-h-24 overflow-hidden"
-                        }`}
+                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
+                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
+                      }`}
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
-                            ? viewEmail[viewEmail.length - 1]?.body
+                            ? viewEmail[viewEmail.length - 1]?.body_html
+                              ? viewEmail[viewEmail.length - 1]?.body_html
+                              : viewEmail[viewEmail.length - 1]?.body
                             : "No Message Found!",
                       }}
                     />
@@ -353,13 +356,13 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (
