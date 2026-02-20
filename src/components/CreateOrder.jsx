@@ -64,7 +64,7 @@ export default function CreateOrder() {
   const [newOrder, setNewOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  useIdle({ idle: false })
+  useIdle({ idle: false });
 
   const [showPreview, setShowPreview] = useState(false);
   const [currentOrders, setCurrentOrders] = useState([]);
@@ -126,7 +126,7 @@ export default function CreateOrder() {
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => { };
+  const sendHandler = () => {};
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -139,14 +139,13 @@ export default function CreateOrder() {
     }
   };
   const handleSubmit = () => {
+    console.log("THREAD ID", state?.threadId);
     dispatch(
-      sendEmail(
-        {
-          reply: editorContent,
-          message: "Order Send Successfully",
-          threadId: state?.threadId,
-        }
-      ),
+      sendEmail({
+        reply: editorContent,
+        message: "Order Send Successfully",
+        threadId: state?.threadId,
+      }),
     );
   };
   useEffect(() => {
