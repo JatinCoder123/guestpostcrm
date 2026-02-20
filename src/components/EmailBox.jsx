@@ -256,6 +256,7 @@ export default function EmailBox({
     }
   };
   const visibleMessages = emails?.slice(-messageLimit);
+  const baseIndex = emails.length - visibleMessages.length;
   const [focusedIndex, setFocusedIndex] = useState(visibleMessages.length - 1);
 
   useEffect(() => {
@@ -902,6 +903,10 @@ export default function EmailBox({
                 const isUser = mail.from_email.includes(businessEmail);
                 const isFirst = idx === 0;
                 const isLast = idx === visibleMessages.length - 1;
+
+                // ✅ REAL index calculation
+                const baseIndex = emails.length - visibleMessages.length;
+                const realIndex = baseIndex + idx + 1;
                 return (
                   <motion.div
                     key={mail.message_id || idx}
@@ -924,7 +929,7 @@ export default function EmailBox({
 `}
                     >
                       <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
-                        {idx + 1}
+                        {realIndex}
                       </div>
                       {isLast && (
                         <div
