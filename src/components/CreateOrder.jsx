@@ -64,7 +64,7 @@ export default function CreateOrder() {
   const [newOrder, setNewOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  useIdle({ idle: false })
+  useIdle({ idle: false });
 
   const [showPreview, setShowPreview] = useState(false);
   const [currentOrders, setCurrentOrders] = useState([]);
@@ -139,13 +139,13 @@ export default function CreateOrder() {
     setCurrentOrderSend(order);
   };
   const handleCreate = (order, send) => {
-    dispatch(createOrder2(state?.email, order, send));
+    dispatch(createOrder2(state?.email, order, send, state?.threadId));
     setCurrentOrderSend(order);
   };
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => { };
+  const sendHandler = () => {};
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -158,14 +158,13 @@ export default function CreateOrder() {
     }
   };
   const handleSubmit = () => {
+    console.log("THREAD ID", state?.threadId);
     dispatch(
-      sendEmail(
-        {
-          reply: editorContent,
-          message: "Order Send Successfully",
-          threadId: state?.threadId,
-        }
-      ),
+      sendEmail({
+        reply: editorContent,
+        message: "Order Send Successfully",
+        threadId: state?.threadId,
+      }),
     );
   };
   useEffect(() => {
@@ -236,7 +235,11 @@ export default function CreateOrder() {
       renderPreview={({ data, email, onClose }) => {
         showConsole && console.log(currentOrderSend);
         const html = createPreviewOrder({
-          templateData: (currentOrderSend.order_type == "GUEST POST" || currentOrderSend.order_type == "BOTH") ? gpTemplate : liTemplate,
+          templateData:
+            currentOrderSend.order_type == "GUEST POST" ||
+            currentOrderSend.order_type == "BOTH"
+              ? gpTemplate
+              : liTemplate,
           order: currentOrderSend,
           userEmail: email,
         });

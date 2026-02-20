@@ -105,7 +105,7 @@ export default function Create({
               d[`${type == "deals" ? "dealamount" : "total_amount_c"}`],
             ).trim() !== "" &&
             Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) >
-            0 &&
+              0 &&
             String(d[websiteKey]).trim() !== "",
         );
       } else if (type == "offers") {
@@ -163,10 +163,11 @@ export default function Create({
                   >
                     <MoveLeft size={16} />
                   </button>
-                  <h3 className="text-2xl font-semibold">{`${pageType == "view"
-                    ? ""
-                    : pageType.charAt(0).toUpperCase() + pageType.slice(1)
-                    } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
+                  <h3 className="text-2xl font-semibold">{`${
+                    pageType == "view"
+                      ? ""
+                      : pageType.charAt(0).toUpperCase() + pageType.slice(1)
+                  } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
                 </div>
 
                 {pageType == "view" && (
@@ -174,7 +175,7 @@ export default function Create({
                     {type == "orders" && (
                       <button
                         onClick={() =>
-                          navigate("/orders", { state: { email } })
+                          navigate("/orders", { state: { email, threadId } })
                         }
                         className="px-3 py-2 bg-green-100 text-green-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
                       >
@@ -183,7 +184,9 @@ export default function Create({
                     )}
                     <button
                       onClick={() =>
-                        navigate(`/${type}/create`, { state: { email } })
+                        navigate(`/${type}/create`, {
+                          state: { email, threadId },
+                        })
                       }
                       className="inline-flex items-center gap-2 "
                     >
@@ -207,130 +210,145 @@ export default function Create({
                   </div>
                 )}
               </div>
-              {(pageType == "create" && type == "orders") ? <CreateOrderForm order={data} setOrder={setData} creating={creating} handleSubmit={handleSubmit} /> : <> <div className="space-y-4">
-                {data.length > 0 &&
-                  data.map((item, itemIndex) => (
-                    <div key={item.id} index={itemIndex}>
-                      <div
-                        className={`bg-white relative border border-gray-100 p-6 ${pageType == "edit" && "pb-15"
-                          } rounded-2xl shadow-sm `}
-                      >
-                        {pageType == "view" && (
-                          <>
-                            <button
-                              onClick={() =>
-                                navigate(`/${type}/edit/${item.id}`, {
-                                  state: { email },
-                                })
-                              }
-                              className={`flex items-center right-2 absolute ${!showPreview ? "z-[100]" : ""
-                                } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
-                            >
-                              <Pencil size={16} />
-                            </button>
-                            {type == "orders" && (
+              {pageType == "create" && type == "orders" ? (
+                <CreateOrderForm
+                  order={data}
+                  setOrder={setData}
+                  creating={creating}
+                  handleSubmit={handleSubmit}
+                />
+              ) : (
+                <>
+                  {" "}
+                  <div className="space-y-4">
+                    {data.length > 0 &&
+                      data.map((item, itemIndex) => (
+                        <div key={item.id} index={itemIndex}>
+                          <div
+                            className={`bg-white relative border border-gray-100 p-6 ${
+                              pageType == "edit" && "pb-15"
+                            } rounded-2xl shadow-sm `}
+                          >
+                            {pageType == "view" && (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    navigate(`/${type}/edit/${item.id}`, {
+                                      state: { email, threadId },
+                                    })
+                                  }
+                                  className={`flex items-center right-2 absolute ${
+                                    !showPreview ? "z-[100]" : ""
+                                  } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
+                                >
+                                  <Pencil size={16} />
+                                </button>
+                                {type == "orders" && (
+                                  <button
+                                    onClick={() => {
+                                      setCurrentOrderSend(item);
+                                      setShowPreview(true);
+                                    }}
+                                    className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
+                                  >
+                                    <Eye />
+                                  </button>
+                                )}
+                              </>
+                            )}
+                            {pageType !== "edit" && type !== "orders" && (
                               <button
                                 onClick={() => {
-                                  setCurrentOrderSend(item);
-                                  setShowPreview(true);
+                                  pageType == "create"
+                                    ? removeData(item.id)
+                                    : handleDelete(item.id);
                                 }}
-                                className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
+                                className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
                               >
-                                <Eye />
+                                {deleting && deleteId == item.id ? (
+                                  <LoadingChase size="20" color="white" />
+                                ) : (
+                                  <Trash size={16} />
+                                )}
                               </button>
                             )}
-                          </>
-                        )}
-                        {pageType !== "edit" && type !== "orders" && (
-                          <button
-                            onClick={() => {
-                              pageType == "create"
-                                ? removeData(item.id)
-                                : handleDelete(item.id);
-                            }}
-                            className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
-                          >
-                            {deleting && deleteId == item.id ? (
-                              <LoadingChase size="20" color="white" />
-                            ) : (
-                              <Trash size={16} />
+                            {pageType == "edit" && (
+                              <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
+                                <button
+                                  onClick={() => {
+                                    setButton(1);
+                                    handleUpdate(item, false);
+                                  }}
+                                  disabled={updating || sending}
+                                  className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${
+                                    (updating || sending) && button == 1
+                                      ? "bg-green-300 cursor-not-allowed"
+                                      : "bg-green-500 hover:bg-green-600"
+                                  }`}
+                                >
+                                  {button == 1 && updating
+                                    ? "Updating..."
+                                    : "Update"}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setButton(2);
+                                    handleUpdate(item, true);
+                                  }}
+                                  disabled={updating || sending}
+                                  className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${
+                                    (updating || sending) && button == 2
+                                      ? "bg-blue-300 cursor-not-allowed"
+                                      : "bg-blue-500 hover:bg-blue-600"
+                                  }`}
+                                >
+                                  {(updating || sending) && button == 2
+                                    ? "Updating..."
+                                    : "Update & Send"}
+                                </button>
+                              </div>
                             )}
-                          </button>
-                        )}
-                        {pageType == "edit" && (
-                          <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
-                            <button
-                              onClick={() => {
-                                setButton(1);
-                                handleUpdate(item, false);
-                              }}
-                              disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending) && button == 1
-                                ? "bg-green-300 cursor-not-allowed"
-                                : "bg-green-500 hover:bg-green-600"
-                                }`}
-                            >
-                              {button == 1 && updating
-                                ? "Updating..."
-                                : "Update"}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setButton(2);
-                                handleUpdate(item, true);
-                              }}
-                              disabled={updating || sending}
-                              className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${(updating || sending) && button == 2
-                                ? "bg-blue-300 cursor-not-allowed"
-                                : "bg-blue-500 hover:bg-blue-600"
-                                }`}
-                            >
-                              {(updating || sending) && button == 2
-                                ? "Updating..."
-                                : "Update & Send"}
-                            </button>
+                            {type == "orders" && pageType == "view" ? (
+                              <OrderView
+                                data={item}
+                                setData={setData}
+                                sending={sending}
+                                setCurrentOrderSend={setCurrentOrderSend}
+                              />
+                            ) : (
+                              <>
+                                {" "}
+                                <div className="mt-4 flex flex-wrap gap-3">
+                                  {fields.map((field, fieldIndex) => (
+                                    <InputField
+                                      key={fieldIndex}
+                                      pageType={pageType}
+                                      {...field}
+                                      data={item}
+                                      onChange={(e) =>
+                                        handelChange(itemIndex, field.name, e)
+                                      }
+                                      websiteLists={validWebsite}
+                                    />
+                                  ))}
+                                </div>
+                              </>
+                            )}
                           </div>
-                        )}
-                        {type == "orders" && pageType == "view" ? (
-                          <OrderView
-                            data={item}
-                            setData={setData}
-                            sending={sending}
-                            setCurrentOrderSend={setCurrentOrderSend}
-                          />
-                        ) : (
-                          <>
-                            {" "}
-                            <div className="mt-4 flex flex-wrap gap-3">
-                              {fields.map((field, fieldIndex) => (
-                                <InputField
-                                  key={fieldIndex}
-                                  pageType={pageType}
-                                  {...field}
-                                  data={item}
-                                  onChange={(e) =>
-                                    handelChange(itemIndex, field.name, e)
-                                  }
-                                  websiteLists={validWebsite}
-                                />
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-
-                {/* Footer */}
-                {pageType !== "edit" && (
-                  <div className="mt-6 flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      Total {type[0].toUpperCase() + type.slice(1)}: {data.length}
-                    </p>
+                        </div>
+                      ))}
                   </div>
-                )}</>}
-
+                  {/* Footer */}
+                  {pageType !== "edit" && (
+                    <div className="mt-6 flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        Total {type[0].toUpperCase() + type.slice(1)}:{" "}
+                        {data.length}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
@@ -400,10 +418,11 @@ export default function Create({
                             setButton(1);
                             handleSubmit(false);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700 cursor-pointer"
-                            }`}
+                          className={`w-full px-3 py-2 rounded-lg text-white ${
+                            data.length === 0 || !valid
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-green-600 hover:bg-green-700 cursor-pointer"
+                          }`}
                         >
                           {creating && button == 1 ? "Saving..." : "Save"}
                         </button>
@@ -413,10 +432,11 @@ export default function Create({
                             setButton(2);
                             handleSubmit(true);
                           }}
-                          className={`w-full px-3 py-2 rounded-lg text-white ${data.length === 0 || !valid
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                            }`}
+                          className={`w-full px-3 py-2 rounded-lg text-white ${
+                            data.length === 0 || !valid
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                          }`}
                         >
                           {creating && button == 2
                             ? "Sending..."
@@ -475,10 +495,11 @@ function InputField({
       className={`${inputType === "number" ? "w-30" : "w-full"} max-w-[300px]`}
     >
       <label
-        className={`block mb-1 ${pageType === "view"
-          ? "text-gray-500 text-sm"
-          : "text-xs text-gray-600"
-          } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
+        className={`block mb-1 ${
+          pageType === "view"
+            ? "text-gray-500 text-sm"
+            : "text-xs text-gray-600"
+        } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
       >
         {label}
       </label>
@@ -489,10 +510,11 @@ function InputField({
           value={value}
           onChange={onChange}
           disabled={isDisabled}
-          className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-            ? "bg-gray-100"
-            : "bg-white border"
-            }`}
+          className={`w-full rounded-xl px-3 py-2 ${
+            pageType === "view" || isDisabled
+              ? "bg-gray-100"
+              : "bg-white border"
+          }`}
         >
           <option value="" disabled>
             Select {label}
@@ -501,15 +523,15 @@ function InputField({
           {/* Order Status (object → key/value) */}
           {label === "Order Status"
             ? Object.entries(statusLists).map(([key, val]) => (
-              <option key={key} value={key}>
-                {val}
-              </option>
-            ))
+                <option key={key} value={key}>
+                  {val}
+                </option>
+              ))
             : websiteLists.map((opt, idx) => (
-              <option key={idx} value={opt}>
-                {opt}
-              </option>
-            ))}
+                <option key={idx} value={opt}>
+                  {opt}
+                </option>
+              ))}
         </select>
       )}
 
@@ -521,10 +543,11 @@ function InputField({
           placeholder={placeholder}
           disabled={isDisabled}
           rows={4}
-          className={`w-full rounded-xl px-3 py-2 resize-none ${pageType === "view" || isDisabled
-            ? "bg-gray-100"
-            : "bg-white border"
-            }`}
+          className={`w-full rounded-xl px-3 py-2 resize-none ${
+            pageType === "view" || isDisabled
+              ? "bg-gray-100"
+              : "bg-white border"
+          }`}
         />
       )}
 
@@ -541,10 +564,11 @@ function InputField({
               type={inputType}
               disabled={isDisabled}
               inputMode={inputType === "number" ? "numeric" : undefined}
-              className={`w-full rounded-xl px-3 py-2 ${pageType === "view" || isDisabled
-                ? "bg-gray-100"
-                : "bg-white border"
-                }`}
+              className={`w-full rounded-xl px-3 py-2 ${
+                pageType === "view" || isDisabled
+                  ? "bg-gray-100"
+                  : "bg-white border"
+              }`}
             />
           </div>
         )}

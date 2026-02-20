@@ -229,7 +229,7 @@ export const createOrder = () => {
     }
   };
 };
-export const createOrder2 = (email, order, send) => {
+export const createOrder2 = (email, order, send,threadId) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     console.log("EMAIL", email)
@@ -245,6 +245,7 @@ export const createOrder2 = (email, order, send) => {
             name: email,
             client_email: email,
             order_type: order.order_type,
+            thread_id:threadId
           },
         },
         {

@@ -15,14 +15,11 @@ const TimelineEvent = () => {
   const { crmEndpoint } = useSelector((state) => state.user);
   const [selectedView, setSelectedView] = useState("important");
   const [timelineData, setTimelineData] = useState([]);
-  const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [templateContent, setTemplateContent] = useState("");
-  const [loadingTemplate, setLoadingTemplate] = useState(false);
-  const [templateData, setTemplateData] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageContent, setMessageContent] = useState("");
   const [isMessageLoading, setIsMessageLoading] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
+
   const [messageMeta, setMessageMeta] = useState({
     subject: "",
     from: "",
@@ -31,14 +28,8 @@ const TimelineEvent = () => {
     time: "",
   });
 
-  const [originalTemplateContent, setOriginalTemplateContent] = useState("");
-  const [isTemplateChanged, setIsTemplateChanged] = useState(false);
-  const [isTemplateSaving, setIsTemplateSaving] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(null);
-  useEffect(() => {
-    setIsTemplateChanged(templateContent !== originalTemplateContent);
-  }, [templateContent, originalTemplateContent]);
 
   const topRef = useRef(null);
   const bottomRef = useRef(null);
@@ -276,75 +267,6 @@ const TimelineEvent = () => {
     setSelectedMessageId(null);
   };
 
-  // for save by kjl
-  const handleTemplateSave = async () => {
-    if (!templateData?.id) return;
-    if (!isTemplateChanged) return;
-    if (isTemplateSaving) return;
-
-    setIsTemplateSaving(true);
-
-    try {
-      const requestBody = {
-        parent_bean: {
-          module: "EmailTemplates",
-          id: templateData.id,
-          body_html: templateContent,
-          name: templateData.name,
-          description: templateData.description || "",
-          subject: templateData.subject || "",
-          type: templateData.type || "",
-        },
-      };
-
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok || result.error) {
-        throw new Error(result.error || "Failed to update template");
-      }
-
-      // ✅ Mark as saved
-      setOriginalTemplateContent(templateContent);
-      setIsTemplateChanged(false);
-
-      alert("✅ Template updated successfully!");
-    } catch (err) {
-      alert("❌ Save failed — changes are still unsaved.");
-      console.error(err);
-    } finally {
-      setIsTemplateSaving(false);
-    }
-  };
-
-  // Function to close template modal
-  const closeTemplateModal = () => {
-    if (isTemplateChanged) {
-      const confirmClose = window.confirm(
-        "You have unsaved changes. Close anyway?",
-      );
-
-      if (!confirmClose) return;
-    }
-
-    setShowTemplateModal(false);
-    setSelectedTemplate(null);
-    setTemplateData(null);
-    setTemplateContent("");
-    setOriginalTemplateContent("");
-  };
-
   // Function to get tooltip text based on event type and contact
   const getTooltipText = (event) => {
     const type = event.type_c || "";
@@ -371,17 +293,6 @@ const TimelineEvent = () => {
       behavior: "smooth",
       block: "start",
     });
-  };
-
-  const isMinuteGap = (current, previous) => {
-    if (!previous) return false;
-
-    const currTime = new Date(current).getTime();
-    const prevTime = new Date(previous).getTime();
-
-    const diffInMinutes = Math.abs(currTime - prevTime) / (1000 * 60);
-
-    return diffInMinutes >= 1;
   };
 
   return (
@@ -578,12 +489,13 @@ const TimelineEvent = () => {
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
               className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${selectedView === "all"
-                  ? "translate-x-0"
-                  : selectedView === "important"
-                    ? "translate-x-full"
-                    : "translate-x-[200%]"
-                }`}
+        ${
+          selectedView === "all"
+            ? "translate-x-0"
+            : selectedView === "important"
+              ? "translate-x-full"
+              : "translate-x-[200%]"
+        }`}
             />
 
             {[
@@ -597,10 +509,11 @@ const TimelineEvent = () => {
                 className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
           transition-colors duration-300 hover:cursor-pointer hover:opacity-90 transition
 
-          ${selectedView === tab.key
-                    ? "text-white"
-                    : "text-gray-600 hover:text-purple-600"
-                  }`}
+          ${
+            selectedView === tab.key
+              ? "text-white"
+              : "text-gray-600 hover:text-purple-600"
+          }`}
               >
                 {tab.label}
               </button>
@@ -669,10 +582,11 @@ const TimelineEvent = () => {
                     </div>
                     <div
                       className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${index === 0
+                      ${
+                        index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-gray-700 flex items-center gap-2">
@@ -685,12 +599,13 @@ const TimelineEvent = () => {
                               size={20}
                               className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
 
-                              ${isReminderEvent
+                              ${
+                                isReminderEvent
                                   ? "text-purple-600"
                                   : isContactEvent
                                     ? "text-green-600"
                                     : "text-blue-600"
-                                }`}
+                              }`}
                             />
 
                             <div
@@ -770,19 +685,8 @@ const TimelineEvent = () => {
                               }
                               className="text-green-600 hover:text-green-700 cursor-pointer relative group"
                               title={`Preview Template: ${event.template_id}`}
-                              disabled={
-                                loadingTemplate &&
-                                selectedTemplate?.id === event.template_id
-                              }
                             >
                               <FileText size={20} />
-                              {loadingTemplate &&
-                                selectedTemplate?.id === event.template_id && (
-                                  <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                                  </div>
-                                )}
-
                               <div
                                 className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
@@ -959,97 +863,7 @@ const TimelineEvent = () => {
           </motion.div>
         </div>
       )}
-      {/* Template Modal */}
-      {showTemplateModal && templateData && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 hover:cursor-pointer hover:opacity-90 transition-all duration-300
-"
-          onClick={closeTemplateModal}
-        >
-          <motion.div
-            initial={{ scale: 0.93, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", damping: 25 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-[92vh] flex flex-col overflow-hidden hover:cursor-pointer hover:opacity-90 transition-all duration-300
-"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-              <h2 className="text-2xl font-bold">
-                {templateData.name || "Template Editor"}
-              </h2>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={handleTemplateSave}
-                  disabled={!isTemplateChanged || isTemplateSaving}
-                  className={`px-4 py-2 rounded-lg font-medium transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
- ${!isTemplateChanged || isTemplateSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700"
-                    }`}
-                >
-                  {isTemplateSaving ? "Saving..." : "Save"}
-                </button>
-
-                {isTemplateChanged && (
-                  <button
-                    onClick={() => setTemplateContent(originalTemplateContent)}
-                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg hover:cursor-pointer hover:opacity-90 transition-all duration-300
-"
-                  >
-                    Cancel
-                  </button>
-                )}
-
-                <button
-                  onClick={closeTemplateModal}
-                  className="p-2 hover:bg-white/20 rounded-full transition hover:cursor-pointer hover:opacity-90 transition-all duration-300
-"
-                >
-                  <X size={28} />
-                </button>
-              </div>
-            </div>
-
-            {/* Editor Content */}
-            <div className="flex-1 overflow-hidden">
-              <Editor
-                apiKey={TINY_EDITOR_API_KEY}
-                value={templateContent}
-                onEditorChange={setTemplateContent}
-                init={{
-                  height: "100%",
-                  menubar: false,
-                  plugins:
-                    "preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media table charmap pagebreak nonbreaking anchor insertdatetime lists wordcount advlist code help emoticons",
-                  toolbar:
-                    "undo redo | formatselect | bold italic underline strikethrough | \
-                    alignleft aligncenter alignright alignjustify | \
-                    bullist numlist outdent indent | link image media | \
-                    preview fullscreen | code emoticons",
-                  toolbar_mode: "sliding",
-                  content_style: `
-                    body { 
-                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-                      font-size: 15px; 
-                      line-height: 1.6; 
-                      color: #333; 
-                    }
-                    img { max-width: 100%; height: auto; }
-
-                    table { border-collapse: collapse; }
-                  `,
-                  preview_styles:
-                    "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
-                  // readonly: true
-                }}
-              />
-            </div>
-          </motion.div>
-        </div>
-      )}
       {timelineData?.length > 8 && (
         <div className="absolute right-4 bottom-6 flex flex-col gap-3 z-50">
           {/* Go to Top */}
