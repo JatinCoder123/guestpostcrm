@@ -14,17 +14,16 @@ const SocialButtons = () => {
   const dispatch = useDispatch();
   const [animate, setAnimate] = useState(false);
   const [hasBeenClicked, setHasBeenClicked] = useState(false);
-  const duplicateCount = useSelector(
-    (state) => state.duplicateEmails?.count || 0,
-  );
+  const { contactInfo } = useSelector((state) => state.viewEmail);
   const { notificationCount, setNotificationCount } = useContext(SocketContext);
-  useEffect(() => {
-    if (duplicateCount > 0) {
-      setAnimate(true);
-      const timer = setTimeout(() => setAnimate(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [duplicateCount]);
+
+  // useEffect(() => {
+  //   if (duplicateCount > 0) {
+  //     setAnimate(true);
+  //     const timer = setTimeout(() => setAnimate(false), 300);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [duplicateCount]);
 
   useEffect(() => {
     if (notificationCount.unreplied_email) {
@@ -44,7 +43,7 @@ const SocialButtons = () => {
     navigate("/duplicates");
   };
 
-  const displayCount = hasBeenClicked ? 0 : duplicateCount;
+  const displayCount = hasBeenClicked ? 0 : contactInfo?.duplicate_threads;
 
   return (
     <div className="flex gap-3 ml-1">
@@ -83,7 +82,7 @@ const SocialButtons = () => {
       </button> */}
 
       {/* DUPLICATE BUTTON WITH BADGE */}
-      {/* <button
+      <button
         className="cursor-pointer hover:scale-105 rounded-full p-2 relative"
         onClick={handleDuplicateClick}
       >
@@ -94,32 +93,32 @@ const SocialButtons = () => {
           alt="duplicate count"
         />
 
-
-        {displayCount > 0 && (
-          <div className={`
+        <div
+          className={`
             absolute top-2 right-3
             bg-red-600 text-white text-xs font-medium
             rounded-full w-4 h-4
             flex items-center justify-center
             transition-all duration-300 ease-out
             ${animate ? "scale-125" : "scale-100"}
-          `}>
-            {displayCount > 99 ? "99+" : displayCount}
-          </div>
-        )}
-
+          `}
+        >
+          {contactInfo?.duplicate_threads}
+        </div>
 
         {displayCount === 0 && (
-          <div className="
+          <div
+            className="
             absolute top-2 right-3
             bg-gray-300 text-gray-700 text-xs font-medium
             rounded-full w-4 h-4
             flex items-center justify-center
-          ">
+          "
+          >
             0
           </div>
         )}
-      </button> */}
+      </button>
     </div>
   );
 };

@@ -518,92 +518,11 @@ export function TimelinePage() {
 
                 <div>
                   <MailerSummaryHeader />
-
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 overflow-y-auto flex mt-4 ">
-                    <div className="flex flex-col items-center justify-start gap-2 mb-2">
-                      <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        onClick={() => setShowPreview(true)}
-                        disabled={
-                          sending ||
-                          mailersSummary == null ||
-                          mailersSummary?.ai_response?.trim() === ""
-                        }
-                      >
-                        <img
-                          width="33"
-                          height="33"
-                          src="https://img.icons8.com/ultraviolet/40/bot.png"
-                          alt="AI Reply"
-                        />
-                      </motion.button>
-                      <div className="flex flex-col items-center justify-center ml-4 ">
-                        {mailersSummary?.prompt_details && (
-                          <button
-                            onClick={() => {
-                              setSelectedPrompt(mailersSummary?.prompt_details);
-                              setOpen(true);
-                            }}
-                            className="text-green-600 hover:text-green-700 cursor-pointer mr-4"
-                          >
-                            <SparkleIcon size={20} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* {!sending && (
-                    <div className="mb-3">
-                      <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                        {aiReply}
-                      </p>
-                    </div>
-                  )} */}
-
-                    <div className="flex flex-col items-center mb-2 ml-3">
-                      {/* <h3 className="text-blue-700 font-semibold">AI Summary</h3> */}
-
-                      <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                        className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2 cursor-pointer"
-                        onClick={() => {
-                          dispatch(getAvatar());
-                          setShowAvatar(true);
-                        }}
-                      >
-                        <img
-                          width="40"
-                          height="40"
-                          src="https://img.icons8.com/office/40/circled-play.png"
-                          alt="Play AI Avatar"
-                        />
-                      </motion.button>
-                      {/* PROMPT */}
-                      <div className="flex items-center justify-center ml-4">
-                        {mailersSummary?.prompt_details && (
-                          <button
-                            onClick={() => {
-                              setSelectedPrompt(mailersSummary?.prompt_details);
-                              setOpen(true);
-                            }}
-                            className="text-blue-600 hover:text-blue-700 cursor-pointer mr-4 mt-2"
-                          >
-                            <SparkleIcon size={20} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Latest Message */}
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-115 overflow-y-auto custom-scrollbar shadow-sm">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 h-fit overflow-y-auto custom-scrollbar shadow-sm">
                   <div className="flex flex-col justify-center mb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -699,6 +618,86 @@ export function TimelinePage() {
                         )}
                       </button>
                     )}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 overflow-y-auto flex mt-4 ">
+                    <div className="flex flex-col items-center justify-start gap-2 mb-2">
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                        className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        onClick={() => setShowPreview(true)}
+                        disabled={
+                          sending ||
+                          mailersSummary == null ||
+                          mailersSummary?.ai_response?.trim() === ""
+                        }
+                      >
+                        <img
+                          width="33"
+                          height="33"
+                          src="https://img.icons8.com/ultraviolet/40/bot.png"
+                          alt="AI Reply"
+                        />
+                      </motion.button>
+                      <div className="flex flex-col items-center justify-center ml-4 ">
+                        {mailersSummary?.prompt_details && (
+                          <button
+                            onClick={() => {
+                              setSelectedPrompt(mailersSummary?.prompt_details);
+                              setOpen(true);
+                            }}
+                            className="text-green-600 hover:text-green-700 cursor-pointer mr-4"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* {!sending && (
+                    <div className="mb-3">
+                      <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                        {aiReply}
+                      </p>
+                    </div>
+                  )} */}
+
+                    <div className="flex flex-col items-center mb-2 ml-3">
+                      {/* <h3 className="text-blue-700 font-semibold">AI Summary</h3> */}
+
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                        className="rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-1 ml-2 cursor-pointer"
+                        onClick={() => {
+                          dispatch(getAvatar());
+                          setShowAvatar(true);
+                        }}
+                      >
+                        <img
+                          width="40"
+                          height="40"
+                          src="https://img.icons8.com/office/40/circled-play.png"
+                          alt="Play AI Avatar"
+                        />
+                      </motion.button>
+                      {/* PROMPT */}
+                      <div className="flex items-center justify-center ml-4">
+                        {mailersSummary?.prompt_details && (
+                          <button
+                            onClick={() => {
+                              setSelectedPrompt(mailersSummary?.prompt_details);
+                              setOpen(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-700 cursor-pointer mr-4 mt-2"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               {!(

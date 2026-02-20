@@ -63,12 +63,12 @@ export const getDuplicateEmails = () => {
         dispatch(duplicateEmailSlice.actions.getDuplicateEmailsRequest());
 
         try {
-            const url = `${getState().user.crmEndpoint}&type=get_duplicate&email=${getState().ladger.email}`;
+            const url = `${getState().user.crmEndpoint}&type=get_dupliacte_threads&email=${getState().ladger.email}`;
             const { data } = await axios.get(url);
             showConsole && console.log(data)
             dispatch(
                 duplicateEmailSlice.actions.getDuplicateEmailsSuccess({
-                    emails: data?.data,
+                    emails: data?.threads,
                     count: data?.data_count ?? 0,
                 })
             );
