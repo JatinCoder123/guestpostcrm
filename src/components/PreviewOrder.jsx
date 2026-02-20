@@ -12,6 +12,7 @@ export const createPreviewOrder = ({ templateData, order, userEmail }) => {
     .replace("{{LINK_NAME}}", dofollowLink?.name ?? "")
     .replace("{{LINK_gp_doc_url_c}}", dofollowLink?.gp_doc_url_c ?? "")
     .replace("{{LINK_target_url_c}}", dofollowLink?.target_url_c ?? "")
+    .replace("{{Live Link}}", dofollowLink?.target_url_c ?? "")
     .replace("{{LINK_anchor_text_c}}", dofollowLink?.anchor_text_c ?? "")
     .replace("{{Invoice_link}}", order?.invoice_link_c ?? "");
   return html;

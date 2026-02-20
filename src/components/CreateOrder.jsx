@@ -69,9 +69,9 @@ export default function CreateOrder() {
   const [showPreview, setShowPreview] = useState(false);
   const [currentOrders, setCurrentOrders] = useState([]);
   const {
-    loading: templateLoading,
-    data: templateData,
-    error: templateError,
+    loading: gpTemplateLoading,
+    data: gpTemplate,
+    error: gpTemplateError,
   } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
@@ -85,7 +85,26 @@ export default function CreateOrder() {
       "x-api-key": `${CREATE_DEAL_API_KEY}`,
       "Content-Type": "application/json",
     },
-    name: "TemplateData",
+    name: "GP TEMPLATE",
+  });
+  const {
+    loading: liTemplateLoading,
+    data: liTemplate,
+    error: liTemplateError,
+  } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "LI_ORDER_TEMPLATE",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "LI TEMPLATE",
   });
   useEffect(() => {
     let order = orders.filter(
@@ -217,7 +236,7 @@ export default function CreateOrder() {
       renderPreview={({ data, email, onClose }) => {
         showConsole && console.log(currentOrderSend);
         const html = createPreviewOrder({
-          templateData,
+          templateData: (currentOrderSend.order_type == "GUEST POST" || currentOrderSend.order_type == "BOTH") ? gpTemplate : liTemplate,
           order: currentOrderSend,
           userEmail: email,
         });
