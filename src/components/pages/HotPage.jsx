@@ -170,7 +170,7 @@ export function HotPage() {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900">HOT EMAILS</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Hot Events</h2>
             <a
               href="https://www.guestpostcrm.com/blog/unreplied-and-unanswered-emails-in-guestpostcrm/"
               target="_blank"

@@ -139,7 +139,7 @@ export default function CreateOrder() {
     setCurrentOrderSend(order);
   };
   const handleCreate = (order, send) => {
-    dispatch(createOrder2(state?.email, order, send));
+    dispatch(createOrder2(state?.email, order, send, state?.threadId));
     setCurrentOrderSend(order);
   };
   const handleDelete = (id) => {
@@ -235,7 +235,11 @@ export default function CreateOrder() {
       renderPreview={({ data, email, onClose }) => {
         showConsole && console.log(currentOrderSend);
         const html = createPreviewOrder({
-          templateData: (currentOrderSend.order_type == "GUEST POST" || currentOrderSend.order_type == "BOTH") ? gpTemplate : liTemplate,
+          templateData:
+            currentOrderSend.order_type == "GUEST POST" ||
+            currentOrderSend.order_type == "BOTH"
+              ? gpTemplate
+              : liTemplate,
           order: currentOrderSend,
           userEmail: email,
         });
