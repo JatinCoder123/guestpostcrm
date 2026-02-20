@@ -56,10 +56,9 @@ export function TimelinePage() {
   const dispatch = useDispatch();
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
     useSelector((state) => state.ladger);
-  const {
-    emails,
-    loading: unrepliedLoading,
-  } = useSelector((state) => state.unreplied);
+  const { emails, loading: unrepliedLoading } = useSelector(
+    (state) => state.unreplied,
+  );
   const currentThreadId = emails?.length > 0 && emails[currentIndex]?.thread_id;
 
   useEffect(() => {
@@ -132,7 +131,6 @@ export function TimelinePage() {
     );
   }
 
-
   if (showPreview) {
     return (
       <PreviewTemplate
@@ -204,9 +202,7 @@ export function TimelinePage() {
                         {mailersSummary?.prompt_details && (
                           <button
                             onClick={() => {
-                              setSelectedPrompt(
-                                mailersSummary?.prompt_details,
-                              );
+                              setSelectedPrompt(mailersSummary?.prompt_details);
                               setOpen(true);
                             }}
                             className="text-green-600 hover:text-green-700 cursor-pointer mr-4"
@@ -250,9 +246,7 @@ export function TimelinePage() {
                         {mailersSummary?.prompt_details && (
                           <button
                             onClick={() => {
-                              setSelectedPrompt(
-                                mailersSummary?.prompt_details,
-                              );
+                              setSelectedPrompt(mailersSummary?.prompt_details);
                               setOpen(true);
                             }}
                             className="text-blue-600 hover:text-blue-700 cursor-pointer mr-4 mt-2"
@@ -335,7 +329,9 @@ export function TimelinePage() {
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
-                            ? viewEmail[viewEmail.length - 1]?.body
+                            ? viewEmail[viewEmail.length - 1]?.body_html
+                              ? viewEmail[viewEmail.length - 1]?.body_html
+                              : viewEmail[viewEmail.length - 1]?.body
                             : "No Message Found!",
                       }}
                     />
