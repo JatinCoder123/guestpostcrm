@@ -85,22 +85,29 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                  label: "Our Link",
-                  name: "target_url_c",
-                  type: "text",
-                  value: item.target_url_c || "",
-                }
+                label: "Our Link",
+                name: "target_url_c",
+                type: "text",
+                value: item.target_url_c || "",
+              }
               : {
-                  label: "Doc Link",
-                  name: "gp_doc_url_c",
-                  type: "text",
-                  value: item.gp_doc_url_c || "",
-                },
+                label: "Doc Link",
+                name: "gp_doc_url_c",
+                type: "text",
+                value: item.gp_doc_url_c || "",
+              },
             {
               label: "Website",
               name: "name",
               type: "text",
               value: item.name || "",
+            },
+            {
+              label: "Link Type",
+              name: "link_type",
+              type: "select",
+              options: [{ value: "dofollow", label: "DoFollow" }, { value: "nofollow", label: "NoFollow" }],
+              value: item.link_type || "",
             },
           ]}
           onUpdate={handleUpdate}

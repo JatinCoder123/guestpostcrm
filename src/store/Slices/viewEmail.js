@@ -232,6 +232,7 @@ export const sendEmail = (
     attachments = [],
     cc = [],
     bcc = [],
+    email,
     threadId = null,
   }
 ) => {

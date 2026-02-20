@@ -86,7 +86,7 @@ export function TimelinePage() {
   };
   const handleActionBtnClick = (btnBody) => {
     dispatch(
-      sendEmail({ reply: btnBody, message: "Quick Action Button Reply Sent" }),
+      sendEmail({ reply: btnBody, threadId, message: "Quick Action Button Reply Sent" }),
     );
     dispatch(
       addEvent({
@@ -101,6 +101,7 @@ export function TimelinePage() {
     dispatch(
       sendEmail({
         reply: editorContent,
+        threadId,
         message: "Ai Reply Send Successfully",
       }),
     );
