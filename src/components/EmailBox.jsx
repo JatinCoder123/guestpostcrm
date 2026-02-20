@@ -54,6 +54,7 @@ export default function EmailBox({
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const [aiReplyContent, setAiReplyContent] = useState("");
   const [aiNewContent, setAiNewContent] = useState("");
+
   const {
     loading: aiLoading,
     aiReply: aiResponse,
@@ -255,6 +256,40 @@ export default function EmailBox({
     }
   };
   const visibleMessages = emails?.slice(-messageLimit);
+  const [focusedIndex, setFocusedIndex] = useState(visibleMessages.length - 1);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!visibleMessages || visibleMessages.length === 0) return;
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          const newIndex = Math.max(prev - 1, 0);
+          scrollRef.current?.children[newIndex]?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          return newIndex;
+        });
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          const newIndex = Math.min(prev + 1, visibleMessages.length - 1);
+          scrollRef.current?.children[newIndex]?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          return newIndex;
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [visibleMessages]);
   useEffect(() => {
     if (!scrollRef.current) return;
 
@@ -888,6 +923,9 @@ export default function EmailBox({
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
                     >
+                      <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
+                        {idx + 1}
+                      </div>
                       {isLast && (
                         <div
                           className={`absolute -inset-1 rounded-3xl blur-2xl opacity-50 -z-10
