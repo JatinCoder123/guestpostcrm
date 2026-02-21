@@ -74,13 +74,13 @@ export function OrdersPage() {
     transactionType: "all",
     dateRange: "30",
     currency: "all",
-    status: "all",
+    status: "new",
     minAmount: 0,
     maxAmount: 0,
   });
 
   // State for status dropdown
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState("all");
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState("new");
 
   // Status options for dropdown
   const statusOptions = [

@@ -7,9 +7,13 @@ import { LoadingChase } from "./Loading";
 import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
+import { Eye, Plus, RefreshCcw } from "lucide-react";
+import axios from "axios";
 
+/* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
+  const [syncing, setSyncing] = useState(null);
 
   const { orders, loading: ordersLoading } = useSelector(
     (state) => state.orders,
@@ -24,7 +28,24 @@ const MailerSummaryHeader = () => {
     offers: [],
     deals: [],
   });
-
+  const handleSync = async (type) => {
+    setSyncing(type);
+    try {
+      const synscData = await axios.get(
+        `https://sales.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=${type}&action=import&email=${email}`,
+      );
+      if (synscData.data.status === "success") {
+        toast.success(`${type} synced successfully!`);
+        // Optionally, you can also refresh the data here by dispatching the relevant actions to fetch the updated orders, offers, or deals.
+      } else {
+        toast.error(`Failed to sync ${type}. Please try again.`);
+      }
+    } catch (error) {
+      toast.error(`Failed to sync ${type}. Please try again.`);
+    } finally {
+      setSyncing(null);
+    }
+  };
   /* ---------------- ORDERS ---------------- */
   useEffect(() => {
     if (!mailersSummary) return;
@@ -38,10 +59,7 @@ const MailerSummaryHeader = () => {
           d.order_status !== "completed",
       );
 
-    setEmailData((prev) => ({
-      ...prev,
-      orders: order,
-    }));
+    setEmailData((prev) => ({ ...prev, orders: order }));
   }, [email, orders, mailersSummary]);
 
   /* ---------------- DEALS ---------------- */
@@ -52,10 +70,7 @@ const MailerSummaryHeader = () => {
       (d) => excludeEmail(d.real_name ?? d.email) === email,
     );
 
-    setEmailData((prev) => ({
-      ...prev,
-      deals: deal,
-    }));
+    setEmailData((prev) => ({ ...prev, deals: deal }));
   }, [email, deals, mailersSummary]);
 
   /* ---------------- OFFERS ---------------- */
@@ -66,22 +81,16 @@ const MailerSummaryHeader = () => {
       ?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
       .filter((d) => d.offer_status === "active");
 
-    setEmailData((prev) => ({
-      ...prev,
-      offers: offer,
-    }));
+    setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, mailersSummary]);
 
-  /* =====================================================
-     🛑 EMPTY STATE WHEN mailersSummary IS NULL
-     ===================================================== */
+  /* ---------------- EMPTY STATE ---------------- */
   if (!mailersSummary) {
     return (
-      <div className="mt-4 p-6 bg-cyan-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center justify-center gap-4">
-        <p className="text-gray-700 font-semibold text-center">
+      <div className="mt-4 p-6 bg-cyan-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4">
+        <p className="text-gray-700 font-semibold">
           No mail summary available for this email.
         </p>
-
         <button
           onClick={() => window.location.reload()}
           className="px-6 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
@@ -92,12 +101,11 @@ const MailerSummaryHeader = () => {
     );
   }
 
-  /* ===================== NORMAL UI ===================== */
+  /* ---------------- UI ---------------- */
   return (
     <div className="mt-0 p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200">
       {/* TOP INFO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {/* CREATED AT */}
         <div>
           <div className="text-xs text-gray-500 uppercase font-semibold">
             Created At
@@ -110,7 +118,6 @@ const MailerSummaryHeader = () => {
           </div>
         </div>
 
-        {/* SUBJECT */}
         <div>
           <div className="text-xs text-gray-500 uppercase font-semibold">
             Subject
@@ -122,7 +129,6 @@ const MailerSummaryHeader = () => {
           </Titletooltip>
         </div>
 
-        {/* MOTIVE */}
         <div>
           <div className="text-xs text-gray-500 uppercase font-semibold">
             Motive
@@ -136,56 +142,52 @@ const MailerSummaryHeader = () => {
       </div>
 
       {/* STATS CARDS */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="grid md:grid-cols-2 divide-x divide-gray-200">
-          <div>
-            {/* OFFERS */}
-            <div className="p-4 text-center">
-              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-                Offers
-              </div>
-              <TD
-                data={emailData.offers}
-                type="offers"
-                loading={offersLoading}
-              />
-            </div>
+      <div className="bg-white rounded-3xl shadow-sm p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SummaryCard
+            type="offers"
+            title="NO OFFERS"
+            subtitle="Click + to add"
+            icon="🎁"
+            color="green"
+            data={emailData.offers}
+            handleSync={() => handleSync("offers")}
+            loading={offersLoading || syncing==="offers"}
+          />
 
-            {/* DEALS */}
-            <div className="p-4 text-center">
-              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-                Deals
-              </div>
-              <TD data={emailData.deals} type="deals" loading={dealsLoading} />
-            </div>
-          </div>
+          <SummaryCard
+            type="orders"
+            title="NO ORDERS"
+            subtitle="Click + to add"
+            icon="📦"
+            color="blue"
+            data={emailData.orders}
+            handleSync={() => handleSync("orders")}
+            loading={ordersLoading || syncing==="orders"}
+            setData={setEmailData}
+          />
 
-          <div>
-            {/* ORDERS */}
-            <div className="p-4 text-center">
-              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-                Orders
-              </div>
-              <TD
-                data={emailData.orders}
-                setData={setEmailData}
-                type="orders"
-                loading={ordersLoading}
-              />
-            </div>
+          <SummaryCard
+            type="deals"
+            title="NO DEALS"
+            subtitle="Click + to add"
+            icon="🤝"
+            color="purple"
+            data={emailData.deals}
+            handleSync={() => handleSync("deals")}
+            loading={dealsLoading || syncing==="deals"}
+          />
 
-            {/* INVOICES */}
-            <div className="p-4 text-center">
-              <div className="text-xs text-gray-500 font-medium uppercase mb-1">
-                Invoices
-              </div>
-              <TD
-                data={emailData.invoice}
-                type="invoice"
-                loading={dealsLoading}
-              />
-            </div>
-          </div>
+          <SummaryCard
+            type="invoice"
+            title="NO INVOICE"
+            subtitle="Click + to add"
+            icon="🧾"
+            color="orange"
+            data={emailData.invoice}
+            handleSync={() => handleSync("invoice")}
+            loading={syncing==="invoice"}
+          />
         </div>
       </div>
     </div>
@@ -194,11 +196,20 @@ const MailerSummaryHeader = () => {
 
 export default MailerSummaryHeader;
 
-/* ===================== TD ===================== */
-function TD({ data, type, setData, loading }) {
+/* ===================== SUMMARY CARD ===================== */
+function SummaryCard({
+  type,
+  title,
+  subtitle,
+  icon,
+  handleSync,
+  color,
+  data,
+  setData,
+  loading,
+}) {
   const { setSidebarCollapsed } = useContext(PageContext);
   const { threadId } = useSelector((state) => state.viewEmail);
-
   const { creating, message, error } = useSelector((state) => state.orders);
   const { email } = useSelector((state) => state.ladger);
 
@@ -211,10 +222,7 @@ function TD({ data, type, setData, loading }) {
     if (message) {
       toast.success(message);
       dispatch(getOrders({ loading: false }));
-      setData((prev) => ({
-        ...prev,
-        orders: [1],
-      }));
+      setData?.((prev) => ({ ...prev, orders: [1] }));
       dispatch(orderAction.clearAllMessages());
     }
 
@@ -237,53 +245,70 @@ function TD({ data, type, setData, loading }) {
       : navigateTo(`/${type}/create`, { state: { email, threadId } });
   };
 
+  const colorMap = {
+    green: "bg-green-50 border-green-300 text-green-600",
+    blue: "bg-blue-50 border-blue-300 text-blue-600",
+    purple: "bg-purple-50 border-purple-300 text-purple-600",
+    orange: "bg-orange-50 border-orange-300 text-orange-600",
+  };
+
   return (
-    <td className="bg-yellow-50 rounded-md border border-blue-400 px-2 py-3 flex items-center justify-center">
+    <div
+      className={`flex items-center justify-between rounded-2xl border-2 border-dashed px-4 py-4 ${colorMap[color]}`}
+    >
       {(creating && type === "orders") || loading ? (
         <LoadingChase />
       ) : (
-        <span className="font-semibold text-gray-900 flex items-center justify-center gap-2">
-          {data?.length > 0
-            ? `${data.length} ${data.length === 1 ? type.slice(0, -1) : type}`
-            : `No ${type}`}
+        <>
+          <div className="flex items-center gap-3">
+            {type == "orders" ? (
+              <button
+                className="cursor-pointer"
+                onClick={() =>
+                  navigateTo(`/${type}/create`, { state: { email, threadId } })
+                }
+              >
+                <img
+                  width="40"
+                  height="40"
+                  src="https://img.icons8.com/arcade/64/plus.png"
+                  alt="plus"
+                />
+              </button>
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-white shadow flex items-center justify-center text-xl">
+                {icon}
+              </div>
+            )}
 
-          <button onClick={handleClick}>
-            <img
-              className="ml-2"
-              width="20"
-              height="20"
-              src={`https://img.icons8.com/stickers/100/${
-                data?.length > 0 ? "visible" : "add"
-              }.png`}
-              alt="action"
-            />
-          </button>
-          {type === "orders" && data.length == 0 && (
+            <div>
+              <p className="text-md font-semibold">
+                {data?.length > 0
+                  ? `${data.length} ${data.length === 1 ? type.slice(0, -1).toUpperCase() : type.toUpperCase()}`
+                  : title}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              onClick={() =>
-                navigateTo(`/${type}/create`, { state: { email, threadId } })
-              }
-              className="inline-flex items-center gap-2 "
+              onClick={handleClick}
+              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
             >
-              <img
-                width="35"
-                height="35"
-                src="https://img.icons8.com/arcade/64/plus.png"
-                alt="plus"
-              />
+              {data?.length > 0 ? (
+                <Eye className="w-4 h-4" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
             </button>
-          )}
-        </span>
+            <button
+              onClick={handleSync}
+              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
+            >
+              <RefreshCcw className="w-4 h-4" />
+            </button>
+          </div>
+        </>
       )}
-    </td>
-  );
-}
-
-/* ===================== TH ===================== */
-function TH({ title }) {
-  return (
-    <th className="border border-blue-400 px-4 py-3 text-center font-bold text-gray-700">
-      {title}
-    </th>
+    </div>
   );
 }

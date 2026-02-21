@@ -104,93 +104,131 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
       >
         {contactLoading && <LoadingChase size="30" color="blue" />}
         {!contactLoading && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 ">
-              <button onClick={() => setShowEmails(true)} className="w-10 h-10 bg-white bg-white rounded-xl shadow-md border border-gray-200 relative
-            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all  flex items-center justify-center cursor-pointer">
-                <img
-                  width="40"
-                  height="40"
-                  src="https://img.icons8.com/keek/100/new-post.png"
-                  alt="new-post"
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-5">
+  {/* Inbox Button */}
+  <button
+    onClick={() => setShowEmails(true)}
+    className="relative rounded-xl bg-white border border-gray-200 shadow-md
+               hover:shadow-lg hover:-translate-y-1 active:scale-95
+               transition-all flex items-center justify-center"
+  >
+    <img
+      src="https://img.icons8.com/keek/100/new-post.png"
+      alt="new-post"
+      className="w-12 h-12"
+    />
+    {count > 0 && (
+      <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+        {count}
+      </span>
+    )}
+  </button>
+
+  {/* Name + Email */}
+  <div className="flex flex-col leading-tight">
+    <Link
+      to="/contacts"
+      className="
+        relative text-lg font-extrabold
+        bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500
+        bg-[length:300%_100%] bg-clip-text text-transparent
+        animate-[gradientMove_4s_linear_infinite]
+      "
+    >
+      {contactInfo?.full_name?.trim()
+        ? contactInfo.full_name
+        : email}
+    </Link>
+
+    {/* Email sub text */}
+    {contactInfo?.full_name && (
+      <span className="text-sm text-gray-500 truncate max-w-[220px]">
+        {email}
+      </span>
+    )}
+  </div>
+
+  {/* Verified Badge */}
+  {contactInfo?.customer_type === "verified" && (
+    <img
+      src="https://img.icons8.com/bubbles/100/verified-account.png"
+      alt="verified"
+      className="w-7 h-7"
+    />
+  )}
+</div>
+            {/* STATUS GRID */}
+            {!contactLoading && (
+              <div className="flex flex-wrap gap-3">
+                <StatusCard
+                  icon="🏷️"
+                  label="Type"
+                  value={contactInfo?.type}
+                  color={{
+                    bg: "bg-violet-50",
+                    border: "border-violet-200",
+                    icon: "text-violet-600",
+                    label: "text-violet-500",
+                    text: "text-violet-700",
+                  }}
                 />
-                {count > 0 && <span className="absolute -top-2 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                  {count}
-                </span>}
 
-              </button>
-
-              <Link
-                to="/contacts"
-                className="text-gray-800 text-lg font-semibold"
-              >
-                {contactInfo?.full_name === "" || contactInfo?.full_name == null
-                  ? email
-                  : contactInfo?.full_name}
-              </Link>
-              {contactInfo?.customer_type === "verified" && (
-                <img
-                  width="50"
-                  height="50"
-                  src="https://img.icons8.com/bubbles/100/verified-account.png"
-                  alt="verified"
+                <StatusCard
+                  icon="🚀"
+                  label="Stage"
+                  value={stage}
+                  color={{
+                    bg: "bg-blue-50",
+                    border: "border-blue-200",
+                    icon: "text-blue-600",
+                    label: "text-blue-500",
+                    text: "text-blue-700",
+                  }}
                 />
-              )}
-            </div>
-            <div className="ml-4 flex items-center gap-4">
-              {/* TYPE */}
-              <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-2 rounded-md">
-                <div className="text-sm">
-                  <div className="text-gray-500 text-xs">Type</div>
-                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                  <div className="text-gray-800 font-medium">
-                    {contactInfo?.type ?? "N/A"}
-                  </div>
-                </div>
-              </div>
-              {/* STAGE */}
-              <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                <div className="text-sm">
-                  <div className="text-gray-500 text-xs">Stage</div>
-                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                  <div className="text-gray-800 font-medium">
-                    {stage ?? "N/A"}
-                  </div>
-                </div>
-              </div>
-              {/* STATUS */}
-              <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                <div className="text-sm">
-                  <div className="text-gray-500 text-xs">Status</div>
-                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                  <div className="text-gray-800 font-medium">
-                    {status ?? "N/A"}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                <div className="text-sm">
-                  <div className="text-gray-500 text-xs">Customer Type</div>
-                  <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                  <div className="text-gray-800 font-medium">
-                    {customer_type ?? "N/A"}
-                  </div>
-                </div>
-              </div>
-              {contactInfo?.moved_label && (
-                <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-2 rounded-md">
-                  <div className="text-sm">
-                    <div className="text-gray-500 text-xs">Email Label</div>
-                    <div className="h-[2px] my-2 -mx-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-blue-600"></div>
-                    <div className="text-gray-800 font-medium">
-                      {contactInfo?.moved_label ?? "N/A"}
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              <div className="w-px h-10 bg-gray-200"></div>
-            </div>
+                <StatusCard
+                  icon="⏳"
+                  label="Status"
+                  value={status}
+                  color={{
+                    bg: "bg-amber-50",
+                    border: "border-amber-200",
+                    icon: "text-amber-600",
+                    label: "text-amber-500",
+                    text: "text-amber-700",
+                  }}
+                />
+
+                <StatusCard
+                  icon="🔒"
+                  label="Customer Type"
+                  value={customer_type}
+                  color={{
+                    bg: "bg-rose-50",
+                    border: "border-rose-200",
+                    icon: "text-rose-600",
+                    label: "text-rose-500",
+                    text: "text-rose-700",
+                  }}
+                />
+
+                {contactInfo?.moved_label && (
+                  <StatusCard
+                    icon="🏷️"
+                    label="Email Label"
+                    value={contactInfo.moved_label}
+                    color={{
+                      bg: "bg-emerald-50",
+                      border: "border-emerald-200",
+                      icon: "text-emerald-600",
+                      label: "text-emerald-500",
+                      text: "text-emerald-700",
+                    }}
+                  />
+                )}
+              </div>
+            )}
           </div>
         )}
         <SocialButtons />
@@ -263,3 +301,17 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
 };
 
 export default ContactHeader;
+
+function StatusCard({ icon, label, value, color }) {
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${color.bg} border ${color.border}`}
+    >
+      <span className={`${color.icon} text-lg`}>{icon}</span>
+      <div>
+        <p className={`text-xs font-medium ${color.label}`}>{label}</p>
+        <p className={`font-semibold ${color.text}`}>{value || "N/A"}</p>
+      </div>
+    </div>
+  );
+}

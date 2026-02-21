@@ -259,7 +259,7 @@ export function LinkExchangePage() {
             </tbody>
           </table>
         </div>
-        {emails.length > 0 && <Pagination slice={"fav"} fn={getLinkExchange} />}
+        {/* {emails.length > 0 && <Pagination slice={"exchange"} fn={getLinkExchange} />} */}
 
         {filteredEmails.length === 0 && (
           <div className="p-12 text-center">

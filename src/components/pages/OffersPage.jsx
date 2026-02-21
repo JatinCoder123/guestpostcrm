@@ -208,21 +208,6 @@ export function OffersPage() {
             </div>
           </div>
         </div>
-
-        {/* Summary / Total Pages */}
-        {/* <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Total Pages</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {summary?.total_pages ?? 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* ⭐ Offers Section (Header + Table) */}
@@ -276,95 +261,102 @@ export function OffersPage() {
                 <th className="px-6 py-4 text-left">ACTIONS</th>
               </tr>
             </thead>
-
-            <tbody>
-              {filteredoffers.map((offer, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-100 hover:bg-pink-50 transition"
-                >
-                  <td
-                    className="px-6 py-4 text-gray-600 cursor-pointer"
-                    onClick={() => {
-                      const input = excludeEmail(offer.real_name);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      navigateTo("/");
-                    }}
+            {loading ? (
+              <TableLoading colSpan={8} />
+            ) : (
+              <tbody>
+                {filteredoffers.map((offer, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-100 hover:bg-pink-50 transition"
                   >
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{offer.date_entered}</span>
-                    </div>
-                  </td>
+                    <td
+                      className="px-6 py-4 text-gray-600 cursor-pointer"
+                      onClick={() => {
+                        const input = excludeEmail(offer.real_name);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        navigateTo("/");
+                      }}
+                    >
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{offer.date_entered}</span>
+                      </div>
+                    </td>
 
-                  <td
-                    onClick={() => {
-                      const input = excludeName(offer.real_name);
-                      localStorage.setItem("email", input);
-                      setSearch(input);
-                      setEnteredEmail(input);
-                      navigateTo("/contacts");
-                    }}
-                    className="px-6 py-4 text-gray-900 cursor-pointer"
-                  >
-                    {excludeName(offer.real_name)}
-                  </td>
-                  <td className="px-6 py-4 text-blue-600">
-                    {excludeEmail(offer.website)}
-                  </td>
+                    <td
+                      onClick={() => {
+                        const input = excludeName(offer.real_name);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        navigateTo("/contacts");
+                      }}
+                      className="px-6 py-4 text-gray-900 cursor-pointer"
+                    >
+                      {excludeName(offer.real_name)}
+                    </td>
+                    <td className="px-6 py-4 text-blue-600">
+                      {excludeEmail(offer.website)}
+                    </td>
 
-                  <td className="px-6 py-4 text-green-600">
-                    {offer.client_offer_c}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {offer.our_offer_c}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                      {offer.offer_status}
-                    </span>
-                  </td>
+                    <td className="px-6 py-4 text-green-600">
+                      {offer.client_offer_c}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {offer.our_offer_c}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+                        {offer.offer_status}
+                      </span>
+                    </td>
 
-                  <td className="pl-9 py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Update Button */}
-                      <button
-                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                        title="Update"
-                        onClick={() =>
-                          navigateTo(`/offers/edit/${offer.id}`, {
-                            state: {
-                              email: excludeEmail(offer.real_name),
-                              threadId: offer?.thread_id,
-                            },
-                          })
-                        }
-                      >
-                        <Pen className="w-5 h-5 text-blue-600" />
-                      </button>
-                      {/* Delete Button */}
-                      {deleting && deleteOfferId === offer.id ? (
-                        <LoadingChase size="20" color="red" />
-                      ) : (
+                    <td className="pl-9 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        {/* Update Button */}
                         <button
-                          className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                          title="Delete"
-                          onClick={() => dispatch(deleteOffer(offer.id))}
+                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                          title="Update"
+                          onClick={() =>
+                            navigateTo(`/offers/edit/${offer.id}`, {
+                              state: {
+                                email: excludeEmail(offer.real_name),
+                                threadId: offer?.thread_id,
+                              },
+                            })
+                          }
                         >
-                          <Trash className="w-5 h-5 text-red-600" />
+                          <Pen className="w-5 h-5 text-blue-600" />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                        {/* Delete Button */}
+                        {deleting && deleteOfferId === offer.id ? (
+                          <LoadingChase size="20" color="red" />
+                        ) : (
+                          <button
+                            className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                            title="Delete"
+                            onClick={() => dispatch(deleteOffer(offer.id))}
+                          >
+                            <Trash className="w-5 h-5 text-red-600" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
           </table>
         </div>
-        {/* {offers.length > 0 && <Pagination slice={"offers"} fn={getOffers} />} */}
-
+        {offers?.length > 0 && (
+          <Pagination
+            slice={"offers"}
+            fn={(p) => dispatch(getOffers({ page: p }))}
+          />
+        )}
         {!loading && filteredoffers.length === 0 && (
           <div className="p-12 text-center">
             <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />

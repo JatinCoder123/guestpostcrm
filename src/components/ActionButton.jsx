@@ -27,7 +27,11 @@ import { PreviewTemplate } from "./PreviewTemplate";
 import { threadEmailAction } from "../store/Slices/threadEmail";
 import { MdHome, MdOutlineHome } from "react-icons/md";
 import { showConsole } from "../assets/assets";
-import { addMarketPlace, deleteMarketPlace, marketplaceActions } from "../store/Slices/Marketplace";
+import {
+  addMarketPlace,
+  deleteMarketPlace,
+  marketplaceActions,
+} from "../store/Slices/Marketplace";
 
 /* 🔹 Separator Component */
 const Separator = () => <div className="h-8 w-[1px] bg-gray-500 mx-2" />;
@@ -150,9 +154,8 @@ const ActionButton = ({
   useEffect(() => {
     if (marketPlaces.length > 0) {
       setIsMark(marketPlaces.find((e) => e.name === email));
-
     }
-  }, [marketPlaces])
+  }, [marketPlaces]);
 
   const FavIcon = () => {
     const isFav = favEmails.some((e) => e.email_address === email);
@@ -316,14 +319,21 @@ const ActionButton = ({
       action: () => setShowUsers((p) => !p),
     },
     {
-      icon: (adding || (deleting && deleteMarketPlaceId == isMark.id))
-        ? (
+      icon:
+        adding || (deleting && deleteMarketPlaceId == isMark.id) ? (
           <LoadingChase />
+        ) : isMark ? (
+          <MdHome size={25} color="red" />
         ) : (
-          isMark ? <MdHome size={25} color="red" /> : <MdOutlineHome size={25} color="red" />
+          <MdOutlineHome size={25} color="red" />
         ),
       label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
-      action: () => dispatch(isMark ? deleteMarketPlace(isMark.id) : addMarketPlace(email, contactInfo.type == "Brand")),
+      action: () =>
+        dispatch(
+          isMark
+            ? deleteMarketPlace(isMark.id)
+            : addMarketPlace(email, contactInfo.type == "Brand"),
+        ),
     },
     {
       icon: exchanging ? (
@@ -369,6 +379,8 @@ const ActionButton = ({
           threadId={threadId}
         />
       )}
+      <hr className="mt-4 border-gray-700" />
+
       <div className="mt-4 flex items-center flex-wrap gap-2">
         {actionButtons.map((btn, i) => (
           <div key={i} className="flex items-center relative">
@@ -440,10 +452,11 @@ const ActionButton = ({
           <>
             {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
             <div
-              className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
-                ? "opacity-100"
-                : "opacity-0 pointer-events-none"
-                }`}
+              className={`flex items-center transition-opacity duration-200 ${
+                showFirstReplyBtn
+                  ? "opacity-100"
+                  : "opacity-0 pointer-events-none"
+              }`}
             >
               <button
                 onClick={(e) => {
