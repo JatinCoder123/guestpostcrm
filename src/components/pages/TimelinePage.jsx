@@ -26,20 +26,12 @@ import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
-import { useNavigate } from "react-router-dom";
 import { PreviewTemplate } from "../PreviewTemplate";
 import PromptViewerModal from "../PromptViewerModal";
-import useIdle from "../../hooks/useIdle";
 import axios from "axios";
-
-const decodeHTMLEntities = (str = "") => {
-  if (typeof str !== "string") return str;
-  const txt = document.createElement("textarea");
-  txt.innerHTML = str;
-  return txt.value;
-};
+import { showConsole } from "../../assets/assets";
+import { LoadingChase } from "../Loading";
 export function TimelinePage() {
-  const navigateTo = useNavigate();
   const [showMore, setShowMore] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
   const [aiReply, setAiReply] = useState("");
@@ -56,7 +48,19 @@ export function TimelinePage() {
   const [messageContent, setMessageContent] = useState("");
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [clickedActionBtn, setClickedActionBtn] = useState(null);
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
   const { crmEndpoint } = useSelector((state) => state.user);
+  const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
+  const [reminderId, setReminderId] = useState(null);
+  const [frLoading, setFrLoading] = useState(false);
+  const { email: frEmail } = useSelector((s) => s.ladger);
+
+  const {
+    buttons,
+    error: buttonsError,
+    loading: buttonsLoading,
+  } = useSelector((s) => s.quickActionBtn);
 
   const [messageMeta, setMessageMeta] = useState({
     subject: "",
@@ -222,6 +226,62 @@ export function TimelinePage() {
       setIsMessageLoading(false);
     }
   };
+  const handleSendFirstReply = async () => {
+    if (!reminderId) return;
+
+    try {
+      setFrLoading(true);
+      showConsole && console.log(crmEndpoint);
+      await fetch(
+        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`,
+      );
+      showConsole && console.log("First rply send button clicked");
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
+      toast.success("First reply sent successfully");
+      setShowFirstReplyBtn(false);
+    } catch (err) {
+      console.error("Error sending first reply:", err);
+      toast.error("Failed to send first reply");
+    } finally {
+      setFrLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (!frEmail) return;
+
+    const fetchFRButtonStatus = async () => {
+      try {
+        const res = await fetch(
+          `${crmEndpoint}&type=fr_button&email=${frEmail}`,
+        );
+        const data = await res.json();
+
+        if (data?.reminder_id && data.reminder_id !== false) {
+          setReminderId(data.reminder_id);
+          setShowFirstReplyBtn(true);
+        } else {
+          setShowFirstReplyBtn(false);
+          setReminderId(null);
+        }
+      } catch (err) {
+        setShowFirstReplyBtn(false);
+      }
+    };
+
+    fetchFRButtonStatus();
+  }, [frEmail]);
+  useEffect(() => {
+    if (buttonsError) {
+      toast.error(buttonsError);
+      dispatch(quickActionBtnActions.clearErrors());
+    }
+    if (message) {
+      setShowUpdatePopup(false);
+    }
+  }, [dispatch, buttonsError,message]);
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
@@ -409,6 +469,19 @@ export function TimelinePage() {
           onClose={() => setOpen(false)}
         />
       )}
+      {showUpdatePopup && (
+        <PreviewTemplate
+          editorContent={editorContent}
+          initialContent={editorContent}
+          setEditorContent={setEditorContent}
+          onClose={() => setShowUpdatePopup(false)}
+          onSubmit={() => {
+            handleActionBtnClick(editorContent);
+          }}
+          loading={sending}
+          threadId={threadId}
+        />
+      )}
       {showMessageModal && (
         <div
           className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
@@ -585,7 +658,7 @@ export function TimelinePage() {
                   ) : (
                     <div
                       className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
-                        showMore ? "max-h-full" : "max-h-18 overflow-hidden"
+                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
                       }`}
                       dangerouslySetInnerHTML={{
                         __html:
@@ -597,19 +670,19 @@ export function TimelinePage() {
                       }}
                     />
                   )}
-                    {/* View Message Button */}
-                    {viewEmail?.length > 0 &&
-                      viewEmail[viewEmail.length - 1].message_id && (
-                        <button
-                          onClick={() =>
-                            handleMessageClick(viewEmail[viewEmail.length - 1])
-                          }
-                          className="text-blue-600 hover:text-blue-700 transition-opacity flex  p-2 cursor-pointer"
-                          title="View Message"
-                        >
-                          view more...
-                        </button>
-                      )}
+                  {/* View Message Button */}
+                  {viewEmail?.length > 0 &&
+                    viewEmail[viewEmail.length - 1].message_id && (
+                      <button
+                        onClick={() =>
+                          handleMessageClick(viewEmail[viewEmail.length - 1])
+                        }
+                        className="text-blue-600 hover:text-blue-700 transition-opacity flex  p-2 cursor-pointer"
+                        title="View Message"
+                      >
+                        view more...
+                      </button>
+                    )}
 
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex  gap-4 mt-4">
                     {/* AI Reply Button */}
@@ -679,7 +752,111 @@ export function TimelinePage() {
                         </button>
                       )}
                     </div>
+                    {showFirstReplyBtn && (
+                      <>
+                        {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
+                        <div
+                          className={`flex items-center transition-opacity duration-200 ${
+                            showFirstReplyBtn
+                              ? "opacity-100"
+                              : "opacity-0 pointer-events-none"
+                          }`}
+                        >
+                          <div className="relative group flex items-center justify-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendFirstReply();
+                              }}
+                              disabled={frLoading}
+                              className="
+        flex items-center justify-center
+        w-12 h-12
+        bg-white rounded-xl shadow-md border border-gray-200
+        hover:shadow-lg active:scale-95 hover:-translate-y-1
+        transition-all
+      "
+                            >
+                              <div className="w-6 h-6 flex items-center justify-center">
+                                {frLoading ? (
+                                  <LoadingChase size="20" />
+                                ) : (
+                                  <img
+                                    src="https://img.icons8.com/color/48/reply.png"
+                                    className="w-6 h-6"
+                                    alt="first-reply"
+                                  />
+                                )}
+                              </div>
+                            </button>
 
+                            {/* TOOLTIP (layout-safe) */}
+                            <span
+                              className="
+        pointer-events-none
+        absolute top-full mt-2 left-1/2 -translate-x-1/2
+        bg-black text-white text-xs px-2 py-1 rounded
+        opacity-0 scale-95
+        group-hover:opacity-100 group-hover:scale-100
+        transition-all duration-200
+        whitespace-nowrap shadow-lg z-50
+      "
+                            >
+                              Send First Reply
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {buttonsLoading ? (
+                      <LoadingChase size="30" />
+                    ) : (
+                      buttons?.map((btn, i) => (
+                        <div key={i} className="flex items-center">
+                          <div className="relative group flex items-center justify-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowUpdatePopup(true);
+                                setEditorContent(btn.body_html);
+                                setClickedActionBtn(btn.id);
+                              }}
+                              disabled={sending}
+                              className="
+      flex items-center justify-center w-12 h-12
+      bg-white rounded-xl shadow-md border border-gray-200
+      hover:shadow-lg active:scale-95 hover:-translate-y-1
+      transition-all
+    "
+                            >
+                              {clickedActionBtn === btn.id && sending ? (
+                                <LoadingChase size="20" />
+                              ) : (
+                                <img
+                                  src={btn.icon}
+                                  alt={btn.name}
+                                  className="w-8 h-8"
+                                />
+                              )}
+                            </button>
+
+                            {/* TOOLTIP (layout-safe) */}
+                            <div
+                              dangerouslySetInnerHTML={{ __html: btn.body }}
+                              className="
+      pointer-events-none
+      absolute top-full mt-2 left-1/2 -translate-x-1/2
+      bg-black text-white text-xs px-2 py-1 rounded
+      opacity-0 scale-95
+      group-hover:opacity-100 group-hover:scale-100
+      transition-all duration-200
+      whitespace-nowrap shadow-lg z-50
+    "
+                            />
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

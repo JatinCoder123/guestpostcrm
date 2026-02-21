@@ -9,6 +9,7 @@ import {
   Joystick,
   Phone,
   Settings2Icon,
+  Sparkle,
   Users,
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
@@ -77,6 +78,13 @@ export function SettingsPage() {
       icon: <Joystick className="w-8 h-8 text-pink-600" />,
       bg: "bg-pink-50",
       link: "controller",
+    },
+    {
+      title: "Prompt Testing",
+      subtitle: "Test and optimize prompts",
+      icon: <Sparkle className="w-8 h-8 text-cyan-600" />,
+      bg: "bg-cyan-50",
+      link: "prompt-testing",
     },
   ];
 

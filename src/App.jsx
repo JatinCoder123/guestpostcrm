@@ -52,6 +52,7 @@ import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
 import ComposePage from "./components/pages/ComposePage";
+import PromptTestingPage from "./components/pages/settingpages/PromptTestingPage";
 
 const router = createBrowserRouter([
   {
@@ -247,6 +248,10 @@ const router = createBrowserRouter([
           {
             path: "controller",
             element: <GpcControllerPage />,
+          },
+          {
+            path: "prompt-testing",
+            element: <PromptTestingPage />,
           },
         ],
       },

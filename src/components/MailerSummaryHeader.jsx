@@ -269,8 +269,8 @@ function SummaryCard({
                 }
               >
                 <img
-                  width="40"
-                  height="40"
+                  width="36"
+                  height="36"
                   src="https://img.icons8.com/arcade/64/plus.png"
                   alt="plus"
                 />
@@ -282,7 +282,7 @@ function SummaryCard({
             )}
 
             <div>
-              <p className="text-md font-semibold">
+              <p className="text-sm font-semibold">
                 {data?.length > 0
                   ? `${data.length} ${data.length === 1 ? type.slice(0, -1).toUpperCase() : type.toUpperCase()}`
                   : title}

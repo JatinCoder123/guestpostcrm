@@ -1,5 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
-import { Eye, SparkleIcon, FileText, MessageSquare } from "lucide-react";
+import {
+  Eye,
+  SparkleIcon,
+  FileText,
+  MessageSquare,
+  Search,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import Pagination from "./Pagination";
@@ -9,6 +15,7 @@ import { X } from "lucide-react";
 import { Editor } from "@tinymce/tinymce-react";
 import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
 import PromptViewerModal from "./PromptViewerModal";
+import { MdLens } from "react-icons/md";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
@@ -461,23 +468,10 @@ const TimelineEvent = () => {
             <input
               type="text"
               placeholder="Search..."
-              class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 
+              class="w-full  p-4 py-2 rounded-full border border-gray-300 
              focus:outline-none focus:ring-2 focus:ring-blue-500 
              focus:border-transparent shadow-sm transition duration-300"
             />
-            <svg
-              class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M21 21l-4.35-4.35m1.85-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
           </div>
         </div>
 
@@ -506,7 +500,7 @@ const TimelineEvent = () => {
               <button
                 key={tab.key}
                 onClick={() => setSelectedView(tab.key)}
-                className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full
+                className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full flex gap-2 items-center justify-center
           transition-colors duration-300 hover:cursor-pointer hover:opacity-90 transition
 
           ${
@@ -515,6 +509,11 @@ const TimelineEvent = () => {
               : "text-gray-600 hover:text-purple-600"
           }`}
               >
+                {tab.label === "All" && (
+                  <span>
+                    <Search className="w-4 h-4 " />
+                  </span>
+                )}
                 {tab.label}
               </button>
             ))}
