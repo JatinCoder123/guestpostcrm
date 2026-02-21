@@ -30,7 +30,7 @@ const PromptTestingPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <Header text="Prompt Testing" />
 
-      <div className="max-w-4xl mx-auto px-4 py-10">
+      <div className=" mx-auto px-6 py-10">
         {/* Card */}
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
@@ -52,9 +52,12 @@ const PromptTestingPage = () => {
               >
                 <option value="">Select stage</option>
                 <option value="new">New</option>
-                <option value="follow_up">Follow Up</option>
-                <option value="negotiation">Negotiation</option>
-                <option value="closed">Closed</option>
+                <option value="negotiation">Offer</option>
+                <option value="follow_up">Deal</option>
+                <option value="follow_up">Order</option>
+                <option value="follow_up">Payment</option>
+                <option value="follow_up">Reminder</option>
+                <option value="follow_up">Defaulter </option>
               </select>
             </div>
 

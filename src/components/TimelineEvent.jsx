@@ -5,6 +5,7 @@ import {
   FileText,
   MessageSquare,
   Search,
+  Cross,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -12,10 +13,7 @@ import Pagination from "./Pagination";
 import { getLadger } from "../store/Slices/ladger";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { Editor } from "@tinymce/tinymce-react";
-import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
 import PromptViewerModal from "./PromptViewerModal";
-import { MdLens } from "react-icons/md";
 
 const TimelineEvent = () => {
   const { ladger, email } = useSelector((state) => state.ladger);
@@ -26,6 +24,8 @@ const TimelineEvent = () => {
   const [messageContent, setMessageContent] = useState("");
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [messageMeta, setMessageMeta] = useState({
     subject: "",
@@ -463,25 +463,51 @@ const TimelineEvent = () => {
         >
           TIMELINE
         </h1>
-        <div class="flex justify-center mt-10">
-          <div class="relative w-80">
-            <input
-              type="text"
-              placeholder="Search..."
-              class="w-full  p-4 py-2 rounded-full border border-gray-300 
-             focus:outline-none focus:ring-2 focus:ring-blue-500 
-             focus:border-transparent shadow-sm transition duration-300"
-            />
-          </div>
-        </div>
 
         <div className="flex justify-center mt-6">
-          <div className="relative flex bg-gray-100 rounded-full p-1 w-[360px] shadow-inner">
-            {/* Sliding pill */}
-            <motion.div
-              layout
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className={`absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(33.333%-4px)]
+          <div className="relative w-[360px]">
+            {/* 🔍 SEARCH MODE */}
+            {isSearchOpen ? (
+              <div className="relative flex items-center bg-white rounded-full shadow-md border border-gray-300 p-4">
+
+                <input
+                  autoFocus
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search timeline..."
+                  className="flex-1 px-3 bg-transparent focus:outline-none text-sm"
+                />
+
+                {/* ❌ CLOSE SEARCH */}
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setIsSearchOpen(false);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition"
+                >
+                  <X className="w-6 h-6"/>
+                </button>
+              </div>
+            ) : (
+              <div className="relative flex items-center bg-gray-100 rounded-full p-1 shadow-inner w-[360px]">
+                {/* 🔍 Search icon (outside pill area) */}
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="flex items-center justify-center w-10 h-10 text-gray-600 hover:text-purple-600 transition z-10"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+
+                {/* Tabs wrapper (pill only moves here) */}
+                <div className="relative flex flex-1 items-center">
+                  {/* Sliding pill */}
+                  <motion.div
+                    layout
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className={`absolute top-1 left-1 h-[calc(100%-8px)]
+        w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
         ${
           selectedView === "all"
@@ -490,33 +516,30 @@ const TimelineEvent = () => {
               ? "translate-x-full"
               : "translate-x-[200%]"
         }`}
-            />
+                  />
 
-            {[
-              { key: "all", label: "All" },
-              { key: "important", label: "Important" },
-              { key: "orderMain", label: "Orders" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setSelectedView(tab.key)}
-                className={`relative z-10 flex-1 py-2.5 text-sm font-semibold rounded-full flex gap-2 items-center justify-center
-          transition-colors duration-300 hover:cursor-pointer hover:opacity-90 transition
-
+                  {[
+                    { key: "all", label: "All" },
+                    { key: "important", label: "Important" },
+                    { key: "orderMain", label: "Orders" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setSelectedView(tab.key)}
+                      className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
+          transition-colors duration-300
           ${
             selectedView === tab.key
               ? "text-white"
               : "text-gray-600 hover:text-purple-600"
           }`}
-              >
-                {tab.label === "All" && (
-                  <span>
-                    <Search className="w-4 h-4 " />
-                  </span>
-                )}
-                {tab.label}
-              </button>
-            ))}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

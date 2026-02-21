@@ -82,43 +82,45 @@ const SocialButtons = () => {
       </button> */}
 
       {/* DUPLICATE BUTTON WITH BADGE */}
-      <button
-        className="cursor-pointer hover:scale-105 rounded-full p-2 relative"
-        onClick={handleDuplicateClick}
-      >
-        <img
-          width="55"
-          height="55"
-          src={images.duplicateImg}
-          alt="duplicate count"
-        />
+      {contactInfo?.duplicate_threads > 0 && (
+        <button
+          className="cursor-pointer hover:scale-105 rounded-full p-2 relative"
+          onClick={handleDuplicateClick}
+        >
+          <img
+            width="55"
+            height="55"
+            src={images.duplicateImg}
+            alt="duplicate count"
+          />
 
-        <div
-          className={`
-            absolute top-2 right-3
+          <div
+            className={`
+            absolute top-1 right-3
             bg-red-600 text-white text-xs font-medium
-            rounded-full w-4 h-4
+            rounded-full w-6 h-6
             flex items-center justify-center
             transition-all duration-300 ease-out
             ${animate ? "scale-125" : "scale-100"}
           `}
-        >
-          {contactInfo?.duplicate_threads}
-        </div>
+          >
+            {contactInfo?.duplicate_threads> 99 ? "99+" : contactInfo?.duplicate_threads}
+          </div>
 
-        {displayCount === 0 && (
-          <div
-            className="
+          {displayCount === 0 && (
+            <div
+              className="
             absolute top-2 right-3
             bg-gray-300 text-gray-700 text-xs font-medium
             rounded-full w-4 h-4
             flex items-center justify-center
           "
-          >
-            0
-          </div>
-        )}
-      </button>
+            >
+              0
+            </div>
+          )}
+        </button>
+      )}
     </div>
   );
 };
