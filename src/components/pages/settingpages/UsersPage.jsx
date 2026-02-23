@@ -14,10 +14,15 @@ export function UsersPage() {
   const { businessEmail, crmEndpoint } = useSelector((state) => state.user);
 
   const { loading, data, error, setData, refetch, add, update } = useModule({
-    url: `${crmEndpoint.split('?')[0]}?entryPoint=fetch_gpc&type=get_users`,
-    method: "GET",
-    name: "USERS"
-
+    url: `https://crm.outrightsystems.org/index.php?entryPoint=get_gpc_users&email=${businessEmail}`,
+    method: "POST",
+    body: {
+      module: "outr_gpc_users",
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
   });
   const handleCreate = async (updatedItem) => {
     setData((prev) => {
@@ -76,7 +81,7 @@ export function UsersPage() {
   };
 
   // Normalize API data response
-  const users = data;
+  const users = data?.data;
   return (
     <div className="p-8">
       {/* Header */}
