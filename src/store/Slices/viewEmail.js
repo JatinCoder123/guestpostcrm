@@ -261,7 +261,9 @@ export const sendEmail = (
       attachments.forEach((file) => {
         formData.append("attachments[]", file.file);
       });
-
+      if (!threadId) {
+        throw new Error("Thread is not there!")
+      }
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
         formData,

@@ -22,6 +22,7 @@ import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
+import OrderStatusCards from "../OrderStatusCards";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -57,6 +58,7 @@ export function OrdersPage() {
   const { state } = useLocation();
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null);
+  const [activeStatStatus, setActiveStatStatus] = useState("new");
   const [actualOrder, setActualOrder] = useState([]);
   const { email } = useSelector((state) => state.ladger);
   const { orders, count, loading, error, message, updating, summary, statusLists } =
@@ -97,6 +99,7 @@ export function OrdersPage() {
   // Handle status filter change
   const handleStatusFilterChange = (e) => {
     setSelectedStatusFilter(e.target.value);
+    setActiveStatStatus(e.target.value)
     // Update filters state as well
     setFilters((prev) => ({ ...prev, status: e.target.value }));
   };
@@ -222,6 +225,25 @@ export function OrdersPage() {
         return amount >= minAmount && amount <= maxAmount;
       }
       return true;
+    }).filter((item) => {
+      if (!activeStatStatus) return true;
+
+      const status = item.order_status?.toLowerCase().trim();
+
+      switch (activeStatStatus) {
+        case "new":
+          return status === "new";
+        case "accepted":
+          return status === "accepted";
+        case "rejected":
+          return status.includes("reject");
+        case "hold":
+          return status.includes("hold");
+        case "completed":
+          return status === "completed";
+        default:
+          return true;
+      }
     })
     .sort((a, b) => {
       if (!selectedSort) return 0;
@@ -419,86 +441,14 @@ export function OrdersPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        {/* Rejected Orders */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Rejected Orders</p>
-              <p className="text-2xl text-gray-900 mt-1 font-semibold">
-                {rejectedCount}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* New Orders */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">New Orders</p>
-              <p className="text-2xl text-gray-900 mt-1 font-semibold">
-                {summary?.new_orders ?? 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Package className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Pending Orders – Clickable */}
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => navigateTo("/orders/view", { state: { email } })}
-          className="
-    bg-white rounded-xl p-4
-    shadow-sm border-l-4 border-green-500
-    cursor-pointer
-    transition-all duration-200 
-    hover:shadow-md hover:-translate-y-0.5
-    hover:bg-green-50
-    focus:outline-none focus:ring-2 focus:ring-green-400
-  "
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Pending Orders</p>
-              <p className="text-2xl text-gray-900 mt-1 font-semibold">
-                {summary?.pending_orders ?? 0}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl text-green-700">✓</span>
-              </div>
-
-              {/* Subtle navigation hint */}
-              <span className="text-gray-400 text-xl">→</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Completed Orders */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Completed Orders</p>
-              <p className="text-2xl text-gray-900 mt-1 font-semibold">
-                {summary?.completed_orders ?? 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <OrderStatusCards
+        selectedStatus={activeStatStatus}
+        onSelect={(status) => {
+          setActiveStatStatus(status);
+          setSelectedCategory("search");
+          setSelectedStatusFilter(status) // allow all records
+        }}
+      />
 
       {/* Orders Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -564,7 +514,7 @@ export function OrdersPage() {
                 {filteredorders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
+                    className={`border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer ${order?.order_type.toLowerCase() == "marketplace" ? "bg-green-50" : ""}`}
                   >
                     <td
                       className="px-6 py-4 text-gray-600 cursor-pointer"

@@ -32,6 +32,7 @@ import {
 } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
+import { getOrderRem } from "../store/Slices/orderRem";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount } = useContext(SocketContext);
@@ -55,6 +56,7 @@ function useRefresh() {
         dispatch(getFavEmails({ email: enteredEmail }));
         dispatch(getAllWebsites());
         dispatch(getLinkExchange(enteredEmail));
+        dispatch(getOrderRem(null, 1));
         dispatch(getMarketplace())
         dispatch(getOrders({ email: enteredEmail }));
         dispatch(getDeals({ email: enteredEmail }));

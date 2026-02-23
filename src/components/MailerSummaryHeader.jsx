@@ -9,12 +9,13 @@ import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
 import { Eye, Plus, RefreshCcw } from "lucide-react";
 import axios from "axios";
+import { getSync, syncAction } from "../store/Slices/syncSlice";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
-  const [syncing, setSyncing] = useState(null);
-
+  const { syncType, syncData, loading: syncing, message, error } = useSelector(state => state.sync)
+  const dispatch = useDispatch()
   const { orders, loading: ordersLoading } = useSelector(
     (state) => state.orders,
   );
@@ -28,23 +29,8 @@ const MailerSummaryHeader = () => {
     offers: [],
     deals: [],
   });
-  const handleSync = async (type) => {
-    setSyncing(type);
-    try {
-      const synscData = await axios.get(
-        `https://sales.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=${type}&action=import&email=${email}`,
-      );
-      if (synscData.data.status === "success") {
-        toast.success(`${type} synced successfully!`);
-        // Optionally, you can also refresh the data here by dispatching the relevant actions to fetch the updated orders, offers, or deals.
-      } else {
-        toast.error(`Failed to sync ${type}. Please try again.`);
-      }
-    } catch (error) {
-      toast.error(`Failed to sync ${type}. Please try again.`);
-    } finally {
-      setSyncing(null);
-    }
+  const handleSync = (type) => {
+    dispatch(getSync(type))
   };
   /* ---------------- ORDERS ---------------- */
   useEffect(() => {
@@ -61,6 +47,16 @@ const MailerSummaryHeader = () => {
 
     setEmailData((prev) => ({ ...prev, orders: order }));
   }, [email, orders, mailersSummary]);
+  useEffect(() => {
+    if (message) {
+      toast.success(message)
+      dispatch(syncAction.clearAllMessage())
+    }
+    if (error) {
+      toast.error(error)
+      dispatch(syncAction.clearAllErrors())
+    }
+  }, [message, error]);
 
   /* ---------------- DEALS ---------------- */
   useEffect(() => {
@@ -152,7 +148,7 @@ const MailerSummaryHeader = () => {
             color="green"
             data={emailData.offers}
             handleSync={() => handleSync("offers")}
-            loading={offersLoading || syncing==="offers"}
+            loading={offersLoading}
           />
 
           <SummaryCard
@@ -163,7 +159,7 @@ const MailerSummaryHeader = () => {
             color="blue"
             data={emailData.orders}
             handleSync={() => handleSync("orders")}
-            loading={ordersLoading || syncing==="orders"}
+            loading={ordersLoading}
             setData={setEmailData}
           />
 
@@ -175,7 +171,7 @@ const MailerSummaryHeader = () => {
             color="purple"
             data={emailData.deals}
             handleSync={() => handleSync("deals")}
-            loading={dealsLoading || syncing==="deals"}
+            loading={dealsLoading}
           />
 
           <SummaryCard
@@ -186,7 +182,7 @@ const MailerSummaryHeader = () => {
             color="orange"
             data={emailData.invoice}
             handleSync={() => handleSync("invoice")}
-            loading={syncing==="invoice"}
+            loading={syncType === "invoice"}
           />
         </div>
       </div>
@@ -209,6 +205,8 @@ function SummaryCard({
   loading,
 }) {
   const { setSidebarCollapsed } = useContext(PageContext);
+  const { syncType, loading: syncing, } = useSelector(state => state.sync)
+
   const { threadId } = useSelector((state) => state.viewEmail);
   const { creating, message, error } = useSelector((state) => state.orders);
   const { email } = useSelector((state) => state.ladger);
@@ -256,7 +254,7 @@ function SummaryCard({
     <div
       className={`flex items-center justify-between rounded-2xl border-2 border-dashed px-4 py-4 ${colorMap[color]}`}
     >
-      {(creating && type === "orders") || loading ? (
+      {(creating && type === "orders") || loading || (syncType == type && syncing) ? (
         <LoadingChase />
       ) : (
         <>
@@ -302,6 +300,7 @@ function SummaryCard({
             </button>
             <button
               onClick={handleSync}
+              disabled={syncing}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
             >
               <RefreshCcw className="w-4 h-4" />

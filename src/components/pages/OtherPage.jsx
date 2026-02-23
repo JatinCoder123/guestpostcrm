@@ -21,13 +21,22 @@ import {
   TruckIcon,
   Users,
   Laptop,
-  PencilOff
+  PencilOff,
+  Home,
+  Store
 
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
 export function OtherPage() {
   const menuItems = [
+    {
+      title: "Market Place",
+      subtitle: "Central hub to manage Inbox & Spam leads seamlessly",
+      icon: <Store className="w-8 h-8 text-blue-600" />,
+      bg: "bg-blue-50",
+      link: "/market-place",
+    },
     {
       title: "Moved Emails",
       subtitle: "inside it Inbox-2 and Spam-2 will be shown",
@@ -50,14 +59,6 @@ export function OtherPage() {
       bg: "bg-green-50",
       link: "/default-report",
     },
-    {
-      title: "Bulk Marking",
-      subtitle: "All the Bulk Marking are Listed here",
-      icon: <Layers className="w-8 h-8 text-green-600" />,
-      bg: "bg-green-50",
-      link: "/mark-bulk",
-    },
-
     {
       title: "Spam Detection",
       subtitle: "Spam Emails will be shown here",

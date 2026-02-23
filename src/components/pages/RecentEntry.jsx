@@ -1,4 +1,4 @@
-import { CalendarDays, Mail, Activity, SparkleIcon } from "lucide-react";
+import { CalendarDays, Mail, Activity, SparkleIcon, UserCircle } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useContext } from "react";
 import { getEvents } from "../../store/Slices/eventSlice";
@@ -76,7 +76,7 @@ export function RecentEntry() {
                 <Activity size={22} /> RECENT ACTIVITY
               </div>
               <div className="flex items-center gap-2 justify-center">
-                <SparkleIcon size={22} /> PROMPT
+                USER
               </div>
             </div>
           </div>
@@ -102,26 +102,36 @@ export function RecentEntry() {
                   className="grid grid-cols-5 py-5 border-b text-gray-800 hover:bg-gray-50 transition"
                 >
                   {/* DATE */}
-                    <div
-                      className="flex items-center gap-3 text-[17px] min-w-0 cursor-pointer"
-                      onClick={() => {
-                        const input = extractEmail(event.name);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        setWelcomeHeaderContent("Unreplied");
-                        navigateTo("/");
-                      }}
-                    >
-                      <CalendarDays
-                        size={20}
-                        className="text-green-700 shrink-0"
-                      />
-                      <span className="truncate">
-                        {event.date_entered ?? "—"}
-                      </span>
+                  <div
+                    className="flex items-center gap-3 text-[17px] min-w-0 cursor-pointer"
+                    onClick={() => {
+                      const input = extractEmail(event.name);
+                      localStorage.setItem("email", input);
+                      setSearch(input);
+                      setEnteredEmail(input);
+                      setWelcomeHeaderContent("Unreplied");
+                      navigateTo("/");
+                    }}
+                  >
+
+                    <span className="truncate">
+                      {event.date_entered ?? "—"}
+                    </span>
+                    <div className="flex items-center justify-center">
+                      {event?.prompt_details && (
+                        <button
+                          onClick={() => {
+                            setSelectedPrompt(event.prompt_details);
+                            setOpen(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <SparkleIcon size={16} />
+                        </button>
+                      )}
                     </div>
-                  
+                  </div>
+
 
                   {/* CONTACT */}
                   <Tooltip content={contactName}>
@@ -155,7 +165,6 @@ export function RecentEntry() {
                         setEmail(input);
                       }}
                     >
-                      <Mail size={20} className="shrink-0" />
                       <span className="truncate">{emailValue}</span>
                     </div>
                   </Tooltip>
@@ -169,17 +178,8 @@ export function RecentEntry() {
 
                   {/* PROMPT */}
                   <div className="flex items-center justify-center">
-                    {event?.prompt_details && (
-                      <button
-                        onClick={() => {
-                          setSelectedPrompt(event.prompt_details);
-                          setOpen(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        <SparkleIcon size={20} />
-                      </button>
-                    )}
+                    <UserCircle size={20} />
+
                   </div>
                 </div>
               );

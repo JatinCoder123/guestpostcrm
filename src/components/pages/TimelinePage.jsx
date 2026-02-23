@@ -31,6 +31,7 @@ import PromptViewerModal from "../PromptViewerModal";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { LoadingChase } from "../Loading";
+import { quickActionBtnActions } from "../../store/Slices/quickActionBtn";
 export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
@@ -276,12 +277,12 @@ export function TimelinePage() {
   useEffect(() => {
     if (buttonsError) {
       toast.error(buttonsError);
-      dispatch(quickActionBtnActions.clearErrors());
+      dispatch(quickActionBtnActionslearErrors());
     }
     if (message) {
       setShowUpdatePopup(false);
     }
-  }, [dispatch, buttonsError,message]);
+  }, [dispatch, buttonsError, message]);
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
@@ -616,11 +617,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -657,9 +657,8 @@ export function TimelinePage() {
                     />
                   ) : (
                     <div
-                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
-                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
-                      }`}
+                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${showMore ? "max-h-full" : "max-h-24 overflow-hidden"
+                        }`}
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
@@ -756,11 +755,10 @@ export function TimelinePage() {
                       <>
                         {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
                         <div
-                          className={`flex items-center transition-opacity duration-200 ${
-                            showFirstReplyBtn
-                              ? "opacity-100"
-                              : "opacity-0 pointer-events-none"
-                          }`}
+                          className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                            ? "opacity-100"
+                            : "opacity-0 pointer-events-none"
+                            }`}
                         >
                           <div className="relative group flex items-center justify-center">
                             <button
@@ -863,13 +861,13 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowEmails={setShowEmail}
+                    setShowIP={setShowIP}
+                    handleActionBtnClick={handleActionBtnClick}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (

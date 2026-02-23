@@ -1,0 +1,69 @@
+import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { showConsole } from "../../assets/assets";
+
+const syncSlice = createSlice({
+    name: "sync",
+    initialState: {
+        loading: false,
+        syncData: null,
+        syncType: null,
+        error: null,
+        count: 0,
+        message: null,
+    },
+    reducers: {
+        getSyncRequest(state, action) {
+            state.loading = true;
+            state.error = null;
+            state.syncType = action.payload
+            state.syncData = null;
+        },
+        getSyncSucess(state, action) {
+            const { syncData, count, message } = action.payload;
+            state.loading = false;
+            state.syncData = syncData;
+            state.error = null;
+            state.message = message
+            state.count = count
+        },
+        getSyncFailed(state, action) {
+            state.loading = false;
+            state.error = action.payload;
+            state.syncData = null;
+        },
+        clearAllErrors(state) {
+            state.error = null;
+        },
+        clearAllMessage(state) {
+            state.message = null;
+        },
+    },
+});
+
+export const getSync = (type, max = 1) => {
+    return async (dispatch, getState) => {
+        dispatch(syncSlice.actions.getSyncRequest(type));
+        const email = getState().viewEmail.contactInfo.email1
+        try {
+            const { data } = await axios.post(
+                `https://anshik.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=sync_opr&email=${email}&fetch_type=${type}&max=${max}`,);
+            showConsole && console.log(`syncData`, data);
+            dispatch(
+                syncSlice.actions.getSyncSucess({
+                    syncData: data[`${type}`] ?? [],
+                    message: data[`${type}`] ? null : `${type.toUpperCase()}  Are Up to date`,
+                    count: data.total_found ?? 0
+                }),
+            );
+            dispatch(syncSlice.actions.clearAllErrors());
+        } catch (error) {
+            dispatch(
+                syncSlice.actions.getSyncFailed("Fetching To Sync Data"),
+            );
+        }
+    };
+};
+
+export const syncAction = syncSlice.actions;
+export default syncSlice.reducer;

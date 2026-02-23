@@ -18,7 +18,7 @@ export default function WebsitesPage() {
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
-      module: "outr_Website_manage",
+      module: "outr_allowed_sites",
     },
     headers: {
       "x-api-key": `${CREATE_DEAL_API_KEY}`,
@@ -33,7 +33,7 @@ export default function WebsitesPage() {
       method: "POST",
       body: {
         parent_bean: {
-          module: "outr_Website_manage",
+          module: "outr_allowed_sites",
           ...updatedItem,
         },
       },
@@ -52,7 +52,7 @@ export default function WebsitesPage() {
       method: "POST",
       body: {
         parent_bean: {
-          module: "outr_Website_manage",
+          module: "outr_allowed_sites",
           ...updatedItem,
         },
       },

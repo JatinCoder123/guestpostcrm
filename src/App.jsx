@@ -34,7 +34,6 @@ import { ForwardedPage } from "./components/pages/ForwardedPage";
 import { FavouritePage } from "./components/pages/FavouritePage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ButtonPage from "./components/pages/settingpages/ButtonPage";
-import { MarkBulkPage } from "./components/pages/MarkBulkPage";
 import { DefaulterPage } from "./components/pages/Defaulterpage";
 import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
@@ -184,8 +183,8 @@ const router = createBrowserRouter([
         element: <FavouritePage />,
       },
       {
-        path: "mark-bulk",
-        element: <MarkBulkPage />,
+        path: "market-place",
+        element: <Marketplace />,
       },
       {
         path: "default-report",

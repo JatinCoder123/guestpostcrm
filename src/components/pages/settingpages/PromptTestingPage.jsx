@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Header from "./Header";
-
+import useModule from "../../../hooks/useModule"
+import CustomDropdown from "../../ui/custom-ui/CustomDropDown";
 const PromptTestingPage = () => {
   const [formData, setFormData] = useState({
     stage: "",
@@ -8,7 +9,18 @@ const PromptTestingPage = () => {
     prompt: "",
     email: "",
   });
-
+  const { loading, data: prompts, error, refetch: refetchPromptList } = useModule({
+    url: `https://kartikey.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_prompts`,
+    method: "GET",
+    name: "PROMPT LIST",
+  });
+  const { loading: responseLoading, data: response, error: responseError, refetch } = useModule({
+    url: `https://kartikey.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=prompt_testing`,
+    method: "GET",
+    name: "PROMPOT TEST REESULT ",
+    body: formData,
+    enabled: false
+  });
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -16,7 +28,7 @@ const PromptTestingPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Prompt Test Data:", formData);
+    refetch()
   };
   const handleReset = () => {
     setFormData({
@@ -82,19 +94,7 @@ const PromptTestingPage = () => {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Prompt
               </label>
-              <select
-                name="prompt"
-                value={formData.prompt}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white
-                           focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="">Select prompt</option>
-                <option value="polite_reply">Polite Reply</option>
-                <option value="negotiation_reply">Negotiation Reply</option>
-                <option value="followup_reply">Follow-up Reply</option>
-                <option value="rejection_reply">Rejection Reply</option>
-              </select>
+              <CustomDropdown value={formData.prompt} placeholder="Select Prompt" onChange={(value) => handleChange({ target: { name: "prompt", value: value } })} options={prompts?.map(p => ({ value: p.name, label: p.name.replaceAll("_", " ") }))} />
             </div>
 
             {/* Email Address (Optional) */}
