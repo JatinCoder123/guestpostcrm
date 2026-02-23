@@ -551,6 +551,7 @@ export function OrdersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
+                <th className="px-6 py-4 text-left">TYPE</th>
                 <th className="px-6 py-4 text-left">VIEW INVOICE</th>
                 <th className="px-6 py-4 text-left">ORDER ID</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
@@ -604,6 +605,13 @@ export function OrdersPage() {
                         )}`}
                       >
                         {order.order_status || "Unknown"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm `}
+                      >
+                        {order.order_type || "Unknown"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
