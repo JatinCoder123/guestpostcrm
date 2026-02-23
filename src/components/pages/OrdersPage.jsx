@@ -560,7 +560,7 @@ export function OrdersPage() {
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
-                <th className="px-6 py-4 text-left">DELIVERY DATE</th>
+                <th className="px-6 py-4 text-left">VIEW INVOICE</th>
                 <th className="px-6 py-4 text-left">ORDER ID</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
@@ -615,8 +615,19 @@ export function OrdersPage() {
                         {order.order_status || "Unknown"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {order.complete_date || "N/A"}
+                    <td className="px-6 py-4">
+                      {order?.invoice_link_c ? (
+                        <a
+                          href={order.invoice_link_c}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline font-medium"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {order.order_id || "N/A"}
