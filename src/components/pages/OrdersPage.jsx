@@ -53,13 +53,13 @@ export function OrdersPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
   const [isExternalSearch, setIsExternalSearch] = useState(false);
-
+  const [statusOptions, setStatusOptions] = useState([])
   const { state } = useLocation();
   const { setSearch, setEnteredEmail } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null);
   const [actualOrder, setActualOrder] = useState([]);
   const { email } = useSelector((state) => state.ladger);
-  const { orders, count, loading, error, message, updating, summary } =
+  const { orders, count, loading, error, message, updating, summary, statusLists } =
     useSelector((state) => state.orders);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
@@ -83,25 +83,16 @@ export function OrdersPage() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState("new");
 
   // Status options for dropdown
-  const statusOptions = [
-    { value: "all", label: "All Status" },
-    { value: "new", label: "New" },
-    { value: "duplicate", label: "Duplicate" },
-    { value: "ai_failed", label: "AI Failed" },
-    { value: "ai_passed", label: "AI Passed" },
-    { value: "in_process", label: "In Process" },
-    { value: "accepted", label: "Accepted" },
-    { value: "completed", label: "Completed" },
-    { value: "published", label: "Published" },
-    { value: "blacklisted", label: "Blacklisted" },
-    { value: "spam_score_high", label: "Spam Score High" },
-    { value: "link_removed", label: "Link Removed" },
-    { value: "rejected_nontechnical", label: "Rejected-NonTechnical" },
-    { value: "previous_payment_due", label: "Previous Payment Due" },
-    { value: "client_side_issue", label: "Client Side Issue" },
-    { value: "reminder_sent", label: "Reminder Sent" },
-    { value: "wrong", label: "Wrong" },
-  ];
+  useEffect(() => {
+    const options = [
+      { value: "all", label: "All Status" },
+      ...Object.entries(statusLists).map(([value, label]) => ({
+        value,
+        label,
+      })),
+    ];
+    setStatusOptions(options)
+  }, [statusLists])
 
   // Handle status filter change
   const handleStatusFilterChange = (e) => {
