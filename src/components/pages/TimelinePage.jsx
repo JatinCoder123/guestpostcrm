@@ -29,9 +29,11 @@ import { SocketContext } from "../../context/SocketContext";
 import { PreviewTemplate } from "../PreviewTemplate";
 import PromptViewerModal from "../PromptViewerModal";
 import axios from "axios";
-import { showConsole } from "../../assets/assets";
+import { getDomain, showConsole } from "../../assets/assets";
 import { LoadingChase } from "../Loading";
 import { quickActionBtnActions } from "../../store/Slices/quickActionBtn";
+import useModule from "../../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../../store/constants";
 export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
@@ -78,6 +80,32 @@ export function TimelinePage() {
     sending,
     threadId,
   } = useSelector((state) => state.viewEmail);
+  const { loading: askBudgetTempLoading, data: askBudgetTemp } = useModule({
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: { name: "Ask Budget" },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: `ASK BUDGET TEMPLATE`,
+  });
+  const { loading: sorryTemplateLoading, data: sorryTemp } = useModule({
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: { name: "Sorry" },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: `Sorry TEMPLATE`,
+  });
 
   const dispatch = useDispatch();
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
@@ -474,6 +502,7 @@ export function TimelinePage() {
         <PreviewTemplate
           editorContent={editorContent}
           initialContent={editorContent}
+          templateContent={clickedActionBtn == "Ask Budget" ? askBudgetTemp[0]?.body_html : sorryTemp[0]?.body_html}
           setEditorContent={setEditorContent}
           onClose={() => setShowUpdatePopup(false)}
           onSubmit={() => {
@@ -816,8 +845,8 @@ export function TimelinePage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setShowUpdatePopup(true);
-                                setEditorContent(btn.body_html);
-                                setClickedActionBtn(btn.id);
+                                setEditorContent(btn.name == "Ask Budget" ? askBudgetTemp[0]?.body_html : sorryTemp[0]?.body_html);
+                                setClickedActionBtn(btn.name);
                               }}
                               disabled={sending}
                               className="
