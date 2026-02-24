@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header from "./Header";
 import useModule from "../../../hooks/useModule"
 import CustomDropdown from "../../ui/custom-ui/CustomDropDown";
+import { useSelector } from "react-redux";
 const PromptTestingPage = () => {
   const [formData, setFormData] = useState({
     stage: "",
@@ -9,13 +10,14 @@ const PromptTestingPage = () => {
     prompt: "",
     email: "",
   });
+  const { crmEndpoint } = useSelector(state => state.user)
   const { loading, data: prompts, error, refetch: refetchPromptList } = useModule({
-    url: `https://kartikey.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_prompts`,
+    url: `${crmEndpoint}&type=get_prompts`,
     method: "GET",
     name: "PROMPT LIST",
   });
   const { loading: responseLoading, data: response, error: responseError, refetch } = useModule({
-    url: `https://kartikey.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=prompt_testing`,
+    url: `${crmEndpoint}&type=prompt_testing`,
     method: "GET",
     name: "PROMPOT TEST REESULT ",
     body: formData,

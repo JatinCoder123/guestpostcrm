@@ -41,18 +41,18 @@ const syncSlice = createSlice({
     },
 });
 
-export const getSync = (type, max = 1) => {
+export const getSync = (type, max = 3) => {
     return async (dispatch, getState) => {
         dispatch(syncSlice.actions.getSyncRequest(type));
         const email = getState().viewEmail.contactInfo.email1
         try {
             const { data } = await axios.post(
-                `https://anshik.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=sync_opr&email=${email}&fetch_type=${type}&max=${max}`,);
+                `${getState().user.crmEndpoint}&type=sync_opr&email=${email}&fetch_type=${type}&max=${max}`,);
             showConsole && console.log(`syncData`, data);
             dispatch(
                 syncSlice.actions.getSyncSucess({
                     syncData: data[`${type}`] ?? [],
-                    message: data[`${type}`] ? null : `${type.toUpperCase()}  Are Up to date`,
+                    message: (data[`${type}`] || !data.total_found == 0) ? null : `${type.toUpperCase()}  Are Up to date`,
                     count: data.total_found ?? 0
                 }),
             );

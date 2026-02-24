@@ -10,11 +10,13 @@ import { PageContext } from "../context/pageContext";
 import { Eye, Plus, RefreshCcw } from "lucide-react";
 import axios from "axios";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
+import SyncSelectionModal from "./SyncSelectionModal";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
-  const { syncType, syncData, loading: syncing, message, error } = useSelector(state => state.sync)
+  const { syncType, syncData, loading: syncing, message, error, count } = useSelector(state => state.sync)
+  const [showSyncData, setShowSyncData] = useState(false)
   const dispatch = useDispatch()
   const { orders, loading: ordersLoading } = useSelector(
     (state) => state.orders,
@@ -30,6 +32,7 @@ const MailerSummaryHeader = () => {
     deals: [],
   });
   const handleSync = (type) => {
+    setShowSyncData(true)
     dispatch(getSync(type))
   };
   /* ---------------- ORDERS ---------------- */
@@ -99,94 +102,107 @@ const MailerSummaryHeader = () => {
 
   /* ---------------- UI ---------------- */
   return (
-    <div className="mt-0 p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200">
-      {/* TOP INFO */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div>
-          <div className="text-xs text-gray-500 uppercase font-semibold">
-            Created At
+    <>{
+      showSyncData && count > 0 && <SyncSelectionModal
+        onClose={() => setShowSyncData(false)}
+        type={syncType}
+        data={syncData}
+        onProceed={(payload) => {
+          console.log("Sync payload:", payload);
+        }}
+      />
+    }
+
+      <div className="mt-0 p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200">
+        {/* TOP INFO */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">
+              Created At
+            </div>
+            <div className="font-semibold text-gray-900 mt-1">
+              {mailersSummary?.date_entered_formatted || ""}
+            </div>
+            <div className="text-xs text-gray-500">
+              {mailersSummary?.date_entered || ""}
+            </div>
           </div>
-          <div className="font-semibold text-gray-900 mt-1">
-            {mailersSummary?.date_entered_formatted || ""}
+
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">
+              Subject
+            </div>
+            <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+              <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+                {mailersSummary?.subject || ""}
+              </div>
+            </Titletooltip>
           </div>
-          <div className="text-xs text-gray-500">
-            {mailersSummary?.date_entered || ""}
+
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">
+              Motive
+            </div>
+            <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+              <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+                {mailersSummary?.correct_motive || ""}
+              </div>
+            </Titletooltip>
           </div>
         </div>
 
-        <div>
-          <div className="text-xs text-gray-500 uppercase font-semibold">
-            Subject
-          </div>
-          <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
-              {mailersSummary?.subject || ""}
-            </div>
-          </Titletooltip>
-        </div>
+        {/* STATS CARDS */}
+        <div className="bg-white rounded-3xl shadow-sm p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SummaryCard
+              type="offers"
+              title="NO OFFERS"
+              subtitle="Click + to add"
+              icon="🎁"
+              color="green"
+              data={emailData.offers}
+              handleSync={() => handleSync("offers")}
+              loading={offersLoading}
+            />
 
-        <div>
-          <div className="text-xs text-gray-500 uppercase font-semibold">
-            Motive
+            <SummaryCard
+              type="orders"
+              title="NO ORDERS"
+              subtitle="Click + to add"
+              icon="📦"
+              color="blue"
+              data={emailData.orders}
+              handleSync={() => handleSync("orders")}
+              loading={ordersLoading}
+              setData={setEmailData}
+            />
+
+            <SummaryCard
+              type="deals"
+              title="NO DEALS"
+              subtitle="Click + to add"
+              icon="🤝"
+              color="purple"
+              data={emailData.deals}
+              handleSync={() => handleSync("deals")}
+              loading={dealsLoading}
+            />
+
+            <SummaryCard
+              type="invoice"
+              title="NO INVOICE"
+              subtitle="Click + to add"
+              icon="🧾"
+              color="orange"
+              data={emailData.invoice}
+              handleSync={() => handleSync("invoice")}
+              loading={syncType === "invoice"}
+            />
           </div>
-          <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
-            <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
-              {mailersSummary?.correct_motive || ""}
-            </div>
-          </Titletooltip>
         </div>
       </div>
+    </>
 
-      {/* STATS CARDS */}
-      <div className="bg-white rounded-3xl shadow-sm p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SummaryCard
-            type="offers"
-            title="NO OFFERS"
-            subtitle="Click + to add"
-            icon="🎁"
-            color="green"
-            data={emailData.offers}
-            handleSync={() => handleSync("offers")}
-            loading={offersLoading}
-          />
-
-          <SummaryCard
-            type="orders"
-            title="NO ORDERS"
-            subtitle="Click + to add"
-            icon="📦"
-            color="blue"
-            data={emailData.orders}
-            handleSync={() => handleSync("orders")}
-            loading={ordersLoading}
-            setData={setEmailData}
-          />
-
-          <SummaryCard
-            type="deals"
-            title="NO DEALS"
-            subtitle="Click + to add"
-            icon="🤝"
-            color="purple"
-            data={emailData.deals}
-            handleSync={() => handleSync("deals")}
-            loading={dealsLoading}
-          />
-
-          <SummaryCard
-            type="invoice"
-            title="NO INVOICE"
-            subtitle="Click + to add"
-            icon="🧾"
-            color="orange"
-            data={emailData.invoice}
-            handleSync={() => handleSync("invoice")}
-            loading={syncType === "invoice"}
-          />
-        </div>
-      </div>
-    </div>
   );
 };
 
