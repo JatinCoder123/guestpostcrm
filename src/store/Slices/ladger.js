@@ -20,6 +20,7 @@ const ladgerSlice = createSlice({
     duplicate: 0,
     searchNotFound: false,
     noSearchFoundLoading: false,
+    latest: false,
     manualScanResponse: null,
     manualScanLoading: false,
   },
@@ -39,6 +40,7 @@ const ladgerSlice = createSlice({
         pageCount,
         pageIndex,
         search,
+        latest,
         mailersSummary,
       } = action.payload;
 
@@ -47,8 +49,10 @@ const ladgerSlice = createSlice({
       state.mailersSummary = mailersSummary || null;
       state.pageCount = pageCount || 1;
       state.pageIndex = pageIndex || 1;
+      state.latest = latest
       state.email = email || null;
       state.duplicate = duplicate || 0;
+
       state.searchNotFound =
         (ladger?.length ?? 0) === 0 && (search?.trim() ?? "") !== "";
       state.error = null;
@@ -147,6 +151,7 @@ export const getLadger = ({
           ladger: data.data ?? [],
           mailersSummary: data.mailers_summary,
           email: data.mailers_summary?.email,
+          latest: !isEmail,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         }),

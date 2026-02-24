@@ -191,26 +191,35 @@ const PromptTestingPage = () => {
         {response && !responseError && (
           <div
             ref={responseRef}
-            className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8"
+            className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8 space-y-6"
           >
-            <h3 className="text-xl font-bold text-slate-900 mb-4">
-              Prompt Response
+            <h3 className="text-xl font-bold text-slate-900">
+              Prompt Test Result
             </h3>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-600 mb-2">
+                Response
+              </h4>
 
-            {responseError ? (
-              <div className="text-red-600 bg-red-50 p-4 rounded-xl">
-                {responseError}
-              </div>
-            ) : (
-              <pre
-                className="bg-slate-900 text-slate-100 rounded-xl p-6
-                           overflow-x-auto whitespace-pre-wrap text-sm leading-relaxed"
+              <span
+                className={`inline-flex items-center px-5 py-2 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700`}
               >
-                {typeof response === "string"
-                  ? response
-                  : JSON.stringify(response, null, 2)}
-              </pre>
-            )}
+                {response.response?.toUpperCase()}
+              </span>
+            </div>
+            {/* PROMPT */}
+            <div>
+              <h4 className="text-sm font-semibold text-slate-600 mb-2">
+                Prompt
+              </h4>
+
+              <div className="bg-slate-100 rounded-xl p-4 text-sm whitespace-pre-wrap leading-relaxed">
+                {response.prompt}
+              </div>
+            </div>
+
+            {/* RESPONSE */}
+
           </div>
         )}
       </div>

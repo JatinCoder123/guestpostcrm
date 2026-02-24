@@ -83,12 +83,12 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-          ...emailDeals.map((d) =>
-            Number(
-              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
-            ),
+        ...emailDeals.map((d) =>
+          Number(
+            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
           ),
-        )
+        ),
+      )
       : 0;
   // end
 
@@ -98,66 +98,58 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
     <div className="flex items-start justify-between w-full">
       {/* LEFT SIDE CONTENT */}
       <div
-        className={`flex  gap-4 ${
-          contactLoading ? "items-center" : "item-start"
-        }`}
+        className={`flex  gap-4 ${contactLoading ? "items-center" : "item-start"
+          }`}
       >
         {contactLoading && <LoadingChase size="30" color="blue" />}
         {!contactLoading && (
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-5">
-  {/* Inbox Button */}
-  <button
-    onClick={() => setShowEmails(true)}
-    className="relative rounded-xl bg-white border border-gray-200 shadow-md
+              {/* Inbox Button */}
+              <button
+                onClick={() => setShowEmails(true)}
+                className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"
-  >
-    <img
-      src="https://img.icons8.com/keek/100/new-post.png"
-      alt="new-post"
-      className="w-12 h-12"
-    />
-    {count > 0 && (
-      <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-        {count}
-      </span>
-    )}
-  </button>
+              >
+                <img
+                  src="https://img.icons8.com/keek/100/new-post.png"
+                  alt="new-post"
+                  className="w-12 h-12"
+                />
+                {count > 0 && (
+                  <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {count}
+                  </span>
+                )}
+              </button>
 
-  {/* Name + Email */}
-  <div className="flex flex-col leading-tight">
-    <Link
-      to="/contacts"
-      className="
+              {/* Name + Email */}
+              <div className="flex flex-col leading-tight">
+                <Link
+                  to="/contacts"
+                  className="
         relative text-lg font-extrabold
         bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500
         bg-[length:300%_100%] bg-clip-text text-transparent
         animate-[gradientMove_4s_linear_infinite]
       "
-    >
-      {contactInfo?.full_name?.trim()
-        ? contactInfo.full_name
-        : email}
-    </Link>
+                >
+                  {contactInfo?.full_name?.trim()
+                    ? contactInfo.full_name
+                    : email}
+                </Link>
+              </div>
 
-    {/* Email sub text */}
-    {contactInfo?.full_name && (
-      <span className="text-sm text-gray-500 truncate max-w-[220px]">
-        {email}
-      </span>
-    )}
-  </div>
-
-  {/* Verified Badge */}
-  {contactInfo?.customer_type === "verified" && (
-    <img
-      src="https://img.icons8.com/bubbles/100/verified-account.png"
-      alt="verified"
-      className="w-7 h-7"
-    />
-  )}
-</div>
+              {/* Verified Badge */}
+              {contactInfo?.customer_type === "verified" && (
+                <img
+                  src="https://img.icons8.com/bubbles/100/verified-account.png"
+                  alt="verified"
+                  className="w-7 h-7"
+                />
+              )}
+            </div>
             {/* STATUS GRID */}
             {!contactLoading && (
               <div className="flex flex-wrap gap-3">
@@ -271,11 +263,10 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
           onClick={onPrev}
           disabled={currentIndex === 0}
           className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${
-                          currentIndex === 0
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }
+                        ${currentIndex === 0
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100"
+            }
                     `}
         >
           <ChevronLeft className="w-5 h-5 text-gray-700" />
@@ -286,11 +277,10 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
           onClick={onNext}
           disabled={currentIndex === emails?.length - 1}
           className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${
-                          currentIndex === emails?.length - 1
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }
+                        ${currentIndex === emails?.length - 1
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100"
+            }
                     `}
         >
           <ChevronRight className="w-5 h-5 text-gray-700" />

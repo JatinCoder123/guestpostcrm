@@ -107,9 +107,6 @@ const MailerSummaryHeader = () => {
         onClose={() => setShowSyncData(false)}
         type={syncType}
         data={syncData}
-        onProceed={(payload) => {
-          console.log("Sync payload:", payload);
-        }}
       />
     }
 

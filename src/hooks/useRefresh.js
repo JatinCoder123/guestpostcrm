@@ -46,7 +46,7 @@ function useRefresh() {
     const dispatch = useDispatch();
 
     const { emails, loading } = useSelector((state) => state.unreplied);
-    const { timeline, email } = useSelector((state) => state.ladger);
+    const { timeline, email, latest } = useSelector((state) => state.ladger);
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
         dispatch(getAiCredits());
@@ -74,8 +74,12 @@ function useRefresh() {
     const refreshLadger = () => {
         if (enteredEmail) {
             dispatch(getLadger({ email: enteredEmail, search }));
+            dispatch(getViewEmail(enteredEmail));
+            dispatch(getContact(enteredEmail));
         } else if (firstEmail) {
             dispatch(getLadger({ email: firstEmail, search }));
+            dispatch(getViewEmail(firstEmail));
+            dispatch(getContact(firstEmail));
         } else if (!loading) {
             dispatch(getLadger({ search, isEmail: false }));
         }
@@ -98,8 +102,12 @@ function useRefresh() {
     useEffect(() => {
         if (enteredEmail) {
             dispatch(getLadger({ email: enteredEmail, search }));
+            dispatch(getViewEmail(enteredEmail));
+            dispatch(getContact(enteredEmail));
         } else if (firstEmail) {
             dispatch(getLadger({ email: firstEmail, search }));
+            dispatch(getViewEmail(firstEmail));
+            dispatch(getContact(firstEmail));
         } else if (!loading) {
             dispatch(getLadger({ search, isEmail: false }));
         }
@@ -108,7 +116,7 @@ function useRefresh() {
 
     // Fetch view email and contact when ladger email is set
     useEffect(() => {
-        if (email) {
+        if (email && latest) {
             dispatch(getViewEmail());
             dispatch(getContact());
         }

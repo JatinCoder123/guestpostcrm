@@ -6,7 +6,7 @@ import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
 import { getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getUnansweredEmails } from "../store/Slices/unansweredEmails";
-import { viewEmailAction } from "../store/Slices/viewEmail";
+import { getContact, getViewEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { getOrders } from "../store/Slices/orders";
 import { getInvoices } from "../store/Slices/invoices";
 import { getOffers } from "../store/Slices/offers";
@@ -29,8 +29,12 @@ function useIdle({ idle }) {
     const refreshLadger = () => {
         if (enteredEmail) {
             dispatch(getLadger({ email: enteredEmail, search }));
+            dispatch(getViewEmail(enteredEmail));
+            dispatch(getContact(enteredEmail));
         } else if (firstEmail) {
             dispatch(getLadger({ email: firstEmail, search }));
+            dispatch(getViewEmail(firstEmail));
+            dispatch(getContact(firstEmail));
         } else if (!loading) {
             dispatch(getLadger({ search, isEmail: false }));
         }
@@ -76,7 +80,8 @@ function useIdle({ idle }) {
             flushQueue()
         }
     }, [])
-    return [];
+    return [refreshLadger
+    ];
 }
 
 export default useIdle;
