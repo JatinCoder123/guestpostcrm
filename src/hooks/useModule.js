@@ -78,7 +78,7 @@ const useModule = ({
     if (enabled) run();
   }, [...dependencies, enabled]);
 
-  return { loading, error, data, setData, refetch: run, add, update };
+  return { loading, error, data, setData, refetch: run, add, update, setError };
 };
 
 export default useModule;

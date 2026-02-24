@@ -1,78 +1,112 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Header from "./Header";
-import useModule from "../../../hooks/useModule"
+import useModule from "../../../hooks/useModule";
 import CustomDropdown from "../../ui/custom-ui/CustomDropDown";
 import { useSelector } from "react-redux";
+
 const PromptTestingPage = () => {
   const [formData, setFormData] = useState({
     stage: "",
-    emailBody: "",
+    body: "",
     prompt: "",
     email: "",
   });
-  const { crmEndpoint } = useSelector(state => state.user)
-  const { loading, data: prompts, error, refetch: refetchPromptList } = useModule({
+
+  const [prompts, setPrompts] = useState([]);
+  const [stages, setStages] = useState({});
+
+  const responseRef = useRef(null);
+
+  const { crmEndpoint } = useSelector((state) => state.user);
+
+  const { data } = useModule({
     url: `${crmEndpoint}&type=get_prompts`,
     method: "GET",
     name: "PROMPT LIST",
   });
-  const { loading: responseLoading, data: response, error: responseError, refetch } = useModule({
+
+  const {
+    loading: responseLoading,
+    data: response,
+    error: responseError,
+    refetch,
+  } = useModule({
     url: `${crmEndpoint}&type=prompt_testing`,
-    method: "GET",
-    name: "PROMPOT TEST REESULT ",
+    method: "POST",
+    name: "PROMPT TEST RESULT",
     body: formData,
-    enabled: false
+    enabled: false,
   });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    refetch()
+  useEffect(() => {
+    if (data?.data) setPrompts(data.data);
+    if (data?.stage_list) setStages(data.stage_list);
+  }, [data]);
+
+  /** 🔽 Auto-scroll when response arrives */
+  useEffect(() => {
+    if (response && responseRef.current && !responseLoading) {
+      responseRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [response, responseLoading]);
+
+  const handleSubmit = () => {
+    refetch();
   };
+  useEffect(() => {
+
+  }, [responseError])
+
   const handleReset = () => {
     setFormData({
       stage: "",
-      emailBody: "",
+      body: "",
       prompt: "",
       email: "",
     });
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <Header text="Prompt Testing" />
 
-      <div className=" mx-auto px-6 py-10">
-        {/* Card */}
+      <div className="mx-auto px-6 py-10 space-y-10">
+        {/* FORM CARD */}
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Test Prompt Output
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-6">
             {/* Stage */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Stage
               </label>
-              <select
-                name="stage"
+
+              <CustomDropdown
                 value={formData.stage}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white
-                           focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select stage</option>
-                <option value="new">New</option>
-                <option value="negotiation">Offer</option>
-                <option value="follow_up">Deal</option>
-                <option value="follow_up">Order</option>
-                <option value="follow_up">Payment</option>
-                <option value="follow_up">Reminder</option>
-                <option value="follow_up">Defaulter </option>
-              </select>
+                placeholder="Select Stage"
+                onChange={(value) =>
+                  handleChange({
+                    target: { name: "stage", value },
+                  })
+                }
+                options={Object.entries(stages)
+                  .filter(([key]) => key)
+                  .map(([key, label]) => ({
+                    value: key,
+                    label,
+                  }))}
+              />
             </div>
 
             {/* Email Body */}
@@ -80,9 +114,10 @@ const PromptTestingPage = () => {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Email Body
               </label>
+
               <textarea
-                name="emailBody"
-                value={formData.emailBody}
+                name="body"
+                value={formData.body}
                 onChange={handleChange}
                 placeholder="Paste or type the email content here..."
                 rows={6}
@@ -96,14 +131,28 @@ const PromptTestingPage = () => {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Prompt
               </label>
-              <CustomDropdown value={formData.prompt} placeholder="Select Prompt" onChange={(value) => handleChange({ target: { name: "prompt", value: value } })} options={prompts?.map(p => ({ value: p.name, label: p.name.replaceAll("_", " ") }))} />
+
+              <CustomDropdown
+                value={formData.prompt}
+                placeholder="Select Prompt"
+                onChange={(value) =>
+                  handleChange({
+                    target: { name: "prompt", value },
+                  })
+                }
+                options={prompts?.map((p) => ({
+                  value: p.name,
+                  label: p.name.replaceAll("_", " "),
+                }))}
+              />
             </div>
 
-            {/* Email Address (Optional) */}
+            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Email Address <span className="text-slate-400">(optional)</span>
               </label>
+
               <input
                 type="email"
                 name="email"
@@ -115,10 +164,10 @@ const PromptTestingPage = () => {
               />
             </div>
 
-            {/* Action */}
+            {/* Actions */}
             <div className="flex justify-end gap-3 pt-4">
               <button
-                type="reset"
+                type="button"
                 onClick={handleReset}
                 className="px-6 py-2.5 rounded-xl border border-slate-300
                            text-slate-700 font-semibold hover:bg-slate-100 transition"
@@ -127,15 +176,43 @@ const PromptTestingPage = () => {
               </button>
 
               <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600
                            text-white font-semibold shadow-lg hover:opacity-90 transition"
               >
-                Test Prompt
+                {responseLoading ? "Testing..." : "Test Prompt"}
               </button>
             </div>
-          </form>
+          </div>
         </div>
+
+        {/* 🔽 RESPONSE BOX (VISIBLE ONLY IF RESPONSE EXISTS) */}
+        {response && !responseError && (
+          <div
+            ref={responseRef}
+            className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8"
+          >
+            <h3 className="text-xl font-bold text-slate-900 mb-4">
+              Prompt Response
+            </h3>
+
+            {responseError ? (
+              <div className="text-red-600 bg-red-50 p-4 rounded-xl">
+                {responseError}
+              </div>
+            ) : (
+              <pre
+                className="bg-slate-900 text-slate-100 rounded-xl p-6
+                           overflow-x-auto whitespace-pre-wrap text-sm leading-relaxed"
+              >
+                {typeof response === "string"
+                  ? response
+                  : JSON.stringify(response, null, 2)}
+              </pre>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
