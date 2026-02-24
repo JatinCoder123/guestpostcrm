@@ -17,6 +17,7 @@ const syncSlice = createSlice({
             state.loading = true;
             state.error = null;
             state.syncType = action.payload
+            state.count = 0
             state.syncData = null;
         },
         getSyncSucess(state, action) {
@@ -52,7 +53,7 @@ export const getSync = (type, max = 3) => {
             dispatch(
                 syncSlice.actions.getSyncSucess({
                     syncData: data[`${type}`] ?? [],
-                    message: (data[`${type}`] || !data.total_found == 0) ? null : `${type.toUpperCase()}  Are Up to date`,
+                    message: data.total_found == 0 ? `${type.toUpperCase()}  Are Up to date` : data?.message,
                     count: data.total_found ?? 0
                 }),
             );

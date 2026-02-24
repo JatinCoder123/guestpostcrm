@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, X } from "lucide-react";
+import useIdle from "../hooks/useIdle.js"
 
 const TYPE_LABELS = {
     deals: "Deals",
@@ -14,7 +15,7 @@ const SyncSelectionModal = ({
     onProceed,
 }) => {
     const [selectedIds, setSelectedIds] = useState(new Set());
-
+    useIdle({ idle: false })
 
     const allSelected = selectedIds.size === data?.length && data?.length > 0;
 
@@ -90,12 +91,12 @@ const SyncSelectionModal = ({
 
                 {/* List */}
                 <div className="max-h-[320px] overflow-y-auto px-6">
-                    {data.map((item) => {
+                    {data.map((item, i) => {
                         const checked = selectedIds.has(item.id);
 
                         return (
                             <div
-                                key={item.id}
+                                key={i}
                                 onClick={() => toggleSelect(item.id)}
                                 className={`flex items-center justify-between rounded-xl border p-4 mb-3 cursor-pointer transition
                   ${checked
@@ -121,7 +122,7 @@ const SyncSelectionModal = ({
                                 </div>
 
                                 <div className="text-sm font-semibold text-gray-900">
-                                    ₹{item.amount}
+                                    ${item.amount}
                                 </div>
                             </div>
                         );
@@ -138,7 +139,7 @@ const SyncSelectionModal = ({
                 <div className="flex items-center justify-between border-t px-6 py-4">
                     <div>
                         <p className="text-sm text-gray-500">Total Amount</p>
-                        <p className="text-lg font-semibold">₹{totalAmount}</p>
+                        <p className="text-lg font-semibold">${totalAmount}</p>
                     </div>
 
                     <button

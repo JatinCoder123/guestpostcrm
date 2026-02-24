@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   ClipboardCheck,
   Download,
+  Eye,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -48,6 +49,32 @@ const getStatusColor = (status) => {
       return "bg-gray-100 text-gray-700";
   }
 };
+const getStatusCounts = (orders = []) => {
+  const counts = {
+    new: 0,
+    accepted: 0,
+    rejected: 0,
+    hold: 0,
+    completed: 0,
+  };
+
+  orders.forEach((order) => {
+    const status = order.order_status?.toLowerCase().trim();
+    if (status === "new") counts.new++;
+    else if (status === "accepted") counts.accepted++;
+    else if (status === "completed") counts.completed++;
+    else if (status?.includes("hold")) counts.hold++;
+    else if (
+      status === "wrong" ||
+      status === "rejected_nontechnical"
+    ) {
+      counts.rejected++;
+    }
+  });
+
+
+  return counts;
+};
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState("");
@@ -63,13 +90,9 @@ export function OrdersPage() {
   const { email } = useSelector((state) => state.ladger);
   const { orders, count, loading, error, message, updating, summary, statusLists } =
     useSelector((state) => state.orders);
+  const statusCounts = getStatusCounts(orders);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-
-  const rejectedCount = orders.filter((order) =>
-    order.order_status?.toLowerCase().trim().includes("reject"),
-  ).length;
-
   // Add state for filter values
   const [filters, setFilters] = useState({
     archive: "all",
@@ -443,10 +466,11 @@ export function OrdersPage() {
       {/* Stats Cards */}
       <OrderStatusCards
         selectedStatus={activeStatStatus}
+        counts={statusCounts}
         onSelect={(status) => {
           setActiveStatStatus(status);
           setSelectedCategory("search");
-          setSelectedStatusFilter(status) // allow all records
+          setSelectedStatusFilter(status);
         }}
       />
 
@@ -502,7 +526,7 @@ export function OrdersPage() {
                 </th>
                 <th className="px-6 py-4 text-left">STATUS</th>
                 <th className="px-6 py-4 text-left">TYPE</th>
-                <th className="px-6 py-4 text-left">VIEW INVOICE</th>
+                <th className="px-6 py-4 text-left">MODIFIED AT</th>
                 <th className="px-6 py-4 text-left">ORDER ID</th>
                 <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
@@ -545,8 +569,20 @@ export function OrdersPage() {
                     >
                       {order.real_name?.split("<")[0]?.trim() || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-green-600">
-                      ${order.total_amount_c || "0.00"}
+                    <td className="px-6 py-4 flex item-center gap-1 text-green-600">
+                      <div>                      ${order.total_amount_c || "0.00"}
+                      </div>
+                      {order?.invoice_link_c && (
+                        <a
+                          href={order.invoice_link_c}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800  font-medium flex item-center"
+                        >
+                          <Eye className="w-4 h-4 " />
+                        </a>
+
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -564,19 +600,21 @@ export function OrdersPage() {
                         {order.order_type || "Unknown"}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      {order?.invoice_link_c ? (
-                        <a
-                          href={order.invoice_link_c}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline font-medium"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
+                    <td
+                      className="px-6 py-4 text-gray-600 cursor-pointer"
+                      onClick={() => {
+                        const input = extractEmail(order.real_name);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null));
+                        navigateTo("/");
+                      }}
+                    >
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{order.date_entered}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {order.order_id || "N/A"}

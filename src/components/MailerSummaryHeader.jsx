@@ -306,6 +306,7 @@ function SummaryCard({
           <div className="flex items-center gap-2">
             <button
               onClick={handleClick}
+              disabled={type == "invoice"}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
             >
               {data?.length > 0 ? (
@@ -316,7 +317,7 @@ function SummaryCard({
             </button>
             <button
               onClick={handleSync}
-              disabled={syncing}
+              disabled={syncing || type == "invoice"}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
             >
               <RefreshCcw className="w-4 h-4" />

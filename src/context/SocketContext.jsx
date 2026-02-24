@@ -17,6 +17,7 @@ export const SocketContextProvider = ({ children }) => {
   const [userIdle, setUserIdle] = useState(true)
   const [eventQueue, setEventQueue] = useState({})
   const eventQueueRef = useRef({});
+  const currentEventThreadId = useRef(null)
 
   useEffect(() => {
     eventQueueRef.current = eventQueue;
@@ -86,6 +87,8 @@ export const SocketContextProvider = ({ children }) => {
       showConsole && console.log("OUR CRM:", crmRef.current);
       showConsole && console.log("Mail site:", data.site_url);
       showConsole && console.log("new mail", data);
+      currentEventThreadId.current = data?.thread_id
+      console.log("currentEventThreadId", currentEventThreadId.current)
 
       if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {
@@ -141,6 +144,7 @@ export const SocketContextProvider = ({ children }) => {
         setUserIdle,
         userIdle,
         eventQueue,
+        currentEventThreadId,
         setEventQueue,
         eventQueueRef,
         setCrm,

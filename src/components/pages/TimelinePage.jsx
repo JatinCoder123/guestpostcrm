@@ -34,6 +34,7 @@ import { LoadingChase } from "../Loading";
 import { quickActionBtnActions } from "../../store/Slices/quickActionBtn";
 import useModule from "../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../store/constants";
+import { useNavigate } from "react-router-dom";
 export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
@@ -108,6 +109,7 @@ export function TimelinePage() {
   });
 
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
     useSelector((state) => state.ladger);
   const { emails, loading: unrepliedLoading } = useSelector(
@@ -780,6 +782,64 @@ export function TimelinePage() {
                         </button>
                       )}
                     </div>
+
+                    {buttonsLoading ? (
+                      <LoadingChase size="30" />
+                    ) : (
+                      buttons?.map((btn, i) => (
+                        <div key={i} className="relative group flex flex-col gap-2 items-center justify-center">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowUpdatePopup(true);
+                              setEditorContent(btn.name == "Ask Budget" ? askBudgetTemp[0]?.body_html : sorryTemp[0]?.body_html);
+                              setClickedActionBtn(btn.name);
+                            }}
+                            disabled={sending}
+                            className="
+      flex items-center justify-center w-12 h-12
+      bg-white rounded-xl shadow-md border border-gray-200
+      hover:shadow-lg active:scale-95 hover:-translate-y-1
+      transition-all
+    "
+                          >
+                            {clickedActionBtn === btn.id && sending ? (
+                              <LoadingChase size="20" />
+                            ) : (
+                              <img
+                                src={btn.icon}
+                                alt={btn.name}
+                                className="w-8 h-8"
+                              />
+                            )}
+                          </button>
+                          <button
+                            onClick={() =>
+                              navigate("/settings/templates", {
+                                state: { templateId: btn.name == "Ask Budget" ? askBudgetTemp[0]?.id : sorryTemp[0]?.id },
+                              })
+                            }
+                            className="text-cyan-600 hover:text-cyan-700"
+                          >
+                            <Pencil size={18} />
+                          </button>
+
+                          {/* TOOLTIP (layout-safe) */}
+                          <div
+                            dangerouslySetInnerHTML={{ __html: btn.body }}
+                            className="
+      pointer-events-none
+      absolute top-full mt-2 left-1/2 -translate-x-1/2
+      bg-black text-white text-xs px-2 py-1 rounded
+      opacity-0 scale-95
+      group-hover:opacity-100 group-hover:scale-100
+      transition-all duration-200
+      whitespace-nowrap shadow-lg z-50
+    "
+                          />
+                        </div>
+                      ))
+                    )}
                     {showFirstReplyBtn && (
                       <>
                         {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
@@ -834,55 +894,6 @@ export function TimelinePage() {
                           </div>
                         </div>
                       </>
-                    )}
-                    {buttonsLoading ? (
-                      <LoadingChase size="30" />
-                    ) : (
-                      buttons?.map((btn, i) => (
-                        <div key={i} className="flex items-center">
-                          <div className="relative group flex items-center justify-center">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowUpdatePopup(true);
-                                setEditorContent(btn.name == "Ask Budget" ? askBudgetTemp[0]?.body_html : sorryTemp[0]?.body_html);
-                                setClickedActionBtn(btn.name);
-                              }}
-                              disabled={sending}
-                              className="
-      flex items-center justify-center w-12 h-12
-      bg-white rounded-xl shadow-md border border-gray-200
-      hover:shadow-lg active:scale-95 hover:-translate-y-1
-      transition-all
-    "
-                            >
-                              {clickedActionBtn === btn.id && sending ? (
-                                <LoadingChase size="20" />
-                              ) : (
-                                <img
-                                  src={btn.icon}
-                                  alt={btn.name}
-                                  className="w-8 h-8"
-                                />
-                              )}
-                            </button>
-
-                            {/* TOOLTIP (layout-safe) */}
-                            <div
-                              dangerouslySetInnerHTML={{ __html: btn.body }}
-                              className="
-      pointer-events-none
-      absolute top-full mt-2 left-1/2 -translate-x-1/2
-      bg-black text-white text-xs px-2 py-1 rounded
-      opacity-0 scale-95
-      group-hover:opacity-100 group-hover:scale-100
-      transition-all duration-200
-      whitespace-nowrap shadow-lg z-50
-    "
-                            />
-                          </div>
-                        </div>
-                      ))
                     )}
                   </div>
                 </div>

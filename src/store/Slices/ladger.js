@@ -15,7 +15,7 @@ const ladgerSlice = createSlice({
     pageCount: 1,
     pageIndex: 1,
     error: null,
-    timeline: localStorage.getItem("timeline") || "last_7_days",
+    timeline: localStorage.getItem("timeline") || "today",
     message: null,
     duplicate: 0,
     searchNotFound: false,

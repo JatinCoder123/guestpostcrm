@@ -35,7 +35,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getOrderRem } from "../store/Slices/orderRem";
 
 function useRefresh() {
-    const { notificationCount, setNotificationCount } = useContext(SocketContext);
+    const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
     const {
         enteredEmail,
         currentIndex,

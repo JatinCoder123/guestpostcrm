@@ -106,6 +106,25 @@ export default function CreateOrder() {
     },
     name: "LI TEMPLATE",
   });
+  const {
+    loading: rejectOrderTempLoading,
+    data: rejectOrderTemp,
+    error: rejectOrderError,
+  } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "ORDER_REJECTED_TEMPLATE",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "ORDER_REJECTED_TEMPLATE",
+  });
   useEffect(() => {
     let order = orders.filter(
       (o) =>
@@ -145,7 +164,7 @@ export default function CreateOrder() {
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => {};
+  const sendHandler = () => { };
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -235,9 +254,9 @@ export default function CreateOrder() {
       renderPreview={({ data, email, onClose }) => {
         showConsole && console.log(currentOrderSend);
         const html = createPreviewOrder({
-          templateData:
+          templateData: (currentOrderSend.order_status == "wrong" || currentOrderSend.order_status == "rejected_nontechnical") ? rejectOrderTemp :
             currentOrderSend.order_type == "GUEST POST" ||
-            currentOrderSend.order_type == "BOTH"
+              currentOrderSend.order_type == "BOTH"
               ? gpTemplate
               : liTemplate,
           order: currentOrderSend,
