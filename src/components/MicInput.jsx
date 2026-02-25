@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 
 const MicInput = ({ editorRef }) => {
     const recognitionRef = useRef(null);
-    const lastTranscriptRef = useRef("");
+    const listeningRef = useRef(false); // real mic state
+    const finalTranscriptRef = useRef(""); // committed text
+
     const [listening, setListening] = useState(false);
 
     useEffect(() => {
@@ -18,67 +20,74 @@ const MicInput = ({ editorRef }) => {
 
         const recognition = new SpeechRecognition();
         recognition.lang = "en-US";
-        recognition.interimResults = false;
-        recognition.continuous = false;
+        recognition.interimResults = true;   // 🔥 REAL-TIME TEXT
+        recognition.continuous = true;       // 🔥 DON'T STOP ON SILENCE
 
         recognition.onresult = (event) => {
-            const result = event.results[event.resultIndex];
-            if (!result.isFinal) return;
+            let interimText = "";
 
-            const transcript = result[0].transcript.trim();
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
 
-            // 🔒 Prevent duplicate insert
-            if (!transcript || transcript === lastTranscriptRef.current) return;
-
-            lastTranscriptRef.current = transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscriptRef.current += transcript + " ";
+                } else {
+                    interimText += transcript;
+                }
+            }
 
             if (editorRef.current) {
-                editorRef.current.insertContent(transcript + " ");
+                editorRef.current.focus(); // ensure cursor is active
+
+                editorRef.current.insertContent(
+                    finalTranscriptRef.current + interimText
+                );
             }
         };
 
         recognition.onend = () => {
-            setListening(false); // 🔑 sync UI with real mic state
+            // 🔁 Auto-restart unless user stopped it
+            if (listeningRef.current) {
+                recognition.start();
+            }
         };
 
-        recognition.onerror = () => {
-            setListening(false);
+        recognition.onerror = (e) => {
+            console.error("Speech error:", e);
         };
 
-        recognitionRef.current = recognition; // 🔑 FIX #1
+        recognitionRef.current = recognition;
 
-        return () => {
-            recognition.stop();
-            recognitionRef.current = null;
-        };
+        return () => recognition.stop();
     }, [editorRef]);
 
     const toggleMic = () => {
         const recognition = recognitionRef.current;
         if (!recognition) return;
 
-        if (listening) {
-            recognition.stop();
+        if (listeningRef.current) {
+            listeningRef.current = false;
             setListening(false);
+            recognition.stop();
         } else {
-            lastTranscriptRef.current = ""; // reset before new session
-            recognition.start();
+            finalTranscriptRef.current = "";
+            listeningRef.current = true;
             setListening(true);
+            recognition.start();
         }
     };
 
     return (
         <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleMic}
-            className={`p-3 rounded-full cursor-pointer hover:opacity-90 shadow-lg transition-all duration-200 flex items-center gap-2 text-white ${listening
-                ? "bg-gradient-to-r from-red-500 to-pink-600 "
-                : "bg-slate-800 "
+            className={`p-3 rounded-full shadow-lg flex items-center gap-2 text-white ${listening
+                ? "bg-gradient-to-r from-red-500 to-pink-600"
+                : "bg-blue-600"
                 }`}
         >
             {listening ? <MicOff size={18} /> : <Mic size={18} />}
-
         </motion.button>
     );
 };

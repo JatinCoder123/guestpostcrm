@@ -24,6 +24,7 @@ import { PageContext } from "../../context/pageContext";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
 import OrderStatusCards from "../OrderStatusCards";
+import OrderStatusDonuts from "../OrderStatusDonut";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -323,7 +324,7 @@ export function OrdersPage() {
       order.real_name?.split("<")[0]?.trim() || "",
       order.total_amount_c,
       order.order_status,
-      order.complete_date,
+      order.date_modified,
       order.order_id,
     ]);
 
@@ -464,7 +465,7 @@ export function OrdersPage() {
       </div>
 
       {/* Stats Cards */}
-      <OrderStatusCards
+      <OrderStatusDonuts
         selectedStatus={activeStatStatus}
         counts={statusCounts}
         onSelect={(status) => {
@@ -613,7 +614,7 @@ export function OrdersPage() {
                     >
                       <div className="flex items-center gap-2 text-gray-600">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        <span>{order.date_entered}</span>
+                        <span>{order.date_modified}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600">
