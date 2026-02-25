@@ -8,12 +8,12 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getThreadEmail } from "../store/Slices/threadEmail";
+import { getThreadEmail } from "../../../store/Slices/threadEmail";
 import { toast } from "react-toastify";
-import { getDomain } from "../assets/assets";
+import { getDomain } from "../../../assets/assets.js";
 import { useNavigate } from "react-router-dom";
-import useIdle from "../hooks/useIdle";
-export default function EmailBox({
+import useIdle from "../../../hooks/useIdle";
+export default function ThreadView({
     onClose,
     view,
     threadId,

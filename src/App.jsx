@@ -52,6 +52,9 @@ import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
 import ComposePage from "./components/pages/ComposePage";
 import PromptTestingPage from "./components/pages/settingpages/PromptTestingPage";
+import ThreadMeta from "./components/pages/threads/ThreadMeta";
+import ThreadReply from "./components/pages/threads/ThreadReply";
+import ThreadView from "./components/pages/threads/ThreadView";
 
 const router = createBrowserRouter([
   {
@@ -210,6 +213,26 @@ const router = createBrowserRouter([
       {
         path: "hot-records",
         element: <HotPage />,
+      },
+      {
+        path: "thread",
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <ThreadMeta />,
+          },
+          {
+            path: ":threadId",
+            element: <ThreadView />,
+          },
+          {
+            path: ":threadId/reply",
+            element: <ThreadReply />,
+          },
+        ]
+
+
       },
 
       {
