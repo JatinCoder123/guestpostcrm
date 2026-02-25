@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   Zap,
   Edit,
+  Pencil,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +28,7 @@ import Attachment from "./Attachment";
 import { useNavigate } from "react-router-dom";
 import { ViewButton } from "./ViewButton";
 import useIdle from "../hooks/useIdle";
+import MicInput from "./MicInput";
 export default function EmailBox({
   onClose,
   view,
@@ -593,7 +595,7 @@ export default function EmailBox({
                           </h3>
                           <button
                             onClick={() => setShowTemplatePopup(false)}
-                            className="p-2 rounded-full hover:bg-gray-100"
+                            className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
                           >
                             <X className="w-6 h-6" />
                           </button>
@@ -605,20 +607,18 @@ export default function EmailBox({
                         )}
                         {/* TEMPLATE LIST */}
                         {!templateListLoading && (
-                          <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-3">
+                          <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-2">
                             {templateList.map((tpl) => (
-                              <ViewButton
+                              <motion.div
                                 key={tpl.id}
-                                Icon={Edit}
-                                onClick={() =>
-                                  navigate("/settings/templates", {
-                                    state: { templateId: tpl.id },
-                                  })
-                                }
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
+                                className="group relative rounded-xl border border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md transition-all"
                               >
-                                <motion.button
-                                  whileHover={{ scale: 1.02 }}
-                                  whileTap={{ scale: 0.98 }}
+                                {/* Accent bar */}
+                                <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-transparent group-hover:bg-indigo-500 transition-all" />
+
+                                <button
                                   onClick={() => {
                                     setEditorContent(tpl.body_html);
                                     setInput(tpl.body_html);
@@ -626,11 +626,31 @@ export default function EmailBox({
                                     setOpenParent(null);
                                     setShowTemplatePopup(false);
                                   }}
-                                  className="w-full text-left px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition font-medium"
+                                  className="w-full text-left px-5 py-4 flex flex-col gap-1"
                                 >
-                                  {tpl.name}
-                                </motion.button>
-                              </ViewButton>
+                                  {/* Header Row */}
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-semibold text-gray-900 truncate">
+                                      {tpl.name}
+                                    </h4>
+                                    <button onClick={() =>
+                                      navigate("/settings/templates", {
+                                        state: { templateId: tpl.id },
+                                      })
+                                    } className="cursor-pointer">
+                                      <Edit size={16} />
+
+                                    </button>
+                                  </div>
+
+                                  {/* Preview */}
+                                  <p className="text-xs text-gray-500 line-clamp-1">
+                                    {tpl.body_html
+                                      ?.replace(/<[^>]+>/g, "")
+                                      ?.slice(0, 90) || "No preview available"}
+                                  </p>
+                                </button>
+                              </motion.div>
                             ))}
                           </div>
                         )}
@@ -643,9 +663,6 @@ export default function EmailBox({
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                {/* DEFAULT TEMPLATE */}
-                {/* onClick={navigate("/settings/templates",{state:{templateId:de}})} */}
                 <ViewButton Icon={Edit}>
                   <motion.button
                     whileHover={{ scale: 1.05, y: -2 }}
@@ -757,6 +774,7 @@ export default function EmailBox({
                 </ViewButton>
 
                 <Attachment data={files} onChange={setFiles} />
+                <MicInput editorRef={editorRef} />
                 <div className="flex items-center gap-2 mb-3">
                   <button
                     onClick={() => setShowCC((p) => !p)}
@@ -920,11 +938,10 @@ export default function EmailBox({
                   >
                     <div
                       className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${
-    isUser
-      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-  }
+  ${isUser
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                        }
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
                     >
@@ -939,11 +956,10 @@ export default function EmailBox({
                         />
                       )}
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
-                          isUser
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
-                        }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700 border border-gray-200"
+                          }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">

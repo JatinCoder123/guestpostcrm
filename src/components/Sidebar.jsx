@@ -136,7 +136,7 @@ export function Sidebar() {
     },
     {
       id: "link-exchange",
-      label: "Link Exchange",
+      label: "Links Exchange",
       icon: Link,
       loading: linkExchangeLoading,
       count: linkExchangeCount,

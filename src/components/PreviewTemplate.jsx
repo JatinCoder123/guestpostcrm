@@ -10,6 +10,7 @@ import PageLoader from "./PageLoader";
 import { ViewButton } from "./ViewButton";
 import useModule from "../hooks/useModule";
 import useIdle from "../hooks/useIdle";
+import MicInput from "./MicInput";
 
 export const PreviewTemplate = ({
   editorContent,
@@ -286,6 +287,7 @@ export const PreviewTemplate = ({
                   setEditorContent(userContent);
                 }}
               />
+              <MicInput editorRef={editorRef} />
             </div>
 
             {/* SEND */}
