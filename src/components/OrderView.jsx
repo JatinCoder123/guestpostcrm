@@ -24,6 +24,14 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
   const onCompleteHandler = () => {
     setShowConsent(true);
   };
+  const { dofollowCount, nofollowCount } = data.seo_backlinks.reduce(
+    (acc, link) => {
+      if (link.link_type === "dofollow") acc.dofollowCount += 1;
+      if (link.link_type === "nofollow") acc.nofollowCount += 1;
+      return acc;
+    },
+    { dofollowCount: 0, nofollowCount: 0 }
+  );
 
   useEffect(() => {
     if (status) {
@@ -123,7 +131,7 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
           setStatus={setStatus}
           onCompleteHandler={onCompleteHandler}
         />
-        <div className="relative  rounded-3xl  p-10 border border-slate-700/50">
+        <div className="relative  rounded-3xl  p-2">
           <div className="relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
               <Field label="Date" value={data.date_entered_formatted} />
@@ -146,6 +154,17 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
                 label="Total Links"
                 value={data.seo_backlinks_count}
                 title="Total Links"
+                children={
+                  <div className="flex gap-4 text-sm">
+                    <span className="flex items-center gap-1 text-green-600 font-medium">
+                      DoFollow {dofollowCount}
+                    </span>
+
+                    <span className="flex items-center gap-1 text-gray-600 font-medium">
+                      NoFollow {nofollowCount}
+                    </span>
+                  </div>
+                }
               />
             </div>
           </div>
@@ -198,7 +217,11 @@ function Field({ label, value, link, children, title }) {
           <div className="relative z-10">
             <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
-              {label}
+              {label}  {children && (
+                <span className="ml-2 mb-1 text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                  {value}
+                </span>
+              )}
             </div>
             <div className="text-gray-800 font-semibold text-lg">
               {link ? (

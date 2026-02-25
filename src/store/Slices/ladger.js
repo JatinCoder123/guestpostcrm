@@ -28,6 +28,8 @@ const ladgerSlice = createSlice({
     getLadgerRequest(state) {
       state.loading = true;
       state.searchNotFound = false;
+      state.ladger = null
+      state.mailersSummary = null
       state.error = null;
       state.email = null;
     },

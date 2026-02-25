@@ -32,6 +32,11 @@ const fields = [
     type: "text",
     disabled: false,
   },
+  {
+    name: "note",
+    label: "Note",
+    type: "textarea",
+  }
 ];
 const lists = [
   { name: "our_link", label: "Our Link" },

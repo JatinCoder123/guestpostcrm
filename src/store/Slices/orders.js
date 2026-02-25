@@ -392,6 +392,14 @@ export const updateOrder = (order, send = true, id = null) => {
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const noteRes = await axios.post(
+        `${getState().user.crmEndpoint}&type=take_notes`,
+        {
+
+          "record_id": order.id,
+          "notes": order.note
+        }
+      );
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
