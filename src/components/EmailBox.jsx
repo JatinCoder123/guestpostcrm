@@ -258,12 +258,12 @@ export default function EmailBox({
     }
   };
   const visibleMessages = emails?.slice(-messageLimit);
-  const baseIndex = emails.length - visibleMessages.length;
-  const [focusedIndex, setFocusedIndex] = useState(visibleMessages.length - 1);
+  const baseIndex = emails.length - visibleMessages?.length;
+  const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (!visibleMessages || visibleMessages.length === 0) return;
+      if (!visibleMessages || visibleMessages?.length === 0) return;
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
@@ -280,7 +280,7 @@ export default function EmailBox({
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setFocusedIndex((prev) => {
-          const newIndex = Math.min(prev + 1, visibleMessages.length - 1);
+          const newIndex = Math.min(prev + 1, visibleMessages?.length - 1);
           scrollRef.current?.children[newIndex]?.scrollIntoView({
             behavior: "smooth",
             block: "center",
@@ -920,10 +920,10 @@ export default function EmailBox({
               {visibleMessages?.map((mail, idx) => {
                 const isUser = mail.from_email.includes(businessEmail);
                 const isFirst = idx === 0;
-                const isLast = idx === visibleMessages.length - 1;
+                const isLast = idx === visibleMessages?.length - 1;
 
                 // ✅ REAL index calculation
-                const baseIndex = emails.length - visibleMessages.length;
+                const baseIndex = emails?.length - visibleMessages?.length;
                 const realIndex = baseIndex + idx + 1;
                 return (
                   <motion.div
