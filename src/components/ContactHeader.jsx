@@ -14,7 +14,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
     navigate("/deals");
   };
   const { email } = useSelector((state) => state.ladger);
-  const { contactInfo, contactLoading, stage, status, customer_type, count } =
+  const { contactInfo, contactLoading, stage, status, customer_type, } =
     useSelector((state) => state.viewEmail);
 
   const { deals } = useSelector((state) => state.deals);
@@ -106,23 +106,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-5">
               {/* Inbox Button */}
-              <button
-                onClick={() => setShowEmails(true)}
-                className="relative rounded-xl bg-white border border-gray-200 shadow-md
-               hover:shadow-lg hover:-translate-y-1 active:scale-95
-               transition-all flex items-center justify-center"
-              >
-                <img
-                  src="https://img.icons8.com/keek/100/new-post.png"
-                  alt="new-post"
-                  className="w-12 h-12"
-                />
-                {count > 0 && (
-                  <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {count}
-                  </span>
-                )}
-              </button>
+
 
               {/* Name + Email */}
               <div className="flex flex-col leading-tight">
@@ -140,15 +124,6 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
                     : email}
                 </Link>
               </div>
-
-              {/* Verified Badge */}
-              {contactInfo?.customer_type === "verified" && (
-                <img
-                  src="https://img.icons8.com/bubbles/100/verified-account.png"
-                  alt="verified"
-                  className="w-7 h-7"
-                />
-              )}
             </div>
             {/* STATUS GRID */}
             {!contactLoading && (

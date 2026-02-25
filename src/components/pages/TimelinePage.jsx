@@ -80,6 +80,7 @@ export function TimelinePage() {
     viewEmail,
     sending,
     threadId,
+    count
   } = useSelector((state) => state.viewEmail);
   const { loading: askBudgetTempLoading, data: askBudgetTemp } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
@@ -307,7 +308,7 @@ export function TimelinePage() {
   useEffect(() => {
     if (buttonsError) {
       toast.error(buttonsError);
-      dispatch(quickActionBtnActionslearErrors());
+      dispatch(quickActionBtnActions.clearErrors());
     }
     if (message) {
       setShowUpdatePopup(false);
@@ -626,23 +627,30 @@ export function TimelinePage() {
                 {/* Latest Message */}
 
                 <div className="bg-yellow-50 border border-yellow-200 rounded-3xl p-4  overflow-y-auto custom-scrollbar shadow-sm">
-                  <div className="flex flex-col justify-center mb-2">
+                  <div className="flex flex-col gap-2 justify-center mb-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <h3 className="text-yellow-700 font-semibold">
                           Latest Message
                         </h3>
-                        <motion.button
-                          whileHover={{ scale: 1.15 }}
-                          whileTap={{ scale: 0.95 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                          className="flex items-center gap-2 rounded-full bg-white/90 shadow-lg hover:shadow-xl border border-gray-200 p-2 ml-2 cursor-pointer"
-                          onClick={() => {
-                            setShowEmail(true);
-                          }}
+                        <button
+                          onClick={() => setShowEmail(true)}
+                          className="relative rounded-xl bg-white border border-gray-200 shadow-md
+               hover:shadow-lg hover:-translate-y-1 active:scale-95
+               transition-all flex items-center justify-center"
                         >
-                          <Reply className="w-6 h-6 text-yellow-700" />
-                        </motion.button>
+                          <img
+                            src="https://img.icons8.com/keek/100/new-post.png"
+                            alt="new-post"
+                            className="w-8 h-8"
+                          />
+                          {count > 0 && (
+                            <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                              {count}
+                            </span>
+                          )}
+                        </button>
+
                       </div>
 
                       {viewEmail?.length > 0 && (

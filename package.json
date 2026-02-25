@@ -51,7 +51,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^12.23.24",
     "input-otp": "^1.4.2",
-    "js-beautify": "^1.15.4",
+    "js-beautify": "^1.14.8",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
     "ldrs": "^1.1.9",
@@ -72,6 +72,7 @@
     "tailwind-merge": "*",
     "tailwindcss": "^4.1.17",
     "vaul": "^1.1.2",
+    "victory": "^37.3.6",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
