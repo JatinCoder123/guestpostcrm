@@ -67,7 +67,6 @@ const SyncSelectionModal = ({
             onClose()
         }
         if (orderMessage) {
-            // toast.success(orderMessage)
             ManualSideCall(
                 crmEndpoint,
                 email,
@@ -75,7 +74,6 @@ const SyncSelectionModal = ({
                 1,
                 refreshLadger,
             );
-            orderAction.clearAllMessages()
             onClose()
         }
         if (offerError) {
