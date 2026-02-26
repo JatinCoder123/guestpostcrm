@@ -78,7 +78,6 @@ export default function CreateOffer() {
   });
   const [currentOffers, setCurrentOffers] = useState([]);
   const { enteredEmail, search } = useContext(PageContext);
-  const { setNotificationCount } = useContext(SocketContext);
   const [editorContent, setEditorContent] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [validWebsite, setValidWebsite] = useState([]);
@@ -161,6 +160,8 @@ export default function CreateOffer() {
           ),
           message: "Offer Send Successfully",
           threadId: state?.threadId,
+          email: state?.email
+
         }
       ),
     );
@@ -172,6 +173,8 @@ export default function CreateOffer() {
           reply: editorContent,
           message: "Offer Send Successfully",
           threadId: state?.threadId,
+          email: state?.email
+
         }
       ),
     );

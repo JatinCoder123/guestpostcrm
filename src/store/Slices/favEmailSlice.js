@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { updateActivity } from "../../services/utils";
 
 const favSlice = createSlice({
   name: "fav",
@@ -109,6 +110,8 @@ export const favEmail = () => {
         favSlice.actions.favouriteEmailSucess(message)
       );
       dispatch(favSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, data.new_value === 1 ? "Email Favorited " : "Email Unfavorited ")
+
     } catch (error) {
       dispatch(favSlice.actions.favouriteEmailFailed(error.message));
     }

@@ -156,7 +156,7 @@ export default function Create({
                           state: { threadId, email },
                         });
                       } else {
-                        navigate("/");
+                        navigate(-1);
                       }
                     }}
                     className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition"

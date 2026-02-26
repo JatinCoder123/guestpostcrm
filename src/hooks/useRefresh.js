@@ -47,6 +47,7 @@ function useRefresh() {
 
     const { emails, loading } = useSelector((state) => state.unreplied);
     const { timeline, email, latest } = useSelector((state) => state.ladger);
+    const { threadId } = useSelector((state) => state.viewEmail);
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
         dispatch(getAiCredits());
@@ -72,20 +73,27 @@ function useRefresh() {
         setCurrentIndex(0);
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {
-        if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, search }));
-            dispatch(getViewEmail(enteredEmail));
-            dispatch(getContact(enteredEmail));
-        } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, search }));
-            dispatch(getViewEmail(firstEmail));
-            dispatch(getContact(firstEmail));
-        } else if (!loading) {
-            dispatch(getLadger({ search, isEmail: false }));
+        console.log("REFRESH LADGER")
+        if (currentEventThreadId.current == threadId) {
+            if (enteredEmail) {
+                dispatch(getLadger({ email: enteredEmail, search }));
+                dispatch(getViewEmail(enteredEmail));
+                dispatch(getContact(enteredEmail));
+            } else if (firstEmail) {
+                dispatch(getLadger({ email: firstEmail, search }));
+                dispatch(getViewEmail(firstEmail));
+                dispatch(getContact(firstEmail));
+            } else if (!loading) {
+                dispatch(getLadger({ search, isEmail: false }));
+            }
+            dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
+            dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
+            dispatch(viewEmailAction.resetViewEmail());
         }
-        dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
-        dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
-        dispatch(viewEmailAction.resetViewEmail());
+
+
+
+
     };
     useEffect(() => {
         if (emails?.length > 0) {
@@ -124,19 +132,19 @@ function useRefresh() {
 
     // Handle socket notifications
     useEffect(() => {
+        if (notificationCount.refreshUnreplied) {
+            refreshLadger();
+            setNotificationCount((prev) => ({
+                ...prev,
+                refreshUnreplied: null,
+            }));
+        }
         if (notificationCount.unreplied_email) {
             refreshLadger();
             dispatch(checkForDuplicates());
             setNotificationCount((prev) => ({
                 ...prev,
                 unreplied_email: null,
-            }));
-        }
-        if (notificationCount.refreshUnreplied) {
-            refreshLadger();
-            setNotificationCount((prev) => ({
-                ...prev,
-                refreshUnreplied: null,
             }));
         }
         if (notificationCount.outr_el_process_audit) {

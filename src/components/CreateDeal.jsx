@@ -91,7 +91,6 @@ export default function CreateDeal() {
   const [newDeals, setNewDeals] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { setNotificationCount } = useContext(SocketContext);
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -180,7 +179,8 @@ export default function CreateDeal() {
             />,
           ),
           message: "Deal Send Successfully",
-          threadId: state?.threadId
+          threadId: state?.threadId,
+          email: state?.email
 
         }
       ),
@@ -204,6 +204,8 @@ export default function CreateDeal() {
           reply: editorContent,
           message: "Deal Send Successfully",
           threadId: state?.threadId,
+          email: state?.email
+
         }
       ),
     );

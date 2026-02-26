@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
+import { updateActivity } from "../../services/utils";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -168,6 +169,8 @@ export const createDeal = (threadId, deals = [], send = false) => {
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Deal Created")
+
     } catch (error) {
       dispatch(dealsSlice.actions.createDealFailed("Deal Creation Failed"));
     }
@@ -213,6 +216,8 @@ export const updateDeal = (deal, send) => {
       });
       dispatch(dealsSlice.actions.updateDealSucess({ message: `Deal Updated ${send ? "and Send Successfully" : "Successfully"}`, deals: updatedDeals }));
       dispatch(dealsSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Deal Updated")
+
     } catch (error) {
       dispatch(dealsSlice.actions.updateDealFailed("Deal Update Failed"));
     }
@@ -236,6 +241,8 @@ export const deleteDeal = (id) => {
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Deal Deleted")
+
     } catch (error) {
       dispatch(dealsSlice.actions.deleteDealFailed(error.message));
     }
