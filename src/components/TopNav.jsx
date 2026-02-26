@@ -48,7 +48,6 @@ export function TopNav() {
     setWelcomeHeaderContent("");
     setSearch("");
     setEnteredEmail(null);
-    navigateTo("/");
   };
 
   const handleKeyPress = (e) => {

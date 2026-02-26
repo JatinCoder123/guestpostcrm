@@ -6,54 +6,32 @@ import {
     PauseCircle,
     BadgeCheck,
     StoreIcon,
-    ListFilter,
+    DollarSign,
+    NotepadTextDashed,
+    SendHorizonal,
 } from "lucide-react";
 
 export const STATUS_CARDS = [
     {
-        key: "new",
-        label: "New",
-        icon: Package,
+        key: "sent",
+        label: "Sent",
+        icon: SendHorizonal,
         color: "#2563eb", // blue
     },
     {
-        key: "accepted",
-        label: "Accepted",
-        icon: CheckCircle,
+        key: "paid",
+        label: "Paid",
+        icon: DollarSign,
         color: "#16a34a", // green
     },
     {
-        key: "rejected",
-        label: "Rejected",
-        icon: XCircle,
-        color: "#dc2626", // red
-    },
-    {
-        key: "pending",
-        label: "Pending",
-        icon: PauseCircle,
+        key: "draft",
+        label: "Draft",
+        icon: NotepadTextDashed,
         color: "#ca8a04", // yellow
     },
-    {
-        key: "completed",
-        label: "Completed",
-        icon: BadgeCheck,
-        color: "#7c3aed", // purple
-    },
-    {
-        key: "marketplace",
-        label: "Marketplace",
-        icon: StoreIcon,
-        color: "#ed3ab7", // purple
-    },
-    {
-        key: "listacle",
-        label: "Listacle",
-        icon: ListFilter,
-        color: "#56cd1f", // purple
-    },
 ];
-export default function OrderStatusDonuts({
+export default function InvoiceStatusDonuts({
     selectedStatus,
     onSelect,
     stats = [],
@@ -66,17 +44,16 @@ export default function OrderStatusDonuts({
         (sum, item) => sum + Number(item.total_amount),
         0
     ) || 1;
+
     return (
         <div className="flex flex-wrap gap-6 items-center mb-6">
             {STATUS_CARDS.map(({ key, label, icon, color }) => (
                 <StatusDonut
                     key={key}
                     label={label}
-                    totalAmount={totalAmount}
                     icon={icon}
-                    value={Number(stats.find(s => s.status == key)?.status_count) || 0}
-                    amount={stats.find(s => s.status == key)?.total_amount || 0}
-                    total={total}
+                    value={Number(stats.find(s => s.status.toLowerCase() == key)?.status_count) || 0}
+                    amount={stats.find(s => s.status.toLowerCase() == key)?.total_amount || 0} total={total}
                     color={color}
                     active={selectedStatus === key}
                     onClick={() => onSelect(key)}

@@ -29,9 +29,10 @@ import { toast } from "react-toastify";
 import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
+import InvoiceStatusDonuts from "../InvoiceStatusDonuts";
 
 export function InvoicesPage() {
-  const { invoices, count, summary, loading, message, error, updating } =
+  const { invoices, count, summary, loading, stats, message, error, updating } =
     useSelector((state) => state.invoices);
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
   const { setSearch, setEnteredEmail } = useContext(PageContext);
@@ -41,6 +42,8 @@ export function InvoicesPage() {
   const [filters, setFilters] = useState({});
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+  const [activeStatStatus, setActiveStatStatus] = useState("draft");
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -131,20 +134,7 @@ export function InvoicesPage() {
       label: "Date",
       placeholder: "Select date range",
     },
-    // {
-    //   key: 'transactionType',
-    //   type: 'select',
-    //   label: 'Transaction type',
-    //   options: [
-    //     { value: 'all', label: 'All transactions' },
-    //     { value: 'invoice', label: 'Invoice' },
-    //     { value: 'payment', label: 'Payment' },
-    //     { value: 'refund', label: 'Refund' },
-    //     { value: 'credit', label: 'Credit' },
-    //     { value: 'debit', label: 'Debit' },
-    //   ],
-    //   defaultValue: 'all'
-    // },
+
     {
       key: "paymentMethod",
       type: "select",
@@ -321,6 +311,21 @@ export function InvoicesPage() {
         );
       }
       return true;
+    }).filter((item) => {
+      if (!activeStatStatus) return true;
+
+      const status = item.status_c?.toLowerCase().trim();
+
+      switch (activeStatStatus) {
+        case "sent":
+          return status === "sent";
+        case "paid":
+          return status.includes("paid");
+        case "draft":
+          return status === "draft";
+        default:
+          return true;
+      }
     });
 
   const dropdownOptions = [
@@ -528,67 +533,18 @@ export function InvoicesPage() {
           </div>
         </div>
       )}
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Total Invoices</p>
-              <p className="text-2xl text-gray-900 mt-1">{count}</p>
-            </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <FileText className="w-6 h-6 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Paid</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {summary?.paid_count}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Sent</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {summary?.sent_count}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">⏳</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Paid Amount</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                ${summary?.total_paid_amount}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">💸</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <InvoiceStatusDonuts
+        selectedStatus={activeStatStatus}
+        stats={stats}
+        onSelect={(status) => {
+          setActiveStatStatus(status);
+          setSelectedCategory("search");
+        }}
+      />
 
       {/* Invoices Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between px-2 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6 text-yellow-600" />
             <h2 className="text-xl font-semibold text-gray-900">INVOICES</h2>
@@ -728,8 +684,8 @@ export function InvoicesPage() {
                           {getPaymentMethodIcon(invoice.payment_method)}
                           {invoice.payment_method
                             ? invoice.payment_method
-                                .replace("_", " ")
-                                .toUpperCase()
+                              .replace("_", " ")
+                              .toUpperCase()
                             : "N/A"}
                         </span>
                       </div>

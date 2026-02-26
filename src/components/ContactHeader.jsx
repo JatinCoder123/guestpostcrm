@@ -237,7 +237,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
 
             <StatusCard
               Icon={Lock}
-              label="Customer Type"
+              label="Category"
               value={customer_type}
               color={{
                 bg: "bg-rose-50",
@@ -277,7 +277,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
             <StatusCard
               Icon={Flame}
               label="Assign To"
-              value={contactInfo?.assign_to_user_name ?? "-"}
+              value={contactInfo?.gpc_assigned_to ?? "-"}
               color={{
                 bg: "bg-indigo-50",
                 border: "border-indigo-200",
@@ -288,8 +288,8 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
             />
             <StatusCard
               Icon={Signature}
-              label="Last Activity Name"
-              value={contactInfo?.last_activity_name ?? "-"}
+              label="Last Activity "
+              value={contactInfo?.last_activity ?? "GPC"}
               color={{
                 bg: "bg-yellow-50",
                 border: "border-yellow-200",
@@ -301,7 +301,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
             <StatusCard
               Icon={CircleUser}
               label="Last Activity By"
-              value={contactInfo?.last_activity_by ?? "-"}
+              value={contactInfo?.last_user ?? "GPC User"}
               color={{
                 bg: "bg-pink-50",
                 border: "border-pink-200",

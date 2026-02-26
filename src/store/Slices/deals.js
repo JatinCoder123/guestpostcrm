@@ -178,6 +178,15 @@ export const updateDeal = (deal, send) => {
     dispatch(dealsSlice.actions.updateDealRequest());
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const noteRes = await axios.post(
+        `${getState().user.crmEndpoint}&type=take_notes`,
+        {
+
+          "record_id": deal.id,
+          "notes": deal.note,
+          "type1": "deals"
+        }
+      );
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {

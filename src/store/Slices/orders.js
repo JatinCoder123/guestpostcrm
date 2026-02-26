@@ -10,6 +10,7 @@ const ordersSlice = createSlice({
     orders: [],
     statusLists: {},
     count: 0,
+    stats: [],
     pageCount: 1,
     pageIndex: 1,
     error: null,
@@ -33,12 +34,13 @@ const ordersSlice = createSlice({
       state.error = null;
     },
     getOrdersSucess(state, action) {
-      const { count, orders, pageCount, pageIndex, statusLists, summary } =
+      const { count, orders, pageCount, pageIndex, statusLists, summary, stats } =
         action.payload;
       state.loading = false;
       state.orders = orders;
       state.statusLists = statusLists;
       state.count = count;
+      state.stats = stats
       state.updateId = null;
       state.summary = summary;
       state.pageCount = pageCount;
@@ -195,6 +197,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
           count: data.data_count ?? 0,
           statusLists: data.order_status_list,
           orders: data.data,
+          stats: data.stats ?? [],
           pageCount: data.total_pages,
           pageIndex: data.current_page,
           summary: data.summary ?? null,
@@ -203,7 +206,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        ordersSlice.actions.getOrdersFailed("Fetching Orders orders Failed"),
+        ordersSlice.actions.getOrdersFailed("Fetching Orders Failed"),
       );
     }
   };
@@ -306,7 +309,7 @@ export const createOrder2 = (email, order, send, threadId) => {
     }
   };
 };
-export const createOrder3 = (email, orders = [], send, threadId) => {
+export const createOrder3 = (email, orders = [], send) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     console.log("EMAIL", email)
@@ -317,57 +320,9 @@ export const createOrder3 = (email, orders = [], send, threadId) => {
       {
         orders.map(async (order) => {
 
-          res = await axios.post(
-            `${domain}?entryPoint=get_post_all&action_type=post_data`,
-
-            {
-              parent_bean: {
-                module: "outr_order_gp_li",
-                name: email,
-                client_email: email,
-                order_type: order.order_type,
-                thread_id: threadId
-              },
-            },
-            {
-              headers: {
-                "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-                "Content-Type": "aplication/json",
-              },
-            },
-
-          );
+          res = await axios.get(
+            `${domain}?entryPoint=manual_order&email=${email}&message_id=${order.message_id}&website=${order.website}&amount=${order.amount}`);
           showConsole && console.log(`Create Order Manully`, res.data);
-          if (res.data?.parent_created) {
-            order.seo_backlinks.map(async (link) => {
-              const res1 = await axios.post(
-                `${domain}?entryPoint=get_post_all&action_type=post_data`,
-
-                {
-                  parent_bean: {
-                    module: "outr_order_gp_li",
-                    id: res.data.parent_id
-                  },
-                  child_bean: {
-                    module: "outr_seo_backlinks",
-                    ...link
-                  }
-                },
-                {
-                  headers: {
-                    "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-                    "Content-Type": "aplication/json",
-                  },
-                },
-
-              );
-              console.log(res1.data)
-            })
-
-          }
-          else {
-            throw new Error("Failed To Create Order")
-          }
         })
       }
 

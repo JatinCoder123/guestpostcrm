@@ -167,7 +167,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                     {/* WEBSITE NAME */}
                     <div className="flex items-center justify-between gap-4 flex-wrap">
                       {/* Website */}
-                      <div className="flex justify-center flex-col gap-4 min-w-0">
+                      {item.type_c === "GP" && <div className="flex justify-center flex-col gap-4 min-w-0">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
 
@@ -183,7 +183,8 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                           </p>
                         </div>
 
-                      </div>
+                      </div>}
+
 
                       {/* Doc / Our Link */}
                       <div className="flex items-center gap-2">

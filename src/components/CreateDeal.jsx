@@ -15,8 +15,6 @@ import Create from "./Create";
 import { buildTable } from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  getContact,
-  getViewEmail,
   sendEmail,
   viewEmailAction,
 } from "../store/Slices/viewEmail";
@@ -41,7 +39,13 @@ export default function CreateDeal() {
       type: "select",
       options: websiteLists,
     },
+
     { name: "dealamount", label: "Deal Amount", type: "number" },
+    {
+      name: "note",
+      label: "Note",
+      type: "textarea",
+    }
   ];
   const { type, id } = useParams();
   const { state } = useLocation();

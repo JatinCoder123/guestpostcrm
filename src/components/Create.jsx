@@ -224,7 +224,7 @@ export default function Create({
                       data.map((item, itemIndex) => (
                         <div key={item.id} index={itemIndex}>
                           <div
-                            className={`bg-white relative  ${type == "orders" ? "border-b-2 border-cyan-500" : "border border-gray-100"}  p-6 ${pageType == "edit" && "pb-15"
+                            className={`bg-white relative  ${type == "orders" && pageType == "view" ? "border-b-2 border-cyan-500" : "border border-gray-100"}  p-6 ${pageType == "edit" && "pb-15"
                               } rounded-2xl shadow-sm `}
                           >
                             {pageType == "view" && (
