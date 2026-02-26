@@ -63,7 +63,6 @@ export default function CreateOrder() {
   const { crmEndpoint } = useSelector((state) => state.user);
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   const [currentOrderSend, setCurrentOrderSend] = useState(null);
-  const { setNotificationCount } = useContext(SocketContext);
   const { enteredEmail, search } = useContext(PageContext);
   const [editorContent, setEditorContent] = useState(null);
   const [newOrder, setNewOrder] = useState({});
@@ -137,10 +136,14 @@ export default function CreateOrder() {
         !(
           (o.order_status == "wrong" ||
             o.order_status == "rejected_nontechnical" ||
-            o.order_status == "completed") &&
+            (o.order_status == "completed" && !state?.orderId)) &&
           type != "edit"
         ),
     );
+    if (state?.orderId) {
+      order = order.filter((d) => d.order_id == state?.orderId);
+
+    }
     if (type == "edit" && id !== undefined) {
       order = order.filter((d) => d.id == id);
     }
@@ -188,6 +191,8 @@ export default function CreateOrder() {
         reply: editorContent,
         message: "Order Send Successfully",
         threadId: state?.threadId,
+        email: state?.email
+
       }),
     );
   };

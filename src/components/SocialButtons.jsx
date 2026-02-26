@@ -15,28 +15,6 @@ const SocialButtons = () => {
   const [animate, setAnimate] = useState(false);
   const [hasBeenClicked, setHasBeenClicked] = useState(false);
   const { contactInfo } = useSelector((state) => state.viewEmail);
-  const { notificationCount, setNotificationCount } = useContext(SocketContext);
-
-  // useEffect(() => {
-  //   if (duplicateCount > 0) {
-  //     setAnimate(true);
-  //     const timer = setTimeout(() => setAnimate(false), 300);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [duplicateCount]);
-
-  useEffect(() => {
-    if (notificationCount.unreplied_email) {
-      dispatch(enableDuplicateUpdates());
-      dispatch(checkForDuplicates());
-      setHasBeenClicked(false);
-      setNotificationCount((prev) => ({
-        ...prev,
-        unreplied_email: null,
-      }));
-    }
-  }, [notificationCount.unreplied_email, dispatch, setNotificationCount]);
-
   const handleDuplicateClick = () => {
     setHasBeenClicked(true);
     dispatch(resetDuplicateCount());
@@ -104,7 +82,7 @@ const SocialButtons = () => {
             ${animate ? "scale-125" : "scale-100"}
           `}
           >
-            {contactInfo?.duplicate_threads> 99 ? "99+" : contactInfo?.duplicate_threads}
+            {contactInfo?.duplicate_threads > 99 ? "99+" : contactInfo?.duplicate_threads}
           </div>
 
           {displayCount === 0 && (

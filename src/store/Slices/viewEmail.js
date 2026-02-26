@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
+import { updateActivity } from "../../services/utils";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -234,10 +235,12 @@ export const sendEmail = (
     bcc = [],
     email,
     threadId = null,
+    addActivity = false
   }
 ) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
+    const ladgerEmail = getState().ladger.email
 
     try {
       const formData = new FormData();
@@ -247,7 +250,7 @@ export const sendEmail = (
         threadId
       );
       formData.append("replyBody", reply);
-      formData.append("email", getState().ladger.email);
+      formData.append("email", email ?? ladgerEmail);
       formData.append(
         "current_email",
         getState().user.user.email
@@ -281,7 +284,9 @@ export const sendEmail = (
           message: message ?? data.message,
         })
       );
+
       dispatch(viewEmailSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, email ?? ladgerEmail, getState().user.user.name, getState().user.user.email, "Email Sent")
       dispatch(getViewEmail());
     } catch (error) {
       showConsole && console.log(error);

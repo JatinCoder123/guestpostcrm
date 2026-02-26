@@ -14,3 +14,19 @@ export const ManualSideCall = async (entryPoint, email, description, match_no, o
     }
 
 }
+export const updateActivity = async (entryPoint, email, last_user, last_user_email, last_activity) => {
+
+    try {
+        const { data } = await axios.post(`${entryPoint}&type=last_activity`, {
+            email,
+            last_activity,
+            last_user,
+            last_user_email
+        })
+        showConsole && console.log('Activity Added', data)
+
+    } catch (error) {
+        showConsole && console.log(error)
+    }
+
+}

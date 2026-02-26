@@ -238,6 +238,7 @@ export default function EmailBox({
         reply: contentToSend,
         attachments: files,
         threadId: view ? viewThreadId : threadId,
+        addActivity: true,
       }),
     );
   };
