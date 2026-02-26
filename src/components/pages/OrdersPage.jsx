@@ -9,7 +9,6 @@ import {
   Eye,
 } from "lucide-react";
 import { IoCheckmarkDoneCircleOutline } from "react-icons/io5"
-import { IoCheckmarkDoneCircleOutline } from "react-icons/io5"
 
 import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../Pagination";
@@ -60,12 +59,10 @@ export function OrdersPage() {
   const [statusOptions, setStatusOptions] = useState([])
   const { state } = useLocation();
   const { setSearch, setEnteredEmail, enteredEmail } = useContext(PageContext);
-  const { setSearch, setEnteredEmail, enteredEmail } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null);
   const [updateOrderId, setUpdateOrderId] = useState(null);
   const [actualOrder, setActualOrder] = useState([]);
   const { email } = useSelector((state) => state.ladger);
-  const { orders, count, stats, loading, error, message, updating, statusLists } =
   const { orders, count, stats, loading, error, message, updating, statusLists } =
     useSelector((state) => state.orders);
   const navigateTo = useNavigate();

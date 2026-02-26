@@ -147,7 +147,6 @@ export function TimelinePage() {
         message: "Quick Action Button Reply Sent",
         threadId,
         addActivity: true
-        addActivity: true
       }),
     );
     dispatch(
@@ -166,6 +165,7 @@ export function TimelinePage() {
         threadId,
         message: "Ai Reply Send Successfully",
         addActivity: true
+
       }),
     );
   };
