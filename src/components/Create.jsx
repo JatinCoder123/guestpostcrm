@@ -151,13 +151,9 @@ export default function Create({
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => {
-                      if (pageType == "edit" || pageType == "create") {
-                        navigate(`/${type}/view`, {
-                          state: { threadId, email },
-                        });
-                      } else {
-                        navigate(-1);
-                      }
+                      navigate(-1, {
+                        state: { threadId, email },
+                      });
                     }}
                     className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
                   >

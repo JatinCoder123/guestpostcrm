@@ -36,11 +36,11 @@ export default function InvoiceStatusDonuts({
     onSelect,
     stats = [],
 }) {
-    const total = stats.reduce(
+    const total = stats?.reduce(
         (sum, item) => sum + Number(item.status_count),
         0
     ) || 1;
-    const totalAmount = stats.reduce(
+    const totalAmount = stats?.reduce(
         (sum, item) => sum + Number(item.total_amount),
         0
     ) || 1;

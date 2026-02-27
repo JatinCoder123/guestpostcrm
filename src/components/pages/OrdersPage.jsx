@@ -531,7 +531,6 @@ export function OrdersPage() {
                   <tr
                     key={order.id}
                     className={`border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer `}
-                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer `}
                   >
                     <td
                       className="px-6 py-4 text-gray-600 cursor-pointer"
@@ -624,7 +623,6 @@ export function OrdersPage() {
                             })
                           }
                           className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
-                          className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
                           title="Update"
                         >
                           <Pen className="w-5 h-5 text-blue-600" />
@@ -644,7 +642,7 @@ export function OrdersPage() {
                         >
                           <Eye className="w-5 h-5 text-blue-600" />
                         </button>
-                        {order.order_status == "marketplace" && updateOrderId !== order.order_id && <button
+                        {order.order_type == "MARKETPLACE" && order.order_status !== "completed" && <button
                           onClick={() => {
                             dispatch(updateOrder({ ...order, order_status: "completed" }, false, order.order_id))
                             setUpdateOrderId(order.order_id)

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { showConsole } from "../../assets/assets";
+import { extractEmail, showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
 
 const dealsSlice = createSlice({
@@ -176,7 +176,7 @@ export const createDeal = (threadId, deals = [], send = false) => {
     }
   };
 };
-export const updateDeal = (deal, send) => {
+export const updateDeal = (email = null, deal, send) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.updateDealRequest());
     try {
@@ -216,14 +216,14 @@ export const updateDeal = (deal, send) => {
       });
       dispatch(dealsSlice.actions.updateDealSucess({ message: `Deal Updated ${send ? "and Send Successfully" : "Successfully"}`, deals: updatedDeals }));
       dispatch(dealsSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Deal Updated")
+      updateActivity(getState().user.crmEndpoint, extractEmail(deal.real_name), getState().user.user.name, getState().user.user.email, "Deal Updated")
 
     } catch (error) {
       dispatch(dealsSlice.actions.updateDealFailed("Deal Update Failed"));
     }
   };
 };
-export const deleteDeal = (id) => {
+export const deleteDeal = (email, id) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.deleteDealRequest(id));
     try {
@@ -241,7 +241,7 @@ export const deleteDeal = (id) => {
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Deal Deleted")
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Deal Deleted")
 
     } catch (error) {
       dispatch(dealsSlice.actions.deleteDealFailed(error.message));

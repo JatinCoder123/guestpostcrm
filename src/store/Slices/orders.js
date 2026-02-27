@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { showConsole } from "../../assets/assets";
+import { extractEmail, showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
 
 const ordersSlice = createSlice({
@@ -393,7 +393,8 @@ export const updateOrder = (order, send = true, id = null) => {
       );
 
       dispatch(ordersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Order Updated ")
+
+      updateActivity(getState().user.crmEndpoint, extractEmail(order.real_name), getState().user.user.name, getState().user.user.email, "Order Updated ")
 
     } catch (error) {
       showConsole && console.log(error);

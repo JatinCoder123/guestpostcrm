@@ -65,7 +65,7 @@ export function DealsPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -331,7 +331,7 @@ export function DealsPage() {
                           <button
                             className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                             title="Delete"
-                            onClick={() => dispatch(deleteDeal(deal.id))}
+                            onClick={() => dispatch(excludeEmail(deal.real_name), deleteDeal(deal.id))}
                           >
                             <Trash className="w-5 h-5 text-red-600" />
                           </button>

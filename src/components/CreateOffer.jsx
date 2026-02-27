@@ -183,7 +183,7 @@ export default function CreateOffer() {
     dispatch(updateOffer(offer, send));
   };
   const handleDelete = (id) => {
-    dispatch(deleteOffer(id));
+    dispatch(deleteOffer(state?.email, id));
   };
   const submitHandler = (_, send = false) => {
     dispatch(createOffer(state?.threadId, newOffers, send));

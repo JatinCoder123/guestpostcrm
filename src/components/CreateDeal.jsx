@@ -190,7 +190,7 @@ export default function CreateDeal() {
     dispatch(updateDeal(item, shouldSend));
   };
   const handleDelete = (id) => {
-    dispatch(deleteDeal(id));
+    dispatch(deleteDeal(state?.email, id));
   };
   useEffect(() => {
     if (type == "create" && !state) {
