@@ -1,4 +1,4 @@
-import { Pencil, Trash, Check } from "lucide-react";
+import { Pencil, Trash, Check, LinkIcon, Dock } from "lucide-react";
 import {
   FiLink,
   FiTag,
@@ -7,13 +7,15 @@ import {
   FiHash,
   FiGlobe,
   FiGrid,
+  FiCheck,
+  FiLock,
 } from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
-
+import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
 function ValidTick() {
   return (
     <span className="relative group ml-2 inline-flex items-center">
@@ -162,64 +164,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                 {/* Links Box */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg p-4">
                   <TheirLink data={item} />
-
-                  <div className="relative z-10 p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
-                    {/* WEBSITE NAME */}
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
-                      {/* Website */}
-                      {item.type_c === "GP" && <div className="flex justify-center flex-col gap-4 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
-
-                          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                            Website
-                          </h3>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <FiGlobe className="text-slate-400" size={14} />
-                          <p className="text-sm text-slate-700 font-medium break-all">
-                            {item.name || "-"}
-                          </p>
-                        </div>
-
-                      </div>}
-
-
-                      {/* Doc / Our Link */}
-                      <div className="flex items-center gap-2">
-                        {item.type_c === "LI" ? (
-                          <OurLink link={item.target_url_c} label="Our Link" />
-                        ) : (
-                          <OurLink link={item.gp_doc_url_c} label="Doc Link" />
-                        )}
-
-                        {item.is_content_valid === true && <ValidTick />}
-                      </div>
-                    </div>
-
-                    {/* Doc Niche */}
-                    {item.type_c === "LI" ? (
-                      ""
-                    ) : (
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                        Doc Niche
-                      </h3>
-                    )}
-
-                    {/*Doc niche  */}
-                    <div className="flex items-start gap-2">
-                      {item.type_c === "LI" ? (
-                        ""
-                      ) : (
-                        <FiGrid className="text-slate-400 mt-0.5" size={14} />
-                      )}
-
-                      <p className="text-sm text-slate-700 font-medium break-all">
-                        {item.niche || ""}
-                      </p>
-                    </div>
-                  </div>
+                  <OurLink data={item} />
                 </div>
               </div>
             ))}
@@ -259,9 +204,8 @@ export function TheirLink({ data }) {
   return (
     <div className="relative p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-5 hover:shadow-md transition">
       {/* HEADER */}
-      <div className="flex items-center gap-3">
-        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+      <div className="flex  items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+        <h3 className="text-sm  font-bold text-white  uppercase tracking-widest">
           Their Link
         </h3>
       </div>
@@ -291,73 +235,250 @@ export function TheirLink({ data }) {
         <Meta icon={FiLink} label="Type" value={data.type_c} />
       </div>
 
-      {/* BACKLINK + SPAM */}
-      <div className="flex flex-wrap items-start justify-between gap-5 pt-3 ">
-        {/* Backlink */}
-        <div className="flex items-start gap-2 max-w-[75%]">
-          <FiLink className="text-slate-400 mt-1" size={14} />
-          <div>
-            <p className="text-xs text-slate-500">Backlink URL</p>
+      <div className="rounded-2xl   bg-white space-y-6">
+        <div className="flex flex-wrap items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
 
-            <a
-              href={data.backlink_url}
-              target="_blank"
-              className="group inline-flex items-center gap-1 mt-0.5 px-2 py-1 rounded-md
-                text-sm font-medium text-blue-600 bg-blue-50
-                hover:bg-blue-100 hover:underline transition"
-            >
-              {data.backlink_url}
-              <span className="opacity-0 group-hover:opacity-100 transition">↗</span>
-            </a>
+            <div className="mt-1 p-2 rounded-lg bg-indigo-50">
+              <FiLink size={14} className="text-indigo-600" />
+            </div>
 
-            {data.is_link_valid && <ValidTick />}
+            <div className="flex-1">
+              <p className="text-xs font-medium text-slate-500">
+                Backlink URL
+              </p>
+
+              <div className="flex items-center gap-2 mt-1">
+                <a
+                  href={data.backlink_url}
+                  target="_blank"
+                  className="group inline-flex items-center gap-2 
+          rounded-lg bg-indigo-50 px-3 py-1.5
+          text-sm font-medium text-indigo-600
+          hover:bg-indigo-100 transition"
+                >
+                  <span className="truncate max-w-[150px]">
+                    {data.backlink_url}
+                  </span>
+                  <span className="opacity-0 group-hover:opacity-100 transition">
+                    ↗
+                  </span>
+                </a>
+
+                {data.is_link_valid && (
+                  <span className="flex items-center justify-center
+          w-6 h-6 rounded-full bg-emerald-100">
+                    <Check className="text-emerald-600" size={14} />
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div
+            className={`flex items-center gap-2 
+      rounded-full px-4 py-1.5
+      ring-1 ${spam.bg} ${spam.text} ${spam.ring}`}
+          >
+            Verdict
           </div>
         </div>
 
-        {/* Spam Score */}
-        <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full ring-1 ${spam.bg} ${spam.text} ${spam.ring}`}
-        >
-          <FiAlertTriangle size={14} />
-          <span className="text-xs font-bold">
-            Spam {data.spam_score_c}% · {spam.label}
-          </span>
+
+
+        <div className="flex flex-wrap items-center justify-between gap-4">
+
+          {/* LINK TYPE */}
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-slate-100">
+              <FiTag size={14} className="text-slate-500" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500 font-medium">
+                Link Type
+              </p>
+              <p className="text-sm font-semibold text-slate-800 capitalize">
+                {data.link_type}
+              </p>
+            </div>
+          </div>
+
+          {/* SPAM SCORE BADGE */}
+          <div
+            className={`flex items-center gap-2 
+      rounded-full px-4 py-1.5
+      ring-1 ${spam.bg} ${spam.text} ${spam.ring}`}
+          >
+            <FiAlertTriangle size={14} />
+            <span className="text-xs font-semibold">
+              Spam {data.spam_score_c}% · {spam.label}
+            </span>
+          </div>
         </div>
       </div>
-
-      {/* Link Type */}
-      <Meta
-        icon={FiTag}
-        label="Link Type"
-        value={data.link_type}
-      />
     </div>
   );
 }
 
-export function OurLink({ link, label }) {
+export function OurLink({ data }) {
+  const spam = getSpamStyle(data?.spam_score_c);
+
   return (
-    <div className="space-y-3">
+    <div className="relative p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-5 hover:shadow-md transition">
       {/* HEADER */}
-      <div className="flex items-center gap-3">
-        <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-          {label}
+      <div className="flex  items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+        <h3 className="text-sm  font-bold text-white  uppercase tracking-widest">
+          Our Link
         </h3>
       </div>
 
-      {/* LINK */}
-      <a
-        href={link}
-        target="_blank"
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg
-          bg-blue-50 text-blue-600 font-medium text-sm
-          hover:bg-blue-100 hover:underline transition truncate w-[240px]"
-      >
-        <FiLink size={14} />
-        {link || "-"}
-        {link && <ValidTick />}
-      </a>
+
+
+      {/* BACKLINK + SPAM */}
+      <div className="flex flex-wrap items-start gap-5  ">
+        {/* Backlink */}
+        {/* Backlink */}
+        {/* Backlink */}
+        {data?.type_c === "LI" && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+
+            {/* TARGET URL */}
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-indigo-50">
+                <FiLink className="text-indigo-600" size={14} />
+              </div>
+
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-600">
+                  Target URL
+                </p>
+
+                <a
+                  href={data?.target_url_c}
+                  target="_blank"
+                  className="group mt-2 inline-flex items-center gap-2 
+          rounded-lg bg-indigo-50 px-3 py-1.5
+          text-sm font-medium text-indigo-600
+          hover:bg-indigo-100 transition"
+                >
+                  <span className="truncate max-w-[280px]">
+                    {data?.target_url_c}
+                  </span>
+                  <span className="opacity-0 group-hover:opacity-100 transition">
+                    ↗
+                  </span>
+                </a>
+              </div>
+            </div>
+
+            {/* STATS GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              {/* GOOGLE */}
+              <StatCard
+                icon={<FaGoogle size={16} />}
+                label="Google Traffic"
+                value={100}
+                iconBg="bg-red-100"
+                iconColor="text-red-600"
+                cardBg="from-red-50 to-white"
+              />
+
+              {/* AHREFS */}
+              <StatCard
+                icon={<Fa500Px size={16} />}
+                label="Ahrefs Traffic"
+                value={100}
+                iconBg="bg-orange-100"
+                iconColor="text-orange-600"
+                cardBg="from-orange-50 to-white"
+              />
+
+              {/* SEMRUSH */}
+              <StatCard
+                icon={<FaAccusoft size={16} />}
+                label="Semrush Traffic"
+                value={100}
+                iconBg="bg-emerald-100"
+                iconColor="text-emerald-600"
+                cardBg="from-emerald-50 to-white"
+              />
+
+              {/* EXISTING LINKS */}
+              <StatCard
+                icon={<FaAddressBook size={16} />}
+                label="Existing Links"
+                value={100}
+                iconBg="bg-violet-100"
+                iconColor="text-violet-600"
+                cardBg="from-violet-50 to-white"
+              />
+
+            </div>
+          </div>
+        )}
+
+        {data?.type_c === "GP" && <>
+          <div className="flex justify-center flex-col gap-4 min-w-0">
+            <div className="flex items-center gap-2">
+              <FiGlobe className="text-slate-400" size={14} />
+
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                Website
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-slate-700 font-medium break-all">
+                {data?.name || "-"}
+              </p>
+            </div>
+
+          </div>
+          <div className="flex justify-center flex-col gap-4 min-w-0">
+            <div className="flex items-center gap-2">
+              <LinkIcon className="text-slate-400" size={14} />
+
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                Doc Link
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+
+              <a
+                href={data?.gp_doc_url_c}
+                target="_blank"
+                className="group inline-flex items-center gap-1 mt-0.5 px-2 py-1 rounded-md truncate
+                text-sm font-medium text-blue-600 bg-blue-50
+                hover:bg-blue-100 hover:underline transition"
+              >
+                {data?.gp_doc_url_c}
+                <span className="opacity-0 group-hover:opacity-100 transition">↗</span>
+              </a>
+            </div>
+
+          </div>
+          <div className="flex justify-center flex-col gap-4 min-w-0">
+            <div className="flex items-center gap-2">
+              <Dock className="text-slate-400" size={14} />
+
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                Doc Niche
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-slate-700 font-medium break-all">
+                {data?.niche || "-"}
+              </p>
+            </div>
+
+          </div>
+        </>}
+
+
+      </div>
+
     </div>
   );
 }
@@ -376,3 +497,28 @@ function Meta({ icon: Icon, label, value, valid }) {
     </div>
   );
 }
+const StatCard = ({ icon, label, value, iconBg, iconColor, cardBg }) => {
+  return (
+    <div
+      className={`flex items-center justify-between
+      rounded-xl border border-slate-200
+      bg-gradient-to-br ${cardBg}
+      px-4 py-3
+      hover:shadow-md hover:-translate-y-0.5
+      transition`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${iconBg} ${iconColor}`}>
+          {icon}
+        </div>
+        <p className="text-sm font-medium text-slate-700">
+          {label}
+        </p>
+      </div>
+
+      <span className="text-sm font-semibold text-slate-900">
+        {value}
+      </span>
+    </div>
+  );
+};
