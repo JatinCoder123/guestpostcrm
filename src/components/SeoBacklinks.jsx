@@ -1,4 +1,4 @@
-import { Pencil, Trash, Check, LinkIcon, Dock } from "lucide-react";
+import { Pencil, Trash, Check, LinkIcon, Dock, SparkleIcon } from "lucide-react";
 import {
   FiLink,
   FiTag,
@@ -9,6 +9,8 @@ import {
   FiGrid,
   FiCheck,
   FiLock,
+  FiArrowUpLeft,
+  FiArrowUpRight,
 } from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
@@ -175,7 +177,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   );
 }
 const getSpamStyle = (score) => {
-  if (score <= 30)
+  if (score <= 10)
     return {
       label: "Low",
       bg: "bg-green-100",
@@ -183,13 +185,13 @@ const getSpamStyle = (score) => {
       ring: "ring-green-400",
     };
 
-  if (score <= 60)
-    return {
-      label: "Medium",
-      bg: "bg-yellow-100",
-      text: "text-yellow-800",
-      ring: "ring-yellow-400",
-    };
+  // if (score <= 60)
+  //   return {
+  //     label: "Medium",
+  //     bg: "bg-yellow-100",
+  //     text: "text-yellow-800",
+  //     ring: "ring-yellow-400",
+  //   };
 
   return {
     label: "High",
@@ -211,7 +213,7 @@ export function TheirLink({ data }) {
       </div>
 
       {/* META GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1  sm:grid-cols-3 gap-5">
         {/* Anchor */}
         <Meta
           icon={FiTag}
@@ -257,7 +259,7 @@ export function TheirLink({ data }) {
           text-sm font-medium text-indigo-600
           hover:bg-indigo-100 transition"
                 >
-                  <span className="truncate max-w-[150px]">
+                  <span className="truncate max-w-[220px]">
                     {data.backlink_url}
                   </span>
                   <span className="opacity-0 group-hover:opacity-100 transition">
@@ -265,22 +267,49 @@ export function TheirLink({ data }) {
                   </span>
                 </a>
 
-                {data.is_link_valid && (
-                  <span className="flex items-center justify-center
-          w-6 h-6 rounded-full bg-emerald-100">
-                    <Check className="text-emerald-600" size={14} />
-                  </span>
-                )}
+
               </div>
             </div>
           </div>
-          <div
-            className={`flex items-center gap-2 
-      rounded-full px-4 py-1.5
-      ring-1 ${spam.bg} ${spam.text} ${spam.ring}`}
-          >
-            Verdict
+          <div className="relative inline-flex items-center">
+
+            {/* MAIN PILL */}
+            <div
+              className="
+      flex items-center gap-2
+      pl-4 pr-10 py-1.5
+      rounded-full
+      border-2
+      border-green-700
+      bg-green-100 text-green-700
+      text-sm font-semibold
+    "
+            >
+              {/* Warning Icon */}
+              <FiAlertTriangle className="w-4 h-4 text-green-700" />
+
+              {/* Text */}
+              <span className="font-bold">Star 5</span>
+
+              {/* Arrow */}
+              <FiArrowUpRight className="w-4 h-4 text-green-600" />
+            </div>
+
+            {/* CHECK CIRCLE (OVERLAPPED) */}
+            <div
+              className="
+                absolute -right-1
+      flex items-center justify-center
+      w-10 h-10
+      rounded-full
+      bg-green-600
+      shadow-md
+    "
+            >
+              <img width="94" height="94" src="https://img.icons8.com/3d-fluency/94/ok.png" alt="ok" />            </div>
+
           </div>
+
         </div>
 
 
@@ -301,18 +330,53 @@ export function TheirLink({ data }) {
               </p>
             </div>
           </div>
-
           {/* SPAM SCORE BADGE */}
-          <div
-            className={`flex items-center gap-2 
-      rounded-full px-4 py-1.5
-      ring-1 ${spam.bg} ${spam.text} ${spam.ring}`}
-          >
-            <FiAlertTriangle size={14} />
-            <span className="text-xs font-semibold">
-              Spam {data.spam_score_c}% · {spam.label}
-            </span>
+          <div className="relative inline-flex items-center">
+
+            {/* MAIN PILL */}
+            <div
+              className="
+      flex items-center gap-2
+      pl-4 pr-14 py-1.5
+      rounded-full
+      border-2
+      bg-emerald-100
+      text-emerald-700
+            border-green-700
+      text-sm font-semibold
+    "
+            >
+              {/* Warning Icon */}
+              <FiAlertTriangle className="w-4 h-4 text-green-700" />
+
+              {/* Text */}
+              <span>
+                Spam {data.spam_score_c}% · {spam.label}
+              </span>
+
+              {/* MOZ */}
+              <span className="ml-2 flex items-center gap-1 text font-bold text-blue-600">
+                MOZ
+                <span className="text-yellow-400 ">★</span>
+              </span>
+            </div>
+
+            {/* CHECK CIRCLE (ATTACHED) */}
+            {data.is_link_valid && (
+              <div
+                className="
+        absolute -right-1
+        flex items-center justify-center
+        w-10 h-10
+        rounded-full
+         bg-green-500
+        shadow-md
+      "
+              >
+                <img width="94" height="94" src="https://img.icons8.com/3d-fluency/94/ok.png" alt="ok" />                          </div>
+            )}
           </div>
+
         </div>
       </div>
     </div>
@@ -323,7 +387,7 @@ export function OurLink({ data }) {
   const spam = getSpamStyle(data?.spam_score_c);
 
   return (
-    <div className="relative p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-5 hover:shadow-md transition">
+    <div className="relative p-5  rounded-xl bg-white  shadow-sm space-y-5 hover:shadow-md transition">
       {/* HEADER */}
       <div className="flex  items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
         <h3 className="text-sm  font-bold text-white  uppercase tracking-widest">
@@ -334,12 +398,10 @@ export function OurLink({ data }) {
 
 
       {/* BACKLINK + SPAM */}
-      <div className="flex flex-wrap items-start gap-5  ">
-        {/* Backlink */}
-        {/* Backlink */}
-        {/* Backlink */}
+      <div className="flex flex-wrap items-center justify-center  ">
+
         {data?.type_c === "LI" && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+          <div className="rounded-2xl  border border-slate-200 bg-white p-6 shadow-sm space-y-6">
 
             {/* TARGET URL */}
             <div className="flex items-start gap-3">

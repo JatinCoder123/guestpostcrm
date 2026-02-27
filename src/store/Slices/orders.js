@@ -198,7 +198,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
           count: data.data_count ?? 0,
           statusLists: data.order_status_list,
           orders: data.data,
-          stats: data.stats ?? [],
+          stats: data.stats ? data.stats : [],
           pageCount: data.total_pages,
           pageIndex: data.current_page,
           summary: data.summary ?? null,

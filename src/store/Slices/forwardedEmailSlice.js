@@ -62,7 +62,7 @@ export const getForwardedEmails = ({ loading = true }) => {
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=forwarded&current_email=${getState().user.user.email}`
+        }&type=forwarded&current_email=${getState().user.user.email} `
       );
 
 
