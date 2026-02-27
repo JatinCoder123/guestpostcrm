@@ -16,19 +16,21 @@ const threadEmailSlice = createSlice({
       state.loading = true;
       state.threadEmail = [];
       state.error = null;
-      count
+      state.count = 0
     },
     getThreadEmailSucess(state, action) {
-      const { threadEmail } = action.payload;
+      const { threadEmail, count } = action.payload;
       state.loading = false;
       state.threadEmail = threadEmail;
       state.error = null;
       state.message = null;
+      state.count = count
     },
     getThreadEmailFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
       state.message = null;
+      state.count = 0
     },
     clearAllErrors(state) {
       state.error = null;
@@ -52,6 +54,7 @@ export const getThreadEmail = (email, threadId) => {
       dispatch(
         threadEmailSlice.actions.getThreadEmailSucess({
           threadEmail: data.emails,
+          count: data.total_emails ?? 0
         })
       );
       dispatch(threadEmailSlice.actions.clearAllErrors());

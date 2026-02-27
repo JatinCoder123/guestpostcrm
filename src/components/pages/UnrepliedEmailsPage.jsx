@@ -23,6 +23,7 @@ import SearchComponent from "./SearchComponent";
 import { ladgerAction } from "../../store/Slices/ladger";
 import { extractEmail } from "../../assets/assets";
 import TableLoading from "../TableLoading";
+import { useThreadContext } from "../../hooks/useThreadContext";
 
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState("");
@@ -36,6 +37,7 @@ export function UnrepliedEmailsPage() {
 
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
+  const { handleSetCurrent } = useThreadContext()
 
   const [
     handleThreadClick,
@@ -289,10 +291,9 @@ export function UnrepliedEmailsPage() {
                   <tr
                     key={email.thread_id}
                     className={`border-b border-gray-100 cursor-pointer transition-colors
-                      ${
-                        email.is_seen == 0
-                          ? "bg-blue-50 hover:bg-blue-100"
-                          : "hover:bg-purple-50"
+                      ${email.is_seen == 0
+                        ? "bg-blue-50 hover:bg-blue-100"
+                        : "hover:bg-purple-50"
                       }
                     `}
                   >
@@ -331,9 +332,11 @@ export function UnrepliedEmailsPage() {
 
                     <td
                       onClick={() => {
-                        setCurrentThreadId(email.thread_id);
-                        handleThreadClick(email.from, email.thread_id);
-                        setEmail(extractEmail(email.from));
+                        // setCurrentThreadId(email.thread_id);
+                        // handleThreadClick(email.from, email.thread_id);
+                        // setEmail(extractEmail(email.from));
+                        handleSetCurrent({ email: extractEmail(email.from), thread: email.thread_id })
+                        navigateTo(`/thread/${email.thread_id}`)
                         if (email.is_seen == 0) {
                           dispatch(
                             unrepliedAction.updateUnread({

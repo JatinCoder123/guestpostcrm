@@ -14,6 +14,7 @@ import { getDomain } from "../../../assets/assets.js";
 import { useNavigate } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
+import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 export default function ThreadView({
     importBtn = null,
 }) {
@@ -23,28 +24,19 @@ export default function ThreadView({
     const lastMessageRef = useRef(null);
     useIdle({ idle: false });
     const dispatch = useDispatch();
-    const {
-        viewEmail,
-        threadId: viewThreadId,
-        error: sendError,
-    } = useSelector((s) => s.viewEmail);
     const navigate = useNavigate();
     const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
-    const { threadEmail } = useSelector((s) => s.threadEmail);
-    const emails = view ? viewEmail : threadEmail;
-    useEffect(() => {
-        if (currentEmail && currentThread) {
-            dispatch(getThreadEmail(currentEmail, currentThread));
-        }
-    }, [currentEmail, currentThread]);
+    const { threadEmail: emails, loading, message, error } = useSelector((s) => s.threadEmail);
     const [messageLimit, setMessageLimit] = useState(3);
     const [openMessageId, setOpenMessageId] = useState(null);
     const [fullMessage, setFullMessage] = useState(null);
     const [fullLoading, setFullLoading] = useState(false);
     const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
-
     const [showEditorScreen, setShowEditorScreen] = useState(false);
     const attachmentBoxRef = useRef(null);
+    const visibleMessages = emails?.slice(-messageLimit);
+    const baseIndex = emails.length - visibleMessages?.length;
+    const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
     const downloadAttachment = (att) => {
         const link = document.createElement("a");
         link.href = att.description; // file URL
@@ -79,20 +71,14 @@ export default function ThreadView({
         }
     };
 
-
-
-
     const handleBackClick = () => {
-        if (showEditorScreen) {
-            setShowEditorScreen(false);
-        } else {
-            onClose();
-        }
+        navigate(-1)
     };
-
-    const visibleMessages = emails?.slice(-messageLimit);
-    const baseIndex = emails.length - visibleMessages?.length;
-    const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
+    useEffect(() => {
+        if (currentEmail && currentThread) {
+            dispatch(getThreadEmail(currentEmail, currentThread));
+        }
+    }, [currentEmail, currentThread]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -130,7 +116,6 @@ export default function ThreadView({
         if (!scrollRef.current) return;
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }, [emails?.length]);
-
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (
@@ -146,12 +131,15 @@ export default function ThreadView({
     }, []);
     return (
         <>
+
             <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                transition={{ type: "spring", damping: 25, stiffness: 500 }}
-                className="bg-white rounded-3xl shadow-2xl w-full h-screen flex flex-col overflow-hidden"
+                className="
+    fixed inset-0 z-[999]
+    bg-white
+    w-screen h-screen
+    flex flex-col
+    overflow-hidden
+  "
             >
                 {/* HEADER */}
                 <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
@@ -170,7 +158,7 @@ export default function ThreadView({
                                 className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
                                 onClick={() =>
                                     window.open(
-                                        `https://mail.google.com/mail/u/0/#inbox/${view ? viewThreadId : threadId}`,
+                                        `https://mail.google.com/mail/u/0/#inbox/${currentThread}`,
                                         "_blank",
                                     )
                                 }
@@ -185,7 +173,7 @@ export default function ThreadView({
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation(); // ⛔ prevent opening gmail
-                                    const link = `https://mail.google.com/mail/u/0/#inbox/${view ? viewThreadId : threadId}`;
+                                    const link = `https://mail.google.com/mail/u/0/#inbox/${currentThread}`;
                                     navigator.clipboard.writeText(link);
                                     toast.success("Email thread link copied!");
                                 }}
@@ -198,7 +186,7 @@ export default function ThreadView({
                     </div>
                     {importBtn && importBtn()}
                 </div>
-                <>
+                {loading ? <ThreadSkeleton /> : <>
                     <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">
                         {/* LOAD MORE / SHOW ALL (conditional) */}
                         {messageLimit < emails?.length && (
@@ -440,14 +428,15 @@ export default function ThreadView({
                         <motion.button
                             whileHover={{ scale: 1.05, y: -2 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={handleSendClick}
+                            onClick={() => navigate(`reply`)}
                             className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                         >
                             <Send className="w-5 h-5" />
                             <span>Reply</span>
                         </motion.button>
                     </div>
-                </>
+                </>}
+
 
                 <AnimatePresence>
                     {openMessageId && (
