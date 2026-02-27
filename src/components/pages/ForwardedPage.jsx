@@ -97,7 +97,7 @@ export function ForwardedPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => { };
+  const handleFilterApply = (filters) => {};
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -221,6 +221,12 @@ export function ForwardedPage() {
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
+                    <span>ASSIGNED AT</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
                     <span>CONTACT</span>
                   </div>
                 </th>
@@ -266,6 +272,23 @@ export function ForwardedPage() {
                         setEnteredEmail(input);
                         dispatch(ladgerAction.setTimeline(null));
                         setWelcomeHeaderContent("Assigned");
+                        navigateTo("/");
+                      }}
+                      className="px-6 py-4"
+                    >
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span>{email.date_modified}</span>
+                      </div>
+                    </td>
+                    <td
+                      onClick={() => {
+                        const input = extractEmail(email.email_address);
+                        localStorage.setItem("email", input);
+                        setSearch(input);
+                        setEnteredEmail(input);
+                        dispatch(ladgerAction.setTimeline(null));
+                        setWelcomeHeaderContent("Assigned");
                         navigateTo("/contacts");
                       }}
                       className="px-6 py-4 text-gray-900"
@@ -281,7 +304,6 @@ export function ForwardedPage() {
                     >
                       {email.subject}
                     </td>
-
                   </tr>
                 ))}
               </tbody>

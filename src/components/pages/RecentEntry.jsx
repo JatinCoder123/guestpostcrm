@@ -1,4 +1,10 @@
-import { CalendarDays, Mail, Activity, SparkleIcon, UserCircle } from "lucide-react";
+import {
+  CalendarDays,
+  Mail,
+  Activity,
+  SparkleIcon,
+  UserCircle,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useContext } from "react";
 import { getEvents } from "../../store/Slices/eventSlice";
@@ -75,9 +81,7 @@ export function RecentEntry() {
               <div className="flex items-center gap-2">
                 <Activity size={22} /> RECENT ACTIVITY
               </div>
-              <div className="flex items-center gap-2 justify-center">
-                USER
-              </div>
+              <div className="flex items-center gap-2 justify-center">USER</div>
             </div>
           </div>
 
@@ -113,7 +117,6 @@ export function RecentEntry() {
                       navigateTo("/");
                     }}
                   >
-
                     <span className="truncate">
                       {event.date_entered ?? "—"}
                     </span>
@@ -131,7 +134,6 @@ export function RecentEntry() {
                       )}
                     </div>
                   </div>
-
 
                   {/* CONTACT */}
                   <Tooltip content={contactName}>
@@ -179,7 +181,6 @@ export function RecentEntry() {
                   {/* PROMPT */}
                   <div className="flex items-center justify-center">
                     <UserCircle size={20} />
-
                   </div>
                 </div>
               );
