@@ -3,14 +3,13 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import useModule from "../hooks/useModule"; // ← adjust path if needed
-import { LoadingChase } from "./Loading"; // ← adjust path if needed
+import useModule from "../hooks/useModule";
+import { LoadingChase } from "./Loading";
 
 export default function TemplateSelectorModal({
   isOpen,
   onClose,
-  onSelect, // called when user clicks "Use This Template"
+  onSelect,
   crmEndpoint,
 }) {
   const navigate = useNavigate();
