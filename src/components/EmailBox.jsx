@@ -29,6 +29,8 @@ import { useNavigate } from "react-router-dom";
 import { ViewButton } from "./ViewButton";
 import useIdle from "../hooks/useIdle";
 import MicInput from "./MicInput";
+import { useMemo } from "react";
+import TemplateSelectorModal from "./TemplateSelectorModal";
 export default function EmailBox({
   onClose,
   view,
@@ -58,6 +60,7 @@ export default function EmailBox({
   const [aiNewContent, setAiNewContent] = useState("");
   const [popupStageType, setPopupStageType] = useState("");
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
+  const [sortOption, setSortOption] = useState("newest"); // "newest" or "oldest"
 
   const {
     loading: aiLoading,
@@ -80,6 +83,17 @@ export default function EmailBox({
     enabled: showTemplatePopup && !!popupStageType,
   });
   const emails = view ? viewEmail : threadEmail;
+
+  const sortedTemplates = useMemo(() => {
+    if (!templateList || templateList.length === 0) return [];
+
+    return [...templateList].sort((a, b) => {
+      const dateA = new Date(a.date_modified || a.date_entered || 0);
+      const dateB = new Date(b.date_modified || b.date_entered || 0);
+
+      return sortOption === "newest" ? dateB - dateA : dateA - dateB;
+    });
+  }, [templateList, sortOption]);
   useEffect(() => {
     if (!view && threadId) {
       dispatch(getThreadEmail(tempEmail, threadId));
@@ -597,153 +611,18 @@ export default function EmailBox({
                   </motion.button>
                 </ViewButton>
 
-                <AnimatePresence>
-                  {showTemplatePopup && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[200] bg-black/70 flex items-center justify-center p-4"
-                    >
-                      <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden"
-                      >
-                        {/* Header */}
-                        <div className="flex justify-between items-center px-8 py-5 border-b bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-3xl">
-                          <div>
-                            <h3 className="text-2xl font-bold">
-                              Choose Email Template
-                            </h3>
-                            <p className="text-indigo-100 text-sm mt-1">
-                              Select a template to load into composer
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => setShowTemplatePopup(false)}
-                            className="p-3 hover:bg-white/20 rounded-full transition"
-                          >
-                            <X size={28} />
-                          </button>
-                        </div>
-
-                        {/* Stage Filters */}
-                        <div className="p-6 border-b bg-gray-50">
-                          {stagesLoading ? (
-                            <div className="text-gray-500">Loading stages…</div>
-                          ) : (
-                            <div className="flex flex-wrap gap-2">
-                              {Object.entries(stages).map(([key, label]) => (
-                                <button
-                                  key={key}
-                                  onClick={() => setPopupStageType(key)}
-                                  className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${
-                                    popupStageType === key
-                                      ? "bg-indigo-600 text-white shadow"
-                                      : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-                                  }`}
-                                >
-                                  {label}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Templates Grid */}
-                        <div className="flex-1 overflow-auto p-8">
-                          {templateListLoading ? (
-                            <div className="flex justify-center py-20">
-                              <LoadingChase />
-                            </div>
-                          ) : templateList.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                              {templateList.map((tpl) => (
-                                <motion.div
-                                  key={tpl.id}
-                                  initial={{ opacity: 0, y: 30 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  whileHover={{ y: -6 }}
-                                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-200 overflow-hidden transition-all group cursor-pointer"
-                                >
-                                  <div className="p-6">
-                                    <h3 className="text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition">
-                                      {tpl.name}
-                                    </h3>
-                                    <p className="mt-3 text-sm text-gray-600 line-clamp-3">
-                                      {tpl.description ||
-                                        "No description available"}
-                                    </p>
-                                    <div className="mt-2 text-xs text-gray-400">
-                                      {tpl.date_modified || tpl.date_entered}
-                                    </div>
-                                  </div>
-                                  <div className="px-6 pb-6 flex gap-3">
-                                    <button
-                                      onClick={() => {
-                                        setEditorContent(tpl.body_html || "");
-                                        setInput(tpl.body_html || "");
-                                        setTemplateId(tpl.id);
-                                        setShowTemplatePopup(false);
-                                        toast.success(
-                                          `✅ "${tpl.name}" loaded into editor`,
-                                        );
-                                      }}
-                                      className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all"
-                                    >
-                                      <Mail size={19} />
-                                      Use This Template
-                                    </button>
-
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate("/settings/templates", {
-                                          state: { templateId: tpl.id },
-                                        });
-                                        setShowTemplatePopup(false);
-                                      }}
-                                      className="p-3 border border-gray-300 hover:bg-gray-100 rounded-xl flex items-center"
-                                    >
-                                      <Edit size={20} />
-                                    </button>
-                                  </div>
-                                </motion.div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-20">
-                              <p className="text-xl text-gray-600">
-                                No templates in this stage.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="p-6 border-t bg-gray-50 flex justify-between items-center rounded-b-3xl">
-                          <button
-                            onClick={() => {
-                              navigate("/settings/templates");
-                              setShowTemplatePopup(false);
-                            }}
-                            className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-2"
-                          >
-                            Manage All Templates →
-                          </button>
-                          <button
-                            onClick={() => setShowTemplatePopup(false)}
-                            className="px-8 py-3 text-gray-600 hover:bg-gray-100 rounded-2xl"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Template Selector Modal */}
+                <TemplateSelectorModal
+                  isOpen={showTemplatePopup}
+                  onClose={() => setShowTemplatePopup(false)}
+                  onSelect={(tpl) => {
+                    setEditorContent(tpl.body_html || "");
+                    setInput(tpl.body_html || "");
+                    setTemplateId(tpl.id);
+                    toast.success(`✅ "${tpl.name}" loaded into editor`);
+                  }}
+                  crmEndpoint={crmEndpoint}
+                />
                 <ViewButton Icon={Edit}>
                   <motion.button
                     whileHover={{ scale: 1.05, y: -2 }}
