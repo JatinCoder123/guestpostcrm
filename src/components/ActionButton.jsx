@@ -36,11 +36,11 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
   const dispatch = useDispatch();
   const [showUsers, setShowUsers] = useState(false);
   const [isMark, setIsMark] = useState(false);
+  const [linkActive, setLinkActive] = useState(false);
 
   const [showTags, setShowTags] = useState(false);
 
   /* 🔥 ADDED: First Reply states */
-  
 
   const { enteredEmail } = useContext(PageContext);
 
@@ -84,28 +84,47 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
 
   /* 🔥 ADDED: Check FR button visibility */
 
-
   /* 🔥 ADDED: Send first reply handler */
- 
+
   useEffect(() => {
     if (marketPlaces.length > 0) {
       setIsMark(marketPlaces.find((e) => e.name === email));
     }
   }, [marketPlaces]);
 
-  const FavIcon = () => {
-    const isFav = favEmails.some((e) => e.email_address === email);
+  /* 🔹 Blinking wrapper for active buttons */
+  const BlinkingButton = ({ children, isActive }) => {
+    return (
+      <motion.div
+        animate={
+          isActive
+            ? { opacity: [1, 0.4, 1] } // blink continuously
+            : { opacity: 1 }
+        }
+        transition={
+          isActive
+            ? { repeat: Infinity, duration: 0.8, ease: "easeInOut" }
+            : { duration: 0 }
+        }
+        className="flex items-center justify-center"
+      >
+        {children}
+      </motion.div>
+    );
+  };
 
+  /* 🔹 Updated FavIcon with blinking */
+  const FavIcon = ({ isFav }) => {
     return (
       <motion.div
         animate={{
-          color: isFav ? "#ef4444" : "#9ca3af", // red → gray
+          color: isFav ? "#ef4444" : "#9ca3af",
         }}
         transition={{
           duration: 0.18,
           ease: "easeInOut",
         }}
-        className="flex items-center justify-center"
+        className="flex items-center justify-center w-10 h-10 rounded-full"
       >
         <Heart
           size={22}
@@ -188,8 +207,6 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
       dispatch(linkExchangeaction.clearAllErrors());
     }
 
-
- 
     if (error) {
       toast.error(error);
       dispatch(threadEmailAction.clearAllErrors());
@@ -230,7 +247,15 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
       action: () => setShowIP(true),
     },
     {
-      icon: favourite ? <LoadingChase /> : <FavIcon />,
+      icon: favourite ? (
+        <LoadingChase />
+      ) : (
+        <BlinkingButton
+          isActive={favEmails.some((e) => e.email_address === email)}
+        >
+          <FavIcon isFav={favEmails.some((e) => e.email_address === email)} />
+        </BlinkingButton>
+      ),
       label: "Favourite",
       action: () => dispatch(favEmail(threadId)),
     },
@@ -238,23 +263,29 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
       icon: forward ? (
         <LoadingChase />
       ) : (
-        <img
-          src="https://img.icons8.com/color/48/redo.png"
-          className="w-6 h-6"
-          alt="forward"
-        />
+        <BlinkingButton isActive={forward}>
+          <img
+            src="https://img.icons8.com/color/48/redo.png"
+            className="w-6 h-6"
+            alt="forward"
+          />
+        </BlinkingButton>
       ),
       label: "Assign",
       action: () => setShowUsers((p) => !p),
     },
     {
       icon:
-        adding || (deleting && deleteMarketPlaceId == isMark.id) ? (
+        adding || (deleting && deleteMarketPlaceId == isMark?.id) ? (
           <LoadingChase />
-        ) : isMark ? (
-          <MdHome size={25} color="red" />
         ) : (
-          <MdOutlineHome size={25} color="red" />
+          <BlinkingButton isActive={isMark}>
+            {isMark ? (
+              <MdHome size={25} color="red" />
+            ) : (
+              <MdOutlineHome size={25} color="red" />
+            )}
+          </BlinkingButton>
         ),
       label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
       action: () =>
@@ -264,18 +295,26 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
             : addMarketPlace(email, contactInfo.type == "Brand"),
         ),
     },
+    // Inside the action button
     {
       icon: exchanging ? (
         <LoadingChase />
       ) : (
-        <img
-          src="https://img.icons8.com/office/40/link.png"
-          className="w-6 h-6"
-          alt="link"
-        />
+        <BlinkingButton isActive={linkActive}>
+          <img
+            src="https://img.icons8.com/office/40/link.png"
+            className="w-6 h-6"
+            alt="link"
+          />
+        </BlinkingButton>
       ),
       label: "Link Exchange",
-      action: () => dispatch(linkExchange(threadId)),
+      action: () => {
+        setLinkActive(true); // start blinking
+        dispatch(linkExchange(threadId)).finally(() => {
+          setTimeout(() => setLinkActive(false), 10000); // blink for 2s after success
+        });
+      },
     },
     {
       icon: (
@@ -364,7 +403,6 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
         ))}
 
         {/* 🔥 SEND FIRST REPLY BUTTON (NEW, SAFE, SAME CSS) */}
-      
 
         <MoveToDropdown
           currentThreadId={threadId}
