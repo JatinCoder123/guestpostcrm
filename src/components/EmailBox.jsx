@@ -56,6 +56,8 @@ export default function EmailBox({
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const [aiReplyContent, setAiReplyContent] = useState("");
   const [aiNewContent, setAiNewContent] = useState("");
+  const [popupStageType, setPopupStageType] = useState("");
+  const [showTemplatePopup, setShowTemplatePopup] = useState(false);
 
   const {
     loading: aiLoading,
@@ -66,20 +68,16 @@ export default function EmailBox({
 
   const {
     loading: templateListLoading,
-    data: templateList,
-    error,
-    refetch,
+    data: templateList = [],
+    refetch: refetchTemplates,
   } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: { module: "EmailTemplates" },
-    headers: {
-      "x-api-key": CREATE_DEAL_API_KEY,
-      "Content-Type": "application/json",
-    },
+    url: popupStageType
+      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${popupStageType}`
+      : null,
+    method: "GET",
     name: "TEMPLATE LIST",
-    dependencies: [crmEndpoint],
-    enabled: false,
+    dependencies: [crmEndpoint, popupStageType],
+    enabled: showTemplatePopup && !!popupStageType,
   });
   const emails = view ? viewEmail : threadEmail;
   useEffect(() => {
@@ -87,6 +85,27 @@ export default function EmailBox({
       dispatch(getThreadEmail(tempEmail, threadId));
     }
   }, [threadId, view]);
+  useEffect(() => {
+    const fetchStages = async () => {
+      setStagesLoading(true);
+      try {
+        const response = await fetch(
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=1`,
+        );
+        const result = await response.json();
+        if (result && typeof result === "object") {
+          setStages(result);
+          const firstKey = Object.keys(result)[0];
+          setPopupStageType(firstKey);
+        }
+      } catch (err) {
+        console.error("Failed to fetch stages", err);
+      } finally {
+        setStagesLoading(false);
+      }
+    };
+    if (crmEndpoint) fetchStages();
+  }, [crmEndpoint]);
   const [messageLimit, setMessageLimit] = useState(3);
   const [openMessageId, setOpenMessageId] = useState(null);
   const [fullMessage, setFullMessage] = useState(null);
@@ -103,7 +122,10 @@ export default function EmailBox({
 
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
-  const [showTemplatePopup, setShowTemplatePopup] = useState(false);
+
+  const [stages, setStages] = useState({});
+
+  const [stagesLoading, setStagesLoading] = useState(false);
   const attachmentBoxRef = useRef(null);
 
   // FETCH BUTTONS
@@ -581,87 +603,143 @@ export default function EmailBox({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center"
+                      className="fixed inset-0 z-[200] bg-black/70 flex items-center justify-center p-4"
                     >
                       <motion.div
-                        initial={{ scale: 0.9, y: 20 }}
-                        animate={{ scale: 1, y: 0 }}
-                        exit={{ scale: 0.9, y: 20 }}
-                        className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl"
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden"
                       >
-                        {/* HEADER */}
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-semibold text-gray-800">
-                            Select Email Template
-                          </h3>
+                        {/* Header */}
+                        <div className="flex justify-between items-center px-8 py-5 border-b bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-3xl">
+                          <div>
+                            <h3 className="text-2xl font-bold">
+                              Choose Email Template
+                            </h3>
+                            <p className="text-indigo-100 text-sm mt-1">
+                              Select a template to load into composer
+                            </p>
+                          </div>
                           <button
                             onClick={() => setShowTemplatePopup(false)}
-                            className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+                            className="p-3 hover:bg-white/20 rounded-full transition"
                           >
-                            <X className="w-6 h-6" />
+                            <X size={28} />
                           </button>
                         </div>
-                        {templateListLoading && (
-                          <div className="flex items-center justify-center">
-                            <LoadingChase />
-                          </div>
-                        )}
-                        {/* TEMPLATE LIST */}
-                        {!templateListLoading && (
-                          <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-2">
-                            {templateList.map((tpl) => (
-                              <motion.div
-                                key={tpl.id}
-                                whileHover={{ scale: 1.01 }}
-                                whileTap={{ scale: 0.99 }}
-                                className="group relative rounded-xl border border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md transition-all"
-                              >
-                                {/* Accent bar */}
-                                <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl bg-transparent group-hover:bg-indigo-500 transition-all" />
 
+                        {/* Stage Filters */}
+                        <div className="p-6 border-b bg-gray-50">
+                          {stagesLoading ? (
+                            <div className="text-gray-500">Loading stages…</div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {Object.entries(stages).map(([key, label]) => (
                                 <button
-                                  onClick={() => {
-                                    setEditorContent(tpl.body_html);
-                                    setInput(tpl.body_html);
-                                    setTemplateId(tpl.id);
-                                    setOpenParent(null);
-                                    setShowTemplatePopup(false);
-                                  }}
-                                  className="w-full text-left px-5 py-4 flex flex-col gap-1"
+                                  key={key}
+                                  onClick={() => setPopupStageType(key)}
+                                  className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${
+                                    popupStageType === key
+                                      ? "bg-indigo-600 text-white shadow"
+                                      : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+                                  }`}
                                 >
-                                  {/* Header Row */}
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-semibold text-gray-900 truncate">
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Templates Grid */}
+                        <div className="flex-1 overflow-auto p-8">
+                          {templateListLoading ? (
+                            <div className="flex justify-center py-20">
+                              <LoadingChase />
+                            </div>
+                          ) : templateList.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                              {templateList.map((tpl) => (
+                                <motion.div
+                                  key={tpl.id}
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  whileHover={{ y: -6 }}
+                                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-200 overflow-hidden transition-all group cursor-pointer"
+                                >
+                                  <div className="p-6">
+                                    <h3 className="text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition">
                                       {tpl.name}
-                                    </h4>
+                                    </h3>
+                                    <p className="mt-3 text-sm text-gray-600 line-clamp-3">
+                                      {tpl.description ||
+                                        "No description available"}
+                                    </p>
+                                    <div className="mt-2 text-xs text-gray-400">
+                                      {tpl.date_modified || tpl.date_entered}
+                                    </div>
+                                  </div>
+                                  <div className="px-6 pb-6 flex gap-3">
                                     <button
-                                      onClick={() =>
+                                      onClick={() => {
+                                        setEditorContent(tpl.body_html || "");
+                                        setInput(tpl.body_html || "");
+                                        setTemplateId(tpl.id);
+                                        setShowTemplatePopup(false);
+                                        toast.success(
+                                          `✅ "${tpl.name}" loaded into editor`,
+                                        );
+                                      }}
+                                      className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all"
+                                    >
+                                      <Mail size={19} />
+                                      Use This Template
+                                    </button>
+
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
                                         navigate("/settings/templates", {
                                           state: { templateId: tpl.id },
-                                        })
-                                      }
-                                      className="cursor-pointer"
+                                        });
+                                        setShowTemplatePopup(false);
+                                      }}
+                                      className="p-3 border border-gray-300 hover:bg-gray-100 rounded-xl flex items-center"
                                     >
-                                      <Edit size={16} />
+                                      <Edit size={20} />
                                     </button>
                                   </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-20">
+                              <p className="text-xl text-gray-600">
+                                No templates in this stage.
+                              </p>
+                            </div>
+                          )}
+                        </div>
 
-                                  {/* Preview */}
-                                  <p className="text-xs text-gray-500 line-clamp-1">
-                                    {tpl.body_html
-                                      ?.replace(/<[^>]+>/g, "")
-                                      ?.slice(0, 90) || "No preview available"}
-                                  </p>
-                                </button>
-                              </motion.div>
-                            ))}
-                          </div>
-                        )}
-                        {!templateListLoading && templateList.length === 0 && (
-                          <div className="flex items-center justify-center">
-                            <p className="text-gray-500">No templates found</p>
-                          </div>
-                        )}
+                        {/* Footer */}
+                        <div className="p-6 border-t bg-gray-50 flex justify-between items-center rounded-b-3xl">
+                          <button
+                            onClick={() => {
+                              navigate("/settings/templates");
+                              setShowTemplatePopup(false);
+                            }}
+                            className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-2"
+                          >
+                            Manage All Templates →
+                          </button>
+                          <button
+                            onClick={() => setShowTemplatePopup(false)}
+                            className="px-8 py-3 text-gray-600 hover:bg-gray-100 rounded-2xl"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </motion.div>
                     </motion.div>
                   )}
@@ -672,15 +750,8 @@ export default function EmailBox({
                     whileTap={{ scale: 0.98 }}
                     className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
                     onClick={() => {
-                      setTemplateId(null);
-                      if (defaultTemplate && editorRef.current) {
-                        const html = base64ToUtf8(defaultTemplate.html_base64);
-                        setEditorContent(html);
-                        setInput(html);
-                        setOpenParent(null);
-                      }
                       setShowTemplatePopup(true);
-                      refetch();
+                      refetchTemplates?.();
                     }}
                   >
                     <Mail className="w-4 h-4" />
