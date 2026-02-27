@@ -36,6 +36,7 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
   const dispatch = useDispatch();
   const [showUsers, setShowUsers] = useState(false);
   const [isMark, setIsMark] = useState(false);
+  const [linkActive, setLinkActive] = useState(false);
 
   const [showTags, setShowTags] = useState(false);
 
@@ -294,11 +295,12 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
             : addMarketPlace(email, contactInfo.type == "Brand"),
         ),
     },
+    // Inside the action button
     {
       icon: exchanging ? (
         <LoadingChase />
       ) : (
-        <BlinkingButton isActive={exchanging}>
+        <BlinkingButton isActive={linkActive}>
           <img
             src="https://img.icons8.com/office/40/link.png"
             className="w-6 h-6"
@@ -307,7 +309,12 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
         </BlinkingButton>
       ),
       label: "Link Exchange",
-      action: () => dispatch(linkExchange(threadId)),
+      action: () => {
+        setLinkActive(true); // start blinking
+        dispatch(linkExchange(threadId)).finally(() => {
+          setTimeout(() => setLinkActive(false), 10000); // blink for 2s after success
+        });
+      },
     },
     {
       icon: (
