@@ -44,23 +44,18 @@ const unansweredSlice = createSlice({
   },
 });
 
-export const getUnansweredEmails = ({ email = null, page = 1, loading = true }) => {
+export const getUnansweredEmails = ({ page = 1, loading = true }) => {
   return async (dispatch, getState) => {
     loading && dispatch(unansweredSlice.actions.getEmailRequest());
 
     try {
       let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=replied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=replied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
-        );
-      }
+
+      response = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=replied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
+      );
+
 
       showConsole && console.log(`Unanswered emails`, response.data);
       const data = response.data;

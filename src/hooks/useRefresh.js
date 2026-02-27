@@ -51,8 +51,6 @@ function useRefresh() {
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
         dispatch(getAiCredits());
-        dispatch(getUnansweredEmails({ email: enteredEmail }));
-        dispatch(getUnrepliedEmail({ email: enteredEmail }));
         dispatch(getForwardedEmails({}));
         dispatch(getFavEmails({ email: enteredEmail }));
         dispatch(getAllWebsites());
@@ -72,6 +70,10 @@ function useRefresh() {
         dispatch(getDuplicateCount());
         setCurrentIndex(0);
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
+    useEffect(() => {
+        dispatch(getUnansweredEmails({}));
+        dispatch(getUnrepliedEmail({}));
+    }, [timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {
         console.log("REFRESH LADGER")
         if (currentEventThreadId.current == threadId) {
@@ -86,8 +88,8 @@ function useRefresh() {
             } else if (!loading) {
                 dispatch(getLadger({ search, isEmail: false }));
             }
-            dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
-            dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
+            dispatch(getUnrepliedEmail({ loading: false }));
+            dispatch(getUnansweredEmails({ loading: false }));
             dispatch(viewEmailAction.resetViewEmail());
         }
 
