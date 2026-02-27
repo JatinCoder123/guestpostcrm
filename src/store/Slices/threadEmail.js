@@ -1,20 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
-
+const initialState = {
+  loading: false,
+  threadEmail: [],
+  message: null,
+  error: null,
+  count: 0,
+}
 const threadEmailSlice = createSlice({
   name: "threadEmail",
-  initialState: {
-    loading: false,
-    threadEmail: [],
-    message: null,
-    error: null,
-  },
+  initialState,
   reducers: {
     getThreadEmailRequest(state) {
       state.loading = true;
       state.threadEmail = [];
       state.error = null;
+      count
     },
     getThreadEmailSucess(state, action) {
       const { threadEmail } = action.payload;

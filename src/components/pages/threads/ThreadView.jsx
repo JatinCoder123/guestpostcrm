@@ -13,15 +13,13 @@ import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
 import { useNavigate } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
+import { useThreadContext } from "../../../hooks/useThreadContext.js";
 export default function ThreadView({
-    onClose,
-    view,
-    threadId,
-    tempEmail,
     importBtn = null,
 }) {
     const scrollRef = useRef();
     const firstMessageRef = useRef(null);
+    const { currentThread, setCurrentThread, currentEmail, setCurrentEmail } = useThreadContext()
     const lastMessageRef = useRef(null);
     useIdle({ idle: false });
     const dispatch = useDispatch();
@@ -35,10 +33,10 @@ export default function ThreadView({
     const { threadEmail } = useSelector((s) => s.threadEmail);
     const emails = view ? viewEmail : threadEmail;
     useEffect(() => {
-        if (!view && threadId) {
-            dispatch(getThreadEmail(tempEmail, threadId));
+        if (currentEmail && currentThread) {
+            dispatch(getThreadEmail(currentEmail, currentThread));
         }
-    }, [threadId, view]);
+    }, [currentEmail, currentThread]);
     const [messageLimit, setMessageLimit] = useState(3);
     const [openMessageId, setOpenMessageId] = useState(null);
     const [fullMessage, setFullMessage] = useState(null);

@@ -55,6 +55,7 @@ import PromptTestingPage from "./components/pages/settingpages/PromptTestingPage
 import ThreadMeta from "./components/pages/threads/ThreadMeta";
 import ThreadReply from "./components/pages/threads/ThreadReply";
 import ThreadView from "./components/pages/threads/ThreadView";
+import { ThreadContextProvider } from "./context/ThreadContext";
 
 const router = createBrowserRouter([
   {
@@ -297,11 +298,14 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <PageContextProvider>
-          <SocketContextProvider>
-            <RouterProvider router={router} />
-          </SocketContextProvider>
-        </PageContextProvider>
+        <ThreadContextProvider>
+          <PageContextProvider>
+            <SocketContextProvider>
+              <RouterProvider router={router} />
+            </SocketContextProvider>
+          </PageContextProvider>
+        </ThreadContextProvider>
+
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}
