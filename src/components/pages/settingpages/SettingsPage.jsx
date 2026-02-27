@@ -1,4 +1,5 @@
 import {
+  Bug,
   Clock9Icon,
   Cpu,
   CreditCard,
@@ -85,6 +86,13 @@ export function SettingsPage() {
       icon: <Sparkle className="w-8 h-8 text-cyan-600" />,
       bg: "bg-cyan-50",
       link: "prompt-testing",
+    },
+    {
+      title: "Debugging",
+      subtitle: "See Error Logs ",
+      icon: <Bug className="w-8 h-8 text-red-600" />,
+      bg: "bg-red-50",
+      link: "debugging",
     },
   ];
 

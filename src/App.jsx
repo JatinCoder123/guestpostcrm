@@ -52,6 +52,7 @@ import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
 import ComposePage from "./components/pages/ComposePage";
 import PromptTestingPage from "./components/pages/settingpages/PromptTestingPage";
+import Debug from "./components/pages/settingpages/Debug";
 
 const router = createBrowserRouter([
   {
@@ -95,10 +96,6 @@ const router = createBrowserRouter([
         path: "contacts",
         element: <Contactpage />,
       },
-      // {
-      //   path: "account",
-      //   element: <AccountPage />,
-      // },
       {
         path: "unanswered",
         element: <UnansweredPage />,
@@ -251,6 +248,10 @@ const router = createBrowserRouter([
           {
             path: "prompt-testing",
             element: <PromptTestingPage />,
+          },
+          {
+            path: "debugging",
+            element: <Debug />,
           },
         ],
       },
