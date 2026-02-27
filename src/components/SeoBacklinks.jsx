@@ -286,13 +286,11 @@ export function TheirLink({ data }) {
     "
             >
               {/* Warning Icon */}
-              <FiAlertTriangle className="w-4 h-4 text-green-700" />
 
               {/* Text */}
-              <span className="font-bold">Star 5</span>
-
+              <SparkleIcon className="w-5 h-5 text-green-600" />
               {/* Arrow */}
-              <FiArrowUpRight className="w-4 h-4 text-green-600" />
+              {/* <FiArrowUpRight className="w-4 h-4 text-green-600" /> */}
             </div>
 
             {/* CHECK CIRCLE (OVERLAPPED) */}
