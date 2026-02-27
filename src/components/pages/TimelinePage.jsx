@@ -146,6 +146,7 @@ export function TimelinePage() {
         reply: btnBody,
         message: "Quick Action Button Reply Sent",
         threadId,
+        addActivity: true
       }),
     );
     dispatch(
@@ -163,6 +164,8 @@ export function TimelinePage() {
         reply: editorContent,
         threadId,
         message: "Ai Reply Send Successfully",
+        addActivity: true
+
       }),
     );
   };
@@ -534,8 +537,23 @@ export function TimelinePage() {
             {/* ✅ HEADER (FIXED) */}
             <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center gap-3">
-                <MessageSquare size={24} className="text-white" />
-
+                <button
+                  onClick={() => setShowEmail(true)}
+                  className="relative rounded-xl bg-white border border-gray-200 shadow-md
+               hover:shadow-lg hover:-translate-y-1 active:scale-95
+               transition-all flex items-center justify-center"
+                >
+                  <img
+                    src="https://img.icons8.com/keek/100/new-post.png"
+                    alt="new-post"
+                    className="w-8 h-8"
+                  />
+                  {count > 0 && (
+                    <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                      {count}
+                    </span>
+                  )}
+                </button>
                 <div className="flex flex-col leading-tight">
                   <h2 className="text-lg font-semibold text-white">
                     {messageMeta.from}

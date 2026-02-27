@@ -15,8 +15,6 @@ import Create from "./Create";
 import { buildTable } from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  getContact,
-  getViewEmail,
   sendEmail,
   viewEmailAction,
 } from "../store/Slices/viewEmail";
@@ -41,7 +39,13 @@ export default function CreateDeal() {
       type: "select",
       options: websiteLists,
     },
+
     { name: "dealamount", label: "Deal Amount", type: "number" },
+    {
+      name: "note",
+      label: "Note",
+      type: "textarea",
+    }
   ];
   const { type, id } = useParams();
   const { state } = useLocation();
@@ -87,7 +91,6 @@ export default function CreateDeal() {
   const [newDeals, setNewDeals] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { setNotificationCount } = useContext(SocketContext);
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -176,7 +179,8 @@ export default function CreateDeal() {
             />,
           ),
           message: "Deal Send Successfully",
-          threadId: state?.threadId
+          threadId: state?.threadId,
+          email: state?.email
 
         }
       ),
@@ -186,7 +190,7 @@ export default function CreateDeal() {
     dispatch(updateDeal(item, shouldSend));
   };
   const handleDelete = (id) => {
-    dispatch(deleteDeal(id));
+    dispatch(deleteDeal(state?.email, id));
   };
   useEffect(() => {
     if (type == "create" && !state) {
@@ -200,6 +204,8 @@ export default function CreateDeal() {
           reply: editorContent,
           message: "Deal Send Successfully",
           threadId: state?.threadId,
+          email: state?.email
+
         }
       ),
     );

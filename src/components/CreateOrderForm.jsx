@@ -60,7 +60,7 @@ const CreateOrderForm = ({
       [key]: value,
     };
 
-    const totalAmount = links.reduce(
+    const totalAmount = links?.reduce(
       (sum, l) => sum + Number(l.link_amount || 0),
       0
     );
@@ -78,7 +78,7 @@ const CreateOrderForm = ({
       ? order.seo_backlinks.filter((_, i) => i !== index)
       : [];
 
-    const totalAmount = links.reduce(
+    const totalAmount = links?.reduce(
       (sum, l) => sum + Number(l.link_amount || 0),
       0
     );

@@ -7,16 +7,23 @@ function StatusDonut({
     color,
     icon: Icon,
     active,
+    amount,
     onClick,
 }) {
     return (
         <button
             onClick={onClick}
+            style={{
+                backgroundColor: active ? `${color}15` : "transparent",
+            }}
             className={`flex flex-col items-center gap-2 p-3 rounded-xl transition
-        ${active ? "bg-gray-100 shadow-md" : "hover:bg-gray-50"}`}
+    ${active ? "shadow-md" : "hover:bg-gray-50"}`}
         >
+            <div className="flex items-center justify-center gap-2">
+                <p className="text-sm font-medium text-gray-700">${amount}</p>
+            </div>
             {/* Donut */}
-            <div className="relative w-24 h-24">
+            <div className="relative w-28 h-28">
                 <VictoryPie
                     data={[
                         { x: "value", y: value },

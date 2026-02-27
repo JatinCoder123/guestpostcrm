@@ -60,24 +60,19 @@ const unrepliedSlice = createSlice({
   },
 });
 
-export const getUnrepliedEmail = ({ email = null, page = 1, loading = true }) => {
+export const getUnrepliedEmail = ({ page = 1, loading = true }) => {
   return async (dispatch, getState) => {
     if (loading) {
       dispatch(unrepliedSlice.actions.getEmailRequest());
     }
     try {
       let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
-        );
-      }
+
+      response = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
+      );
+
 
       showConsole && console.log(`Unreplied emails`, response.data);
       const data = response.data;

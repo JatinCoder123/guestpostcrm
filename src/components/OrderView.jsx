@@ -125,7 +125,7 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
       {/* PROCESSING PAYPAL */}
       {processingPayment && <ProcessingLoader />}
       {(updating || sending) && <PageLoader />}
-      <div className="w-full relative mt-3">
+      <div className="w-full relative ">
         <OrderHeader
           data={data}
           setStatus={setStatus}
@@ -270,16 +270,14 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
       <div className="w-full mb-3">
         <div className="relative group">
           <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
-            <div className="relative z-10 flex flex-col items-center justify-center gap-5">
+            <div className="relative z-10 flex flex-col items-center justify-center gap-3">
               {/* Order Label */}
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Order ID
-                  </span>
-                </div>
+              <div className=" flex items-center gap-4">
+                <span className="text-sm font-bold text-slate-700 uppercase ">
+                  # Order ID
+                </span>
 
-                <h2 className="text-2xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
+                <h2 className="text-xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
                   {data.order_id}
                 </h2>
               </div>

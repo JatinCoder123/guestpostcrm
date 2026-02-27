@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { showConsole } from "../../assets/assets";
+import { extractEmail, showConsole } from "../../assets/assets";
+import { updateActivity } from "../../services/utils";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -170,6 +171,8 @@ export const updateOffer = (offer, send) => {
       );
 
       dispatch(offersSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, extractEmail(offer.real_name), getState().user.user.name, getState().user.user.email, "Offer Updated ")
+
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
       dispatch(offersSlice.actions.updateOfferFailed("Updating Offer Failed"));
@@ -212,12 +215,14 @@ export const createOffer = (threadId, offers = [], send = false) => {
         }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Offer Created ")
+
     } catch (error) {
       dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));
     }
   };
 };
-export const deleteOffer = (id) => {
+export const deleteOffer = (email, id) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest(id));
     try {
@@ -238,6 +243,8 @@ export const deleteOffer = (id) => {
         }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Deleted")
+
     } catch (error) {
       dispatch(offersSlice.actions.deleteOfferFailed(error.message));
     }

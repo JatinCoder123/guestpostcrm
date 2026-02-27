@@ -238,6 +238,7 @@ export default function EmailBox({
         reply: contentToSend,
         attachments: files,
         threadId: view ? viewThreadId : threadId,
+        addActivity: true,
       }),
     );
   };
@@ -633,13 +634,15 @@ export default function EmailBox({
                                     <h4 className="text-sm font-semibold text-gray-900 truncate">
                                       {tpl.name}
                                     </h4>
-                                    <button onClick={() =>
-                                      navigate("/settings/templates", {
-                                        state: { templateId: tpl.id },
-                                      })
-                                    } className="cursor-pointer">
+                                    <button
+                                      onClick={() =>
+                                        navigate("/settings/templates", {
+                                          state: { templateId: tpl.id },
+                                        })
+                                      }
+                                      className="cursor-pointer"
+                                    >
                                       <Edit size={16} />
-
                                     </button>
                                   </div>
 
@@ -938,10 +941,11 @@ export default function EmailBox({
                   >
                     <div
                       className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${isUser
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                        }
+  ${
+    isUser
+      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+  }
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
                     >
@@ -956,10 +960,11 @@ export default function EmailBox({
                         />
                       )}
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
-                          ? "bg-white/20 text-white"
-                          : "bg-gray-100 text-gray-700 border border-gray-200"
-                          }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
+                          isUser
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                        }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">

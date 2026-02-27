@@ -338,7 +338,7 @@ export function OffersPage() {
                           <button
                             className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                             title="Delete"
-                            onClick={() => dispatch(deleteOffer(offer.id))}
+                            onClick={() => dispatch(excludeEmail(offer.real_name), deleteOffer(offer.id))}
                           >
                             <Trash className="w-5 h-5 text-red-600" />
                           </button>

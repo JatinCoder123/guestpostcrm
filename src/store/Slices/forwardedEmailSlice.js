@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { updateActivity } from "../../services/utils";
 
 const forwardedSlice = createSlice({
   name: "forwarded",
@@ -101,6 +102,8 @@ export const forwardEmail = (email, id) => {
         )
       );
       dispatch(forwardedSlice.actions.clearAllErrors());
+
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Email Assign")
 
     } catch (error) {
       dispatch(forwardedSlice.actions.forwardEmailFailed(error.message));

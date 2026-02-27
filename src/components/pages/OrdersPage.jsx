@@ -1,16 +1,14 @@
 import {
-  Mail,
-  ShoppingCart,
+
   Package,
   Pen,
   DollarSign,
   Calendar,
   User,
-  ShieldCheck,
-  ClipboardCheck,
   Download,
   Eye,
 } from "lucide-react";
+import { IoCheckmarkDoneCircleOutline } from "react-icons/io5"
 
 import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../Pagination";
@@ -23,8 +21,9 @@ import { excludeEmail, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
-import OrderStatusCards from "../OrderStatusCards";
 import OrderStatusDonuts from "../OrderStatusDonut";
+import UpdatePopup from "../UpdatePopup";
+import { LoadingAll, LoadingChase } from "../Loading";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -50,32 +49,7 @@ const getStatusColor = (status) => {
       return "bg-gray-100 text-gray-700";
   }
 };
-const getStatusCounts = (orders = []) => {
-  const counts = {
-    new: 0,
-    accepted: 0,
-    rejected: 0,
-    hold: 0,
-    completed: 0,
-  };
 
-  orders.forEach((order) => {
-    const status = order.order_status?.toLowerCase().trim();
-    if (status === "new") counts.new++;
-    else if (status === "accepted") counts.accepted++;
-    else if (status === "completed") counts.completed++;
-    else if (status?.includes("hold")) counts.hold++;
-    else if (
-      status === "wrong" ||
-      status === "rejected_nontechnical"
-    ) {
-      counts.rejected++;
-    }
-  });
-
-
-  return counts;
-};
 
 export function OrdersPage() {
   const [topsearch, setTopsearch] = useState("");
@@ -84,14 +58,13 @@ export function OrdersPage() {
   const [isExternalSearch, setIsExternalSearch] = useState(false);
   const [statusOptions, setStatusOptions] = useState([])
   const { state } = useLocation();
-  const { setSearch, setEnteredEmail } = useContext(PageContext);
+  const { setSearch, setEnteredEmail, enteredEmail } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null);
-  const [activeStatStatus, setActiveStatStatus] = useState("new");
+  const [updateOrderId, setUpdateOrderId] = useState(null);
   const [actualOrder, setActualOrder] = useState([]);
   const { email } = useSelector((state) => state.ladger);
-  const { orders, count, loading, error, message, updating, summary, statusLists } =
+  const { orders, count, stats, loading, error, message, updating, statusLists } =
     useSelector((state) => state.orders);
-  const statusCounts = getStatusCounts(orders);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   // Add state for filter values
@@ -106,6 +79,8 @@ export function OrdersPage() {
   });
 
   // State for status dropdown
+  const [activeStatStatus, setActiveStatStatus] = useState("new");
+
   const [selectedStatusFilter, setSelectedStatusFilter] = useState("new");
 
   // Status options for dropdown
@@ -261,10 +236,12 @@ export function OrdersPage() {
           return status === "accepted";
         case "rejected":
           return status.includes("reject");
-        case "hold":
-          return status.includes("hold");
+        case "pending":
+          return status.includes("pending");
         case "completed":
           return status === "completed";
+        case "marketplace":
+          return status === "marketplace";
         default:
           return true;
       }
@@ -354,6 +331,20 @@ export function OrdersPage() {
       setActualOrder(orders);
     }
   }, [state?.email, orders]);
+  useEffect(() => {
+    if (message) {
+      toast.success(message)
+      setUpdateOrderId(null)
+      dispatch(orderAction.clearAllMessages())
+      dispatch(getOrders({ email: enteredEmail }));
+
+    }
+    if (error) {
+      setUpdateOrderId(null)
+      toast.error(error)
+      dispatch(orderAction.clearAllErrors())
+    }
+  }, [message, error]);
 
   return (
     <>
@@ -467,7 +458,7 @@ export function OrdersPage() {
       {/* Stats Cards */}
       <OrderStatusDonuts
         selectedStatus={activeStatStatus}
-        counts={statusCounts}
+        stats={stats}
         onSelect={(status) => {
           setActiveStatStatus(status);
           setSelectedCategory("search");
@@ -539,7 +530,7 @@ export function OrdersPage() {
                 {filteredorders.map((order) => (
                   <tr
                     key={order.id}
-                    className={`border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer ${order?.order_type.toLowerCase() == "marketplace" ? "bg-green-50" : ""}`}
+                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer `}
                   >
                     <td
                       className="px-6 py-4 text-gray-600 cursor-pointer"
@@ -631,11 +622,42 @@ export function OrdersPage() {
                               },
                             })
                           }
-                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                          className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
                           title="Update"
                         >
                           <Pen className="w-5 h-5 text-blue-600" />
                         </button>
+                        <button
+                          onClick={() =>
+                            navigateTo(`/orders/view`, {
+                              state: {
+                                email: excludeEmail(order.real_name),
+                                threadId: order?.thread_id,
+                                orderId: order?.order_id
+                              },
+                            })
+                          }
+                          className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
+                          title="Update"
+                        >
+                          <Eye className="w-5 h-5 text-blue-600" />
+                        </button>
+                        {order.order_type == "MARKETPLACE" && order.order_status !== "completed" && <button
+                          onClick={() => {
+                            dispatch(updateOrder({ ...order, order_status: "completed" }, false, order.order_id))
+                            setUpdateOrderId(order.order_id)
+
+                          }
+
+                          }
+                          disabled={updating}
+                          className="p-1 hover:bg-green-500 rounded-full transition-colors cursor-pointer"
+                          title="Complete"
+                        >
+                          {updating && updateOrderId == order.order_id ? <LoadingAll /> : <IoCheckmarkDoneCircleOutline className="w-8 h-8 text-green-600 hover:text-white   " />
+                          }
+                        </button>}
+
                       </div>
                     </td>
                   </tr>
