@@ -52,6 +52,9 @@ import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
 import ComposePage from "./components/pages/ComposePage";
 import PromptTestingPage from "./components/pages/settingpages/PromptTestingPage";
+import ThreadReply from "./components/pages/threads/ThreadReply";
+import ThreadView from "./components/pages/threads/ThreadView";
+import { ThreadContextProvider } from "./context/ThreadContext";
 import Debug from "./components/pages/settingpages/Debug";
 
 const router = createBrowserRouter([
@@ -208,6 +211,21 @@ const router = createBrowserRouter([
         path: "hot-records",
         element: <HotPage />,
       },
+      {
+        path: "thread",
+        children: [
+          {
+            path: ":threadId",
+            element: <ThreadView />,
+          },
+          {
+            path: ":threadId/reply",
+            element: <ThreadReply />,
+          },
+        ]
+
+
+      },
 
       {
         path: "settings",
@@ -275,11 +293,14 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <PageContextProvider>
-          <SocketContextProvider>
-            <RouterProvider router={router} />
-          </SocketContextProvider>
-        </PageContextProvider>
+        <ThreadContextProvider>
+          <PageContextProvider>
+            <SocketContextProvider>
+              <RouterProvider router={router} />
+            </SocketContextProvider>
+          </PageContextProvider>
+        </ThreadContextProvider>
+
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}

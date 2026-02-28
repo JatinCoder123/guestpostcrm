@@ -20,6 +20,9 @@ class ErrorBoundary extends React.Component {
   handleReset = () => {
     window.location.reload();
   };
+  handleGoHome = () => {
+    window.location.href = "/";
+  };
 
   render() {
     if (this.state.hasError) {
@@ -47,12 +50,21 @@ class ErrorBoundary extends React.Component {
             </p>
 
             {/* Action */}
-            <button
-              onClick={this.handleReset}
-              className="mt-6 inline-flex items-center justify-center rounded-xl bg-red-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
-            >
-              Try Again
-            </button>
+            <div className="flex gap-5 items-center justify-center">
+              <button
+                onClick={this.handleReset}
+                className="mt-6 inline-flex items-center justify-center rounded-xl bg-red-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={this.handleGoHome}
+                className="mt-6 inline-flex items-center justify-center  rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+              >
+                Go Home
+              </button>
+            </div>
+
 
             {/* Dev-only error details */}
             {process.env.NODE_ENV === "development" && (
