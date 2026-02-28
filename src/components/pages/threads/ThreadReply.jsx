@@ -27,6 +27,7 @@ import { ViewButton } from "../../ViewButton";
 import useIdle from "../../../hooks/useIdle";
 import MicInput from "../../MicInput";
 import { useThreadContext } from "../../../hooks/useThreadContext";
+import MailHeaderLeft from "./MailHeaderLeft";
 const ThreadReply = () => {
     const editorRef = useRef(null);
     const [editorContent, setEditorContent] = useState();
@@ -45,10 +46,10 @@ const ThreadReply = () => {
     const [aiNewContent, setAiNewContent] = useState("");
     const [input, setInput] = useState("");
     const [openParent, setOpenParent] = useState(null);
-    const [CC, setCC] = useState([]);
-    const [BCC, setBCC] = useState([]);
-    const [showCC, setShowCC] = useState(false);
-    const [showBCC, setShowBCC] = useState(false);
+    const [to, setTo] = useState([]);
+  const [cc, setCc] = useState([]);
+  const [bcc, setBcc] = useState([]);
+
     const [templateId, setTemplateId] = useState(null);
     const [editorReady, setEditorReady] = useState(false);
     const [showTemplatePopup, setShowTemplatePopup] = useState(false);
@@ -230,7 +231,7 @@ const ThreadReply = () => {
   "
             >
                 {/* HEADER */}
-                <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+                <div className="flex gap-3 items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
                     <div className="flex items-center gap-3">
                         <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -272,6 +273,14 @@ const ThreadReply = () => {
                             </button>
                         </div>
                     </div>
+                    <MailHeaderLeft
+      to={to}
+      setTo={setTo}
+      cc={cc}
+      setCc={setCc}
+      bcc={bcc}
+      setBcc={setBcc}
+    />
                 </div>
                 <div className="flex flex-col h-full w-full">
                     <div className="flex-1 px-6 pb-4 overflow-hidden">
@@ -651,62 +660,7 @@ const ThreadReply = () => {
 
                             <Attachment data={files} onChange={setFiles} />
                             <MicInput editorRef={editorRef} />
-                            <div className="flex items-center gap-2 mb-3">
-                                <button
-                                    onClick={() => setShowCC((p) => !p)}
-                                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
-                                >
-                                    CC
-                                </button>
-                                <button
-                                    onClick={() => setShowBCC((p) => !p)}
-                                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
-                                >
-                                    BCC
-                                </button>
-                            </div>
 
-                            <AnimatePresence>
-                                {showCC && (
-                                    <motion.input
-                                        initial={{ opacity: 0, y: -5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -5 }}
-                                        type="text"
-                                        placeholder="CC (comma separated emails)"
-                                        className="w-64 px-3 py-2 text-sm border rounded-xl mb-2"
-                                        onChange={(e) =>
-                                            setCC(
-                                                e.target.value
-                                                    .split(",")
-                                                    .map((v) => v.trim())
-                                                    .filter(Boolean),
-                                            )
-                                        }
-                                    />
-                                )}
-                            </AnimatePresence>
-
-                            <AnimatePresence>
-                                {showBCC && (
-                                    <motion.input
-                                        initial={{ opacity: 0, y: -5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -5 }}
-                                        type="text"
-                                        placeholder="BCC (comma separated emails)"
-                                        className="w-64 px-3 py-2 text-sm border rounded-xl"
-                                        onChange={(e) =>
-                                            setBCC(
-                                                e.target.value
-                                                    .split(",")
-                                                    .map((v) => v.trim())
-                                                    .filter(Boolean),
-                                            )
-                                        }
-                                    />
-                                )}
-                            </AnimatePresence>
                         </div>
 
                         {/* SEND BUTTON */}
