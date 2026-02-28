@@ -31,6 +31,7 @@ import useIdle from "../hooks/useIdle";
 import MicInput from "./MicInput";
 import { useMemo } from "react";
 import TemplateSelectorModal from "./TemplateSelectorModal";
+import MailHeaderLeft from "./MailHeaderLeft";
 export default function EmailBox({
   onClose,
   view,
@@ -54,7 +55,7 @@ export default function EmailBox({
   } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
-  const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
+  const { businessEmail, crmEndpoint,user } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const [aiReplyContent, setAiReplyContent] = useState("");
   const [aiNewContent, setAiNewContent] = useState("");
@@ -129,10 +130,9 @@ export default function EmailBox({
   const [showEditorScreen, setShowEditorScreen] = useState(false);
   const [input, setInput] = useState("");
   const [openParent, setOpenParent] = useState(null);
-  const [CC, setCC] = useState([]);
-  const [BCC, setBCC] = useState([]);
-  const [showCC, setShowCC] = useState(false);
-  const [showBCC, setShowBCC] = useState(false);
+  const [to, setTo] = useState([]);
+  const [cc, setCc] = useState([]);
+  const [bcc, setBcc] = useState([]);
 
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
@@ -269,8 +269,9 @@ export default function EmailBox({
     const contentToSend = editorContent || input;
     dispatch(
       sendEmail({
-        cc: CC,
-        bcc: BCC,
+        to: to,
+        cc: cc,
+        bcc: bcc,
         reply: contentToSend,
         attachments: files,
         threadId: view ? viewThreadId : threadId,
@@ -429,6 +430,17 @@ export default function EmailBox({
               </button>
             </div>
           </div>
+          {showEditorScreen && (
+            <MailHeaderLeft
+            sender={user?.name}
+            email={tempEmail}
+              to={to}
+              setTo={setTo}
+              cc={cc}
+              setCc={setCc}
+            
+            />
+          )}
           {importBtn && importBtn()}
         </div>
 
@@ -728,62 +740,6 @@ export default function EmailBox({
 
                 <Attachment data={files} onChange={setFiles} />
                 <MicInput editorRef={editorRef} />
-                <div className="flex items-center gap-2 mb-3">
-                  <button
-                    onClick={() => setShowCC((p) => !p)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
-                  >
-                    CC
-                  </button>
-                  <button
-                    onClick={() => setShowBCC((p) => !p)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
-                  >
-                    BCC
-                  </button>
-                </div>
-
-                <AnimatePresence>
-                  {showCC && (
-                    <motion.input
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      type="text"
-                      placeholder="CC (comma separated emails)"
-                      className="w-64 px-3 py-2 text-sm border rounded-xl mb-2"
-                      onChange={(e) =>
-                        setCC(
-                          e.target.value
-                            .split(",")
-                            .map((v) => v.trim())
-                            .filter(Boolean),
-                        )
-                      }
-                    />
-                  )}
-                </AnimatePresence>
-
-                <AnimatePresence>
-                  {showBCC && (
-                    <motion.input
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      type="text"
-                      placeholder="BCC (comma separated emails)"
-                      className="w-64 px-3 py-2 text-sm border rounded-xl"
-                      onChange={(e) =>
-                        setBCC(
-                          e.target.value
-                            .split(",")
-                            .map((v) => v.trim())
-                            .filter(Boolean),
-                        )
-                      }
-                    />
-                  )}
-                </AnimatePresence>
               </div>
 
               {/* SEND BUTTON */}

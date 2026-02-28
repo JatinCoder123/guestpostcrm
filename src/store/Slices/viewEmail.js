@@ -232,6 +232,7 @@ export const sendEmail = (
     message = null,
     attachments = [],
     cc = [],
+    to = [],
     bcc = [],
     email,
     threadId = null,
@@ -258,6 +259,7 @@ export const sendEmail = (
 
       // ✅ ADD ONLY THESE TWO
       formData.append("cc", cc.join(","));
+      formData.append("to", to.join(","));
       formData.append("bcc", bcc.join(","));
 
       // existing attachments
@@ -286,7 +288,7 @@ export const sendEmail = (
       );
 
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, email ?? ladgerEmail, getState().user.user.name, getState().user.user.email, "Email Sent")
+     addActivity && updateActivity(getState().user.crmEndpoint, email ?? ladgerEmail, getState().user.user.name, getState().user.user.email, "Email Sent")
       dispatch(getViewEmail());
     } catch (error) {
       showConsole && console.log(error);
