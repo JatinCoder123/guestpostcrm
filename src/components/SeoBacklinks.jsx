@@ -4,13 +4,7 @@ import {
   FiTag,
   FiLayers,
   FiAlertTriangle,
-  FiHash,
   FiGlobe,
-  FiGrid,
-  FiCheck,
-  FiLock,
-  FiArrowUpLeft,
-  FiArrowUpRight,
 } from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
@@ -177,27 +171,22 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   );
 }
 const getSpamStyle = (score) => {
-  if (score <= 10)
+  if (score < 10) {
     return {
       label: "Low",
       bg: "bg-green-100",
       text: "text-green-700",
-      ring: "ring-green-400",
+      border: "border-green-700",
+      icon: "check",
     };
-
-  // if (score <= 60)
-  //   return {
-  //     label: "Medium",
-  //     bg: "bg-yellow-100",
-  //     text: "text-yellow-800",
-  //     ring: "ring-yellow-400",
-  //   };
+  }
 
   return {
     label: "High",
     bg: "bg-red-100",
     text: "text-red-700",
-    ring: "ring-red-400",
+    border: "border-red-700",
+    icon: "cross",
   };
 };
 export function TheirLink({ data }) {
@@ -285,12 +274,7 @@ export function TheirLink({ data }) {
       text-sm font-semibold
     "
             >
-              {/* Warning Icon */}
-
-              {/* Text */}
               <SparkleIcon className="w-5 h-5 text-green-600" />
-              {/* Arrow */}
-              {/* <FiArrowUpRight className="w-4 h-4 text-green-600" /> */}
             </div>
 
             {/* CHECK CIRCLE (OVERLAPPED) */}
@@ -330,49 +314,51 @@ export function TheirLink({ data }) {
           </div>
           {/* SPAM SCORE BADGE */}
           <div className="relative inline-flex items-center">
-
             {/* MAIN PILL */}
             <div
-              className="
+              className={`
       flex items-center gap-2
       pl-4 pr-14 py-1.5
       rounded-full
       border-2
-      bg-emerald-100
-      text-emerald-700
-            border-green-700
+      ${spam.bg}
+      ${spam.text}
+      ${spam.border}
       text-sm font-semibold
-    "
+    `}
             >
-              {/* Warning Icon */}
-              <FiAlertTriangle className="w-4 h-4 text-green-700" />
+              <FiAlertTriangle className={`w-4 h-4 ${spam.text}`} />
 
-              {/* Text */}
               <span>
                 Spam {data.spam_score_c}% · {spam.label}
               </span>
 
-              {/* MOZ */}
-              <span className="ml-2 flex items-center gap-1 text font-bold text-blue-600">
-                MOZ
-                <span className="text-yellow-400 ">★</span>
+              <span className="ml-2 flex items-center gap-1 font-bold text-blue-600">
+                MOZ <span className="text-yellow-400">★</span>
               </span>
             </div>
 
-            {/* CHECK CIRCLE (ATTACHED) */}
-            {data.is_link_valid && (
-              <div
-                className="
-        absolute -right-1
-        flex items-center justify-center
-        w-10 h-10
-        rounded-full
-         bg-green-500
-        shadow-md
-      "
-              >
-                <img width="94" height="94" src="https://img.icons8.com/3d-fluency/94/ok.png" alt="ok" />                          </div>
-            )}
+            {/* ICON (CHECK OR CROSS) */}
+            <div
+              className={`
+      absolute -right-1
+      flex items-center justify-center
+      w-10 h-10
+      rounded-full
+      shadow-md
+      ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}
+    `}
+            >
+              {spam.icon === "check" ? (
+                <img width="94" height="94" src="https://img.icons8.com/3d-fluency/94/ok.png" alt="ok" />
+              ) : (
+                <img
+                  src="https://img.icons8.com/3d-fluency/94/cancel.png"
+                  alt="cross"
+                  width="94" height="94"
+                />
+              )}
+            </div>
           </div>
 
         </div>
