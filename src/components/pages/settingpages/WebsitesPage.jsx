@@ -45,7 +45,7 @@ export default function WebsitesPage() {
   };
   const handleUpdate = (updatedItem) => {
     setData((prev) =>
-      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
+      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj)),
     );
     update({
       url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
@@ -117,20 +117,50 @@ export default function WebsitesPage() {
                 <span
                   className={`
               px-3 py-1 text-xs font-semibold rounded-full
-              ${item.website_stage_c === "1"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : item.website_stage_c === "2"
-                        ? "bg-blue-100 text-blue-700"
-                        : item.website_stage_c === "3"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
-                    }
+              ${
+                item.website_stage_c === "1"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : item.website_stage_c === "2"
+                    ? "bg-blue-100 text-blue-700"
+                    : item.website_stage_c === "3"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-600"
+              }
             `}
                 >
                   Type: {item.website_type}
                 </span>
               </div>
-
+              <div className="flex justify-between mt-2">
+                <span className="font-medium">Traffic:</span>
+                <span>{item.traffic || "-"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">DA:</span>
+                <span>{item.da || "-"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">DR:</span>
+                <span>{item.dr || "-"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Brand Highest:</span>
+                <span>₹ {item.amount || "-"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Brand Lowest:</span>
+                <span>₹ {item.minimum_price || "-"}</span>
+              </div>
+              {/* Main Asset Checkbox */}
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Main Asset:</span>
+                <input
+                  type="checkbox"
+                  checked={item.main_asset_c === "1" || item.main_asset_c === 1}
+                  readOnly
+                  className="w-4 h-4 accent-blue-600"
+                />
+              </div>
               {/* Edit Button */}
               <div className="mt-6 flex justify-end">
                 <button

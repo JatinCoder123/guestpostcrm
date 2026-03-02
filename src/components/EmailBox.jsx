@@ -10,6 +10,8 @@ import {
   Zap,
   Edit,
   Pencil,
+  Trash2,
+  LayoutTemplate,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -55,7 +57,7 @@ export default function EmailBox({
   } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
-  const { businessEmail, crmEndpoint,user } = useSelector((s) => s.user);
+  const { businessEmail, crmEndpoint, user } = useSelector((s) => s.user);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const [aiReplyContent, setAiReplyContent] = useState("");
   const [aiNewContent, setAiNewContent] = useState("");
@@ -432,13 +434,12 @@ export default function EmailBox({
           </div>
           {showEditorScreen && (
             <MailHeaderLeft
-            sender={user?.name}
-            email={tempEmail}
+              sender={user?.name}
+              email={tempEmail}
               to={to}
               setTo={setTo}
               cc={cc}
               setCc={setCc}
-            
             />
           )}
           {importBtn && importBtn()}
@@ -580,6 +581,22 @@ export default function EmailBox({
 
             <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
               <div className="flex items-center gap-3 flex-wrap">
+                <ViewButton>
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      if (editorRef.current) {
+                        editorRef.current.setContent(""); // Clear TinyMCE editor
+                      }
+                      setEditorContent("");
+                      setInput("");
+                    }}
+                    className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 mb-7"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </motion.button>
+                </ViewButton>
                 {/* AI REPLY BUTTON */}
                 <ViewButton Icon={Sparkles}>
                   <motion.button
@@ -645,9 +662,9 @@ export default function EmailBox({
                       refetchTemplates?.();
                     }}
                   >
-                    <Mail className="w-4 h-4" />
+                    <LayoutTemplate className="w-4 h-4" />
                     <span className="text-sm font-medium hidden sm:inline">
-                      Template
+                      All
                     </span>
                   </motion.button>
                 </ViewButton>
