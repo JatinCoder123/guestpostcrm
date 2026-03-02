@@ -121,7 +121,7 @@ const Debug = () => {
         )}
       </div>
     </div>
-  );~
+  );
 };
 
 export default Debug;
