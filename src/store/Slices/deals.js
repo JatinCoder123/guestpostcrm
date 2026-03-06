@@ -176,7 +176,7 @@ export const createDeal = (threadId, deals = [], send = false) => {
     }
   };
 };
-export const updateDeal = (email = null, deal, send) => {
+export const updateDeal = (deal, send) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.updateDealRequest());
     try {
