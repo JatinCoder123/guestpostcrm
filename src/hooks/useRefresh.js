@@ -74,8 +74,8 @@ function useRefresh() {
         dispatch(getUnrepliedEmail({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {
-        console.log("REFRESH LADGER")
         if (currentEventThreadId.current == threadId) {
+            console.log("REFRESH LADGER")
             if (enteredEmail) {
                 dispatch(getLadger({ email: enteredEmail, search }));
                 dispatch(getViewEmail(enteredEmail));
@@ -91,10 +91,6 @@ function useRefresh() {
             dispatch(getUnansweredEmails({ loading: false }));
             dispatch(viewEmailAction.resetViewEmail());
         }
-
-
-
-
     };
     useEffect(() => {
         if (emails?.length > 0) {
