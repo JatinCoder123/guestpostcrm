@@ -16,7 +16,7 @@ const WelcomeHeader = () => {
 
   const { email, timeline, loading } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
-  const { setEnteredEmail, setCurrentIndex, setSearch } =
+  const { setEnteredEmail, setCurrentIndex, setSearch, welcomeHeaderContent } =
     useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
@@ -145,7 +145,7 @@ const WelcomeHeader = () => {
         {/* LEFT */}
         <div className="flex items-center gap-5">
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
-            <span className="font-bold text-gray-900">Results for </span>
+            <span className="font-bold text-gray-900">Results for {welcomeHeaderContent} </span>
 
             <span className="font-bold text-gray-900">{resultTitle}</span>
 

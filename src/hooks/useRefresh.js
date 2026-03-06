@@ -94,7 +94,6 @@ function useRefresh() {
     };
     useEffect(() => {
         if (emails?.length > 0) {
-            setWelcomeHeaderContent("Unreplied");
             setFirstEmail(
                 emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
             );

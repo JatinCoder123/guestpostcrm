@@ -74,7 +74,7 @@ export function Marketplace() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleDownload = () => {
     if (!filtereditems || filtereditems.length === 0) {
@@ -206,7 +206,7 @@ export function Marketplace() {
                       setSearch(input);
                       setEnteredEmail(input);
                       dispatch(ladgerAction.setTimeline(null));
-                      setWelcomeHeaderContent("Unreplied");
+                      setWelcomeHeaderContent("MarketPlace");
                       navigateTo("/");
                     }}
                   >

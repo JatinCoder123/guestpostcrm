@@ -18,7 +18,7 @@ const ContactHeader = () => {
   const { email } = useSelector((state) => state.ladger);
   const { contactInfo, contactLoading, stage, status, customer_type, } =
     useSelector((state) => state.viewEmail);
-  const { enteredEmail, search } = useContext(PageContext)
+  const { enteredEmail, search, welcomeHeaderContent } = useContext(PageContext)
 
 
   const { deals } = useSelector((state) => state.deals);
@@ -162,7 +162,8 @@ const ContactHeader = () => {
               </div>
             </div>
           )}
-          <NextPrev />
+          {(welcomeHeaderContent == "Unreplied" || welcomeHeaderContent == "") && <NextPrev />
+          }
         </div>
 
       </div>

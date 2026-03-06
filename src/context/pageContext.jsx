@@ -13,7 +13,7 @@ export const PageContextProvider = (props) => {
   );
   const [search, setSearch] = useState(localStorage.getItem("email") || "");
   const [welcomeHeaderContent, setWelcomeHeaderContent] = useState(
-    search.trim() !== "" ? "Search" : ""
+    localStorage.getItem("welcomeHeaderContent") ? localStorage.getItem("welcomeHeaderContent") : search.trim() !== "" ? "Search" : ""
   );
 
   // Set activePage based on current URL
@@ -24,6 +24,9 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed(true);
     localStorage.setItem("showConsole", showConsole);
   }, []);
+  useEffect(() => {
+    localStorage.setItem("welcomeHeaderContent", welcomeHeaderContent)
+  }, [welcomeHeaderContent]);
 
 
   const value = {
