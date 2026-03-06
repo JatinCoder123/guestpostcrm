@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { motion } from "framer-motion";
@@ -145,11 +144,11 @@ export default function WebsitesPage() {
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Brand Highest:</span>
-                <span>₹ {item.amount || "-"}</span>
+                <span>$ {item.amount || "-"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Brand Lowest:</span>
-                <span>₹ {item.minimum_price || "-"}</span>
+                <span>$ {item.minimum_price || "-"}</span>
               </div>
               {/* Main Asset Checkbox */}
               <div className="flex justify-between items-center">

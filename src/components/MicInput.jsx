@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mic, MicOff } from "lucide-react";
+import { Mic } from "lucide-react";
 import { motion } from "framer-motion";
 
 const MicInput = ({ editorRef }) => {
@@ -20,10 +20,9 @@ const MicInput = ({ editorRef }) => {
 
     const recognition = new SpeechRecognition();
 
-    // 🔥 Best for English + Hindi mixed speech
-    recognition.lang = "en-IN";
+    recognition.lang = "en-IN"; // Hindi + English
     recognition.continuous = true;
-    recognition.interimResults = false; // 🔥 prevents duplication issues
+    recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event) => {
@@ -36,16 +35,20 @@ const MicInput = ({ editorRef }) => {
         }
       }
 
-      if (finalText && editorRef.current) {
+      if (finalText && editorRef?.current) {
         editorRef.current.focus();
         editorRef.current.insertContent(finalText);
       }
     };
 
     recognition.onend = () => {
-      // Auto restart if user didn't manually stop
-      if (listeningRef.current) {
-        recognition.start();
+      // Restart only if still listening AND page visible
+      if (listeningRef.current && document.visibilityState === "visible") {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn("Restart prevented:", e);
+        }
       }
     };
 
@@ -60,8 +63,33 @@ const MicInput = ({ editorRef }) => {
 
     recognitionRef.current = recognition;
 
+    // 🔥 Stop mic when user switches tab
+    const handleVisibilityChange = () => {
+      if (document.hidden && recognitionRef.current) {
+        listeningRef.current = false;
+        setListening(false);
+
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // 🔥 Cleanup when component unmounts
     return () => {
-      recognition.stop();
+      listeningRef.current = false;
+      lastResultIndex.current = 0;
+
+      if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+      }
+
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [editorRef]);
 
@@ -73,14 +101,22 @@ const MicInput = ({ editorRef }) => {
       // 🔴 Stop
       listeningRef.current = false;
       setListening(false);
-      recognition.stop();
-      lastResultIndex.current = 0; // 🔥 reset index
+      lastResultIndex.current = 0;
+
+      try {
+        recognition.stop();
+      } catch {}
     } else {
       // 🟢 Start
-      lastResultIndex.current = 0; // 🔥 reset index
       listeningRef.current = true;
       setListening(true);
-      recognition.start();
+      lastResultIndex.current = 0;
+
+      try {
+        recognition.start();
+      } catch (err) {
+        console.warn("Mic already started");
+      }
     }
   };
 
