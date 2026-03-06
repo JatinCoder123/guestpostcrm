@@ -469,7 +469,6 @@ const TimelineEvent = () => {
             {/* 🔍 SEARCH MODE */}
             {isSearchOpen ? (
               <div className="relative flex items-center bg-white rounded-full shadow-md border border-gray-300 p-4">
-
                 <input
                   autoFocus
                   type="text"
@@ -487,7 +486,7 @@ const TimelineEvent = () => {
                   }}
                   className="text-gray-400 hover:text-gray-600 transition"
                 >
-                  <X className="w-6 h-6"/>
+                  <X className="w-6 h-6" />
                 </button>
               </div>
             ) : (
@@ -572,7 +571,7 @@ const TimelineEvent = () => {
               return (
                 <>
                   {showSeparator && (
-                    <div className="relative flex gap-1 my-1">
+                    <div className="relative flex gap-0 my-0">
                       <div className="relative z-10 w-16 flex-shrink-0">
                         <div className="w-12 h-12 flex items-center justify-center">
                           <img
