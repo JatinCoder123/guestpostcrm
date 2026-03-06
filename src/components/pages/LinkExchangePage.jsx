@@ -11,13 +11,18 @@ import {
 } from "lucide-react";
 
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import EmailBox from "../EmailBox";
 import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getLinkExchange } from "../../store/Slices/linkExchange";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
+import { PageContext } from "../../context/pageContext";
+import { useNavigate } from "react-router-dom";
+import { extractEmail } from "../../assets/assets";
+import { ladgerAction } from "../../store/Slices/ladger";
+import LinkExchangeStatusDonuts from "../LinkExchangeStatusDonuts";
 export function LinkExchangePage() {
   const { count, emails } = useSelector((state) => state.linkExchange);
   const [
@@ -30,6 +35,12 @@ export function LinkExchangePage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
+  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+    useContext(PageContext);
+  const [activeStatStatus, setActiveStatStatus] = useState("connected");
+
+  const navigateTo = useNavigate()
+  const dispatch = useDispatch()
 
   const filteredEmails = emails
     .filter((item) => {
@@ -87,7 +98,7 @@ export function LinkExchangePage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -176,7 +187,12 @@ export function LinkExchangePage() {
           />
         </div>
       )}
-      {/* Unanswered Section */}
+      <LinkExchangeStatusDonuts
+        selectedStatus={activeStatStatus}
+        // stats={stats}
+        onSelect={(status) => {
+          setActiveStatStatus(status);
+        }} />
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -235,9 +251,13 @@ export function LinkExchangePage() {
                 <tr
                   key={index}
                   onClick={() => {
-                    setCurrentThreadId(email.thread_id);
-                    handleThreadClick(email.from, email.thread_id);
-                    setEmail(email.from?.split("<")[1].split(">")[0]);
+                    const input = email.email_address;
+                    localStorage.setItem("email", input);
+                    setSearch(input);
+                    setEnteredEmail(input);
+                    dispatch(ladgerAction.setTimeline(null));
+                    setWelcomeHeaderContent("Unreplied");
+                    navigateTo("/");
                   }}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
                 >
