@@ -20,7 +20,7 @@ import { base64ToUtf8, getDomain } from "../../../assets/assets";
 import useModule from "../../../hooks/useModule";
 import PageLoader from "../../PageLoader";
 import Attachment from "../../Attachment";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ViewButton } from "../../ViewButton";
 import useIdle from "../../../hooks/useIdle";
 import MicInput from "../../MicInput";
@@ -30,7 +30,8 @@ import TemplateSelectorModal from "../../TemplateSelectorModal";
 import TinyEditor from "../../TinyEditor";
 const ThreadReply = () => {
   const editorRef = useRef(null);
-  const [editorContent, setEditorContent] = useState();
+  const { state } = useLocation()
+  const [editorContent, setEditorContent] = useState(state?.initialContent || "");
   const { currentThread, currentEmail } = useThreadContext();
   useIdle({ idle: false });
   const dispatch = useDispatch();
@@ -41,10 +42,9 @@ const ThreadReply = () => {
   } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
-  const { crmEndpoint } = useSelector((s) => s.user);
+  const { crmEndpoint, user } = useSelector((s) => s.user);
   const [aiReplyContent, setAiReplyContent] = useState("");
   const [aiNewContent, setAiNewContent] = useState("");
-  const [input, setInput] = useState("");
   const [openParent, setOpenParent] = useState(null);
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
@@ -116,7 +116,6 @@ const ThreadReply = () => {
         template?.[0]?.body_html || base64ToUtf8(defaultTemplate.html_base64);
       if (htmlContent) {
         setEditorContent(htmlContent);
-        setInput(htmlContent);
       } else {
         toast.warn("Template is empty—starting with blank editor.");
       }
@@ -126,7 +125,6 @@ const ThreadReply = () => {
   function insertAiReply(input) {
     setOpenParent(null);
     setTemplateId(null);
-    setInput(input);
     setEditorContent(input);
   }
 
@@ -135,17 +133,24 @@ const ThreadReply = () => {
   }, [files]);
 
   const handleSendClick = () => {
-    const contentToSend = editorContent || input;
-    dispatch(
-      sendEmail({
-        to: to,
-        cc: cc,
-        bcc: bcc,
-        reply: contentToSend,
-        attachments: files,
-        threadId: currentThread,
-      }),
-    );
+    const contentToSend = editorContent;
+
+    const formData = new FormData();
+
+    formData.append("threadId", currentThread);
+    formData.append("replyBody", contentToSend);
+    formData.append("email", currentEmail);
+    formData.append("current_email", user.email); // or user email from redux
+
+    formData.append("cc", cc.join(","));
+    formData.append("to", to.join(","));
+    formData.append("bcc", bcc.join(","));
+
+    files.forEach((file) => {
+      formData.append("attachments[]", file.file);
+    });
+
+    dispatch(sendEmail(formData));
   };
 
   const insertTextAtCursor = () => {
@@ -173,7 +178,6 @@ const ThreadReply = () => {
   useEffect(() => {
     if (sendMessage) {
       onClose();
-      setInput("");
       setFiles([]);
       setEditorContent("");
     }
@@ -251,7 +255,7 @@ const ThreadReply = () => {
               </button>
             </div>
           </div>
-            <MailHeaderLeft
+          <MailHeaderLeft
             email={currentEmail}
             to={to}
             setTo={setTo}
@@ -259,7 +263,7 @@ const ThreadReply = () => {
             setCc={setCc}
             bcc={bcc}
             setBcc={setBcc}
-             />
+          />
         </div>
         <div className="flex flex-col h-full w-full">
           <TinyEditor
@@ -315,7 +319,6 @@ const ThreadReply = () => {
                 onClose={() => setShowTemplatePopup(false)}
                 onSelect={(tpl) => {
                   setEditorContent(tpl.body_html || "");
-                  setInput(tpl.body_html || "");
                   setTemplateId(tpl.id);
                   toast.success(`✅ "${tpl.name}" loaded into editor`);
                 }}
@@ -331,7 +334,6 @@ const ThreadReply = () => {
                     if (defaultTemplate && editorRef.current) {
                       const html = base64ToUtf8(defaultTemplate.html_base64);
                       setEditorContent(html);
-                      setInput(html);
                       setOpenParent(null);
                     }
                     setShowTemplatePopup(true);

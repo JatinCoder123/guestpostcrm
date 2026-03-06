@@ -227,48 +227,12 @@ export const editContact = (contactData) => {
   };
 };
 export const sendEmail = (
-  {
-    reply,
-    message = null,
-    attachments = [],
-    cc = [],
-    to = [],
-    bcc = [],
-    email,
-    threadId = null,
-    addActivity = false
-  }
+  formData
 ) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
-    const ladgerEmail = getState().ladger.email
-
+    console.log(formData)
     try {
-      const formData = new FormData();
-
-      formData.append(
-        "threadId",
-        threadId
-      );
-      formData.append("replyBody", reply);
-      formData.append("email", email ?? ladgerEmail);
-      formData.append(
-        "current_email",
-        getState().user.user.email
-      );
-
-      // ✅ ADD ONLY THESE TWO
-      formData.append("cc", cc.join(","));
-      formData.append("to", to.join(","));
-      formData.append("bcc", bcc.join(","));
-
-      // existing attachments
-      attachments.forEach((file) => {
-        formData.append("attachments[]", file.file);
-      });
-      if (!threadId) {
-        throw new Error("Thread is not there!")
-      }
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
         formData,
@@ -288,7 +252,7 @@ export const sendEmail = (
       );
 
       dispatch(viewEmailSlice.actions.clearAllErrors());
-     addActivity && updateActivity(getState().user.crmEndpoint, email ?? ladgerEmail, getState().user.user.name, getState().user.user.email, "Email Sent")
+      addActivity && updateActivity(getState().user.crmEndpoint, formData.email, getState().user.user.name, getState().user.user.email, "Email Sent")
       dispatch(getViewEmail());
     } catch (error) {
       showConsole && console.log(error);
