@@ -1,23 +1,58 @@
 // TemplateSelectorModal.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Edit } from "lucide-react";
+import { X, Mail, Edit, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useModule from "../hooks/useModule";
 import { LoadingChase } from "./Loading";
+import { useSelector } from "react-redux";
 
 export default function TemplateSelectorModal({
   isOpen,
   onClose,
   onSelect,
   crmEndpoint,
+  favourites,
+  setFavourites,
 }) {
   const navigate = useNavigate();
 
   const [stages, setStages] = useState({});
+  const [assignUserId, setAssignUserId] = useState(null);
   const [stageType, setStageType] = useState("");
-  const [sortOption, setSortOption] = useState("newest"); // "newest" | "oldest"
+  const [sortOption, setSortOption] = useState("newest");
   const [stagesLoading, setStagesLoading] = useState(false);
+  const { user } = useSelector((s) => s.user);
+
+  // ⭐ Favourite State
+
+  /*
+  -----------------------------
+  Fetch USER ID using email
+  -----------------------------
+  */
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(
+          `https://sales.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_user&email=${user.email}`,
+        );
+
+        const result = await res.json();
+
+        if (result?.id) {
+          setAssignUserId(result.id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user id", err);
+      }
+    };
+
+    fetchUser();
+  }, [user]);
 
   // Fetch stages once
   useEffect(() => {
@@ -26,12 +61,12 @@ export default function TemplateSelectorModal({
       setStagesLoading(true);
       try {
         const res = await fetch(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=1`,
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=2&assigned_user_id=${assignUserId}`,
         );
         const result = await res.json();
         if (result && typeof result === "object") {
           setStages(result);
-          setStageType(Object.keys(result)[0]); // auto-select first
+          setStageType(Object.keys(result)[0]);
         }
       } catch (err) {
         console.error("Failed to fetch stages", err);
@@ -49,7 +84,7 @@ export default function TemplateSelectorModal({
     refetch: refetchTemplates,
   } = useModule({
     url: stageType
-      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}`
+      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}&assigned_user_id=${assignUserId}`
       : null,
     method: "GET",
     name: "TEMPLATE LIST IN MODAL",
@@ -72,6 +107,61 @@ export default function TemplateSelectorModal({
   useEffect(() => {
     setSortOption("newest");
   }, [stageType]);
+
+  const toggleFavourite = async (tpl) => {
+    try {
+      const baseUrl = crmEndpoint.split("?")[0];
+
+      // If already favourited from backend OR local state
+      if (tpl.is_favourite) {
+        // Backend favourite → clicking again should CREATE again
+        await fetch(
+          `${baseUrl}?entryPoint=get_buttons&create_btn=1&template_id=${tpl.id}&assigned_user_id=${assignUserId || 1}`,
+        );
+      } else if (favourites[tpl.id]) {
+        // Local favourite → delete
+        const btnId = favourites[tpl.id];
+
+        await fetch(
+          `${baseUrl}?entryPoint=get_buttons&delete_btn=1&btn_id=${btnId}`,
+        );
+
+        setFavourites((prev) => {
+          const updated = { ...prev };
+          delete updated[tpl.id];
+          return updated;
+        });
+      } else {
+        // Create favourite
+        const res = await fetch(
+          `${baseUrl}?entryPoint=get_buttons&create_btn=1&template_id=${tpl.id}&assigned_user_id=${assignUserId || 1}`,
+        );
+
+        const result = await res.json();
+
+        setFavourites((prev) => ({
+          ...prev,
+          [tpl.id]: result?.btn_id || tpl.id,
+        }));
+      }
+
+      /*
+    --------------------------
+    REFRESH BOTH ENDPOINTS
+    --------------------------
+    */
+
+      // refresh template list
+      refetchTemplates();
+
+      // reload buttons list if backend relies on it
+      await fetch(
+        `${baseUrl}?entryPoint=get_buttons&assigned_user_id=${assignUserId || 1}`,
+      );
+    } catch (err) {
+      console.error("Favourite error:", err);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -174,6 +264,7 @@ export default function TemplateSelectorModal({
                         </span>
                       </div>
                     </div>
+
                     <div className="px-6 pb-6 flex gap-3">
                       <button
                         onClick={() => {
@@ -184,6 +275,21 @@ export default function TemplateSelectorModal({
                       >
                         <Mail size={19} />
                         Use This Template
+                      </button>
+
+                      {/* ⭐ Favourite Button */}
+                      <button
+                        onClick={() => toggleFavourite(tpl)}
+                        className="p-3 border border-gray-300 hover:bg-gray-100 rounded-xl flex items-center"
+                      >
+                        <Heart
+                          size={20}
+                          className={`transition ${
+                            tpl.is_favourite || favourites[tpl.id]
+                              ? "fill-red-500 text-red-500"
+                              : "text-gray-500"
+                          }`}
+                        />
                       </button>
 
                       <button

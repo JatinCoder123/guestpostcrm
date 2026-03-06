@@ -63,7 +63,7 @@ export default function EmailBox({
   const [aiNewContent, setAiNewContent] = useState("");
   const [popupStageType, setPopupStageType] = useState("");
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
-  const [sortOption, setSortOption] = useState("newest"); // "newest" or "oldest"
+  const [sortOption, setSortOption] = useState("newest");
 
   const {
     loading: aiLoading,
@@ -135,6 +135,7 @@ export default function EmailBox({
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
   const [bcc, setBcc] = useState([]);
+  const [favourites, setFavourites] = useState([]);
 
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
@@ -148,7 +149,7 @@ export default function EmailBox({
   const { loading, data: buttons } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_buttons&type=regular&email=${tempEmail}`,
     name: "BUTTONS",
-    dependencies: [tempEmail],
+    dependencies: [tempEmail, favourites],
   });
 
   // DEFAULT TEMPLATE
@@ -651,23 +652,9 @@ export default function EmailBox({
                     toast.success(`✅ "${tpl.name}" loaded into editor`);
                   }}
                   crmEndpoint={crmEndpoint}
+                  favourites={favourites}
+                  setFavourites={setFavourites}
                 />
-                <ViewButton Icon={Edit}>
-                  <motion.button
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-                    onClick={() => {
-                      setShowTemplatePopup(true);
-                      refetchTemplates?.();
-                    }}
-                  >
-                    <LayoutTemplate className="w-4 h-4" />
-                    <span className="text-sm font-medium hidden sm:inline">
-                      All
-                    </span>
-                  </motion.button>
-                </ViewButton>
 
                 {/* PARENT + CHILD BUTTONS */}
                 {loading ? (
@@ -755,6 +742,22 @@ export default function EmailBox({
                   </motion.button>
                 </ViewButton>
 
+                <ViewButton Icon={Edit}>
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    onClick={() => {
+                      setShowTemplatePopup(true);
+                      refetchTemplates?.();
+                    }}
+                  >
+                    <LayoutTemplate className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">
+                      All
+                    </span>
+                  </motion.button>
+                </ViewButton>
                 <Attachment data={files} onChange={setFiles} />
                 <MicInput editorRef={editorRef} />
               </div>
