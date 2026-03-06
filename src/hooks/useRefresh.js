@@ -68,7 +68,6 @@ function useRefresh() {
         dispatch(getAllAvatar());
         dispatch(getQuickActionBtn());
         dispatch(getDuplicateCount());
-        setCurrentIndex(0);
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {
         dispatch(getUnansweredEmails({}));
@@ -106,9 +105,6 @@ function useRefresh() {
         }
     }, [emails?.length, currentIndex]);
 
-
-
-    // Fetch ladger when email changes
     useEffect(() => {
         if (enteredEmail) {
             dispatch(getLadger({ email: enteredEmail, search }));

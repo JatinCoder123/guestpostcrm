@@ -25,6 +25,7 @@ export const PageContextProvider = (props) => {
     localStorage.setItem("showConsole", showConsole);
   }, []);
 
+
   const value = {
     activePage,
     setActivePage,

@@ -40,7 +40,7 @@ export function TimelinePage() {
   const [showEmail, setShowEmail] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showIP, setShowIP] = useState(false);
-  const { currentIndex, setCurrentIndex, enterEmail, search } =
+  const { currentIndex } =
     useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
@@ -169,16 +169,7 @@ export function TimelinePage() {
       }),
     );
   };
-  const handleNext = () => {
-    if (currentIndex < emails?.length - 1) {
-      setCurrentIndex((p) => p + 1);
-    }
-  };
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((p) => p - 1);
-    }
-  };
+
   // Function to clean HTML content
   const cleanHtmlContent = (html) => {
     // Basic HTML cleanup
@@ -631,10 +622,6 @@ export function TimelinePage() {
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
               <ContactHeader
-                onNext={handleNext}
-                setShowEmails={setShowEmail}
-                onPrev={handlePrev}
-                currentIndex={currentIndex}
               />
 
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-3xl">

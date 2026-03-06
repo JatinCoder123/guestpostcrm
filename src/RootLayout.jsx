@@ -12,10 +12,11 @@ import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
 import Avatar from "./components/Avatar";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { getDomain } from "./assets/assets";
+import { extractEmail, getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
+import { ladgerAction } from "./store/Slices/ladger";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const { message } = useSelector((state) => state.viewEmail);
@@ -24,6 +25,7 @@ const RootLayout = () => {
     displayIntro,
     setActivePage,
     collapsed,
+    setEnteredEmail, currentIndex, setCurrentIndex, setWelcomeHeaderContent, setSearch
   } = useContext(PageContext);
   const { currentAvatar, setCrm, setNotificationCount } =
     useContext(SocketContext);
@@ -32,6 +34,7 @@ const RootLayout = () => {
   const location = useLocation().pathname.split("/")[2];
   const pathname = useLocation().pathname;
   const mainRef = useRef(null);
+  const { emails } = useSelector((state) => state.unreplied);
 
   useEffect(() => {
     if (mainRef.current) {
@@ -52,12 +55,23 @@ const RootLayout = () => {
     setShowAvatar(true);
   }, [currentAvatar]);
   useEffect(() => {
-    setNotificationCount((prev) => ({
-      ...prev,
-      refreshUnreplied: Date.now(),
-    }));
-    toast.success(message)
-    dispatch(viewEmailAction.clearAllMessage())
+    if (message) {
+      setNotificationCount((prev) => ({
+        ...prev,
+        refreshUnreplied: Date.now(),
+      }));
+
+      toast.success(message)
+      dispatch(viewEmailAction.clearAllMessage())
+      const input = extractEmail(emails[currentIndex + 1]?.from);
+      localStorage.setItem("email", input);
+      setSearch(input);
+      setEnteredEmail(input);
+      dispatch(ladgerAction.setTimeline(null));
+      setWelcomeHeaderContent("Unreplied");
+      setCurrentIndex(p => p + 1)
+    }
+
   }, [message]);
 
   // Set active page based on URL

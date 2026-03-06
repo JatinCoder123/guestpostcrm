@@ -3,12 +3,14 @@ import { useSelector } from "react-redux";
 import { Mail, ChevronLeft, ChevronRight, Handshake, Lock, Diameter, ArrowUpAz, Tag, TimerOffIcon, Rocket, Gamepad2Icon, Flame, TriangleDashed, Hourglass, User, Signature, CircleUser } from "lucide-react";
 import { Link } from "react-router-dom";
 import SocialButtons from "./SocialButtons";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import confetti from "canvas-confetti";
 // start
 import { useNavigate } from "react-router-dom";
+import NextPrev from "./NextPrev";
+import { PageContext } from "../context/pageContext";
 
-const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
+const ContactHeader = () => {
   const navigate = useNavigate();
   const goToDeal = () => {
     navigate("/deals");
@@ -16,6 +18,8 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
   const { email } = useSelector((state) => state.ladger);
   const { contactInfo, contactLoading, stage, status, customer_type, } =
     useSelector((state) => state.viewEmail);
+  const { enteredEmail, search } = useContext(PageContext)
+
 
   const { deals } = useSelector((state) => state.deals);
 
@@ -92,7 +96,6 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
       : 0;
   // end
 
-  const { emails } = useSelector((state) => state.unreplied);
 
   return (
     <div className="flex flex-col gap-4">
@@ -159,35 +162,7 @@ const ContactHeader = ({ onPrev, onNext, currentIndex, setShowEmails }) => {
               </div>
             </div>
           )}
-          {/* end by kjl */}
-
-          {/* PREV BUTTON (Disable if index is 0) */}
-          <button
-            onClick={onPrev}
-            disabled={currentIndex === 0}
-            className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${currentIndex === 0
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-gray-100"
-              }
-                    `}
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-700" />
-          </button>
-
-          {/* NEXT BUTTON (Disable if last email) */}
-          <button
-            onClick={onNext}
-            disabled={currentIndex === emails?.length - 1}
-            className={`p-2 rounded-lg border bg-white shadow-sm active:scale-95 transition
-                        ${currentIndex === emails?.length - 1
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-gray-100"
-              }
-                    `}
-          >
-            <ChevronRight className="w-5 h-5 text-gray-700" />
-          </button>
+          <NextPrev />
         </div>
 
       </div>
