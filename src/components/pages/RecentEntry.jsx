@@ -93,24 +93,6 @@ export function RecentEntry() {
   focus:border-green-400 focus:shadow-green-200/50 
   transition-all duration-300"
             />
-
-            {/* Email Filter */}
-            <select
-              value={emailFilter}
-              onChange={(e) => setEmailFilter(e.target.value)}
-              className="px-5 py-2.5 bg-white border border-green-200 
-  rounded-xl shadow-sm 
-  focus:outline-none focus:ring-2 focus:ring-green-400 
-  focus:border-green-400 focus:shadow-green-200/50 
-  transition-all duration-300 cursor-pointer"
-            >
-              <option value="all">All Emails</option>
-              {uniqueEmails.map((email, index) => (
-                <option key={index} value={email}>
-                  {email}
-                </option>
-              ))}
-            </select>
           </div>
           {/* HEADER */}
           <div className="bg-green-600 py-4 px-8">
