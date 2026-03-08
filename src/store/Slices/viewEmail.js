@@ -125,6 +125,10 @@ const viewEmailSlice = createSlice({
       state.status = null;
       state.customer_type = null;
     },
+    updateContactInfo(state, action) {
+      const { key } = action.payload;
+      state.contactInfo[key] = state.contactInfo[key] === "1" ? "0" : "1";
+    },
   },
 });
 
@@ -134,7 +138,8 @@ export const getViewEmail = (email = null) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email ?? getState().ladger.email
+        `${getState().user.crmEndpoint}&type=view_email&email=${
+          email ?? getState().ladger.email
         }`,
       );
       showConsole && console.log(`viewEmail`, data);
@@ -161,7 +166,8 @@ export const getContact = (email = null) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint
+        `${
+          getState().user.crmEndpoint
         }&type=get_contact&email=${email ?? getState().ladger.email}&page=1&page_size=50`,
       );
       showConsole && console.log(`Get contact`, data);
@@ -226,36 +232,28 @@ export const editContact = (contactData) => {
     }
   };
 };
-export const sendEmail = (
-  {
-    reply,
-    message = null,
-    attachments = [],
-    cc = [],
-    to = [],
-    bcc = [],
-    email,
-    threadId = null,
-    addActivity = false
-  }
-) => {
+export const sendEmail = ({
+  reply,
+  message = null,
+  attachments = [],
+  cc = [],
+  to = [],
+  bcc = [],
+  email,
+  threadId = null,
+  addActivity = false,
+}) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
-    const ladgerEmail = getState().ladger.email
+    const ladgerEmail = getState().ladger.email;
 
     try {
       const formData = new FormData();
 
-      formData.append(
-        "threadId",
-        threadId
-      );
+      formData.append("threadId", threadId);
       formData.append("replyBody", reply);
       formData.append("email", email ?? ladgerEmail);
-      formData.append(
-        "current_email",
-        getState().user.user.email
-      );
+      formData.append("current_email", getState().user.user.email);
 
       // ✅ ADD ONLY THESE TWO
       formData.append("cc", cc.join(","));
@@ -267,7 +265,7 @@ export const sendEmail = (
         formData.append("attachments[]", file.file);
       });
       if (!threadId) {
-        throw new Error("Thread is not there!")
+        throw new Error("Thread is not there!");
       }
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
@@ -276,7 +274,7 @@ export const sendEmail = (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       showConsole && console.log("Reply Data", data);
@@ -284,23 +282,27 @@ export const sendEmail = (
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: message ?? data.message,
-        })
+        }),
       );
 
       dispatch(viewEmailSlice.actions.clearAllErrors());
-     addActivity && updateActivity(getState().user.crmEndpoint, email ?? ladgerEmail, getState().user.user.name, getState().user.user.email, "Email Sent")
+      addActivity &&
+        updateActivity(
+          getState().user.crmEndpoint,
+          email ?? ladgerEmail,
+          getState().user.user.name,
+          getState().user.user.email,
+          "Email Sent",
+        );
       dispatch(getViewEmail());
     } catch (error) {
       showConsole && console.log(error);
       dispatch(
-        viewEmailSlice.actions.sendEmailFailed(
-          "Error while sending email"
-        )
+        viewEmailSlice.actions.sendEmailFailed("Error while sending email"),
       );
     }
   };
 };
-
 
 export const viewEmailAction = viewEmailSlice.actions;
 export default viewEmailSlice.reducer;
