@@ -278,10 +278,15 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
 
   return (
     <>
-      <hr className="mt-4 border-gray-500" />
+      {/* <hr className="mt-4 border-gray-500" /> */}
 
-      <div className="mt-4 flex items-center justify-center flex-wrap gap-10">
-        {actionButtons.map((btn, i) => (
+<div
+  className="mt-6 flex items-center justify-center flex-wrap gap-10
+  px-8 py-5 rounded-2xl
+  bg-gradient-to-r from-cyan-50 via-orange-50 to-cyan-50
+  border-t border-gray-300
+  shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
+>       {actionButtons.map((btn, i) => (
           <div key={i} className="flex items-center  gap-8 relative">
             {i == 2 ? (
               <>
@@ -310,7 +315,7 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
                         }
                       : {}
                   }
-                  className={`group flex items-center justify-center w-12 h-12
+                  className={`group flex items-center cursor-pointer justify-center w-12 h-12
   rounded-xl border border-gray-300
   bg-gray-100
   shadow-md
