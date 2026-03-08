@@ -1,25 +1,61 @@
 import { LoadingAll, LoadingChase } from "./Loading";
 import { useSelector } from "react-redux";
-import { Mail, ChevronLeft, ChevronRight, Handshake, Lock, Diameter, ArrowUpAz, Tag, TimerOffIcon, Rocket, Gamepad2Icon, Flame, TriangleDashed, Hourglass, User, Signature, CircleUser } from "lucide-react";
+import {
+  Mail,
+  ChevronLeft,
+  ChevronRight,
+  Handshake,
+  Lock,
+  Diameter,
+  ArrowUpAz,
+  Tag,
+  TimerOffIcon,
+  Rocket,
+  Gamepad2Icon,
+  Flame,
+  TriangleDashed,
+  Hourglass,
+  User,
+  Signature,
+  CircleUser,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import SocialButtons from "./SocialButtons";
 import { useEffect, useState, useRef, useContext } from "react";
 import confetti from "canvas-confetti";
-// start
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
 
-const ContactHeader = () => {
+/* 🔥 Modern Hashtag Badge */
+function HashTag({ text, color }) {
+  return (
+    <span
+      className={`
+      px-2.5 py-1 rounded-full text-xs font-semibold
+      bg-gradient-to-r ${color}
+      text-white shadow-sm
+      hover:scale-105 hover:shadow-md
+      transition-all duration-200
+    `}
+    >
+      #{text}
+    </span>
+  );
+}
+
+const ContactHeader = ({isMark}) => {
   const navigate = useNavigate();
   const goToDeal = () => {
     navigate("/deals");
   };
-  const { email } = useSelector((state) => state.ladger);
-  const { contactInfo, contactLoading, stage, status, customer_type, } =
-    useSelector((state) => state.viewEmail);
-  const { enteredEmail, search, welcomeHeaderContent } = useContext(PageContext)
 
+  const { email } = useSelector((state) => state.ladger);
+
+  const { contactInfo, contactLoading, stage, status, customer_type } =
+    useSelector((state) => state.viewEmail);
+
+  const { welcomeHeaderContent } = useContext(PageContext);
 
   const { deals } = useSelector((state) => state.deals);
 
@@ -48,10 +84,8 @@ const ContactHeader = () => {
         } else if (!hasBlasted.current && amountRef.current) {
           hasBlasted.current = true;
 
-          // ✅ mark animation as done
           sessionStorage.setItem(storageKey, "true");
 
-          // 🎯 confetti only on amount
           const rect = amountRef.current.getBoundingClientRect();
           const x = (rect.left + rect.width / 2) / window.innerWidth;
           const y = (rect.top + rect.height / 2) / window.innerHeight;
@@ -87,70 +121,93 @@ const ContactHeader = () => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-        ...emailDeals.map((d) =>
-          Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
-          ),
-        ),
-      )
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
+            )
+          )
+        )
       : 0;
-  // end
-
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between w-full">
-        {/* LEFT SIDE CONTENT */}
+        {/* LEFT SIDE */}
         <div
-          className={`flex  gap-4 ${contactLoading ? "items-center" : "item-start"
-            }`}
+          className={`flex gap-4 ${
+            contactLoading ? "items-center" : "item-start"
+          }`}
         >
           {contactLoading && <LoadingChase size="30" color="blue" />}
+
           {!contactLoading && (
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-5">
-                {/* Name + Email */}
-                <div className="flex flex-col leading-tight">
+                <div className="flex flex-col leading-tight gap-1">
+                  {/* Name */}
                   <Link
                     to="/contacts"
                     className="
-        relative text-lg font-extrabold
-        bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500
-        bg-[length:300%_100%] bg-clip-text text-transparent
-        animate-[gradientMove_4s_linear_infinite]
-      "
+                      relative text-lg font-extrabold
+                      bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500
+                      bg-[length:300%_100%] bg-clip-text text-transparent
+                      animate-[gradientMove_4s_linear_infinite]
+                    "
                   >
                     {contactInfo?.full_name?.trim()
                       ? contactInfo.full_name
                       : email}
                   </Link>
+
+                  {/* 🔥 Modern Hashtags */}
+                  <div className="flex gap-2 flex-wrap">
+                    {contactInfo?.favorite === "1" && (
+                      <HashTag
+                        text="favorite"
+                        color="from-pink-500 to-rose-500"
+                      />
+                    )}
+
+                    {contactInfo?.exchange === "1" && (
+                      <HashTag
+                        text="linkexchange"
+                        color="from-blue-500 to-indigo-500"
+                      />
+                    )}
+
+                    {isMark && (
+                      <HashTag
+                        text="marketplace"
+                        color="from-violet-500 to-purple-500"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
-
             </div>
           )}
+
           <SocialButtons />
         </div>
 
-        {/* 🔘 PREV + NEXT BUTTONS */}
+        {/* RIGHT SIDE */}
         <div className="flex items-center gap-3">
-          {/* start by kjl */}
           {emailDeals?.length > 0 && (
             <div className="flex items-center">
               <div
                 onClick={goToDeal}
                 className="
-        flex items-center gap-4
-        p-2
-        rounded-xl
-        bg-white
-        border border-slate-200
-        shadow-sm
-        cursor-pointer
-        hover:shadow-md
-        hover:-translate-y-0.5
-        transition-all
-      "
+                flex items-center gap-4
+                p-2
+                rounded-xl
+                bg-white
+                border border-slate-200
+                shadow-sm
+                cursor-pointer
+                hover:shadow-md
+                hover:-translate-y-0.5
+                transition-all
+              "
               >
                 <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-slate-900">
                   <Handshake size={22} className="text-white" />
@@ -162,11 +219,12 @@ const ContactHeader = () => {
               </div>
             </div>
           )}
-          {(welcomeHeaderContent == "Unreplied" || welcomeHeaderContent == "") && <NextPrev />
-          }
-        </div>
 
+          {(welcomeHeaderContent === "Unreplied" ||
+            welcomeHeaderContent === "") && <NextPrev />}
+        </div>
       </div>
+
       {/* STATUS GRID */}
 
       <div>
@@ -238,6 +296,7 @@ const ContactHeader = () => {
                 }}
               />
             )}
+
             <StatusCard
               Icon={TriangleDashed}
               label="Direction"
@@ -250,6 +309,7 @@ const ContactHeader = () => {
                 text: "text-cyan-700",
               }}
             />
+
             <StatusCard
               Icon={Flame}
               label="Assign To"
@@ -262,9 +322,10 @@ const ContactHeader = () => {
                 text: "text-indigo-700",
               }}
             />
+
             <StatusCard
               Icon={Signature}
-              label="Last Activity "
+              label="Last Activity"
               value={contactInfo?.last_activity ?? "GPC"}
               color={{
                 bg: "bg-yellow-50",
@@ -274,6 +335,7 @@ const ContactHeader = () => {
                 text: "text-yellow-700",
               }}
             />
+
             <StatusCard
               Icon={CircleUser}
               label="Last Activity By"
@@ -290,7 +352,6 @@ const ContactHeader = () => {
         )}
       </div>
     </div>
-
   );
 };
 
@@ -301,7 +362,10 @@ function StatusCard({ Icon, label, value, color }) {
     <div
       className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${color.bg} border ${color.border}`}
     >
-      <span className={`${color.icon} text-lg`}><Icon /></span>
+      <span className={`${color.icon} text-lg`}>
+        <Icon />
+      </span>
+
       <div>
         <p className={`text-xs font-medium ${color.label}`}>{label}</p>
         <p className={`font-semibold ${color.text}`}>{value || "N/A"}</p>
