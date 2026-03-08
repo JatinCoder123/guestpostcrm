@@ -274,27 +274,29 @@ export default function App() {
   }, [dispatch, error]);
   return (
     <>
-      {isAuthenticated && (
-        <PageContextProvider>
-          <SocketContextProvider>
-            <RouterProvider router={router} />
-          </SocketContextProvider>
-        </PageContextProvider>
-      )}
-      {!isAuthenticated && loading && <LoadingPage />}
-      {!isAuthenticated && !loading && <Login />}
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark" // you can change to "light"
-      />
+      <ErrorBoundary>
+        {isAuthenticated && (
+          <PageContextProvider>
+            <SocketContextProvider>
+              <RouterProvider router={router} />
+            </SocketContextProvider>
+          </PageContextProvider>
+        )}
+        {!isAuthenticated && loading && <LoadingPage />}
+        {!isAuthenticated && !loading && <Login />}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark" // you can change to "light"
+        />
+      </ErrorBoundary>
     </>
   );
 }

@@ -1,6 +1,16 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Editor } from "@tinymce/tinymce-react";
-import { Brain, Zap, Trash2, Mail, Send, X, Sparkle, Eye, List } from "lucide-react";
+import {
+  Brain,
+  Zap,
+  Trash2,
+  Mail,
+  Send,
+  X,
+  Sparkle,
+  Eye,
+  List,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CREATE_DEAL_API_KEY, TINY_EDITOR_API_KEY } from "../store/constants";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,17 +37,15 @@ export const PreviewTemplate = ({
   useEffect(() => {
     setEditorContent(initialContent || "");
   }, [initialContent]);
-  useIdle({ idle: false })
+  useIdle({ idle: false });
   const {
     loading: aiLoading,
     aiReply: aiResponse,
     error: aiError,
     message,
   } = useSelector((state) => state.aiReply);
-  const {
-    crmEndpoint
-  } = useSelector((state) => state.user);
-  const editorRef = useRef(null)
+  const { crmEndpoint } = useSelector((state) => state.user);
+  const editorRef = useRef(null);
   const dispatch = useDispatch();
   const [aiReplyContent, setAiReplyContent] = useState(aiReply);
   const [aiNewContent, setAiNewContent] = useState("");
@@ -70,12 +78,13 @@ export const PreviewTemplate = ({
       "Content-Type": "application/json",
     },
     name: "Price Template",
-
   });
   const insertTextAtCursor = () => {
     if (editorRef.current) {
       editorRef.current.focus(); // ensure cursor is active
-      editorRef.current.insertContent(priceTemp[0]?.body_html ?? "No Content Available");
+      editorRef.current.insertContent(
+        priceTemp[0]?.body_html ?? "No Content Available",
+      );
     }
   };
   return (
@@ -217,7 +226,10 @@ export const PreviewTemplate = ({
                   "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
 
                 /* ================= UX ================= */
-                contextmenu: "link image table",
+                /* ================= UX ================= */
+                browser_spellcheck: true,
+                contextmenu: "link image table spellchecker",
+                spellchecker_ignore_list: [],
                 resize: true,
               }}
             />
@@ -241,8 +253,6 @@ export const PreviewTemplate = ({
                 />
               </ViewButton>
 
-
-
               {/* AI NOW */}
               <ViewButton Icon={Sparkle}>
                 <ActionButton
@@ -255,7 +265,6 @@ export const PreviewTemplate = ({
                   }}
                 />
               </ViewButton>
-
 
               {/* TEMPLATE */}
               <ViewButton Icon={Eye}>
@@ -276,7 +285,6 @@ export const PreviewTemplate = ({
                   onClick={insertTextAtCursor}
                 />
               </ViewButton>
-
 
               {/* CLEAR */}
               <ActionButton
@@ -316,6 +324,7 @@ const ActionButton = ({ Icon, label, gradient, onClick }) => (
     onClick={onClick}
     className={`bg-gradient-to-r ${gradient} text-white p-3 rounded-2xl shadow-lg hover:shadow-xl cursor-pointer transition-all duration-200 flex items-center gap-2`}
   >
-    <Icon className="w-4 h-4" />    <span className="text-sm font-medium hidden sm:inline">{label}</span>
+    <Icon className="w-4 h-4" />{" "}
+    <span className="text-sm font-medium hidden sm:inline">{label}</span>
   </motion.button>
 );

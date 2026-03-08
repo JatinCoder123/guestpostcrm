@@ -1,9 +1,9 @@
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { viewEmailAction, } from "./store/Slices/viewEmail";
+import { viewEmailAction } from "./store/Slices/viewEmail";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
 import { AnimatePresence } from "framer-motion";
@@ -25,17 +25,21 @@ const RootLayout = () => {
     displayIntro,
     setActivePage,
     collapsed,
-    setEnteredEmail, currentIndex, setCurrentIndex, setWelcomeHeaderContent, setSearch
+    setEnteredEmail,
+    currentIndex,
+    setCurrentIndex,
+    setWelcomeHeaderContent,
+    setSearch,
   } = useContext(PageContext);
   const { currentAvatar, setCrm, setNotificationCount } =
     useContext(SocketContext);
-  useRefresh()
+  useRefresh();
   const dispatch = useDispatch();
   const location = useLocation().pathname.split("/")[2];
   const pathname = useLocation().pathname;
   const mainRef = useRef(null);
   const { emails } = useSelector((state) => state.unreplied);
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTo({
@@ -61,17 +65,20 @@ const RootLayout = () => {
         refreshUnreplied: Date.now(),
       }));
 
-      toast.success(message)
-      dispatch(viewEmailAction.clearAllMessage())
+      toast.success(message);
+      dispatch(viewEmailAction.clearAllMessage());
+      if (emails.length === currentIndex + 1) {
+        navigate("/unreplied-emails");
+        return;
+      }
       const input = extractEmail(emails[currentIndex + 1]?.from);
       localStorage.setItem("email", input);
       setSearch(input);
       setEnteredEmail(input);
       dispatch(ladgerAction.setTimeline(null));
       setWelcomeHeaderContent("Unreplied");
-      setCurrentIndex(p => p + 1)
+      setCurrentIndex((p) => p + 1);
     }
-
   }, [message]);
 
   // Set active page based on URL
@@ -88,41 +95,41 @@ const RootLayout = () => {
       {displayIntro ? (
         <DisplayIntro key="intro" />
       ) : (
-        <ErrorBoundary>
-          <div className="min-h-screen bg-[#F8FAFC] ">
-            <TopNav setShowAvatar={setShowAvatar} />
-            <div className="flex h-[calc(100vh-100px)] ">
-              {/* Sidebar scrolls independently */}
-              <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-                <Sidebar />
-              </div>
+        <div className="min-h-screen bg-[#F8FAFC] ">
+          <TopNav setShowAvatar={setShowAvatar} />
+          <div className="flex h-[calc(100vh-100px)] ">
+            {/* Sidebar scrolls independently */}
+            <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
+              <Sidebar />
+            </div>
 
-              {/* Main content scrolls independently */}
-              <main
-                ref={mainRef}
-                className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-                  }`}
-              >
+            {/* Main content scrolls independently */}
+            <main
+              ref={mainRef}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                collapsed ? "ml-4" : "ml-0"
+              }`}
+            >
+              <div className="p-6">
+                {isLowCredit && <LowCreditWarning score={currentScore} />}
                 <div className="p-6">
-                  {isLowCredit && <LowCreditWarning score={currentScore} />}
-                  <div className="p-6">
-                    <WelcomeHeader />
-                    <Outlet />
-                  </div>
+                  <WelcomeHeader />
+                  <Outlet />
+                </div>
 
-                  {/* {showAvatar && currentAvatar && (
+                {/* {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}
                     avatarUrl={currentAvatar?.url}
                     mute={currentAvatar}
                   />
                 )} */}
-                </div>
-                <Footer />
-              </main>
-            </div>
+              </div>
+              <Footer />
+            </main>
+          </div>
 
-            {/* <div className="fixed bottom-1 right-2 cursor-pointer">
+          {/* <div className="fixed bottom-1 right-2 cursor-pointer">
             <img
               width="80"
               height="80"
@@ -130,8 +137,7 @@ const RootLayout = () => {
               alt="whatsapp-logo"
             />
           </div> */}
-          </div>
-        </ErrorBoundary>
+        </div>
       )}
     </AnimatePresence>
   );
