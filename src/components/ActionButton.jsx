@@ -1,4 +1,4 @@
-import { Globe, Mail, Heart, Link } from "lucide-react";
+import { Globe, Mail, Heart, Link, CircleStop } from "lucide-react";
 import Loading, { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
@@ -273,6 +273,14 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
             ? deleteMarketPlace(isMark.id)
             : addMarketPlace(email, contactInfo.type == "Brand"),
         ),
+    },
+    {
+      icon:
+        <CircleStop size={25} color="red"/>,
+
+      label: "Stop Future Emails",
+      action: () =>
+        alert("Feature coming soon! This will allow you to block all future emails from this sender."),
     },
   ];
 
