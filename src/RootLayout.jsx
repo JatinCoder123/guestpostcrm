@@ -71,7 +71,7 @@ const RootLayout = () => {
         navigate("/unreplied-emails");
         return;
       }
-      const input = extractEmail(emails[currentIndex + 1]?.from);
+      const input = extractEmail(emails[currentIndex + 1]?.from || "") ;
       localStorage.setItem("email", input);
       setSearch(input);
       setEnteredEmail(input);
