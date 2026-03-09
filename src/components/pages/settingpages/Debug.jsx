@@ -29,6 +29,8 @@ const IMPORTANT_COLUMNS = {
 
 const Debug = () => {
   const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+
   const { crmEndpoint } = useSelector((state) => state.user);
 
   const { loading, data, error, refetch } = useModule({
@@ -76,7 +78,7 @@ const Debug = () => {
         ))}
       </div>
 
-      {/* Content */}
+      {/* Table */}
       <div className="bg-white rounded-lg shadow border overflow-x-auto">
         {loading && (
           <div className="p-6 text-sm text-gray-500">
@@ -102,9 +104,14 @@ const Debug = () => {
                 ))}
               </tr>
             </thead>
+
             <tbody>
               {data.map((row, index) => (
-                <tr key={index} className="border-t hover:bg-gray-50">
+                <tr
+                  key={index}
+                  onClick={() => setSelectedRecord(row)}
+                  className="border-t hover:bg-gray-50 cursor-pointer transition"
+                >
                   {columns.map((col) => (
                     <td key={col} className="px-4 py-3 max-w-xs truncate">
                       {truncate(row[col])}
@@ -120,6 +127,42 @@ const Debug = () => {
           <div className="p-6 text-sm text-gray-500">No records found.</div>
         )}
       </div>
+
+      {/* Popup Modal */}
+      {selectedRecord && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center border-b px-6 py-4">
+              <h2 className="text-lg font-semibold">Record Details</h2>
+
+              <button
+                onClick={() => setSelectedRecord(null)}
+                className="text-gray-500 hover:text-black text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(selectedRecord).map(([key, value]) => (
+                <div key={key} className="border rounded-lg p-3 bg-gray-50">
+                  <div className="text-xs text-gray-500 mb-1">
+                    {key.replace(/_/g, " ").toUpperCase()}
+                  </div>
+
+                  <div className="text-sm break-words whitespace-pre-wrap">
+                    {typeof value === "object"
+                      ? JSON.stringify(value, null, 2)
+                      : String(value)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
