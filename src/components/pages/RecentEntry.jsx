@@ -38,6 +38,7 @@ export function RecentEntry() {
   const [email, setEmail] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [emailFilter, setEmailFilter] = useState("all");
+  const [timeFilter, setTimeFilter] = useState("all");
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
 
@@ -54,8 +55,8 @@ export function RecentEntry() {
   const navigateTo = useNavigate();
 
   useEffect(() => {
-    dispatch(getEvents("all"));
-  }, [dispatch]);
+    dispatch(getEvents(timeFilter));
+  }, [dispatch, timeFilter]);
 
   if (showThread) {
     return (
@@ -93,6 +94,21 @@ export function RecentEntry() {
   focus:border-green-400 focus:shadow-green-200/50 
   transition-all duration-300"
             />
+
+            {/* TIME FILTER */}
+            <select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+              className="px-5 py-2.5 bg-white border border-green-200 
+  rounded-xl shadow-sm 
+  focus:outline-none focus:ring-2 focus:ring-green-400 
+  focus:border-green-400 transition-all duration-300"
+            >
+              <option value="all">All Time</option>
+              <option value="last_1_hour">Last 1 Hour</option>
+              <option value="last_3_hour">Last 3 Hours</option>
+              <option value="last_5_hour">Last 5 Hours</option>
+            </select>
           </div>
           {/* HEADER */}
           <div className="bg-green-600 py-4 px-8">
