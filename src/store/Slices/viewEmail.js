@@ -125,6 +125,10 @@ const viewEmailSlice = createSlice({
       state.status = null;
       state.customer_type = null;
     },
+    updateContactInfo(state, action) {
+      const { key } = action.payload;
+      state.contactInfo[key] = state.contactInfo[key] === "1" ? "0" : "1";
+    },
   },
 });
 
@@ -240,7 +244,7 @@ export const sendEmail = (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       showConsole && console.log("Reply Data", data);
@@ -248,7 +252,7 @@ export const sendEmail = (
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: message ?? data.message,
-        })
+        }),
       );
 
       dispatch(viewEmailSlice.actions.clearAllErrors());
@@ -257,14 +261,11 @@ export const sendEmail = (
     } catch (error) {
       showConsole && console.log(error);
       dispatch(
-        viewEmailSlice.actions.sendEmailFailed(
-          "Error while sending email"
-        )
+        viewEmailSlice.actions.sendEmailFailed("Error while sending email"),
       );
     }
   };
 };
-
 
 export const viewEmailAction = viewEmailSlice.actions;
 export default viewEmailSlice.reducer;

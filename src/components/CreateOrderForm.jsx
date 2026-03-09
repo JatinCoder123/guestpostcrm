@@ -104,7 +104,7 @@ const CreateOrderForm = ({
       if (!link.link_amount || Number(link.link_amount) <= 0) return false;
 
       if (
-        (order.order_type === "LINK INSERTION" ||
+        (order.order_type === "GUEST POST" ||
           order.order_type === "BOTH") &&
         (!link.gp_doc_url_c?.trim())
       ) {

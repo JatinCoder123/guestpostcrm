@@ -159,7 +159,7 @@ export function RecentEntry() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        setWelcomeHeaderContent("Unreplied");
+                        setWelcomeHeaderContent("Recent");
                         navigateTo("/");
                       }}
                     >
@@ -190,7 +190,7 @@ export function RecentEntry() {
                           localStorage.setItem("email", input);
                           setSearch(input);
                           setEnteredEmail(input);
-                          setWelcomeHeaderContent("Unreplied");
+                          setWelcomeHeaderContent("Recent");
                           navigateTo("/contacts");
                         }}
                       >
@@ -207,7 +207,7 @@ export function RecentEntry() {
                           localStorage.setItem("email", input);
                           setSearch(input);
                           setEnteredEmail(input);
-                          setWelcomeHeaderContent("Unreplied");
+                          setWelcomeHeaderContent("Recent");
                           setShowThread(true);
                           setCurrentThreadId(event.thread_id);
                           setEmail(input);

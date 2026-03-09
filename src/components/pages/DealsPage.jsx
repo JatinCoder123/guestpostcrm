@@ -26,10 +26,11 @@ import TableLoading from "../TableLoading";
 export function DealsPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const { setSearch, setEnteredEmail } = useContext(PageContext);
+  const { setSearch, setEnteredEmail, setWelcomeHeaderContent } = useContext(PageContext);
   const [selectedSort, setSelectedSort] = useState("");
   const { count, deals, loading, error, deleting, deleteDealId, summary } =
     useSelector((state) => state.deals);
+
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
@@ -273,6 +274,7 @@ export function DealsPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
+                        setWelcomeHeaderContent('Deal')
                         dispatch(ladgerAction.setTimeline(null));
                         navigateTo("/");
                       }}

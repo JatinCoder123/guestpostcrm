@@ -40,8 +40,7 @@ export function TimelinePage() {
   const [showEmail, setShowEmail] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showIP, setShowIP] = useState(false);
-  const { currentIndex, setCurrentIndex, enterEmail, search } =
-    useContext(PageContext);
+  const { currentIndex } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [editorContent, setEditorContent] = useState("");
@@ -58,6 +57,15 @@ export function TimelinePage() {
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
   const [frLoading, setFrLoading] = useState(false);
+  const [isMark, setIsMark] = useState(false);
+  const { items: marketPlaces } = useSelector((s) => s.marketplace);
+  useEffect(() => {
+    if (marketPlaces.length > 0) {
+      setIsMark(marketPlaces.find((e) => e.name === email));
+    } else {
+      setIsMark(false);
+    }
+  }, [marketPlaces]);
   const { email: frEmail } = useSelector((s) => s.ladger);
 
   const {
@@ -80,7 +88,7 @@ export function TimelinePage() {
     viewEmail,
     sending,
     threadId,
-    count
+    count,
   } = useSelector((state) => state.viewEmail);
   const { loading: askBudgetTempLoading, data: askBudgetTemp } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
@@ -110,7 +118,7 @@ export function TimelinePage() {
   });
 
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
     useSelector((state) => state.ladger);
   const { emails, loading: unrepliedLoading } = useSelector(
@@ -146,7 +154,7 @@ export function TimelinePage() {
         reply: btnBody,
         message: "Quick Action Button Reply Sent",
         threadId,
-        addActivity: true
+        addActivity: true,
       }),
     );
     dispatch(
@@ -164,21 +172,11 @@ export function TimelinePage() {
         reply: editorContent,
         threadId,
         message: "Ai Reply Send Successfully",
-        addActivity: true
-
+        addActivity: true,
       }),
     );
   };
-  const handleNext = () => {
-    if (currentIndex < emails?.length - 1) {
-      setCurrentIndex((p) => p + 1);
-    }
-  };
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((p) => p - 1);
-    }
-  };
+
   // Function to clean HTML content
   const cleanHtmlContent = (html) => {
     // Basic HTML cleanup
@@ -508,7 +506,11 @@ export function TimelinePage() {
         <PreviewTemplate
           editorContent={editorContent}
           initialContent={editorContent}
-          templateContent={clickedActionBtn == "Ask Budget" ? askBudgetTemp[0]?.body_html : sorryTemp[0]?.body_html}
+          templateContent={
+            clickedActionBtn == "Ask Budget"
+              ? askBudgetTemp[0]?.body_html
+              : sorryTemp[0]?.body_html
+          }
           setEditorContent={setEditorContent}
           onClose={() => setShowUpdatePopup(false)}
           onSubmit={() => {
@@ -630,12 +632,7 @@ export function TimelinePage() {
         {!loading && !unrepliedLoading && (
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
-              <ContactHeader
-                onNext={handleNext}
-                setShowEmails={setShowEmail}
-                onPrev={handlePrev}
-                currentIndex={currentIndex}
-              />
+              <ContactHeader isMark={isMark}/>
 
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-3xl">
                 {/* AI SUMMARY */}
@@ -668,16 +665,16 @@ export function TimelinePage() {
                             </span>
                           )}
                         </button>
-
                       </div>
 
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -714,8 +711,9 @@ export function TimelinePage() {
                     />
                   ) : (
                     <div
-                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${showMore ? "max-h-full" : "max-h-24 overflow-hidden"
-                        }`}
+                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
+                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
+                      }`}
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
@@ -813,12 +811,19 @@ export function TimelinePage() {
                       <LoadingChase size="30" />
                     ) : (
                       buttons?.map((btn, i) => (
-                        <div key={i} className="relative group flex flex-col gap-2 items-center justify-center">
+                        <div
+                          key={i}
+                          className="relative group flex flex-col gap-2 items-center justify-center"
+                        >
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setShowUpdatePopup(true);
-                              setEditorContent(btn.name == "Ask Budget" ? askBudgetTemp[0]?.body_html : sorryTemp[0]?.body_html);
+                              setEditorContent(
+                                btn.name == "Ask Budget"
+                                  ? askBudgetTemp[0]?.body_html
+                                  : sorryTemp[0]?.body_html,
+                              );
                               setClickedActionBtn(btn.name);
                             }}
                             disabled={sending}
@@ -842,7 +847,12 @@ export function TimelinePage() {
                           <button
                             onClick={() =>
                               navigate("/settings/templates", {
-                                state: { templateId: btn.name == "Ask Budget" ? askBudgetTemp[0]?.id : sorryTemp[0]?.id },
+                                state: {
+                                  templateId:
+                                    btn.name == "Ask Budget"
+                                      ? askBudgetTemp[0]?.id
+                                      : sorryTemp[0]?.id,
+                                },
                               })
                             }
                             className="text-cyan-600 hover:text-cyan-700"
@@ -870,10 +880,11 @@ export function TimelinePage() {
                       <>
                         {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
                         <div
-                          className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
-                            ? "opacity-100"
-                            : "opacity-0 pointer-events-none"
-                            }`}
+                          className={`flex items-center transition-opacity duration-200 ${
+                            showFirstReplyBtn
+                              ? "opacity-100"
+                              : "opacity-0 pointer-events-none"
+                          }`}
                         >
                           <div className="relative group flex items-center justify-center">
                             <button
@@ -927,13 +938,14 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowEmails={setShowEmail}
-                    setShowIP={setShowIP}
-                    handleActionBtnClick={handleActionBtnClick}
-                  />
-                )}
+                <ActionButton
+                isMark={isMark}
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowEmails={setShowEmail}
+                  setShowIP={setShowIP}
+                  handleActionBtnClick={handleActionBtnClick}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (

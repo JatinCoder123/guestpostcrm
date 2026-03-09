@@ -58,7 +58,7 @@ export function OrdersPage() {
   const [isExternalSearch, setIsExternalSearch] = useState(false);
   const [statusOptions, setStatusOptions] = useState([])
   const { state } = useLocation();
-  const { setSearch, setEnteredEmail, enteredEmail } = useContext(PageContext);
+  const { setSearch, setEnteredEmail, enteredEmail, setWelcomeHeaderContent } = useContext(PageContext);
   const [currentUpdateOrder, setCurrentUpdateOrder] = useState(null);
   const [updateOrderId, setUpdateOrderId] = useState(null);
   const [actualOrder, setActualOrder] = useState([]);
@@ -539,6 +539,7 @@ export function OrdersPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
+                        setWelcomeHeaderContent("Order")
                         dispatch(ladgerAction.setTimeline(null));
                         navigateTo("/");
                       }}
@@ -600,6 +601,8 @@ export function OrdersPage() {
                         setSearch(input);
                         setEnteredEmail(input);
                         dispatch(ladgerAction.setTimeline(null));
+                        setWelcomeHeaderContent("Order")
+
                         navigateTo("/");
                       }}
                     >

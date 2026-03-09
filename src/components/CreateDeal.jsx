@@ -187,6 +187,7 @@ export default function CreateDeal() {
     );
   };
   const handleUpdate = (item, shouldSend) => {
+    console.log(item)
     dispatch(updateDeal(item, shouldSend));
   };
   const handleDelete = (id) => {

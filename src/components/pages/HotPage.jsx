@@ -85,7 +85,7 @@ export function HotPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -234,7 +234,7 @@ export function HotPage() {
                           localStorage.setItem("email", input);
                           setSearch(input);
                           setEnteredEmail(input);
-                          setWelcomeHeaderContent("Unreplied");
+                          setWelcomeHeaderContent("Hot");
                           navigateTo("/");
                         }}
                       >
@@ -250,7 +250,7 @@ export function HotPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        setWelcomeHeaderContent("Unreplied");
+                        setWelcomeHeaderContent("Hot");
                         navigateTo("/contacts");
                       }}
                     >
@@ -264,7 +264,7 @@ export function HotPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        setWelcomeHeaderContent("Unreplied");
+                        setWelcomeHeaderContent("Hot");
                         navigateTo("/");
                       }}
                     >
@@ -277,7 +277,7 @@ export function HotPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
-                        setWelcomeHeaderContent("Unreplied");
+                        setWelcomeHeaderContent("Hot");
                         navigateTo("/");
                       }}
                     >

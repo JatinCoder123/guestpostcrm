@@ -256,7 +256,7 @@ export function LinkExchangePage() {
                     setSearch(input);
                     setEnteredEmail(input);
                     dispatch(ladgerAction.setTimeline(null));
-                    setWelcomeHeaderContent("Unreplied");
+                    setWelcomeHeaderContent("Link Exchange");
                     navigateTo("/");
                   }}
                   className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
