@@ -59,6 +59,11 @@ const Debug = () => {
     return text.length > limit ? text.substring(0, limit) + "..." : text;
   };
 
+  const isLargeField = (key) => {
+    const largeFields = ["request", "response", "full_prompt", "description"];
+    return largeFields.includes(key);
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Tabs */}
@@ -131,7 +136,7 @@ const Debug = () => {
       {/* Popup Modal */}
       {selectedRecord && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex justify-between items-center border-b px-6 py-4">
               <h2 className="text-lg font-semibold">Record Details</h2>
@@ -146,19 +151,40 @@ const Debug = () => {
 
             {/* Content */}
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(selectedRecord).map(([key, value]) => (
-                <div key={key} className="border rounded-lg p-3 bg-gray-50">
-                  <div className="text-xs text-gray-500 mb-1">
-                    {key.replace(/_/g, " ").toUpperCase()}
-                  </div>
+              {Object.entries(selectedRecord).map(([key, value]) => {
+                const large = isLargeField(key);
 
-                  <div className="text-sm break-words whitespace-pre-wrap">
-                    {typeof value === "object"
-                      ? JSON.stringify(value, null, 2)
-                      : String(value)}
+                return (
+                  <div
+                    key={key}
+                    className={`border rounded-lg p-3 bg-gray-50 ${
+                      large ? "md:col-span-2" : ""
+                    }`}
+                  >
+                    <div className="text-xs text-gray-500 mb-1">
+                      {key.replace(/_/g, " ").toUpperCase()}
+                    </div>
+
+                    {large ? (
+                      <textarea
+                        readOnly
+                        value={
+                          typeof value === "object"
+                            ? JSON.stringify(value, null, 2)
+                            : String(value)
+                        }
+                        className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded resize-y"
+                      />
+                    ) : (
+                      <div className="text-sm break-words">
+                        {typeof value === "object"
+                          ? JSON.stringify(value)
+                          : String(value)}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
