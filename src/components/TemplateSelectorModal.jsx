@@ -39,7 +39,7 @@ export default function TemplateSelectorModal({
     const fetchUser = async () => {
       try {
         const res = await fetch(
-          `https://sales.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_user&email=${user.email}`,
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=get_user&email=${user.email}`,
         );
 
         const result = await res.json();
