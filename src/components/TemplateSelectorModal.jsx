@@ -23,6 +23,7 @@ export default function TemplateSelectorModal({
   const [sortOption, setSortOption] = useState("newest");
   const [stagesLoading, setStagesLoading] = useState(false);
   const { user } = useSelector((s) => s.user);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (!user?.email) return;
@@ -30,7 +31,7 @@ export default function TemplateSelectorModal({
     const fetchUser = async () => {
       try {
         const res = await fetch(
-          `https://sales.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_user&email=${user.email}`,
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=get_user&email=${user.email}`,
         );
 
         const result = await res.json();
@@ -84,16 +85,31 @@ export default function TemplateSelectorModal({
     enabled: !!stageType && isOpen,
   });
 
-  // Sorted templates
-  const sortedTemplates = useMemo(() => {
+  const filteredTemplates = useMemo(() => {
     if (!templateList?.length) return [];
 
-    return [...templateList].sort((a, b) => {
+    let list = [...templateList];
+
+    // Sort
+    list.sort((a, b) => {
       const dateA = new Date(a.date_modified || a.date_entered || 0);
       const dateB = new Date(b.date_modified || b.date_entered || 0);
       return sortOption === "newest" ? dateB - dateA : dateA - dateB;
     });
-  }, [templateList, sortOption]);
+
+    // Search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+
+      list = list.filter(
+        (tpl) =>
+          tpl.name?.toLowerCase().includes(term) ||
+          tpl.description?.toLowerCase().includes(term),
+      );
+    }
+
+    return list;
+  }, [templateList, sortOption, searchTerm]);
 
   useEffect(() => {
     setSortOption("newest");
@@ -203,6 +219,16 @@ export default function TemplateSelectorModal({
             )}
 
             <div className="flex items-center gap-3">
+              {/* Search */}
+              <input
+                type="text"
+                placeholder="Search templates..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="px-4 py-2.5 bg-white border border-gray-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56"
+              />
+
+              {/* Sort */}
               <span className="text-sm text-gray-500 font-medium">
                 Sort by:
               </span>
@@ -223,9 +249,9 @@ export default function TemplateSelectorModal({
               <div className="flex justify-center py-20">
                 <LoadingChase />
               </div>
-            ) : sortedTemplates?.length > 0 ? (
+            ) : filteredTemplates?.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedTemplates.map((tpl) => (
+                {filteredTemplates.map((tpl) => (
                   <motion.div
                     key={tpl.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -254,7 +280,7 @@ export default function TemplateSelectorModal({
                           onSelect(tpl);
                           onClose();
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all"
+                        className="flex-1 flex items-center justify-left gap-2 px-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all"
                       >
                         <Mail size={19} />
                         Use This Template
