@@ -57,9 +57,6 @@ export function buildTable(data, type, webKey, amtKey) {
           <td style="padding:12px;text-align:right;border-bottom:1px solid #eee;">
             $${deal[amtKey]}
           </td>
-          <td style="padding:12px;text-align:right;border-bottom:1px solid #eee;color:#ff8c00;">
-            ${type == "Deals" ? addOneWeek(deal?.date_entered_formatted ? deal?.date_entered_formatted : null) : addOneMonth(deal?.date_entered_formatted ? deal?.date_entered_formatted : null)}
-          </td>
         </tr>
       `,
     )
@@ -71,7 +68,6 @@ export function buildTable(data, type, webKey, amtKey) {
         <tr style="background:#FFF4D4;border-bottom:2px solid #FFD166;">
           <th style="padding:12px;text-align:left;">Website</th>
           <th style="padding:12px;text-align:right;">Amount</th>
-          <th style="padding:12px;text-align:right;">Expiry Date</th>
         </tr>
       </thead>
       <tbody>

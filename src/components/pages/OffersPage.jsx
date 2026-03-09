@@ -29,7 +29,8 @@ import TableLoading from "../TableLoading";
 export function OffersPage() {
   const { offers, count, loading, error, deleting, deleteOfferId, summary } =
     useSelector((state) => state.offers);
-  const { setSearch, setEnteredEmail } = useContext(PageContext);
+  const { setSearch, setEnteredEmail, setWelcomeHeaderContent
+  } = useContext(PageContext);
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
@@ -277,6 +278,8 @@ export function OffersPage() {
                         localStorage.setItem("email", input);
                         setSearch(input);
                         setEnteredEmail(input);
+                        setWelcomeHeaderContent("Offer")
+
                         navigateTo("/");
                       }}
                     >

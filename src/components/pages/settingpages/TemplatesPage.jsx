@@ -492,8 +492,11 @@ export default function TemplatesPage() {
                 a11y_advanced_options: true,
 
                 /* ================= UX GOODIES ================= */
-                contextmenu: "link image table",
-                resize: true,
+                /* ================= UX ================= */
+browser_spellcheck: true,
+contextmenu: "link image table spellchecker",
+spellchecker_ignore_list: [],
+resize: true,
               }}
             />
           </div>
@@ -682,8 +685,11 @@ export default function TemplatesPage() {
                   "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
 
                 /* ================= UX ================= */
-                contextmenu: "link image table",
-                resize: true,
+                /* ================= UX ================= */
+browser_spellcheck: true,
+contextmenu: "link image table spellchecker",
+spellchecker_ignore_list: [],
+resize: true,
               }}
             />
           </div>

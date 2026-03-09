@@ -61,7 +61,11 @@ const router = createBrowserRouter([
   },
   {
     path: "",
-    element: <RootLayout />,
+    element: (
+      <ErrorBoundary>
+        <RootLayout />
+      </ErrorBoundary>
+    ),
     children: [
       {
         index: true,

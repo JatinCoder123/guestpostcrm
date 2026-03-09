@@ -34,7 +34,7 @@ export function UnrepliedEmailsPage() {
     (state) => state.unreplied,
   );
 
-  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+  const { setEnteredEmail, setCurrentIndex, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
 
   const [
@@ -285,14 +285,13 @@ export function UnrepliedEmailsPage() {
             ) : (
               <tbody>
                 {/* 🟣 USING filteredEmails NOW (NOT emails) */}
-                {filteredEmails.map((email) => (
+                {filteredEmails.map((email, index) => (
                   <tr
                     key={email.thread_id}
                     className={`border-b border-gray-100 cursor-pointer transition-colors
-                      ${
-                        email.is_seen == 0
-                          ? "bg-blue-50 hover:bg-blue-100"
-                          : "hover:bg-purple-50"
+                      ${email.is_seen == 0
+                        ? "bg-blue-50 hover:bg-blue-100"
+                        : "hover:bg-purple-50"
                       }
                     `}
                   >
@@ -304,6 +303,7 @@ export function UnrepliedEmailsPage() {
                         setEnteredEmail(input);
                         dispatch(ladgerAction.setTimeline(null));
                         setWelcomeHeaderContent("Unreplied");
+                        setCurrentIndex(index)
                         navigateTo("/");
                       }}
                       className="px-6 py-4"

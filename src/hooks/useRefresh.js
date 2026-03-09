@@ -68,15 +68,14 @@ function useRefresh() {
         dispatch(getAllAvatar());
         dispatch(getQuickActionBtn());
         dispatch(getDuplicateCount());
-        setCurrentIndex(0);
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {
         dispatch(getUnansweredEmails({}));
         dispatch(getUnrepliedEmail({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {
-        console.log("REFRESH LADGER")
         if (currentEventThreadId.current == threadId) {
+            console.log("REFRESH LADGER")
             if (enteredEmail) {
                 dispatch(getLadger({ email: enteredEmail, search }));
                 dispatch(getViewEmail(enteredEmail));
@@ -92,23 +91,15 @@ function useRefresh() {
             dispatch(getUnansweredEmails({ loading: false }));
             dispatch(viewEmailAction.resetViewEmail());
         }
-
-
-
-
     };
     useEffect(() => {
         if (emails?.length > 0) {
-            setWelcomeHeaderContent("Unreplied");
             setFirstEmail(
                 emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
             );
         }
     }, [emails?.length, currentIndex]);
 
-
-
-    // Fetch ladger when email changes
     useEffect(() => {
         if (enteredEmail) {
             dispatch(getLadger({ email: enteredEmail, search }));

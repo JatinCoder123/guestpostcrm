@@ -1,4 +1,4 @@
-import { Globe, Mail } from "lucide-react";
+import { Globe, Mail, Heart, Link, CircleStop } from "lucide-react";
 import Loading, { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
@@ -19,28 +19,23 @@ import { addEvent } from "../store/Slices/eventSlice";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { getTags, applyTag } from "../store/Slices/markTagSlice";
-import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
 import { threadEmailAction } from "../store/Slices/threadEmail";
-import { MdHome, MdOutlineHome } from "react-icons/md";
+import {  MdOutlineHome } from "react-icons/md";
 import {
   addMarketPlace,
   deleteMarketPlace,
   marketplaceActions,
 } from "../store/Slices/Marketplace";
+import { viewEmailAction } from "../store/Slices/viewEmail";
 
-/* 🔹 Separator Component */
-const Separator = () => <div className="h-8 w-[1px] bg-gray-500 mx-2" />;
+/* Separator */
+const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
 
-const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
+const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
   const dispatch = useDispatch();
+
   const [showUsers, setShowUsers] = useState(false);
-  const [isMark, setIsMark] = useState(false);
-  const [linkActive, setLinkActive] = useState(false);
-
   const [showTags, setShowTags] = useState(false);
-
-  /* 🔥 ADDED: First Reply states */
 
   const { enteredEmail } = useContext(PageContext);
 
@@ -61,7 +56,6 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
   } = useSelector((s) => s.linkExchange);
 
   const {
-    emails: favEmails,
     favourite,
     error: favouriteError,
     message: favouriteMessage,
@@ -78,64 +72,17 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
 
+  /* highlight states from contactInfo */
+  const isFavActive = contactInfo?.favorite === "1";
+  const isExchangeActive = contactInfo?.exchange === "1";
+
   const handleForward = (email, id) => {
     dispatch(forwardEmail(email, id));
   };
 
-  /* 🔥 ADDED: Check FR button visibility */
+  
 
-  /* 🔥 ADDED: Send first reply handler */
-
-  useEffect(() => {
-    if (marketPlaces.length > 0) {
-      setIsMark(marketPlaces.find((e) => e.name === email));
-    }
-  }, [marketPlaces]);
-
-  /* 🔹 Blinking wrapper for active buttons */
-  const BlinkingButton = ({ children, isActive }) => {
-    return (
-      <motion.div
-        animate={
-          isActive
-            ? { opacity: [1, 0.4, 1] } // blink continuously
-            : { opacity: 1 }
-        }
-        transition={
-          isActive
-            ? { repeat: Infinity, duration: 0.8, ease: "easeInOut" }
-            : { duration: 0 }
-        }
-        className="flex items-center justify-center"
-      >
-        {children}
-      </motion.div>
-    );
-  };
-
-  /* 🔹 Updated FavIcon with blinking */
-  const FavIcon = ({ isFav }) => {
-    return (
-      <motion.div
-        animate={{
-          color: isFav ? "#ef4444" : "#9ca3af",
-        }}
-        transition={{
-          duration: 0.18,
-          ease: "easeInOut",
-        }}
-        className="flex items-center justify-center w-10 h-10 rounded-full"
-      >
-        <Heart
-          size={22}
-          strokeWidth={1.8}
-          fill={isFav ? "#ef4444" : "transparent"}
-        />
-      </motion.div>
-    );
-  };
-
-  /* 🔹 Side Effects (UNCHANGED) */
+  /* side effects */
   useEffect(() => {
     if (forwardError) {
       toast.error(forwardError);
@@ -170,6 +117,8 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
         }),
       );
       dispatch(favAction.clearAllMessages());
+      dispatch(viewEmailAction.updateContactInfo({ key: "favorite" }));
+
       dispatch(getFavEmails({ email: enteredEmail, loading: false }));
     }
 
@@ -199,6 +148,7 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
           recent_activity: "link exchange status changed",
         }),
       );
+      dispatch(viewEmailAction.updateContactInfo({ key: "exchange" }));
       dispatch(linkExchangeaction.clearAllMessages());
     }
 
@@ -211,9 +161,8 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
       toast.error(error);
       dispatch(threadEmailAction.clearAllErrors());
     }
+
     if (message) {
-      // toast.success(message);
-      setShowUpdatePopup(false);
       dispatch(threadEmailAction.clearAllMessage());
     }
   }, [
@@ -232,7 +181,6 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
     enteredEmail,
   ]);
 
-  /* 🔹 Static Buttons (UNCHANGED) */
   const actionButtons = [
     {
       icon: (
@@ -245,76 +193,6 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
       ),
       label: "IP",
       action: () => setShowIP(true),
-    },
-    {
-      icon: favourite ? (
-        <LoadingChase />
-      ) : (
-        <BlinkingButton
-          isActive={favEmails.some((e) => e.email_address === email)}
-        >
-          <FavIcon isFav={favEmails.some((e) => e.email_address === email)} />
-        </BlinkingButton>
-      ),
-      label: "Favourite",
-      action: () => dispatch(favEmail(threadId)),
-    },
-    {
-      icon: forward ? (
-        <LoadingChase />
-      ) : (
-        <BlinkingButton isActive={forward}>
-          <img
-            src="https://img.icons8.com/color/48/redo.png"
-            className="w-6 h-6"
-            alt="forward"
-          />
-        </BlinkingButton>
-      ),
-      label: "Assign",
-      action: () => setShowUsers((p) => !p),
-    },
-    {
-      icon:
-        adding || (deleting && deleteMarketPlaceId == isMark?.id) ? (
-          <LoadingChase />
-        ) : (
-          <BlinkingButton isActive={isMark}>
-            {isMark ? (
-              <MdHome size={25} color="red" />
-            ) : (
-              <MdOutlineHome size={25} color="red" />
-            )}
-          </BlinkingButton>
-        ),
-      label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
-      action: () =>
-        dispatch(
-          isMark
-            ? deleteMarketPlace(isMark.id)
-            : addMarketPlace(email, contactInfo.type == "Brand"),
-        ),
-    },
-    // Inside the action button
-    {
-      icon: exchanging ? (
-        <LoadingChase />
-      ) : (
-        <BlinkingButton isActive={linkActive}>
-          <img
-            src="https://img.icons8.com/office/40/link.png"
-            className="w-6 h-6"
-            alt="link"
-          />
-        </BlinkingButton>
-      ),
-      label: "Link Exchange",
-      action: () => {
-        setLinkActive(true); // start blinking
-        dispatch(linkExchange(threadId)).finally(() => {
-          setTimeout(() => setLinkActive(false), 10000); // blink for 2s after success
-        });
-      },
     },
     {
       icon: (
@@ -330,85 +208,180 @@ const ActionButton = ({ handleMoveSuccess, setShowIP }) => {
         dispatch(getTags());
       },
     },
+    {},
+
+    {
+      icon: favourite ? (
+        <LoadingChase />
+      ) : (
+        <Heart size={25} color={isFavActive ? "white" : "#dc2626"} />
+      ),
+      label: "Favourite",
+      active: isFavActive,
+      activeProps: {
+        color: "#dc2626",
+        fill: "#f74050",
+      },
+      action: () => dispatch(favEmail(threadId)),
+    },
+
+    {
+      icon: forward ? (
+        <LoadingChase />
+      ) : (
+        <img
+          src="https://img.icons8.com/color/48/redo.png"
+          className="w-6 h-6"
+          alt="forward"
+        />
+      ),
+      label: "Assign",
+      action: () => setShowUsers((p) => !p),
+    },
+
+    {
+      icon: exchanging ? (
+        <LoadingChase />
+      ) : (
+        <Link size={25} color={isExchangeActive ? "white" : "#2563eb"} />
+      ),
+      label: "Link Exchange",
+      active: isExchangeActive,
+      activeProps: {
+        color: "#2563eb",
+        fill: "#313cb5",
+      },
+      action: () => dispatch(linkExchange(threadId)),
+    },
+    {
+      icon:
+        adding || (deleting && deleteMarketPlaceId == isMark?.id) ? (
+          <LoadingChase />
+        ) : (
+          <MdOutlineHome size={25} color={isMark ? "white" : "#d40d8b"} />
+        ),
+
+      label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
+      active: isMark,
+      activeProps: {
+        color: "#ea580c",
+        fill: "#d40d8b",
+      },
+      action: () =>
+        dispatch(
+          isMark
+            ? deleteMarketPlace(isMark.id)
+            : addMarketPlace(email, contactInfo.type == "Brand"),
+        ),
+    },
+    {
+      icon:
+        <CircleStop size={25} color="red"/>,
+
+      label: "Stop Future Emails",
+      action: () =>
+        alert("Feature coming soon! This will allow you to block all future emails from this sender."),
+    },
   ];
 
   return (
     <>
-      <hr className="mt-4 border-gray-500 " />
+      {/* <hr className="mt-4 border-gray-500" /> */}
 
-      <div className="mt-4 flex items-center flex-wrap gap-2">
-        {actionButtons.map((btn, i) => (
-          <div key={i} className="flex items-center relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                btn.action();
-              }}
-              className="group flex items-center justify-center w-12 h-12
-            bg-white rounded-xl shadow-md border border-gray-200
-            hover:shadow-lg active:scale-95 hover:-translate-y-1 transition-all"
-            >
-              {btn.icon}
-              <span
-                className="absolute -bottom-9 left-1/2 -translate-x-1/2
-            bg-black text-white text-xs px-2 py-1 rounded opacity-0
-            group-hover:opacity-100 transition-all whitespace-nowrap shadow-lg z-20"
-              >
-                {btn.label}
-              </span>
-            </button>
+<div
+  className="mt-6 flex items-center justify-center flex-wrap gap-10
+  px-8 py-5 rounded-2xl
+  bg-gradient-to-r from-cyan-50 via-orange-50 to-cyan-50
+  border-t border-gray-300
+  shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
+>       {actionButtons.map((btn, i) => (
+          <div key={i} className="flex items-center  gap-8 relative">
+            {i == 2 ? (
+              <>
+                <MoveToDropdown
+                  currentThreadId={threadId}
+                  onMoveSuccess={handleMoveSuccess}
+                />
+                <Separator />
+              </>
+            ) : (
+              <>
+                {" "}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    btn.action();
+                  }}
+                  style={
+                    btn.active
+                      ? {
+                          backgroundColor: btn.activeProps.fill,
+                          color: btn.activeProps.color,
+                          transform: "translateY(-2px) scale(1.09)",
+                          boxShadow:
+                            "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
+                        }
+                      : {}
+                  }
+                  className={`group flex items-center cursor-pointer justify-center w-12 h-12
+  rounded-xl border border-gray-300
+  bg-gray-100
+  shadow-md
+  hover:shadow-xl hover:-translate-y-1
+  active:scale-95
+  transition-all duration-200
+  ${btn.active ? "ring-2 ring-black/30" : ""}`}
+                >
+                  {btn.icon}
 
-            {btn.label === "Email" && (
-              <span className="absolute -top-1 right-3 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                {count}
-              </span>
-            )}
-
-            {showUsers && btn.label === "Assign" && (
-              <UserDropdown
-                forwardHandler={handleForward}
-                onClose={() => setShowUsers(false)}
-              />
-            )}
-
-            {showTags && btn.label === "Mark Tag" && (
-              <div className="absolute top-14 right-0 w-60 z-40">
-                <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
-                  {tagLoading ? (
-                    <div className="py-6 flex justify-center">
-                      <LoadingChase />
+                  <span
+                    className="absolute -bottom-9 left-1/2 -translate-x-1/2
+    bg-black text-white text-xs px-2 py-1 rounded
+    opacity-0 group-hover:opacity-100
+    transition-all whitespace-nowrap shadow-lg z-20"
+                  >
+                    {btn.label}
+                  </span>
+                </button>
+                {showUsers && btn.label === "Assign" && (
+                  <UserDropdown
+                    forwardHandler={handleForward}
+                    onClose={() => setShowUsers(false)}
+                  />
+                )}
+                {showTags && btn.label === "Mark Tag" && (
+                  <div className="absolute top-14 right-0 w-60 z-40">
+                    <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
+                      {tagLoading ? (
+                        <div className="py-6 flex justify-center">
+                          <LoadingChase />
+                        </div>
+                      ) : (
+                        tags.map((tag) => (
+                          <button
+                            key={tag.name}
+                            onClick={() => {
+                              dispatch(applyTag(tag.name));
+                              setShowTags(false);
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm font-semibold
+                        text-gray-700 border-b last:border-b-0
+                        hover:bg-indigo-50 hover:text-indigo-600 transition"
+                          >
+                            {tag.name}
+                          </button>
+                        ))
+                      )}
                     </div>
-                  ) : (
-                    tags.map((tag) => (
-                      <button
-                        key={tag.name}
-                        onClick={() => {
-                          dispatch(applyTag(tag.name));
-                          setShowTags(false);
-                        }}
-                        className="w-full text-left px-4 py-3 text-sm font-semibold
-                      text-gray-700 border-b last:border-b-0
-                      hover:bg-indigo-50 hover:text-indigo-600 transition"
-                      >
-                        {tag.name}
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
+                  </div>
+                )}
+                {i !== actionButtons.length - 1 && (
+                  <Separator />
+                )}
+              </>
             )}
-
-            <Separator />
           </div>
         ))}
-
-        {/* 🔥 SEND FIRST REPLY BUTTON (NEW, SAFE, SAME CSS) */}
-
-        <MoveToDropdown
-          currentThreadId={threadId}
-          onMoveSuccess={handleMoveSuccess}
-        />
-        <Separator />
       </div>
     </>
   );

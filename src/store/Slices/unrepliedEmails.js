@@ -62,6 +62,7 @@ const unrepliedSlice = createSlice({
 
 export const getUnrepliedEmail = ({ page = 1, loading = true }) => {
   return async (dispatch, getState) => {
+    console.log("CALLED")
     if (loading) {
       dispatch(unrepliedSlice.actions.getEmailRequest());
     }

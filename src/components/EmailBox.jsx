@@ -571,7 +571,9 @@ export default function EmailBox({
                       "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
 
                     /* ================= UX ================= */
-                    contextmenu: "link image table",
+                    /* ================= UX ================= */
+                    browser_spellcheck: true,
+                    contextmenu: "link image table ",
                     resize: true,
                   }}
                 />
