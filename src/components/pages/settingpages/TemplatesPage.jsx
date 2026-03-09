@@ -12,8 +12,9 @@ import ErrorBox from "./ErrorBox";
 import { Editor } from "@tinymce/tinymce-react";
 import { useSelector } from "react-redux";
 import { PageContext } from "../../../context/pageContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getDomain } from "../../../assets/assets";
+import TinyEditor from "../../TinyEditor";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -104,6 +105,7 @@ export default function TemplatesPage() {
     setOriginalContent(item.body_html || "");
     setIsChanged(false);
   };
+  const navigate = useNavigate()
 
   const handleSave = async () => {
     if (!viewItem || !isChanged) return;
@@ -274,6 +276,9 @@ export default function TemplatesPage() {
   }, [getTempError, temp])
 
   const handleClose = () => {
+    if (state?.templateId) {
+      navigate(-1)
+    }
     if (isChanged) {
       const confirmClose = window.confirm(
         "You have unsaved changes. Are you sure you want to close without saving?",
@@ -316,11 +321,10 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                  isCreating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isCreating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 active:scale-95"
+                  }`}
               >
                 {isCreating ? (
                   <>
@@ -493,12 +497,13 @@ export default function TemplatesPage() {
 
                 /* ================= UX GOODIES ================= */
                 /* ================= UX ================= */
-browser_spellcheck: true,
-contextmenu: "link image table spellchecker",
-spellchecker_ignore_list: [],
-resize: true,
+                browser_spellcheck: true,
+                contextmenu: "link image table spellchecker",
+                spellchecker_ignore_list: [],
+                resize: true,
               }}
             />
+            <TinyEditor editorContent={newTemplateContent} setEditorContent={setNewTemplateContent} />
           </div>
 
           <div className="flex justify-center items-center px-6 py-3 bg-gray-50 border-t text-sm text-gray-600">
@@ -535,11 +540,10 @@ resize: true,
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                 >
                   {isSaving ? (
                     <>
@@ -686,10 +690,10 @@ resize: true,
 
                 /* ================= UX ================= */
                 /* ================= UX ================= */
-browser_spellcheck: true,
-contextmenu: "link image table spellchecker",
-spellchecker_ignore_list: [],
-resize: true,
+                browser_spellcheck: true,
+                contextmenu: "link image table spellchecker",
+                spellchecker_ignore_list: [],
+                resize: true,
               }}
             />
           </div>
@@ -723,11 +727,10 @@ resize: true,
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                stageType === key
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
             >
               {label}
             </button>

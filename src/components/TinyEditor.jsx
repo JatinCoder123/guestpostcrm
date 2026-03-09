@@ -6,7 +6,7 @@ const TinyEditor = ({
   editorContent,
   setEditorContent,
   editorRef,
-  setEditorReady,
+  setEditorReady
 }) => {
   return (
     <div className="flex-1  overflow-hidden">

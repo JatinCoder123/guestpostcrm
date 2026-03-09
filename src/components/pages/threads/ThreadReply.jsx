@@ -95,7 +95,7 @@ const ThreadReply = () => {
   });
 
   // SELECTED TEMPLATE
-  const { loading: templateLoading, data: template } = useModule({
+  const { loading: templateLoading, data: template, refetch } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
@@ -418,7 +418,11 @@ const ThreadReply = () => {
                   );
                 })
               )}
-              <ViewButton Icon={Edit}>
+              <ViewButton Icon={Edit} onClick={() =>
+                navigate("/settings/templates", {
+                  state: { templateId: priceTemp[0].id },
+                })
+              }>
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}

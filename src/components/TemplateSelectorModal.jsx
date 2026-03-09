@@ -305,7 +305,6 @@ export default function TemplateSelectorModal({
                           navigate("/settings/templates", {
                             state: { templateId: tpl.id },
                           });
-                          onClose();
                         }}
                         className="p-3 border border-gray-300 hover:bg-gray-100 rounded-xl flex items-center"
                       >
