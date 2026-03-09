@@ -27,6 +27,16 @@ const IMPORTANT_COLUMNS = {
   prompt: ["date_entered", "name", "full_prompt", "response"],
 };
 
+/* fields we never want to show in popup */
+const HIDDEN_FIELDS = [
+  "id",
+  "modified_user_id",
+  "created_by",
+  "deleted",
+  "parent_type",
+  "assigned_user_id",
+];
+
 const Debug = () => {
   const [activeTab, setActiveTab] = useState(TABS[0]);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -151,40 +161,42 @@ const Debug = () => {
 
             {/* Content */}
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(selectedRecord).map(([key, value]) => {
-                const large = isLargeField(key);
+              {Object.entries(selectedRecord)
+                .filter(([key]) => !HIDDEN_FIELDS.includes(key))
+                .map(([key, value]) => {
+                  const large = isLargeField(key);
 
-                return (
-                  <div
-                    key={key}
-                    className={`border rounded-lg p-3 bg-gray-50 ${
-                      large ? "md:col-span-2" : ""
-                    }`}
-                  >
-                    <div className="text-xs text-gray-500 mb-1">
-                      {key.replace(/_/g, " ").toUpperCase()}
-                    </div>
-
-                    {large ? (
-                      <textarea
-                        readOnly
-                        value={
-                          typeof value === "object"
-                            ? JSON.stringify(value, null, 2)
-                            : String(value)
-                        }
-                        className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded resize-y"
-                      />
-                    ) : (
-                      <div className="text-sm break-words">
-                        {typeof value === "object"
-                          ? JSON.stringify(value)
-                          : String(value)}
+                  return (
+                    <div
+                      key={key}
+                      className={`border rounded-lg p-3 bg-gray-50 ${
+                        large ? "md:col-span-2" : ""
+                      }`}
+                    >
+                      <div className="text-xs text-gray-500 mb-1">
+                        {key.replace(/_/g, " ").toUpperCase()}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+
+                      {large ? (
+                        <textarea
+                          readOnly
+                          value={
+                            typeof value === "object"
+                              ? JSON.stringify(value, null, 2)
+                              : String(value)
+                          }
+                          className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded resize-y"
+                        />
+                      ) : (
+                        <div className="text-sm break-words">
+                          {typeof value === "object"
+                            ? JSON.stringify(value)
+                            : String(value)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </div>

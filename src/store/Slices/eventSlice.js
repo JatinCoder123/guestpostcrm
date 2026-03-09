@@ -66,13 +66,21 @@ const eventSlice = createSlice({
 });
 
 
-export const getEvents = () => {
+export const getEvents = (timeFilter = "all") => {
     return async (dispatch, getState) => {
         dispatch(eventSlice.actions.getEventsRequest());
 
         try {
-            const url =
-                `${getState().user.crmEndpoint}&type=recent_activities&user_id=null${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`;
+            const timeParam =
+  timeFilter !== "all" ? `&time_stamp=${timeFilter}` : "";
+
+const url =
+  `${getState().user.crmEndpoint}&type=recent_activities&user_id=null${
+    (getState().ladger.timeline !== null) &&
+    (getState().ladger.timeline !== "null")
+      ? `&filter=${getState().ladger.timeline}`
+      : ""
+  }${timeParam}&page=1&page_size=50`;
             const { data } = await axios.get(url);
             showConsole && console.log(`events`, data);
 
