@@ -13,15 +13,13 @@ import {
   updateOrder,
 } from "../store/Slices/orders";
 import { createPreviewOrder } from "./PreviewOrder";
-import { sendEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
 import { ManualSideCall } from "../services/utils";
-import { SocketContext } from "../context/SocketContext";
-import { PreviewTemplate } from "./PreviewTemplate";
 import useModule from "../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
 import useIdle from "../hooks/useIdle";
+import { useThreadContext } from "../hooks/useThreadContext";
 const fields = [
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
@@ -44,6 +42,8 @@ const lists = [
 ];
 export default function CreateOrder() {
   const { websites: websiteLists } = useSelector((state) => state.website);
+  const { handleMove } = useThreadContext()
+
   const { type, id } = useParams();
   const { state } = useLocation();
   const {
@@ -64,7 +64,6 @@ export default function CreateOrder() {
   const { emails: unrepliedEmails } = useSelector((state) => state.unreplied);
   const [currentOrderSend, setCurrentOrderSend] = useState(null);
   const { enteredEmail, search } = useContext(PageContext);
-  const [editorContent, setEditorContent] = useState(null);
   const [newOrder, setNewOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -184,22 +183,8 @@ export default function CreateOrder() {
       dispatch(getLadger({ email: state?.email, search }));
     }
   };
-  const handleSubmit = () => {
-    console.log("THREAD ID", state?.threadId);
-    dispatch(
-      sendEmail({
-        reply: editorContent,
-        message: "Order Send Successfully",
-        threadId: state?.threadId,
-        email: state?.email
-
-      }),
-    );
-  };
   useEffect(() => {
     if (message) {
-      // console.log("MESSAGE", message)
-      // console.log("newly", newlyOrder)
       dispatch(getOrders({}));
       ManualSideCall(
         crmEndpoint,
@@ -226,10 +211,6 @@ export default function CreateOrder() {
       toast.error(error);
       dispatch(orderAction.clearAllErrors());
     }
-    if (sendMessage) {
-      navigate("/");
-    }
-
     if (updateLinkMessage) {
       dispatch(getOrders({}));
       toast.success(updateLinkMessage);
@@ -272,18 +253,8 @@ export default function CreateOrder() {
           order: currentOrderSend,
           userEmail: email,
         });
-        return (
-          <PreviewTemplate
-            editorContent={editorContent}
-            initialContent={html}
-            setEditorContent={setEditorContent}
-            templateContent={html}
-            onClose={onClose}
-            threadId={state?.threadId}
-            onSubmit={handleSubmit}
-            loading={sending}
-          />
-        );
+        handleMove({ email: state?.email, threadId: state?.threadId, reply: html })
+
       }}
       amountKey={"total_amount_c"}
       pageType={type}

@@ -16,9 +16,6 @@ import {
 } from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
 import {
-  getContact,
-  getViewEmail,
-  sendEmail,
   viewEmailAction,
 } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
@@ -26,13 +23,15 @@ import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
 import { getLadger } from "../store/Slices/ladger";
 import { dealsAction } from "../store/Slices/deals";
-import { PreviewTemplate } from "./PreviewTemplate";
 import useModule from "../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
 import useIdle from "../hooks/useIdle";
+import { useThreadContext } from "../hooks/useThreadContext";
 
 export default function CreateOffer() {
   const { websites: websiteLists } = useSelector((state) => state.website);
+  const { handleMove } = useThreadContext()
+
   const fields = [
     {
       name: "website",
@@ -144,41 +143,6 @@ export default function CreateOffer() {
       navigate("/");
     }
   }, [state, type]);
-  const sendHandler = () => {
-    dispatch(
-      sendEmail(
-        {
-          reply: renderToStaticMarkup(
-            <Preview
-              templateData={templateData}
-              data={currentOffers}
-              type="Offers"
-              userEmail={state?.email}
-              websiteKey="website"
-              amountKey="our_offer_c"
-            />,
-          ),
-          message: "Offer Send Successfully",
-          threadId: state?.threadId,
-          email: state?.email
-
-        }
-      ),
-    );
-  };
-  const handleSubmit = () => {
-    dispatch(
-      sendEmail(
-        {
-          reply: editorContent,
-          message: "Offer Send Successfully",
-          threadId: state?.threadId,
-          email: state?.email
-
-        }
-      ),
-    );
-  };
   const handleUpdate = (offer, send) => {
     dispatch(updateOffer(offer, send));
   };
@@ -248,15 +212,12 @@ export default function CreateOffer() {
       dispatch(offersAction.clearAllErrors());
     }
 
-    if (sendMessage) {
-      navigate("/");
-    }
 
     if (sendError) {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [message, error, sendMessage, sendError]);
+  }, [message, error, sendError]);
 
   return (
     <Create
@@ -276,7 +237,6 @@ export default function CreateOffer() {
       setData={type == "create" ? setNewOffers : setCurrentOffers}
       type="offers"
       submitData={submitHandler}
-      sendHandler={sendHandler}
       showPreview={showPreview}
       setShowPreview={setShowPreview}
       fields={fields}
@@ -284,23 +244,11 @@ export default function CreateOffer() {
       renderPreview={({ data, email, onClose }) => {
         let html = templateData?.[0]?.body_html || "";
         const tableHtml = buildTable(data, "Offers", "website", "our_offer_c");
-
         html = html
           .replace("{{USER_EMAIL}}", email)
           .replace("{{TABLE}}", tableHtml);
+        handleMove({ email: state?.email, threadId: state?.threadId, reply: html })
 
-        return (
-          <PreviewTemplate
-            editorContent={editorContent}
-            initialContent={html}
-            setEditorContent={setEditorContent}
-            onClose={onClose}
-            threadId={state?.threadId}
-            templateContent={html}
-            onSubmit={handleSubmit}
-            loading={sending}
-          />
-        );
       }}
     />
   );

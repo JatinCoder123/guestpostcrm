@@ -11,8 +11,8 @@ import { getEvents } from "../../store/Slices/eventSlice";
 import { excludeEmail, excludeName, extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import EmailBox from "../EmailBox";
 import PromptViewerModal from "../PromptViewerModal";
+import { useThreadContext } from "../../hooks/useThreadContext";
 
 /* 🔹 Custom Tooltip Component */
 const Tooltip = ({ content, children }) => {
@@ -33,41 +33,19 @@ export function RecentEntry() {
   const { events, loading } = useSelector((state) => state.events);
   const [open, setOpen] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(null);
-  const [showThread, setShowThread] = useState(false);
   const [currentThreadId, setCurrentThreadId] = useState(null);
-  const [email, setEmail] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [emailFilter, setEmailFilter] = useState("all");
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
-
-  const uniqueEmails = [
-    ...new Set(
-      events
-        ?.map((e) =>
-          excludeEmail(e.real_name === "User" ? e.name : e.real_name),
-        )
-        .filter(Boolean),
-    ),
-  ];
-
+  const { handleMove } = useThreadContext()
   const navigateTo = useNavigate();
 
   useEffect(() => {
     dispatch(getEvents("all"));
   }, [dispatch]);
 
-  if (showThread) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-        <EmailBox
-          onClose={() => setShowThread(false)}
-          threadId={currentThreadId}
-          tempEmail={email}
-        />
-      </div>
-    );
-  }
+
 
   return (
     <>
@@ -208,9 +186,7 @@ export function RecentEntry() {
                           setSearch(input);
                           setEnteredEmail(input);
                           setWelcomeHeaderContent("Recent");
-                          setShowThread(true);
-                          setCurrentThreadId(event.thread_id);
-                          setEmail(input);
+                          handleMove({ email: input, threadId: event.thread_id })
                         }}
                       >
                         <span className="truncate">{emailValue}</span>

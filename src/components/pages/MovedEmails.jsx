@@ -1,32 +1,23 @@
 import {
-  Mail,
   Calendar,
   User,
   FileText,
   MessageSquare,
-  LeafyGreen,
   BarChart,
-  Repeat,
   EqualApproximatelyIcon,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getmovedEmails } from "../../store/Slices/movedEmails";
 
 import SearchComponent from "./SearchComponent";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useThreadContext } from "../../hooks/useThreadContext";
 
-// export function MovedPage() {
-//   const { count, emails } = useSelector((state) => state.moved);
 
-//     const [topsearch, setTopsearch] = useState('');
-//     const [selectedCategory, setSelectedCategory] = useState('');
-//     const [selectedSort, setSelectedSort] = useState('');
 
 export function MovedPage() {
   const navigate = useNavigate(); // 👈 add this
@@ -35,6 +26,8 @@ export function MovedPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
+  const { handleMove } = useThreadContext()
+
 
   const filteredEmails = emails
     .filter((item) => {
@@ -86,7 +79,7 @@ export function MovedPage() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleDownload = () => {
     if (!filteredEmails || filteredEmails.length === 0) {
@@ -119,22 +112,8 @@ export function MovedPage() {
     a.click();
   };
 
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-  ] = useThread();
-  if (showEmail && currentThreadId) {
-    return (
-      <EmailBox
-        onClose={() => setShowEmails(false)}
-        view={false}
-        threadId={currentThreadId}
-      />
-    );
-  }
+
+
   return (
     <>
       <SearchComponent
@@ -161,13 +140,6 @@ export function MovedPage() {
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          {/* <div className="flex items-center gap-3">
-            <MessageSquare className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl text-gray-900">MOVED EMAILS</h2>
-             <a href="">
-         <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info"/>
-         </a>
-          </div> */}
           <div className="flex items-center gap-3">
             {/* Back Button */}
             <button
@@ -242,8 +214,7 @@ export function MovedPage() {
                   <td className="px-6 py-4 text-gray-900">{email.email}</td>
                   <td
                     onClick={() => {
-                      setCurrentThreadId(email.thread_id);
-                      handleThreadClick(email.from, email.thread_id);
+                      handleMove({ email: email.from, threadId: email.thread_id })
                     }}
                     className="px-6 py-4 text-purple-600"
                   >

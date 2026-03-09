@@ -12,9 +12,6 @@ import {
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
-import Pagination from "../Pagination";
 import { getAllHot } from "../../store/Slices/hotSlice";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";

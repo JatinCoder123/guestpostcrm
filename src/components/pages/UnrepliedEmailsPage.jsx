@@ -10,8 +10,6 @@ import {
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useContext } from "react";
-import useThread from "../../hooks/useThread";
-import EmailBox from "../EmailBox";
 import Pagination from "../Pagination";
 import {
   getUnrepliedEmail,
@@ -37,33 +35,13 @@ export function UnrepliedEmailsPage() {
 
   const { setEnteredEmail, setCurrentIndex, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
-  const { handleSetCurrent } = useThreadContext()
+  const { handleMove } = useThreadContext()
 
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-    email,
-    setEmail,
-  ] = useThread("unreplied");
+
 
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
 
-  if (showEmail && currentThreadId && email) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-        <EmailBox
-          onClose={() => setShowEmails(false)}
-          view={false}
-          threadId={currentThreadId}
-          tempEmail={email}
-        />
-      </div>
-    );
-  }
 
   // ------------------------------------------------------------------
   // ✅ SEARCH + FILTER + SORT LOGIC (ONLY NEW CODE ADDED HERE)
@@ -116,12 +94,7 @@ export function UnrepliedEmailsPage() {
     { value: "subject", label: "Subject" },
   ];
 
-  const filterOptions = [
-    { value: "asc", label: "A to Z" },
-    { value: "desc", label: "Z to A" },
-    { value: "newest", label: "Newest First" },
-    { value: "oldest", label: "Oldest First" },
-  ];
+
 
   const handleFilterApply = (filters) => {
     setSelectedSort(filters.sort || "");
@@ -333,11 +306,7 @@ export function UnrepliedEmailsPage() {
 
                     <td
                       onClick={() => {
-                        // setCurrentThreadId(email.thread_id);
-                        // handleThreadClick(email.from, email.thread_id);
-                        // setEmail(extractEmail(email.from));
-                        handleSetCurrent({ email: extractEmail(email.from), thread: email.thread_id })
-                        navigateTo(`/thread/${email.thread_id}`)
+                        handleMove({ email: extractEmail(email.from), threadId: email.thread_id })
                         if (email.is_seen == 0) {
                           dispatch(
                             unrepliedAction.updateUnread({

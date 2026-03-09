@@ -1,27 +1,23 @@
 import {
-  Mail,
   Calendar,
   User,
   FileText,
   MessageSquare,
-  LeafyGreen,
   BarChart,
-  Repeat,
   EqualApproximatelyIcon,
 } from "lucide-react";
 
 import SearchComponent from "./SearchComponent";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 
 import { getContactDefaulters } from "../../store/Slices/contactdefaulterSlice";
 
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useThreadContext } from "../../hooks/useThreadContext"
 
 export function DefaulterPage() {
   const navigate = useNavigate();
@@ -33,6 +29,7 @@ export function DefaulterPage() {
 
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const { handleMove } = useThreadContext()
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -42,30 +39,14 @@ export function DefaulterPage() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleDownload = () => {
     alert("download handler");
   };
 
   const dispatch = useDispatch();
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-  ] = useThread();
 
-  if (showEmail && currentThreadId) {
-    return (
-      <EmailBox
-        onClose={() => setShowEmails(false)}
-        view={false}
-        threadId={currentThreadId}
-      />
-    );
-  }
 
   useEffect(() => {
     dispatch(getContactDefaulters());
@@ -168,10 +149,8 @@ export function DefaulterPage() {
                     </td>
 
                     <td
-                      onClick={() => {
-                        setCurrentThreadId(email.thread_id);
-                        handleThreadClick(email.from, email.thread_id);
-                      }}
+                      onClick={() => handleMove({ email: email.from, threadId: email.thread_id })
+                      }
                       className="px-6 py-4 text-purple-600"
                     >
                       {email.stage}

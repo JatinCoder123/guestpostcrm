@@ -1,5 +1,4 @@
 import { createContext, useState } from "react";
-
 export const ThreadContext = createContext();
 
 export const ThreadContextProvider = (props) => {
@@ -12,6 +11,7 @@ export const ThreadContextProvider = (props) => {
         localStorage.setItem("currentEmail", email)
         localStorage.setItem("currentThread", thread)
     }
+
 
 
 

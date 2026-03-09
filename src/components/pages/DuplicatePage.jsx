@@ -6,15 +6,9 @@ import {
   getDuplicateEmails,
 } from "../../store/Slices/duplicateEmailSlice";
 import { toast } from "react-toastify";
-import EmailBox from "../EmailBox";
 
 export const Duplicate = () => {
   const dispatch = useDispatch();
-
-  const [showThread, setShowThread] = useState(false);
-  const [currentThreadId, setCurrentThreadId] = useState(null);
-  const [email, setEmail] = useState(null);
-
   const { duplicateEmail, loading, error } = useSelector(
     (state) => state.duplicateEmails,
   );
@@ -30,18 +24,7 @@ export const Duplicate = () => {
     }
   }, [error, dispatch]);
 
-  // Thread modal
-  if (showThread) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-        <EmailBox
-          onClose={() => setShowThread(false)}
-          threadId={currentThreadId}
-          tempEmail={email}
-        />
-      </div>
-    );
-  }
+
 
   // Convert object to iterable entries
   const entries = duplicateEmail ? Object.entries(duplicateEmail) : [];
@@ -104,9 +87,7 @@ export const Duplicate = () => {
                 <div>
                   <button
                     onClick={() => {
-                      setShowThread(true);
-                      setCurrentThreadId(threadId);
-                      setEmail(item.from_email);
+                      handleMove({ email: item.from_email, threadId })
                     }}
                     className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full border hover:bg-gray-200 transition"
                   >

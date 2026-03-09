@@ -1,20 +1,12 @@
 import {
-  Mail,
   Calendar,
   User,
   FileText,
   MessageSquare,
-  LeafyGreen,
-  BarChart,
-  Repeat,
   MoveRight,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
-import Pagination from "../Pagination";
-import { getForwardedEmails } from "../../store/Slices/forwardedEmailSlice";
 import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
 import { PageContext } from "../../context/pageContext";
@@ -23,18 +15,14 @@ import { extractEmail } from "../../assets/assets";
 import { ladgerAction } from "../../store/Slices/ladger";
 import { useDispatch } from "react-redux";
 import TableLoading from "../TableLoading";
+import { useThreadContext } from "../../hooks/useThreadContext";
 export function ForwardedPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
   const { count, emails, loading } = useSelector((state) => state.forwarded);
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-  ] = useThread();
+  const { handleMove } = useThreadContext()
+
 
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
     useContext(PageContext);
@@ -97,7 +85,7 @@ export function ForwardedPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -177,15 +165,7 @@ export function ForwardedPage() {
         className="mb-6"
       />
 
-      {showEmail && currentThreadId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <EmailBox
-            onClose={() => setShowEmails(false)}
-            view={false}
-            threadId={currentThreadId}
-          />
-        </div>
-      )}
+
       {/* Unanswered Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -297,8 +277,7 @@ export function ForwardedPage() {
                     </td>
                     <td
                       onClick={() => {
-                        setCurrentThreadId(email.thread_id);
-                        handleThreadClick(email.from, email.thread_id);
+                        handleMove({ email: email.from, threadId: email.thread_id });
                       }}
                       className="px-6 py-4 text-purple-600"
                     >

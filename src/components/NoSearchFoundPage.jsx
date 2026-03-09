@@ -8,8 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { toast } from "react-toastify";
 import { LoadingChase } from "./Loading";
-import { Calendar, Eye, Import } from "lucide-react";
-import EmailBox from "./EmailBox";
+import { Calendar, Eye } from "lucide-react";
+import { useThreadContext } from "../hooks/useThreadContext";
 
 export const NoSearchFoundPage = () => {
   const {
@@ -19,8 +19,8 @@ export const NoSearchFoundPage = () => {
     manualScanResponse,
   } = useSelector((state) => state.ladger);
   const [currentMessageId, setCurrentMessageId] = useState(null);
-  const [showThread, setShowThread] = useState(false);
   const { setSearch, search, setEnteredEmail } = useContext(PageContext);
+  const { handleMove } = useThreadContext()
   const [popup, setPopup] = useState({
     open: false,
     status: null,
@@ -48,32 +48,7 @@ export const NoSearchFoundPage = () => {
       dispatch(ladgerAction.setTimeline(null));
     }
   }, [error, manualScanResponse, dispatch]);
-  if (showThread) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-        <EmailBox
-          importBtn={() => {
-            return (
-              <button
-                onClick={() => {
-                  dispatch(manualEmailScan(currentMessageId.message_id));
-                  setPopup({ open: true });
-                  setShowThread(false);
-                }}
-                className="p-2 rounded-lg hover:bg-blue-500 transition cursor-pointer"
-                title="Import"
-              >
-                <Import className="w-6 h-6 text-white" />
-              </button>
-            );
-          }}
-          onClose={() => setShowThread(false)}
-          threadId={currentMessageId?.thread_id}
-          tempEmail={currentMessageId?.customer_email}
-        />
-      </div>
-    );
-  }
+
   if (noSearchFoundLoading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
@@ -137,8 +112,7 @@ export const NoSearchFoundPage = () => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setShowThread(true);
-              setCurrentMessageId(item);
+              handleMove({ email: extractEmail(item.customer_email), threadId: item.thread_id })
             }}
             className="p-2 rounded-lg hover:bg-blue-100 transition cursor-pointer"
             title="View"

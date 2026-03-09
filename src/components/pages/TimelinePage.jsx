@@ -2,7 +2,6 @@ import {
   Mail,
   MessageSquare,
   Pencil,
-  Reply,
   SparkleIcon,
   X,
 } from "lucide-react";
@@ -10,8 +9,6 @@ import { useEffect, useId, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getLadger, ladgerAction } from "../../store/Slices/ladger";
-import EmailBox from "../EmailBox";
-import { sendEmail, viewEmailAction } from "../../store/Slices/viewEmail";
 import { motion } from "framer-motion";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
@@ -26,7 +23,6 @@ import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
-import { PreviewTemplate } from "../PreviewTemplate";
 import PromptViewerModal from "../PromptViewerModal";
 import axios from "axios";
 import { getDomain, showConsole } from "../../assets/assets";
@@ -35,16 +31,15 @@ import { quickActionBtnActions } from "../../store/Slices/quickActionBtn";
 import useModule from "../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../store/constants";
 import { useNavigate } from "react-router-dom";
+import { useThreadContext } from "../../hooks/useThreadContext";
 export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
-  const [showEmail, setShowEmail] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showIP, setShowIP] = useState(false);
   const { currentIndex } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
   const [editorContent, setEditorContent] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -52,13 +47,13 @@ export function TimelinePage() {
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
-  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
   const { crmEndpoint } = useSelector((state) => state.user);
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
   const [frLoading, setFrLoading] = useState(false);
   const [isMark, setIsMark] = useState(false);
   const { items: marketPlaces } = useSelector((s) => s.marketplace);
+
   useEffect(() => {
     if (marketPlaces.length > 0) {
       setIsMark(marketPlaces.find((e) => e.name === email));
@@ -119,12 +114,13 @@ export function TimelinePage() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { handleMove } = useThreadContext()
+
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
     useSelector((state) => state.ladger);
   const { emails, loading: unrepliedLoading } = useSelector(
     (state) => state.unreplied,
   );
-  const currentThreadId = emails?.length > 0 && emails[currentIndex]?.thread_id;
 
   useEffect(() => {
     if (error) {
@@ -132,11 +128,10 @@ export function TimelinePage() {
       dispatch(ladgerAction.clearAllErrors());
     }
     if (message) {
-      setShowPreview(false);
       dispatch(
         addEvent({
           email: email,
-          thread_id: currentThreadId,
+          thread_id: threadId,
           recent_activity: message,
         }),
       );
@@ -147,34 +142,6 @@ export function TimelinePage() {
   }, [mailersSummary]);
   const handleMoveSuccess = () => {
     dispatch(getLadger({ email }));
-  };
-  const handleActionBtnClick = (btnBody) => {
-    dispatch(
-      sendEmail({
-        reply: btnBody,
-        message: "Quick Action Button Reply Sent",
-        threadId,
-        addActivity: true,
-      }),
-    );
-    dispatch(
-      addEvent({
-        email: email,
-        thread_id: emails[currentIndex]?.thread_id,
-        recent_activity: "Quick Action Button Reply Sent",
-      }),
-    );
-  };
-
-  const handleAiAutoReply = () => {
-    dispatch(
-      sendEmail({
-        reply: editorContent,
-        threadId,
-        message: "Ai Reply Send Successfully",
-        addActivity: true,
-      }),
-    );
   };
 
   // Function to clean HTML content
@@ -311,40 +278,14 @@ export function TimelinePage() {
       toast.error(buttonsError);
       dispatch(quickActionBtnActions.clearErrors());
     }
-    if (message) {
-      setShowUpdatePopup(false);
-    }
+
   }, [dispatch, buttonsError, message]);
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
-  if (showEmail) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-        <EmailBox
-          onClose={() => setShowEmail(false)}
-          view={true}
-          tempEmail={email}
-        />
-      </div>
-    );
-  }
 
-  if (showPreview) {
-    return (
-      <PreviewTemplate
-        editorContent={editorContent}
-        initialContent={aiReply}
-        templateContent=""
-        aiReply={aiReply}
-        threadId={threadId}
-        setEditorContent={setEditorContent}
-        onClose={() => setShowPreview(false)}
-        onSubmit={handleAiAutoReply}
-        loading={sending}
-      />
-    );
-  }
+
+
 
   if (showIP) {
     return <Ip onClose={() => setShowIP(false)} />;
@@ -502,24 +443,7 @@ export function TimelinePage() {
           onClose={() => setOpen(false)}
         />
       )}
-      {showUpdatePopup && (
-        <PreviewTemplate
-          editorContent={editorContent}
-          initialContent={editorContent}
-          templateContent={
-            clickedActionBtn == "Ask Budget"
-              ? askBudgetTemp[0]?.body_html
-              : sorryTemp[0]?.body_html
-          }
-          setEditorContent={setEditorContent}
-          onClose={() => setShowUpdatePopup(false)}
-          onSubmit={() => {
-            handleActionBtnClick(editorContent);
-          }}
-          loading={sending}
-          threadId={threadId}
-        />
-      )}
+
       {showMessageModal && (
         <div
           className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
@@ -540,7 +464,7 @@ export function TimelinePage() {
             <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setShowEmail(true)}
+                  onClick={() => handleMove({ email, threadId })}
                   className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"
@@ -632,7 +556,7 @@ export function TimelinePage() {
         {!loading && !unrepliedLoading && (
           <>
             <div className="flex flex-col p-6 border-b border-gray-200">
-              <ContactHeader isMark={isMark}/>
+              <ContactHeader isMark={isMark} />
 
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-3xl">
                 {/* AI SUMMARY */}
@@ -649,7 +573,7 @@ export function TimelinePage() {
                           Latest Message
                         </h3>
                         <button
-                          onClick={() => setShowEmail(true)}
+                          onClick={() => handleMove({ email, threadId })}
                           className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"
@@ -670,11 +594,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -711,9 +634,8 @@ export function TimelinePage() {
                     />
                   ) : (
                     <div
-                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
-                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
-                      }`}
+                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${showMore ? "max-h-full" : "max-h-24 overflow-hidden"
+                        }`}
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
@@ -746,7 +668,7 @@ export function TimelinePage() {
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400 }}
                         className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setShowPreview(true)}
+                        onClick={() => handleMove({ email, threadId, reply: mailersSummary?.ai_response, addActivity: true })}
                         disabled={
                           sending ||
                           mailersSummary == null ||
@@ -818,13 +740,11 @@ export function TimelinePage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setShowUpdatePopup(true);
-                              setEditorContent(
-                                btn.name == "Ask Budget"
+                              handleMove({
+                                email, threadId, reply: btn.name == "Ask Budget"
                                   ? askBudgetTemp[0]?.body_html
                                   : sorryTemp[0]?.body_html,
-                              );
-                              setClickedActionBtn(btn.name);
+                              })
                             }}
                             disabled={sending}
                             className="
@@ -880,11 +800,10 @@ export function TimelinePage() {
                       <>
                         {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
                         <div
-                          className={`flex items-center transition-opacity duration-200 ${
-                            showFirstReplyBtn
-                              ? "opacity-100"
-                              : "opacity-0 pointer-events-none"
-                          }`}
+                          className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                            ? "opacity-100"
+                            : "opacity-0 pointer-events-none"
+                            }`}
                         >
                           <div className="relative group flex items-center justify-center">
                             <button
@@ -938,14 +857,12 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                isMark={isMark}
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowEmails={setShowEmail}
-                  setShowIP={setShowIP}
-                  handleActionBtnClick={handleActionBtnClick}
-                />
-              )}
+                  <ActionButton
+                    isMark={isMark}
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowIP={setShowIP}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (

@@ -20,7 +20,7 @@ export default function ThreadView({
 }) {
     const scrollRef = useRef();
     const firstMessageRef = useRef(null);
-    const { currentThread, setCurrentThread, currentEmail, setCurrentEmail } = useThreadContext()
+    const { context: { currentThread, currentEmail } } = useThreadContext()
     const lastMessageRef = useRef(null);
     useIdle({ idle: false });
     const dispatch = useDispatch();
@@ -79,7 +79,17 @@ export default function ThreadView({
             dispatch(getThreadEmail(currentEmail, currentThread));
         }
     }, [currentEmail, currentThread]);
-
+    useEffect(() => {
+        if (!currentThread) {
+            toast.error("Thread id is missing!")
+            navigate(-1)
+            return;
+        }
+        if (!currentEmail) {
+            toast.error("Email id is missing!")
+            navigate(-1)
+        }
+    }, [])
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (!visibleMessages || visibleMessages?.length === 0) return;

@@ -11,7 +11,6 @@ import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
 import Avatar from "./components/Avatar";
-import ErrorBoundary from "./components/ErrorBoundary";
 import { extractEmail, getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
@@ -69,15 +68,19 @@ const RootLayout = () => {
       dispatch(viewEmailAction.clearAllMessage());
       if (emails.length === currentIndex + 1) {
         navigate("/unreplied-emails");
-        return;
+
       }
-      const input = extractEmail(emails[currentIndex + 1]?.from || "") ;
-      localStorage.setItem("email", input);
-      setSearch(input);
-      setEnteredEmail(input);
-      dispatch(ladgerAction.setTimeline(null));
-      setWelcomeHeaderContent("Unreplied");
-      setCurrentIndex((p) => p + 1);
+      else {
+        const input = extractEmail(emails[currentIndex + 1]?.from || "");
+        localStorage.setItem("email", input);
+        setSearch(input);
+        setEnteredEmail(input);
+        dispatch(ladgerAction.setTimeline(null));
+        setWelcomeHeaderContent("Unreplied");
+        setCurrentIndex((p) => p + 1);
+        navigate("/")
+      }
+
     }
   }, [message]);
 
@@ -106,9 +109,8 @@ const RootLayout = () => {
             {/* Main content scrolls independently */}
             <main
               ref={mainRef}
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                collapsed ? "ml-4" : "ml-0"
-              }`}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+                }`}
             >
               <div className="p-6">
                 {isLowCredit && <LowCreditWarning score={currentScore} />}

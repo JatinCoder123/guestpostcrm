@@ -10,28 +10,26 @@ import {
   updateDeal,
 } from "../store/Slices/deals";
 import { excludeEmail, unionByKey } from "../assets/assets";
-import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import Create from "./Create";
 import { buildTable } from "./Preview";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  sendEmail,
   viewEmailAction,
 } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
 import { getLadger } from "../store/Slices/ladger";
-import { SocketContext } from "../context/SocketContext";
 import { getOffers } from "../store/Slices/offers";
-import { PreviewTemplate } from "./PreviewTemplate";
 import useModule from "../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
-import Preview from "./Preview";
 import useIdle from "../hooks/useIdle";
+import { useThreadContext } from "../hooks/useThreadContext";
 
 export default function CreateDeal() {
   const { websites: websiteLists } = useSelector((state) => state.website);
   const { crmEndpoint } = useSelector((state) => state.user);
+  const { handleMove } = useThreadContext()
+
   const fields = [
     {
       name: "website_c",
@@ -164,28 +162,7 @@ export default function CreateDeal() {
     dispatch(createDeal(state?.threadId, data, send));
   };
 
-  const sendHandler = () => {
-    dispatch(
-      sendEmail(
-        {
-          reply: renderToStaticMarkup(
-            <Preview
-              templateData={templateData}
-              data={currentDeals}
-              type="Deals"
-              userEmail={state?.email}
-              websiteKey="website_c"
-              amountKey="dealamount"
-            />,
-          ),
-          message: "Deal Send Successfully",
-          threadId: state?.threadId,
-          email: state?.email
 
-        }
-      ),
-    );
-  };
   const handleUpdate = (item, shouldSend) => {
     console.log(item)
     dispatch(updateDeal(item, shouldSend));
@@ -198,19 +175,6 @@ export default function CreateDeal() {
       navigate("/");
     }
   }, [state, type]);
-  const handleSubmit = () => {
-    dispatch(
-      sendEmail(
-        {
-          reply: editorContent,
-          message: "Deal Send Successfully",
-          threadId: state?.threadId,
-          email: state?.email
-
-        }
-      ),
-    );
-  };
   useEffect(() => {
     if (message) {
       if (message.includes("Updated")) {
@@ -249,7 +213,6 @@ export default function CreateDeal() {
         setNewDeals([]);
       }
       dispatch(dealsAction.clearAllMessages());
-
       dispatch(getDeals({ email: state?.email }));
       dispatch(getOffers({ email: state?.email }));
     }
@@ -257,14 +220,11 @@ export default function CreateDeal() {
       toast.error(error);
       dispatch(dealsAction.clearAllErrors());
     }
-    if (sendMessage) {
-      navigate("/");
-    }
     if (sendError) {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [message, error, dispatch, sendError, sendMessage]);
+  }, [message, error, dispatch, sendError]);
 
   return (
     <Create
@@ -284,7 +244,6 @@ export default function CreateDeal() {
       sending={sending}
       threadId={state?.threadId}
       setData={type == "create" ? setNewDeals : setCurrentDeals}
-      sendHandler={sendHandler}
       amountKey={"dealamount"}
       type="deals"
       submitData={submitHandler}
@@ -294,23 +253,10 @@ export default function CreateDeal() {
       renderPreview={({ data, email, onClose }) => {
         let html = templateData?.[0]?.body_html || "";
         const tableHtml = buildTable(data, "Deals", "website_c", "dealamount");
-
         html = html
           .replace("{{USER_EMAIL}}", email)
           .replace("{{TABLE}}", tableHtml);
-
-        return (
-          <PreviewTemplate
-            editorContent={editorContent}
-            initialContent={html}
-            templateContent={html}
-            setEditorContent={setEditorContent}
-            onClose={onClose}
-            threadId={state?.threadId}
-            onSubmit={handleSubmit}
-            loading={sending}
-          />
-        );
+        handleMove({ email: state?.email, threadId: state?.threadId, reply: html })
       }}
     />
   );

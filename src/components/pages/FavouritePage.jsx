@@ -12,8 +12,6 @@ import {
 
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
 import Pagination from "../Pagination";
 import { getFavEmails } from "../../store/Slices/favEmailSlice";
 import { useContext, useState } from "react";
@@ -23,20 +21,16 @@ import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
+import { useThreadContext } from "../../hooks/useThreadContext";
 export function FavouritePage() {
   const { count, emails, loading } = useSelector((state) => state.fav);
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-  ] = useThread();
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
     useContext(PageContext);
+  const { handleMove } = useThreadContext()
+
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
 
@@ -89,14 +83,7 @@ export function FavouritePage() {
     { value: "subject", label: "Subject" },
   ];
 
-  const filterOptions = [
-    { value: "asc", label: "A to Z" },
-    { value: "desc", label: "Z to A" },
-    { value: "newest", label: "Newest First" },
-    { value: "oldest", label: "Oldest First" },
-  ];
-
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -176,15 +163,6 @@ export function FavouritePage() {
         className="mb-6"
       />
 
-      {showEmail && currentThreadId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <EmailBox
-            onClose={() => setShowEmails(false)}
-            view={false}
-            threadId={currentThreadId}
-          />
-        </div>
-      )}
       {/* Unanswered Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -280,19 +258,13 @@ export function FavouritePage() {
                       {email.first_name}
                     </td>
                     <td
-                      onClick={() => {
-                        setCurrentThreadId(email.thread_id);
-                        handleThreadClick(email.from, email.thread_id);
-                      }}
+                      onClick={() => handleMove({ email: email.from, threadId: email.thread_id })}
                       className="px-6 py-4 text-purple-600"
                     >
                       {email.subject}
                     </td>
                     <td
-                      onClick={() => {
-                        setCurrentThreadId(email.thread_id);
-                        handleThreadClick(email.from, email.thread_id);
-                      }}
+                      onClick={() => handleMove({ email: email.from, threadId: email.thread_id })}
                       className="px-6 py-4 text-purple-600"
                     >
                       {email.description}

@@ -12,8 +12,7 @@ import {
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
+
 import Pagination from "../Pagination";
 import { getUnansweredEmails } from "../../store/Slices/unansweredEmails";
 import { useContext } from "react";
@@ -23,6 +22,7 @@ import { extractEmail } from "../../assets/assets";
 import SearchComponent from "./SearchComponent";
 import { ladgerAction } from "../../store/Slices/ladger";
 import TableLoading from "../TableLoading";
+import { useThreadContext } from "../../hooks/useThreadContext";
 
 export function UnansweredPage() {
   const [topsearch, setTopsearch] = useState("");
@@ -33,28 +33,10 @@ export function UnansweredPage() {
     useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-    email,
-    setEmail,
-  ] = useThread("unanswered");
 
-  if (showEmail && currentThreadId && email) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-        <EmailBox
-          onClose={() => setShowEmails(false)}
-          view={false}
-          threadId={currentThreadId}
-          tempEmail={email}
-        />
-      </div>
-    );
-  }
+
+  const { handleMove } = useThreadContext()
+
 
   // ------------------------------------------------------------------
   // ✅ SEARCH + FILTER + SORT LOGIC (ONLY NEW CODE ADDED HERE)
@@ -117,7 +99,7 @@ export function UnansweredPage() {
     { value: "oldest", label: "Oldest First" },
   ];
 
-  const handleFilterApply = (filters) => {};
+  const handleFilterApply = (filters) => { };
 
   const handleSearchChange = (value) => {
     setTopsearch(value);
@@ -297,9 +279,7 @@ export function UnansweredPage() {
                     </td>
                     <td
                       onClick={() => {
-                        setCurrentThreadId(email.thread_id);
-                        handleThreadClick(email.from, email.thread_id);
-                        setEmail(extractEmail(email.from));
+                        handleMove({ email: extractEmail(email.from), threadId: email.thread_id })
                       }}
                       className="px-6 py-4 text-purple-600"
                     >
@@ -312,7 +292,6 @@ export function UnansweredPage() {
                         setSearch(input);
                         setEnteredEmail(input);
                         dispatch(ladgerAction.setTimeline(null));
-
                         setWelcomeHeaderContent("Replied");
                         navigateTo("/");
                       }}

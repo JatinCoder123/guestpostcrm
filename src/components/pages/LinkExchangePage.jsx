@@ -12,32 +12,22 @@ import {
 
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import EmailBox from "../EmailBox";
-import useThread from "../../hooks/useThread";
-import Pagination from "../Pagination";
-import { getLinkExchange } from "../../store/Slices/linkExchange";
 import { useContext, useState } from "react";
 import SearchComponent from "./SearchComponent";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../assets/assets";
 import { ladgerAction } from "../../store/Slices/ladger";
 import LinkExchangeStatusDonuts from "../LinkExchangeStatusDonuts";
+import { useThreadContext } from "../../hooks/useThreadContext.js"
 export function LinkExchangePage() {
   const { count, emails } = useSelector((state) => state.linkExchange);
-  const [
-    handleThreadClick,
-    showEmail,
-    setShowEmails,
-    currentThreadId,
-    setCurrentThreadId,
-  ] = useThread();
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
   const [activeStatStatus, setActiveStatStatus] = useState("connected");
+  const { handleMove } = useThreadContext()
 
   const navigateTo = useNavigate()
   const dispatch = useDispatch()
@@ -91,12 +81,7 @@ export function LinkExchangePage() {
     { value: "subject", label: "Subject" },
   ];
 
-  const filterOptions = [
-    { value: "asc", label: "A to Z" },
-    { value: "desc", label: "Z to A" },
-    { value: "newest", label: "Newest First" },
-    { value: "oldest", label: "Oldest First" },
-  ];
+
 
   const handleFilterApply = (filters) => { };
 
@@ -178,15 +163,6 @@ export function LinkExchangePage() {
         className="mb-6"
       />
 
-      {showEmail && currentThreadId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <EmailBox
-            onClose={() => setShowEmails(false)}
-            view={false}
-            threadId={currentThreadId}
-          />
-        </div>
-      )}
       <LinkExchangeStatusDonuts
         selectedStatus={activeStatStatus}
         // stats={stats}
@@ -250,7 +226,9 @@ export function LinkExchangePage() {
               {filteredEmails.map((email, index) => (
                 <tr
                   key={index}
-                  onClick={() => {
+                  className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
+                >
+                  <td onClick={() => {
                     const input = email.email_address;
                     localStorage.setItem("email", input);
                     setSearch(input);
@@ -258,10 +236,7 @@ export function LinkExchangePage() {
                     dispatch(ladgerAction.setTimeline(null));
                     setWelcomeHeaderContent("Link Exchange");
                     navigateTo("/");
-                  }}
-                  className="border-b border-gray-100 hover:bg-purple-50 transition-colors cursor-pointer"
-                >
-                  <td className="px-6 py-4">
+                  }} className="px-6 py-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span>{email.date_entered}</span>
@@ -270,7 +245,7 @@ export function LinkExchangePage() {
                   <td className="px-6 py-4 text-gray-900">
                     {email.first_name}
                   </td>
-                  <td className="px-6 py-4 text-purple-600">{email.subject}</td>
+                  <td onClick={() => handleMove({ email: email.email_address, threadId: email.thread_id })} className="px-6 py-4 text-purple-600">{email.subject}</td>
                   <td className="px-6 py-4 text-purple-600">
                     {email.description}
                   </td>

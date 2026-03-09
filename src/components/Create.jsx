@@ -33,7 +33,6 @@ export default function Create({
   threadId,
   setCurrentOrderSend,
   submitData,
-  sendHandler,
   handleDelete,
   websiteKey = "website",
   orderID = "order_id",

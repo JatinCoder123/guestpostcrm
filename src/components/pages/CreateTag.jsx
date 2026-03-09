@@ -6,28 +6,28 @@ import { createTag } from "../../store/Slices/tag";
 const CreateTag = ({ onSubmit, onCancel }) => {
   const dispatch = useDispatch();
   const { creating, error: reduxError } = useSelector((state) => state.tag);
-  
+
   const [tagName, setTagName] = useState("");
   const [localError, setLocalError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!tagName.trim()) {
       setLocalError("Please enter a tag name");
       return;
     }
 
     setLocalError("");
-    
+
     try {
-      await dispatch(createTag(tagName));
-      
-      
+      dispatch(createTag(tagName));
+
+
       if (onSubmit) {
         onSubmit(tagName);
       }
-      
+
     } catch (err) {
       setLocalError(err.message || "Failed to create tag");
     }

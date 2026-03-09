@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 
 export default function MailHeaderLeft({
   sender,
-  email,
   to = [],
   setTo,
   cc = [],
@@ -12,11 +11,8 @@ export default function MailHeaderLeft({
   return (
     <div className="flex items-center gap-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white rounded-t-lg">
       <span className="text-sm opacity-90">Sender:</span>
-      {/* <div className="bg-white text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
-        {sender}
-      </div> */}
       <div className="bg-white text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
-        {email}
+        {sender}
       </div>
       <RecipientRow label="To:" values={to} setValues={setTo} name="to" />
       <RecipientRow label="CC:" values={cc} setValues={setCc} name="cc" />

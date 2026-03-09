@@ -231,7 +231,7 @@ export const editContact = (contactData) => {
   };
 };
 export const sendEmail = (
-  formData
+  formData,
 ) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
@@ -251,12 +251,12 @@ export const sendEmail = (
 
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
-          message: message ?? data.message,
+          message: data.message,
         }),
       );
 
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      addActivity && updateActivity(getState().user.crmEndpoint, formData.email, getState().user.user.name, getState().user.user.email, "Email Sent")
+      localStorage.getItem("addActivity") && updateActivity(getState().user.crmEndpoint, formData.email, getState().user.user.name, getState().user.user.email, "Email Sent")
       dispatch(getViewEmail());
     } catch (error) {
       showConsole && console.log(error);

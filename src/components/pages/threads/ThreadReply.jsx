@@ -32,7 +32,7 @@ const ThreadReply = () => {
   const editorRef = useRef(null);
   const { state } = useLocation()
   const [editorContent, setEditorContent] = useState(state?.initialContent || "");
-  const { currentThread, currentEmail } = useThreadContext();
+  const { context: { currentThread, currentEmail } } = useThreadContext();
   useIdle({ idle: false });
   const dispatch = useDispatch();
   const {
@@ -121,7 +121,16 @@ const ThreadReply = () => {
       }
     }
   }, [template, editorReady]);
-
+  useEffect(() => {
+    if (!currentThread) {
+      toast.error("Thread id is missing!")
+      navigate(-1)
+    }
+    if (!currentEmail) {
+      toast.error("Email id is missing!")
+      navigate(-1)
+    }
+  }, [])
   function insertAiReply(input) {
     setOpenParent(null);
     setTemplateId(null);
@@ -177,7 +186,6 @@ const ThreadReply = () => {
   }, []);
   useEffect(() => {
     if (sendMessage) {
-      onClose();
       setFiles([]);
       setEditorContent("");
     }
@@ -256,7 +264,7 @@ const ThreadReply = () => {
             </div>
           </div>
           <MailHeaderLeft
-            email={currentEmail}
+            sender={currentEmail}
             to={to}
             setTo={setTo}
             cc={cc}
