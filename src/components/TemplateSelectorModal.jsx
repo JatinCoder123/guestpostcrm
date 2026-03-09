@@ -297,7 +297,7 @@ export default function TemplateSelectorModal({
                           onSelect(tpl);
                           onClose();
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all"
+                        className="flex-1 flex items-center justify-left gap-2 px-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all"
                       >
                         <Mail size={19} />
                         Use This Template
