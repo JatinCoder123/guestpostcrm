@@ -24,14 +24,6 @@ export default function TemplateSelectorModal({
   const [stagesLoading, setStagesLoading] = useState(false);
   const { user } = useSelector((s) => s.user);
 
-  // ⭐ Favourite State
-
-  /*
-  -----------------------------
-  Fetch USER ID using email
-  -----------------------------
-  */
-
   useEffect(() => {
     if (!user?.email) return;
 
@@ -103,7 +95,6 @@ export default function TemplateSelectorModal({
     });
   }, [templateList, sortOption]);
 
-  // Reset sort when stage changes
   useEffect(() => {
     setSortOption("newest");
   }, [stageType]);
@@ -145,13 +136,6 @@ export default function TemplateSelectorModal({
         }));
       }
 
-      /*
-    --------------------------
-    REFRESH BOTH ENDPOINTS
-    --------------------------
-    */
-
-      // refresh template list
       refetchTemplates();
 
       // reload buttons list if backend relies on it
@@ -207,11 +191,10 @@ export default function TemplateSelectorModal({
                   <button
                     key={key}
                     onClick={() => setStageType(key)}
-                    className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${
-                      stageType === key
-                        ? "bg-indigo-600 text-white shadow"
-                        : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-                    }`}
+                    className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${stageType === key
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+                      }`}
                   >
                     {label}
                   </button>
@@ -284,11 +267,10 @@ export default function TemplateSelectorModal({
                       >
                         <Heart
                           size={20}
-                          className={`transition ${
-                            tpl.is_favourite || favourites[tpl.id]
-                              ? "fill-red-500 text-red-500"
-                              : "text-gray-500"
-                          }`}
+                          className={`transition ${tpl.is_favourite || favourites[tpl.id]
+                            ? "fill-red-500 text-red-500"
+                            : "text-gray-500"
+                            }`}
                         />
                       </button>
 

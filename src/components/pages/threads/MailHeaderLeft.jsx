@@ -10,7 +10,7 @@ export default function MailHeaderLeft({
 }) {
   return (
     <div className="flex items-center gap-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white rounded-t-lg">
-      <span className="text-sm opacity-90">Sender:</span>
+      <span className="text-sm opacity-90">Client:</span>
       <div className="bg-white text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
         {sender}
       </div>

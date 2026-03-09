@@ -7,6 +7,8 @@ import {
   ChevronLeft,
   Zap,
   Edit,
+  Trash2,
+  LayoutTemplateIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -54,7 +56,7 @@ const ThreadReply = () => {
   const [editorReady, setEditorReady] = useState(false);
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
   const attachmentBoxRef = useRef(null);
-
+  const [favourites, setFavourites] = useState([]);
   const {
     loading: aiLoading,
     aiReply: aiResponse,
@@ -66,7 +68,7 @@ const ThreadReply = () => {
   const { loading, data: buttons } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_buttons&type=regular&email=${currentEmail}`,
     name: "BUTTONS",
-    dependencies: [currentEmail],
+    dependencies: [currentEmail, favourites],
   });
 
   // DEFAULT TEMPLATE
@@ -285,7 +287,16 @@ const ThreadReply = () => {
 
           <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
             <div className="flex items-center gap-3 flex-wrap">
-              {/* AI REPLY BUTTON */}
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setEditorContent("");
+                }}
+                className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 mb-7"
+              >
+                <Trash2 className="w-4 h-4" />
+              </motion.button>
               <ViewButton Icon={Sparkles}>
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
@@ -331,30 +342,9 @@ const ThreadReply = () => {
                   toast.success(`✅ "${tpl.name}" loaded into editor`);
                 }}
                 crmEndpoint={crmEndpoint}
+                favourites={favourites}
+                setFavourites={setFavourites}
               />
-              <ViewButton Icon={Edit}>
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-                  onClick={() => {
-                    setTemplateId(null);
-                    if (defaultTemplate && editorRef.current) {
-                      const html = base64ToUtf8(defaultTemplate.html_base64);
-                      setEditorContent(html);
-                      setOpenParent(null);
-                    }
-                    setShowTemplatePopup(true);
-                    refetch();
-                  }}
-                >
-                  <Mail className="w-4 h-4" />
-                  <span className="text-sm font-medium hidden sm:inline">
-                    Template
-                  </span>
-                </motion.button>
-              </ViewButton>
-
               {/* PARENT + CHILD BUTTONS */}
               {loading ? (
                 <LoadingChase className="p-4" />
@@ -366,7 +356,6 @@ const ThreadReply = () => {
 
                   return (
                     <div key={i} className="relative">
-                      {/* PARENT BUTTON */}
                       <ViewButton
                         Icon={Edit}
                         onClick={() =>
@@ -388,7 +377,6 @@ const ThreadReply = () => {
                         </motion.button>
                       </ViewButton>
 
-                      {/* CHILDREN LIST */}
                       <AnimatePresence>
                         {isOpen && children && (
                           <motion.div
@@ -440,7 +428,28 @@ const ThreadReply = () => {
                   Price
                 </motion.button>
               </ViewButton>
-
+              <ViewButton Icon={Edit}>
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                  onClick={() => {
+                    setTemplateId(null);
+                    if (defaultTemplate && editorRef.current) {
+                      const html = base64ToUtf8(defaultTemplate.html_base64);
+                      setEditorContent(html);
+                      setOpenParent(null);
+                    }
+                    setShowTemplatePopup(true);
+                    refetch();
+                  }}
+                >
+                  <LayoutTemplateIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium hidden sm:inline">
+                    All
+                  </span>
+                </motion.button>
+              </ViewButton>
               <Attachment data={files} onChange={setFiles} />
               <MicInput editorRef={editorRef} />
             </div>
