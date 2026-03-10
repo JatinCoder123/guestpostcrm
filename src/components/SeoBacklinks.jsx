@@ -1,4 +1,11 @@
-import { Pencil, Trash, Check, LinkIcon, Dock, SparkleIcon } from "lucide-react";
+import {
+  Pencil,
+  Trash,
+  Check,
+  LinkIcon,
+  Dock,
+  SparkleIcon,
+} from "lucide-react";
 import {
   FiLink,
   FiTag,
@@ -83,17 +90,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                label: "Our Link",
-                name: "target_url_c",
-                type: "text",
-                value: item.target_url_c || "",
-              }
+                  label: "Our Link",
+                  name: "target_url_c",
+                  type: "text",
+                  value: item.target_url_c || "",
+                }
               : {
-                label: "Doc Link",
-                name: "gp_doc_url_c",
-                type: "text",
-                value: item.gp_doc_url_c || "",
-              },
+                  label: "Doc Link",
+                  name: "gp_doc_url_c",
+                  type: "text",
+                  value: item.gp_doc_url_c || "",
+                },
             {
               label: "Website",
               name: "name",
@@ -104,7 +111,10 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
               label: "Link Type",
               name: "link_type",
               type: "select",
-              options: [{ value: "dofollow", label: "DoFollow" }, { value: "nofollow", label: "NoFollow" }],
+              options: [
+                { value: "dofollow", label: "DoFollow" },
+                { value: "nofollow", label: "NoFollow" },
+              ],
               value: item.link_type || "",
             },
           ]}
@@ -121,9 +131,11 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
               >
                 {/* Index Badge */}
                 <div className="absolute top-2 -left-1 z-20">
-                  <span className="flex items-center justify-center w-7 h-7 rounded-full
+                  <span
+                    className="flex items-center justify-center w-7 h-7 rounded-full
         bg-gradient-to-r from-indigo-500 to-purple-600
-        text-white text-xs font-bold shadow-md">
+        text-white text-xs font-bold shadow-md"
+                  >
                     #{index + 1}
                   </span>
                 </div>
@@ -195,172 +207,216 @@ export function TheirLink({ data }) {
   return (
     <div className="relative p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-5 hover:shadow-md transition">
       {/* HEADER */}
-      <div className="flex  items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
-        <h3 className="text-sm  font-bold text-white  uppercase tracking-widest">
+      <div className="flex items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+        <h3 className="text-sm font-bold text-white uppercase tracking-widest">
           Their Link
         </h3>
       </div>
 
-      {/* META GRID */}
-      <div className="grid grid-cols-1  sm:grid-cols-3 gap-5">
-        {/* Anchor */}
-        <Meta
-          icon={FiTag}
-          label="Anchor Text"
-          value={data.anchor_text_c}
-          valid={data.is_anchor_text_valid}
-        />
-
-        {/* Amount (Highlighted) */}
-        <div className="flex items-start gap-2">
-          <FiLayers className="text-indigo-500 mt-0.5" size={15} />
-          <div>
-            <p className="text-xs text-slate-500">Amount</p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-base">
-              {data.link_amount_c ?? "-"}
-            </div>
+      {/* ROW 1: Anchor Text | vertical line | Amount */}
+      <div className="flex items-start gap-0">
+        {/* LEFT: Anchor Text */}
+        <div className="flex-1 flex flex-col gap-1 pr-4">
+          <div className="flex items-center gap-2">
+            <FiTag className="text-slate-400" size={13} />
+            <p className="text-xs text-slate-500">Anchor Text</p>
+          </div>
+          <p className="text-sm font-semibold text-slate-800 break-all flex items-center gap-1">
+            {data.anchor_text_c || "-"}
+            {/* {data.is_anchor_text_valid && <ValidTick />} */}
+          </p>
+        </div>
+        {/* RIGHT: Sparkle + Check pill (original) */}
+        <div className="relative inline-flex items-center">
+          <div
+            className="
+              flex items-center gap-2
+              pl-4 pr-10 py-1.5
+              rounded-full border-2
+              border-green-700
+              bg-green-100 text-green-700
+              text-sm font-semibold
+            "
+          >
+            <SparkleIcon className="w-5 h-5 text-green-600" />
+          </div>
+          <div
+            className={`
+                absolute -right-1
+                flex items-center justify-center
+                w-10 h-10 rounded-full shadow-md
+                ${data.is_anchor_text_valid === "1" ? "bg-green-600" : "bg-red-600"}
+              `}
+          >
+            {data.is_anchor_text_valid === "1" ? (
+              <img
+                width="94"
+                height="94"
+                src="https://img.icons8.com/3d-fluency/94/ok.png"
+                alt="ok"
+              />
+            ) : (
+              <img
+                src="https://img.icons8.com/3d-fluency/94/cancel.png"
+                alt="cross"
+                width="94"
+                height="94"
+              />
+            )}
           </div>
         </div>
-
-        {/* Type */}
-        <Meta icon={FiLink} label="Type" value={data.type_c} />
       </div>
 
-      <div className="rounded-2xl   bg-white space-y-6">
-        <div className="flex flex-wrap items-center justify-between">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Horizontal Divider */}
+      <span className="block border-t border-gray-200"></span>
 
-            <div className="mt-1 p-2 rounded-lg bg-indigo-50">
-              <FiLink size={14} className="text-indigo-600" />
-            </div>
-
-            <div className="flex-1">
-              <p className="text-xs font-medium text-slate-500">
-                Backlink URL
-              </p>
-
-              <div className="flex items-center gap-2 mt-1">
-                <a
-                  href={data.backlink_url}
-                  target="_blank"
-                  className="group inline-flex items-center gap-2 
-          rounded-lg bg-indigo-50 px-3 py-1.5
-          text-sm font-medium text-indigo-600
-          hover:bg-indigo-100 transition"
-                >
-                  <span className="truncate max-w-[220px]">
-                    {data.backlink_url}
-                  </span>
-                  <span className="opacity-0 group-hover:opacity-100 transition">
-                    ↗
-                  </span>
-                </a>
-
-
-              </div>
-            </div>
-          </div>
-          <div className="relative inline-flex items-center">
-
-            {/* MAIN PILL */}
-            <div
-              className="
-      flex items-center gap-2
-      pl-4 pr-10 py-1.5
-      rounded-full
-      border-2
-      border-green-700
-      bg-green-100 text-green-700
-      text-sm font-semibold
-    "
-            >
-              <SparkleIcon className="w-5 h-5 text-green-600" />
-            </div>
-
-            {/* CHECK CIRCLE (OVERLAPPED) */}
-            <div
-              className="
-                absolute -right-1
-      flex items-center justify-center
-      w-10 h-10
-      rounded-full
-      bg-green-600
-      shadow-md
-    "
-            >
-              <img width="94" height="94" src="https://img.icons8.com/3d-fluency/94/ok.png" alt="ok" />            </div>
-
+      {/* ROW 2: Backlink URL | Sparkle+Check pill */}
+      <div className="flex items-center justify-between gap-0">
+        {/* RIGHT: Amount */}
+        <div className="flex flex-col gap-1 pl-4 items-end">
+          <div className="flex items-center gap-2">
+            <FiLayers className="text-indigo-500" size={14} />
+            <p className="text-xs text-slate-500">Amount</p>
           </div>
 
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-base">
+            {data.link_amount_c ?? "-"}
+          </div>
+        </div>
+        {/* Vertical Divider */}
+        <span className="self-stretch border-l border-gray-200 mx-2"></span>
+        {/* LEFT: Backlink URL */}
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-indigo-50">
+            <FiLink size={14} className="text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500">Backlink URL</p>
+            <div className="flex items-center gap-2 mt-1">
+              <a
+                href={data.backlink_url}
+                target="_blank"
+                className="group inline-flex items-center gap-2
+                  rounded-lg bg-indigo-50 px-3 py-1.5
+                  text-sm font-medium text-indigo-600
+                  hover:bg-indigo-100 transition"
+              >
+                <span className="truncate max-w-[220px]">
+                  {data.backlink_url}
+                </span>
+                <span className="opacity-0 group-hover:opacity-100 transition">
+                  ↗
+                </span>
+              </a>
+            </div>
+          </div>
         </div>
 
+        {/* RIGHT: Sparkle + Check pill (original) */}
+        <div className="relative inline-flex items-center">
+          <div
+            className="
+              flex items-center gap-2
+              pl-4 pr-10 py-1.5
+              rounded-full border-2
+              border-green-700
+              bg-green-100 text-green-700
+              text-sm font-semibold
+            "
+          >
+            <SparkleIcon className="w-5 h-5 text-green-600" />
+          </div>
+          <div
+            className="
+              absolute -right-1
+              flex items-center justify-center
+              w-10 h-10 rounded-full
+              bg-green-600 shadow-md
+            "
+          >
+            <img
+              width="94"
+              height="94"
+              src="https://img.icons8.com/3d-fluency/94/ok.png"
+              alt="ok"
+            />
+          </div>
+        </div>
+      </div>
 
+      {/* Horizontal Divider */}
+      <span className="block border-t border-gray-200"></span>
 
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* ROW 3: Type | Link Type | vertical line | Spam Badge */}
+      <div className="flex items-center gap-0">
+        {/* LEFT: Type + Link Type */}
+        <div className="flex-1 flex items-center gap-6 pr-4">
+          <Meta icon={FiLink} label="Type" value={data.type_c} />
 
-          {/* LINK TYPE */}
-          <div className="flex items-center gap-3">
+          {/* Vertical Divider */}
+          <span className="self-stretch border-l border-gray-200 mx-2"></span>
+
+          <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-slate-100">
               <FiTag size={14} className="text-slate-500" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">
-                Link Type
-              </p>
+              <p className="text-xs text-slate-500 font-medium">Link Type</p>
               <p className="text-sm font-semibold text-slate-800 capitalize">
                 {data.link_type}
               </p>
             </div>
           </div>
-          {/* SPAM SCORE BADGE */}
+        </div>
+
+        {/* Vertical Divider */}
+        <span className="self-stretch border-l border-gray-200 mx-2"></span>
+
+        {/* RIGHT: Spam Badge only */}
+        <div className="flex items-center pl-4">
           <div className="relative inline-flex items-center">
-            {/* MAIN PILL */}
             <div
               className={`
-      flex items-center gap-2
-      pl-4 pr-14 py-1.5
-      rounded-full
-      border-2
-      ${spam.bg}
-      ${spam.text}
-      ${spam.border}
-      text-sm font-semibold
-    `}
+                flex items-center gap-2
+                pl-4 pr-14 py-1.5
+                rounded-full border-2
+                ${spam.bg} ${spam.text} ${spam.border}
+                text-sm font-semibold
+              `}
             >
               <FiAlertTriangle className={`w-4 h-4 ${spam.text}`} />
-
               <span>
                 Spam {data.spam_score_c}% · {spam.label}
               </span>
-
               <span className="ml-2 flex items-center gap-1 font-bold text-blue-600">
                 MOZ <span className="text-yellow-400">★</span>
               </span>
             </div>
-
-            {/* ICON (CHECK OR CROSS) */}
             <div
               className={`
-      absolute -right-1
-      flex items-center justify-center
-      w-10 h-10
-      rounded-full
-      shadow-md
-      ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}
-    `}
+                absolute -right-1
+                flex items-center justify-center
+                w-10 h-10 rounded-full shadow-md
+                ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}
+              `}
             >
               {spam.icon === "check" ? (
-                <img width="94" height="94" src="https://img.icons8.com/3d-fluency/94/ok.png" alt="ok" />
+                <img
+                  width="94"
+                  height="94"
+                  src="https://img.icons8.com/3d-fluency/94/ok.png"
+                  alt="ok"
+                />
               ) : (
                 <img
                   src="https://img.icons8.com/3d-fluency/94/cancel.png"
                   alt="cross"
-                  width="94" height="94"
+                  width="94"
+                  height="94"
                 />
               )}
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -371,22 +427,18 @@ export function OurLink({ data }) {
   const spam = getSpamStyle(data?.spam_score_c);
 
   return (
-    <div className="relative p-5  rounded-xl bg-white  shadow-sm space-y-5 hover:shadow-md transition">
+    <div className="relative p-5 rounded-xl bg-white shadow-sm space-y-5 hover:shadow-md transition">
       {/* HEADER */}
-      <div className="flex  items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
-        <h3 className="text-sm  font-bold text-white  uppercase tracking-widest">
+      <div className="flex items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+        <h3 className="text-sm font-bold text-white uppercase tracking-widest">
           Our Link
         </h3>
       </div>
 
-
-
       {/* BACKLINK + SPAM */}
-      <div className="flex flex-wrap items-center justify-center  ">
-
+      <div className="flex flex-wrap items-center justify-center">
         {data?.type_c === "LI" && (
-          <div className="rounded-2xl  border border-slate-200 bg-white p-6 shadow-sm space-y-6">
-
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
             {/* TARGET URL */}
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-indigo-50">
@@ -394,17 +446,15 @@ export function OurLink({ data }) {
               </div>
 
               <div className="flex-1">
-                <p className="text-sm font-medium text-slate-600">
-                  Target URL
-                </p>
+                <p className="text-sm font-medium text-slate-600">Target URL</p>
 
                 <a
                   href={data?.target_url_c}
                   target="_blank"
-                  className="group mt-2 inline-flex items-center gap-2 
-          rounded-lg bg-indigo-50 px-3 py-1.5
-          text-sm font-medium text-indigo-600
-          hover:bg-indigo-100 transition"
+                  className="group mt-2 inline-flex items-center gap-2
+                    rounded-lg bg-indigo-50 px-3 py-1.5
+                    text-sm font-medium text-indigo-600
+                    hover:bg-indigo-100 transition"
                 >
                   <span className="truncate max-w-[280px]">
                     {data?.target_url_c}
@@ -418,8 +468,6 @@ export function OurLink({ data }) {
 
             {/* STATS GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-              {/* GOOGLE */}
               <StatCard
                 icon={<FaGoogle size={16} />}
                 label="Google Traffic"
@@ -428,8 +476,6 @@ export function OurLink({ data }) {
                 iconColor="text-red-600"
                 cardBg="from-red-50 to-white"
               />
-
-              {/* AHREFS */}
               <StatCard
                 icon={<Fa500Px size={16} />}
                 label="Ahrefs Traffic"
@@ -438,8 +484,6 @@ export function OurLink({ data }) {
                 iconColor="text-orange-600"
                 cardBg="from-orange-50 to-white"
               />
-
-              {/* SEMRUSH */}
               <StatCard
                 icon={<FaAccusoft size={16} />}
                 label="Semrush Traffic"
@@ -448,8 +492,6 @@ export function OurLink({ data }) {
                 iconColor="text-emerald-600"
                 cardBg="from-emerald-50 to-white"
               />
-
-              {/* EXISTING LINKS */}
               <StatCard
                 icon={<FaAddressBook size={16} />}
                 label="Existing Links"
@@ -458,73 +500,117 @@ export function OurLink({ data }) {
                 iconColor="text-violet-600"
                 cardBg="from-violet-50 to-white"
               />
-
             </div>
           </div>
         )}
 
-        {data?.type_c === "GP" && <>
-          <div className="flex justify-center flex-col gap-4 min-w-0">
-            <div className="flex items-center gap-2">
-              <FiGlobe className="text-slate-400" size={14} />
+        {data?.type_c === "GP" && (
+          <div className="w-full flex flex-col gap-0">
+            {/* ROW 1: Website | Doc Link */}
+            <div className="flex items-start gap-0 py-3">
+              {/* LEFT: Website */}
+              <div className="flex-1 flex flex-col gap-1 pr-4">
+                <div className="flex items-center gap-1">
+                  <FiGlobe className="text-slate-400" size={13} />
+                  <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">
+                    Website
+                  </p>
+                </div>
+                <p className="text-sm text-slate-700 font-medium break-all">
+                  {data?.name || "-"}
+                </p>
+              </div>
 
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                Website
-              </h3>
+              {/* Vertical Divider */}
+              <span className="self-stretch border-l border-gray-200 mx-2"></span>
+
+              {/* RIGHT: Doc Link */}
+              <div className="flex-1 flex flex-col gap-1 pl-4">
+                <div className="flex items-center gap-1">
+                  <LinkIcon className="text-slate-400" size={13} />
+                  <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">
+                    Doc Link
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <a
+                    href={data?.gp_doc_url_c}
+                    target="_blank"
+                    className="group inline-flex items-center gap-2
+                      rounded-lg bg-indigo-50 px-3 py-1.5
+                      text-sm font-medium text-indigo-600
+                      hover:bg-indigo-100 transition max-w-fit"
+                  >
+                    <span className="truncate max-w-[160px]">
+                      {data?.gp_doc_url_c}
+                    </span>
+                    <span className="opacity-0 group-hover:opacity-100 transition">
+                      ↗
+                    </span>
+                  </a>
+                </div>
+              </div>
+              {/* RIGHT: Sparkle + Check pill (original) */}
+              <div className="relative inline-flex items-center">
+                <div
+                  className="
+              flex items-center gap-2
+              pl-4 pr-10 py-1.5
+              rounded-full border-2
+              border-green-700
+              bg-green-100 text-green-700
+              text-sm font-semibold
+            "
+                >
+                  <SparkleIcon className="w-5 h-5 text-green-600" />
+                </div>
+                <div
+                  className={`
+                absolute -right-1
+                flex items-center justify-center
+                w-10 h-10 rounded-full shadow-md
+                ${data.is_link_valid === "1" ? "bg-green-600" : "bg-red-600"}
+              `}
+                >
+                  {data.is_link_valid === "1" ? (
+                    <img
+                      width="94"
+                      height="94"
+                      src="https://img.icons8.com/3d-fluency/94/ok.png"
+                      alt="ok"
+                    />
+                  ) : (
+                    <img
+                      src="https://img.icons8.com/3d-fluency/94/cancel.png"
+                      alt="cross"
+                      width="94"
+                      height="94"
+                    />
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-slate-700 font-medium break-all">
-                {data?.name || "-"}
-              </p>
-            </div>
+            {/* Horizontal Divider */}
+            <span className="block border-t border-gray-200"></span>
 
+            {/* ROW 2: Doc Niche */}
+            <div className="flex items-start gap-0 py-3">
+              <div className="flex-1 flex flex-col gap-1 pr-4">
+                <div className="flex items-center gap-1">
+                  <Dock className="text-slate-400" size={13} />
+                  <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">
+                    Doc Niche
+                  </p>
+                </div>
+                <p className="text-sm text-slate-700 font-medium break-all">
+                  {data?.niche || "-"}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-center flex-col gap-4 min-w-0">
-            <div className="flex items-center gap-2">
-              <LinkIcon className="text-slate-400" size={14} />
-
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                Doc Link
-              </h3>
-            </div>
-
-            <div className="flex items-center gap-2">
-
-              <a
-                href={data?.gp_doc_url_c}
-                target="_blank"
-                className="group inline-flex items-center gap-1 mt-0.5 px-2 py-1 rounded-md truncate
-                text-sm font-medium text-blue-600 bg-blue-50
-                hover:bg-blue-100 hover:underline transition"
-              >
-                {data?.gp_doc_url_c}
-                <span className="opacity-0 group-hover:opacity-100 transition">↗</span>
-              </a>
-            </div>
-
-          </div>
-          <div className="flex justify-center flex-col gap-4 min-w-0">
-            <div className="flex items-center gap-2">
-              <Dock className="text-slate-400" size={14} />
-
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                Doc Niche
-              </h3>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-slate-700 font-medium break-all">
-                {data?.niche || "-"}
-              </p>
-            </div>
-
-          </div>
-        </>}
-
-
+        )}
       </div>
-
     </div>
   );
 }
@@ -554,17 +640,11 @@ const StatCard = ({ icon, label, value, iconBg, iconColor, cardBg }) => {
       transition`}
     >
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${iconBg} ${iconColor}`}>
-          {icon}
-        </div>
-        <p className="text-sm font-medium text-slate-700">
-          {label}
-        </p>
+        <div className={`p-2 rounded-lg ${iconBg} ${iconColor}`}>{icon}</div>
+        <p className="text-sm font-medium text-slate-700">{label}</p>
       </div>
 
-      <span className="text-sm font-semibold text-slate-900">
-        {value}
-      </span>
+      <span className="text-sm font-semibold text-slate-900">{value}</span>
     </div>
   );
 };
