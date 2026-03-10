@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 export const useThreadContext = () => {
     const navigateTo = useNavigate()
     const context = useContext(ThreadContext);
-    const moveToThread = (threadId) => {
-        navigateTo(`/thread/${threadId}`)
+    const moveToThread = (threadId, viewEmails) => {
+        navigateTo(`/thread/${threadId}`, { state: { viewEmails } })
     }
     const moveToReply = (threadId, initialContent) => {
         navigateTo(`/thread/${threadId}/reply`, { state: { initialContent } })
@@ -14,9 +14,9 @@ export const useThreadContext = () => {
     if (!context) {
         throw new Error("useThreadContext must be used inside ThreadContextProvider");
     }
-    const handleMove = ({ email, threadId, reply = false, addActivity = false }) => {
+    const handleMove = ({ email, threadId, viewEmail = null, reply = false, addActivity = false }) => {
         context.handleSetCurrent({ email, thread: threadId })
-        reply ? moveToReply(threadId, reply) : moveToThread(threadId);
+        reply ? moveToReply(threadId, reply) : moveToThread(threadId, viewEmail);
         (addActivity || !reply) && localStorage.setItem("addActivity", true)
 
     }

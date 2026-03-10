@@ -22,7 +22,11 @@ const unrepliedSlice = createSlice({
     getEmailSucess(state, action) {
       const { count, emails, pageCount, pageIndex, unread } = action.payload;
       state.loading = false;
-      state.emails = emails;
+      if (pageIndex === 1) {
+        state.emails = emails;
+      } else {
+        state.emails = [...state.emails, ...emails];
+      }
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
@@ -62,7 +66,6 @@ const unrepliedSlice = createSlice({
 
 export const getUnrepliedEmail = ({ page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    console.log("CALLED")
     if (loading) {
       dispatch(unrepliedSlice.actions.getEmailRequest());
     }

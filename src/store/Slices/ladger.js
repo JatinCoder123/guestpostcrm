@@ -47,7 +47,11 @@ const ladgerSlice = createSlice({
       } = action.payload;
 
       state.loading = false;
-      state.ladger = ladger || [];
+      if (pageIndex === 1) {
+        state.ladger = ladger;
+      } else {
+        state.ladger = [...state.ladger, ...ladger];
+      }
       state.mailersSummary = mailersSummary || null;
       state.pageCount = pageCount || 1;
       state.pageIndex = pageIndex || 1;

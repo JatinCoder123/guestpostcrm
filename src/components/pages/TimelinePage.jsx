@@ -464,7 +464,7 @@ export function TimelinePage() {
             <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleMove({ email, threadId })}
+                  onClick={() => handleMove({ email, threadId, viewEmail })}
                   className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"
@@ -573,7 +573,7 @@ export function TimelinePage() {
                           Latest Message
                         </h3>
                         <button
-                          onClick={() => handleMove({ email, threadId })}
+                          onClick={() => handleMove({ email, threadId, viewEmail })}
                           className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"

@@ -44,7 +44,7 @@ function HashTag({ text, color }) {
   );
 }
 
-const ContactHeader = ({isMark}) => {
+const ContactHeader = ({ isMark }) => {
   const navigate = useNavigate();
   const goToDeal = () => {
     navigate("/deals");
@@ -121,12 +121,12 @@ const ContactHeader = ({isMark}) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-          ...emailDeals.map((d) =>
-            Number(
-              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
-            )
+        ...emailDeals.map((d) =>
+          Number(
+            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
           )
         )
+      )
       : 0;
 
   return (
@@ -134,9 +134,8 @@ const ContactHeader = ({isMark}) => {
       <div className="flex items-start justify-between w-full">
         {/* LEFT SIDE */}
         <div
-          className={`flex gap-4 ${
-            contactLoading ? "items-center" : "item-start"
-          }`}
+          className={`flex gap-4 ${contactLoading ? "items-center" : "item-start"
+            }`}
         >
           {contactLoading && <LoadingChase size="30" color="blue" />}
 
@@ -160,28 +159,7 @@ const ContactHeader = ({isMark}) => {
                   </Link>
 
                   {/* 🔥 Modern Hashtags */}
-                  <div className="flex gap-2 flex-wrap">
-                    {contactInfo?.favorite === "1" && (
-                      <HashTag
-                        text="favorite"
-                        color="from-pink-500 to-rose-500"
-                      />
-                    )}
 
-                    {contactInfo?.exchange === "1" && (
-                      <HashTag
-                        text="linkexchange"
-                        color="from-blue-500 to-indigo-500"
-                      />
-                    )}
-
-                    {isMark && (
-                      <HashTag
-                        text="marketplace"
-                        color="from-violet-500 to-purple-500"
-                      />
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
@@ -199,7 +177,7 @@ const ContactHeader = ({isMark}) => {
                 className="
                 flex items-center gap-4
                 p-2
-                rounded-xl
+                rounded-4xl
                 bg-white
                 border border-slate-200
                 shadow-sm
@@ -209,16 +187,40 @@ const ContactHeader = ({isMark}) => {
                 transition-all
               "
               >
-                <div className="flex items-center justify-center w-11 h-11 rounded-lg bg-slate-900">
+                <div className="flex items-center  justify-center w-9 h-9 rounded-4xl  bg-gradient-to-r from-violet-600 via-blue-500 to-violet-500
+">
                   <Handshake size={22} className="text-white" />
                 </div>
 
-                <span className="text-2xl font-semibold text-slate-900">
+                <span className="text-xl font-semibold text-slate-900">
                   $<CountUpWithBlast value={maxDeal} />
                 </span>
               </div>
+
             </div>
           )}
+          <div className="flex gap-2 flex-wrap">
+            {contactInfo?.favorite === "1" && (
+              <HashTag
+                text="favorite"
+                color="from-pink-500 to-rose-500"
+              />
+            )}
+
+            {contactInfo?.exchange === "1" && (
+              <HashTag
+                text="linkexchange"
+                color="from-blue-500 to-indigo-500"
+              />
+            )}
+
+            {isMark && (
+              <HashTag
+                text="marketplace"
+                color="from-violet-500 to-purple-500"
+              />
+            )}
+          </div>
 
           {(welcomeHeaderContent === "Unreplied" ||
             welcomeHeaderContent === "") && <NextPrev />}

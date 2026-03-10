@@ -16,7 +16,8 @@ import { X } from "lucide-react";
 import PromptViewerModal from "./PromptViewerModal";
 
 const TimelineEvent = () => {
-  const { ladger, email } = useSelector((state) => state.ladger);
+  const { ladger, email, pageCount,
+    pageIndex, } = useSelector((state) => state.ladger);
   const { crmEndpoint } = useSelector((state) => state.user);
   const [selectedView, setSelectedView] = useState("important");
   const [timelineData, setTimelineData] = useState([]);
@@ -508,13 +509,12 @@ const TimelineEvent = () => {
                     className={`absolute top-1 left-1 h-[calc(100%-8px)]
         w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${
-          selectedView === "all"
-            ? "translate-x-0"
-            : selectedView === "important"
-              ? "translate-x-full"
-              : "translate-x-[200%]"
-        }`}
+        ${selectedView === "all"
+                        ? "translate-x-0"
+                        : selectedView === "important"
+                          ? "translate-x-full"
+                          : "translate-x-[200%]"
+                      }`}
                   />
 
                   {[
@@ -527,11 +527,10 @@ const TimelineEvent = () => {
                       onClick={() => setSelectedView(tab.key)}
                       className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${
-            selectedView === tab.key
-              ? "text-white"
-              : "text-gray-600 hover:text-purple-600"
-          }`}
+          ${selectedView === tab.key
+                          ? "text-white"
+                          : "text-gray-600 hover:text-purple-600"
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -603,11 +602,10 @@ const TimelineEvent = () => {
                     </div>
                     <div
                       className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${
-                        index === 0
+                      ${index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-gray-700 flex items-center gap-2">
@@ -620,13 +618,12 @@ const TimelineEvent = () => {
                               size={20}
                               className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
 
-                              ${
-                                isReminderEvent
+                              ${isReminderEvent
                                   ? "text-purple-600"
                                   : isContactEvent
                                     ? "text-green-600"
                                     : "text-blue-600"
-                              }`}
+                                }`}
                             />
 
                             <div

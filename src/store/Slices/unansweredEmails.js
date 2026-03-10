@@ -17,28 +17,47 @@ const unansweredSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
+
     getEmailSucess(state, action) {
       const { count, emails, pageCount, pageIndex } = action.payload;
+
       state.loading = false;
-      state.emails = emails;
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.error = null;
+
+      // ⭐ Infinite scroll logic
+      if (pageIndex === 1) {
+        state.emails = emails;
+      } else {
+        state.emails = [...state.emails, ...emails];
+      }
     },
+
     getEmailFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
+
     clearAllErrors(state) {
       state.error = null;
     },
+
     updateUnanswered(state, action) {
       const { count, emails, pageCount, pageIndex } = action.payload;
-      state.count = count;
-      state.emails = emails;
-      state.pageCount = pageCount;
-      state.pageIndex = pageIndex;
+
+      state.count = count ?? state.count;
+      state.pageCount = pageCount ?? state.pageCount;
+      state.pageIndex = pageIndex ?? state.pageIndex;
+
+      // same append logic
+      if (pageIndex === 1) {
+        state.emails = emails;
+      } else {
+        state.emails = [...state.emails, ...(emails || [])];
+      }
+
       state.error = null;
     },
   },
@@ -46,28 +65,33 @@ const unansweredSlice = createSlice({
 
 export const getUnansweredEmails = ({ page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    loading && dispatch(unansweredSlice.actions.getEmailRequest());
+    if (loading) {
+      dispatch(unansweredSlice.actions.getEmailRequest());
+    }
 
     try {
-      let response;
+      const state = getState();
 
-      response = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=replied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
+      const response = await axios.get(
+        `${state.user.crmEndpoint}&type=replied${state.ladger.timeline !== null && state.ladger.timeline !== "null"
+          ? `&filter=${state.ladger.timeline}`
+          : ""
+        }&page=${page}`
       );
 
-
       showConsole && console.log(`Unanswered emails`, response.data);
+
       const data = response.data;
+
       dispatch(
         unansweredSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
           emails: data.data ?? [],
           pageCount: data.total_pages ?? 1,
           pageIndex: data.current_page ?? 1,
-
         })
       );
+
       dispatch(unansweredSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
@@ -82,12 +106,17 @@ export const getUnansweredEmails = ({ page = 1, loading = true }) => {
 export const updateUnansweredEmails = (email) => {
   return (dispatch, getState) => {
     const updatedEmails = [email, ...getState().unanswered.emails];
-    dispatch(unansweredSlice.actions.updateUnanswered({
-      count: getState().unanswered.count + 1,
-      emails: updatedEmails,
-    }))
-  }
+
+    dispatch(
+      unansweredSlice.actions.updateUnanswered({
+        count: getState().unanswered.count + 1,
+        emails: updatedEmails,
+        pageIndex: 1,
+      })
+    );
+  };
 };
 
 export const unansweredAction = unansweredSlice.actions;
+
 export default unansweredSlice.reducer;
