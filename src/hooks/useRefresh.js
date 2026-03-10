@@ -51,10 +51,7 @@ function useRefresh() {
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
         dispatch(getAiCredits());
-        dispatch(getForwardedEmails({}));
-        dispatch(getFavEmails({ email: enteredEmail }));
         dispatch(getAllWebsites());
-        dispatch(getLinkExchange(enteredEmail));
         dispatch(getOrderRem(null, 1));
         dispatch(getMarketplace())
         dispatch(getOrders({ email: enteredEmail }));
@@ -72,6 +69,9 @@ function useRefresh() {
     useEffect(() => {
         dispatch(getUnansweredEmails({}));
         dispatch(getUnrepliedEmail({}));
+        dispatch(getLinkExchange());
+        dispatch(getFavEmails({}));
+        dispatch(getForwardedEmails({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {
         if (currentEventThreadId.current == threadId) {
@@ -115,15 +115,12 @@ function useRefresh() {
         dispatch(viewEmailAction.resetViewEmail());
     }, [enteredEmail, firstEmail, timeline, dispatch]);
 
-    // Fetch view email and contact when ladger email is set
     useEffect(() => {
         if (email && latest) {
             dispatch(getViewEmail());
             dispatch(getContact());
         }
     }, [email, dispatch]);
-
-    // Handle socket notifications
     useEffect(() => {
         if (notificationCount.refreshUnreplied) {
             refreshLadger();

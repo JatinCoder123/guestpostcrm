@@ -5,7 +5,7 @@ import {
   SparkleIcon,
   X,
 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getLadger, ladgerAction } from "../../store/Slices/ladger";
@@ -80,6 +80,7 @@ export function TimelinePage() {
     error: sendError,
     message,
     loading: viewEmailLoading,
+    contactInfo,
     viewEmail,
     sending,
     threadId,
@@ -283,10 +284,6 @@ export function TimelinePage() {
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
-
-
-
-
   if (showIP) {
     return <Ip onClose={() => setShowIP(false)} />;
   }

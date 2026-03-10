@@ -66,22 +66,16 @@ const exchangeSlice = createSlice({
   },
 });
 
-export const getLinkExchange = (email) => {
+export const getLinkExchange = () => {
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.getEmailRequest());
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=exchange${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=exchange${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
-        );
-      }
+
+      const response = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=exchange${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+      );
+
       showConsole && console.log(`Exchange links data`, response.data);
       const data = response.data;
       dispatch(

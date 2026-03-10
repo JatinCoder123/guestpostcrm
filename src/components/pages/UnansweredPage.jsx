@@ -18,6 +18,7 @@ import { useThreadContext } from "../../hooks/useThreadContext";
 import { List } from "react-window";
 import Pagination from "../Pagination";
 import InfinitePagination from "../InfinitePagination";
+import { LoadingChase } from "../Loading";
 
 export function UnansweredPage() {
   const { count, emails, loading, pageIndex, pageCount } = useSelector(
@@ -51,7 +52,7 @@ export function UnansweredPage() {
           style={style}
           className="flex items-center justify-center border-b border-gray-100 px-6"
         >
-          Loading more emails...
+          <LoadingChase color="gray" />
 
         </div>
       );
