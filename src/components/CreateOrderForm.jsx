@@ -44,7 +44,7 @@ const CreateOrderForm = ({
           backlink_url: "",
           target_url_c: "",
           link_amount: "",
-          gp_doc_url_c: ""
+          gp_doc_url_c: "",
         },
       ],
     }));
@@ -62,7 +62,7 @@ const CreateOrderForm = ({
 
     const totalAmount = links?.reduce(
       (sum, l) => sum + Number(l.link_amount || 0),
-      0
+      0,
     );
 
     setOrder((prev) => ({
@@ -80,7 +80,7 @@ const CreateOrderForm = ({
 
     const totalAmount = links?.reduce(
       (sum, l) => sum + Number(l.link_amount || 0),
-      0
+      0,
     );
 
     setOrder((prev) => ({
@@ -104,9 +104,8 @@ const CreateOrderForm = ({
       if (!link.link_amount || Number(link.link_amount) <= 0) return false;
 
       if (
-        (order.order_type === "GUEST POST" ||
-          order.order_type === "BOTH") &&
-        (!link.gp_doc_url_c?.trim())
+        (order.order_type === "GUEST POST" || order.order_type === "BOTH") &&
+        !link.gp_doc_url_c?.trim()
       ) {
         return false;
       }
@@ -184,15 +183,15 @@ const CreateOrderForm = ({
 
             {(order.order_type === "GUEST POST" ||
               order.order_type === "BOTH") && (
-                <input
-                  placeholder="Doc URL"
-                  value={link.gp_doc_url_c || ""}
-                  onChange={(e) =>
-                    updateSeoLink(index, "gp_doc_url_c", e.target.value)
-                  }
-                  className="border p-2 rounded w-full"
-                />
-              )}
+              <input
+                placeholder="Doc URL"
+                value={link.gp_doc_url_c || ""}
+                onChange={(e) =>
+                  updateSeoLink(index, "gp_doc_url_c", e.target.value)
+                }
+                className="border p-2 rounded w-full"
+              />
+            )}
 
             <input
               placeholder="Link Amount ($)"
@@ -217,10 +216,8 @@ const CreateOrderForm = ({
 
       {/* TOTAL */}
 
-
       {/* ACTION BUTTONS */}
       <div className="flex justify-between item-center">
-
         <div className="text-right font-semibold">
           Order Amount: ${order.total_amount_c || 0}
         </div>
@@ -231,10 +228,11 @@ const CreateOrderForm = ({
               setButton(1);
               onSubmit(false);
             }}
-            className={`w-fit px-3 py-2 rounded-lg text-white transition ${!formValid
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
-              }`}
+            className={`w-fit px-3 py-2 rounded-lg text-white transition ${
+              !formValid
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
           >
             {creating && button === 1 ? "Saving..." : "Save"}
           </button>
@@ -245,15 +243,15 @@ const CreateOrderForm = ({
               setButton(2);
               onSubmit(true);
             }}
-            className={`w-fit px-3 py-2 rounded-lg text-white transition ${!formValid
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-              }`}
+            className={`w-fit px-3 py-2 rounded-lg text-white transition ${
+              !formValid
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             {creating && button === 2 ? "Sending..." : "Save & Send"}
           </button>
         </div>
-
       </div>
     </div>
   );
