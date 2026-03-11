@@ -163,7 +163,9 @@ export function RecentEntry() {
                       <div className="flex items-center justify-center">
                         {event?.prompt_details && (
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation()
+
                               setSelectedPrompt(event.prompt_details);
                               setOpen(true);
                             }}

@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 const Header = ({ text, handleCreate }) => {
@@ -6,7 +5,7 @@ const Header = ({ text, handleCreate }) => {
     <div className="flex items-center justify-between mb-6">
       {/* LEFT: Back Button + Title */}
       <div className="flex gap-3 items-center">
-        <Link to="/settings" className="hover:scale-110 transition">
+        <Link to={-1} className="hover:scale-110 transition">
           <img
             width="48"
             height="48"
