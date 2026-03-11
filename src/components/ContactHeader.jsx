@@ -32,7 +32,7 @@ function HashTag({ text, color }) {
   return (
     <span
       className={`
-      px-2.5 py-1 rounded-full text-xs font-semibold
+      px-2.5 py-1 rounded-full text-md font-semibold
       bg-gradient-to-r ${color}
       text-white shadow-sm
       hover:scale-105 hover:shadow-md
@@ -158,7 +158,6 @@ const ContactHeader = ({ isMark }) => {
                       : email}
                   </Link>
 
-                  {/* 🔥 Modern Hashtags */}
 
                 </div>
               </div>

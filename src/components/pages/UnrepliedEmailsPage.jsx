@@ -23,6 +23,7 @@ import { extractEmail } from "../../assets/assets";
 import TableLoading from "../TableLoading";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import InfinitePagination from "../InfinitePagination";
+import { LoadingChase } from "../Loading";
 
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState("");
@@ -151,8 +152,7 @@ export function UnrepliedEmailsPage() {
           style={style}
           className="flex items-center justify-center border-b border-gray-100 px-6"
         >
-          Loading more emails...
-
+          <LoadingChase color="gray" />
         </div>
       );
     }
@@ -161,7 +161,7 @@ export function UnrepliedEmailsPage() {
     return (
       <div
         style={style}
-        className="grid grid-cols-5 border-b border-gray-100 hover:bg-purple-50 cursor-pointer"
+        className={`grid grid-cols-5 border-b border-gray-100 hover:bg-purple-50 ${email?.stage == "Order" ? "bg-green-100 hover:bg-green-50" : ""} cursor-pointer`}
       >
         <div
           onClick={() => handleOnClick(email, "/")}
@@ -173,7 +173,7 @@ export function UnrepliedEmailsPage() {
 
         <div
           className="px-6 py-4 text-gray-900"
-          onClick={() => handleOnClick(email, "/contact")}
+          onClick={() => handleOnClick(email, "/contacts")}
         >
           {email.from?.split("<")[0]?.trim()}
         </div>
