@@ -75,7 +75,7 @@ export function UnansweredPage() {
 
         <div
           className="px-6 py-4 text-gray-900"
-          onClick={() => handleOnClick(email, "/contact")}
+          onClick={() => handleOnClick(email, "/contacts")}
         >
           {email.from?.split("<")[0]?.trim()}
         </div>
