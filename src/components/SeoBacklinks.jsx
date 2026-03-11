@@ -12,6 +12,7 @@ import {
   FiLayers,
   FiAlertTriangle,
   FiGlobe,
+  FiTrendingUp,
 } from "react-icons/fi";
 import UpdatePopup from "./UpdatePopup";
 import { useEffect, useState } from "react";
@@ -170,7 +171,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                 </div>
 
                 {/* Links Box */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-lg p-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 rounded-lg p-4">
                   <TheirLink data={item} />
                   <OurLink data={item} />
                 </div>
@@ -467,10 +468,18 @@ export function OurLink({ data }) {
             </div>
 
             {/* STATS GRID */}
+            <div className="flex">
+              <div className="p-2 rounded-lg bg-indigo-50">
+                <FiTrendingUp className="text-indigo-600" size={14} />
+              </div>
+              <p className="text-sm font-medium text-slate-600 ml-3">
+                Monthly Traffic
+              </p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <StatCard
                 icon={<FaGoogle size={16} />}
-                label="Google Traffic"
+                label="Google"
                 value={100}
                 iconBg="bg-red-100"
                 iconColor="text-red-600"
@@ -478,7 +487,7 @@ export function OurLink({ data }) {
               />
               <StatCard
                 icon={<Fa500Px size={16} />}
-                label="Ahrefs Traffic"
+                label="Ahrefs"
                 value={100}
                 iconBg="bg-orange-100"
                 iconColor="text-orange-600"
@@ -486,7 +495,7 @@ export function OurLink({ data }) {
               />
               <StatCard
                 icon={<FaAccusoft size={16} />}
-                label="Semrush Traffic"
+                label="Semrush"
                 value={100}
                 iconBg="bg-emerald-100"
                 iconColor="text-emerald-600"
