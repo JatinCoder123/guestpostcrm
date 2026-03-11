@@ -199,7 +199,7 @@ const router = createBrowserRouter([
         element: <MovedPage />,
       },
       {
-        path: "all-backlinks",
+        path: "backlinks",
         element: <Allbacklinkspage />,
       },
 
@@ -226,9 +226,7 @@ const router = createBrowserRouter([
             path: ":threadId/reply",
             element: <ThreadReply />,
           },
-        ]
-
-
+        ],
       },
 
       {
@@ -304,7 +302,6 @@ export default function App() {
             </SocketContextProvider>
           </PageContextProvider>
         </ThreadContextProvider>
-
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}

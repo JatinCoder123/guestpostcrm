@@ -232,27 +232,27 @@ export function TheirLink({ data }) {
           <div
             className="
               flex items-center gap-2
-              pl-4 pr-10 py-1.5
+              pl-3 pr-8 py-1.5
               rounded-full border-2
               border-green-700
               bg-green-100 text-green-700
-              text-sm font-semibold
+              text-sm font-medium
             "
           >
-            <SparkleIcon className="w-5 h-5 text-green-600" />
+            <SparkleIcon className="w-4 h-4 text-green-600" />
           </div>
           <div
             className={`
                 absolute -right-1
                 flex items-center justify-center
-                w-10 h-10 rounded-full shadow-md
+                w-8 h-8 rounded-full shadow-md
                 ${data.is_anchor_text_valid === "1" ? "bg-green-600" : "bg-red-600"}
               `}
           >
             {data.is_anchor_text_valid === "1" ? (
               <img
-                width="94"
-                height="94"
+                width="65"
+                height="65"
                 src="https://img.icons8.com/3d-fluency/94/ok.png"
                 alt="ok"
               />
@@ -260,8 +260,8 @@ export function TheirLink({ data }) {
               <img
                 src="https://img.icons8.com/3d-fluency/94/cancel.png"
                 alt="cross"
-                width="94"
-                height="94"
+                width="65"
+                height="65"
               />
             )}
           </div>
@@ -318,26 +318,26 @@ export function TheirLink({ data }) {
           <div
             className="
               flex items-center gap-2
-              pl-4 pr-10 py-1.5
+              pl-2 pr-8 py-1.5
               rounded-full border-2
               border-green-700
               bg-green-100 text-green-700
-              text-sm font-semibold
+              text-sm font-medium
             "
           >
-            <SparkleIcon className="w-5 h-5 text-green-600" />
+            <SparkleIcon className="w-4 h-4 text-green-600" />
           </div>
           <div
             className="
               absolute -right-1
               flex items-center justify-center
-              w-10 h-10 rounded-full
+              w-8 h-8 rounded-full
               bg-green-600 shadow-md
             "
           >
             <img
-              width="94"
-              height="94"
+              width="65"
+              height="65"
               src="https://img.icons8.com/3d-fluency/94/ok.png"
               alt="ok"
             />
@@ -371,25 +371,25 @@ export function TheirLink({ data }) {
         </div>
 
         {/* Vertical Divider */}
-        <span className="self-stretch border-l border-gray-200 mx-2"></span>
+        <span className="self-stretch border-l border-gray-200 mx-15"></span>
 
         {/* RIGHT: Spam Badge only */}
-        <div className="flex items-center pl-4">
+        <div className="flex items-center pl-0">
           <div className="relative inline-flex items-center">
             <div
               className={`
                 flex items-center gap-2
-                pl-4 pr-14 py-1.5
+                pl-2 pr-8 py-1.5
                 rounded-full border-2
                 ${spam.bg} ${spam.text} ${spam.border}
-                text-sm font-semibold
+                text-sm font-medium
               `}
             >
               <FiAlertTriangle className={`w-4 h-4 ${spam.text}`} />
               <span>
                 Spam {data.spam_score_c}% · {spam.label}
               </span>
-              <span className="ml-2 flex items-center gap-1 font-bold text-blue-600">
+              <span className="ml-1 flex items-center gap-1 font-bold text-blue-600">
                 MOZ <span className="text-yellow-400">★</span>
               </span>
             </div>
@@ -397,14 +397,14 @@ export function TheirLink({ data }) {
               className={`
                 absolute -right-1
                 flex items-center justify-center
-                w-10 h-10 rounded-full shadow-md
+                w-8 h-8 rounded-full shadow-md
                 ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}
               `}
             >
               {spam.icon === "check" ? (
                 <img
-                  width="94"
-                  height="94"
+                  width="65"
+                  height="65"
                   src="https://img.icons8.com/3d-fluency/94/ok.png"
                   alt="ok"
                 />
@@ -412,8 +412,8 @@ export function TheirLink({ data }) {
                 <img
                   src="https://img.icons8.com/3d-fluency/94/cancel.png"
                   alt="cross"
-                  width="94"
-                  height="94"
+                  width="65"
+                  height="65"
                 />
               )}
             </div>
@@ -503,7 +503,7 @@ export function OurLink({ data }) {
               />
               <StatCard
                 icon={<FaAddressBook size={16} />}
-                label="Existing Links"
+                label="All Links"
                 value={100}
                 iconBg="bg-violet-100"
                 iconColor="text-violet-600"
