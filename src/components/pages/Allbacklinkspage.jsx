@@ -1,6 +1,7 @@
 import SearchComponent from "./SearchComponent";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 import {
   Calendar,
   User,
@@ -9,11 +10,17 @@ import {
   TrendingUp,
   Clock,
   EqualApproximatelyIcon,
-  Plus,
+  ArrowLeft,
+  Edit,
+  X,
 } from "lucide-react";
+
 import { BacklinkDetailBox } from "../../components/pages/BacklinkDetailBox";
-import { getBacklinks, getBacklinkDetail } from "../../store/Slices/backlinks";
-import { ArrowLeft } from "lucide-react";
+import {
+  getBacklinks,
+  getBacklinkDetail,
+  updateBacklink,
+} from "../../store/Slices/backlinks";
 import { useNavigate } from "react-router-dom";
 
 export function Allbacklinkspage() {
@@ -26,86 +33,63 @@ export function Allbacklinkspage() {
 
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSort, setSelectedSort] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const filteredbacklinks = backlinks
-    .filter((item) => {
-      const searchValue = topsearch.toLowerCase();
-      if (!searchValue) return true;
+  /* ---------------- EDIT MODAL STATES ---------------- */
 
-      // SAFELY HANDLE "from"
-      const fromField = item?.post_author_name_c ?? "";
-      const contact = fromField.toLowerCase();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editData, setEditData] = useState(null);
 
-      // SAFE subject
-      const subject = item?.target_url_c?.toLowerCase() ?? "";
+  const handleEditClick = (backlink) => {
+    setEditData(backlink);
+    setShowEditModal(true);
+  };
 
-      const date = item?.date_entered?.toLowerCase() ?? "";
-
-      if (selectedCategory === "contect" || selectedCategory === "contact") {
-        return contact.includes(searchValue);
-      }
-      if (selectedCategory === "subject") {
-        return subject.includes(searchValue);
-      }
-
-      return contact.includes(searchValue);
-    })
-    .sort((a, b) => {
-      if (!selectedSort) return 0;
-
-      const aFrom = a?.from ?? "";
-      const bFrom = b?.from ?? "";
-
-      if (selectedSort === "asc") {
-        return aFrom.localeCompare(bFrom);
-      }
-      if (selectedSort === "desc") {
-        return bFrom.localeCompare(aFrom);
-      }
-      if (selectedSort === "oldest") {
-        return new Date(a.date_entered) - new Date(b.date_entered);
-      }
-
-      return 0;
+  const handleEditChange = (e) => {
+    setEditData({
+      ...editData,
+      [e.target.name]: e.target.value,
     });
-
-  const handleSearchChange = (value) => {
-    setTopsearch(value);
   };
 
-  const handleCategoryChange = (value) => {
-    setSelectedCategory(value);
+  const handleSaveEdit = async () => {
+    try {
+      setSaving(true);
+
+      await dispatch(updateBacklink(editData));
+
+      toast.success("Backlink updated successfully");
+
+      setShowEditModal(false);
+    } catch (err) {
+      toast.error("Update failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleFilterApply = (filters) => {};
+  /* ---------------- FILTER ---------------- */
 
-  const handleDownload = () => {
-    if (!filtereditems || filtereditems.length === 0) {
-      toast.error("No data available to download");
-      return;
+  const filteredbacklinks = backlinks.filter((item) => {
+    const searchValue = topsearch.toLowerCase();
+    if (!searchValue) return true;
+
+    const contact = item?.post_author_name_c?.toLowerCase() ?? "";
+    const subject = item?.target_url_c?.toLowerCase() ?? "";
+
+    if (selectedCategory === "contact") {
+      return contact.includes(searchValue);
     }
 
-    // Convert Objects → CSV rows
-    const headers = ["DATE", "WEBSITES"];
+    if (selectedCategory === "subject") {
+      return subject.includes(searchValue);
+    }
 
-    const rows = filtereditems.map((email) => [email.date_entered, email.name]);
+    return contact.includes(searchValue);
+  });
 
-    // Convert to CSV string
-    const csvContent =
-      headers.join(",") +
-      "\n" +
-      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
-
-    // Create and auto-download file
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "unreplied-emails.csv";
-    a.click();
-  };
+  const handleSearchChange = (value) => setTopsearch(value);
+  const handleCategoryChange = (value) => setSelectedCategory(value);
 
   useEffect(() => {
     dispatch(getBacklinks());
@@ -119,12 +103,7 @@ export function Allbacklinkspage() {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return new Date(dateString).toLocaleDateString();
   };
 
   const getStatusColor = (status) => {
@@ -148,36 +127,13 @@ export function Allbacklinkspage() {
       />
     );
   }
-
   if (loading && backlinks.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm p-8">
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-        </div>
-        <p className="text-center mt-4 text-gray-600">Loading backlinks...</p>
+      <div className="bg-white rounded-2xl shadow-sm p-10 flex justify-center">
+        <div className="animate-spin h-10 w-10 border-b-2 border-green-600 rounded-full"></div>
       </div>
     );
   }
-
-  if (error && backlinks.length === 0) {
-    return (
-      <div className="bg-white rounded-2xl shadow-sm p-8">
-        <div className="text-center text-red-600">
-          <Shield className="w-16 h-16 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold">Error Loading Backlinks</h3>
-          <p className="text-gray-600 mt-2">{error}</p>
-          <button
-            onClick={() => dispatch(getBacklinks())}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <SearchComponent
@@ -187,135 +143,96 @@ export function Allbacklinkspage() {
         ]}
         selectedDropdownValue={selectedCategory}
         onDropdownChange={handleCategoryChange}
-        // dropdownPlaceholder="Filter by target url "
-
         searchValue={topsearch}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Search  items..."
-        onFilterApply={handleFilterApply}
-        filterPlaceholder="Filters"
-        showFilter={true}
-        onDownloadClick={handleDownload}
-        showDownload={true}
+        searchPlaceholder="Search items..."
+        showDownload={false}
         className="mb-6"
       />
+
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
-            {/* Back Button */}
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm"
-              title="Go back"
-            >
-              <ArrowLeft className="w-5 h-5 text-green-700" />
-            </button>
             <ExternalLink className="w-6 h-6 text-green-600" />
             <h2 className="text-xl text-gray-900">ALL BACKLINKS</h2>
-            <a href="#" title="Backlinks Information">
-              <img
-                width="30"
-                height="30"
-                src="https://img.icons8.com/offices/30/info.png"
-                alt="info"
-              />
-            </a>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="px-4 py-1.5 bg-green-100 text-green-700 rounded-full">
-              {backlinks.length} Backlinks
-            </span>
-          </div>
+
+          <span className="px-4 py-1 bg-green-100 text-green-700 rounded-full">
+            {backlinks.length} Backlinks
+          </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        {/* TABLE */}
+
+        <div className="overflow-auto">
+          <table className="w-full table-fixed">
             <thead>
-              <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>CREATED AT</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>AUTHOR</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4" />
-                    <span>TARGET URL</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    <span>ANCHOR TEXT</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span>EXPIRY DATE</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    <span>STATUS</span>
-                  </div>
-                </th>
+              <tr className="bg-green-600 text-white">
+                <th className="px-6 py-4 text-left">CREATED</th>
+                <th className="px-6 py-4 text-left">AUTHOR</th>
+                <th className="px-6 py-4 text-left">TARGET URL</th>
+                <th className="px-6 py-4 text-left">ANCHOR TEXT</th>
+                <th className="px-6 py-4 text-left">EXPIRY</th>
+                <th className="px-6 py-4 text-left">LINK TYPE</th>
+                <th className="px-6 py-4 text-left">ACTION</th>
               </tr>
             </thead>
+
             <tbody>
               {filteredbacklinks.map((backlink, index) => (
                 <tr
                   key={backlink.id || index}
-                  className="border-b border-gray-100 hover:bg-green-50 transition-colors cursor-pointer"
+                  className="border-b hover:bg-green-50"
                 >
+                  <td className="px-6 py-4">{backlink.date_entered}</td>
+
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{formatDate(backlink.date_entered)}</span>
+                    <div className="font-medium">
+                      {backlink.post_author_name_c?.substring(0, 20)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {backlink.post_author_email_c?.substring(0, 20)}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-gray-900">
-                      <div className="font-medium">
-                        {backlink.post_author_name_c}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {backlink.post_author_email_c}
-                      </div>
-                    </div>
-                  </td>
-                  <td
-                    onClick={() => handleBacklinkClick(backlink.id)}
-                    className="px-6 py-4 text-blue-600 hover:text-blue-800"
-                  >
-                    <div className="flex items-center gap-1">
+
+                  <td className="px-6 py-4 max-w-[250px] truncate">
+                    <a
+                      href={backlink.target_url_c}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
                       {backlink.target_url_c?.substring(0, 40)}...
-                      <ExternalLink className="w-3 h-3" />
-                    </div>
+                    </a>
                   </td>
-                  <td
-                    onClick={() => handleBacklinkClick(backlink.id)}
-                    className="px-6 py-4 text-gray-900 hover:text-green-700"
-                  >
+
+                  <td className="px-6 py-4">
                     {backlink.anchor_text_c || "N/A"}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
+
+                  <td className="px-6 py-4">
                     {formatDate(backlink.expiry_date_c)}
                   </td>
+
                   <td className="px-6 py-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(backlink.status_c)}`}
+                      className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
+                        backlink.link_type,
+                      )}`}
                     >
-                      {backlink.status_c?.toUpperCase() || "UNKNOWN"}
+                      {backlink.link_type}
                     </span>
+                  </td>
+
+                  {/* EDIT BUTTON */}
+
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleEditClick(backlink)}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -326,10 +243,117 @@ export function Allbacklinkspage() {
         {backlinks.length === 0 && !loading && (
           <div className="p-12 text-center">
             <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No backlinks found.</p>
+            <p>No backlinks found</p>
           </div>
         )}
       </div>
+
+      {/* ---------------- EDIT POPUP MODAL ---------------- */}
+
+      {showEditModal && editData && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white w-[500px] rounded-xl shadow-xl p-6 relative">
+            {/* CLOSE */}
+
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute right-4 top-4"
+            >
+              <X />
+            </button>
+
+            <h2 className="text-xl font-semibold mb-6">Edit Backlink</h2>
+
+            {/* AUTHOR */}
+
+            <input
+              type="text"
+              name="post_author_name_c"
+              value={editData.post_author_name_c || ""}
+              onChange={handleEditChange}
+              placeholder="Author Name"
+              className="w-full border p-2 mb-3 rounded"
+            />
+
+            {/* EMAIL */}
+
+            <input
+              type="email"
+              name="post_author_email_c"
+              value={editData.post_author_email_c || ""}
+              onChange={handleEditChange}
+              placeholder="Author Email"
+              className="w-full border p-2 mb-3 rounded"
+            />
+
+            {/* TARGET URL */}
+
+            <input
+              type="text"
+              name="target_url_c"
+              value={editData.target_url_c || ""}
+              onChange={handleEditChange}
+              placeholder="Target URL"
+              className="w-full border p-2 mb-3 rounded"
+            />
+
+            {/* ANCHOR TEXT */}
+
+            <input
+              type="text"
+              name="anchor_text_c"
+              value={editData.anchor_text_c || ""}
+              onChange={handleEditChange}
+              placeholder="Anchor Text"
+              className="w-full border p-2 mb-3 rounded"
+            />
+
+            {/* EXPIRY */}
+
+            <input
+              type="date"
+              name="expiry_date_c"
+              value={editData.expiry_date_c || ""}
+              onChange={handleEditChange}
+              className="w-full border p-2 mb-4 rounded"
+            />
+
+            {/* LINK TYPE */}
+
+            <select
+              name="link_type"
+              value={editData.link_type || ""}
+              onChange={handleEditChange}
+              className="w-full border p-2 mb-6 rounded"
+            >
+              <option value="dofollow">dofollow</option>
+              <option value="nofollow">nofollow</option>
+            </select>
+
+            {/* ACTIONS */}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="px-4 py-2 bg-green-600 text-white rounded flex items-center gap-2"
+              >
+                {saving && (
+                  <div className="animate-spin h-4 w-4 border-b-2 border-white rounded-full"></div>
+                )}
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
