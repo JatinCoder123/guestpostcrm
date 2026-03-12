@@ -20,7 +20,8 @@ const TableView = ({
     columns, slice,
     statusList = [],
     defaultStatus,
-    fetchNextPage
+    fetchNextPage,
+    children,
 }) => {
     const { pageIndex, pageCount, count, loading } = useSelector(state => state[slice])
     const [search, setSearch] = useState("")
@@ -103,8 +104,11 @@ const TableView = ({
                 <FilterRow />
 
                 {statusList.length > 0 && <StatusRow />}
+                <div className="bg-white  rounded-xl border overflow-hidden">
+                    {children}
 
-                <Table />
+                </div>
+
 
             </div>
 
@@ -113,15 +117,12 @@ const TableView = ({
     )
 
 }
-const Table = () => {
+export const Table = (props) => {
     return (
-        <div className="bg-white rounded-xl border overflow-hidden">
-            <TableTitleBar />
-            <table className="w-full">
-                <TableHeader />
-                <TableBody />
-            </table>
-        </div>
+        <table className="w-full">
+            <TableHeader {...props} />
+            <TableBody />
+        </table>
     )
 }
 

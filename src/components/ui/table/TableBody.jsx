@@ -31,10 +31,9 @@ function TableBody() {
 
         return (
             <div
-                className="grid border-b border-gray-100 hover:bg-gray-50"
+                className="grid grid-cols-4 border-b border-gray-100  hover:bg-gray-50"
                 style={{
                     ...style,
-                    gridTemplateColumns: `repeat(${visibleColumns.length}, minmax(0,1fr))`
                 }}
             >
                 {visibleColumns.map((col) => {
@@ -44,7 +43,8 @@ function TableBody() {
                     return (
                         <div
                             key={col.accessor}
-                            className="px-6 py-4 text-sm text-gray-700"
+                            onClick={() => col.onClick(row)}
+                            className={`px-6 py-4 ${col.classes}  text-gray-700`}
                         >
 
                             {col.render

@@ -1,8 +1,8 @@
 import { ArrowUpDown } from "lucide-react";
 import { useTableContext } from "./Table";
 
-function TableHeader() {
-
+function TableHeader(props) {
+    console.log(props)
     const { visibleColumns, sort, setSort } = useTableContext();
 
     const toggleSort = (column) => {
@@ -29,12 +29,8 @@ function TableHeader() {
 
     return (
         <div
-            style={{
-                gridTemplateColumns: visibleColumns
-                    .map(col => col.width || "1fr")
-                    .join(" "), backgroundColor: "gray"
-            }}
-            className="grid border-b bg-gray-50 font-bold "
+
+            className={`${props.headerStyle} `}
 
         >
 
@@ -46,7 +42,7 @@ function TableHeader() {
 
                     <div
                         key={col.accessor}
-                        className="px-6 py-4 flex items-center gap-2 text-sm font-bold text-white"
+                        className={`px-6 py-4 flex items-center gap-2 ${col.headerClasses}  font-bold text-white`}
                     >
 
                         {Icon && (
