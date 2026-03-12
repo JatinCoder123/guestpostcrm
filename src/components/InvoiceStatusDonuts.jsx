@@ -1,11 +1,6 @@
 import StatusDonut from "./StatusDonut";
 import {
-    Package,
-    CheckCircle,
-    XCircle,
-    PauseCircle,
-    BadgeCheck,
-    StoreIcon,
+
     DollarSign,
     NotepadTextDashed,
     SendHorizonal,
@@ -40,10 +35,7 @@ export default function InvoiceStatusDonuts({
         (sum, item) => sum + Number(item.status_count),
         0
     ) || 1;
-    const totalAmount = stats?.reduce(
-        (sum, item) => sum + Number(item.total_amount),
-        0
-    ) || 1;
+
 
     return (
         <div className="flex flex-wrap gap-6 items-center mb-6">
