@@ -334,7 +334,7 @@ export function UnrepliedEmailsPage() {
               page: pageIndex + 1,
               loading: false,
             })
-          )} data={emails} pageCount={pageCount} pageIndex={pageIndex} Row={Row} loading={loading} />
+          )} data={emails} pageCount={1} pageIndex={pageIndex} Row={Row} loading={loading} />
         )}
 
 

@@ -3,29 +3,21 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import {
-  Calendar,
-  User,
   ExternalLink,
-  Shield,
-  TrendingUp,
-  Clock,
   EqualApproximatelyIcon,
-  ArrowLeft,
   Edit,
   X,
 } from "lucide-react";
 
-import { BacklinkDetailBox } from "../../components/pages/BacklinkDetailBox";
+import { BacklinkDetailBox } from "./BacklinkDetailBox";
 import {
   getBacklinks,
   getBacklinkDetail,
   updateBacklink,
 } from "../../store/Slices/backlinks";
-import { useNavigate } from "react-router-dom";
 
-export function Allbacklinkspage() {
+export function BacklinksPage() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { loading, backlinks, error } = useSelector((state) => state.backlinks);
 
   const [showDetail, setShowDetail] = useState(false);
