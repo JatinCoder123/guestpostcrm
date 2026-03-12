@@ -121,9 +121,9 @@ export default function Create({
 
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100/80 dark:from-slate-950 dark:to-slate-900 pb-16 pt-10 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto">
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col lg:flex-row gap-8 bg-gradient-to-br from-blue-50 via-blue-100/40 to-blue-50 rounded-2xl p-4">
             {/* MAIN */}
-            <div className="flex-1 order-2 lg:order-1">
+            <div className="flex-1 order-2 lg:order-1 ">
               <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
                 {/* HEADER - ultra clean, elevated */}
                 <div className="px-6 py-5 border-b border-slate-200/70 dark:border-slate-700/50 bg-gradient-to-r from-white/40 to-transparent dark:from-slate-800/40 flex items-center justify-between">
@@ -145,7 +145,7 @@ export default function Create({
                     </h2>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 ">
                     {pageType === "view" && type === "orders" && (
                       <button
                         onClick={() =>
@@ -164,7 +164,7 @@ export default function Create({
                             state: { email, threadId },
                           })
                         }
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium "
                       >
                         <Plus size={18} /> New
                       </button>
@@ -190,11 +190,11 @@ export default function Create({
                       handleSubmit={handleSubmit}
                     />
                   ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-6 ">
                       {data.map((item, idx) => (
                         <div
                           key={item.id}
-                          className="group relative bg-white/70 dark:bg-slate-800/70 backdrop-blur-lg rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+                          className="group relative   backdrop-blur-lg rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden bg-cyan-50"
                         >
                           {/* Floating actions - subtle & elevated */}
                           <div className="absolute top-4 right-4 flex gap-2.5 opacity-90 group-hover:opacity-100 transition-opacity">
@@ -206,7 +206,7 @@ export default function Create({
                                       state: { email, threadId },
                                     })
                                   }
-                                  className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/70 text-amber-700 dark:text-amber-300 shadow-sm hover:shadow-md transition-all"
+                                  className="p-2.5 rounded-xl  hover:bg-amber-100  text-amber-700 dark:text-amber-300 shadow-sm hover:shadow-md transition-all"
                                 >
                                   <Pencil size={17} strokeWidth={2.5} />
                                 </button>
@@ -448,7 +448,7 @@ function InputField({
       <label
         className={`block mb-1.5 text-sm font-medium ${
           pageType === "view"
-            ? "text-slate-500 dark:text-slate-400"
+            ? "text-slate-700 dark:text-slate-400"
             : "text-slate-700 dark:text-slate-300"
         } ${label === "Order Status" ? "text-amber-700 dark:text-amber-400 font-semibold" : ""} `}
       >
