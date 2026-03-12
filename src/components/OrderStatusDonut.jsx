@@ -7,6 +7,8 @@ import {
     BadgeCheck,
     StoreIcon,
     ListFilter,
+    XCircleIcon,
+    X,
 } from "lucide-react";
 
 export const STATUS_CARDS = [
@@ -23,10 +25,16 @@ export const STATUS_CARDS = [
         color: "#16a34a", // green
     },
     {
-        key: "rejected",
+        key: "rejected_nontechnical",
         label: "Rejected",
         icon: XCircle,
         color: "#dc2626", // red
+    },
+    {
+        key: "wrong",
+        label: "Wrong",
+        icon: X,
+        color: "#4e0b0bff", // red
     },
     {
         key: "pending",
