@@ -35,6 +35,7 @@ const HIDDEN_FIELDS = [
   "deleted",
   "parent_type",
   "assigned_user_id",
+  "date_modified",
 ];
 
 const Debug = () => {
@@ -70,7 +71,13 @@ const Debug = () => {
   };
 
   const isLargeField = (key) => {
-    const largeFields = ["request", "response", "full_prompt", "description"];
+    const largeFields = [
+      "request",
+      "response",
+      "full_prompt",
+      "description",
+      "static_prompt",
+    ];
     return largeFields.includes(key);
   };
 
