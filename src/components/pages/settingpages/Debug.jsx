@@ -334,9 +334,25 @@ const Debug = () => {
           >
 
             <div className="flex justify-between items-center border-b px-6 py-4">
-              <h2 className="text-lg font-semibold">
-                Record Details
-              </h2>
+
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold">
+                  Record Details
+                </h2>
+
+                {state?.prompt && (
+                  <button
+                    onClick={() => {
+                      navigateTo("/settings/machine-learning", {
+                        state: { promptId: state?.prompt.prompt_id },
+                      })
+                    }}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
 
               <button
                 onClick={() => {
@@ -347,8 +363,8 @@ const Debug = () => {
               >
                 ✕
               </button>
-            </div>
 
+            </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
 
               {Object.entries(selectedRecord)

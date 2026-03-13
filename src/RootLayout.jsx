@@ -82,8 +82,8 @@ const RootLayout = () => {
         setCurrentIndex((p) => p + 1);
         navigate("/")
       }
-      dispatch(getUnrepliedEmail({ loading: false }))
-      dispatch(getUnansweredEmails({ loading: false }))
+      // dispatch(getUnrepliedEmail({ loading: false }))
+      // dispatch(getUnansweredEmails({ loading: false }))
     }
   }, [message]);
 

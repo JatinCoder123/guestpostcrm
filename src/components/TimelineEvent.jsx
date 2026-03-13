@@ -13,7 +13,6 @@ import Pagination from "./Pagination";
 import { getLadger } from "../store/Slices/ladger";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import PromptViewerModal from "./PromptViewerModal";
 
 const TimelineEvent = () => {
   const { ladger, email, pageCount,
@@ -36,8 +35,7 @@ const TimelineEvent = () => {
     time: "",
   });
 
-  const [open, setOpen] = useState(false);
-  const [selectedPrompt, setSelectedPrompt] = useState(null);
+
 
   const topRef = useRef(null);
   const bottomRef = useRef(null);
@@ -449,12 +447,7 @@ const TimelineEvent = () => {
           box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
       `}</style>
-      {open && (
-        <PromptViewerModal
-          promptDetails={selectedPrompt}
-          onClose={() => setOpen(false)}
-        />
-      )}
+
       <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
           onClick={scrollToTop}
