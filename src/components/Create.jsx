@@ -1,5 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
-import { Eye, MoveLeft, Pencil, Plus, ShoppingCart, Trash } from "lucide-react";
+import {
+  Eye,
+  MoveLeft,
+  Pencil,
+  Plus,
+  ShoppingBasket,
+  ShoppingCart,
+  Trash,
+} from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
@@ -40,18 +48,21 @@ export default function Create({
   const { loading, message } = useSelector((state) => state.threadEmail);
   const [button, setButton] = useState(1);
   const [activeIndex, setActiveIndex] = useState(0);
-
   useEffect(() => {
-    if (activeIndex >= data.length && data.length > 0) {
+    if (activeIndex >= data.length && data.length > 0)
       setActiveIndex(data.length - 1);
-    }
   }, [data.length, activeIndex]);
 
-  const removeData = (id) => setData((prev) => prev.filter((d) => d.id !== id));
+  const removeData = (id) => {
+    setData((prev) => prev.filter((d) => d.id !== id));
+  };
 
-  const updateData = (idx, patch) =>
-    setData((prev) => prev.map((d, i) => (i === idx ? { ...d, ...patch } : d)));
-
+  const updateData = (idx, patch) => {
+    setData((prev) => {
+      const next = prev.map((d, i) => (i === idx ? { ...d, ...patch } : d));
+      return next;
+    });
+  };
   const addData = () => {
     const newData = getEmptyData(fields);
     setData((prev) => [newData, ...prev]);
@@ -59,49 +70,60 @@ export default function Create({
 
   const getEmptyData = (fields) => {
     const newData = { id: `${Date.now()}${Math.random()}` };
-    fields.forEach((f) => (newData[f.name] = ""));
-    newData.email = email;
+    fields.forEach((field) => {
+      newData[field.name] = "";
+    });
+    newData["email"] = email;
+
     return newData;
   };
 
   const handelChange = (idx = null, field, e) => {
     const value = e.target.value;
+
     if (field === websiteKey) {
       const alreadyUsed = data.some(
         (d, i) => i !== idx && d[websiteKey] === value,
       );
+
       if (alreadyUsed) {
         toast.error("This website is already used in another deal");
         return;
       }
     }
+
     updateData(idx, { [field]: value });
   };
 
   const valid = useMemo(() => {
-    if (data.length === 0) return type === "orders";
-    if (type === "deals") {
-      return data.every(
-        (d) =>
-          String(d.dealamount ?? "").trim() &&
-          Number(d.dealamount) > 0 &&
-          String(d[websiteKey] ?? "").trim(),
-      );
-    }
-    if (type === "offers") {
-      return data.every(
-        (d) =>
-          String(d.client_offer_c ?? "").trim() &&
-          Number(d.client_offer_c) > 0 &&
-          String(d[websiteKey] ?? "").trim(),
-      );
+    if (data.length > 0) {
+      if (type == "deals") {
+        return data.every(
+          (d) =>
+            String(
+              d[`${type == "deals" ? "dealamount" : "total_amount_c"}`],
+            ).trim() !== "" &&
+            Number(d[`${type == "deals" ? "dealamount" : "total_amount_c"}`]) >
+              0 &&
+            String(d[websiteKey]).trim() !== "",
+        );
+      } else if (type == "offers") {
+        return data.every(
+          (d) =>
+            String(d["client_offer_c"]).trim() !== "" &&
+            Number(d["client_offer_c"]) > 0 &&
+            String(d[websiteKey]).trim() !== "",
+        );
+      }
     }
     return false;
-  }, [data, type, websiteKey]);
+  }, [data]);
 
   useEffect(() => {
-    if (message) navigate(-1);
-  }, [message, navigate]);
+    if (message) {
+      navigate(-1);
+    }
+  }, [message]);
 
   const handleSubmit = (send = false) => {
     if (data.length === 0 && type !== "orders") {
@@ -114,91 +136,95 @@ export default function Create({
     }
     submitData(data, send);
   };
-
   return (
     <>
       {(updating || sending || creating) && <PageLoader />}
 
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100/80 dark:from-slate-950 dark:to-slate-900 pb-16 pt-10 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto">
-          <div className="flex flex-col lg:flex-row gap-8 bg-gradient-to-br from-blue-50 via-blue-100/40 to-blue-50 rounded-2xl p-4">
-            {/* MAIN */}
-            <div className="flex-1 order-2 lg:order-1 ">
-              <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
-                {/* HEADER - ultra clean, elevated */}
-                <div className="px-6 py-5 border-b border-slate-200/70 dark:border-slate-700/50 bg-gradient-to-r from-white/40 to-transparent dark:from-slate-800/40 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() =>
-                        navigate(-1, { state: { threadId, email } })
-                      }
-                      className="p-2.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all duration-200 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                    >
-                      <MoveLeft size={18} strokeWidth={2.2} />
-                    </button>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                      {pageType === "view"
-                        ? ""
-                        : pageType.charAt(0).toUpperCase() +
-                          pageType.slice(1)}{" "}
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </h2>
-                  </div>
+      <div className="w-full min-h-[80vh] p-6 bg-gray-50 flex justify-center">
+        <div className="w-full flex gap-6">
+          {/* LEFT SECTION */}
+          <div className="col-span-12 flex-1 lg:col-span-8">
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 relative">
+              {/* Header Row */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      navigate(-1, {
+                        state: { threadId, email },
+                      });
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                  >
+                    <MoveLeft size={16} />
+                  </button>
+                  <h3 className="text-2xl font-semibold">{`${
+                    pageType == "view"
+                      ? ""
+                      : pageType.charAt(0).toUpperCase() + pageType.slice(1)
+                  } ${type.charAt(0).toUpperCase() + type.slice(1)}`}</h3>
+                </div>
 
-                  <div className="flex gap-3 ">
-                    {pageType === "view" && type === "orders" && (
+                {pageType == "view" && (
+                  <div className="flex items-center gap-3">
+                    {type == "orders" && (
                       <button
                         onClick={() =>
                           navigate("/orders", { state: { email, threadId } })
                         }
-                        className="p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 transition-all shadow-sm hover:shadow"
+                        className="px-3 py-2 bg-green-100 text-green-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
                       >
-                        <ShoppingCart size={18} />
+                        <ShoppingCart />
                       </button>
                     )}
-
-                    {pageType === "view" && (
-                      <button
-                        onClick={() =>
-                          navigate(`/${type}/create`, {
-                            state: { email, threadId },
-                          })
-                        }
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 font-medium "
-                      >
-                        <Plus size={18} /> New
-                      </button>
-                    )}
-
-                    {pageType === "create" && type !== "orders" && (
-                      <button
-                        onClick={addData}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 font-semibold"
-                      >
-                        <Plus size={18} /> Add {type.slice(0, -1)}
-                      </button>
-                    )}
+                    <button
+                      onClick={() =>
+                        navigate(`/${type}/create`, {
+                          state: { email, threadId },
+                        })
+                      }
+                      className="inline-flex items-center gap-2 "
+                    >
+                      <img
+                        width="40"
+                        height="40"
+                        src="https://img.icons8.com/arcade/64/plus.png"
+                        alt="plus"
+                      />{" "}
+                    </button>
                   </div>
-                </div>
-
-                <div className="p-6 lg:p-8">
-                  {pageType === "create" && type === "orders" ? (
-                    <CreateOrderForm
-                      order={data}
-                      setOrder={setData}
-                      creating={creating}
-                      handleSubmit={handleSubmit}
-                    />
-                  ) : (
-                    <div className="space-y-6 ">
-                      {data.map((item, idx) => (
-                        <div
-                          key={item.id}
-                          className="group relative   backdrop-blur-lg rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden bg-cyan-50"
-                        >
-                          {/* Floating actions - subtle & elevated */}
-                          <div className="absolute top-4 right-4 flex gap-2.5 opacity-90 group-hover:opacity-100 transition-opacity">
-                            {pageType === "view" && (
+                )}
+                {pageType == "create" && type != "orders" && (
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={addData}
+                      className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"
+                    >
+                      <Plus size={16} /> Add
+                    </button>
+                  </div>
+                )}
+              </div>
+              {pageType == "create" && type == "orders" ? (
+                <CreateOrderForm
+                  order={data}
+                  setOrder={setData}
+                  creating={creating}
+                  handleSubmit={handleSubmit}
+                />
+              ) : (
+                <>
+                  {" "}
+                  <div className="space-y-4">
+                    {data.length > 0 &&
+                      data.map((item, itemIndex) => (
+                        <div key={item.id} index={itemIndex}>
+                          <div
+                            className={`bg-white relative  ${type == "orders" && pageType == "view" ? "border-b-2 border-cyan-500" : "border border-gray-100"}  p-6 ${
+                              pageType == "edit" && "pb-15"
+                            } rounded-2xl shadow-sm `}
+                          >
+                            {pageType == "view" && (
                               <>
                                 <button
                                   onClick={() =>
@@ -206,149 +232,161 @@ export default function Create({
                                       state: { email, threadId },
                                     })
                                   }
-                                  className="p-2.5 rounded-xl  hover:bg-amber-100  text-amber-700 dark:text-amber-300 shadow-sm hover:shadow-md transition-all"
+                                  className={`flex items-center right-2 absolute ${
+                                    !showPreview ? "z-[100]" : ""
+                                  } top-2 gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition`}
                                 >
-                                  <Pencil size={17} strokeWidth={2.5} />
+                                  <Pencil size={16} />
                                 </button>
-                                {type === "orders" && (
+                                {type == "orders" && (
                                   <button
                                     onClick={() => {
                                       setCurrentOrderSend(item);
                                       setShowPreview(true);
                                     }}
-                                    className="p-2.5 rounded-xl bg-blue-50/90 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 shadow-sm hover:shadow-md transition-all"
+                                    className="px-3 py-2 bg-blue-100 text-blue-700 hover:rounded-full transition-all duration-300 rounded-lg cursor-pointer"
                                   >
-                                    <Eye size={17} strokeWidth={2.5} />
+                                    <Eye />
                                   </button>
                                 )}
                               </>
                             )}
-
                             {pageType !== "edit" && type !== "orders" && (
                               <button
-                                onClick={() =>
-                                  pageType === "create"
+                                onClick={() => {
+                                  pageType == "create"
                                     ? removeData(item.id)
-                                    : handleDelete(item.id)
-                                }
-                                disabled={deleting && deleteId === item.id}
-                                className="p-2.5 rounded-xl bg-red-50/90 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/70 text-red-600 dark:text-red-400 shadow-sm hover:shadow-md transition-all disabled:opacity-50"
+                                    : handleDelete(item.id);
+                                }}
+                                className="flex items-center right-16 absolute  top-2 gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
                               >
-                                {deleting && deleteId === item.id ? (
-                                  <LoadingChase size="18" color="red" />
+                                {deleting && deleteId == item.id ? (
+                                  <LoadingChase size="20" color="white" />
                                 ) : (
-                                  <Trash size={17} strokeWidth={2.5} />
+                                  <Trash size={16} />
                                 )}
                               </button>
                             )}
+                            {pageType == "edit" && (
+                              <div className="flex absolute  right-2 bottom-2  items-center  gap-2">
+                                <button
+                                  onClick={() => {
+                                    setButton(1);
+                                    handleUpdate(item, false);
+                                  }}
+                                  disabled={updating || sending}
+                                  className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${
+                                    (updating || sending) && button == 1
+                                      ? "bg-green-300 cursor-not-allowed"
+                                      : "bg-green-500 hover:bg-green-600"
+                                  }`}
+                                >
+                                  {button == 1 && updating
+                                    ? "Updating..."
+                                    : "Update"}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setButton(2);
+                                    handleUpdate(item, true);
+                                  }}
+                                  disabled={updating || sending}
+                                  className={`flex items-center gap-2 px-3 py-1.5  text-white rounded-lg transition ${
+                                    (updating || sending) && button == 2
+                                      ? "bg-blue-300 cursor-not-allowed"
+                                      : "bg-blue-500 hover:bg-blue-600"
+                                  }`}
+                                >
+                                  {(updating || sending) && button == 2
+                                    ? "Updating..."
+                                    : "Update & Send"}
+                                </button>
+                              </div>
+                            )}
+                            {type == "orders" && pageType == "view" ? (
+                              <OrderView
+                                data={item}
+                                setData={setData}
+                                sending={sending}
+                                setCurrentOrderSend={setCurrentOrderSend}
+                              />
+                            ) : (
+                              <>
+                                {" "}
+                                <div className="mt-4 flex flex-wrap gap-3">
+                                  {fields.map((field, fieldIndex) => (
+                                    <InputField
+                                      key={fieldIndex}
+                                      pageType={pageType}
+                                      {...field}
+                                      data={item}
+                                      onChange={(e) =>
+                                        handelChange(itemIndex, field.name, e)
+                                      }
+                                      websiteLists={validWebsite}
+                                    />
+                                  ))}
+                                </div>
+                                {}
+                              </>
+                            )}
                           </div>
-
-                          {type === "orders" && pageType === "view" ? (
-                            <OrderView
-                              data={item}
-                              setData={setData}
-                              sending={sending}
-                              setCurrentOrderSend={setCurrentOrderSend}
-                            />
-                          ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 lg:gap-6 p-3 mt-3">
-                              {fields.map((field) => (
-                                <InputField
-                                  key={field.name}
-                                  pageType={pageType}
-                                  {...field}
-                                  data={item}
-                                  onChange={(e) =>
-                                    handelChange(idx, field.name, e)
-                                  }
-                                  websiteLists={validWebsite}
-                                />
-                              ))}
-                            </div>
-                          )}
-
-                          {pageType === "edit" && (
-                            <div className="mt-10 pt-6 border-t border-slate-200/70 dark:border-slate-700/50 flex justify-center gap-5 px-6 pb-6">
-                              <button
-                                onClick={() => {
-                                  setButton(1);
-                                  handleUpdate(item, false);
-                                }}
-                                disabled={updating || sending}
-                                className={`min-w-[160px] py-3.5 px-8 rounded-2xl font-semibold text-white shadow-lg transition-all duration-300 ${
-                                  updating && button === 1
-                                    ? "bg-green-500/70 cursor-not-allowed"
-                                    : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:-translate-y-0.5"
-                                }`}
-                              >
-                                {updating && button === 1
-                                  ? "Updating..."
-                                  : "Update"}
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setButton(2);
-                                  handleUpdate(item, true);
-                                }}
-                                disabled={updating || sending}
-                                className={`min-w-[160px] py-3.5 px-8 rounded-2xl font-semibold text-white shadow-lg transition-all duration-300 ${
-                                  updating && button === 2
-                                    ? "bg-indigo-500/70 cursor-not-allowed"
-                                    : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:-translate-y-0.5"
-                                }`}
-                              >
-                                {updating && button === 2
-                                  ? "Updating..."
-                                  : "Update & Send"}
-                              </button>
-                            </div>
-                          )}
                         </div>
                       ))}
+                  </div>
+                  {/* Footer */}
+                  {pageType !== "edit" && (
+                    <div className="mt-6 flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        Total {type[0].toUpperCase() + type.slice(1)}:{" "}
+                        {data.length}
+                      </p>
                     </div>
                   )}
-                </div>
-              </div>
+                </>
+              )}
             </div>
+          </div>
 
-            {/* SIDEBAR - glass + elevated */}
-            {pageType !== "edit" && type !== "orders" && (
-              <div className="lg:w-96 order-1 lg:order-2 lg:sticky lg:top-10 h-fit">
-                <div className="bg-white/65 dark:bg-slate-900/65 backdrop-blur-2xl rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl p-7 ring-1 ring-black/5 dark:ring-white/5">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5">
-                    {type.charAt(0).toUpperCase() + type.slice(1)} • {email}
-                  </h3>
+          {/* RIGHT SIDEBAR */}
+          {pageType !== "edit" && type !== "orders" && (
+            <div className="col-span-12 lg:col-span-4">
+              <div className="sticky top-6 space-y-4">
+                <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+                  <h4 className="font-semibold">
+                    {type[0].toUpperCase() + type.slice(1)} for {email}
+                  </h4>
 
-                  <div className="space-y-5 text-sm">
-                    <div className="flex justify-between text-slate-700 dark:text-slate-300">
-                      <span>Total:</span>
-                      <span className="font-semibold">{data.length}</span>
+                  <div className="mt-3 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>
+                        Total {type[0].toUpperCase() + type.slice(1)}:
+                      </span>
+                      <strong>{data.length}</strong>
                     </div>
 
-                    <div>
-                      <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2.5">
-                        {type === "orders" ? "Order IDs" : "Websites"}
-                      </p>
+                    {/* Website breakdown */}
+                    <div className="mt-3">
+                      <strong className="block mb-1">
+                        {type == "orders" ? "OrderID" : "Websites"}
+                      </strong>
+
                       {data.length === 0 ? (
-                        <p className="text-slate-400 dark:text-slate-500 italic text-sm">
-                          None added yet
-                        </p>
+                        <p className="text-gray-400">No websites selected</p>
                       ) : (
-                        <ul className="space-y-2 text-slate-600 dark:text-slate-400">
+                        <ul className="list-none space-y-1">
                           {data.map((d, i) => (
-                            <li
-                              key={i}
-                              className="flex justify-between items-center"
-                            >
-                              <span className="truncate max-w-[160px] font-medium">
-                                {type === "orders"
-                                  ? d[orderID] || "—"
-                                  : d[websiteKey] || "—"}
-                              </span>
+                            <li key={i}>
+                              {type == "orders"
+                                ? d[orderID] || "(no id)"
+                                : d[websiteKey] || "(no site)"}
                               {amountKey && (
-                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                  ${Number(d[amountKey] || 0).toLocaleString()}
-                                </span>
+                                <strong>
+                                  - $
+                                  {isNaN(Number(d[amountKey]))
+                                    ? 0
+                                    : Number(d[amountKey])}
+                                </strong>
                               )}
                             </li>
                           ))}
@@ -357,15 +395,17 @@ export default function Create({
                     </div>
                   </div>
 
-                  <div className="mt-8 space-y-3">
-                    {pageType === "view" ? (
-                      <button
-                        disabled={data.length === 0}
-                        onClick={() => setShowPreview(true)}
-                        className="w-full py-3.5 px-6 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Preview
-                      </button>
+                  <div className="mt-4 flex gap-3">
+                    {pageType == "view" ? (
+                      <>
+                        <button
+                          disabled={data.length === 0}
+                          onClick={() => setShowPreview(true)}
+                          className={`w-full px-3 py-2 rounded-lg text-white  bg-blue-500`}
+                        >
+                          Preview
+                        </button>
+                      </>
                     ) : (
                       <>
                         <button
@@ -374,28 +414,27 @@ export default function Create({
                             setButton(1);
                             handleSubmit(false);
                           }}
-                          className={`w-full py-3.5 px-6 rounded-2xl font-semibold text-white shadow-lg transition-all duration-300 ${
+                          className={`w-full px-3 py-2 rounded-lg text-white ${
                             data.length === 0 || !valid
-                              ? "bg-slate-300 dark:bg-slate-700 cursor-not-allowed"
-                              : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:-translate-y-0.5"
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-green-600 hover:bg-green-700 cursor-pointer"
                           }`}
                         >
-                          {creating && button === 1 ? "Saving..." : "Save"}
+                          {creating && button == 1 ? "Saving..." : "Save"}
                         </button>
-
                         <button
                           disabled={data.length === 0 || !valid}
                           onClick={() => {
                             setButton(2);
                             handleSubmit(true);
                           }}
-                          className={`w-full py-3.5 px-6 rounded-2xl font-semibold text-white shadow-lg transition-all duration-300 ${
+                          className={`w-full px-3 py-2 rounded-lg text-white ${
                             data.length === 0 || !valid
-                              ? "bg-slate-300 dark:bg-slate-700 cursor-not-allowed"
-                              : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:-translate-y-0.5"
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
                           }`}
                         >
-                          {creating && button === 2
+                          {creating && button == 2
                             ? "Sending..."
                             : "Save & Send"}
                         </button>
@@ -404,19 +443,22 @@ export default function Create({
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-
-        {/* PREVIEW MODAL - cinematic feel */}
+        {/* PREVIEW MODAL */}
         {showPreview && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden ring-1 ring-black/10 dark:ring-white/10">
-              <div className="max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-100 p-2">
+            {/* OUTER WRAPPER (WIDER + ROUNDED) */}
+            <div className="bg-white w-full max-w-[800px] rounded-2xl shadow-2xl overflow-hidden relative">
+              {/* SCROLLABLE CONTENT */}
+              <div className="max-h-[60vh] overflow-y-auto p-6">
                 {renderPreview({
                   data,
                   email,
-                  onClose: () => setShowPreview(false),
+                  onClose: () => {
+                    setShowPreview(false);
+                  },
                 })}
               </div>
             </div>
@@ -440,76 +482,92 @@ function InputField({
 }) {
   const { statusLists } = useSelector((state) => state.orders);
   const value = data?.[name] ?? "";
-  const isDisabled = pageType === "view" ? true : disabled;
-  const inputType = pageType === "view" && type === "select" ? "text" : type;
+  const isDisabled =
+    pageType === "create" ? false : pageType === "view" ? true : disabled;
 
+  const inputType = pageType === "view" && type === "select" ? "text" : type;
   return (
-    <div>
+    <div
+      className={`${inputType === "number" ? "w-30" : "w-full"} max-w-[300px]`}
+    >
       <label
-        className={`block mb-1.5 text-sm font-medium ${
+        className={`block mb-1 ${
           pageType === "view"
-            ? "text-slate-700 dark:text-slate-400"
-            : "text-slate-700 dark:text-slate-300"
-        } ${label === "Order Status" ? "text-amber-700 dark:text-amber-400 font-semibold" : ""} `}
+            ? "text-gray-500 text-sm"
+            : "text-xs text-gray-600"
+        } ${label == "Order Status" ? "text-yellow-600 font-bold" : ""}`}
       >
         {label}
       </label>
 
-      {inputType === "select" ? (
+      {/* ================= SELECT ================= */}
+      {inputType === "select" && (
         <select
           value={value}
           onChange={onChange}
           disabled={isDisabled}
-          className={`w-full px-4 py-3 rounded-2xl border border-slate-300/70 dark:border-slate-600/70 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200/40 focus:outline-none transition-all duration-200 shadow-inner ${
-            isDisabled ? "opacity-70 cursor-not-allowed" : ""
+          className={`w-full rounded-xl px-3 py-2 ${
+            pageType === "view" || isDisabled
+              ? "bg-gray-100"
+              : "bg-white border"
           }`}
         >
           <option value="" disabled>
-            Select {label.toLowerCase()}
+            Select {label}
           </option>
+
+          {/* Order Status (object → key/value) */}
           {label === "Order Status"
-            ? Object.entries(statusLists).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v}
+            ? Object.entries(statusLists).map(([key, val]) => (
+                <option key={key} value={key}>
+                  {val}
                 </option>
               ))
-            : websiteLists.map((opt) => (
-                <option key={opt} value={opt}>
+            : websiteLists.map((opt, idx) => (
+                <option key={idx} value={opt}>
                   {opt}
                 </option>
               ))}
         </select>
-      ) : inputType === "textarea" ? (
+      )}
+
+      {/* ================= TEXTAREA ================= */}
+      {inputType === "textarea" && (
         <textarea
           value={value}
           onChange={onChange}
           placeholder={placeholder}
           disabled={isDisabled}
-          rows={1}
-          className={`w-full px-4 py-3 rounded-2xl border border-slate-300/70 dark:border-slate-600/70 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200/40 focus:outline-none transition-all duration-200 resize-y min-h-[30px] shadow-inner ${
-            isDisabled ? "opacity-70 cursor-not-allowed" : ""
+          rows={4}
+          className={`w-full rounded-xl px-3 py-2 resize-none ${
+            pageType === "view" || isDisabled
+              ? "bg-gray-100"
+              : "bg-white border"
           }`}
         />
-      ) : (
-        <div className="relative">
-          {inputType === "number" && (
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 z-10">
-              $
-            </span>
-          )}
-          <input
-            value={value === "N/A" ? "" : value}
-            onChange={onChange}
-            placeholder={placeholder}
-            type={inputType}
-            disabled={isDisabled}
-            inputMode={inputType === "number" ? "numeric" : undefined}
-            className={`w-full px-4 py-3 rounded-2xl border border-slate-300/70 dark:border-slate-600/70 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200/40 focus:outline-none transition-all duration-200 shadow-inner ${
-              inputType === "number" ? "pl-9" : ""
-            } ${isDisabled ? "opacity-70 cursor-not-allowed" : ""}`}
-          />
-        </div>
       )}
+
+      {/* ================= INPUT ================= */}
+      {inputType !== "select" &&
+        inputType !== "textarea" &&
+        inputType !== "list" && (
+          <div className="flex items-center gap-1">
+            {inputType === "number" && <span>$</span>}
+            <input
+              value={value === "N/A" ? "" : value}
+              onChange={onChange}
+              placeholder={placeholder}
+              type={inputType}
+              disabled={isDisabled}
+              inputMode={inputType === "number" ? "numeric" : undefined}
+              className={`w-full rounded-xl px-3 py-2 ${
+                pageType === "view" || isDisabled
+                  ? "bg-gray-100"
+                  : "bg-white border"
+              }`}
+            />
+          </div>
+        )}
     </div>
   );
 }

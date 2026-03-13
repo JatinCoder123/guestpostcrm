@@ -39,14 +39,12 @@ export function RecentEntry() {
   const [timeFilter, setTimeFilter] = useState("all");
   const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
     useContext(PageContext);
-  const { handleMove } = useThreadContext()
+  const { handleMove } = useThreadContext();
   const navigateTo = useNavigate();
 
   useEffect(() => {
     dispatch(getEvents(timeFilter));
   }, [dispatch, timeFilter]);
-
-
 
   return (
     <>
@@ -202,7 +200,10 @@ export function RecentEntry() {
                           setSearch(input);
                           setEnteredEmail(input);
                           setWelcomeHeaderContent("Recent");
-                          handleMove({ email: input, threadId: event.thread_id })
+                          handleMove({
+                            email: input,
+                            threadId: event.thread_id,
+                          });
                         }}
                       >
                         <span className="truncate">{emailValue}</span>
