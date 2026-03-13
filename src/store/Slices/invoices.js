@@ -99,7 +99,7 @@ export const getInvoices = ({ email = null, page = 1, loading = true }) => {
         invoicesSlice.actions.getInvoicesSucess({
           count: data.data_count ?? 0,
           invoices: data.data ?? [],
-          stats: data.stats ?? [],
+          stats: data.stats ? data.stats : [],
           summary: data.summary ?? null,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
