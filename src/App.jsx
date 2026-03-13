@@ -11,7 +11,6 @@ import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
-import { Contacts_otherPage } from "./components/pages/Contacts_otherPage";
 import { DraftInvoice } from "./components/pages/DraftInvoice";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
@@ -41,7 +40,7 @@ import CreateDeal from "./components/CreateDeal";
 import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
-import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
+import { BacklinksPage } from "./components/pages/BacklinksPage";
 import CreateOrder from "./components/CreateOrder";
 import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
@@ -199,8 +198,8 @@ const router = createBrowserRouter([
         element: <MovedPage />,
       },
       {
-        path: "all-backlinks",
-        element: <Allbacklinkspage />,
+        path: "backlinks",
+        element: <BacklinksPage />,
       },
 
       {
@@ -226,9 +225,7 @@ const router = createBrowserRouter([
             path: ":threadId/reply",
             element: <ThreadReply />,
           },
-        ]
-
-
+        ],
       },
 
       {
@@ -304,7 +301,6 @@ export default function App() {
             </SocketContextProvider>
           </PageContextProvider>
         </ThreadContextProvider>
-
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}

@@ -5,7 +5,7 @@ import {
   SparkleIcon,
   X,
 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getLadger, ladgerAction } from "../../store/Slices/ladger";
@@ -23,7 +23,6 @@ import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
-import PromptViewerModal from "../PromptViewerModal";
 import axios from "axios";
 import { getDomain, showConsole } from "../../assets/assets";
 import { LoadingChase } from "../Loading";
@@ -36,12 +35,8 @@ export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showIP, setShowIP] = useState(false);
-  const { currentIndex } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
-  const [editorContent, setEditorContent] = useState("");
-  const [open, setOpen] = useState(false);
-  const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageContent, setMessageContent] = useState("");
   const [isMessageLoading, setIsMessageLoading] = useState(false);
@@ -80,6 +75,7 @@ export function TimelinePage() {
     error: sendError,
     message,
     loading: viewEmailLoading,
+    contactInfo,
     viewEmail,
     sending,
     threadId,
@@ -283,10 +279,6 @@ export function TimelinePage() {
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
-
-
-
-
   if (showIP) {
     return <Ip onClose={() => setShowIP(false)} />;
   }
@@ -437,12 +429,6 @@ export function TimelinePage() {
           box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
       `}</style>
-      {open && (
-        <PromptViewerModal
-          promptDetails={selectedPrompt}
-          onClose={() => setOpen(false)}
-        />
-      )}
 
       {showMessageModal && (
         <div
@@ -464,7 +450,7 @@ export function TimelinePage() {
             <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleMove({ email, threadId })}
+                  onClick={() => handleMove({ email, threadId, viewEmail })}
                   className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"
@@ -573,7 +559,7 @@ export function TimelinePage() {
                           Latest Message
                         </h3>
                         <button
-                          onClick={() => handleMove({ email, threadId })}
+                          onClick={() => handleMove({ email, threadId, viewEmail })}
                           className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"
@@ -686,8 +672,8 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
+                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
+
                           }}
                           className="text-green-600 hover:text-green-700"
                         >
@@ -719,8 +705,8 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
+                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
+
                           }}
                           className="text-blue-600 hover:text-blue-700"
                         >

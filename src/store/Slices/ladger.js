@@ -47,7 +47,11 @@ const ladgerSlice = createSlice({
       } = action.payload;
 
       state.loading = false;
-      state.ladger = ladger || [];
+      if (pageIndex === 1) {
+        state.ladger = ladger;
+      } else {
+        state.ladger = [...state.ladger, ...ladger];
+      }
       state.mailersSummary = mailersSummary || null;
       state.pageCount = pageCount || 1;
       state.pageIndex = pageIndex || 1;
@@ -152,7 +156,7 @@ export const getLadger = ({
           duplicate: data.duplicate_threads_count,
           ladger: data.data ?? [],
           mailersSummary: data.mailers_summary,
-          email: data.mailers_summary?.email,
+          email: email ?? getState().ladger.timeline,
           latest: !isEmail,
           pageCount: data.total_pages,
           pageIndex: data.current_page,

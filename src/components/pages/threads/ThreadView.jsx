@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getThreadEmail } from "../../../store/Slices/threadEmail";
 import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
@@ -24,18 +24,18 @@ export default function ThreadView({
     const lastMessageRef = useRef(null);
     useIdle({ idle: false });
     const dispatch = useDispatch();
+    const { state } = useLocation()
     const navigate = useNavigate();
     const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
-    const { threadEmail: emails, loading, message, error } = useSelector((s) => s.threadEmail);
+    const [emails, setEmails] = useState(state?.viewEmails || [])
+    const { threadEmail, loading, message, error } = useSelector((s) => s.threadEmail);
     const [messageLimit, setMessageLimit] = useState(3);
     const [openMessageId, setOpenMessageId] = useState(null);
     const [fullMessage, setFullMessage] = useState(null);
     const [fullLoading, setFullLoading] = useState(false);
     const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
-    const [showEditorScreen, setShowEditorScreen] = useState(false);
     const attachmentBoxRef = useRef(null);
     const visibleMessages = emails?.slice(-messageLimit);
-    const baseIndex = emails.length - visibleMessages?.length;
     const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
     const downloadAttachment = (att) => {
         const link = document.createElement("a");
@@ -46,7 +46,6 @@ export default function ThreadView({
         link.click();
         document.body.removeChild(link);
     };
-
     const fetchFullMessage = async (messageId) => {
         try {
             setFullLoading(true);
@@ -70,15 +69,16 @@ export default function ThreadView({
             setFullLoading(false);
         }
     };
-
-    const handleBackClick = () => {
-        navigate(-1)
-    };
     useEffect(() => {
-        if (currentEmail && currentThread) {
+        if (currentEmail && currentThread && !state?.viewEmails) {
             dispatch(getThreadEmail(currentEmail, currentThread));
         }
     }, [currentEmail, currentThread]);
+    useEffect(() => {
+        if (threadEmail?.length > 0) {
+            setEmails(threadEmail)
+        }
+    }, [threadEmail])
     useEffect(() => {
         if (!currentThread) {
             toast.error("Thread id is missing!")
@@ -144,11 +144,11 @@ export default function ThreadView({
 
             <motion.div
                 className="
-    fixed inset-0 z-[999]
-    bg-white
-    w-screen h-screen
-    flex flex-col
-    overflow-hidden
+                fixed inset-0 z-[999]
+                bg-white
+                w-screen h-screen
+                flex flex-col
+                overflow-hidden
   "
             >
                 {/* HEADER */}
@@ -157,7 +157,8 @@ export default function ThreadView({
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={handleBackClick}
+                            onClick={() => navigate(-1)
+                            }
                             className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
                         >
                             <ChevronLeft className="w-5 h-5" />
@@ -175,8 +176,7 @@ export default function ThreadView({
                             >
                                 <Send className="w-5 h-5" />
                                 <h2 className="text-xl font-bold tracking-tight">
-                                    {showEditorScreen ? "Compose Email" : "Email Thread"}
-                                </h2>
+                                    Email Thread                                </h2>
                             </div>
 
                             {/* COPY LINK */}
@@ -194,7 +194,6 @@ export default function ThreadView({
                             </button>
                         </div>
                     </div>
-                    {importBtn && importBtn()}
                 </div>
                 {loading ? <ThreadSkeleton /> : <>
                     <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">

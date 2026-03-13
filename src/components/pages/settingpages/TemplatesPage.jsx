@@ -24,6 +24,8 @@ export default function TemplatesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [stages, setStages] = useState({});
   const [stageType, setStageType] = useState("");
+  const [editingStage, setEditingStage] = useState(false);
+  const [selectedStage, setSelectedStage] = useState("");
   const [stagesLoading, setStagesLoading] = useState(false);
 
   const { crmEndpoint } = useSelector((state) => state.user);
@@ -32,9 +34,18 @@ export default function TemplatesPage() {
   const [newDescription, setNewDescription] = useState("");
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const [templateId, setTemplateId] = useState(false)
+  const [templateId, setTemplateId] = useState(false);
   const { showConsole } = useContext(PageContext);
   const { state } = useLocation();
+  const stageOptions = [
+    "first_reply",
+    "team_outreach",
+    "offer",
+    "deal",
+    "order",
+    "reminders",
+    "others",
+  ];
 
   const { loading, data, error, refetch } = useModule({
     url: stageType
@@ -43,7 +54,12 @@ export default function TemplatesPage() {
     method: "GET",
     name: "emailTemplates",
   });
-  const { loading: tempLoading, data: temp, error: getTempError, refetch: getTemp } = useModule({
+  const {
+    loading: tempLoading,
+    data: temp,
+    error: getTempError,
+    refetch: getTemp,
+  } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
@@ -104,8 +120,9 @@ export default function TemplatesPage() {
     setEditorContent(item.body_html || "");
     setOriginalContent(item.body_html || "");
     setIsChanged(false);
+    setSelectedStage(item.stage || item.stage_type || "");
   };
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSave = async () => {
     if (!viewItem || !isChanged) return;
@@ -172,6 +189,44 @@ export default function TemplatesPage() {
       setIsChanged(false);
     } finally {
       setIsSaving(false);
+    }
+  };
+  const handleStageUpdate = async () => {
+    if (!viewItem) return;
+
+    try {
+      const requestBody = {
+        parent_bean: {
+          module: "EmailTemplates",
+          id: viewItem.id,
+          stage: selectedStage,
+        },
+      };
+
+      const response = await fetch(
+        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          method: "POST",
+          headers: {
+            "x-api-key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        },
+      );
+
+      const result = await response.json();
+
+      if (result.parent_updated) {
+        alert("✅ Stage updated successfully");
+        setEditingStage(false);
+        refetch();
+      } else {
+        alert("❌ Failed to update stage");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error updating stage");
     }
   };
 
@@ -265,21 +320,20 @@ export default function TemplatesPage() {
   };
   useEffect(() => {
     if (state?.templateId) {
-      setTemplateId(state.templateId)
+      setTemplateId(state.templateId);
     }
-  }, [state?.templateId])
+  }, [state?.templateId]);
   useEffect(() => {
     if (temp) {
-      setViewItem(temp[0])
+      setViewItem(temp[0]);
     }
-
-  }, [getTempError, temp])
+  }, [getTempError, temp]);
 
   const handleClose = () => {
         setViewItem(null);
 
     if (state?.templateId) {
-      navigate(-1)
+      navigate(-1);
     }
   };
 
@@ -310,36 +364,6 @@ export default function TemplatesPage() {
           <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
             <div className="flex items-center gap-4">
               <h2 className="text-2xl font-bold">Create New Template</h2>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleCreateNewTemplate}
-                disabled={isCreating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isCreating
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
-              >
-                {isCreating ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Save size={18} />
-                    Create Template
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={handleCloseNewTemplateModal}
-                className="p-2 hover:bg-white/20 rounded-full transition"
-              >
-                <X size={28} />
-              </button>
             </div>
           </div>
 
@@ -498,12 +522,46 @@ export default function TemplatesPage() {
                 resize: true,
               }}
             />
-            <TinyEditor editorContent={newTemplateContent} setEditorContent={setNewTemplateContent} />
+            <TinyEditor
+              editorContent={newTemplateContent}
+              setEditorContent={setNewTemplateContent}
+            />
           </div>
 
-          <div className="flex justify-center items-center px-6 py-3 bg-gray-50 border-t text-sm text-gray-600">
-            <div>
+          <div className="flex justify-between items-center px-6 py-3 bg-gray-50 border-t">
+            <div className="text-sm text-gray-600">
               ✨ Enter template name above and design your email template
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCloseNewTemplateModal}
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleCreateNewTemplate}
+                disabled={isCreating}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${
+                  isCreating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                {isCreating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} />
+                    Create Template
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </motion.div>
@@ -531,14 +589,46 @@ export default function TemplatesPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Stage Editor */}
+              {editingStage ? (
+                <div className="flex items-center gap-2 bg-white px-2 py-1 rounded">
+                  <select
+                    value={selectedStage}
+                    onChange={(e) => setSelectedStage(e.target.value)}
+                    className="px-2 py-1 border rounded text-black"
+                  >
+                    {stageOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={handleStageUpdate}
+                    className="px-3 py-1 bg-green-600 text-white rounded"
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setEditingStage(true)}
+                  className="px-3 py-1 bg-blue-600 text-white rounded"
+                >
+                  Edit Stage
+                </button>
+              )}
+
               {isChanged && (
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 active:scale-95"
+                  }`}
                 >
                   {isSaving ? (
                     <>
@@ -704,8 +794,7 @@ export default function TemplatesPage() {
     );
   }
   if (tempLoading) {
-    return <Loading text="template" />
-
+    return <Loading text="template" />;
   }
   return (
     <div className="p-8 min-h-screen bg-gray-50">
@@ -722,10 +811,11 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
-                ? "bg-indigo-600 text-white shadow-lg"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                stageType === key
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
             >
               {label}
             </button>

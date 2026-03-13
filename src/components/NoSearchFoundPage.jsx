@@ -8,27 +8,26 @@ import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { toast } from "react-toastify";
 import { LoadingChase } from "./Loading";
-import { Calendar, Eye } from "lucide-react";
+import { Calendar, Eye, ScanSearch } from "lucide-react";
 import { useThreadContext } from "../hooks/useThreadContext";
+import { extractEmail } from "../assets/assets";
 
 export const NoSearchFoundPage = () => {
   const {
     noSearchResultData,
     noSearchFoundLoading,
+    manualScanLoading,
     error,
     manualScanResponse,
   } = useSelector((state) => state.ladger);
+
   const [currentMessageId, setCurrentMessageId] = useState(null);
+
   const { setSearch, search, setEnteredEmail } = useContext(PageContext);
-  const { handleMove } = useThreadContext()
-  const [popup, setPopup] = useState({
-    open: false,
-    status: null,
-    message: "",
-    threadId: null,
-  });
+  const { handleMove } = useThreadContext();
 
   const dispatch = useDispatch();
+
   useEffect(() => {
     dispatch(getNoSearchResultData(search));
   }, []);
@@ -38,13 +37,16 @@ export const NoSearchFoundPage = () => {
       toast.error(error);
       dispatch(ladgerAction.clearAllErrors());
     }
+
     if (
       manualScanResponse &&
       manualScanResponse?.message_id == currentMessageId?.message_id
     ) {
       setSearch(currentMessageId?.customer_email);
       setEnteredEmail(currentMessageId?.customer_email);
-      localStorage.setItem("email", currentMessageId?.customer_email)
+
+      localStorage.setItem("email", currentMessageId?.customer_email);
+
       dispatch(ladgerAction.setTimeline(null));
     }
   }, [error, manualScanResponse, dispatch]);
@@ -67,34 +69,54 @@ export const NoSearchFoundPage = () => {
 
   return (
     <div className="space-y-3 p-4">
+
+      {/* Manual Scan Loader */}
+      {manualScanLoading && (
+        <div className="fixed inset-0 bg-black/20 flex flex-col items-center justify-center z-50 gap-4">
+          <LoadingChase />
+          <p className="text-white font-medium text-sm tracking-wide">
+            Scanning email...
+          </p>
+        </div>
+      )}
+
       <h1 className="text-center font-semibold text-gray-500">
         TimeLine Does not exists, Results from Live Search
       </h1>
-      {noSearchResultData?.map((item, index) => (
+
+      {noSearchResultData?.map((item) => (
         <div
-          key={index}
+          key={item.message_id}
           className="flex items-center justify-between gap-4
           bg-white rounded-xl shadow-sm border border-gray-100
           hover:bg-pink-50 transition cursor-pointer px-4 py-3"
         >
+          {/* LEFT */}
           <div className="flex items-center gap-3 min-w-[220px]">
             <div
               className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-yellow-500
-            flex items-center justify-center text-white font-semibold"
+              flex items-center justify-center text-white font-semibold"
             >
               {item.customer_email?.[0]?.toUpperCase()}
             </div>
 
             <div>
+              {/* EMAIL SEARCH BUTTON */}
               <button
+                disabled={manualScanLoading}
                 onClick={() => {
-                  setCurrentMessageId(item);
-                  dispatch(manualEmailScan(item.message_id));
+                  setSearch(item.customer_email);
+                  setEnteredEmail(item.customer_email);
+
+                  localStorage.setItem("email", item.customer_email);
+
+                  dispatch(ladgerAction.setTimeline(null));
                 }}
-                className="text-sm font-medium text-gray-800 hover:underline cursor-pointer"
+                className="text-sm font-medium text-gray-800 hover:underline disabled:opacity-50"
               >
                 {item.customer_email}
               </button>
+
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Calendar className="w-3 h-3" />
                 {item.date_created}
@@ -102,47 +124,49 @@ export const NoSearchFoundPage = () => {
             </div>
           </div>
 
-          {/* Middle: Subject */}
+          {/* SUBJECT */}
           <div className="flex-1">
-            <p className="text-sm text-gray-700 line-clamp-2">{item.subject}</p>
+            <p className="text-sm text-gray-700 line-clamp-2">
+              {item.subject}
+            </p>
           </div>
 
-          {/* Right: Action */}
+          {/* ACTION BUTTONS */}
+          <div className="flex items-center gap-2">
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleMove({ email: extractEmail(item.customer_email), threadId: item.thread_id })
-            }}
-            className="p-2 rounded-lg hover:bg-blue-100 transition cursor-pointer"
-            title="View"
-          >
-            <Eye className="w-6 h-6 text-blue-600" />
-          </button>
+            {/* SCAN BUTTON */}
+            <button
+              disabled={manualScanLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentMessageId(item);
+                dispatch(manualEmailScan(item.message_id));
+              }}
+              className="px-3 py-1 text-xs rounded-md cursor-pointer bg-purple-100 text-purple-700 hover:bg-purple-200 disabled:opacity-50"
+              title="Scan Email"
+            >
+              <ScanSearch className="w-5 h-5" />
+            </button>
+
+            {/* VIEW BUTTON */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMove({
+                  email: extractEmail(item.customer_email),
+                  threadId: item.thread_id,
+                });
+              }}
+              className="px-3 py-1 rounded-md bg-blue-100 transition cursor-pointer"
+              title="View"
+            >
+              <Eye className="w-5 h-5 text-blue-600" />
+            </button>
+
+          </div>
         </div>
       ))}
-      {popup.open && manualScanResponse && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-[420px] p-5 space-y-4">
-            <h2 className="text-lg font-semibold">Scan Result</h2>
-
-            {/* MESSAGE */}
-            <p className="text-gray-700">{manualScanResponse.message}</p>
-
-            {/* CLOSE */}
-            {(manualScanResponse.status === "skipped" ||
-              manualScanResponse.status === 404 ||
-              manualScanResponse.status === "success") && (
-                <button
-                  className="w-full bg-gray-200 py-2 rounded-lg"
-                  onClick={() => setPopup({ open: false })}
-                >
-                  Close
-                </button>
-              )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
+

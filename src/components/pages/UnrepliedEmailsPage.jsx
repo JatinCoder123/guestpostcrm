@@ -22,6 +22,8 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import { extractEmail } from "../../assets/assets";
 import TableLoading from "../TableLoading";
 import { useThreadContext } from "../../hooks/useThreadContext";
+import InfinitePagination from "../InfinitePagination";
+import { LoadingChase } from "../Loading";
 
 export function UnrepliedEmailsPage() {
   const [topsearch, setTopsearch] = useState("");
@@ -29,7 +31,7 @@ export function UnrepliedEmailsPage() {
   const [selectedView, setSelectedView] = useState("unreplied");
 
   const [selectedSort, setSelectedSort] = useState("");
-  const { count, emails, loading, unread } = useSelector(
+  const { count, emails, loading, unread, pageIndex, pageCount } = useSelector(
     (state) => state.unreplied,
   );
 
@@ -43,9 +45,7 @@ export function UnrepliedEmailsPage() {
   const dispatch = useDispatch();
 
 
-  // ------------------------------------------------------------------
-  // ✅ SEARCH + FILTER + SORT LOGIC (ONLY NEW CODE ADDED HERE)
-  // ------------------------------------------------------------------
+
   const filteredEmails = emails
     .filter((item) => {
       // 🔴 UNREAD FILTER
@@ -134,6 +134,81 @@ export function UnrepliedEmailsPage() {
     a.href = url;
     a.download = "unreplied-emails.csv";
     a.click();
+  };
+  const handleOnClick = (email, navigate) => {
+    const input = extractEmail(email.from);
+    localStorage.setItem("email", input);
+    setSearch(input);
+    setEnteredEmail(input);
+    dispatch(ladgerAction.setTimeline(null));
+    setWelcomeHeaderContent("Replied");
+    navigateTo(navigate);
+  };
+  const Row = ({ index, style, data }) => {
+    // Loader row
+    if (index >= data.length) {
+      return (
+        <div
+          style={style}
+          className="flex items-center justify-center border-b border-gray-100 px-6"
+        >
+          <LoadingChase color="gray" />
+        </div>
+      );
+    }
+    const email = data[index];
+
+    return (
+      <div
+        style={style}
+        className={`grid grid-cols-5 border-b border-gray-100 hover:bg-purple-50 ${email?.stage == "Order" ? "bg-green-100 hover:bg-green-50" : ""} cursor-pointer`}
+      >
+        <div
+          onClick={() => handleOnClick(email, "/")}
+          className="px-6 py-4 flex items-center gap-2 text-gray-600"
+        >
+          <Calendar className="w-4 h-4 text-gray-400" />
+          {email.date_entered}
+        </div>
+
+        <div
+          className="px-6 py-4 text-gray-900"
+          onClick={() => handleOnClick(email, "/contacts")}
+        >
+          {email.from?.split("<")[0]?.trim()}
+        </div>
+
+        <div
+          onClick={() =>
+            handleMove({
+              email: extractEmail(email.from),
+              threadId: email.thread_id,
+            })
+          }
+          className="px-6 py-4 text-purple-600 truncate max-w-[300px]"
+        >
+          {email.subject}
+        </div>
+        <div
+          onClick={() =>
+            handleMove({
+              email: extractEmail(email.from),
+              threadId: email.thread_id,
+            })
+          }
+          className="px-6 py-4 text-purple-600 truncate max-w-[300px]"
+        >
+          {email?.stage || "-"}
+        </div>
+
+        <div
+          onClick={() => handleOnClick(email, "/")}
+          className="px-6 py-4 text-purple-600"
+        >
+          {email.thread_count}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -225,128 +300,44 @@ export function UnrepliedEmailsPage() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>CREATED AT</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>CONTACT</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    <span>SUBJECT</span>
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <BarChart2 className="w-4 h-4" />
-                    <span>COUNT</span>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            {loading ? (
-              <TableLoading cols={4} />
-            ) : (
-              <tbody>
-                {/* 🟣 USING filteredEmails NOW (NOT emails) */}
-                {filteredEmails.map((email, index) => (
-                  <tr
-                    key={email.thread_id}
-                    className={`border-b border-gray-100 cursor-pointer transition-colors
-                      ${email.is_seen == 0
-                        ? "bg-blue-50 hover:bg-blue-100"
-                        : "hover:bg-purple-50"
-                      }
-                    `}
-                  >
-                    <td
-                      onClick={() => {
-                        const input = extractEmail(email.from);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null));
-                        setWelcomeHeaderContent("Unreplied");
-                        setCurrentIndex(index)
-                        navigateTo("/");
-                      }}
-                      className="px-6 py-4"
-                    >
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span>{email.date_entered}</span>
-                      </div>
-                    </td>
 
-                    <td
-                      onClick={() => {
-                        const input = extractEmail(email.from);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null));
-                        setWelcomeHeaderContent("Unreplied");
-                        navigateTo("/contacts");
-                      }}
-                      className="px-6 py-4 text-gray-900"
-                    >
-                      {email.from?.split("<")[0].trim()}
-                    </td>
+        <div className="grid grid-cols-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+          <div className="px-6 py-4 flex items-center gap-2 font-bold">
+            <Calendar className="w-4 h-4" />
+            CREATED AT
+          </div>
 
-                    <td
-                      onClick={() => {
-                        handleMove({ email: extractEmail(email.from), threadId: email.thread_id })
-                        if (email.is_seen == 0) {
-                          dispatch(
-                            unrepliedAction.updateUnread({
-                              thread_id: email.thread_id,
-                            }),
-                          );
-                        }
-                      }}
-                      className="px-6 py-4 text-purple-600"
-                    >
-                      {email.subject}
-                    </td>
+          <div className="px-6 py-4 flex items-center gap-2 font-bold">
+            <User className="w-4 h-4" />
+            CONTACT
+          </div>
 
-                    <td
-                      onClick={() => {
-                        const input = extractEmail(email.from);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        dispatch(ladgerAction.setTimeline(null));
-                        setWelcomeHeaderContent("Unreplied");
-                        navigateTo("/");
-                      }}
-                      className="px-6 py-4 text-purple-600"
-                    >
-                      {email.thread_count}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            )}
-          </table>
+          <div className="px-6 py-4 flex items-center gap-2 font-bold">
+            <FileText className="w-4 h-4" />
+            SUBJECT
+          </div>
+          <div className="px-6 py-4 flex items-center gap-2 font-bold">
+            <FileText className="w-4 h-4" />
+            STAGE
+          </div>
+
+          <div className="px-6 py-4 flex items-center gap-2 font-bold">
+            <BarChart2 className="w-4 h-4" />
+            COUNT
+          </div>
         </div>
-
-        {emails?.length > 0 && (
-          <Pagination
-            slice={"unreplied"}
-            fn={(p) => dispatch(getUnrepliedEmail({ page: p, loading: true }))}
-          />
+        {loading && pageIndex === 1 ? (
+          <TableLoading cols={4} />
+        ) : (
+          <InfinitePagination fn={() => dispatch(
+            getUnrepliedEmail({
+              page: pageIndex + 1,
+              loading: false,
+            })
+          )} data={emails} pageCount={1} pageIndex={pageIndex} Row={Row} loading={loading} />
         )}
+
+
 
         {filteredEmails.length === 0 && (
           <div className="p-12 text-center">

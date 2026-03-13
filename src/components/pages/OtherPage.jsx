@@ -1,30 +1,12 @@
 import {
-  Clock9Icon,
   Contact,
-  Cpu,
-  CreditCard,
-  FileCog,
-  Gamepad2,
-  GamepadIcon,
-  Globe,
   Inbox,
-  Layers,
-  LucideForkKnifeCrossed,
-  MessageCircle,
-  Move,
-  Option,
-  Phone,
   Settings,
-  Settings2Icon,
   Shield,
   TagIcon,
-  TruckIcon,
-  Users,
   Laptop,
   PencilOff,
-  Home,
-  Store
-
+  Store,
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
@@ -45,13 +27,6 @@ export function OtherPage() {
       link: "/moved-emails",
     },
 
-    {
-      title: "All BackLinks",
-      subtitle: "All BackLinks content shown here",
-      icon: <Option className="w-8 h-8 text-green-600" />,
-      bg: "bg-green-50",
-      link: "/all-backlinks",
-    },
     {
       title: "Defaulters",
       subtitle: "All the defaulters are Listed here",
@@ -95,7 +70,7 @@ export function OtherPage() {
       icon: <PencilOff className="w-8 h-8 text-red-500" />,
       bg: "bg-green-50",
       link: "/draft-invoice",
-    }
+    },
   ];
 
   return (
@@ -103,9 +78,17 @@ export function OtherPage() {
       <div className="flex gap-5">
         <h2 className="text-2xl font-semibold mb-6">Others</h2>
 
-        <a href="https://www.guestpostcrm.com/blog/other-section-in-guestpostcrm/" target="_blank"
-          rel="noopener noreferrer">
-          <img width="30" height="30" src="https://img.icons8.com/offices/30/info.png" alt="info" />
+        <a
+          href="https://www.guestpostcrm.com/blog/other-section-in-guestpostcrm/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            width="30"
+            height="30"
+            src="https://img.icons8.com/offices/30/info.png"
+            alt="info"
+          />
         </a>
       </div>
 

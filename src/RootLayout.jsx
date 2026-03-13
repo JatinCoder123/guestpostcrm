@@ -16,6 +16,8 @@ import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import { ladgerAction } from "./store/Slices/ladger";
+import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
+import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const { message } = useSelector((state) => state.viewEmail);
@@ -80,7 +82,8 @@ const RootLayout = () => {
         setCurrentIndex((p) => p + 1);
         navigate("/")
       }
-
+      // dispatch(getUnrepliedEmail({ loading: false }))
+      // dispatch(getUnansweredEmails({ loading: false }))
     }
   }, [message]);
 
