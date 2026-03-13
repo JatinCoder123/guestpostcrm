@@ -23,7 +23,6 @@ import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
-import PromptViewerModal from "../PromptViewerModal";
 import axios from "axios";
 import { getDomain, showConsole } from "../../assets/assets";
 import { LoadingChase } from "../Loading";
@@ -36,12 +35,8 @@ export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showIP, setShowIP] = useState(false);
-  const { currentIndex } = useContext(PageContext);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
-  const [editorContent, setEditorContent] = useState("");
-  const [open, setOpen] = useState(false);
-  const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageContent, setMessageContent] = useState("");
   const [isMessageLoading, setIsMessageLoading] = useState(false);
@@ -434,12 +429,6 @@ export function TimelinePage() {
           box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
       `}</style>
-      {open && (
-        <PromptViewerModal
-          promptDetails={selectedPrompt}
-          onClose={() => setOpen(false)}
-        />
-      )}
 
       {showMessageModal && (
         <div
@@ -683,8 +672,8 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
+                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
+
                           }}
                           className="text-green-600 hover:text-green-700"
                         >
@@ -716,8 +705,8 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
+                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
+
                           }}
                           className="text-blue-600 hover:text-blue-700"
                         >

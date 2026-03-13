@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
   const { state } = useLocation();
+  const navigateTo = useNavigate()
   const { crmEndpoint } = useSelector((state) => state.user);
   const [close, setClose] = useState(false);
   const { loading, data, error, setData, refetch, add, update } = useModule({
@@ -156,7 +157,10 @@ export function MachineLearningPage() {
       {/* Edit Modal */}
       <EditModal
         item={editItem}
-        onClose={() => setEditItem(null)}
+        onClose={() => {
+          if (state?.promptId) navigateTo(-1)
+          setEditItem(null)
+        }}
         handleUpdate={handleUpdate}
       />
     </div>
