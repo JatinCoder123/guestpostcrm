@@ -276,16 +276,11 @@ export default function TemplatesPage() {
   }, [getTempError, temp])
 
   const handleClose = () => {
+        setViewItem(null);
+
     if (state?.templateId) {
       navigate(-1)
     }
-    if (isChanged) {
-      const confirmClose = window.confirm(
-        "You have unsaved changes. Are you sure you want to close without saving?",
-      );
-      if (!confirmClose) return;
-    }
-    setViewItem(null);
   };
 
   const handleCloseNewTemplateModal = () => {
