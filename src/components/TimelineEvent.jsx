@@ -724,8 +724,7 @@ const TimelineEvent = () => {
                           {event.prompt_details && (
                             <button
                               onClick={() => {
-                                setSelectedPrompt(event.prompt_details);
-                                setOpen(true);
+                                navigateTo("/settings/debugging", { state: { prompt: event.prompt_details[0] } })
                               }}
                               className="text-blue-600 hover:text-blue-700 cursor-pointer"
                             >

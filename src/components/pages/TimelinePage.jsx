@@ -683,8 +683,8 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
+                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
+
                           }}
                           className="text-green-600 hover:text-green-700"
                         >
@@ -716,8 +716,8 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            setSelectedPrompt(mailersSummary?.prompt_details);
-                            setOpen(true);
+                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
+
                           }}
                           className="text-blue-600 hover:text-blue-700"
                         >
