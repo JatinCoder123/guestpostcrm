@@ -72,15 +72,14 @@ export const getEvents = (timeFilter = "all") => {
 
         try {
             const timeParam =
-  timeFilter !== "all" ? `&time_stamp=${timeFilter}` : "";
+                timeFilter !== "all" ? `&filter=${timeFilter}` : "";
 
-const url =
-  `${getState().user.crmEndpoint}&type=recent_activities&user_id=null${
-    (getState().ladger.timeline !== null) &&
-    (getState().ladger.timeline !== "null")
-      ? `&filter=${getState().ladger.timeline}`
-      : ""
-  }${timeParam}&page=1&page_size=50`;
+            const url =
+                `${getState().user.crmEndpoint}&type=recent_activities&user_id=null${(getState().ladger.timeline !== null) &&
+                    (getState().ladger.timeline !== "null")
+                    ? `&filter=${getState().ladger.timeline}`
+                    : ""
+                }${timeParam}&page=1&page_size=50`;
             const { data } = await axios.get(url);
             showConsole && console.log(`events`, data);
 
