@@ -376,7 +376,7 @@ export function TheirLink({ data }) {
 
         {/* RIGHT: Spam Badge */}
         <div className="flex items-center">
-          <div className="relative inline-flex items-center max-w-full">
+          <div className="relative inline-flex justify-end max-w-[500px] lg:max-w-[100px]">
             <div
               className={`
           flex items-center gap-1 sm:gap-2
