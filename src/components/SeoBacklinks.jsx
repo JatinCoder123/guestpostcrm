@@ -302,7 +302,7 @@ export function TheirLink({ data }) {
                   text-sm font-medium text-indigo-600
                   hover:bg-indigo-100 transition"
               >
-                <span className="truncate max-w-[220px]">
+                <span className="truncate max-w-[220px] lg:max-w-[150px]">
                   {data.backlink_url}
                 </span>
                 <span className="opacity-0 group-hover:opacity-100 transition">
@@ -349,9 +349,9 @@ export function TheirLink({ data }) {
       <span className="block border-t border-gray-200"></span>
 
       {/* ROW 3: Type | Link Type | vertical line | Spam Badge */}
-      <div className="flex items-center gap-0">
+      <div className="flex flex-wrap items-center gap-3">
         {/* LEFT: Type + Link Type */}
-        <div className="flex-1 flex items-center gap-6 pr-4">
+        <div className="flex-1 flex items-center gap-4 pr-2 min-w-[220px]">
           <Meta icon={FiLink} label="Type" value={data.type_c} />
 
           {/* Vertical Divider */}
@@ -361,6 +361,7 @@ export function TheirLink({ data }) {
             <div className="p-2 rounded-lg bg-slate-100">
               <FiTag size={14} className="text-slate-500" />
             </div>
+
             <div>
               <p className="text-xs text-slate-500 font-medium">Link Type</p>
               <p className="text-sm font-semibold text-slate-800 capitalize">
@@ -371,49 +372,54 @@ export function TheirLink({ data }) {
         </div>
 
         {/* Vertical Divider */}
-        <span className="self-stretch border-l border-gray-200 mx-15"></span>
+        <span className="hidden sm:block self-stretch border-l border-gray-200 mx-4"></span>
 
-        {/* RIGHT: Spam Badge only */}
-        <div className="flex items-center pl-0">
-          <div className="relative inline-flex items-center">
+        {/* RIGHT: Spam Badge */}
+        <div className="flex items-center">
+          <div className="relative inline-flex items-center max-w-full">
             <div
               className={`
-                flex items-center gap-2
-                pl-2 pr-8 py-1.5
-                rounded-full border-2
-                ${spam.bg} ${spam.text} ${spam.border}
-                text-sm font-medium
-              `}
+          flex items-center gap-1 sm:gap-2
+          pl-1 sm:pl-2 pr-6 sm:pr-8 py-1
+          rounded-full border-2
+          ${spam.bg} ${spam.text} ${spam.border}
+          text-xs sm:text-sm font-medium
+          whitespace-nowrap
+        `}
             >
-              <FiAlertTriangle className={`w-4 h-4 ${spam.text}`} />
+              <FiAlertTriangle
+                className={`w-3 h-3 sm:w-4 sm:h-4 ${spam.text}`}
+              />
+
               <span>
                 Spam {data.spam_score_c}% · {spam.label}
               </span>
+
               <span className="ml-1 flex items-center gap-1 font-bold text-blue-600">
-                MOZ <span className="text-yellow-400">★</span>
+                MOZ{" "}
+                <span className="text-yellow-400 text-xs sm:text-sm">★</span>
               </span>
             </div>
+
             <div
               className={`
-                absolute -right-1
-                flex items-center justify-center
-                w-8 h-8 rounded-full shadow-md
-                ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}
-              `}
+          absolute -right-1
+          flex items-center justify-center
+          w-6 h-6 sm:w-8 sm:h-8 rounded-full shadow-md
+          ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}
+        `}
             >
               {spam.icon === "check" ? (
                 <img
-                  width="65"
-                  height="65"
+                  className="w-5 h-5 sm:w-7 sm:h-7"
                   src="https://img.icons8.com/3d-fluency/94/ok.png"
                   alt="ok"
                 />
               ) : (
                 <img
+                  className="w-5 h-5 sm:w-7 sm:h-7"
                   src="https://img.icons8.com/3d-fluency/94/cancel.png"
                   alt="cross"
-                  width="65"
-                  height="65"
                 />
               )}
             </div>

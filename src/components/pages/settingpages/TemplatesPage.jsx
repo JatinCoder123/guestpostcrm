@@ -533,9 +533,40 @@ export default function TemplatesPage() {
             />
           </div>
 
-          <div className="flex justify-center items-center px-6 py-3 bg-gray-50 border-t text-sm text-gray-600">
-            <div>
+          <div className="flex justify-between items-center px-6 py-3 bg-gray-50 border-t">
+            <div className="text-sm text-gray-600">
               ✨ Enter template name above and design your email template
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCloseNewTemplateModal}
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleCreateNewTemplate}
+                disabled={isCreating}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${
+                  isCreating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                {isCreating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} />
+                    Create Template
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </motion.div>
