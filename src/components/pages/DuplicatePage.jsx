@@ -6,12 +6,14 @@ import {
   getDuplicateEmails,
 } from "../../store/Slices/duplicateEmailSlice";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export const Duplicate = () => {
   const dispatch = useDispatch();
   const { duplicateEmail, loading, error } = useSelector(
     (state) => state.duplicateEmails,
   );
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(getDuplicateEmails());
@@ -24,31 +26,24 @@ export const Duplicate = () => {
     }
   }, [error, dispatch]);
 
-
-
   // Convert object to iterable entries
   const entries = duplicateEmail ? Object.entries(duplicateEmail) : [];
 
   return (
     <div className="p-8">
       <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
-        {/* Header */}
-        <div className="bg-green-600 py-4 px-8">
-          <div className="grid grid-cols-3 text-white text-lg font-semibold">
-            <div className="flex items-center gap-2">
-              <Mail size={22} /> From Email
-            </div>
-            <div className="flex items-center gap-2">
-              <Activity size={22} /> Subject
-            </div>
-            <div className="flex items-center gap-2">
-              <Hash size={22} /> Thread ID
-            </div>
+        {/* Table Header */}
+        <div className="grid grid-cols-2 bg-green-600 text-white text-lg font-semibold px-8 py-4">
+          <div className="flex items-center gap-2">
+            <Mail size={22} /> DateTime
+          </div>
+          <div className="flex items-center gap-2">
+            <Activity size={22} /> Subject
           </div>
         </div>
 
-        {/* Body */}
-        <div className="px-8 py-6">
+        {/* Table Body */}
+        <div>
           {/* Loading */}
           {loading && (
             <p className="text-center py-6 text-lg text-gray-600">
@@ -68,32 +63,20 @@ export const Duplicate = () => {
             entries.map(([threadId, item]) => (
               <div
                 key={threadId}
-                className="grid grid-cols-3 py-5 border-b last:border-b-0 hover:bg-gray-50 transition"
+                className="grid grid-cols-2 px-8 py-5 border-b last:border-b-0 hover:bg-gray-50 transition"
               >
-                {/* From Email */}
-                <div className="flex flex-col">
-                  <span className="text-blue-600 font-medium">
-                    {item.from_email}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {item.from_name}
-                  </span>
+                {/* Date */}
+                <div className="text-blue-600 font-medium">
+                  {item.date_entered ? item.date_entered : "-"}
                 </div>
 
                 {/* Subject */}
-                <div className="text-gray-800 font-medium">{item.subject}</div>
-
-                {/* Thread ID */}
-                <div>
-                  <button
-                    onClick={() => {
-                      handleMove({ email: item.from_email, threadId })
-                    }}
-                    className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full border hover:bg-gray-200 transition"
-                  >
-                    {threadId}
-                  </button>
-                </div>
+                <button
+                  onClick={() => navigate(`/thread/${threadId}`)}
+                  className="text-gray-800 font-medium text-left"
+                >
+                  {item.subject}
+                </button>
               </div>
             ))}
         </div>
