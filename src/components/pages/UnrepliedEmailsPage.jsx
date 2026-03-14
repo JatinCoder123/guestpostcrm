@@ -141,7 +141,7 @@ export function UnrepliedEmailsPage() {
     setSearch(input);
     setEnteredEmail(input);
     dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Replied");
+    setWelcomeHeaderContent("Unreplied");
     navigateTo(navigate);
   };
   const Row = ({ index, style, data }) => {

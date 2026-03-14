@@ -10,6 +10,7 @@ import {
   Trash2,
   LayoutTemplateIcon,
 } from "lucide-react";
+import { TbMessageStar } from "react-icons/tb";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,7 +23,7 @@ import { base64ToUtf8, getDomain } from "../../../assets/assets";
 import useModule from "../../../hooks/useModule";
 import PageLoader from "../../PageLoader";
 import Attachment from "../../Attachment";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { ViewButton } from "../../ViewButton";
 import useIdle from "../../../hooks/useIdle";
 import MicInput from "../../MicInput";
@@ -30,11 +31,19 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 import MailHeaderLeft from "./MailHeaderLeft";
 import TemplateSelectorModal from "../../TemplateSelectorModal";
 import TinyEditor from "../../TinyEditor";
+import MessageModal from "../../MessageModal";
 const ThreadReply = () => {
   const editorRef = useRef(null);
-  const { state } = useLocation()
-  const [editorContent, setEditorContent] = useState(state?.initialContent || "");
-  const { context: { currentThread, currentEmail } } = useThreadContext();
+  const { emails } = useOutletContext() || [];
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const lastMessage = emails?.[emails.length - 1];
+  const { state } = useLocation();
+  const [editorContent, setEditorContent] = useState(
+    state?.initialContent || "",
+  );
+  const {
+    context: { currentThread, currentEmail },
+  } = useThreadContext();
   useIdle({ idle: false });
   const dispatch = useDispatch();
   const {
@@ -95,7 +104,11 @@ const ThreadReply = () => {
   });
 
   // SELECTED TEMPLATE
-  const { loading: templateLoading, data: template, refetch } = useModule({
+  const {
+    loading: templateLoading,
+    data: template,
+    refetch,
+  } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
@@ -125,14 +138,14 @@ const ThreadReply = () => {
   }, [template, editorReady]);
   useEffect(() => {
     if (!currentThread) {
-      toast.error("Thread id is missing!")
-      navigate(-1)
+      toast.error("Thread id is missing!");
+      navigate(-1);
     }
     if (!currentEmail) {
-      toast.error("Email id is missing!")
-      navigate(-1)
+      toast.error("Email id is missing!");
+      navigate(-1);
     }
-  }, [])
+  }, []);
   function insertAiReply(input) {
     setOpenParent(null);
     setTemplateId(null);
@@ -212,6 +225,15 @@ const ThreadReply = () => {
 
   return (
     <>
+    <MessageModal
+  showMessageModal={showMessageModal}
+  closeMessageModal={() => setShowMessageModal(false)}
+  messageId={lastMessage?.message_id}
+  email={currentEmail}
+  threadId={currentThread}
+  viewEmail={emails}
+  count={emails?.length || 0}
+/>
       {(aiLoading || templateLoading) && <PageLoader />}
       <motion.div
         className="
@@ -261,8 +283,16 @@ const ThreadReply = () => {
                 title="Copy Gmail link"
                 className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
               >
-                <Globe className="w-4 h-4" />
+                <Globe className="w-6 h-6" />
               </button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowMessageModal(true)}
+                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
+              >
+                <TbMessageStar className="w-6 h-6 text-yellow-400" />
+              </motion.button>
             </div>
           </div>
           <MailHeaderLeft
@@ -418,11 +448,14 @@ const ThreadReply = () => {
                   );
                 })
               )}
-              <ViewButton Icon={Edit} onClick={() =>
-                navigate("/settings/templates", {
-                  state: { templateId: priceTemp[0].id },
-                })
-              }>
+              <ViewButton
+                Icon={Edit}
+                onClick={() =>
+                  navigate("/settings/templates", {
+                    state: { templateId: priceTemp[0].id },
+                  })
+                }
+              >
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}

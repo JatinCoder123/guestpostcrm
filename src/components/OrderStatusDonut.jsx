@@ -25,7 +25,6 @@ export const STATUS_CARDS = [
     },
     {
         key: "rejected_nontechnical",
-        key: "rejected_nontechnical",
         label: "Rejected",
         icon: XCircle,
         color: "#dc2626", // red

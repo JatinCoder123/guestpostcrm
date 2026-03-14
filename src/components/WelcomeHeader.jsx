@@ -145,8 +145,7 @@ const WelcomeHeader = () => {
         {/* LEFT */}
         <div className="flex items-center gap-5">
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
-            <span className="font-bold text-gray-900">Results for {welcomeHeaderContent} </span>
-
+            <span className="font-bold text-gray-900">Results for  </span>
             <span className="font-bold text-gray-900">{resultTitle}</span>
 
             {shouldShowEmail && email && !loading && (

@@ -1,10 +1,4 @@
-import {
-  Mail,
-  MessageSquare,
-  Pencil,
-  SparkleIcon,
-  X,
-} from "lucide-react";
+import { Mail, MessageSquare, Pencil, SparkleIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -20,10 +14,8 @@ import ContactHeader from "../ContactHeader";
 import ActionButton from "../ActionButton";
 import { addEvent } from "../../store/Slices/eventSlice";
 import { useContext } from "react";
-import { PageContext } from "../../context/pageContext";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
 import { SocketContext } from "../../context/SocketContext";
-import axios from "axios";
 import { getDomain, showConsole } from "../../assets/assets";
 import { LoadingChase } from "../Loading";
 import { quickActionBtnActions } from "../../store/Slices/quickActionBtn";
@@ -31,16 +23,15 @@ import useModule from "../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../store/constants";
 import { useNavigate } from "react-router-dom";
 import { useThreadContext } from "../../hooks/useThreadContext";
+import MessageModal from "../MessageModal";
 export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
   const [aiReply, setAiReply] = useState("");
   const [showIP, setShowIP] = useState(false);
   const { setNotificationCount } = useContext(SocketContext);
   const [showAvatar, setShowAvatar] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
-  const [messageContent, setMessageContent] = useState("");
-  const [isMessageLoading, setIsMessageLoading] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [clickedActionBtn, setClickedActionBtn] = useState(null);
   const { crmEndpoint } = useSelector((state) => state.user);
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
@@ -63,19 +54,15 @@ export function TimelinePage() {
     error: buttonsError,
     loading: buttonsLoading,
   } = useSelector((s) => s.quickActionBtn);
-
-  const [messageMeta, setMessageMeta] = useState({
-    subject: "",
-    from: "",
-    date: "",
-    fromEmail: "",
-    time: "",
-  });
+  const handleMessageClick = (id) => {
+    console.log("Message clicked:", id);
+    setSelectedMessage(id);
+    setShowMessageModal(true);
+  };
   const {
     error: sendError,
     message,
     loading: viewEmailLoading,
-    contactInfo,
     viewEmail,
     sending,
     threadId,
@@ -110,7 +97,7 @@ export function TimelinePage() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { handleMove } = useThreadContext()
+  const { handleMove } = useThreadContext();
 
   const { ladger, email, mailersSummary, searchNotFound, loading, error } =
     useSelector((state) => state.ladger);
@@ -140,88 +127,6 @@ export function TimelinePage() {
     dispatch(getLadger({ email }));
   };
 
-  // Function to clean HTML content
-  const cleanHtmlContent = (html) => {
-    // Basic HTML cleanup
-    const cleaned = html
-      .replace(/<style[^>]*>.*?<\/style>/gis, "") // Remove style tags
-      .replace(/<script[^>]*>.*?<\/script>/gis, "") // Remove script tags
-      .replace(/<!--.*?-->/g, "") // Remove comments
-      .trim();
-
-    return cleaned || html;
-  };
-  const closeMessageModal = () => {
-    setShowMessageModal(false);
-    setMessageContent("");
-    setSelectedMessageId(null);
-  };
-  const handleMessageClick = async (event) => {
-    if (!event.message_id) return;
-
-    // ✅ open modal FIRST
-    setShowMessageModal(true);
-
-    // ✅ show loader INSIDE MODAL
-    setIsMessageLoading(true);
-
-    try {
-      const baseUrl = crmEndpoint.split("?")[0];
-      const { data } = await axios.get(
-        `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id}`,
-      );
-
-      console.log("result", data);
-
-      const htmlBody =
-        data.email?.html_body ||
-        data.email?.body_html ||
-        data.email?.content ||
-        data.email?.html_body ||
-        "";
-
-      const subject = data.email?.subject || event.subject || "No Subject";
-
-      const from =
-        data.email?.from_name || event?.from_addr || "Unknown Sender";
-
-      const fromEmail = data.email?.from_addr || event?.from_email || "";
-
-      const createdDate = data.email?.date_created || "";
-
-      let formattedDate = "";
-      let formattedTime = "";
-
-      if (createdDate) {
-        const d = new Date(createdDate);
-        formattedDate = d.toLocaleDateString();
-        formattedTime = d.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      setMessageMeta({
-        subject,
-        from,
-        fromEmail,
-        date: formattedDate,
-        time: formattedTime,
-      });
-
-      setMessageContent(
-        htmlBody
-          ? cleanHtmlContent(htmlBody)
-          : event.description || event.subject || "No content available",
-      );
-    } catch (err) {
-      setMessageContent(
-        event.description || event.subject || "No content available",
-      );
-    } finally {
-      setIsMessageLoading(false);
-    }
-  };
   const handleSendFirstReply = async () => {
     if (!reminderId) return;
 
@@ -274,7 +179,6 @@ export function TimelinePage() {
       toast.error(buttonsError);
       dispatch(quickActionBtnActions.clearErrors());
     }
-
   }, [dispatch, buttonsError, message]);
   if (searchNotFound) {
     return <NoSearchFoundPage />;
@@ -285,257 +189,15 @@ export function TimelinePage() {
 
   return (
     <>
-      <style jsx>{`
-        .message-content h1,
-        .message-content h2,
-        .message-content h3,
-        .message-content h4 {
-          margin-top: 1.5em;
-          margin-bottom: 0.5em;
-          font-weight: 600;
-          color: #1f2937;
-        }
-
-        .message-content p {
-          margin-bottom: 1em;
-        }
-
-        .message-content a {
-          color: #3b82f6;
-          text-decoration: underline;
-        }
-
-        .message-content a:hover {
-          color: #2563eb;
-        }
-
-        .message-content ul,
-        .message-content ol {
-          margin-left: 1.5em;
-          margin-bottom: 1em;
-        }
-
-        .message-content li {
-          margin-bottom: 0.5em;
-        }
-
-        .message-content img {
-          max-width: 100%;
-          height: auto;
-          border-radius: 4px;
-        }
-
-        .message-content table {
-          border-collapse: collapse;
-          width: 100%;
-          margin-bottom: 1em;
-        }
-
-        .message-content table th,
-        .message-content table td {
-          border: 1px solid #e5e7eb;
-          padding: 8px 12px;
-          text-align: left;
-        }
-
-        .message-content table th {
-          background-color: #f9fafb;
-          font-weight: 600;
-        }
-
-        .message-content blockquote {
-          border-left: 4px solid #e5e7eb;
-          margin: 1em 0;
-          padding-left: 1em;
-          color: #6b7280;
-          font-style: italic;
-        }
-
-        .message-content code {
-          background-color: #f3f4f6;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-          font-size: 0.9em;
-        }
-
-        .message-content pre {
-          background-color: #1f2937;
-          color: #f9fafb;
-          padding: 1em;
-          border-radius: 6px;
-          overflow-x: auto;
-          margin: 1em 0;
-        }
-
-        .message-content pre code {
-          background-color: transparent;
-          color: inherit;
-          padding: 0;
-        }
-
-        .message-content .cta {
-          margin: 20px 0;
-        }
-
-        .message-content .emoticon {
-          display: inline-block;
-          vertical-align: middle;
-          width: 20px;
-          height: 20px;
-        }
-
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-        }
-
-        .message-icon-pulse {
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.05);
-            opacity: 0.8;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        .modal-backdrop {
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-        }
-
-        .message-modal {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          box-shadow:
-            0 20px 40px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .message-content-container {
-          background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-      `}</style>
-
-      {showMessageModal && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
-          onClick={closeMessageModal}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{
-              type: "spring",
-              damping: 25,
-              stiffness: 300,
-            }}
-            className="message-modal rounded-3xl w-full max-w-7xl h-[85vh] flex flex-col overflow-hidden shadow-2xl bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* ✅ HEADER (FIXED) */}
-            <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => handleMove({ email, threadId, viewEmail })}
-                  className="relative rounded-xl bg-white border border-gray-200 shadow-md
-               hover:shadow-lg hover:-translate-y-1 active:scale-95
-               transition-all flex items-center justify-center"
-                >
-                  <img
-                    src="https://img.icons8.com/keek/100/new-post.png"
-                    alt="new-post"
-                    className="w-8 h-8"
-                  />
-                  {count > 0 && (
-                    <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                      {count}
-                    </span>
-                  )}
-                </button>
-                <div className="flex flex-col leading-tight">
-                  <h2 className="text-lg font-semibold text-white">
-                    {messageMeta.from}
-                  </h2>
-
-                  <span className="text-sm text-blue-100">
-                    {messageMeta.fromEmail}
-                  </span>
-
-                  <span className="text-xs text-blue-200">
-                    {messageMeta.date} • {messageMeta.time}
-                  </span>
-                </div>
-              </div>
-
-              {/* SUBJECT CENTER */}
-              <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
-                <h1 className="text-lg font-semibold text-white truncate">
-                  {messageMeta.subject}
-                </h1>
-              </div>
-
-              <button
-                onClick={closeMessageModal}
-                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
-                title="Close"
-              >
-                <X size={24} className="text-white" />
-              </button>
-            </div>
-
-            {/* ✅ SCROLLABLE BODY */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
-              {isMessageLoading ? (
-                <div className="flex flex-col items-center justify-center h-full">
-                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-gray-600 font-medium">
-                    Loading message content...
-                  </p>
-                </div>
-              ) : messageContent ? (
-                <div className="message-content-container w-full max-w-4xl mx-auto">
-                  <div
-                    className="message-content"
-                    style={{
-                      fontFamily:
-                        'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                      fontSize: "15px",
-                      lineHeight: "1.8",
-                      color: "#2d3748",
-                      padding: "20px",
-                    }}
-                    dangerouslySetInnerHTML={{ __html: messageContent }}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-20 h-20 mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-                    <MessageSquare size={32} className="text-gray-500" />
-                  </div>
-
-                  <p className="text-gray-500 mt-2">
-                    This message doesn't contain any readable content.
-                  </p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      )}
+      <MessageModal
+        showMessageModal={showMessageModal}
+        closeMessageModal={() => setShowMessageModal(false)}
+        messageId={selectedMessage}
+        email={email}
+        threadId={threadId}
+        viewEmail={viewEmail}
+        count={count}
+      />
 
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
@@ -559,7 +221,9 @@ export function TimelinePage() {
                           Latest Message
                         </h3>
                         <button
-                          onClick={() => handleMove({ email, threadId, viewEmail })}
+                          onClick={() =>
+                            handleMove({ email, threadId, viewEmail })
+                          }
                           className="relative rounded-xl bg-white border border-gray-200 shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
                transition-all flex items-center justify-center"
@@ -580,10 +244,11 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${viewEmail[viewEmail.length - 1].from_email === email
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                            }
+      ${
+        viewEmail[viewEmail.length - 1].from_email === email
+          ? "bg-green-100 text-green-700"
+          : "bg-blue-100 text-blue-700"
+      }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -620,8 +285,9 @@ export function TimelinePage() {
                     />
                   ) : (
                     <div
-                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${showMore ? "max-h-full" : "max-h-24 overflow-hidden"
-                        }`}
+                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
+                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
+                      }`}
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
@@ -637,7 +303,9 @@ export function TimelinePage() {
                     viewEmail[viewEmail.length - 1].message_id && (
                       <button
                         onClick={() =>
-                          handleMessageClick(viewEmail[viewEmail.length - 1])
+                          handleMessageClick(
+                            viewEmail[viewEmail.length - 1]?.message_id,
+                          )
                         }
                         className="text-blue-600 hover:text-blue-700 transition-opacity flex  p-2 cursor-pointer"
                         title="View Message"
@@ -654,7 +322,14 @@ export function TimelinePage() {
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400 }}
                         className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => handleMove({ email, threadId, reply: mailersSummary?.ai_response, addActivity: true })}
+                        onClick={() =>
+                          handleMove({
+                            email,
+                            threadId,
+                            reply: mailersSummary?.ai_response,
+                            addActivity: true,
+                          })
+                        }
                         disabled={
                           sending ||
                           mailersSummary == null ||
@@ -672,8 +347,11 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
-
+                            navigate("/settings/debugging", {
+                              state: {
+                                prompt: mailersSummary.prompt_details[0],
+                              },
+                            });
                           }}
                           className="text-green-600 hover:text-green-700"
                         >
@@ -705,8 +383,11 @@ export function TimelinePage() {
                       {mailersSummary?.prompt_details && (
                         <button
                           onClick={() => {
-                            navigate("/settings/debugging", { state: { prompt: mailersSummary.prompt_details[0] } })
-
+                            navigate("/settings/debugging", {
+                              state: {
+                                prompt: mailersSummary.prompt_details[0],
+                              },
+                            });
                           }}
                           className="text-blue-600 hover:text-blue-700"
                         >
@@ -727,10 +408,13 @@ export function TimelinePage() {
                             onClick={(e) => {
                               e.stopPropagation();
                               handleMove({
-                                email, threadId, reply: btn.name == "Ask Budget"
-                                  ? askBudgetTemp[0]?.body_html
-                                  : sorryTemp[0]?.body_html,
-                              })
+                                email,
+                                threadId,
+                                reply:
+                                  btn.name == "Ask Budget"
+                                    ? askBudgetTemp[0]?.body_html
+                                    : sorryTemp[0]?.body_html,
+                              });
                             }}
                             disabled={sending}
                             className="
@@ -786,10 +470,11 @@ export function TimelinePage() {
                       <>
                         {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
                         <div
-                          className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
-                            ? "opacity-100"
-                            : "opacity-0 pointer-events-none"
-                            }`}
+                          className={`flex items-center transition-opacity duration-200 ${
+                            showFirstReplyBtn
+                              ? "opacity-100"
+                              : "opacity-0 pointer-events-none"
+                          }`}
                         >
                           <div className="relative group flex items-center justify-center">
                             <button
@@ -843,16 +528,16 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                  <ActionButton
-                    isMark={isMark}
-                    handleMoveSuccess={handleMoveSuccess}
-                    setShowIP={setShowIP}
-                  />
-                )}
+                <ActionButton
+                  isMark={isMark}
+                  handleMoveSuccess={handleMoveSuccess}
+                  setShowIP={setShowIP}
+                />
+              )}
             </div>
 
             {ladger?.length > 0 ? (
-              <TimelineEvent />
+              <TimelineEvent handleMessageClick={handleMessageClick} />
             ) : (
               <div className="py-[2%] px-[30%] ">
                 <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-2xl text-center text-white">
