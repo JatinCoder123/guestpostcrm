@@ -6,13 +6,14 @@ import {
   getDuplicateEmails,
 } from "../../store/Slices/duplicateEmailSlice";
 import { toast } from "react-toastify";
+import { useThreadContext } from "../../hooks/useThreadContext";
 
 export const Duplicate = () => {
   const dispatch = useDispatch();
   const { duplicateEmail, loading, error } = useSelector(
     (state) => state.duplicateEmails,
   );
-
+  const { handleMove } = useThreadContext()
   useEffect(() => {
     dispatch(getDuplicateEmails());
   }, [dispatch]);

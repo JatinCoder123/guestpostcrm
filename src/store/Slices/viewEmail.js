@@ -16,6 +16,7 @@ const viewEmailSlice = createSlice({
     contactInfo: null,
     customer_type: null,
     accountInfo: null,
+    sendedEmail: null,
     sending: false,
     dealInfo: null,
     threadId: null,
@@ -99,9 +100,10 @@ const viewEmailSlice = createSlice({
       state.error = null;
     },
     sendEmailSucess(state, action) {
-      const { message } = action.payload;
+      const { message, sendedEmail } = action.payload;
       state.sending = false;
       state.message = message;
+      state.sendedEmail = sendedEmail
       state.error = null;
     },
     sendEmailFailed(state, action) {
@@ -113,6 +115,7 @@ const viewEmailSlice = createSlice({
     },
     clearAllMessage(state) {
       state.message = null;
+      state.sendedEmail = null
     },
     resetViewEmail(state) {
       state.viewEmail = null;
@@ -252,6 +255,7 @@ export const sendEmail = (
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: data.message,
+          sendedEmail: formData.get("email")
         }),
       );
 

@@ -164,7 +164,10 @@ export function UnrepliedEmailsPage() {
         className={`grid grid-cols-5 border-b border-gray-100 hover:bg-purple-50 ${email?.stage == "Order" ? "bg-green-100 hover:bg-green-50" : ""} cursor-pointer`}
       >
         <div
-          onClick={() => handleOnClick(email, "/")}
+          onClick={() => {
+            handleOnClick(email, "/")
+            setCurrentIndex(index)
+          }}
           className="px-6 py-4 flex items-center gap-2 text-gray-600"
         >
           <Calendar className="w-4 h-4 text-gray-400" />

@@ -47,8 +47,8 @@ export function TimelinePage() {
       setIsMark(false);
     }
   }, [marketPlaces]);
-  const { email: frEmail } = useSelector((s) => s.ladger);
-
+  const { ladger, email, mailersSummary, searchNotFound, loading, error } =
+    useSelector((state) => state.ladger);
   const {
     buttons,
     error: buttonsError,
@@ -99,8 +99,7 @@ export function TimelinePage() {
   const navigate = useNavigate();
   const { handleMove } = useThreadContext();
 
-  const { ladger, email, mailersSummary, searchNotFound, loading, error } =
-    useSelector((state) => state.ladger);
+
   const { emails, loading: unrepliedLoading } = useSelector(
     (state) => state.unreplied,
   );
@@ -151,12 +150,12 @@ export function TimelinePage() {
     }
   };
   useEffect(() => {
-    if (!frEmail) return;
+    if (!email) return;
 
     const fetchFRButtonStatus = async () => {
       try {
         const res = await fetch(
-          `${crmEndpoint}&type=fr_button&email=${frEmail}`,
+          `${crmEndpoint}&type=fr_button&email=${email}`,
         );
         const data = await res.json();
 
@@ -173,7 +172,7 @@ export function TimelinePage() {
     };
 
     fetchFRButtonStatus();
-  }, [frEmail]);
+  }, [email]);
   useEffect(() => {
     if (buttonsError) {
       toast.error(buttonsError);
@@ -244,11 +243,10 @@ export function TimelinePage() {
                       {viewEmail?.length > 0 && (
                         <div
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                            }
     `}
                         >
                           <Mail className="w-4 h-4" />
@@ -285,9 +283,8 @@ export function TimelinePage() {
                     />
                   ) : (
                     <div
-                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${
-                        showMore ? "max-h-full" : "max-h-24 overflow-hidden"
-                      }`}
+                      className={`text-gray-700 text-sm leading-relaxed whitespace-pre-line transition-all duration-300 ${showMore ? "max-h-full" : "max-h-24 overflow-hidden"
+                        }`}
                       dangerouslySetInnerHTML={{
                         __html:
                           viewEmail?.length > 0
@@ -322,13 +319,16 @@ export function TimelinePage() {
                         whileTap={{ scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400 }}
                         className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() =>
+                        onClick={() => {
+                          console.log("EMAIL", email)
                           handleMove({
                             email,
                             threadId,
                             reply: mailersSummary?.ai_response,
                             addActivity: true,
                           })
+                        }
+
                         }
                         disabled={
                           sending ||
@@ -470,11 +470,10 @@ export function TimelinePage() {
                       <>
                         {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
                         <div
-                          className={`flex items-center transition-opacity duration-200 ${
-                            showFirstReplyBtn
-                              ? "opacity-100"
-                              : "opacity-0 pointer-events-none"
-                          }`}
+                          className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                            ? "opacity-100"
+                            : "opacity-0 pointer-events-none"
+                            }`}
                         >
                           <div className="relative group flex items-center justify-center">
                             <button
@@ -528,12 +527,12 @@ export function TimelinePage() {
               {!(
                 !mailersSummary || Object.keys(mailersSummary).length === 0
               ) && (
-                <ActionButton
-                  isMark={isMark}
-                  handleMoveSuccess={handleMoveSuccess}
-                  setShowIP={setShowIP}
-                />
-              )}
+                  <ActionButton
+                    isMark={isMark}
+                    handleMoveSuccess={handleMoveSuccess}
+                    setShowIP={setShowIP}
+                  />
+                )}
             </div>
 
             {ladger?.length > 0 ? (
