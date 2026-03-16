@@ -28,6 +28,7 @@ import {
   ClipboardEdit,
   BellRing,
   Plus,
+  Contact2Icon,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -62,8 +63,8 @@ export function Sidebar() {
   const { count: unrepliedCount, loading: unrepliedLoading } = useSelector(
     (s) => s.unreplied,
   );
-  const { count: unansweredCount, loading: unansweredLoading } = useSelector(
-    (s) => s.unanswered,
+  const {  contactLoading } = useSelector(
+    (s) => s.viewEmail,
   );
   const { count: dealCount, loading: dealsLoading } = useSelector(
     (s) => s.deals,
@@ -82,9 +83,7 @@ export function Sidebar() {
     (s) => s.orderRem,
   );
 
-  const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
-    (s) => s.marketplace,
-  );
+ 
   const { count: linkExchangeCount, loading: linkExchangeLoading } =
     useSelector((s) => s.linkExchange);
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
@@ -105,11 +104,11 @@ export function Sidebar() {
       countBg: "bg-red-500 text-white",
     },
     {
-      id: "unanswered",
-      label: "Replied",
-      icon: MessageSquare,
-      loading: unansweredLoading,
-      count: unansweredCount,
+      id: "contacts",
+      label: "Contact",
+      icon: Contact2Icon,
+      loading: contactLoading,
+      count: null,
       color: "text-purple-600",
       hover: "hover:bg-purple-50",
       countBg: "bg-purple-500 text-white",

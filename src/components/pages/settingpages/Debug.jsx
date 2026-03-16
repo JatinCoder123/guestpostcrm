@@ -3,6 +3,7 @@ import { CREATE_DEAL_API_KEY } from "../../../store/constants.js";
 import useModule from "../../../hooks/useModule.js";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+import { PromptViewer } from "../../PromptViewer.jsx";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
@@ -384,7 +385,9 @@ const Debug = () => {
                         {key.replace(/_/g, " ").toUpperCase()}
                       </div>
 
-                      {large ? (
+                      {key === "full_prompt" ? (
+                        <PromptViewer prompt={value} />
+                      ) : large ? (
                         <textarea
                           readOnly
                           value={
@@ -416,3 +419,6 @@ const Debug = () => {
 };
 
 export default Debug;
+
+
+

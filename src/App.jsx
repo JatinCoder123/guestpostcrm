@@ -56,6 +56,7 @@ import ThreadReply from "./components/pages/threads/ThreadReply";
 import ThreadView from "./components/pages/threads/ThreadView";
 import { ThreadContextProvider } from "./context/ThreadContext";
 import Debug from "./components/pages/settingpages/Debug";
+import Thread from "./components/pages/threads/Thread";
 
 const router = createBrowserRouter([
   {
@@ -218,6 +219,7 @@ const router = createBrowserRouter([
 
       {
         path: "thread",
+        element: <Thread />,
         children: [
           {
             path: ":threadId",
