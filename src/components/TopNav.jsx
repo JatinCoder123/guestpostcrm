@@ -1,4 +1,11 @@
-import { Search, Sparkles, Flame, X, User2Icon } from "lucide-react";
+import {
+  Search,
+  Sparkles,
+  Flame,
+  X,
+  User2Icon,
+  CircleAlert,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
 import { useContext, useEffect, useState, useRef } from "react";
@@ -9,11 +16,14 @@ import { toast } from "react-toastify";
 import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
+import { SocketContext } from "../context/SocketContext";
 
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const profileMenuRef = useRef(null);
+  const { notificationCount } = useContext(SocketContext);
+  const [errorLogCount, setErrorLogCount] = useState(0);
 
   const { user, error } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
@@ -37,7 +47,7 @@ export function TopNav() {
     }
     localStorage.setItem("email", search);
     setEnteredEmail(search);
-    dispatch(ladgerAction.setTimeline(null))
+    dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Search");
     navigateTo("");
   };
@@ -84,6 +94,12 @@ export function TopNav() {
       dispatch(userAction.clearAllErrors());
     }
   }, [error, dispatch]);
+
+  useEffect(() => {
+    if (notificationCount.error_log_created) {
+      setErrorLogCount((prev) => prev + 1);
+    }
+  }, [notificationCount.error_log_created]);
 
   const getUserInitials = () => {
     if (!user?.name) return "U";
@@ -133,9 +149,10 @@ export function TopNav() {
                 className={`
                   absolute right-2 top-1/2 -translate-y-1/2
                   w-6 h-6 flex items-center justify-center rounded-md
-                  ${isBlinking
-                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                    : "bg-gray-300 text-gray-700"
+                  ${
+                    isBlinking
+                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                      : "bg-gray-300 text-gray-700"
                   }
                 `}
               >
@@ -171,23 +188,23 @@ export function TopNav() {
           animate={
             count > 0
               ? {
-                scale: [1, 1.12, 1],
-                boxShadow: [
-                  "0 0 0px rgba(59,130,246,0)",
-                  "0 0 18px rgba(59,130,246,0.9)",
-                  "0 0 18px rgba(239, 68, 213, 0.9)",
-                  "0 0 0px rgba(239,68,68,0)",
-                ],
-              }
+                  scale: [1, 1.12, 1],
+                  boxShadow: [
+                    "0 0 0px rgba(59,130,246,0)",
+                    "0 0 18px rgba(59,130,246,0.9)",
+                    "0 0 18px rgba(239, 68, 213, 0.9)",
+                    "0 0 0px rgba(239,68,68,0)",
+                  ],
+                }
               : {}
           }
           transition={
             count > 0
               ? {
-                repeat: Infinity,
-                duration: 1.6, // normal speed
-                ease: "easeInOut",
-              }
+                  repeat: Infinity,
+                  duration: 1.6, // normal speed
+                  ease: "easeInOut",
+                }
               : {}
           }
           className="relative p-4 bg-orange-500 text-white rounded-full"
@@ -202,12 +219,20 @@ export function TopNav() {
         </motion.button>
         {/* end */}
 
-        <button
-          onClick={() => navigateTo("avatars")}
-          className="p-4 bg-yellow-500 text-white rounded-full"
-        >
-          <User2Icon />
-        </button>
+        {notificationCount.error_log_created && (
+          <button
+            onClick={() => navigateTo("error-logs")}
+            className="relative p-4 bg-red-500 text-white rounded-full"
+          >
+            <CircleAlert />
+
+            {errorLogCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full shadow">
+                {errorLogCount}
+              </span>
+            )}
+          </button>
+        )}
 
         <button
           onClick={() => navigateTo("ai-credits")}

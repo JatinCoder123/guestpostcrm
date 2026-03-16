@@ -32,8 +32,7 @@ import hotReducer from "./Slices/hotSlice.js";
 import tagReducer from "./Slices/tag.js";
 import gpcControllerReducer from "./Slices/gpcControllerSlice";
 import websiteReducer from "./Slices/webSlice";
-import syncReducer from "./Slices/syncSlice.js"
-
+import syncReducer from "./Slices/syncSlice.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
