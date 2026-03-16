@@ -16,11 +16,10 @@ import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import { ladgerAction } from "./store/Slices/ladger";
-import { getUnrepliedEmail } from "./store/Slices/unrepliedEmails";
-import { getUnansweredEmails } from "./store/Slices/unansweredEmails";
+import { getUnrepliedEmail, unrepliedAction } from "./store/Slices/unrepliedEmails";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
-  const { message } = useSelector((state) => state.viewEmail);
+  const { message, sendedEmail } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, currentScore } = useSelector((state) => state.user);
   const {
     displayIntro,
@@ -67,7 +66,7 @@ const RootLayout = () => {
       }));
 
       toast.success(message);
-      dispatch(viewEmailAction.clearAllMessage());
+      dispatch(unrepliedAction.removeUnreplied(sendedEmail))
       if (emails.length === currentIndex + 1) {
         navigate("/unreplied-emails");
 
@@ -79,10 +78,10 @@ const RootLayout = () => {
         setEnteredEmail(input);
         dispatch(ladgerAction.setTimeline(null));
         setWelcomeHeaderContent("Unreplied");
-        setCurrentIndex((p) => p + 1);
         navigate("/")
       }
-      // dispatch(getUnrepliedEmail({ loading: false }))
+      dispatch(viewEmailAction.clearAllMessage());
+
       // dispatch(getUnansweredEmails({ loading: false }))
     }
   }, [message]);

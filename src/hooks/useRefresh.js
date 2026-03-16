@@ -33,6 +33,7 @@ import {
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
 import { getOrderRem } from "../store/Slices/orderRem";
+import { extractEmail } from "../assets/assets";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -84,8 +85,6 @@ function useRefresh() {
                 dispatch(getLadger({ email: firstEmail, search }));
                 dispatch(getViewEmail(firstEmail));
                 dispatch(getContact(firstEmail));
-            } else if (!loading) {
-                dispatch(getLadger({ search, isEmail: false }));
             }
             dispatch(getUnrepliedEmail({ loading: false }));
             dispatch(getUnansweredEmails({ loading: false }));
@@ -97,6 +96,12 @@ function useRefresh() {
             setFirstEmail(
                 emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
             );
+            if (enteredEmail) {
+                const index = emails.findIndex((email) => extractEmail(email?.from) === enteredEmail)
+                if (index > -1 && index !== currentIndex) {
+                    setCurrentIndex(index);
+                }
+            }
         }
     }, [emails?.length, currentIndex]);
 
@@ -109,8 +114,6 @@ function useRefresh() {
             dispatch(getLadger({ email: firstEmail, search }));
             dispatch(getViewEmail(firstEmail));
             dispatch(getContact(firstEmail));
-        } else if (!loading) {
-            dispatch(getLadger({ search, isEmail: false }));
         }
         dispatch(viewEmailAction.resetViewEmail());
     }, [enteredEmail, firstEmail, timeline, dispatch]);

@@ -205,12 +205,12 @@ export default function CreateDeal() {
         if (message.includes("Send")) {
           const data = unionByKey(newDealsCreated, currentDeals, "website_c");
           console.log("DATA", data);
+          setNewDeals(data)
           navigate("/deals/view", {
             state: { email: state?.email, threadId: state?.threadId },
           });
           setShowPreview(true);
         }
-        setNewDeals([]);
       }
       dispatch(dealsAction.clearAllMessages());
       dispatch(getDeals({ email: state?.email }));
@@ -224,7 +224,10 @@ export default function CreateDeal() {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [message, error, dispatch, sendError]);
+    if (sendMessage) {
+      setNewDeals([])
+    }
+  }, [message, error, dispatch, sendMessage]);
 
   return (
     <Create
@@ -252,6 +255,7 @@ export default function CreateDeal() {
       setShowPreview={setShowPreview}
       renderPreview={({ data, email, onClose }) => {
         let html = templateData?.[0]?.body_html || "";
+        console.log("data", data)
         const tableHtml = buildTable(data, "Deals", "website_c", "dealamount");
         html = html
           .replace("{{USER_EMAIL}}", email)
