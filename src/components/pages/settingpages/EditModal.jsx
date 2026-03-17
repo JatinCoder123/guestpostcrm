@@ -24,7 +24,6 @@ export default function EditModal({ item, onClose, handleUpdate }) {
     overwrite_prompt: "",
   });
 
-  // Fill state when modal opens
   useEffect(() => {
     if (item) {
       setForm({
@@ -59,16 +58,18 @@ export default function EditModal({ item, onClose, handleUpdate }) {
     <AnimatePresence>
       {item && (
         <motion.div
+          onClick={onClose} // 👈 outside click closes modal
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         >
           <motion.div
+            onClick={(e) => e.stopPropagation()} // 👈 prevent inside click
             initial={{ scale: 0.9, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 30 }}
-            className="bg-white rounded-2xl p-6 w-full max-w-[800px] shadow-xl relative"
+            className="flex flex-col bg-white rounded-2xl p-6 w-full max-w-[80%] shadow-xl relative"
           >
             {/* Close */}
             <button
@@ -93,31 +94,37 @@ export default function EditModal({ item, onClose, handleUpdate }) {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`relative z-10 w-1/2 py-2 text-sm font-medium   transition-colors duration-300 cursor-pointer
-        ${activeTab === tab.key ? "text-purple-600 bg-white rounded-xl" : "text-gray-600 bg-gray-200 rounded-xl"}`}
+                  className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300 cursor-pointer
+                  ${activeTab === tab.key
+                      ? "text-purple-600 bg-white rounded-xl"
+                      : "text-gray-600 bg-gray-200 rounded-xl"
+                    }`}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
 
-            {/* Single Textarea */}
+            {/* Textarea */}
             <div className="mb-6">
               <textarea
                 value={form[activeTab]}
                 onChange={(e) => updateField(activeTab, e.target.value)}
-                className="w-full h-56 p-3 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={`Enter ${TABS.find((t) => t.key === activeTab)?.label}`}
+                className="w-full h-120 p-3 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={`Enter ${TABS.find((t) => t.key === activeTab)?.label
+                  }`}
               />
             </div>
 
-            {/* Save */}
-            <button
-              onClick={handleSave}
-              className="w-full bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 transition cursor-pointer"
-            >
-              Save Changes
-            </button>
+            {/* Save Button (RIGHT) */}
+            <div className="flex justify-end">
+              <button
+                onClick={handleSave}
+                className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition cursor-pointer"
+              >
+                Save Changes
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}

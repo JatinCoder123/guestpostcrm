@@ -28,7 +28,7 @@ export function TopNav() {
   const { user, error } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
 
-  const { search, setSearch, setEnteredEmail, setWelcomeHeaderContent } =
+  const { search, setSearch, setEnteredEmail, setWelcomeHeaderContent, handleClear } =
     useContext(PageContext);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -50,14 +50,6 @@ export function TopNav() {
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Search");
     navigateTo("");
-  };
-
-  /* ❌ Clear */
-  const handleClear = () => {
-    localStorage.removeItem("email");
-    setWelcomeHeaderContent("");
-    setSearch("");
-    setEnteredEmail(null);
   };
 
   const handleKeyPress = (e) => {
@@ -149,10 +141,9 @@ export function TopNav() {
                 className={`
                   absolute right-2 top-1/2 -translate-y-1/2
                   w-6 h-6 flex items-center justify-center rounded-md
-                  ${
-                    isBlinking
-                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                      : "bg-gray-300 text-gray-700"
+                  ${isBlinking
+                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                    : "bg-gray-300 text-gray-700"
                   }
                 `}
               >
@@ -188,23 +179,23 @@ export function TopNav() {
           animate={
             count > 0
               ? {
-                  scale: [1, 1.12, 1],
-                  boxShadow: [
-                    "0 0 0px rgba(59,130,246,0)",
-                    "0 0 18px rgba(59,130,246,0.9)",
-                    "0 0 18px rgba(239, 68, 213, 0.9)",
-                    "0 0 0px rgba(239,68,68,0)",
-                  ],
-                }
+                scale: [1, 1.12, 1],
+                boxShadow: [
+                  "0 0 0px rgba(59,130,246,0)",
+                  "0 0 18px rgba(59,130,246,0.9)",
+                  "0 0 18px rgba(239, 68, 213, 0.9)",
+                  "0 0 0px rgba(239,68,68,0)",
+                ],
+              }
               : {}
           }
           transition={
             count > 0
               ? {
-                  repeat: Infinity,
-                  duration: 1.6, // normal speed
-                  ease: "easeInOut",
-                }
+                repeat: Infinity,
+                duration: 1.6, // normal speed
+                ease: "easeInOut",
+              }
               : {}
           }
           className="relative p-4 bg-orange-500 text-white rounded-full"

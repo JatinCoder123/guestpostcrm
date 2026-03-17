@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import wolfImg from "../assets/wolf-5.gif";
-import { unrepliedAction } from "../store/Slices/unrepliedEmails";
+import { getUnrepliedEmail, unrepliedAction } from "../store/Slices/unrepliedEmails";
 import { motion, AnimatePresence } from "framer-motion";
 
 const WelcomeHeader = () => {
@@ -16,17 +16,12 @@ const WelcomeHeader = () => {
 
   const { email, timeline, loading } = useSelector((state) => state.ladger);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
-  const { setEnteredEmail, setCurrentIndex, setSearch, welcomeHeaderContent } =
+  const { setEnteredEmail, setCurrentIndex, setSearch, welcomeHeaderContent, handleClear } =
     useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
 
   const [animate, setAnimate] = useState(false);
-
-  /* ---------------- ROUTE-BASED TITLE ---------------- */
-
-  const time = periodOptions.find((o) => o.period == timeline)?.title;
-
   const formatRouteName = (route) => {
     if (route === "/") {
       return (
@@ -115,7 +110,11 @@ const WelcomeHeader = () => {
                   "0 0 0 rgba(59,130,246,0)",
                 ],
               }}
-              onClick={() => setCurrentIndex(0)}
+              onClick={() => {
+                handleClear()
+                dispatch(getUnrepliedEmail({ loading: true }))
+                setCurrentIndex(0)
+              }}
               transition={{ duration: 2, repeat: Infinity }}
               className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:cursor-pointer
               bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
