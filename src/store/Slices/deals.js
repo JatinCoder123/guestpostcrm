@@ -172,7 +172,7 @@ export const createDeal = (threadId, deals = [], send = false) => {
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Deal Created")
 
     } catch (error) {
-      dispatch(dealsSlice.actions.createDealFailed("Deal Creation Failed"));
+      dispatch(dealsSlice.actions.createDealFailed("Deal Creation Failed! Please Try Again"));
     }
   };
 };

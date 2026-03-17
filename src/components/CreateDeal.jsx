@@ -211,6 +211,9 @@ export default function CreateDeal() {
           });
           setShowPreview(true);
         }
+        else {
+          toast.success(message)
+        }
       }
       dispatch(dealsAction.clearAllMessages());
       dispatch(getDeals({ email: state?.email }));
