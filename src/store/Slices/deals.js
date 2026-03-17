@@ -28,7 +28,11 @@ const dealsSlice = createSlice({
     getDealsSucess(state, action) {
       const { count, deals, pageCount, summary, pageIndex } = action.payload;
       state.loading = false;
-      state.deals = deals;
+      if (pageIndex === 1) {
+        state.deals = deals;
+      } else {
+        state.deals = [...state.deals, ...deals];
+      }
       state.count = count;
       state.summary = summary;
       state.pageCount = pageCount;
@@ -75,7 +79,7 @@ const dealsSlice = createSlice({
     deleteDealRequest(state, action) {
       state.deleting = true;
       state.error = null;
-      state.deleteDealId = action.payload;
+      state.deleteDealId = action.payload.id;
     },
     deleteDealSuccess(state, action) {
       state.deleting = false;
@@ -225,7 +229,7 @@ export const updateDeal = (deal, send) => {
 };
 export const deleteDeal = (email, id) => {
   return async (dispatch, getState) => {
-    dispatch(dealsSlice.actions.deleteDealRequest(id));
+    dispatch(dealsSlice.actions.deleteDealRequest({ id }));
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`
       );

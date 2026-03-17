@@ -16,7 +16,7 @@ function TableBody(props) {
     const Row = ({ index, style, data }) => {
 
         // Loader row
-        if (index >= data.length) {
+        if (index >= data.length && loading) {
             return (
                 <div
                     style={style}
@@ -28,7 +28,7 @@ function TableBody(props) {
         }
 
         const row = data[index];
-
+        if (!row) return null;
         return (
             <div
                 className={`${props.layoutStyle} border-b border-gray-100  hover:bg-gray-50`}

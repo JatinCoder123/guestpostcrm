@@ -28,28 +28,27 @@ const STATUS_CONFIG = [
     value: "active",
     label: "Active",
     icon: ShieldCheckIcon,
-    color: "orange",
-    showAmount: true
+    color: "#F59E0B", // orange (amber-500)
   },
   {
     value: "accepted",
     label: "Accepted",
     icon: HandCoins,
-    color: "green",
-    showAmount: true
+    color: "#10B981", // green (emerald-500)
   },
   {
     value: "expired",
     label: "Expired",
     icon: ShieldAlert,
-    color: "red"
+    color: "#EF4444", // red (red-500)
   }
-
 ];
 export function OffersPage() {
   const { count, offers, loading, pageIndex, deleting, deleteOfferId, summary } = useSelector(
     (state) => state.offers
   );
+
+
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
     useContext(PageContext);
   const navigateTo = useNavigate();
@@ -167,9 +166,12 @@ export function OffersPage() {
           >
             <Pen className="w-5 h-5 text-blue-600" />
           </button>
-          {/* Delete Button */}
           {deleting && deleteOfferId === row.id ? (
-            <LoadingChase size="20" color="red" />
+            <>
+              {console.log("HELLo")}
+              < LoadingChase size="20" color="red" />
+            </>
+
           ) : (
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"

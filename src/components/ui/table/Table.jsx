@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import TableToolbar from './TableToolbar'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
@@ -38,8 +38,10 @@ const TableView = ({
     })
 
     const [selectedRows, setSelectedRows] = useState([])
-    const [visibleColumns, setVisibleColumns] = useState(columns)
-
+    const [visibleColumns, setVisibleColumns] = useState([])
+    useEffect(() => {
+        setVisibleColumns(columns);
+    }, [columns]);
     const processedData = useMemo(() => {
 
         let data = [...tableData]
@@ -105,7 +107,7 @@ const TableView = ({
 
                 <FilterRow />
 
-                {statusList.length > 0 && <StatusRow />}
+                {statusList.length > 0 && count > 0 && <StatusRow />}
                 <div className="bg-white  rounded-xl border overflow-hidden">
                     {children}
 

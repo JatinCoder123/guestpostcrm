@@ -21,7 +21,7 @@ function StatusRow() {
 
     return (
 
-        <div className="flex gap-6 overflow-x-auto py-3">
+        <div className="flex items-end gap-6 overflow-x-auto py-3">
 
             {statusList.map(status => {
 
