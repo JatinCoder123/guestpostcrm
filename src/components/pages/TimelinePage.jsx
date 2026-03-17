@@ -1,4 +1,4 @@
-import { Mail, MessageSquare, Pencil, SparkleIcon, X } from "lucide-react";
+import { Mail, MessageSquare, Pencil, SparkleIcon, StopCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -24,6 +24,7 @@ import { CREATE_DEAL_API_KEY } from "../../store/constants";
 import { useNavigate } from "react-router-dom";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import MessageModal from "../MessageModal";
+import { BiSolidMessageCheck } from "react-icons/bi";
 export function TimelinePage() {
   const [showMore, setShowMore] = useState(false);
   const [aiReply, setAiReply] = useState("");
@@ -311,149 +312,149 @@ export function TimelinePage() {
                       </button>
                     )}
 
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex  gap-4 mt-4">
-                    {/* AI Reply Button */}
-                    <div className="flex flex-col items-center gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                        className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => {
-                          console.log("EMAIL", email)
-                          handleMove({
-                            email,
-                            threadId,
-                            reply: mailersSummary?.ai_response,
-                            addActivity: true,
-                          })
-                        }
-
-                        }
-                        disabled={
-                          sending ||
-                          mailersSummary == null ||
-                          mailersSummary?.ai_response?.trim() === ""
-                        }
-                      >
-                        <img
-                          width="30"
-                          height="30"
-                          src="https://img.icons8.com/ultraviolet/40/bot.png"
-                          alt="AI Reply"
-                        />
-                      </motion.button>
-
-                      {mailersSummary?.prompt_details && (
-                        <button
+                  <div className="bg-green-50 border border-green-200 flex items-center justify-between rounded-lg p-4 ">
+                    <div className="flex  gap-4 ">
+                      <div className="flex flex-col items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                           onClick={() => {
-                            navigate("/settings/debugging", {
-                              state: {
-                                prompt: mailersSummary.prompt_details[0],
-                              },
-                            });
-                          }}
-                          className="text-green-600 hover:text-green-700"
-                        >
-                          <SparkleIcon size={20} />
-                        </button>
-                      )}
-                    </div>
+                            console.log("EMAIL", email)
+                            handleMove({
+                              email,
+                              threadId,
+                              reply: mailersSummary?.ai_response,
+                              addActivity: true,
+                            })
+                          }
 
-                    {/* Avatar Button */}
-                    <div className="flex flex-col items-center gap-2">
-                      <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                        className="rounded-full bg-white shadow-md border border-gray-200 p-1"
-                        onClick={() => {
-                          dispatch(getAvatar());
-                          setShowAvatar(true);
-                        }}
-                      >
-                        <img
-                          width="36"
-                          height="36"
-                          src="https://img.icons8.com/office/40/circled-play.png"
-                          alt="Play AI Avatar"
-                        />
-                      </motion.button>
-
-                      {mailersSummary?.prompt_details && (
-                        <button
-                          onClick={() => {
-                            navigate("/settings/debugging", {
-                              state: {
-                                prompt: mailersSummary.prompt_details[0],
-                              },
-                            });
-                          }}
-                          className="text-blue-600 hover:text-blue-700"
+                          }
+                          disabled={
+                            sending ||
+                            mailersSummary == null ||
+                            mailersSummary?.ai_response?.trim() === ""
+                          }
                         >
-                          <SparkleIcon size={20} />
-                        </button>
-                      )}
-                    </div>
+                          <img
+                            width="30"
+                            height="30"
+                            src="https://img.icons8.com/ultraviolet/40/bot.png"
+                            alt="AI Reply"
+                          />
+                        </motion.button>
 
-                    {buttonsLoading ? (
-                      <LoadingChase size="30" />
-                    ) : (
-                      buttons?.map((btn, i) => (
-                        <div
-                          key={i}
-                          className="relative group flex flex-col gap-2 items-center justify-center"
-                        >
+                        {mailersSummary?.prompt_details && (
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMove({
-                                email,
-                                threadId,
-                                reply:
-                                  btn.name == "Ask Budget"
-                                    ? askBudgetTemp[0]?.body_html
-                                    : sorryTemp[0]?.body_html,
+                            onClick={() => {
+                              navigate("/settings/debugging", {
+                                state: {
+                                  prompt: mailersSummary.prompt_details[0],
+                                },
                               });
                             }}
-                            disabled={sending}
-                            className="
+                            className="text-green-600 hover:text-green-700"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Avatar Button */}
+                      <div className="flex flex-col items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                          className="rounded-full bg-white shadow-md border border-gray-200 p-1"
+                          onClick={() => {
+                            dispatch(getAvatar());
+                            setShowAvatar(true);
+                          }}
+                        >
+                          <img
+                            width="36"
+                            height="36"
+                            src="https://img.icons8.com/office/40/circled-play.png"
+                            alt="Play AI Avatar"
+                          />
+                        </motion.button>
+
+                        {mailersSummary?.prompt_details && (
+                          <button
+                            onClick={() => {
+                              navigate("/settings/debugging", {
+                                state: {
+                                  prompt: mailersSummary.prompt_details[0],
+                                },
+                              });
+                            }}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <SparkleIcon size={20} />
+                          </button>
+                        )}
+                      </div>
+
+                      {buttonsLoading ? (
+                        <LoadingChase size="30" />
+                      ) : (
+                        buttons?.map((btn, i) => (
+                          <div
+                            key={i}
+                            className="relative group flex flex-col gap-2 items-center justify-center"
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMove({
+                                  email,
+                                  threadId,
+                                  reply:
+                                    btn.name == "Ask Budget"
+                                      ? askBudgetTemp[0]?.body_html
+                                      : sorryTemp[0]?.body_html,
+                                });
+                              }}
+                              disabled={sending}
+                              className="
       flex items-center justify-center w-12 h-12
       bg-white rounded-xl shadow-md border border-gray-200
       hover:shadow-lg active:scale-95 hover:-translate-y-1
       transition-all
     "
-                          >
-                            {clickedActionBtn === btn.id && sending ? (
-                              <LoadingChase size="20" />
-                            ) : (
-                              <img
-                                src={btn.icon}
-                                alt={btn.name}
-                                className="w-8 h-8"
-                              />
-                            )}
-                          </button>
-                          <button
-                            onClick={() =>
-                              navigate("/settings/templates", {
-                                state: {
-                                  templateId:
-                                    btn.name == "Ask Budget"
-                                      ? askBudgetTemp[0]?.id
-                                      : sorryTemp[0]?.id,
-                                },
-                              })
-                            }
-                            className="text-cyan-600 hover:text-cyan-700"
-                          >
-                            <Pencil size={18} />
-                          </button>
+                            >
+                              {clickedActionBtn === btn.id && sending ? (
+                                <LoadingChase size="20" />
+                              ) : (
+                                <img
+                                  src={btn.icon}
+                                  alt={btn.name}
+                                  className="w-8 h-8"
+                                />
+                              )}
+                            </button>
+                            <button
+                              onClick={() =>
+                                navigate("/settings/templates", {
+                                  state: {
+                                    templateId:
+                                      btn.name == "Ask Budget"
+                                        ? askBudgetTemp[0]?.id
+                                        : sorryTemp[0]?.id,
+                                  },
+                                })
+                              }
+                              className="text-cyan-600 hover:text-cyan-700"
+                            >
+                              <Pencil size={18} />
+                            </button>
 
-                          {/* TOOLTIP (layout-safe) */}
-                          <div
-                            dangerouslySetInnerHTML={{ __html: btn.body }}
-                            className="
+                            {/* TOOLTIP (layout-safe) */}
+                            <div
+                              dangerouslySetInnerHTML={{ __html: btn.body }}
+                              className="
       pointer-events-none
       absolute top-full mt-2 left-1/2 -translate-x-1/2
       bg-black text-white text-xs px-2 py-1 rounded
@@ -462,50 +463,50 @@ export function TimelinePage() {
       transition-all duration-200
       whitespace-nowrap shadow-lg z-50
     "
-                          />
-                        </div>
-                      ))
-                    )}
-                    {showFirstReplyBtn && (
-                      <>
-                        {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
-                        <div
-                          className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
-                            ? "opacity-100"
-                            : "opacity-0 pointer-events-none"
-                            }`}
-                        >
-                          <div className="relative group flex items-center justify-center">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSendFirstReply();
-                              }}
-                              disabled={frLoading}
-                              className="
+                            />
+                          </div>
+                        ))
+                      )}
+                      {showFirstReplyBtn && (
+                        <>
+                          {/* 🔥 SEND FIRST REPLY BUTTON (LAYOUT-SAFE) */}
+                          <div
+                            className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                              ? "opacity-100"
+                              : "opacity-0 pointer-events-none"
+                              }`}
+                          >
+                            <div className="relative group flex items-center justify-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSendFirstReply();
+                                }}
+                                disabled={frLoading}
+                                className="
         flex items-center justify-center
         w-12 h-12
         bg-white rounded-xl shadow-md border border-gray-200
         hover:shadow-lg active:scale-95 hover:-translate-y-1
         transition-all
       "
-                            >
-                              <div className="w-6 h-6 flex items-center justify-center">
-                                {frLoading ? (
-                                  <LoadingChase size="20" />
-                                ) : (
-                                  <img
-                                    src="https://img.icons8.com/color/48/reply.png"
-                                    className="w-6 h-6"
-                                    alt="first-reply"
-                                  />
-                                )}
-                              </div>
-                            </button>
+                              >
+                                <div className="w-6 h-6 flex items-center justify-center">
+                                  {frLoading ? (
+                                    <LoadingChase size="20" />
+                                  ) : (
+                                    <img
+                                      src="https://img.icons8.com/color/48/reply.png"
+                                      className="w-6 h-6"
+                                      alt="first-reply"
+                                    />
+                                  )}
+                                </div>
+                              </button>
 
-                            {/* TOOLTIP (layout-safe) */}
-                            <span
-                              className="
+                              {/* TOOLTIP (layout-safe) */}
+                              <span
+                                className="
         pointer-events-none
         absolute top-full mt-2 left-1/2 -translate-x-1/2
         bg-black text-white text-xs px-2 py-1 rounded
@@ -514,13 +515,36 @@ export function TimelinePage() {
         transition-all duration-200
         whitespace-nowrap shadow-lg z-50
       "
-                            >
-                              Send First Reply
-                            </span>
+                              >
+                                Send First Reply
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+
+                    </div>
+                    <div className="flex flex-col items-center gap-2 relative group">
+                      {/* Tooltip */}
+                      <div className="absolute -bottom-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs px-3 py-1 rounded-md ">
+                        Done Conversation
+                      </div>
+
+                      <motion.button
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                        className="flex items-center justify-center bg-green-600 hover:bg-green-700 cursor-pointer text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() =>
+                          alert(
+                            "🚧 Coming soon!\n\nThis will complete the conversation without sending an email."
+                          )
+                        }
+                      >
+                        <BiSolidMessageCheck className="w-6 h-6" />
+                      </motion.button>
+                    </div>
+
                   </div>
                 </div>
               </div>
