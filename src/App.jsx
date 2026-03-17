@@ -57,6 +57,7 @@ import ThreadView from "./components/pages/threads/ThreadView";
 import { ThreadContextProvider } from "./context/ThreadContext";
 import Debug from "./components/pages/settingpages/Debug";
 import Thread from "./components/pages/threads/Thread";
+import SelfTest from "./components/pages/settingpages/SelfTest";
 
 const router = createBrowserRouter([
   {
@@ -279,6 +280,10 @@ const router = createBrowserRouter([
           {
             path: "debugging",
             element: <Debug />,
+          },
+          {
+            path: "self-test",
+            element: <SelfTest />,
           },
         ],
       },

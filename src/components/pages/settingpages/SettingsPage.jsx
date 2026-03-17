@@ -1,5 +1,6 @@
 import {
   Bug,
+  BugOff,
   Clock9Icon,
   Cpu,
   CreditCard,
@@ -93,6 +94,13 @@ export function SettingsPage() {
       icon: <Bug className="w-8 h-8 text-red-600" />,
       bg: "bg-red-50",
       link: "debugging",
+    },
+    {
+      title: "Self Test",
+      subtitle: "Test GPC ",
+      icon: <BugOff className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "self-test",
     },
   ];
 
