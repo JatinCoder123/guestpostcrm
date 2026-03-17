@@ -20,13 +20,13 @@ import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { getTags, applyTag } from "../store/Slices/markTagSlice";
 import { threadEmailAction } from "../store/Slices/threadEmail";
-import {  MdOutlineHome } from "react-icons/md";
+import { MdOutlineHome } from "react-icons/md";
 import {
   addMarketPlace,
   deleteMarketPlace,
   marketplaceActions,
 } from "../store/Slices/Marketplace";
-import { viewEmailAction } from "../store/Slices/viewEmail";
+import { viewEmailAction, editContact } from "../store/Slices/viewEmail";
 
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
@@ -39,7 +39,9 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
 
   const { enteredEmail } = useContext(PageContext);
 
-  const { contactInfo, count, threadId } = useSelector((s) => s.viewEmail);
+  const { contactInfo, accountInfo, count, threadId } = useSelector(
+    (s) => s.viewEmail,
+  );
   const { sending, message, error } = useSelector((s) => s.threadEmail);
   const { email } = useSelector((s) => s.ladger);
 
@@ -79,8 +81,6 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
   const handleForward = (email, id) => {
     dispatch(forwardEmail(email, id));
   };
-
-  
 
   /* side effects */
   useEffect(() => {
@@ -275,12 +275,21 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
         ),
     },
     {
-      icon:
-        <CircleStop size={25} color="red"/>,
-
+      icon: <CircleStop size={25} color="red" />,
       label: "Stop Future Emails",
-      action: () =>
-        alert("Feature coming soon! This will allow you to block all future emails from this sender."),
+      action: () => {
+        if (!contactInfo) return;
+
+        dispatch(
+          editContact({
+            contact: {
+              ...contactInfo,
+              customer_type: "rejected",
+            },
+            account: accountInfo || {},
+          }),
+        );
+      },
     },
   ];
 
@@ -288,13 +297,15 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
     <>
       {/* <hr className="mt-4 border-gray-500" /> */}
 
-<div
-  className="mt-6 flex items-center justify-center flex-wrap gap-10
+      <div
+        className="mt-6 flex items-center justify-center flex-wrap gap-10
   px-8 py-5 rounded-2xl
   bg-gradient-to-r from-cyan-50 via-orange-50 to-cyan-50
   border-t border-gray-300
   shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
->       {actionButtons.map((btn, i) => (
+      >
+        {" "}
+        {actionButtons.map((btn, i) => (
           <div key={i} className="flex items-center  gap-8 relative">
             {i == 2 ? (
               <>
@@ -375,9 +386,7 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
                     </div>
                   </div>
                 )}
-                {i !== actionButtons.length - 1 && (
-                  <Separator />
-                )}
+                {i !== actionButtons.length - 1 && <Separator />}
               </>
             )}
           </div>
