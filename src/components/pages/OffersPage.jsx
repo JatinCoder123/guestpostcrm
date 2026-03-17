@@ -1,374 +1,202 @@
-import { useContext, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
 import {
-  CheckCircle,
-  Clock,
-  User,
   Calendar,
-  DollarSign,
-  Tag,
-  Pen,
-  Trash,
+  User2,
   Gift,
+  Pen,
+  Globe,
+  BadgeDollarSign,
+  ChartNoAxesColumn,
+  Clapperboard,
+  Trash,
+  ShieldCheckIcon,
+  HandCoins,
+  ShieldAlert,
 } from "lucide-react";
-import {
-  deleteOffer,
-  getOffers,
-  offersAction,
-} from "../../store/Slices/offers";
-import Pagination from "../Pagination";
-import SearchComponent from "./SearchComponent";
-import { useNavigate } from "react-router-dom";
-import { excludeEmail, excludeName, extractEmail } from "../../assets/assets";
-import { LoadingChase, LoadingSpin } from "../Loading";
+import { useDispatch, useSelector } from "react-redux";
+import { useContext } from "react";
+import { deleteOffer, getOffers } from "../../store/Slices/offers.js"
 import { PageContext } from "../../context/pageContext";
+import { useNavigate } from "react-router-dom";
+import { extractEmail } from "../../assets/assets";
 import { ladgerAction } from "../../store/Slices/ladger";
-import TableLoading from "../TableLoading";
+import { useThreadContext } from "../../hooks/useThreadContext";
+import TableView, { Table } from "../ui/table/Table";
+import TableTitleBar from "../ui/table/TableTitleBar";
+import { LoadingChase } from "../Loading.jsx"
+const STATUS_CONFIG = [
+  {
+    value: "active",
+    label: "Active",
+    icon: ShieldCheckIcon,
+    color: "orange",
+    showAmount: true
+  },
+  {
+    value: "accepted",
+    label: "Accepted",
+    icon: HandCoins,
+    color: "green",
+    showAmount: true
+  },
+  {
+    value: "expired",
+    label: "Expired",
+    icon: ShieldAlert,
+    color: "red"
+  }
 
+];
 export function OffersPage() {
-  const { offers, count, loading, error, deleting, deleteOfferId, summary } =
-    useSelector((state) => state.offers);
-  const { setSearch, setEnteredEmail, setWelcomeHeaderContent
-  } = useContext(PageContext);
-  const [topsearch, setTopsearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSort, setSelectedSort] = useState("");
-  const dispatch = useDispatch();
-  const filteredoffers = offers
-    .filter((item) => {
-      const searchValue = topsearch.toLowerCase();
-      if (!searchValue) return true; // no search → show all
-
-      const contact = item.real_name?.split("<")[0].trim().toLowerCase();
-      if (selectedCategory === "contect" || selectedCategory === "contact") {
-        return contact.includes(searchValue);
-      }
-
-      return contact.includes(searchValue);
-    })
-    .sort((a, b) => {
-      if (!selectedSort) return 0;
-
-      if (selectedSort === "asc") {
-        return a.from.localeCompare(b.from);
-      }
-
-      if (selectedSort === "desc") {
-        return b.from.localeCompare(a.from);
-      }
-
-      return 0;
-    });
-
-  // Calculate stats
-  const pending = offers.filter((o) => o.status === "Pending").length;
-  const accepted = offers.filter((o) => o.status === "Accepted").length;
-
+  const { count, offers, loading, pageIndex, deleting, deleteOfferId, summary } = useSelector(
+    (state) => state.offers
+  );
+  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+    useContext(PageContext);
   const navigateTo = useNavigate();
-  const dropdownOptions = [{ value: "contect", label: "Contact" }];
-  const handleFilterApply = (filters) => {
-    console.log("Applied filters from popup:", filters);
+  const dispatch = useDispatch();
+  const handleOnClick = (email, navigate) => {
+    localStorage.setItem("email", email);
+    setSearch(email);
+    setEnteredEmail(email);
+    dispatch(ladgerAction.setTimeline(null));
+    setWelcomeHeaderContent("Offers");
+    navigateTo(navigate);
   };
+  const columns = [
+    {
+      label: "Created At",
+      accessor: "date_entered",
+      headerClasses: "",
+      icon: Calendar,
 
-  const handleSearchChange = (value) => {
-    setTopsearch(value);
-    console.log("Searching for:", value);
-  };
+      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/"),
+      classes: "truncate max-w-[200px]",
+      render: (row) => (
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {row.date_entered}
+        </span>
+      )
+    },
+    {
+      label: "Contact",
+      accessor: "real_name",
+      headerClasses: "",
+      icon: User2,
+      classes: "truncate max-w-[200px]",
+      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/contacts"),
 
-  const handleCategoryChange = (value) => {
-    setSelectedCategory(value);
-    console.log("Category selected:", value);
-  };
+      render: (row) => (
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {row.real_name?.split("<")[0]?.trim()}
+        </span>
+      )
+    },
+    {
+      label: "Website",
+      accessor: "website",
+      headerClasses: "",
+      icon: Globe,
+      classes: "truncate ",
+      render: (row) => (
+        <span className="font-medium text-blue-700 ">
+          {row?.website}
+        </span>
+      )
+    },
+    {
+      label: "Client Offer",
+      accessor: "client_offer_c",
+      headerClasses: "",
+      icon: BadgeDollarSign,
+      classes: "truncate max-w-[300px]",
 
-  const handleDownload = () => {
-    if (!filteredoffers || filteredoffers.length === 0) {
-      toast.error("No data available to download");
-      return;
-    }
+      render: (row) => (
+        <span className="font-medium text-green-700 ">
+          {row?.client_offer_c}
+        </span>
+      )
+    },
+    {
+      label: "Our OFfer",
+      accessor: "our_offer_c",
+      headerClasses: "",
+      icon: BadgeDollarSign,
+      classes: "truncate max-w-[300px]",
 
-    // Convert Objects → CSV rows
-    const headers = [
-      "DATE",
-      "CONTACT",
-      "EMAIL",
-      "STATUS",
-      "CLIENT OFFER",
-      "OUR OFFER",
-    ];
+      render: (row) => (
+        <span className="font-medium text-gray-700 ">
+          {row?.our_offer_c}
+        </span>
+      )
+    },
+    {
+      label: "Stage",
+      accessor: "offer_status",
+      headerClasses: "",
+      icon: ChartNoAxesColumn,
+      classes: "truncate max-w-[300px]",
+      onClick: (row) => handleOnClick(extractEmail(row?.from), "/"),
 
-    const rows = filteredoffers.map((email) => [
-      email.date_entered,
-      email.real_name?.split("<")[0].trim(),
-      email.name,
-      email.status,
-      email.client_offer_c,
-      email.our_offer_c,
-    ]);
+      render: (row) => (
+        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+          {row?.offer_status}
+        </span>
+      )
+    },
+    {
+      label: "Action",
+      accessor: "action",
+      headerClasses: "ml-auto",
+      icon: Clapperboard,
+      classes: "truncate max-w-[300px] ml-auto",
+      render: (row) => (
+        <div className="flex items-center justify-center gap-2">
+          {/* Update Button */}
+          <button
+            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+            title="Update"
+            onClick={() =>
 
-    // Convert to CSV string
-    const csvContent =
-      headers.join(",") +
-      "\n" +
-      rows.map((r) => r.map((val) => `"${val}"`).join(",")).join("\n");
+              navigateTo(`/offers/edit/${row.id}`, {
+                state: {
+                  email: extractEmail(row.real_name),
+                  threadId: row?.thread_id,
+                },
+              })
+            }
+          >
+            <Pen className="w-5 h-5 text-blue-600" />
+          </button>
+          {/* Delete Button */}
+          {deleting && deleteOfferId === row.id ? (
+            <LoadingChase size="20" color="red" />
+          ) : (
+            <button
+              className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+              title="Delete"
+              onClick={() => dispatch(deleteOffer(extractEmail(row.real_name), row.id))}            >
+              <Trash className="w-5 h-5 text-red-600" />
+            </button>
+          )}
+        </div>
+      )
+    },
 
-    // Create and auto-download file
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "unreplied-emails.csv";
-    a.click();
-  };
+  ]
+  const statusList = STATUS_CONFIG.map(config => {
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(offersAction.clearAllErrors());
-    }
-  }, [error]);
+    return {
+      ...config,
+      count: Number(summary?.[`${config.value}_offers`] || 0),
+    };
+
+  });
 
   return (
-    <>
-      <SearchComponent
-        dropdownOptions={dropdownOptions}
-        onDropdownChange={handleCategoryChange}
-        selectedDropdownValue={selectedCategory}
-        // dropdownPlaceholder="Filter by contact"
-
-        onSearchChange={handleSearchChange}
-        searchValue={topsearch}
-        searchPlaceholder="Search here..."
-        onFilterApply={handleFilterApply}
-        filterPlaceholder="Filters"
-        showFilter={true}
-        archiveOptions={[
-          { value: "all", label: "All" },
-          { value: "active", label: "Active" },
-          { value: "inactive", label: "Inactive" },
-        ]}
-        transactionTypeOptions={[
-          { value: "all", label: "All Emails" },
-          { value: "incoming", label: "Incoming" },
-          { value: "outgoing", label: "Outgoing" },
-        ]}
-        currencyOptions={[
-          { value: "all", label: "All" },
-          { value: "usd", label: "USD" },
-          { value: "eur", label: "EUR" },
-        ]}
-        onDownloadClick={handleDownload}
-        showDownload={true}
-        className="mb-6"
-      />
-
-      {/* ⭐ Stats Cards (Top Section) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Active Offers */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Active Offers</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {summary?.active_offers ?? 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Tag className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Accepted Offers */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Accepted Offers</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {summary?.accepted_offers ?? 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl text-green-700">✓</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Expired Offers */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-red-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Expired Offers</p>
-              <p className="text-2xl text-gray-900 mt-1">
-                {summary?.expired_offers ?? 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <Gift className="w-6 h-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ⭐ Offers Section (Header + Table) */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <Gift className="w-6 h-6 text-yellow-600" />
-            <h2 className="text-xl text-gray-900 font-semibold">OFFERS</h2>
-            <a
-              href="https://www.guestpostcrm.com/blog/offers-in-guestpostcrm/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                width="30"
-                height="30"
-                src="https://img.icons8.com/offices/30/info.png"
-                alt="info"
-              />
-            </a>
-          </div>
-          <div className="px-4 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-            {offers.length} Active Offers
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    CREATED AT
-                  </div>
-                </th>
-
-                <th className="px-6 py-4 text-left">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>CONTACT</span>
-                  </div>
-                </th>
-
-                <th className="px-6 py-4 text-left">WEBSITE</th>
-                <th className="px-6 py-4 text-left">CLIENT OFFER</th>
-                <th className="px-6 py-4 text-left">OUR OFFER</th>
-                <th className="px-6 py-4 text-left">STAGE</th>
-
-                <th className="px-6 py-4 text-left">ACTIONS</th>
-              </tr>
-            </thead>
-            {loading ? (
-              <TableLoading colSpan={8} />
-            ) : (
-              <tbody>
-                {filteredoffers.map((offer, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-gray-100 hover:bg-pink-50 transition"
-                  >
-                    <td
-                      className="px-6 py-4 text-gray-600 cursor-pointer"
-                      onClick={() => {
-                        const input = excludeEmail(offer.real_name);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        setWelcomeHeaderContent("Offer")
-
-                        navigateTo("/");
-                      }}
-                    >
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span>{offer.date_entered}</span>
-                      </div>
-                    </td>
-
-                    <td
-                      onClick={() => {
-                        const input = excludeName(offer.real_name);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        navigateTo("/contacts");
-                      }}
-                      className="px-6 py-4 text-gray-900 cursor-pointer"
-                    >
-                      {excludeName(offer.real_name)}
-                    </td>
-                    <td className="px-6 py-4 text-blue-600">
-                      {excludeEmail(offer.website)}
-                    </td>
-
-                    <td className="px-6 py-4 text-green-600">
-                      {offer.client_offer_c}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {offer.our_offer_c}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                        {offer.offer_status}
-                      </span>
-                    </td>
-
-                    <td className="pl-9 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        {/* Update Button */}
-                        <button
-                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                          title="Update"
-                          onClick={() =>
-                            navigateTo(`/offers/edit/${offer.id}`, {
-                              state: {
-                                email: excludeEmail(offer.real_name),
-                                threadId: offer?.thread_id,
-                              },
-                            })
-                          }
-                        >
-                          <Pen className="w-5 h-5 text-blue-600" />
-                        </button>
-                        {/* Delete Button */}
-                        {deleting && deleteOfferId === offer.id ? (
-                          <LoadingChase size="20" color="red" />
-                        ) : (
-                          <button
-                            className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                            title="Delete"
-                            onClick={() => dispatch(excludeEmail(offer.real_name), deleteOffer(offer.id))}
-                          >
-                            <Trash className="w-5 h-5 text-red-600" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            )}
-          </table>
-        </div>
-        {offers?.length > 0 && (
-          <Pagination
-            slice={"offers"}
-            fn={(p) => dispatch(getOffers({ page: p }))}
-          />
-        )}
-        {!loading && filteredoffers.length === 0 && (
-          <div className="p-12 text-center">
-            <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">
-              No offers yet. Create your first offer to get started.
-            </p>
-          </div>
-        )}
-      </div>
-    </>
+    <TableView tableData={offers} tableName={"Offers"} columns={columns} slice={"offers"} statusKey={"offer_status"} statusList={statusList} fetchNextPage={() => dispatch(getOffers({ page: pageIndex + 1, loading: false }))}   >
+      <TableTitleBar Icon={Gift} title={"Offers"} titleClass={"text-green-700"} />
+      <Table headerStyle={"  bg-green-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_200px_1fr]"} />
+    </TableView>
   );
 }

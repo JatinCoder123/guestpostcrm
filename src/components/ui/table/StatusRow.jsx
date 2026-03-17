@@ -3,17 +3,17 @@ import { useTableContext } from "./Table"
 
 function StatusRow() {
 
-    const { statusList, filters, setFilters, count: total } = useTableContext()
-    const activeStatus = filters.status
+    const { statusList, statusKey, filters, setFilters, count: total } = useTableContext()
+    const activeStatus = filters[statusKey]
 
     const toggleStatus = (value) => {
         setFilters(prev => {
-            if (prev.status === value) {
+            if (prev[statusKey] === value) {
                 const updated = { ...prev }
-                delete updated.status
+                delete updated[statusKey]
                 return updated
             }
-            return { ...prev, status: value }
+            return { ...prev, [statusKey]: value }
 
         })
 

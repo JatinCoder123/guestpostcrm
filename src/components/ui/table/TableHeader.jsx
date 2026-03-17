@@ -2,7 +2,6 @@ import { ArrowUpDown } from "lucide-react";
 import { useTableContext } from "./Table";
 
 function TableHeader(props) {
-    console.log(props)
     const { visibleColumns, sort, setSort } = useTableContext();
 
     const toggleSort = (column) => {
@@ -30,7 +29,7 @@ function TableHeader(props) {
     return (
         <div
 
-            className={`${props.headerStyle} `}
+            className={`${props.headerStyle} ${props.layoutStyle} `}
 
         >
 
@@ -42,7 +41,7 @@ function TableHeader(props) {
 
                     <div
                         key={col.accessor}
-                        className={`px-6 py-4 flex items-center gap-2 ${col.headerClasses}  font-bold text-white`}
+                        className={`px-6 py-4 flex items-center gap-2 ${col.headerClasses}   font-bold text-white`}
                     >
 
                         {Icon && (

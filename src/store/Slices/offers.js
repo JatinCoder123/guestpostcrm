@@ -29,8 +29,11 @@ const offersSlice = createSlice({
     getOffersSucess(state, action) {
       const { count, offers, summary, pageCount, pageIndex } = action.payload;
       state.loading = false;
-      state.offers = offers;
-      state.summary = summary;
+      if (pageIndex === 1) {
+        state.offers = offers;
+      } else {
+        state.offers = [...state.offers, ...offers];
+      } state.summary = summary;
       state.count = count;
       state.error = null;
       state.pageCount = pageCount;

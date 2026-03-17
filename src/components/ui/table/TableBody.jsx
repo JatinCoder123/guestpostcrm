@@ -1,8 +1,8 @@
 import { Loader2Icon } from "lucide-react";
 import InfinitePagination from "../../InfinitePagination";
 import { useTableContext } from "./Table";
-
-function TableBody() {
+import { LoadingChase } from "../../Loading"
+function TableBody(props) {
 
     const {
         data,
@@ -22,7 +22,7 @@ function TableBody() {
                     style={style}
                     className="flex items-center justify-center border-b border-gray-100 px-6"
                 >
-                    <Loader2Icon color="gray" />
+                    <LoadingChase color="gray" />
                 </div>
             );
         }
@@ -31,7 +31,7 @@ function TableBody() {
 
         return (
             <div
-                className="grid grid-cols-4 border-b border-gray-100  hover:bg-gray-50"
+                className={`${props.layoutStyle} border-b border-gray-100  hover:bg-gray-50`}
                 style={{
                     ...style,
                 }}
@@ -43,7 +43,7 @@ function TableBody() {
                     return (
                         <div
                             key={col.accessor}
-                            onClick={() => col.onClick(row)}
+                            onClick={() => col.onClick ? col.onClick(row) : undefined}
                             className={`px-6 py-4 ${col.classes}  text-gray-700`}
                         >
 

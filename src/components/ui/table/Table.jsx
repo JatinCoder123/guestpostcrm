@@ -19,6 +19,7 @@ const TableView = ({
     tableName,
     columns, slice,
     statusList = [],
+    statusKey = "status",
     defaultStatus,
     fetchNextPage,
     children,
@@ -77,6 +78,7 @@ const TableView = ({
         tableName,
         columns,
         statusList,
+        statusKey,
         visibleColumns,
         setVisibleColumns,
         search,
@@ -119,9 +121,9 @@ const TableView = ({
 }
 export const Table = (props) => {
     return (
-        <table className="w-full">
+        <table className={`w-full `}>
             <TableHeader {...props} />
-            <TableBody />
+            <TableBody {...props} />
         </table>
     )
 }
