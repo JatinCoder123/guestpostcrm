@@ -56,7 +56,13 @@ const Debug = () => {
   const { state } = useLocation();
   const navigateTo = useNavigate();
 
-  const [activeTab, setActiveTab] = useState(TABS[3]);
+  const getInitialTab = () => {
+    if (!state?.prompt) return TABS[0];
+
+    return TABS[3];
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   const [timeline, setTimeline] = useState(1);
@@ -86,6 +92,16 @@ const Debug = () => {
     if (activeTab.key !== "prompt") return;
     if (state?.prompt) setSelectedRecord(state?.prompt);
   }, [loading, data, state?.promptId, activeTab]);
+  useEffect(() => {
+    if (state?.key) {
+      const foundTab = TABS.find((tab) => tab.key === state.key);
+      if (foundTab) {
+        setActiveTab(foundTab);
+      }
+    } else {
+      setActiveTab(TABS[0]);
+    }
+  }, [state?.key]);
 
   /* set timeline based on date */
   useEffect(() => {

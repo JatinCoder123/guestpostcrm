@@ -221,7 +221,7 @@ export function TopNav() {
 
         {notificationCount.error_log_created && (
           <button
-            onClick={() => navigateTo("error-logs")}
+            onClick={() => navigateTo("/settings/debugging")}
             className="relative p-4 bg-red-500 text-white rounded-full"
           >
             <CircleAlert />

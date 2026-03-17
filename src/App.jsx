@@ -46,7 +46,6 @@ import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
 import { HotPage } from "./components/pages/HotPage";
-import ErrorLogPage from "./components/pages/ErrorLogPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
@@ -216,11 +215,6 @@ const router = createBrowserRouter([
         path: "hot-records",
         element: <HotPage />,
       },
-      {
-        path: "error-logs",
-        element: <ErrorLogPage />,
-      },
-
       {
         path: "thread",
         element: <Thread />,
