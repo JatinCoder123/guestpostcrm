@@ -13,7 +13,7 @@ export const Duplicate = () => {
   const { duplicateEmail, loading, error } = useSelector(
     (state) => state.duplicateEmails,
   );
-  const { handleMove } = useThreadContext()
+  const { handleMove } = useThreadContext();
   useEffect(() => {
     dispatch(getDuplicateEmails());
   }, [dispatch]);

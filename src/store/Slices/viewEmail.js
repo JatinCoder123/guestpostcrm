@@ -208,7 +208,7 @@ export const editContact = (contactData) => {
       };
 
       payload.child_bean = {
-        module: "Accounts",
+        module: "Contacts",
         ...contactData.account,
       };
 

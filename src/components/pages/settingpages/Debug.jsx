@@ -20,13 +20,14 @@ const TABS = [
     module: "outr_request_and_response",
   },
   { key: "prompt", label: "Prompt Ledger", module: "outr_prompt_ledger" },
+  { key: "logger", label: "Logger", module: "outr_prompt_ledger" },
 ];
 
 const IMPORTANT_COLUMNS = {
-  error: ["date_entered", "email", "log_level", "file_path", "description"],
-  api: ["date_entered", "email", "name", "request", "response"],
-  gpc: ["date_entered", "email", "name", "request", "response"],
-  prompt: ["date_entered", "email", "name", "response", "full_prompt"],
+  error: ["date_entered", "file_path", "description"],
+  api: ["date_entered", "request", "response"],
+  gpc: ["date_entered", "request", "response"],
+  prompt: ["date_entered", "response", "full_prompt"],
 };
 
 const HIDDEN_FIELDS = [
@@ -40,7 +41,6 @@ const HIDDEN_FIELDS = [
   "static_prompt",
   "name",
   "date_entered",
-  "description",
   "prompt_id",
   "parent_id",
 ];
@@ -55,6 +55,12 @@ const TIME_FILTERS = [
 const Debug = () => {
   const { state } = useLocation();
   const navigateTo = useNavigate();
+
+  const getInitialTab = () => {
+    if (!state?.prompt) return TABS[0];
+
+    return TABS[3];
+  };
 
   const [activeTab, setActiveTab] = useState(TABS[3]);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -77,6 +83,7 @@ const Debug = () => {
     },
     name: activeTab.label,
   });
+  console.log("data", data);
 
   useEffect(() => {
     refetch();
@@ -86,6 +93,16 @@ const Debug = () => {
     if (activeTab.key !== "prompt") return;
     if (state?.prompt) setSelectedRecord(state?.prompt);
   }, [loading, data, state?.promptId, activeTab]);
+  useEffect(() => {
+    if (state?.key) {
+      const foundTab = TABS.find((tab) => tab.key === state.key);
+      if (foundTab) {
+        setActiveTab(foundTab);
+      }
+    } else {
+      setActiveTab(TABS[0]);
+    }
+  }, [state?.key]);
 
   /* set timeline based on date */
   useEffect(() => {
@@ -147,7 +164,7 @@ const Debug = () => {
   const filteredData = useMemo(() => {
     if (!data) return [];
 
-    return data.filter((row) => {
+    return data?.filter((row) => {
       const email = (row.email || "").toLowerCase();
 
       /* EMAIL SEARCH */
@@ -186,6 +203,66 @@ const Debug = () => {
       return true;
     });
   }, [data, timeline, selectedDate, emailSearch]);
+
+  const parseAndDecode = (val) => {
+    let parsed = val;
+
+    // STEP 1: Parse JSON safely (even double encoded)
+    try {
+      if (typeof parsed === "string") parsed = JSON.parse(parsed);
+      if (typeof parsed === "string") parsed = JSON.parse(parsed);
+    } catch {}
+
+    let content = parsed?.reply || parsed;
+
+    if (typeof content !== "string") {
+      content = JSON.stringify(content, null, 2);
+    }
+
+    // STEP 2: Remove all escape junk
+    content = content
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "")
+      .replace(/\\"/g, '"')
+      .replace(/\\\//g, "/")
+      .replace(/\\\\/g, "")
+      .replace(/\s*\\\s*/g, ""); // removes \ \ garbage
+
+    // STEP 3: REMOVE ALL BROKEN HTML TAGS
+    content = content.replace(/<\/?[^>]+(>|$)/g, "");
+
+    // STEP 4: Clean structure manually
+    content = content
+      .replace(/Hi\s+/i, "Hi ")
+      .replace(/Please share:/i, "\n\nPlease share:\n")
+      .replace(/Best regards,/i, "\n\nBest regards,\n")
+      .replace(/Admin/i, "Admin\n")
+      .replace(/OutrightCRM/i, "OutrightCRM");
+
+    // STEP 5: Fix bullet points
+    content = content
+      .replace(/3–5 topic ideas/g, "\n• 3–5 topic ideas")
+      .replace(/Your preferred target URL/g, "\n• Your preferred target URL")
+      .replace(/Any key requirements/g, "\n• Any key requirements");
+
+    return content.trim();
+  };
+
+  const decodeHTML = (html) => {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  };
+
+  const formatJSON = (val) => {
+    try {
+      return typeof val === "string"
+        ? JSON.stringify(JSON.parse(val), null, 2)
+        : JSON.stringify(val, null, 2);
+    } catch {
+      return String(val);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -353,7 +430,16 @@ const Debug = () => {
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(selectedRecord)
-                .filter(([key]) => !HIDDEN_FIELDS.includes(key))
+                .filter(([key]) => {
+                  // hide global fields
+                  if (HIDDEN_FIELDS.includes(key)) return false;
+
+                  // hide description ONLY in prompt tab
+                  if (activeTab.key === "prompt" && key === "description")
+                    return false;
+
+                  return true;
+                })
                 .sort(([a], [b]) => {
                   if (a === "response") return -1;
                   if (b === "response") return 1;
@@ -378,15 +464,20 @@ const Debug = () => {
                       {key === "full_prompt" ? (
                         <PromptViewer prompt={value} />
                       ) : large ? (
-                        <textarea
-                          readOnly
-                          value={
-                            typeof value === "object"
-                              ? JSON.stringify(value, null, 2)
-                              : String(value)
-                          }
-                          className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded"
-                        />
+                        key === "response" ? (
+                          <div
+                            className="w-full max-h-[400px] overflow-auto text-sm bg-black text-green-400 p-4 rounded"
+                            dangerouslySetInnerHTML={{
+                              __html: parseAndDecode(value),
+                            }}
+                          />
+                        ) : (
+                          <textarea
+                            readOnly
+                            value={formatJSON(value)}
+                            className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded"
+                          />
+                        )
                       ) : (
                         <div className="text-sm break-words">
                           {typeof value === "object"
