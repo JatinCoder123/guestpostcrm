@@ -16,6 +16,15 @@ export const PageContextProvider = (props) => {
     localStorage.getItem("welcomeHeaderContent") ? localStorage.getItem("welcomeHeaderContent") : search.trim() !== "" ? "Search" : ""
   );
 
+  /* ❌ Clear */
+  const handleClear = () => {
+    localStorage.removeItem("email");
+    setWelcomeHeaderContent("");
+    setSearch("");
+    setEnteredEmail(null);
+  };
+
+
   // Set activePage based on current URL
   useEffect(() => {
     const path = window.location.pathname;
@@ -34,6 +43,7 @@ export const PageContextProvider = (props) => {
     setActivePage,
     displayIntro,
     setDisplayIntro,
+    handleClear,
     enteredEmail,
     setEnteredEmail,
     search,

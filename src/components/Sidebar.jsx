@@ -28,13 +28,14 @@ import {
   ClipboardEdit,
   BellRing,
   Plus,
+  Contact2Icon,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, color } from "framer-motion";
 import { LoadingSpin } from "./Loading";
 import { BarChart3 } from "lucide-react";
 
@@ -62,8 +63,8 @@ export function Sidebar() {
   const { count: unrepliedCount, loading: unrepliedLoading } = useSelector(
     (s) => s.unreplied,
   );
-  const { count: unansweredCount, loading: unansweredLoading } = useSelector(
-    (s) => s.unanswered,
+  const {  contactLoading } = useSelector(
+    (s) => s.viewEmail,
   );
   const { count: dealCount, loading: dealsLoading } = useSelector(
     (s) => s.deals,
@@ -82,9 +83,7 @@ export function Sidebar() {
     (s) => s.orderRem,
   );
 
-  const { count: marketPlaceCount, loading: marketPlaceLoading } = useSelector(
-    (s) => s.marketplace,
-  );
+ 
   const { count: linkExchangeCount, loading: linkExchangeLoading } =
     useSelector((s) => s.linkExchange);
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
@@ -105,11 +104,11 @@ export function Sidebar() {
       countBg: "bg-red-500 text-white",
     },
     {
-      id: "unanswered",
-      label: "Replied",
-      icon: MessageSquare,
-      loading: unansweredLoading,
-      count: unansweredCount,
+      id: "contacts",
+      label: "Contact",
+      icon: Contact2Icon,
+      loading: contactLoading,
+      count: null,
       color: "text-purple-600",
       hover: "hover:bg-purple-50",
       countBg: "bg-purple-500 text-white",
@@ -196,6 +195,16 @@ export function Sidebar() {
       countBg: "bg-cyan-500 text-white",
     },
     {
+      id: "backlinks",
+      label: "Backlinks",
+      icon: Link2,
+      loading: false,
+      count: null,
+      color: "text-teal-600",
+      hover: "hover:bg-teal-50",
+      countBg: "bg-teal-500 text-white",
+    },
+    {
       id: "other",
       label: "Others",
       icon: RectangleEllipsis,
@@ -229,8 +238,9 @@ export function Sidebar() {
         {/* COLLAPSE BUTTON */}
         <button
           onClick={() => setSidebarCollapsed(!collapsed)}
-          className={`fixed ${collapsed ? "left-23" : "left-62"
-            } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
+          className={`fixed ${
+            collapsed ? "left-23" : "left-62"
+          } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
                      rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}
@@ -243,9 +253,10 @@ export function Sidebar() {
             navigateTo("");
           }}
           className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-            ${activePage === ""
-              ? "bg-green-500 text-white"
-              : "bg-green-50 text-green-700"
+            ${
+              activePage === ""
+                ? "bg-green-500 text-white"
+                : "bg-green-50 text-green-700"
             }`}
         >
           <Radio className="w-5 h-5 animate-pulse" />
@@ -258,10 +269,11 @@ export function Sidebar() {
             navigateTo("compose");
           }}
           className={`w-full mt-3 flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-    ${activePage === "compose"
-              ? "bg-blue-600 text-white"
-              : "bg-blue-50 text-blue-700"
-            }`}
+    ${
+      activePage === "compose"
+        ? "bg-blue-600 text-white"
+        : "bg-blue-50 text-blue-700"
+    }`}
         >
           <Plus className="w-5 h-5" />
           {!collapsed && <span className="font-medium">Compose</span>}
@@ -279,28 +291,30 @@ export function Sidebar() {
               }}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer
                 ${collapsed ? "justify-center" : ""}
-                    ${activePage === item.id
-                  ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-sm scale-[1.01]"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }
+                    ${
+                      activePage === item.id
+                        ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-sm scale-[1.01]"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }
                 ${item.hover}`}
             >
               {/* FIXED ICON SIZE ALWAYS */}
               <item.icon
                 className={`w-5 h-5 transition-all duration-300 ease-out
-    ${activePage === item.id
-                    ? `
+    ${
+      activePage === item.id
+        ? `
          
           translate-x-0
           scale-130
           drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]
         `
-                    : `
+        : `
           text-gray-500
           translate-x-0
           scale-100
         `
-                  }`}
+    }`}
               />
 
               {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}

@@ -1,4 +1,11 @@
-import { Search, Sparkles, Flame, X, User2Icon } from "lucide-react";
+import {
+  Search,
+  Sparkles,
+  Flame,
+  X,
+  User2Icon,
+  CircleAlert,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
 import { useContext, useEffect, useState, useRef } from "react";
@@ -9,16 +16,19 @@ import { toast } from "react-toastify";
 import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
+import { SocketContext } from "../context/SocketContext";
 
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const profileMenuRef = useRef(null);
+  const { notificationCount } = useContext(SocketContext);
+  const [errorLogCount, setErrorLogCount] = useState(0);
 
   const { user, error } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
 
-  const { search, setSearch, setEnteredEmail, setWelcomeHeaderContent } =
+  const { search, setSearch, setEnteredEmail, setWelcomeHeaderContent, handleClear } =
     useContext(PageContext);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -37,17 +47,9 @@ export function TopNav() {
     }
     localStorage.setItem("email", search);
     setEnteredEmail(search);
-    dispatch(ladgerAction.setTimeline(null))
+    dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Search");
     navigateTo("");
-  };
-
-  /* ❌ Clear */
-  const handleClear = () => {
-    localStorage.removeItem("email");
-    setWelcomeHeaderContent("");
-    setSearch("");
-    setEnteredEmail(null);
   };
 
   const handleKeyPress = (e) => {
@@ -84,6 +86,12 @@ export function TopNav() {
       dispatch(userAction.clearAllErrors());
     }
   }, [error, dispatch]);
+
+  useEffect(() => {
+    if (notificationCount.error_log_created) {
+      setErrorLogCount((prev) => prev + 1);
+    }
+  }, [notificationCount.error_log_created]);
 
   const getUserInitials = () => {
     if (!user?.name) return "U";
@@ -202,12 +210,20 @@ export function TopNav() {
         </motion.button>
         {/* end */}
 
-        <button
-          onClick={() => navigateTo("avatars")}
-          className="p-4 bg-yellow-500 text-white rounded-full"
-        >
-          <User2Icon />
-        </button>
+        {notificationCount.error_log_created && (
+          <button
+            onClick={() => navigateTo("error-logs")}
+            className="relative p-4 bg-red-500 text-white rounded-full"
+          >
+            <CircleAlert />
+
+            {errorLogCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full shadow">
+                {errorLogCount}
+              </span>
+            )}
+          </button>
+        )}
 
         <button
           onClick={() => navigateTo("ai-credits")}

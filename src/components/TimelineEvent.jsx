@@ -13,32 +13,15 @@ import Pagination from "./Pagination";
 import { getLadger } from "../store/Slices/ladger";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import PromptViewerModal from "./PromptViewerModal";
 
-const TimelineEvent = () => {
-  const { ladger, email, pageCount,
-    pageIndex, } = useSelector((state) => state.ladger);
-  const { crmEndpoint } = useSelector((state) => state.user);
+const TimelineEvent = ({ handleMessageClick }) => {
+  const { ladger, email, pageCount, pageIndex } = useSelector(
+    (state) => state.ladger,
+  );
   const [selectedView, setSelectedView] = useState("important");
   const [timelineData, setTimelineData] = useState([]);
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [messageContent, setMessageContent] = useState("");
-  const [isMessageLoading, setIsMessageLoading] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const [messageMeta, setMessageMeta] = useState({
-    subject: "",
-    from: "",
-    date: "",
-    fromEmail: "",
-    time: "",
-  });
-
-  const [open, setOpen] = useState(false);
-  const [selectedPrompt, setSelectedPrompt] = useState(null);
-
   const topRef = useRef(null);
   const bottomRef = useRef(null);
 
@@ -187,94 +170,6 @@ const TimelineEvent = () => {
     navigateTo("/");
   };
 
-  const handleMessageClick = async (event) => {
-    if (!event.message_id_c) return;
-
-    // ✅ open modal FIRST
-    setShowMessageModal(true);
-
-    // ✅ show loader INSIDE MODAL
-    setIsMessageLoading(true);
-
-    try {
-      const baseUrl = crmEndpoint.split("?")[0];
-
-      const response = await fetch(
-        `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${event.message_id_c}`,
-      );
-
-      const result = await response.json();
-
-      const htmlBody =
-        result.email?.html_body ||
-        result.email?.body_html ||
-        result.email?.content ||
-        result.html_body ||
-        "";
-
-      const subject = result.email?.subject || event.subject || "No Subject";
-
-      const from =
-        result.email?.from_name || result.email?.from_addr || "Unknown Sender";
-
-      const fromEmail =
-        result.email?.from_addr || result.email?.from_email || "";
-
-      const createdDate = result.email?.date_created || "";
-
-      let formattedDate = "";
-      let formattedTime = "";
-
-      if (createdDate) {
-        const d = new Date(createdDate);
-        formattedDate = d.toLocaleDateString();
-        formattedTime = d.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      setMessageMeta({
-        subject,
-        from,
-        fromEmail,
-        date: formattedDate,
-        time: formattedTime,
-      });
-
-      setMessageContent(
-        htmlBody
-          ? cleanHtmlContent(htmlBody)
-          : event.description || event.subject || "No content available",
-      );
-    } catch (err) {
-      setMessageContent(
-        event.description || event.subject || "No content available",
-      );
-    } finally {
-      setIsMessageLoading(false);
-    }
-  };
-
-  // Function to clean HTML content
-  const cleanHtmlContent = (html) => {
-    // Basic HTML cleanup
-    const cleaned = html
-      .replace(/<style[^>]*>.*?<\/style>/gis, "") // Remove style tags
-      .replace(/<script[^>]*>.*?<\/script>/gis, "") // Remove script tags
-      .replace(/<!--.*?-->/g, "") // Remove comments
-      .trim();
-
-    return cleaned || html;
-  };
-
-  // Function to close message modal
-  const closeMessageModal = () => {
-    setShowMessageModal(false);
-    setMessageContent("");
-    setSelectedMessageId(null);
-  };
-
   // Function to get tooltip text based on event type and contact
   const getTooltipText = (event) => {
     const type = event.type_c || "";
@@ -305,156 +200,6 @@ const TimelineEvent = () => {
 
   return (
     <div className="relative">
-      <style jsx>{`
-        .message-content h1,
-        .message-content h2,
-        .message-content h3,
-        .message-content h4 {
-          margin-top: 1.5em;
-          margin-bottom: 0.5em;
-          font-weight: 600;
-          color: #1f2937;
-        }
-
-        .message-content p {
-          margin-bottom: 1em;
-        }
-
-        .message-content a {
-          color: #3b82f6;
-          text-decoration: underline;
-        }
-
-        .message-content a:hover {
-          color: #2563eb;
-        }
-
-        .message-content ul,
-        .message-content ol {
-          margin-left: 1.5em;
-          margin-bottom: 1em;
-        }
-
-        .message-content li {
-          margin-bottom: 0.5em;
-        }
-
-        .message-content img {
-          max-width: 100%;
-          height: auto;
-          border-radius: 4px;
-        }
-
-        .message-content table {
-          border-collapse: collapse;
-          width: 100%;
-          margin-bottom: 1em;
-        }
-
-        .message-content table th,
-        .message-content table td {
-          border: 1px solid #e5e7eb;
-          padding: 8px 12px;
-          text-align: left;
-        }
-
-        .message-content table th {
-          background-color: #f9fafb;
-          font-weight: 600;
-        }
-
-        .message-content blockquote {
-          border-left: 4px solid #e5e7eb;
-          margin: 1em 0;
-          padding-left: 1em;
-          color: #6b7280;
-          font-style: italic;
-        }
-
-        .message-content code {
-          background-color: #f3f4f6;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-          font-size: 0.9em;
-        }
-
-        .message-content pre {
-          background-color: #1f2937;
-          color: #f9fafb;
-          padding: 1em;
-          border-radius: 6px;
-          overflow-x: auto;
-          margin: 1em 0;
-        }
-
-        .message-content pre code {
-          background-color: transparent;
-          color: inherit;
-          padding: 0;
-        }
-
-        .message-content .cta {
-          margin: 20px 0;
-        }
-
-        .message-content .emoticon {
-          display: inline-block;
-          vertical-align: middle;
-          width: 20px;
-          height: 20px;
-        }
-
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-        }
-
-        .message-icon-pulse {
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.05);
-            opacity: 0.8;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        .modal-backdrop {
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-        }
-
-        .message-modal {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          box-shadow:
-            0 20px 40px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .message-content-container {
-          background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-      `}</style>
-      {open && (
-        <PromptViewerModal
-          promptDetails={selectedPrompt}
-          onClose={() => setOpen(false)}
-        />
-      )}
       <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
           onClick={scrollToTop}
@@ -509,12 +254,13 @@ const TimelineEvent = () => {
                     className={`absolute top-1 left-1 h-[calc(100%-8px)]
         w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${selectedView === "all"
-                        ? "translate-x-0"
-                        : selectedView === "important"
-                          ? "translate-x-full"
-                          : "translate-x-[200%]"
-                      }`}
+        ${
+          selectedView === "all"
+            ? "translate-x-0"
+            : selectedView === "important"
+              ? "translate-x-full"
+              : "translate-x-[200%]"
+        }`}
                   />
 
                   {[
@@ -527,10 +273,11 @@ const TimelineEvent = () => {
                       onClick={() => setSelectedView(tab.key)}
                       className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${selectedView === tab.key
-                          ? "text-white"
-                          : "text-gray-600 hover:text-purple-600"
-                        }`}
+          ${
+            selectedView === tab.key
+              ? "text-white"
+              : "text-gray-600 hover:text-purple-600"
+          }`}
                     >
                       {tab.label}
                     </button>
@@ -602,10 +349,11 @@ const TimelineEvent = () => {
                     </div>
                     <div
                       className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${index === 0
+                      ${
+                        index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-gray-700 flex items-center gap-2">
@@ -618,12 +366,13 @@ const TimelineEvent = () => {
                               size={20}
                               className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
 
-                              ${isReminderEvent
+                              ${
+                                isReminderEvent
                                   ? "text-purple-600"
                                   : isContactEvent
                                     ? "text-green-600"
                                     : "text-blue-600"
-                                }`}
+                              }`}
                             />
 
                             <div
@@ -666,17 +415,13 @@ const TimelineEvent = () => {
                         <div className="flex items-center gap-2">
                           {hasMessageId && (
                             <button
-                              onClick={() => handleMessageClick(event)}
+                              onClick={() => handleMessageClick(event.message_id_c)}
                               className="text-blue-600 hover:text-blue-700 hover:cursor-pointer hover:opacity-90 transition-all duration-300
  relative group message-icon-pulse"
                               title="View Message"
-                              disabled={isMessageLoading === event.message_id_c}
                             >
-                              {isMessageLoading === event.message_id_c ? (
-                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                              ) : (
-                                <MessageSquare />
-                              )}
+                              <MessageSquare />
+
                               <div
                                 className="absolute left-1/2 -translate-x-1/2 -top-8
                                           whitespace-nowrap px-2 py-1 text-xs
@@ -724,8 +469,9 @@ const TimelineEvent = () => {
                           {event.prompt_details && (
                             <button
                               onClick={() => {
-                                setSelectedPrompt(event.prompt_details);
-                                setOpen(true);
+                                navigateTo("/settings/debugging", {
+                                  state: { prompt: event.prompt_details[0] },
+                                });
                               }}
                               className="text-blue-600 hover:text-blue-700 cursor-pointer"
                             >
@@ -788,100 +534,6 @@ const TimelineEvent = () => {
           fn={(p) => dispatch(getLadger({ page: p, loading: false }))}
         />
       )}
-
-      {/* Attractive Message Content Modal - CENTERED AND BEAUTIFUL */}
-      {showMessageModal && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50 p-4 modal-backdrop"
-          onClick={closeMessageModal}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{
-              type: "spring",
-              damping: 25,
-              stiffness: 300,
-            }}
-            className="message-modal rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* ✅ HEADER (FIXED) */}
-            <div className="relative bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex justify-between items-center flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <MessageSquare size={24} className="text-white" />
-
-                <div className="flex flex-col leading-tight">
-                  <h2 className="text-lg font-semibold text-white">
-                    {messageMeta.from}
-                  </h2>
-
-                  <span className="text-sm text-blue-100">
-                    {messageMeta.fromEmail}
-                  </span>
-
-                  <span className="text-xs text-blue-200">
-                    {messageMeta.date} • {messageMeta.time}
-                  </span>
-                </div>
-              </div>
-
-              {/* SUBJECT CENTER */}
-              <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none max-w-xl">
-                <h1 className="text-lg font-semibold text-white truncate">
-                  {messageMeta.subject}
-                </h1>
-              </div>
-
-              <button
-                onClick={closeMessageModal}
-                className="p-2 hover:bg-white/20 rounded-full transition-all duration-200 hover:rotate-90 cursor-pointer"
-                title="Close"
-              >
-                <X size={24} className="text-white" />
-              </button>
-            </div>
-
-            {/* ✅ SCROLLABLE BODY */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 flex-1 overflow-y-auto">
-              {isMessageLoading ? (
-                <div className="flex flex-col items-center justify-center h-full">
-                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-gray-600 font-medium">
-                    Loading message content...
-                  </p>
-                </div>
-              ) : messageContent ? (
-                <div className="message-content-container w-full max-w-4xl mx-auto">
-                  <div
-                    className="message-content"
-                    style={{
-                      fontFamily:
-                        'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                      fontSize: "15px",
-                      lineHeight: "1.8",
-                      color: "#2d3748",
-                      padding: "20px",
-                    }}
-                    dangerouslySetInnerHTML={{ __html: messageContent }}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="w-20 h-20 mb-4 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center">
-                    <MessageSquare size={32} className="text-gray-500" />
-                  </div>
-
-                  <p className="text-gray-500 mt-2">
-                    This message doesn't contain any readable content.
-                  </p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      )}
-
       {timelineData?.length > 8 && (
         <div className="absolute right-4 bottom-6 flex flex-col gap-3 z-50">
           {/* Go to Top */}

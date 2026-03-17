@@ -11,7 +11,6 @@ import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
-import { Contacts_otherPage } from "./components/pages/Contacts_otherPage";
 import { DraftInvoice } from "./components/pages/DraftInvoice";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
@@ -41,12 +40,13 @@ import CreateDeal from "./components/CreateDeal";
 import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
-import { Allbacklinkspage } from "./components/pages/Allbacklinkspage";
+import { BacklinksPage } from "./components/pages/BacklinksPage";
 import CreateOrder from "./components/CreateOrder";
 import { ReminderPage } from "./components/pages/Reminder";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
 import { HotPage } from "./components/pages/HotPage";
+import ErrorLogPage from "./components/pages/ErrorLogPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
@@ -56,6 +56,7 @@ import ThreadReply from "./components/pages/threads/ThreadReply";
 import ThreadView from "./components/pages/threads/ThreadView";
 import { ThreadContextProvider } from "./context/ThreadContext";
 import Debug from "./components/pages/settingpages/Debug";
+import Thread from "./components/pages/threads/Thread";
 
 const router = createBrowserRouter([
   {
@@ -199,8 +200,8 @@ const router = createBrowserRouter([
         element: <MovedPage />,
       },
       {
-        path: "all-backlinks",
-        element: <Allbacklinkspage />,
+        path: "backlinks",
+        element: <BacklinksPage />,
       },
 
       {
@@ -216,7 +217,13 @@ const router = createBrowserRouter([
         element: <HotPage />,
       },
       {
+        path: "error-logs",
+        element: <ErrorLogPage />,
+      },
+
+      {
         path: "thread",
+        element: <Thread />,
         children: [
           {
             path: ":threadId",
@@ -226,9 +233,7 @@ const router = createBrowserRouter([
             path: ":threadId/reply",
             element: <ThreadReply />,
           },
-        ]
-
-
+        ],
       },
 
       {
@@ -304,7 +309,6 @@ export default function App() {
             </SocketContextProvider>
           </PageContextProvider>
         </ThreadContextProvider>
-
       )}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}

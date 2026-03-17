@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { io } from "socket.io-client";
 import { showConsole } from "../assets/assets.js";
 import axios from "axios";
@@ -13,17 +20,15 @@ export const SocketContextProvider = ({ children }) => {
   const [currentAvatar, setCurrentAvatar] = useState();
   const [crm, setCrm] = useState("");
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
-  const dispatch = useDispatch()
-  const [userIdle, setUserIdle] = useState(true)
-  const [eventQueue, setEventQueue] = useState({})
+  const dispatch = useDispatch();
+  const [userIdle, setUserIdle] = useState(true);
+  const [eventQueue, setEventQueue] = useState({});
   const eventQueueRef = useRef({});
-  const currentEventThreadId = useRef(null)
+  const currentEventThreadId = useRef(null);
 
   useEffect(() => {
     eventQueueRef.current = eventQueue;
   }, [eventQueue]);
-
-
 
   const crmRef = useRef(""); // ✅ IMPORTANT
   const userRef = useRef(userIdle); // ✅ IMPORTANT
@@ -38,6 +43,7 @@ export const SocketContextProvider = ({ children }) => {
     outr_self_test: null,
     refreshUnreplied: null,
     outr_paypal_invoice_links: null,
+    error_log_created: null,
   });
   const getMoveOptions = async () => {
     try {
@@ -66,7 +72,7 @@ export const SocketContextProvider = ({ children }) => {
     userRef.current = userIdle;
   }, [crm, userIdle]);
   useEffect(() => {
-    console.log(eventQueue)
+    console.log(eventQueue);
   }, [eventQueue]);
   useEffect(() => {
     const newAvatarHandler = (data) => {
@@ -87,8 +93,8 @@ export const SocketContextProvider = ({ children }) => {
       showConsole && console.log("OUR CRM:", crmRef.current);
       showConsole && console.log("Mail site:", data.site_url);
       showConsole && console.log("new mail", data);
-      currentEventThreadId.current = data?.thread_id
-      console.log("currentEventThreadId", currentEventThreadId.current)
+      currentEventThreadId.current = data?.thread_id;
+      console.log("currentEventThreadId", currentEventThreadId.current);
 
       if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {
@@ -96,11 +102,9 @@ export const SocketContextProvider = ({ children }) => {
         }
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);
-        }
-        else if (data.name === "outr_recent_activity") {
-          dispatch(eventActions.updateCount(1))
-        }
-        else {
+        } else if (data.name === "outr_recent_activity") {
+          dispatch(eventActions.updateCount(1));
+        } else {
           if (data.name === "unreplied_email") {
             dispatch(unrepliedAction.setShowNewEmailBanner(true));
           }
@@ -108,21 +112,17 @@ export const SocketContextProvider = ({ children }) => {
             setNotificationCount((prev) => ({
               ...prev,
               [data.name]: Date.now(),
-            }))
-          }
-          else {
-            console.log("ADDING TO QUEUE")
+            }));
+          } else {
+            console.log("ADDING TO QUEUE");
             setEventQueue((prev) => ({
               ...prev,
-              [data.name]: prev[data.name] ? prev[data.name] + 1 : 1
-            }))
+              [data.name]: prev[data.name] ? prev[data.name] + 1 : 1,
+            }));
           }
-
         }
-
       }
-    }
-
+    };
 
     socket.on("new_avatar", newAvatarHandler);
     socket.on("latest_avatar", latestAvatarHandler);

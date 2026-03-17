@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { showConsole } from "../../assets/assets";
+import { extractEmail, showConsole } from "../../assets/assets";
 
 const unrepliedSlice = createSlice({
   name: "unreplied",
@@ -40,14 +40,9 @@ const unrepliedSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
-    updateUnreplied(state, action) {
-      const { count, emails, pageCount, pageIndex } = action.payload;
-      state.loading = false;
-      state.emails = emails;
-      state.count = count;
-      state.pageCount = pageCount;
-      state.pageIndex = pageIndex;
-      state.error = null;
+    removeUnreplied(state, action) {
+      state.emails = state.emails.filter(e => extractEmail(e?.from) !== action.payload);
+      state.count = state.emails.length;
     },
     setShowNewEmailBanner(state, action) {
       state.showNewEmailBanner = action.payload;
@@ -100,16 +95,6 @@ export const getUnrepliedEmail = ({ page = 1, loading = true }) => {
   };
 };
 
-export const updateUnrepliedEmails = (threadId) => {
-  return (dispatch, getState) => {
-    const updatedEmails = getState().unreplied.emails.filter((email) => email.thread_id !== threadId);
-    dispatch(unrepliedSlice.actions.updateUnreplied({
-      count: getState().unreplied.count - 1,
-      emails: updatedEmails,
-
-    }))
-  }
-};
 
 export const unrepliedAction = unrepliedSlice.actions;
 export default unrepliedSlice.reducer;

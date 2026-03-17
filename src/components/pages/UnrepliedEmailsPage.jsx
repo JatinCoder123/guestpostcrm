@@ -141,7 +141,7 @@ export function UnrepliedEmailsPage() {
     setSearch(input);
     setEnteredEmail(input);
     dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Replied");
+    setWelcomeHeaderContent("Unreplied");
     navigateTo(navigate);
   };
   const Row = ({ index, style, data }) => {
@@ -164,7 +164,10 @@ export function UnrepliedEmailsPage() {
         className={`grid grid-cols-5 border-b border-gray-100 hover:bg-purple-50 ${email?.stage == "Order" ? "bg-green-100 hover:bg-green-50" : ""} cursor-pointer`}
       >
         <div
-          onClick={() => handleOnClick(email, "/")}
+          onClick={() => {
+            handleOnClick(email, "/")
+            setCurrentIndex(index)
+          }}
           className="px-6 py-4 flex items-center gap-2 text-gray-600"
         >
           <Calendar className="w-4 h-4 text-gray-400" />
@@ -173,7 +176,7 @@ export function UnrepliedEmailsPage() {
 
         <div
           className="px-6 py-4 text-gray-900"
-          onClick={() => handleOnClick(email, "/contact")}
+          onClick={() => handleOnClick(email, "/contacts")}
         >
           {email.from?.split("<")[0]?.trim()}
         </div>
@@ -334,7 +337,7 @@ export function UnrepliedEmailsPage() {
               page: pageIndex + 1,
               loading: false,
             })
-          )} data={emails} pageCount={pageCount} pageIndex={pageIndex} Row={Row} loading={loading} />
+          )} data={emails} pageCount={1} pageIndex={pageIndex} Row={Row} loading={loading} />
         )}
 
 

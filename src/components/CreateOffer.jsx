@@ -196,6 +196,8 @@ export default function CreateOffer() {
         if (message.includes("Send")) {
           const data = unionByKey(newOffers, currentOffers, "website");
           console.log("DATA", data);
+          setNewOffers(data);
+
           navigate("/offers/view", {
             state: { email: state?.email, threadId: state?.threadId },
           });
@@ -203,7 +205,6 @@ export default function CreateOffer() {
         } else {
           navigate("/");
         }
-        setNewOffers([]);
       }
       dispatch(offersAction.clearAllMessages());
     }
@@ -217,7 +218,10 @@ export default function CreateOffer() {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [message, error, sendError]);
+    if (sendMessage) {
+      setNewOffers([])
+    }
+  }, [message, error, sendError, sendMessage]);
 
   return (
     <Create
