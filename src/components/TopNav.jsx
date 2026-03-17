@@ -21,9 +21,11 @@ import { SocketContext } from "../context/SocketContext";
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+  const [animate, setAnimate] = useState(false);
   const profileMenuRef = useRef(null);
   const { notificationCount } = useContext(SocketContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
+  const prevCountRef = useRef(errorLogCount);
 
   const { user, error } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
@@ -100,6 +102,16 @@ export function TopNav() {
       setErrorLogCount((prev) => prev + 1);
     }
   }, [notificationCount.error_log_created]);
+
+  useEffect(() => {
+    if (errorLogCount > prevCountRef.current) {
+      setAnimate(true);
+
+      setTimeout(() => setAnimate(false), 400); // animation duration
+    }
+
+    prevCountRef.current = errorLogCount;
+  }, [errorLogCount]);
 
   const getUserInitials = () => {
     if (!user?.name) return "U";
@@ -220,18 +232,39 @@ export function TopNav() {
         {/* end */}
 
         {notificationCount.error_log_created && (
-          <button
+          <motion.button
             onClick={() => navigateTo("/settings/debugging")}
             className="relative p-4 bg-red-500 text-white rounded-full"
+            animate={
+              errorLogCount > 0
+                ? {
+                    scale: [1, 1.08, 1],
+                    boxShadow: [
+                      "0 0 0px rgba(239,68,68,0)",
+                      "0 0 20px rgba(239,68,68,0.9)",
+                      "0 0 0px rgba(239,68,68,0)",
+                    ],
+                  }
+                : {}
+            }
+            transition={
+              errorLogCount > 0
+                ? {
+                    repeat: Infinity,
+                    duration: 1.4,
+                    ease: "easeInOut",
+                  }
+                : {}
+            }
           >
             <CircleAlert />
 
             {errorLogCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full shadow">
+              <motion.span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full shadow">
                 {errorLogCount}
-              </span>
+              </motion.span>
             )}
-          </button>
+          </motion.button>
         )}
 
         <button
