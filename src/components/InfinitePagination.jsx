@@ -5,17 +5,23 @@ function InfinitePagination({ fn, pageCount, pageIndex, data, Row, loading }) {
 
     const loadingRef = useRef(false);
 
+    const rowHeight = 70;
+    const maxHeight = 500; // max table height
+
+    const totalRows = pageIndex < pageCount ? data.length + 1 : data.length;
+
+    const height = Math.min(totalRows * rowHeight, maxHeight);
+
     useEffect(() => {
-        // unlock when new data arrives
         loadingRef.current = false;
     }, [data.length]);
 
     return (
         <List
-            style={{ height: "100vh", width: "100%" }}
+            style={{ height, width: "100%" }}
             rowComponent={Row}
-            rowCount={pageIndex < pageCount ? data.length + 1 : data.length}
-            rowHeight={70}
+            rowCount={totalRows}
+            rowHeight={rowHeight}
             rowProps={{ data }}
             overscanCount={5}
             onRowsRendered={({ stopIndex }) => {

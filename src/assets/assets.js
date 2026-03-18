@@ -153,7 +153,7 @@ export function base64ToUtf8(base64) {
 
 
 export const extractEmail = (str) => {
-  if (str.includes("<")) {
+  if (str?.includes("<")) {
     return str.split("<")[1].split(">")[0];
   }
   return str;

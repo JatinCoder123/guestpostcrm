@@ -25,7 +25,11 @@ const invoicesSlice = createSlice({
     getInvoicesSucess(state, action) {
       const { count, invoices, pageCount, pageIndex, summary, stats } = action.payload;
       state.loading = false;
-      state.invoices = invoices;
+      if (pageIndex === 1) {
+        state.invoices = invoices;
+      } else {
+        state.invoices = [...state.invoices, ...invoices];
+      }
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
       state.count = count;
