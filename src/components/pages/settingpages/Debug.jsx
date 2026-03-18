@@ -62,7 +62,7 @@ const Debug = () => {
     return TABS[3];
   };
 
-  const [activeTab, setActiveTab] = useState(TABS[3]);
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   const [timeline, setTimeline] = useState(1);
@@ -73,7 +73,7 @@ const Debug = () => {
 
   const { crmEndpoint } = useSelector((state) => state.user);
 
-  const { loading, data, error, refetch } = useModule({
+  const { loading, data, error } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: { module: activeTab.module },
@@ -83,26 +83,13 @@ const Debug = () => {
     },
     name: activeTab.label,
   });
-  console.log("data", data);
 
-  useEffect(() => {
-    refetch();
-  }, [activeTab]);
+
 
   useEffect(() => {
     if (activeTab.key !== "prompt") return;
     if (state?.prompt) setSelectedRecord(state?.prompt);
   }, [loading, data, state?.promptId, activeTab]);
-  useEffect(() => {
-    if (state?.key) {
-      const foundTab = TABS.find((tab) => tab.key === state.key);
-      if (foundTab) {
-        setActiveTab(foundTab);
-      }
-    } else {
-      setActiveTab(TABS[0]);
-    }
-  }, [state?.key]);
 
   /* set timeline based on date */
   useEffect(() => {
@@ -211,7 +198,7 @@ const Debug = () => {
     try {
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
-    } catch {}
+    } catch { }
 
     let content = parsed?.reply || parsed;
 
@@ -272,11 +259,10 @@ const Debug = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
-              activeTab.key === tab.key
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition ${activeTab.key === tab.key
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
           >
             {tab.label}
           </button>
@@ -453,9 +439,8 @@ const Debug = () => {
                   return (
                     <div
                       key={key}
-                      className={`border rounded-lg p-3 bg-gray-50 ${
-                        large ? "md:col-span-2" : ""
-                      }`}
+                      className={`border rounded-lg p-3 bg-gray-50 ${large ? "md:col-span-2" : ""
+                        }`}
                     >
                       <div className="text-xs text-gray-500 mb-1">
                         {key.replace(/_/g, " ").toUpperCase()}

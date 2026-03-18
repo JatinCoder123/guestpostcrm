@@ -7,7 +7,7 @@ import { LoadingChase } from "./Loading";
 import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
-import { Eye, Plus, RefreshCcw } from "lucide-react";
+import { Eye, Plus, RefreshCcw, RefreshCcwIcon } from "lucide-react";
 import axios from "axios";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
@@ -83,22 +83,6 @@ const MailerSummaryHeader = () => {
     setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, mailersSummary]);
 
-  /* ---------------- EMPTY STATE ---------------- */
-  if (!mailersSummary) {
-    return (
-      <div className="mt-4 p-6 bg-cyan-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4">
-        <p className="text-gray-700 font-semibold">
-          No mail summary available for this email.
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-6 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-        >
-          Refresh
-        </button>
-      </div>
-    );
-  }
 
   /* ---------------- UI ---------------- */
   return (
@@ -112,7 +96,7 @@ const MailerSummaryHeader = () => {
 
       <div className="mt-0 p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200">
         {/* TOP INFO */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {mailersSummary ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div>
             <div className="text-xs text-gray-500 uppercase font-semibold">
               Created At
@@ -146,7 +130,19 @@ const MailerSummaryHeader = () => {
               </div>
             </Titletooltip>
           </div>
-        </div>
+        </div> : <div className=" p-6 bg-gray-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4 mb-2">
+          <p className="text-gray-800 font-semibold">
+            No mail summary available for this email.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
+          >
+            <RefreshCcwIcon className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>}
+
 
         {/* STATS CARDS */}
         <div className="bg-white rounded-3xl shadow-sm p-4">
