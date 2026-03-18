@@ -14,12 +14,13 @@ import { useSelector } from "react-redux";
 export function MachineLearningPage() {
   const [editItem, setEditItem] = useState(null);
   const { state } = useLocation();
-  const navigateTo = useNavigate()
+  const navigateTo = useNavigate();
   const { crmEndpoint } = useSelector((state) => state.user);
   const [close, setClose] = useState(false);
   const { loading, data, error, setData, refetch, add, update } = useModule({
-    url: `${crmEndpoint.split("?")[0]
-      }?entryPoint=get_post_all&action_type=get_data`,
+    url: `${
+      crmEndpoint.split("?")[0]
+    }?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "outr_machine_learning",
@@ -36,13 +37,14 @@ export function MachineLearningPage() {
   const handleUpdate = (updatedItem) => {
     // Update UI instantly
     setData((prev) =>
-      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj))
+      prev.map((obj) => (obj.id === updatedItem.id ? updatedItem : obj)),
     );
 
     // Fire API update
     update({
-      url: `${crmEndpoint.split("?")[0]
-        }?entryPoint=get_post_all&action_type=post_data`,
+      url: `${
+        crmEndpoint.split("?")[0]
+      }?entryPoint=get_post_all&action_type=post_data`,
       method: "POST",
       body: {
         parent_bean: {
@@ -102,6 +104,7 @@ export function MachineLearningPage() {
                 <th className="p-4 text-gray-700 font-semibold">Motive</th>
                 <th className="p-4 text-gray-700 font-semibold">Type</th>
                 <th className="p-4 text-gray-700 font-semibold">Description</th>
+                <th className="p-4 text-gray-700 font-semibold">Stage</th>
                 <th className="p-4 text-gray-700 font-semibold text-right">
                   Actions
                 </th>
@@ -133,6 +136,11 @@ export function MachineLearningPage() {
                       {item.description}
                     </p>
                   </td>
+                  <td className="p-4 text-gray-700 max-w-[300px]">
+                    <p className="line-clamp-2 " title={item.stage}>
+                      {item.stage || "-"}
+                    </p>
+                  </td>
 
                   <td className="p-4 text-right">
                     <button
@@ -158,8 +166,8 @@ export function MachineLearningPage() {
       <EditModal
         item={editItem}
         onClose={() => {
-          if (state?.promptId) navigateTo(-1)
-          setEditItem(null)
+          if (state?.promptId) navigateTo(-1);
+          setEditItem(null);
         }}
         handleUpdate={handleUpdate}
       />

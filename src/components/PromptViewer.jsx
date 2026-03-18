@@ -1,37 +1,94 @@
-const colors = [
-    "bg-blue-50 border-blue-200",
-    "bg-green-50 border-green-200",
-    "bg-yellow-50 border-yellow-200",
-    "bg-purple-50 border-purple-200",
-    "bg-pink-50 border-pink-200",
-    "bg-indigo-50 border-indigo-200",
+import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+const splitPromptSections = (prompt) => {
+  if (!prompt) return [];
+
+  return prompt
+    .split(
+      "----------------------------------------------------------------------",
+    )
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const TABS = [
+  "System Prompt",
+  "Role Prompt",
+  "Common Prompt",
+  "Output / Styling",
+  "Client Email",
+  "Email Subject",
+  "Email Body",
+  "Overwrite Rule",
 ];
 
-export const PromptViewer = ({ prompt }) => {
+const PromptSectionsViewer = ({ prompt }) => {
+  const [activeTab, setActiveTab] = useState(0);
 
-    if (!prompt) return null;
+  const sections = useMemo(() => {
+    return splitPromptSections(prompt);
+  }, [prompt]);
 
-    const sections = prompt.split("----------------------------------------------------------------------");
+  if (!sections.length) return null;
 
-    return (
-        <div className="space-y-4">
+  const activeContent = sections[activeTab] || "";
 
-            {sections.map((section, index) => {
+  // create line numbers
+  const lines = activeContent.split("\n");
 
-                const color = colors[index % colors.length];
+  return (
+    <div className="border rounded-xl overflow-hidden bg-white">
+      {/* HEADER (like screenshot) */}
+      <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
+        <div className="font-semibold text-gray-700">Full Prompt</div>
+      </div>
 
-                return (
-                    <div
-                        key={index}
-                        className={`border rounded-lg p-4 ${color}`}
-                    >
-                        <pre className="whitespace-pre-wrap text-sm leading-relaxed font-mono">
-                            {section.trim()}
-                        </pre>
-                    </div>
-                );
-            })}
+      {/* TOP TABS */}
+      <div className="flex gap-6 px-4 pt-3 border-b text-sm">
+        {sections.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveTab(i)}
+            className={`pb-2 ${
+              activeTab === i
+                ? "text-blue-600 border-b-2 border-blue-600 font-medium"
+                : "text-gray-500"
+            }`}
+          >
+            {TABS[i] || `Section ${i + 1}`}
+          </button>
+        ))}
+      </div>
 
+      {/* TOOLBAR */}
+      <div className="flex justify-between items-center px-4 py-2 border-b bg-gray-50 text-sm">
+        <div className="flex justify-end w-full">
+          <button
+            onClick={() => navigator.clipboard.writeText(activeContent)}
+            className="px-3 py-1 border rounded hover:bg-gray-100"
+          >
+            Copy
+          </button>
         </div>
-    );
+      </div>
+
+      {/* CODE VIEW */}
+      <div className="flex text-sm font-mono max-h-[500px] overflow-auto">
+        {/* LINE NUMBERS */}
+        <div className="bg-gray-100 text-gray-400 px-3 py-2 text-right select-none">
+          {lines.map((_, i) => (
+            <div key={i}>{i + 1}</div>
+          ))}
+        </div>
+
+        {/* CONTENT */}
+        <pre className="flex-1 p-3 whitespace-pre-wrap text-gray-800">
+          {activeContent}
+        </pre>
+      </div>
+    </div>
+  );
 };
+
+export default PromptSectionsViewer;

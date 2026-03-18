@@ -1,6 +1,7 @@
 import { Mail, Activity, Hash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   duplicateEmailActions,
   getDuplicateEmails,
@@ -14,6 +15,7 @@ export const Duplicate = () => {
     (state) => state.duplicateEmails,
   );
   const { handleMove } = useThreadContext();
+  const navigate = useNavigate();
   useEffect(() => {
     dispatch(getDuplicateEmails());
   }, [dispatch]);
@@ -66,12 +68,14 @@ export const Duplicate = () => {
               >
                 {/* Date */}
                 <div className="text-blue-600 font-medium">
-                  {item.date_entered ? item.date_entered : "-"}
+                  {item.date_created ? item.date_created : "-"}
                 </div>
 
                 {/* Subject */}
                 <button
-                  onClick={() => navigate(`/thread/${threadId}`)}
+                  onClick={() =>
+                    handleMove({ email: item.from_email, threadId })
+                  }
                   className="text-gray-800 font-medium text-left"
                 >
                   {item.subject}
