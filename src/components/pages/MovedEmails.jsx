@@ -5,6 +5,8 @@ import {
   MessageSquare,
   BarChart,
   EqualApproximatelyIcon,
+  Contact,
+  Hammer,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useState } from "react";
@@ -17,8 +19,6 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useThreadContext } from "../../hooks/useThreadContext";
 
-
-
 export function MovedPage() {
   const navigate = useNavigate(); // 👈 add this
   const { count, emails } = useSelector((state) => state.moved);
@@ -26,8 +26,7 @@ export function MovedPage() {
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSort, setSelectedSort] = useState("");
-  const { handleMove } = useThreadContext()
-
+  const { handleMove } = useThreadContext();
 
   const filteredEmails = emails
     .filter((item) => {
@@ -79,7 +78,7 @@ export function MovedPage() {
     setSelectedCategory(value);
   };
 
-  const handleFilterApply = (filters) => { };
+  const handleFilterApply = (filters) => {};
 
   const handleDownload = () => {
     if (!filteredEmails || filteredEmails.length === 0) {
@@ -111,8 +110,6 @@ export function MovedPage() {
     a.download = "unreplied-emails.csv";
     a.click();
   };
-
-
 
   return (
     <>
@@ -193,8 +190,20 @@ export function MovedPage() {
                 </th>
                 <th className="px-6 py-4 text-left">
                   <div className="flex items-center gap-2">
-                    <BarChart className="w-4 h-4" />
-                    <span>THREAD SIZE</span>
+                    <Contact className="w-4 h-4" />
+                    <span>LABEL NAME</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <EqualApproximatelyIcon className="w-4 h-4" />
+                    <span>REASON</span>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Hammer className="w-4 h-4" />
+                    <span>ACTION</span>
                   </div>
                 </th>
               </tr>
@@ -214,14 +223,20 @@ export function MovedPage() {
                   <td className="px-6 py-4 text-gray-900">{email.email}</td>
                   <td
                     onClick={() => {
-                      handleMove({ email: email.from, threadId: email.thread_id })
+                      handleMove({
+                        email: email.from,
+                        threadId: email.thread_id,
+                      });
                     }}
                     className="px-6 py-4 text-purple-600"
                   >
                     {email.subject}
                   </td>
                   <td className="px-6 py-4 text-purple-600">
-                    {email.thread_count}
+                    {email.label_name}
+                  </td>
+                  <td className="px-6 py-4 text-purple-600">
+                    {email.reason || "-"}
                   </td>
                 </tr>
               ))}

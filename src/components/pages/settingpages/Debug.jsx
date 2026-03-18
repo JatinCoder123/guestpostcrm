@@ -3,7 +3,8 @@ import { CREATE_DEAL_API_KEY } from "../../../store/constants.js";
 import useModule from "../../../hooks/useModule.js";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { PromptViewer } from "../../PromptViewer.jsx";
+import PromptViewer from "../../PromptViewer.jsx";
+import PromptSectionsViewer from "../../PromptViewer.jsx";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
@@ -83,8 +84,6 @@ const Debug = () => {
     },
     name: activeTab.label,
   });
-
-
 
   useEffect(() => {
     if (activeTab.key !== "prompt") return;
@@ -198,7 +197,7 @@ const Debug = () => {
     try {
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
-    } catch { }
+    } catch {}
 
     let content = parsed?.reply || parsed;
 
@@ -259,10 +258,11 @@ const Debug = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition ${activeTab.key === tab.key
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+              activeTab.key === tab.key
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
           >
             {tab.label}
           </button>
@@ -439,15 +439,22 @@ const Debug = () => {
                   return (
                     <div
                       key={key}
-                      className={`border rounded-lg p-3 bg-gray-50 ${large ? "md:col-span-2" : ""
-                        }`}
+                      className={`border rounded-lg p-3 bg-gray-50 ${
+                        large ? "md:col-span-2" : ""
+                      }`}
                     >
                       <div className="text-xs text-gray-500 mb-1">
                         {key.replace(/_/g, " ").toUpperCase()}
                       </div>
 
                       {key === "full_prompt" ? (
-                        <PromptViewer prompt={value} />
+                        value?.includes(
+                          "----------------------------------------------------------------------",
+                        ) ? (
+                          <PromptSectionsViewer prompt={value} />
+                        ) : (
+                          <PromptViewer prompt={value} />
+                        )
                       ) : large ? (
                         key === "response" ? (
                           <div
