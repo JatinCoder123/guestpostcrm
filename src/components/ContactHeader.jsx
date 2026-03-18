@@ -145,7 +145,7 @@ const ContactHeader = ({ isMark }) => {
                 <div className="flex flex-col leading-tight gap-1">
                   {/* Name */}
                   <Link
-                    to="/contacts"
+                    to="/contacts/id"
                     className="
                       relative text-lg font-extrabold
                       bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500

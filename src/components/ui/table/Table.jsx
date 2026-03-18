@@ -26,7 +26,7 @@ const TableView = ({
 }) => {
     const { pageIndex, pageCount, count, loading } = useSelector(state => state[slice])
     const [search, setSearch] = useState("")
-
+    console.log("TAVBLE DATA", tableData)
     const [filters, setFilters] = useState(() => {
         if (defaultStatus) return { [statusKey]: defaultStatus }
         return {}
