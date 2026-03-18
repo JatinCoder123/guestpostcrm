@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
+import { get } from "react-hook-form";
 
 const forwardedSlice = createSlice({
   name: "forwarded",
@@ -87,13 +88,17 @@ export const getForwardedEmails = ({ loading = true }) => {
 export const forwardEmail = (email, id) => {
   return async (dispatch, getState) => {
     dispatch(forwardedSlice.actions.forwardEmailRequest());
-    showConsole && console.log("EMAIL", email)
-    showConsole && console.log("EMAIL", id)
+    showConsole && console.log("CLIENT EMAIL", email)
+    showConsole && console.log("CLIENT ID", id)
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const response = await axios.get(
-        `${domain}?entryPoint=fetch_gpc&type=assigned_task&client_email=${email}&id=${id}`,
+      const response = await axios.post(
+        `${domain}?entryPoint=fetch_gpc&type=assigned_task`, {
+        "client_email": email,
+        "current_email": getState().user.user.email,
+        "assigned_to": id,
+      }
       );
       showConsole && console.log("Assiging  ", response.data);
       dispatch(
