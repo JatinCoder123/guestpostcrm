@@ -176,7 +176,7 @@ export function DealsPage() {
   });
 
   return (
-    <TableView tableData={deals} tableName={"Deals"} columns={columns} slice={"deals"} statusKey={"status"} statusList={statusList} fetchNextPage={() => dispatch(getDeals({ page: pageIndex + 1, loading: false }))}   >
+    <TableView tableData={deals} tableName={"Deals"} columns={columns} slice={"deals"} statusKey={"status"} statusList={statusList} fetchNextPage={() => dispatch(getDeals({ page: pageIndex + 1 }))}   >
       <TableTitleBar Icon={Handshake} title={"Deals"} titleClass={"text-blue-700"} />
       <Table headerStyle={"  bg-blue-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_1fr]"} />
     </TableView>

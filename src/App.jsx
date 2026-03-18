@@ -42,7 +42,7 @@ import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
 import { BacklinksPage } from "./components/pages/BacklinksPage";
 import CreateOrder from "./components/CreateOrder";
-import { ReminderPage } from "./components/pages/Reminder";
+import { ReminderPage } from "./components/pages/ReminderPage";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
 import CreateOffer from "./components/CreateOffer";
 import { HotPage } from "./components/pages/HotPage";

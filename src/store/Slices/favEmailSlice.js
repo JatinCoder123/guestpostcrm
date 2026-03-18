@@ -23,7 +23,11 @@ const favSlice = createSlice({
     getEmailSucess(state, action) {
       const { count, emails, pageCount, pageIndex } = action.payload;
       state.loading = false;
-      state.emails = emails;
+      if (pageIndex === 1) {
+        state.emails = emails;
+      } else {
+        state.emails = [...state.emails, ...emails];
+      }
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;

@@ -1,20 +1,21 @@
 import {
   Calendar,
-  User2,
-  Gift,
   Pen,
   Globe,
   BadgeDollarSign,
   ChartNoAxesColumn,
   Clapperboard,
-  Trash,
-  ShieldCheckIcon,
-  HandCoins,
-  ShieldAlert,
   FileText,
+  Link2Icon,
+  Wallet,
+  Banknote,
+  Flag,
+  SendHorizonal,
+  DollarSign,
+  NotepadTextDashed,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { getInvoices } from "../../store/Slices/invoices.js"
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
@@ -23,33 +24,67 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
+import UpdatePopup from "../UpdatePopup.jsx"
 import { LoadingChase } from "../Loading.jsx"
 const STATUS_CONFIG = [
   {
-    value: "active",
+    value: "SENT",
     label: "Sent",
-    icon: ShieldCheckIcon,
-    color: "#F59E0B", // orange (amber-500)
+    icon: SendHorizonal,
+    color: "#2563eb", // orange (amber-500)
   },
   {
-    value: "accepted",
+    value: "PAID",
     label: "Paid",
-    icon: HandCoins,
+    icon: DollarSign,
     color: "#10B981", // green (emerald-500)
   },
   {
-    value: "expired",
+    value: "DRAFT",
     label: "Draft",
-    icon: ShieldAlert,
-    color: "#EF4444", // red (red-500)
+    icon: NotepadTextDashed,
+    color: "#ca8a04",
   }
 ];
 export function InvoicesPage() {
-  const { count, invoices, loading, pageIndex, summary } = useSelector(
+  const { count, updating, invoices, loading, pageIndex, stats, } = useSelector(
     (state) => state.invoices
   );
+  const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
 
 
+  const getPaymentMethodIcon = (method) => {
+    switch (method?.toLowerCase()) {
+      case "paypal":
+        return <Wallet className="w-4 h-4 mr-1" />;
+      case "payoneer":
+        return <Globe className="w-4 h-4 mr-1" />;
+      case "wise":
+        return <Banknote className="w-4 h-4 mr-1" />;
+      case "indian_upi":
+        return <Flag className="w-4 h-4 mr-1" />;
+      case "swift_india":
+        return <Banknote className="w-4 h-4 mr-1" />;
+      default:
+        return <Wallet className="w-4 h-4 mr-1" />;
+    }
+  };
+  const getPaymentMethodColor = (method) => {
+    switch (method?.toLowerCase()) {
+      case "paypal":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "payoneer":
+        return "bg-orange-100 text-orange-700 border-orange-200";
+      case "wise":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "indian_upi":
+        return "bg-indigo-100 text-indigo-700 border-indigo-200";
+      case "swift_india":
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
     useContext(PageContext);
   const navigateTo = useNavigate();
@@ -69,7 +104,7 @@ export function InvoicesPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/"),
+      onClick: (row) => handleOnClick(extractEmail(row?.email_c), "/"),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -78,60 +113,76 @@ export function InvoicesPage() {
       )
     },
     {
-      label: "Contact",
-      accessor: "real_name",
+      label: "LINK ",
+      accessor: "preview",
       headerClasses: "",
-      icon: User2,
+      icon: Link2Icon,
       classes: "truncate max-w-[200px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/contacts"),
-
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.real_name?.split("<")[0]?.trim()}
+          <a
+            href={row.preview}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            View Invoice
+          </a>
         </span>
       )
     },
     {
-      label: "Website",
-      accessor: "website",
+      label: "CLIENT",
+      accessor: "email_c",
       headerClasses: "",
       icon: Globe,
       classes: "truncate ",
+      onClick: (row) => handleOnClick(extractEmail(row?.email_c), "/contacts"),
+
       render: (row) => (
-        <span className="font-medium text-blue-700 ">
-          {row?.website}
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {row?.email_c}
         </span>
       )
     },
     {
-      label: "Client Offer",
-      accessor: "client_offer_c",
+      label: "Amount",
+      accessor: "amount_c",
       headerClasses: "",
       icon: BadgeDollarSign,
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-green-700 ">
-          {row?.client_offer_c}
+        <span className="px-6 py-4 text-green-600">
+          ${parseFloat(row.amount_c || 0).toFixed(2)}
         </span>
       )
     },
     {
-      label: "Our OFfer",
-      accessor: "our_offer_c",
+      label: "Payment Method",
+      accessor: "payment_method",
       headerClasses: "",
       icon: BadgeDollarSign,
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-gray-700 ">
-          {row?.our_offer_c}
-        </span>
+        <div className="flex items-center">
+          <span
+            className={`px-3 py-1.5 rounded-full text-sm border flex items-center ${getPaymentMethodColor(row.payment_method)}`}
+          >
+            {getPaymentMethodIcon(row.payment_method)}
+            {row.payment_method
+              ? row.payment_method
+                .replace("_", " ")
+                .toUpperCase()
+              : "N/A"}
+          </span>
+        </div>
       )
     },
     {
-      label: "Stage",
-      accessor: "offer_status",
+      label: "Status",
+      accessor: "status_c",
       headerClasses: "",
       icon: ChartNoAxesColumn,
       classes: "truncate max-w-[300px]",
@@ -139,7 +190,21 @@ export function InvoicesPage() {
 
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-          {row?.offer_status}
+          {row?.status_c}
+        </span>
+      )
+    },
+    {
+      label: "Due Date",
+      accessor: "due_date",
+      headerClasses: "",
+      icon: ChartNoAxesColumn,
+      classes: "truncate max-w-[300px]",
+      onClick: (row) => handleOnClick(extractEmail(row?.from), "/"),
+
+      render: (row) => (
+        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+          {row?.due_date}
         </span>
       )
     },
@@ -153,20 +218,13 @@ export function InvoicesPage() {
         <div className="flex items-center justify-center gap-2">
           {/* Update Button */}
           <button
+            onClick={() => setCurrentUpdateInvoice(row)}
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="Update"
-            onClick={() =>
-
-              navigateTo(`/offers/edit/${row.id}`, {
-                state: {
-                  email: extractEmail(row.real_name),
-                  threadId: row?.thread_id,
-                },
-              })
-            }
           >
-            <Pen className="w-5 h-5 text-blue-600" />
+            <Pen className="w-4 h-4 text-blue-600" />
           </button>
+
         </div>
       )
     },
@@ -174,18 +232,64 @@ export function InvoicesPage() {
 
   ]
   const statusList = STATUS_CONFIG.map(config => {
-
+    const status = stats.find(s => s.status == config.value)
     return {
       ...config,
-      count: Number(summary?.[`${config.value}_offers`] || 0),
+      count: status?.status_count || 0,
+      amount: status?.total_amount || 0,
+      showAmount: true
     };
 
   });
 
   return (
-    <TableView tableData={invoices} tableName={"Invoices"} columns={columns} slice={"invoices"} statusKey={"offer_status"} statusList={statusList} fetchNextPage={() => dispatch(getInvoices({ page: pageIndex + 1, loading: false }))}   >
-      <TableTitleBar Icon={FileText} title={"Invoices"} titleClass={"text-orange-700"} />
-      <Table headerStyle={"  bg-orange-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_200px_1fr]"} />
-    </TableView>
+    <>
+      {currentUpdateInvoice && (
+        <UpdatePopup
+          open={!!currentUpdateInvoice}
+          title="Update Invoice"
+          fields={[
+            {
+              name: "name",
+              label: "Name",
+              type: "text",
+              value: currentUpdateInvoice.name,
+            },
+            {
+              name: "email_c",
+              label: "Email",
+              type: "text",
+              value: currentUpdateInvoice.email_c,
+            },
+            {
+              name: "amount_c",
+              label: "Amount",
+              type: "number",
+              value: currentUpdateInvoice.amount_c,
+            },
+            {
+              name: "payment_method",
+              label: "Payment Method",
+              type: "select",
+              value: currentUpdateInvoice.payment_method,
+              options: [
+                { value: "paypal", label: "PayPal" },
+                { value: "payoneer", label: "Payoneer" },
+                { value: "wise", label: "Wise" },
+                { value: "indian_upi", label: "Indian UPI" },
+                { value: "swift_india", label: "Swift India" },
+              ],
+            },
+          ]}
+          loading={updating}
+          onUpdate={(data) => updateInvoiceHandler(currentUpdateInvoice, data)}
+          onClose={() => setCurrentUpdateInvoice(null)}
+        />
+      )}
+      <TableView tableData={invoices} tableName={"Invoices"} columns={columns} slice={"invoices"} statusKey={"status_c"} statusList={statusList} fetchNextPage={() => dispatch(getInvoices({ page: pageIndex + 1 }))}   >
+        <TableTitleBar Icon={FileText} title={"Invoices"} titleClass={"text-orange-700"} />
+        <Table headerStyle={"  bg-orange-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_200px_200px_1fr]"} />
+      </TableView></>
+
   );
 }

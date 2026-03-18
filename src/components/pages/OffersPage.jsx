@@ -196,7 +196,7 @@ export function OffersPage() {
   });
 
   return (
-    <TableView tableData={offers} tableName={"Offers"} columns={columns} slice={"offers"} statusKey={"offer_status"} statusList={statusList} fetchNextPage={() => dispatch(getOffers({ page: pageIndex + 1, loading: false }))}   >
+    <TableView tableData={offers} tableName={"Offers"} columns={columns} slice={"offers"} statusKey={"offer_status"} statusList={statusList} fetchNextPage={() => dispatch(getOffers({ page: pageIndex + 1 }))}   >
       <TableTitleBar Icon={Gift} title={"Offers"} titleClass={"text-green-700"} />
       <Table headerStyle={"  bg-green-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_200px_1fr]"} />
     </TableView>

@@ -28,7 +28,7 @@ const TableView = ({
     const [search, setSearch] = useState("")
 
     const [filters, setFilters] = useState(() => {
-        if (defaultStatus) return { status: defaultStatus }
+        if (defaultStatus) return { [statusKey]: defaultStatus }
         return {}
     })
 
@@ -103,7 +103,7 @@ const TableView = ({
 
             <div className='flex flex-col gap-5'>
 
-                <TableToolbar />
+                {/* <TableToolbar /> */}
 
                 <FilterRow />
 

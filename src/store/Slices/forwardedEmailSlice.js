@@ -12,6 +12,8 @@ const forwardedSlice = createSlice({
     count: 0,
     error: null,
     message: null,
+    pageIndex: 1,
+    pageCount: 1
   },
   reducers: {
     getEmailRequest(state) {

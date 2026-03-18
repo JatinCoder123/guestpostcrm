@@ -1,54 +1,77 @@
-import SearchComponent from "./SearchComponent";
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { toast } from "react-toastify";
 import {
-  ExternalLink,
-  EqualApproximatelyIcon,
+  Calendar,
+  User2,
+  Gift,
+  Pen,
+  Globe,
+  BadgeDollarSign,
+  ChartNoAxesColumn,
+  Clapperboard,
+  Trash,
+  ShieldCheckIcon,
+  HandCoins,
+  ShieldAlert,
+  Cable,
+  Text,
   Edit,
+  Pencil,
   X,
+  Eye,
 } from "lucide-react";
-
-import { BacklinkDetailBox } from "./BacklinkDetailBox";
-import {
-  getBacklinks,
-  getBacklinkDetail,
-  updateBacklink,
-} from "../../store/Slices/backlinks";
+import { useDispatch, useSelector } from "react-redux";
+import { useContext, useState } from "react";
+import { deleteOffer, getOffers } from "../../store/Slices/offers.js"
+import { PageContext } from "../../context/pageContext";
+import { useNavigate } from "react-router-dom";
+import { extractEmail } from "../../assets/assets";
+import { ladgerAction } from "../../store/Slices/ladger";
+import { useThreadContext } from "../../hooks/useThreadContext";
+import TableView, { Table } from "../ui/table/Table";
+import TableTitleBar from "../ui/table/TableTitleBar";
+import { LoadingChase } from "../Loading.jsx"
+import { getBacklinks, updateBacklink } from "../../store/Slices/backlinks.js";
+import BacklinkDetailBox from "./BacklinkDetailBox.jsx"
+import { toast } from "react-toastify";
 
 export function BacklinksPage() {
+  const { count, backlinks, loading, pageIndex, summary } = useSelector(
+    (state) => state.backlinks
+  );
+
+
+  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+    useContext(PageContext);
+  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const { loading, backlinks, error } = useSelector((state) => state.backlinks);
-
-  const [showDetail, setShowDetail] = useState(false);
-  const [currentBacklinkId, setCurrentBacklinkId] = useState(null);
-
-  const [topsearch, setTopsearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  /* ---------------- EDIT MODAL STATES ---------------- */
-
+  const handleOnClick = (email, navigate) => {
+    localStorage.setItem("email", email);
+    setSearch(email);
+    setEnteredEmail(email);
+    dispatch(ladgerAction.setTimeline(null));
+    setWelcomeHeaderContent("Backlinks");
+    navigateTo(navigate);
+  };
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [currentBacklinkId, setCurrentBacklinkId] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const handleEditClick = (backlink) => {
     setEditData(backlink);
     setShowEditModal(true);
   };
-
   const handleEditChange = (e) => {
     setEditData({
       ...editData,
       [e.target.name]: e.target.value,
     });
   };
-
   const handleSaveEdit = async () => {
     try {
       setSaving(true);
 
-      await dispatch(updateBacklink(editData));
+      dispatch(updateBacklink(editData));
 
       toast.success("Backlink updated successfully");
 
@@ -59,58 +82,113 @@ export function BacklinksPage() {
       setSaving(false);
     }
   };
+  const columns = [
+    {
+      label: "Created At",
+      accessor: "date_entered",
+      headerClasses: "",
+      icon: Calendar,
 
-  /* ---------------- FILTER ---------------- */
+      onClick: (row) => handleOnClick(extractEmail(row?.post_author_email_c), "/"),
+      classes: "truncate max-w-[200px]",
+      render: (row) => (
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {row.date_entered}
+        </span>
+      )
+    },
+    {
+      label: "AUTHOR",
+      accessor: "post_author_email_c",
+      headerClasses: "",
+      icon: User2,
+      classes: "truncate max-w-[200px]",
+      onClick: (row) => handleOnClick(extractEmail(row?.post_author_email_c), "/contacts"),
 
-  const filteredbacklinks = backlinks.filter((item) => {
-    const searchValue = topsearch.toLowerCase();
-    if (!searchValue) return true;
+      render: (row) => (
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {row.post_author_email_c?.substring(0, 20)}
+        </span>
+      )
+    },
+    {
+      label: "Target url",
+      accessor: "target_url_c",
+      headerClasses: "",
+      icon: Globe,
+      classes: "truncate ",
+      render: (row) => (
+        <span className="font-medium text-blue-700 ">
+          <a
+            href={row.target_url_c}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {row.target_url_c?.substring(0, 40)}...
+          </a>        </span>
+      )
+    },
+    {
+      label: "Anchor Text ",
+      accessor: "anchor_text_c",
+      headerClasses: "",
+      icon: Text,
+      classes: "truncate max-w-[300px]",
 
-    const contact = item?.post_author_name_c?.toLowerCase() ?? "";
-    const subject = item?.target_url_c?.toLowerCase() ?? "";
+      render: (row) => (
+        <span className="font-medium text-green-700 ">
+          {row.anchor_text_c || "N/A"}
+        </span>
+      )
+    },
+    {
+      label: "Expiry",
+      accessor: "expiry_date_c",
+      headerClasses: "",
+      icon: Calendar,
+      classes: "truncate max-w-[300px]",
 
-    if (selectedCategory === "contact") {
-      return contact.includes(searchValue);
-    }
+      render: (row) => (
+        <span className="font-medium text-gray-700 ">
+          {row?.expiry_date_c}
+        </span>
+      )
+    },
+    {
+      label: "Link Type",
+      accessor: "link_type",
+      headerClasses: "",
+      icon: ChartNoAxesColumn,
+      classes: "truncate max-w-[300px]",
 
-    if (selectedCategory === "subject") {
-      return subject.includes(searchValue);
-    }
+      render: (row) => (
+        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+          {row.link_type}
+        </span>
+      )
+    },
+    {
+      label: "Action",
+      accessor: "action",
+      headerClasses: "ml-auto",
+      icon: Clapperboard,
+      classes: "truncate max-w-[300px] ml-auto",
+      render: (row) => (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => handleEditClick(row)}
+            className="flex items-center gap-1 px-3 py-1  text-blue-700 rounded cursor-pointer"
+          >
+            <Pen className="w-5 h-5" />
+          </button>
 
-    return contact.includes(searchValue);
-  });
+        </div>
+      )
+    },
 
-  const handleSearchChange = (value) => setTopsearch(value);
-  const handleCategoryChange = (value) => setSelectedCategory(value);
 
-  useEffect(() => {
-    dispatch(getBacklinks());
-  }, [dispatch]);
-
-  const handleBacklinkClick = (backlinkId) => {
-    setCurrentBacklinkId(backlinkId);
-    dispatch(getBacklinkDetail(backlinkId));
-    setShowDetail(true);
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800";
-      case "removed":
-        return "bg-red-100 text-red-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
+  ]
   if (showDetail && currentBacklinkId) {
     return (
       <BacklinkDetailBox
@@ -119,129 +197,9 @@ export function BacklinksPage() {
       />
     );
   }
-  if (loading && backlinks.length === 0) {
-    return (
-      <div className="bg-white rounded-2xl shadow-sm p-10 flex justify-center">
-        <div className="animate-spin h-10 w-10 border-b-2 border-green-600 rounded-full"></div>
-      </div>
-    );
-  }
+
   return (
     <>
-      <SearchComponent
-        dropdownOptions={[
-          { value: "subject", label: "Target url" },
-          { value: "contact", label: "Author" },
-        ]}
-        selectedDropdownValue={selectedCategory}
-        onDropdownChange={handleCategoryChange}
-        searchValue={topsearch}
-        onSearchChange={handleSearchChange}
-        searchPlaceholder="Search items..."
-        showDownload={false}
-        className="mb-6"
-      />
-
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center gap-3">
-            <ExternalLink className="w-6 h-6 text-green-600" />
-            <h2 className="text-xl text-gray-900">ALL BACKLINKS</h2>
-          </div>
-
-          <span className="px-4 py-1 bg-green-100 text-green-700 rounded-full">
-            {backlinks.length} Backlinks
-          </span>
-        </div>
-
-        {/* TABLE */}
-
-        <div className="overflow-auto">
-          <table className="w-full table-fixed">
-            <thead>
-              <tr className="bg-green-600 text-white">
-                <th className="px-6 py-4 text-left">CREATED</th>
-                <th className="px-6 py-4 text-left">AUTHOR</th>
-                <th className="px-6 py-4 text-left">TARGET URL</th>
-                <th className="px-6 py-4 text-left">ANCHOR TEXT</th>
-                <th className="px-6 py-4 text-left">EXPIRY</th>
-                <th className="px-6 py-4 text-left">LINK TYPE</th>
-                <th className="px-6 py-4 text-left">ACTION</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredbacklinks.map((backlink, index) => (
-                <tr
-                  key={backlink.id || index}
-                  className="border-b hover:bg-green-50"
-                >
-                  <td className="px-6 py-4">{backlink.date_entered}</td>
-
-                  <td className="px-6 py-4">
-                    <div className="font-medium">
-                      {backlink.post_author_name_c?.substring(0, 20)}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {backlink.post_author_email_c?.substring(0, 20)}
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4 max-w-[250px] truncate">
-                    <a
-                      href={backlink.target_url_c}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {backlink.target_url_c?.substring(0, 40)}...
-                    </a>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {backlink.anchor_text_c || "N/A"}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {formatDate(backlink.expiry_date_c)}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
-                        backlink.link_type,
-                      )}`}
-                    >
-                      {backlink.link_type}
-                    </span>
-                  </td>
-
-                  {/* EDIT BUTTON */}
-
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleEditClick(backlink)}
-                      className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {backlinks.length === 0 && !loading && (
-          <div className="p-12 text-center">
-            <EqualApproximatelyIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p>No backlinks found</p>
-          </div>
-        )}
-      </div>
-
-      {/* ---------------- EDIT POPUP MODAL ---------------- */}
-
       {showEditModal && editData && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-[500px] rounded-xl shadow-xl p-6 relative">
@@ -346,6 +304,11 @@ export function BacklinksPage() {
           </div>
         </div>
       )}
+      <TableView tableData={backlinks} tableName={"Backlinks"} columns={columns} slice={"backlinks"} fetchNextPage={() => dispatch(getBacklinks({ page: pageIndex + 1 }))}   >
+        <TableTitleBar Icon={Cable} title={"Backlinks"} titleClass={"text-teal-700"} />
+        <Table headerStyle={"  bg-teal-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_200px_1fr]"} />
+      </TableView>
     </>
+
   );
 }

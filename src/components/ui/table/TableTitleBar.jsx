@@ -14,12 +14,12 @@ function TableTitleBar({ Icon, title, iconClass, titleClass }) {
             </div>
 
             {/* Right */}
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
                 <button className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-md hover:bg-gray-100">
                     <Download className="w-4 h-4" />
                     Export
                 </button>
-            </div>
+            </div> */}
 
         </div>
     )
