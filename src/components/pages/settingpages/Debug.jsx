@@ -21,7 +21,7 @@ const TABS = [
     module: "outr_request_and_response",
   },
   { key: "prompt", label: "Prompt Ledger", module: "outr_prompt_ledger" },
-  { key: "logger", label: "Logger", module: "outr_prompt_ledger" },
+  { key: "logger", label: "Logger", module: "outr_global_logger" },
 ];
 
 const IMPORTANT_COLUMNS = {
@@ -29,6 +29,7 @@ const IMPORTANT_COLUMNS = {
   api: ["date_entered", "request", "response"],
   gpc: ["date_entered", "request", "response"],
   prompt: ["date_entered", "response", "full_prompt"],
+  logger: ["date_entered", "name", "description"],
 };
 
 const HIDDEN_FIELDS = [
@@ -74,7 +75,7 @@ const Debug = () => {
 
   const { crmEndpoint } = useSelector((state) => state.user);
 
-  const { loading, data, error } = useModule({
+  const { loading, data, error, refetch } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: { module: activeTab.module },
@@ -89,6 +90,9 @@ const Debug = () => {
     if (activeTab.key !== "prompt") return;
     if (state?.prompt) setSelectedRecord(state?.prompt);
   }, [loading, data, state?.promptId, activeTab]);
+  useEffect(() => {
+    refetch();
+  }, [activeTab]);
 
   /* set timeline based on date */
   useEffect(() => {
