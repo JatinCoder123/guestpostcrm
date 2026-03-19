@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import TableToolbar from './TableToolbar'
+import { motion } from "framer-motion"
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
 import FilterRow from './FilterRow'
 import StatusRow from './StatusRow'
 import { useSelector } from 'react-redux'
-import TableTitleBar from './TableTitleBar'
+import { Eye, EyeOff } from 'lucide-react'
+
 const TableContext = createContext()
+
 export const useTableContext = () => {
     const ctx = useContext(TableContext)
     if (!ctx) {
@@ -14,19 +16,24 @@ export const useTableContext = () => {
     }
     return ctx;
 }
+
 const TableView = ({
     tableData,
     tableName,
-    columns, slice,
+    columns,
+    slice,
     statusList = [],
     statusKey = "status",
     defaultStatus,
     fetchNextPage,
     children,
 }) => {
+
     const { pageIndex, pageCount, count, loading } = useSelector(state => state[slice])
+
     const [search, setSearch] = useState("")
-    console.log("TAVBLE DATA", tableData)
+    const [showStatus, setShowStatus] = useState(true)
+
     const [filters, setFilters] = useState(() => {
         if (defaultStatus) return { [statusKey]: defaultStatus }
         return {}
@@ -39,11 +46,12 @@ const TableView = ({
 
     const [selectedRows, setSelectedRows] = useState([])
     const [visibleColumns, setVisibleColumns] = useState([])
+
     useEffect(() => {
         setVisibleColumns(columns);
     }, [columns]);
-    const processedData = useMemo(() => {
 
+    const processedData = useMemo(() => {
         let data = [...tableData]
 
         if (search) {
@@ -61,14 +69,12 @@ const TableView = ({
 
         if (sort.column) {
             data.sort((a, b) => {
-
                 const valA = a[sort.column]
                 const valB = b[sort.column]
 
                 if (valA > valB) return sort.direction === "asc" ? 1 : -1
                 if (valA < valB) return sort.direction === "asc" ? -1 : 1
                 return 0
-
             })
         }
 
@@ -83,6 +89,8 @@ const TableView = ({
         statusKey,
         visibleColumns,
         setVisibleColumns,
+        showStatus,
+        setShowStatus,
         search,
         setSearch,
         filters,
@@ -93,44 +101,73 @@ const TableView = ({
         loading,
         selectedRows,
         setSelectedRows,
-        pageIndex, pageCount, count,
+        pageIndex,
+        pageCount,
+        count,
         data: processedData
     }
 
     return (
-
         <TableContext.Provider value={value}>
 
-            <div className='flex flex-col gap-5'>
-
-                {/* <TableToolbar /> */}
+            {/* 🔥 Layout animation wrapper */}
+            <motion.div layout className='flex flex-col gap-2'>
 
                 <FilterRow />
+                {statusList.length > 0 && count > 0 && <div className="flex justify-start ">
+                    <button
+                        onClick={() => setShowStatus(prev => !prev)}
+                        className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
+                    >
+                        {showStatus ? <EyeOff className="w-4 h-4 text-gray-700" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                </div>}
 
-                {statusList.length > 0 && count > 0 && <StatusRow />}
-                <div className="bg-white  rounded-xl border overflow-hidden">
+
+                {/* 🔥 Animated StatusRow (controlled by showStatus) */}
+                <motion.div
+                    layout
+                    initial={false}
+                    animate={{
+                        height: showStatus ? "auto" : 0,
+                        opacity: showStatus ? 1 : 0
+                    }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 120,
+                        damping: 18
+                    }}
+                    style={{ overflow: "hidden" }}
+                >
+                    {statusList.length > 0 && count > 0 && <StatusRow />}
+                </motion.div>
+
+                {/* 🔥 Table smoothly moves up/down */}
+                <motion.div
+                    layout
+                    transition={{
+                        type: "spring",
+                        stiffness: 120,
+                        damping: 18
+                    }}
+                    className="bg-white rounded-xl border overflow-hidden"
+                >
                     {children}
+                </motion.div>
 
-                </div>
-
-
-            </div>
+            </motion.div>
 
         </TableContext.Provider>
-
     )
-
 }
+
 export const Table = (props) => {
     return (
-        <table className={`w-full `}>
+        <table className="w-full">
             <TableHeader {...props} />
             <TableBody {...props} />
         </table>
     )
 }
-
-
-
 
 export default TableView

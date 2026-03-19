@@ -15,10 +15,6 @@ import {
   Hash,
   Globe,
   Calendar,
-  Table,
-  User2,
-  Contact2Icon,
-  ChartNoAxesColumn,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -28,17 +24,12 @@ import {
 } from "../../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 import AccountPage from "./AccountPage";
-import TableView from "../ui/table/Table";
-import TableTitleBar from "../ui/table/TableTitleBar";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageContext } from "../../context/pageContext";
-import { getAllContacts } from "../../store/Slices/contacts";
+import AllContacts from "./AllContacts";
 
 export default function Contactpage() {
   const { contactInfo, accountInfo, dealInfo, message, error, loading } =
     useSelector((state) => state.viewEmail);
-  const { contacts, loading: contactsLoading } =
-    useSelector((state) => state.contacts);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     contact: {},
@@ -161,736 +152,675 @@ export default function Contactpage() {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [message, error, dispatch]);
-  if (id) {
-    if (accountShow) {
-      return (
-        <AccountPage
-          setAccountShow={setAccountShow}
-          formData={formData}
-          setFormData={setFormData}
-          handleSave={handleSave}
-        // handleChange={handleChange}
-        />
-      );
-    }
 
+  if (accountShow) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8] py-12 px-4">
-        {/* Hero Section with Avatar */}
-        <div className="max-w-7xl mx-auto mb-8">
-          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full backdrop-blur-xl bg-gradient-to-br from-[#a855f7]/30 to-[#60a5fa]/30 border border-white/50 flex items-center justify-center shadow-xl">
-                  <User size={30} className="text-[#9333ea]" />
-                </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#4ade80] rounded-full border-4 border-white" />
-              </div>
+      <AccountPage
+        setAccountShow={setAccountShow}
+        formData={formData}
+        setFormData={setFormData}
+        handleSave={handleSave}
+      // handleChange={handleChange}
+      />
+    );
+  }
 
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#9333ea] to-[#3b82f6] bg-clip-text text-transparent">
-                  {contactInfo?.full_name || "No Name"}
-                </h1>
-                <p className="text-lg text-gray-600 mt-2">
-                  {contactInfo?.type} {contactInfo?.title}
-                </p>
+  return (
+    <div className="w-full min-h-screen bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8] py-12 px-4">
+      {/* Hero Section with Avatar */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full backdrop-blur-xl bg-gradient-to-br from-[#a855f7]/30 to-[#60a5fa]/30 border border-white/50 flex items-center justify-center shadow-xl">
+                <User size={30} className="text-[#9333ea]" />
               </div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#4ade80] rounded-full border-4 border-white" />
+            </div>
 
-              <div className="editbtn cursor-pointer" onClick={handleEditClick}>
-                <img
-                  width="48"
-                  height="48"
-                  src="https://img.icons8.com/fluency/48/create-new.png"
-                  alt="create-new"
-                />
-              </div>
-              <button
-                onClick={() => setAccountShow(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#9333ea] to-[#3b82f6] bg-clip-text text-transparent">
+                {contactInfo?.full_name || "No Name"}
+              </h1>
+              <p className="text-lg text-gray-600 mt-2">
+                {contactInfo?.type} {contactInfo?.title}
+              </p>
+            </div>
+
+            <div className="editbtn cursor-pointer" onClick={handleEditClick}>
+              <img
+                width="48"
+                height="48"
+                src="https://img.icons8.com/fluency/48/create-new.png"
+                alt="create-new"
+              />
+            </div>
+            <button
+              onClick={() => setAccountShow(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl
                             bg-gradient-to-r from-[#ec4899] to-[#9333ea]
                             text-white font-semibold shadow-lg hover:scale-105 transition"
-              >
-                <Building2 size={18} />
-                View Account
-              </button>
-            </div>
+            >
+              <Building2 size={18} />
+              View Account
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Main Content Grid */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Contact Information - 2 columns */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Contact Information Card */}
-            <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#a855f7] to-[#60a5fa] flex items-center justify-center">
-                  <User className="text-white" size={20} />
+      {/* Main Content Grid */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Contact Information - 2 columns */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Contact Information Card */}
+          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#a855f7] to-[#60a5fa] flex items-center justify-center">
+                <User className="text-white" size={20} />
+              </div>
+              Contact Information
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <GlassInfo
+                icon={<User />}
+                label="Name"
+                value={contactInfo?.full_name}
+              />
+              <GlassInfo
+                icon={<User />}
+                label="Stage"
+                value={contactInfo?.stage}
+              />
+              <GlassInfo
+                icon={<Phone />}
+                label="Phone"
+                value={contactInfo?.phone_mobile}
+              />
+              <GlassInfo
+                icon={<Mail />}
+                label="Email"
+                value={contactInfo?.email1}
+              />
+              <GlassInfo
+                icon={<MapPin />}
+                label="Date Entered"
+                value={contactInfo?.date_entered}
+              />
+              <GlassInfo
+                icon={<User />}
+                label="Customer Type"
+                value={contactInfo?.customer_type}
+              />
+              <GlassInfo
+                icon={<ChartSpline />}
+                label="Status"
+                value={contactInfo?.status}
+              />
+              <GlassInfo
+                icon={<Target />}
+                label="Last Activity"
+                value={contactInfo?.date_modified}
+              />
+            </div>
+          </div>
+
+          {/* Deals Information Section - FIXED HEIGHT AND SCROLLABLE */}
+          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4ade80] to-[#10b981] flex items-center justify-center">
+                <DollarSign className="text-white" size={20} />
+              </div>
+              Deals Information
+            </h2>
+
+            {/* Deals Summary Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#60a5fa]/20 to-[#22d3ee]/20 flex items-center justify-center">
+                    <Hash className="text-[#3b82f6]" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
+                      Total Deals
+                    </p>
+                    <p className="text-xl font-bold text-gray-800">
+                      {totalDealCount}
+                    </p>
+                  </div>
                 </div>
-                Contact Information
-              </h2>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <GlassInfo
-                  icon={<User />}
-                  label="Name"
-                  value={contactInfo?.full_name}
-                />
-                <GlassInfo
-                  icon={<User />}
-                  label="Stage"
-                  value={contactInfo?.stage}
-                />
-                <GlassInfo
-                  icon={<Phone />}
-                  label="Phone"
-                  value={contactInfo?.phone_mobile}
-                />
-                <GlassInfo
-                  icon={<Mail />}
-                  label="Email"
-                  value={contactInfo?.email1}
-                />
-                <GlassInfo
-                  icon={<MapPin />}
-                  label="Date Entered"
-                  value={contactInfo?.date_entered}
-                />
-                <GlassInfo
-                  icon={<User />}
-                  label="Customer Type"
-                  value={contactInfo?.customer_type}
-                />
-                <GlassInfo
-                  icon={<ChartSpline />}
-                  label="Status"
-                  value={contactInfo?.status}
-                />
-                <GlassInfo
-                  icon={<Target />}
-                  label="Last Activity"
-                  value={contactInfo?.date_modified}
-                />
+              <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#fbbf24]/20 to-[#f97316]/20 flex items-center justify-center">
+                    <TrendingUp className="text-[#eab308]" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
+                      Highest Deal
+                    </p>
+                    <p className="text-xl font-bold text-gray-800">
+                      ${highestDealAmount}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#a855f7]/20 to-[#ec4899]/20 flex items-center justify-center">
+                    <Calendar className="text-[#9333ea]" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
+                      Deal Date
+                    </p>
+                    <p className="text-xl font-bold text-gray-800">
+                      {highestDealDate}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Deals Information Section - FIXED HEIGHT AND SCROLLABLE */}
-            <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4ade80] to-[#10b981] flex items-center justify-center">
-                  <DollarSign className="text-white" size={20} />
-                </div>
-                Deals Information
-              </h2>
+            {/* Deals Table with Fixed Height and Scrollable */}
+            {formData.deal && formData.deal.length > 0 ? (
+              <div className="space-y-4">
+                {/* Table Header */}
+                <div className="grid grid-cols-12 gap-4 mb-2 pb-3 pt-3 border-b border-gray-200/50 sticky top-0 bg-white/40 backdrop-blur-sm z-10">
+                  <div className="col-span-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <Hash size={20} /> #
+                    </p>
+                  </div>
+                  <div className="col-span-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <Calendar size={20} /> Date
+                    </p>
+                  </div>
+                  <div className="col-span-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <DollarSign size={20} /> Deal Amount
+                    </p>
 
-              {/* Deals Summary Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#60a5fa]/20 to-[#22d3ee]/20 flex items-center justify-center">
-                      <Hash className="text-[#3b82f6]" size={20} />
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
-                        Total Deals
-                      </p>
-                      <p className="text-xl font-bold text-gray-800">
-                        {totalDealCount}
-                      </p>
-                    </div>
+                  </div>
+                  <div className="col-span-5">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
+                      <Globe size={20} /> Website
+                    </p>
                   </div>
                 </div>
 
-                <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#fbbf24]/20 to-[#f97316]/20 flex items-center justify-center">
-                      <TrendingUp className="text-[#eab308]" size={20} />
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
-                        Highest Deal
-                      </p>
-                      <p className="text-xl font-bold text-gray-800">
-                        ${highestDealAmount}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="backdrop-blur-md bg-white/30 border border-white/60 p-4 rounded-2xl hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#a855f7]/20 to-[#ec4899]/20 flex items-center justify-center">
-                      <Calendar className="text-[#9333ea]" size={20} />
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-600 font-bold">
-                        Deal Date
-                      </p>
-                      <p className="text-xl font-bold text-gray-800">
-                        {highestDealDate}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Deals Table with Fixed Height and Scrollable */}
-              {formData.deal && formData.deal.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Table Header */}
-                  <div className="grid grid-cols-12 gap-4 mb-2 pb-3 pt-3 border-b border-gray-200/50 sticky top-0 bg-white/40 backdrop-blur-sm z-10">
-                    <div className="col-span-1">
-                      <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
-                        <Hash size={20} /> #
-                      </p>
-                    </div>
-                    <div className="col-span-3">
-                      <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
-                        <Calendar size={20} /> Date
-                      </p>
-                    </div>
-                    <div className="col-span-3">
-                      <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
-                        <DollarSign size={20} /> Deal Amount
-                      </p>
-
-                    </div>
-                    <div className="col-span-5">
-                      <p className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1">
-                        <Globe size={20} /> Website
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Table Rows with Fixed Height Container */}
-                  <div
-                    className="space-y-2 h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
-                    style={{
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "#d1d5db transparent",
-                    }}
-                  >
-                    {formData.deal.map((deal, index) => (
-                      <div
-                        key={index}
-                        className={`grid grid-cols-12 gap-4 p-3 backdrop-blur-md bg-white/20 border ${index === highestDealIndex
-                          ? "border-[#f59e0b]/50"
-                          : "border-white/40"
-                          } rounded-xl items-center transition-all duration-200 hover:scale-101 hover:bg-white/50 hover:border-[#9333ea]/30`}
-                      >
-                        {/* Serial Number */}
-                        <div className="col-span-1">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center ${index === highestDealIndex
-                              ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
-                              : "bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20"
+                {/* Table Rows with Fixed Height Container */}
+                <div
+                  className="space-y-2 h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+                  style={{
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#d1d5db transparent",
+                  }}
+                >
+                  {formData.deal.map((deal, index) => (
+                    <div
+                      key={index}
+                      className={`grid grid-cols-12 gap-4 p-3 backdrop-blur-md bg-white/20 border ${index === highestDealIndex
+                        ? "border-[#f59e0b]/50"
+                        : "border-white/40"
+                        } rounded-xl items-center transition-all duration-200 hover:scale-101 hover:bg-white/50 hover:border-[#9333ea]/30`}
+                    >
+                      {/* Serial Number */}
+                      <div className="col-span-1">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${index === highestDealIndex
+                            ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
+                            : "bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20"
+                            }`}
+                        >
+                          <span
+                            className={`text-sm font-bold ${index === highestDealIndex
+                              ? "text-[#92400e]"
+                              : "text-gray-800"
                               }`}
                           >
-                            <span
-                              className={`text-sm font-bold ${index === highestDealIndex
+                            {index + 1}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Date */}
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#a855f7]/20 to-[#ec4899]/20 flex items-center justify-center">
+                            <Calendar size={16} className="text-[#9333ea]" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-700">
+                              {deal.date_entered
+                                ? formatDate(deal.date_entered)
+                                : "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Deal Amount */}
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${index === highestDealIndex
+                              ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
+                              : "bg-gradient-to-br from-[#4ade80]/20 to-[#10b981]/20"
+                              }`}
+                          >
+                            <DollarSign
+                              size={16}
+                              className={
+                                index === highestDealIndex
+                                  ? "text-[#92400e]"
+                                  : "text-[#059669]"
+                              }
+                            />
+                          </div>
+                          <div>
+                            <p
+                              className={`text-base font-bold ${index === highestDealIndex
                                 ? "text-[#92400e]"
                                 : "text-gray-800"
                                 }`}
                             >
-                              {index + 1}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Date */}
-                        <div className="col-span-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#a855f7]/20 to-[#ec4899]/20 flex items-center justify-center">
-                              <Calendar size={16} className="text-[#9333ea]" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-700">
-                                {deal.date_entered
-                                  ? formatDate(deal.date_entered)
-                                  : "N/A"}
+                              ${deal.dealamount || "0"}
+                            </p>
+                            {index === highestDealIndex && (
+                              <p className="text-xs text-[#d97706] font-medium">
+                                Highest Deal
                               </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Deal Amount */}
-                        <div className="col-span-3">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-10 h-10 rounded-lg flex items-center justify-center ${index === highestDealIndex
-                                ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
-                                : "bg-gradient-to-br from-[#4ade80]/20 to-[#10b981]/20"
-                                }`}
-                            >
-                              <DollarSign
-                                size={16}
-                                className={
-                                  index === highestDealIndex
-                                    ? "text-[#92400e]"
-                                    : "text-[#059669]"
-                                }
-                              />
-                            </div>
-                            <div>
-                              <p
-                                className={`text-base font-bold ${index === highestDealIndex
-                                  ? "text-[#92400e]"
-                                  : "text-gray-800"
-                                  }`}
-                              >
-                                ${deal.dealamount || "0"}
-                              </p>
-                              {index === highestDealIndex && (
-                                <p className="text-xs text-[#d97706] font-medium">
-                                  Highest Deal
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Website */}
-                        <div className="col-span-5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#60a5fa]/20 to-[#22d3ee]/20 flex items-center justify-center">
-                              <Globe size={16} className="text-[#3b82f6]" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800 truncate">
-                                {deal.website_c || "N/A"}
-                              </p>
-                            </div>
+                            )}
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 mx-auto rounded-full backdrop-blur-md bg-white/30 border border-white/50 flex items-center justify-center mb-4">
-                    <DollarSign className="text-gray-400" size={24} />
-                  </div>
-                  <p className="text-gray-500 font-medium">No deals found</p>
-                </div>
-              )}
-            </div>
 
-            {/* Addresses Section */}
-            <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#60a5fa] to-[#22d3ee] flex items-center justify-center">
-                  <MapPin className="text-white" size={20} />
+                      {/* Website */}
+                      <div className="col-span-5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#60a5fa]/20 to-[#22d3ee]/20 flex items-center justify-center">
+                            <Globe size={16} className="text-[#3b82f6]" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800 truncate">
+                              {deal.website_c || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                Addresses
-              </h2>
-
-              <div className="space-y-4">
-                <GlassInfo
-                  icon={<MapPin />}
-                  label="Primary Address"
-                  value={contactInfo?.billing_address_street}
-                  fullWidth
-                />
-                <GlassInfo
-                  icon={<MapPin />}
-                  label="Secondary Address"
-                  value={contactInfo?.alt_address_street}
-                  fullWidth
-                />
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto rounded-full backdrop-blur-md bg-white/30 border border-white/50 flex items-center justify-center mb-4">
+                  <DollarSign className="text-gray-400" size={24} />
+                </div>
+                <p className="text-gray-500 font-medium">No deals found</p>
+              </div>
+            )}
           </div>
 
-          {/* Account Details - 1 column */}
-          <div className="space-y-6">
-            <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f472b6] to-[#a855f7] flex items-center justify-center">
-                  <Building2 className="text-white" size={20} />
-                </div>
-                Account
-              </h2>
-
-              <div className="space-y-4">
-                <GlassInfo
-                  icon={<Building2 />}
-                  label="Company"
-                  value={formData?.contact?.account_name}
-                  fullWidth
-                />
-                <GlassInfo
-                  icon={<CreditCard />}
-                  label="Account ID"
-                  value={formData?.contact?.account_id}
-                  fullWidth
-                />
-                <GlassInfo
-                  icon={<Phone />}
-                  label="Phone"
-                  value={formData?.contact?.phone_work}
-                  fullWidth
-                />
-                <GlassInfo
-                  icon={<Building2 />}
-                  label="Website"
-                  value={accountInfo?.website}
-                  fullWidth
-                />
+          {/* Addresses Section */}
+          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#60a5fa] to-[#22d3ee] flex items-center justify-center">
+                <MapPin className="text-white" size={20} />
               </div>
-            </div>
+              Addresses
+            </h2>
 
-            {/* Account Addresses */}
-            <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">
-                Account Addresses
-              </h3>
-              <div className="space-y-4">
-                <GlassInfo
-                  icon={<MapPin />}
-                  label="Billing"
-                  value={accountInfo?.billing_address_street}
-                  fullWidth
-                />
-                <GlassInfo
-                  icon={<MapPin />}
-                  label="Shipping"
-                  value={accountInfo?.shipping_address_street}
-                  fullWidth
-                />
-              </div>
+            <div className="space-y-4">
+              <GlassInfo
+                icon={<MapPin />}
+                label="Primary Address"
+                value={contactInfo?.billing_address_street}
+                fullWidth
+              />
+              <GlassInfo
+                icon={<MapPin />}
+                label="Secondary Address"
+                value={contactInfo?.alt_address_street}
+                fullWidth
+              />
             </div>
           </div>
         </div>
 
-        {/* Edit Modal */}
-        {isEditing && (
+        {/* Account Details - 1 column */}
+        <div className="space-y-6">
+          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f472b6] to-[#a855f7] flex items-center justify-center">
+                <Building2 className="text-white" size={20} />
+              </div>
+              Account
+            </h2>
+
+            <div className="space-y-4">
+              <GlassInfo
+                icon={<Building2 />}
+                label="Company"
+                value={formData?.contact?.account_name}
+                fullWidth
+              />
+              <GlassInfo
+                icon={<CreditCard />}
+                label="Account ID"
+                value={formData?.contact?.account_id}
+                fullWidth
+              />
+              <GlassInfo
+                icon={<Phone />}
+                label="Phone"
+                value={formData?.contact?.phone_work}
+                fullWidth
+              />
+              <GlassInfo
+                icon={<Building2 />}
+                label="Website"
+                value={accountInfo?.website}
+                fullWidth
+              />
+            </div>
+          </div>
+
+          {/* Account Addresses */}
+          <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl p-8 shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              Account Addresses
+            </h3>
+            <div className="space-y-4">
+              <GlassInfo
+                icon={<MapPin />}
+                label="Billing"
+                value={accountInfo?.billing_address_street}
+                fullWidth
+              />
+              <GlassInfo
+                icon={<MapPin />}
+                label="Shipping"
+                value={accountInfo?.shipping_address_street}
+                fullWidth
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      {isEditing && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={handleCancel}
+        >
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={handleCancel}
+            className="backdrop-blur-xl bg-white/90 border border-white/50 rounded-3xl p-8 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="backdrop-blur-xl bg-white/90 border border-white/50 rounded-3xl p-8 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">
-                  Edit Contact & Account
-                </h2>
-                <button
-                  onClick={handleCancel}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X size={24} />
-                </button>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-800">
+                Edit Contact & Account
+              </h2>
+              <button
+                onClick={handleCancel}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={handleCancel}
+                className="px-6 py-2 text-gray-600 font-semibold border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white font-semibold rounded-xl hover:from-[#7e22ce] hover:to-[#2563eb] transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+            {/* Edit form content */}
+            <div className="space-y-8">
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <User size={20} className="text-[#9333ea]" />
+                  Contact Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      name="first_name"
+                      value={formData.contact.first_name || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      name="last_name"
+                      value={formData.contact.last_name || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Stage
+                    </label>
+                    <input
+                      type="text"
+                      name="stage"
+                      value={formData.contact.stage || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone_mobile"
+                      value={formData.contact.phone_mobile || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email1"
+                      value={formData.contact.email1 || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Date Entered
+                    </label>
+                    <input
+                      type="date"
+                      name="date_entered"
+                      value={formData.contact.date_entered || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Customer Type
+                    </label>
+                    <input
+                      type="text"
+                      name="customer_type"
+                      value={formData.contact.customer_type || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+                    />
+                  </div>
+                </div>
               </div>
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
-                <button
-                  onClick={handleCancel}
-                  className="px-6 py-2 text-gray-600 font-semibold border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-6 py-2 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white font-semibold rounded-xl hover:from-[#7e22ce] hover:to-[#2563eb] transition-colors"
-                >
-                  Save Changes
-                </button>
+
+              {/* Contact Addresses */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <MapPin size={20} className="text-[#3b82f6]" />
+                  Contact Addresses
+                </h3>
+                <div className="space-y-4">
+                  <div className="col-span-full">
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Primary Address
+                    </label>
+                    <textarea
+                      name="billing_address_street"
+                      value={formData.contact.billing_address_street || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      rows={3}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
+                    />
+                  </div>
+                  <div className="col-span-full">
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Secondary Address
+                    </label>
+                    <textarea
+                      name="alt_address_street"
+                      value={formData.contact.alt_address_street || ""}
+                      onChange={(e) => handleChange(e, "contact")}
+                      rows={3}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
+                    />
+                  </div>
+                </div>
               </div>
-              {/* Edit form content */}
-              <div className="space-y-8">
-                {/* Contact Information */}
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <User size={20} className="text-[#9333ea]" />
-                    Contact Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        name="first_name"
-                        value={formData.contact.first_name || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        name="last_name"
-                        value={formData.contact.last_name || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Stage
-                      </label>
-                      <input
-                        type="text"
-                        name="stage"
-                        value={formData.contact.stage || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone_mobile"
-                        value={formData.contact.phone_mobile || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email1"
-                        value={formData.contact.email1 || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Date Entered
-                      </label>
-                      <input
-                        type="date"
-                        name="date_entered"
-                        value={formData.contact.date_entered || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Customer Type
-                      </label>
-                      <input
-                        type="text"
-                        name="customer_type"
-                        value={formData.contact.customer_type || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                      />
-                    </div>
+
+              {/* Account Information */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <Building2 size={20} className="text-[#ec4899]" />
+                  Account Information
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Company
+                    </label>
+                    <input
+                      type="text"
+                      name="company"
+                      value={formData.account.company || ""}
+                      onChange={(e) => handleChange(e, "account")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Account ID
+                    </label>
+                    <input
+                      type="text"
+                      name="accountId"
+                      value={formData.account.accountId || ""}
+                      onChange={(e) => handleChange(e, "account")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone_office"
+                      value={formData.account.phone_office || ""}
+                      onChange={(e) => handleChange(e, "account")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Website
+                    </label>
+                    <input
+                      type="url"
+                      name="website"
+                      value={formData.account.website || ""}
+                      onChange={(e) => handleChange(e, "account")}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* Contact Addresses */}
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <MapPin size={20} className="text-[#3b82f6]" />
-                    Contact Addresses
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="col-span-full">
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Primary Address
-                      </label>
-                      <textarea
-                        name="billing_address_street"
-                        value={formData.contact.billing_address_street || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        rows={3}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                      />
-                    </div>
-                    <div className="col-span-full">
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Secondary Address
-                      </label>
-                      <textarea
-                        name="alt_address_street"
-                        value={formData.contact.alt_address_street || ""}
-                        onChange={(e) => handleChange(e, "contact")}
-                        rows={3}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                      />
-                    </div>
+              {/* Account Addresses */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <MapPin size={20} className="text-[#3b82f6]" />
+                  Account Addresses
+                </h3>
+                <div className="space-y-4">
+                  <div className="col-span-full">
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Billing Address
+                    </label>
+                    <textarea
+                      name="billing_address_street"
+                      value={formData.account.billing_address_street || ""}
+                      onChange={(e) => handleChange(e, "account")}
+                      rows={3}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
+                    />
                   </div>
-                </div>
-
-                {/* Account Information */}
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <Building2 size={20} className="text-[#ec4899]" />
-                    Account Information
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Company
-                      </label>
-                      <input
-                        type="text"
-                        name="company"
-                        value={formData.account.company || ""}
-                        onChange={(e) => handleChange(e, "account")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Account ID
-                      </label>
-                      <input
-                        type="text"
-                        name="accountId"
-                        value={formData.account.accountId || ""}
-                        onChange={(e) => handleChange(e, "account")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone_office"
-                        value={formData.account.phone_office || ""}
-                        onChange={(e) => handleChange(e, "account")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Website
-                      </label>
-                      <input
-                        type="url"
-                        name="website"
-                        value={formData.account.website || ""}
-                        onChange={(e) => handleChange(e, "account")}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ec4899]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Account Addresses */}
-                <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <MapPin size={20} className="text-[#3b82f6]" />
-                    Account Addresses
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="col-span-full">
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Billing Address
-                      </label>
-                      <textarea
-                        name="billing_address_street"
-                        value={formData.account.billing_address_street || ""}
-                        onChange={(e) => handleChange(e, "account")}
-                        rows={3}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                      />
-                    </div>
-                    <div className="col-span-full">
-                      <label className="block text-sm font-semibold text-gray-600 mb-1">
-                        Shipping Address
-                      </label>
-                      <textarea
-                        name="shipping_address_street"
-                        value={formData.account.shipping_address_street || ""}
-                        onChange={(e) => handleChange(e, "account")}
-                        rows={3}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
-                      />
-                    </div>
+                  <div className="col-span-full">
+                    <label className="block text-sm font-semibold text-gray-600 mb-1">
+                      Shipping Address
+                    </label>
+                    <textarea
+                      name="shipping_address_street"
+                      value={formData.account.shipping_address_street || ""}
+                      onChange={(e) => handleChange(e, "account")}
+                      rows={3}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3b82f6] resize-none"
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
-    );
-  }
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
-    useContext(PageContext);
-  const navigateTo = useNavigate();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setSearch(email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Offers");
-    navigateTo(navigate);
-  };
-  const columns = [
-    {
-      label: "Created At",
-      accessor: "date_entered",
-      headerClasses: "",
-      icon: Calendar,
-
-      onClick: (row) => handleOnClick(extrrow?.email_address, "/"),
-      classes: "truncate max-w-[200px]",
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
-        </span>
-      )
-    },
-    {
-      label: "Contact",
-      accessor: "email_address",
-      headerClasses: "",
-      icon: User2,
-      classes: "truncate max-w-[200px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/contacts"),
-
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row.email_address}
-        </span>
-      )
-    },
+        </div>
+      )}
+    </div>
+  );
 
 
-    {
-      label: "type",
-      accessor: "type",
-      headerClasses: "",
-      icon: ChartNoAxesColumn,
-      classes: "truncate max-w-[300px]",
-
-      render: (row) => (
-        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-          {row?.type}
-        </span>
-      )
-    },
-
-
-
-  ]
   return (
-    <TableView tableData={contacts} tableName={"Contacts"} columns={columns} slice={"contacts"} statusKey={"offer_status"} fetchNextPage={() => dispatch(getAllContacts({ page: 1 }))}   >
-      <TableTitleBar Icon={Contact2Icon} title={"Contacts"} titleClass={"text-fuchsia-700"} />
-      <Table headerStyle={"  bg-fuchsia-600"} layoutStyle={"grid grid-cols-[1fr_1fr_1fr]"} />
-    </TableView>
+    <AllContacts />
   )
 }
 

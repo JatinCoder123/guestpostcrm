@@ -50,7 +50,7 @@ export function ForwardedPage() {
     },
     {
       label: "Assigned At",
-      accessor: "date_entered",
+      accessor: "date_modified",
       headerClasses: "",
       icon: Calendar,
 

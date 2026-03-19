@@ -101,7 +101,7 @@ const router = createBrowserRouter([
         element: <DraftInvoice />,
       },
       {
-        path: "contacts/:id?",
+        path: "contacts",
         element: <Contactpage />,
       },
       {

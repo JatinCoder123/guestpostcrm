@@ -288,7 +288,7 @@ export function InvoicesPage() {
       )}
       <TableView tableData={invoices} tableName={"Invoices"} columns={columns} slice={"invoices"} statusKey={"status_c"} statusList={statusList} fetchNextPage={() => dispatch(getInvoices({ page: pageIndex + 1 }))}   >
         <TableTitleBar Icon={FileText} title={"Invoices"} titleClass={"text-orange-700"} />
-        <Table headerStyle={"  bg-orange-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_200px_200px_1fr]"} />
+        <Table headerStyle={"  bg-orange-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_300px_200px_200px_1fr]"} />
       </TableView></>
 
   );

@@ -34,16 +34,18 @@ export function UnrepliedEmailsPage() {
 
 
   const { handleMove } = useThreadContext()
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { setWelcomeHeaderContent, setSearch, setEnteredEmail, setCurrentIndex } =
     useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
+  const handleOnClick = (email, navigate, index) => {
     localStorage.setItem("email", email);
     setSearch(email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Invoices");
+    setWelcomeHeaderContent("Unreplied");
+    console.log(index)
+    setCurrentIndex(index)
     navigateTo(navigate);
   };
   const columns = [
@@ -53,7 +55,7 @@ export function UnrepliedEmailsPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.from), "/"),
+      onClick: (row, index) => handleOnClick(extractEmail(row?.from), "/", index),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -68,7 +70,7 @@ export function UnrepliedEmailsPage() {
       headerClasses: "",
       icon: User,
       classes: "truncate ",
-      onClick: (row) => handleOnClick(extractEmail(row?.from), "/contacts"),
+      onClick: (row, index) => handleOnClick(extractEmail(row?.from), "/contacts", index),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">

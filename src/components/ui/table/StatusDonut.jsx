@@ -16,23 +16,23 @@ function StatusDonut({
             style={{
                 backgroundColor: active ? `${color}15` : "transparent",
             }}
-            className={`flex flex-col items-center gap-2 p-3 rounded-xl transition
+            className={`flex flex-col items-center gap-1 p-3 rounded-xl transition
     ${active ? "shadow-md" : "hover:bg-gray-50"}`}
         >{amount && < div className="flex items-center justify-center gap-2">
             <p className="text-sm font-medium text-gray-700">${amount}</p>
         </div>}
 
             {/* Donut */}
-            <div className="relative w-28 h-28">
+            <div className="relative w-20 h-20">
                 <VictoryPie
                     data={[
                         { x: "value", y: value },
                         { x: "rest", y: Math.max(total - value, 0) },
                     ]}
-                    cornerRadius={10}
+                    cornerRadius={2}
                     startAngle={-6}
                     innerRadius={100}
-                    padAngle={2}
+                    padAngle={1}
                     colorScale={[color, "#e5e7eb"]}
                     labels={() => null}
                     animate={{ duration: 700 }}

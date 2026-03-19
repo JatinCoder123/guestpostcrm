@@ -43,12 +43,12 @@ function TableBody(props) {
                     return (
                         <div
                             key={col.accessor}
-                            onClick={() => col.onClick ? col.onClick(row) : undefined}
+                            onClick={() => col.onClick ? col.onClick(row, index) : undefined}
                             className={`px-6 py-4 ${col.classes}  text-gray-700`}
                         >
 
                             {col.render
-                                ? col.render(row)
+                                ? col.render(row, index)
                                 : value}
 
                         </div>

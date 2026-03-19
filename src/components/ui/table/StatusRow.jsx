@@ -1,10 +1,15 @@
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import StatusDonut from "./StatusDonut"
 import { useTableContext } from "./Table"
+import { Eye, EyeOff } from "lucide-react"
 
 function StatusRow() {
 
-    const { statusList, statusKey, filters, setFilters, count: total } = useTableContext()
+    const { statusList, statusKey, filters, setFilters, count: total, showStatus, setShowStatus } = useTableContext()
     const activeStatus = filters[statusKey]
+
+
 
     const toggleStatus = (value) => {
         setFilters(prev => {
@@ -14,41 +19,49 @@ function StatusRow() {
                 return updated
             }
             return { ...prev, [statusKey]: value }
-
         })
-
     }
 
     return (
+        <div className="w-full">
 
-        <div className="flex items-end justify-center gap-6 overflow-x-auto py-1">
+            {/* Toggle Button */}
 
-            {statusList.map(status => {
 
-                const Icon = status.icon
+            {/* Animated Donut Section */}
+            <AnimatePresence>
+                {showStatus && (
+                    <motion.div
+                        key="status-row"
+                        initial={{ y: -100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        className="flex items-end justify-center gap-6 overflow-x-auto py-1"
+                    >
+                        {statusList.map(status => {
+                            const Icon = status.icon
 
-                return (
-
-                    <StatusDonut
-                        key={status.value}
-                        label={status.label}
-                        value={status.count}
-                        total={total}
-                        color={status.color}
-                        icon={Icon}
-                        active={activeStatus === status.value}
-                        amount={status.showAmount ? status.amount : null}
-                        onClick={() => toggleStatus(status.value)}
-                    />
-
-                )
-
-            })}
+                            return (
+                                <StatusDonut
+                                    key={status.value}
+                                    label={status.label}
+                                    value={status.count}
+                                    total={total}
+                                    color={status.color}
+                                    icon={Icon}
+                                    active={activeStatus === status.value}
+                                    amount={status.showAmount ? status.amount : null}
+                                    onClick={() => toggleStatus(status.value)}
+                                />
+                            )
+                        })}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
         </div>
-
     )
-
 }
 
 export default StatusRow
