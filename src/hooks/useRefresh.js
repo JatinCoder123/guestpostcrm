@@ -32,8 +32,10 @@ import {
 } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
-import { getOrderRem } from "../store/Slices/orderRem";
+import { getOrderRem } from "../store/Slices/reminder.js";
 import { extractEmail } from "../assets/assets";
+import { getBacklinks } from "../store/Slices/backlinks.js";
+import { getAllContacts } from "../store/Slices/contacts.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -55,6 +57,8 @@ function useRefresh() {
         dispatch(getAllWebsites());
         dispatch(getOrderRem(null, 1));
         dispatch(getMarketplace())
+        dispatch(getBacklinks({}));
+        dispatch(getAllContacts({}))
         dispatch(getOrders({ email: enteredEmail }));
         dispatch(getDeals({ email: enteredEmail }));
         dispatch(getInvoices({ email: enteredEmail }));

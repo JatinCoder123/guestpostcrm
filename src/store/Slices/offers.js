@@ -29,8 +29,11 @@ const offersSlice = createSlice({
     getOffersSucess(state, action) {
       const { count, offers, summary, pageCount, pageIndex } = action.payload;
       state.loading = false;
-      state.offers = offers;
-      state.summary = summary;
+      if (pageIndex === 1) {
+        state.offers = offers;
+      } else {
+        state.offers = [...state.offers, ...offers];
+      } state.summary = summary;
       state.count = count;
       state.error = null;
       state.pageCount = pageCount;
@@ -77,7 +80,7 @@ const offersSlice = createSlice({
     deleteOfferRequest(state, action) {
       state.deleting = true;
       state.error = null;
-      state.deleteOfferId = action.payload;
+      state.deleteOfferId = action.payload.id;
     },
     deleteOfferSuccess(state, action) {
       state.deleting = false;
@@ -224,7 +227,8 @@ export const createOffer = (threadId, offers = [], send = false) => {
 };
 export const deleteOffer = (email, id) => {
   return async (dispatch, getState) => {
-    dispatch(offersSlice.actions.deleteOfferRequest(id));
+    dispatch(offersSlice.actions.deleteOfferRequest({ id }));
+
     try {
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_offer&record_id=${id}`,

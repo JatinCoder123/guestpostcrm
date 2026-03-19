@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { 
-  X, 
-  ExternalLink, 
-  Calendar, 
-  User, 
-  Shield, 
+import {
+  X,
+  ExternalLink,
+  Calendar,
+  User,
+  Shield,
   TrendingUp,
   Clock,
   Globe,
@@ -18,17 +18,17 @@ import {
   AlertCircle
 } from "lucide-react";
 
-export function BacklinkDetailBox({ onClose, backlinkId }) {
+export default function BacklinkDetailBox({ onClose, backlinkId }) {
   const dispatch = useDispatch();
   const { backlinks, backlinkDetail, loading } = useSelector((state) => state.backlinks);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
 
-  
+
   const currentBacklink = backlinkDetail || backlinks.find(bl => bl.id === backlinkId);
 
-  
+
   useEffect(() => {
     if (currentBacklink) {
       setEditData({
@@ -36,7 +36,7 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
         status_c: currentBacklink.status_c || '',
         expiry_date_c: currentBacklink.expiry_date_c || '',
         target_url_c: currentBacklink.target_url_c || '',
-        
+
       });
     }
   }, [currentBacklink]);
@@ -49,7 +49,7 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
     }));
   };
 
-  
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
@@ -63,7 +63,7 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
     }
   };
 
-  
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -96,7 +96,7 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        
+
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <ExternalLink className="w-6 h-6 text-green-600" />
@@ -105,7 +105,7 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            
+
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -118,13 +118,13 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
 
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <FileText className="w-5 h-5" />
                 Basic Information
               </h3>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Globe className="w-5 h-5 text-gray-500" />
@@ -231,12 +231,12 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
 
             <div className="md:col-span-2 space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">URLs</h3>
-              
+
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-2">Target URL</p>
-                <a 
-                  href={currentBacklink.target_url_c} 
-                  target="_blank" 
+                <a
+                  href={currentBacklink.target_url_c}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2 break-all"
                 >
@@ -248,9 +248,9 @@ export function BacklinkDetailBox({ onClose, backlinkId }) {
               {currentBacklink.source_url_c && (
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600 mb-2">Source URL</p>
-                  <a 
-                    href={currentBacklink.source_url_c} 
-                    target="_blank" 
+                  <a
+                    href={currentBacklink.source_url_c}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2 break-all"
                   >

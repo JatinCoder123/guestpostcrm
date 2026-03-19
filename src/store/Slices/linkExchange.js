@@ -4,7 +4,7 @@ import { showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
 
 const exchangeSlice = createSlice({
-  name: "exchange",
+  name: "linkExchange",
   initialState: {
     loading: false,
     emails: [],
@@ -24,8 +24,11 @@ const exchangeSlice = createSlice({
     getEmailSucess(state, action) {
       const { count, emails, pageCount, pageIndex } = action.payload;
       state.loading = false;
-      state.emails = emails;
-      // Update exchange map for fetched marked emails
+      if (pageIndex === 1) {
+        state.emails = emails;
+      } else {
+        state.emails = [...state.emails, ...emails];
+      }
       emails.forEach((email) => {
         state.marked[email.thread_id || email.id] = true;
       });

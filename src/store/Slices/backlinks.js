@@ -9,8 +9,11 @@ const backlinksSlice = createSlice({
     loading: false,
     backlinks: [],
     backlinkDetail: null,
+    count: 0,
     error: null,
     message: null,
+    pageIndex: 1,
+    pageCount: 1,
   },
 
   reducers: {
@@ -18,14 +21,21 @@ const backlinksSlice = createSlice({
 
     getBacklinksRequest(state) {
       state.loading = true;
-      state.backlinks = [];
       state.error = null;
     },
 
     getBacklinksSuccess(state, action) {
-      const { backlinks } = action.payload;
+      const { backlinks, pageCount, pageIndex, count } = action.payload;
+      state.count = count
       state.loading = false;
-      state.backlinks = backlinks;
+      if (pageIndex === 1) {
+        state.backlinks = backlinks;
+      } else {
+        state.backlinks = [...state.backlinks, ...backlinks];
+      }
+      state.pageCount = pageCount;
+      state.pageIndex = pageIndex;
+
       state.error = null;
     },
 
@@ -101,13 +111,13 @@ const backlinksSlice = createSlice({
    GET ALL BACKLINKS
 ===================================================== */
 
-export const getBacklinks = () => {
-  return async (dispatch) => {
+export const getBacklinks = ({ page = 1, loading = true }) => {
+  return async (dispatch, getState) => {
     dispatch(backlinksSlice.actions.getBacklinksRequest());
 
     try {
       const { data } = await axios.post(
-        "https://sales.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_seo_backlinks",
+        `${getState().user.crmEndpoint}&type=get_seo_backlinks&page=${page}&page_size=50`,
         {
           module: "outr_seo_backlinks",
         }
@@ -117,7 +127,10 @@ export const getBacklinks = () => {
 
       dispatch(
         backlinksSlice.actions.getBacklinksSuccess({
-          backlinks: data.data ,
+          count: data.data_count,
+          backlinks: data.data,
+          pageCount: data.total_pages ?? 1,
+          pageIndex: data.current_page ?? 1,
         })
       );
 
@@ -194,7 +207,7 @@ export const updateBacklink = (formData) => {
       };
 
       const { data } = await axios.post(
-        "https://sales.guestpostcrm.com/index.php?entryPoint=get_post_all&action_type=post_data",
+        `${getState().user.crmEndpoint}/index.php?entryPoint=get_post_all&action_type=post_data`,
         payload,
         {
           headers: {

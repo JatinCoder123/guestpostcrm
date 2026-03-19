@@ -29,6 +29,7 @@ import {
   BellRing,
   Plus,
   Contact2Icon,
+  Cable,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -63,7 +64,7 @@ export function Sidebar() {
   const { count: unrepliedCount, loading: unrepliedLoading } = useSelector(
     (s) => s.unreplied,
   );
-  const {  contactLoading } = useSelector(
+  const { contactLoading } = useSelector(
     (s) => s.viewEmail,
   );
   const { count: dealCount, loading: dealsLoading } = useSelector(
@@ -80,10 +81,16 @@ export function Sidebar() {
     (s) => s.orders,
   );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
-    (s) => s.orderRem,
+    (s) => s.reminders,
+  );
+  const { count: backlinkCount, loading: backlinkLoading } = useSelector(
+    (s) => s.backlinks,
+  );
+  const { count: contactCount, loading: allContactLoading } = useSelector(
+    (s) => s.contacts,
   );
 
- 
+
   const { count: linkExchangeCount, loading: linkExchangeLoading } =
     useSelector((s) => s.linkExchange);
   const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
@@ -99,19 +106,19 @@ export function Sidebar() {
       icon: Mail,
       loading: unrepliedLoading,
       count: unrepliedCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-red-500 text-white",
+      color: "text-rose-600",
+      hover: "hover:bg-rose-50",
+      countBg: "bg-rose-500 text-white",
     },
     {
       id: "contacts",
-      label: "Contact",
+      label: "Contacts",
       icon: Contact2Icon,
-      loading: contactLoading,
-      count: null,
-      color: "text-purple-600",
-      hover: "hover:bg-purple-50",
-      countBg: "bg-purple-500 text-white",
+      loading: allContactLoading,
+      count: contactCount,
+      color: "text-fuchsia-600",
+      hover: "hover:bg-fuchsia-50",
+      countBg: "bg-fuchsia-500 text-white",
     },
     {
       id: "forwarded-emails",
@@ -119,9 +126,9 @@ export function Sidebar() {
       icon: Forward,
       loading: forwardLoading,
       count: forwardCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
-      countBg: "bg-blue-500 text-white",
+      color: "text-sky-600",
+      hover: "hover:bg-sky-50",
+      countBg: "bg-sky-500 text-white",
     },
     {
       id: "favourite-emails",
@@ -129,8 +136,8 @@ export function Sidebar() {
       icon: Heart,
       loading: favLoading,
       count: favCount,
-      color: "text-red-600",
-      hover: "hover:bg-red-50",
+      color: "text-pink-600",
+      hover: "hover:bg-pink-50",
       countBg: "bg-pink-500 text-white",
     },
     {
@@ -139,9 +146,9 @@ export function Sidebar() {
       icon: Link,
       loading: linkExchangeLoading,
       count: linkExchangeCount,
-      color: "text-pink-600",
-      hover: "hover:bg-pink-50",
-      countBg: "bg-pink-500 text-white",
+      color: "text-violet-600",
+      hover: "hover:bg-violet-50",
+      countBg: "bg-violet-500 text-white",
     },
     {
       id: "offers",
@@ -169,9 +176,9 @@ export function Sidebar() {
       icon: ShoppingCart,
       loading: ordersLoading,
       count: orderCount,
-      color: "text-indigo-600",
-      hover: "hover:bg-indigo-50",
-      countBg: "bg-indigo-500 text-white",
+      color: "text-cyan-600",
+      hover: "hover:bg-cyan-50",
+      countBg: "bg-cyan-500 text-white",
     },
     {
       id: "invoices",
@@ -179,9 +186,9 @@ export function Sidebar() {
       icon: FileText,
       loading: invoicesLoading,
       count: invoiceCount,
-      color: "text-yellow-600",
-      hover: "hover:bg-yellow-50",
-      countBg: "bg-yellow-500 text-white",
+      color: "text-orange-600",
+      hover: "hover:bg-orange-50",
+      countBg: "bg-orange-500 text-white",
     },
 
     {
@@ -190,16 +197,16 @@ export function Sidebar() {
       icon: BellRing,
       loading: orderRemLoading,
       count: orderRemCount,
-      color: "text-cyan-600",
-      hover: "hover:bg-cyan-50",
-      countBg: "bg-cyan-500 text-white",
+      color: "text-lime-600",
+      hover: "hover:bg-lime-50",
+      countBg: "bg-lime-500 text-white",
     },
     {
       id: "backlinks",
       label: "Backlinks",
-      icon: Link2,
-      loading: false,
-      count: null,
+      icon: Cable,
+      loading: backlinkLoading,
+      count: backlinkCount,
       color: "text-teal-600",
       hover: "hover:bg-teal-50",
       countBg: "bg-teal-500 text-white",
@@ -222,7 +229,7 @@ export function Sidebar() {
       count: null,
       color: "text-teal-600",
       hover: "hover:bg-teal-50",
-      countBg: "bg-teal-500 text-white",
+      countBg: "bg-teal-500 text-white ",
     },
   ];
 
@@ -238,9 +245,8 @@ export function Sidebar() {
         {/* COLLAPSE BUTTON */}
         <button
           onClick={() => setSidebarCollapsed(!collapsed)}
-          className={`fixed ${
-            collapsed ? "left-23" : "left-62"
-          } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
+          className={`fixed ${collapsed ? "left-23" : "left-62"
+            } top-[50%] w-7 h-7 bg-white border border-gray-300 cursor-pointer
                      rounded-full flex items-center justify-center hover:bg-gray-100 shadow`}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}
@@ -253,10 +259,9 @@ export function Sidebar() {
             navigateTo("");
           }}
           className={`w-full flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-            ${
-              activePage === ""
-                ? "bg-green-500 text-white"
-                : "bg-green-50 text-green-700"
+            ${activePage === ""
+              ? "bg-green-500 text-white"
+              : "bg-green-50 text-green-700"
             }`}
         >
           <Radio className="w-5 h-5 animate-pulse" />
@@ -269,11 +274,10 @@ export function Sidebar() {
             navigateTo("compose");
           }}
           className={`w-full mt-3 flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-    ${
-      activePage === "compose"
-        ? "bg-blue-600 text-white"
-        : "bg-blue-50 text-blue-700"
-    }`}
+    ${activePage === "compose"
+              ? "bg-blue-600 text-white"
+              : "bg-blue-50 text-blue-700"
+            }`}
         >
           <Plus className="w-5 h-5" />
           {!collapsed && <span className="font-medium">Compose</span>}
@@ -289,32 +293,21 @@ export function Sidebar() {
                 setActivePage(item.id);
                 navigateTo(item.id);
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer
+              className={`w-full flex items-center gap-3 px-3 py-2  transition-all duration-200 cursor-pointer
                 ${collapsed ? "justify-center" : ""}
-                    ${
-                      activePage === item.id
-                        ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold shadow-sm scale-[1.01]"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }
-                ${item.hover}`}
+                    ${activePage === item.id
+                  ? `${item.countBg}  shadow-2xl rounded-full `
+                  : `text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${item.hover} rounded-lg`
+                }
+                `}
             >
               {/* FIXED ICON SIZE ALWAYS */}
               <item.icon
-                className={`w-5 h-5 transition-all duration-300 ease-out
-    ${
-      activePage === item.id
-        ? `
-         
-          translate-x-0
-          scale-130
-          drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]
-        `
-        : `
-          text-gray-500
-          translate-x-0
-          scale-100
-        `
-    }`}
+                className={`w-5 h-5 transition-all duration-100 ease-out
+    ${activePage === item.id
+                    ? " scale-120" : ""
+
+                  }`}
               />
 
               {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
@@ -323,7 +316,7 @@ export function Sidebar() {
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.count != null && (
                     <span
-                      className={`px-2 py-0.5 rounded-full text-xs ${item.countBg}`}
+                      className={`px-2 py-0.5 rounded-full ${activePage == item.id ? "text-md" : "text-xs"} ${item.countBg}`}
                     >
                       {item.loading ? <LoadingSpin /> : <>{item.count}</>}
                     </span>

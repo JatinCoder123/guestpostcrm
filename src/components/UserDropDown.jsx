@@ -8,7 +8,6 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const dropdownRef = useRef(null);
   const { crmEndpoint } = useSelector((state) => state.user);
-  const { email } = useSelector((state) => state.ladger);
   const domain = crmEndpoint.split("?")[0];
   const { loading, data: users } = useModule({
     url: `${domain}?entryPoint=fetch_gpc&type=get_users`,
@@ -70,7 +69,7 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
           <button
             onClick={() => {
               onClose();
-              selectedUser && forwardHandler(email, selectedUser.id);
+              selectedUser && forwardHandler(selectedUser.description, selectedUser.id);
             }}
             disabled={!selectedUser}
             className={`w-full mt-3 py-2 rounded-lg text-sm text-white transition-all

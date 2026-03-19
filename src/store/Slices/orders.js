@@ -38,7 +38,11 @@ const ordersSlice = createSlice({
       const { count, orders, pageCount, pageIndex, statusLists, summary, stats } =
         action.payload;
       state.loading = false;
-      state.orders = orders;
+      if (pageIndex === 1) {
+        state.orders = orders;
+      } else {
+        state.orders = [...state.orders, ...orders];
+      }
       state.statusLists = statusLists;
       state.count = count;
       state.stats = stats

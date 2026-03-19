@@ -15,7 +15,7 @@ import viewEmailReducer from "./Slices/viewEmail.js";
 import threadEmailReducer from "./Slices/threadEmail.js";
 import aiCreditsReducer from "./Slices/aiCredits.js";
 import aiReplyReducer from "./Slices/aiReply.js";
-import orderRemReducer from "./Slices/orderRem.js";
+import orderRemReducer from "./Slices/reminder.js";
 import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
@@ -33,6 +33,7 @@ import tagReducer from "./Slices/tag.js";
 import gpcControllerReducer from "./Slices/gpcControllerSlice";
 import websiteReducer from "./Slices/webSlice";
 import syncReducer from "./Slices/syncSlice.js";
+import contactReducer from "./Slices/contacts.js"
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -50,7 +51,7 @@ export const store = configureStore({
     threadEmail: threadEmailReducer,
     aiCredits: aiCreditsReducer,
     aiReply: aiReplyReducer,
-    orderRem: orderRemReducer,
+    reminders: orderRemReducer,
     user: userReducer,
     bulk: bulkReducer,
     markTag: markTagReducer,
@@ -69,6 +70,7 @@ export const store = configureStore({
     tag: tagReducer,
     gpcController: gpcControllerReducer,
     website: websiteReducer,
-    sync: syncReducer
+    sync: syncReducer,
+    contacts: contactReducer
   },
 });

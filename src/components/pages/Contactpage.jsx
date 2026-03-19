@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   User,
   Phone,
@@ -24,6 +24,8 @@ import {
 } from "../../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 import AccountPage from "./AccountPage";
+import { useNavigate, useParams } from "react-router-dom";
+import AllContacts from "./AllContacts";
 
 export default function Contactpage() {
   const { contactInfo, accountInfo, dealInfo, message, error, loading } =
@@ -34,7 +36,7 @@ export default function Contactpage() {
     account: {},
     deal: [],
   });
-
+  const { id } = useParams()
   const [accountShow, setAccountShow] = useState(false);
 
   const [totalDealCount, setTotalDealCount] = useState(0);
@@ -150,6 +152,7 @@ export default function Contactpage() {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [message, error, dispatch]);
+
   if (accountShow) {
     return (
       <AccountPage
@@ -157,10 +160,11 @@ export default function Contactpage() {
         formData={formData}
         setFormData={setFormData}
         handleSave={handleSave}
-        // handleChange={handleChange}
+      // handleChange={handleChange}
       />
     );
   }
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8] py-12 px-4">
       {/* Hero Section with Avatar */}
@@ -181,7 +185,7 @@ export default function Contactpage() {
               <p className="text-lg text-gray-600 mt-2">
                 {contactInfo?.type} {contactInfo?.title}
               </p>
-            </div>     
+            </div>
 
             <div className="editbtn cursor-pointer" onClick={handleEditClick}>
               <img
@@ -189,7 +193,7 @@ export default function Contactpage() {
                 height="48"
                 src="https://img.icons8.com/fluency/48/create-new.png"
                 alt="create-new"
-              />  
+              />
             </div>
             <button
               onClick={() => setAccountShow(true)}
@@ -215,14 +219,14 @@ export default function Contactpage() {
                 <User className="text-white" size={20} />
               </div>
               Contact Information
-            </h2>   
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <GlassInfo
                 icon={<User />}
                 label="Name"
                 value={contactInfo?.full_name}
-              />   
+              />
               <GlassInfo
                 icon={<User />}
                 label="Stage"
@@ -360,27 +364,24 @@ export default function Contactpage() {
                   {formData.deal.map((deal, index) => (
                     <div
                       key={index}
-                      className={`grid grid-cols-12 gap-4 p-3 backdrop-blur-md bg-white/20 border ${
-                        index === highestDealIndex
-                          ? "border-[#f59e0b]/50"
-                          : "border-white/40"
-                      } rounded-xl items-center transition-all duration-200 hover:scale-101 hover:bg-white/50 hover:border-[#9333ea]/30`}
+                      className={`grid grid-cols-12 gap-4 p-3 backdrop-blur-md bg-white/20 border ${index === highestDealIndex
+                        ? "border-[#f59e0b]/50"
+                        : "border-white/40"
+                        } rounded-xl items-center transition-all duration-200 hover:scale-101 hover:bg-white/50 hover:border-[#9333ea]/30`}
                     >
                       {/* Serial Number */}
                       <div className="col-span-1">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            index === highestDealIndex
-                              ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
-                              : "bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20"
-                          }`}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${index === highestDealIndex
+                            ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
+                            : "bg-gradient-to-br from-[#a855f7]/20 to-[#60a5fa]/20"
+                            }`}
                         >
                           <span
-                            className={`text-sm font-bold ${
-                              index === highestDealIndex
-                                ? "text-[#92400e]"
-                                : "text-gray-800"
-                            }`}
+                            className={`text-sm font-bold ${index === highestDealIndex
+                              ? "text-[#92400e]"
+                              : "text-gray-800"
+                              }`}
                           >
                             {index + 1}
                           </span>
@@ -407,11 +408,10 @@ export default function Contactpage() {
                       <div className="col-span-3">
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              index === highestDealIndex
-                                ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
-                                : "bg-gradient-to-br from-[#4ade80]/20 to-[#10b981]/20"
-                            }`}
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${index === highestDealIndex
+                              ? "bg-gradient-to-br from-[#fbbf24]/30 to-[#f97316]/30"
+                              : "bg-gradient-to-br from-[#4ade80]/20 to-[#10b981]/20"
+                              }`}
                           >
                             <DollarSign
                               size={16}
@@ -424,11 +424,10 @@ export default function Contactpage() {
                           </div>
                           <div>
                             <p
-                              className={`text-base font-bold ${
-                                index === highestDealIndex
-                                  ? "text-[#92400e]"
-                                  : "text-gray-800"
-                              }`}
+                              className={`text-base font-bold ${index === highestDealIndex
+                                ? "text-[#92400e]"
+                                : "text-gray-800"
+                                }`}
                             >
                               ${deal.dealamount || "0"}
                             </p>
@@ -818,6 +817,11 @@ export default function Contactpage() {
       )}
     </div>
   );
+
+
+  return (
+    <AllContacts />
+  )
 }
 
 // Glassmorphic Info Box
