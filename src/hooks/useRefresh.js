@@ -58,7 +58,6 @@ function useRefresh() {
         dispatch(getOrderRem(null, 1));
         dispatch(getMarketplace())
         dispatch(getBacklinks({}));
-        dispatch(getAllContacts({}))
         dispatch(getOrders({ email: enteredEmail }));
         dispatch(getDeals({ email: enteredEmail }));
         dispatch(getInvoices({ email: enteredEmail }));
@@ -76,6 +75,8 @@ function useRefresh() {
         dispatch(getUnrepliedEmail({}));
         dispatch(getLinkExchange());
         dispatch(getFavEmails({}));
+        dispatch(getAllContacts({}))
+
         dispatch(getForwardedEmails({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {
