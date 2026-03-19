@@ -253,12 +253,6 @@ function SummaryCard({
 
   useEffect(() => {
     if (type !== "orders") return;
-    if (data?.length > prevLengthRef.current) {
-      setHighlight(true);
-      setTimeout(() => setHighlight(false), 1500);
-    }
-    prevLengthRef.current = data?.length;
-
     if (message) {
       toast.success(message);
       dispatch(getOrders({ loading: false }));
@@ -271,6 +265,22 @@ function SummaryCard({
       dispatch(orderAction.clearAllErrors());
     }
   }, [dispatch, creating, message, error, type, setData]);
+
+  useEffect(() => {
+    if (type !== "orders") return;
+
+    if ((data?.length || 0) > prevLengthRef.current) {
+      setHighlight(true);
+
+      const timer = setTimeout(() => {
+        setHighlight(false);
+      }, 25000); // ✅ 25 seconds
+
+      return () => clearTimeout(timer); // cleanup
+    }
+
+    prevLengthRef.current = data?.length || 0;
+  }, [data, type]);
 
   const handleClick = () => {
     setSidebarCollapsed(true);
@@ -294,7 +304,11 @@ function SummaryCard({
 
   return (
     <div
-      className={`flex items-center justify-between rounded-2xl border-t-2  p-3 ${colorMap[color]} ${highlight ? "ring-2 ring-yellow-400 scale-105 transition-all duration-300" : ""}`}
+      className={`flex items-center justify-between rounded-2xl border-t-2 p-3 ${colorMap[color]} ${
+        highlight
+          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 animate-pulse"
+          : "transition-all duration-300"
+      }`}
     >
       {(creating && type === "orders") ||
       loading ||
