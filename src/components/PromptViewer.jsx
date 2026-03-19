@@ -15,12 +15,12 @@ const splitPromptSections = (prompt) => {
 const TABS = [
   "System Prompt",
   "Role Prompt",
-  "Common Prompt",
+  "Overwrite Prompt",
   "Output / Styling",
+  "Common Prompt",
   "Client Email",
   "Email Subject",
   "Email Body",
-  "Overwrite Rule",
 ];
 
 const PromptSectionsViewer = ({ prompt }) => {

@@ -21,6 +21,7 @@ const viewEmailSlice = createSlice({
     dealInfo: null,
     threadId: null,
     message: null,
+    editMessage: null,
     error: null,
   },
   reducers: {
@@ -81,17 +82,17 @@ const viewEmailSlice = createSlice({
     },
     editContactRequest(state) {
       state.contactLoading = true;
-      state.message = null;
+      state.editMessage = null;
       state.error = null;
     },
     editContactSucess(state, action) {
       state.contactLoading = false;
-      state.message = "Contact updated successfully";
+      state.editMessage = "Contact updated successfully";
       state.error = null;
     },
     editContactFailed(state, action) {
       state.contactLoading = false;
-      state.message = null;
+      state.editMessage = null;
       state.error = action.payload;
     },
     sendEmailRequest(state) {
@@ -116,6 +117,7 @@ const viewEmailSlice = createSlice({
     clearAllMessage(state) {
       state.message = null;
       state.sendedEmail = null
+      state.editMessage = null
     },
     resetViewEmail(state) {
       state.viewEmail = null;
@@ -226,6 +228,7 @@ export const editContact = (contactData) => {
       showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess());
       dispatch(viewEmailSlice.actions.clearAllErrors());
+      dispatch(getContact());
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed"),
@@ -233,6 +236,7 @@ export const editContact = (contactData) => {
     }
   };
 };
+
 export const sendEmail = (
   formData,
 ) => {
