@@ -1,97 +1,121 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import {
     Calendar,
-    Table,
     User2,
     Contact2Icon,
     ChartNoAxesColumn,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import TableView from "../ui/table/Table";
-import TableTitleBar from "../ui/table/TableTitleBar";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PageContext } from "../../context/pageContext";
-import { ladgerAction } from "../../store/Slices/ladger"
+import { ladgerAction } from "../../store/Slices/ladger";
 import { getAllContacts } from "../../store/Slices/contacts";
 
 export default function AllContacts() {
-
-    const { contacts, loading: contactsLoading } =
-        useSelector((state) => state.contacts);
-
-
+    const { contacts, loading } = useSelector((state) => state.contacts);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
         useContext(PageContext);
-    const navigateTo = useNavigate();
-    const handleOnClick = (email, navigate) => {
+
+
+
+    const handleOnClick = (email, path) => {
         localStorage.setItem("email", email);
         setSearch(email);
         setEnteredEmail(email);
         dispatch(ladgerAction.setTimeline(null));
         setWelcomeHeaderContent("Offers");
-        navigateTo(navigate);
+        navigate(path);
     };
-    const columns = [
-        {
-            label: "Created At",
-            accessor: "date_entered",
-            headerClasses: "",
-            icon: Calendar,
 
-            onClick: (row) => handleOnClick(row?.email_address, "/"),
-            classes: "truncate max-w-[200px]",
-            render: (row) => (
-                <span className="font-medium text-gray-700 cursor-pointer">
-                    {row.date_entered}
-                </span>
-            )
-        },
-        {
-            label: "Contact",
-            accessor: "email_address",
-            headerClasses: "",
-            icon: User2,
-            classes: "truncate max-w-[200px]",
-            onClick: (row) => handleOnClick(row?.email_address, "/contacts/id"),
-
-            render: (row) => (
-                <span className="font-medium text-gray-700 cursor-pointer">
-                    {row.email_address}
-                </span>
-            )
-        },
-
-
-        {
-            label: "type",
-            accessor: "type",
-            headerClasses: "",
-            icon: ChartNoAxesColumn,
-            classes: "truncate max-w-[300px]",
-
-            render: (row) => (
-                <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                    {row?.type}
-                </span>
-            )
-        },
-
-
-
-    ]
     return (
-        <TableView
-            tableData={contacts}
-            tableName={"Contacts"}
-            columns={columns}
-            slice={"contacts"}
-        >
-            <TableTitleBar Icon={Contact2Icon} title={"Contacts"} titleClass={"text-fuchsia-700"} />
-            <Table headerStyle={"bg-fuchsia-600"} layoutStyle={"grid grid-cols-3"} />
-        </TableView>
-    )
+        <div className="p-4">
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-4">
+                <Contact2Icon className="text-fuchsia-600" />
+                <h2 className="text-lg font-semibold text-fuchsia-700">
+                    Contacts
+                </h2>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto border rounded-xl shadow-sm">
+                <table className="w-full border-collapse">
+                    {/* THEAD */}
+                    <thead className="bg-fuchsia-600 text-white text-sm">
+                        <tr>
+                            <th className="px-4 py-3 text-left">
+                                <div className="flex items-center gap-2">
+                                    <Calendar size={16} /> Created At
+                                </div>
+                            </th>
+                            <th className="px-4 py-3 text-left">
+                                <div className="flex items-center gap-2">
+                                    <User2 size={16} /> Contact
+                                </div>
+                            </th>
+                            <th className="px-4 py-3 text-left">
+                                <div className="flex items-center gap-2">
+                                    <ChartNoAxesColumn size={16} /> Type
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+
+                    {/* TBODY */}
+                    <tbody className="text-sm">
+                        {loading ? (
+                            <tr>
+                                <td colSpan="3" className="text-center py-6">
+                                    Loading...
+                                </td>
+                            </tr>
+                        ) : contacts?.length > 0 ? (
+                            contacts.map((row, index) => (
+                                <tr
+                                    key={index}
+                                    className="border-t hover:bg-gray-50 transition cursor-pointer"
+                                >
+                                    {/* Created At */}
+                                    <td
+                                        onClick={() =>
+                                            handleOnClick(row?.email_address, "/")
+                                        }
+                                        className="px-4 py-3 text-gray-700"
+                                    >
+                                        {row.date_entered}
+                                    </td>
+
+                                    {/* Email */}
+                                    <td
+                                        onClick={() =>
+                                            handleOnClick(row?.email_address, "/contacts/id")
+                                        }
+                                        className="px-4 py-3 text-gray-700 font-medium"
+                                    >
+                                        {row.email_address}
+                                    </td>
+
+                                    {/* Type */}
+                                    <td className="px-4 py-3">
+                                        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
+                                            {row?.type}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="3" className="text-center py-6 text-gray-500">
+                                    No Contacts Found
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 }
-
-

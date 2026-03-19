@@ -27,47 +27,15 @@ export function DefaulterPage() {
     count,
   } = useSelector((state) => state.contactdefaulter);
 
-  const [topsearch, setTopsearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
   const { handleMove } = useThreadContext()
-
-  const handleSearchChange = (value) => {
-    setTopsearch(value);
-  };
-
-  const handleCategoryChange = (value) => {
-    setSelectedCategory(value);
-  };
-
-  const handleFilterApply = (filters) => { };
-
-  const handleDownload = () => {
-    alert("download handler");
-  };
-
   const dispatch = useDispatch();
-
-
   useEffect(() => {
     dispatch(getContactDefaulters());
   }, []);
 
   return (
     <>
-      <SearchComponent
-        dropdownOptions={[{ value: "all", label: "websites" }]}
-        selectedDropdownValue={selectedCategory}
-        onDropdownChange={handleCategoryChange}
-        searchValue={topsearch}
-        onSearchChange={handleSearchChange}
-        searchPlaceholder="Search items..."
-        onFilterApply={handleFilterApply}
-        filterPlaceholder="Filters"
-        showFilter={true}
-        onDownloadClick={handleDownload}
-        showDownload={true}
-        className="mb-6"
-      />
+
 
       {/* Defaulter Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
