@@ -18,6 +18,7 @@ import {
   User,
   Signature,
   CircleUser,
+  ArrowBigDown,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SocialButtons from "./SocialButtons";
@@ -26,6 +27,7 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
+import { BiDownArrow } from "react-icons/bi";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -128,46 +130,72 @@ const ContactHeader = ({ isMark }) => {
         )
       )
       : 0;
-
+  const statusItems = [
+    { Icon: Tag, label: "Type", value: contactInfo?.type },
+    { Icon: Rocket, label: "Stage", value: stage },
+    { Icon: Hourglass, label: "Status", value: status },
+    { Icon: Lock, label: "Category", value: customer_type },
+    ...(contactInfo?.moved_label
+      ? [{ Icon: Tag, label: "Email Label", value: contactInfo.moved_label }]
+      : []),
+    {
+      Icon: ArrowBigDown,
+      label: "Direction",
+      value: contactInfo?.direction ?? "-",
+    },
+    {
+      Icon: Flame,
+      label: "Assign To",
+      value: contactInfo?.gpc_assigned_to ?? "-",
+    },
+    {
+      Icon: Signature,
+      label: "Last Activity",
+      value: contactInfo?.last_activity ?? "GPC",
+    },
+    {
+      Icon: CircleUser,
+      label: "Last Activity By",
+      value: contactInfo?.last_user ?? "GPC User",
+    },
+  ];
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between w-full">
+      <div
+        className="
+    flex items-center justify-between w-full
+    py-4 px-4
+    rounded-t-xl
+    bg-gradient-to-r from-sky-600 via-cyan-500 to-sky-500 
+    text-white
+    shadow-lg
+  "
+      >
         {/* LEFT SIDE */}
-        <div
-          className={`flex gap-4 ${contactLoading ? "items-center" : "item-start"
-            }`}
-        >
-          {contactLoading && <LoadingChase size="30" color="blue" />}
+        <div className="flex items-center gap-4">
+          {contactLoading && <LoadingChase size="30" color="white" />}
 
           {!contactLoading && (
-            <div className="flex items-center gap-5">
-              <div className="flex items-center gap-5">
-                <div className="flex flex-col leading-tight gap-1">
-                  {/* Name */}
-                  <Link
-                    to="/contacts/id"
-                    className="
-                      relative text-lg font-extrabold
-                      bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500
-                      bg-[length:300%_100%] bg-clip-text text-transparent
-                      animate-[gradientMove_4s_linear_infinite]
-                    "
-                  >
-                    {contactInfo?.full_name?.trim()
-                      ? contactInfo.full_name
-                      : email}
-                  </Link>
+            <div className="flex flex-col">
+              {/* Name */}
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-extrabold">
+                  {contactInfo?.full_name?.trim()
+                    ? contactInfo.full_name
+                    : email}
+                </span>
 
 
-                </div>
               </div>
+
+
             </div>
           )}
-
           <SocialButtons />
+
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* RIGHT SIDE (UNCHANGED) */}
         <div className="flex items-center gap-3">
           {emailDeals?.length > 0 && (
             <div className="flex items-center">
@@ -175,9 +203,9 @@ const ContactHeader = ({ isMark }) => {
                 onClick={goToDeal}
                 className="
                 flex items-center gap-4
-                p-2
+                p-1
                 rounded-4xl
-                bg-white
+                bg-blue-200
                 border border-slate-200
                 shadow-sm
                 cursor-pointer
@@ -186,18 +214,20 @@ const ContactHeader = ({ isMark }) => {
                 transition-all
               "
               >
-                <div className="flex items-center  justify-center w-9 h-9 rounded-4xl  bg-gradient-to-r from-violet-600 via-blue-500 to-violet-500
+                <div className="flex items-center  justify-center w-8 h-8 rounded-4xl  bg-gradient-to-r from-violet-600 via-blue-500 to-violet-500
 ">
-                  <Handshake size={22} className="text-white" />
+                  <Handshake size={20} className="text-white" />
                 </div>
 
-                <span className="text-xl font-semibold text-slate-900">
+                <span className="text-lg font-bold text-slate-800">
                   $<CountUpWithBlast value={maxDeal} />
                 </span>
               </div>
 
             </div>
           )}
+
+          {/* TAGS */}
           <div className="flex gap-2 flex-wrap">
             {contactInfo?.favorite === "1" && (
               <HashTag
@@ -228,148 +258,52 @@ const ContactHeader = ({ isMark }) => {
 
       {/* STATUS GRID */}
 
-      <div>
-        {!contactLoading && (
-          <div className="flex flex-wrap gap-3">
+      {!contactLoading && (
+        <div className=" gap-3 p-2 flex flex-wrap items-center ">
+          {statusItems.map((item, index) => (
             <StatusCard
-              Icon={Tag}
-              label="Type"
-              value={contactInfo?.type}
-              color={{
-                bg: "bg-violet-50",
-                border: "border-violet-200",
-                icon: "text-violet-600",
-                label: "text-violet-500",
-                text: "text-violet-700",
-              }}
+              key={index}
+              Icon={item.Icon}
+              label={item.label}
+              value={item.value}
             />
-
-            <StatusCard
-              Icon={Rocket}
-              label="Stage"
-              value={stage}
-              color={{
-                bg: "bg-blue-50",
-                border: "border-blue-200",
-                icon: "text-blue-600",
-                label: "text-blue-500",
-                text: "text-blue-700",
-              }}
-            />
-
-            <StatusCard
-              Icon={Hourglass}
-              label="Status"
-              value={status}
-              color={{
-                bg: "bg-amber-50",
-                border: "border-amber-200",
-                icon: "text-amber-600",
-                label: "text-amber-500",
-                text: "text-amber-700",
-              }}
-            />
-
-            <StatusCard
-              Icon={Lock}
-              label="Category"
-              value={customer_type}
-              color={{
-                bg: "bg-rose-50",
-                border: "border-rose-200",
-                icon: "text-rose-600",
-                label: "text-rose-500",
-                text: "text-rose-700",
-              }}
-            />
-
-            {contactInfo?.moved_label && (
-              <StatusCard
-                Icon={Tag}
-                label="Email Label"
-                value={contactInfo.moved_label}
-                color={{
-                  bg: "bg-emerald-50",
-                  border: "border-emerald-200",
-                  icon: "text-emerald-600",
-                  label: "text-emerald-500",
-                  text: "text-emerald-700",
-                }}
-              />
-            )}
-
-            <StatusCard
-              Icon={TriangleDashed}
-              label="Direction"
-              value={contactInfo?.direction ?? "-"}
-              color={{
-                bg: "bg-cyan-50",
-                border: "border-cyan-200",
-                icon: "text-cyan-600",
-                label: "text-cyan-500",
-                text: "text-cyan-700",
-              }}
-            />
-
-            <StatusCard
-              Icon={Flame}
-              label="Assign To"
-              value={contactInfo?.gpc_assigned_to ?? "-"}
-              color={{
-                bg: "bg-indigo-50",
-                border: "border-indigo-200",
-                icon: "text-indigo-600",
-                label: "text-indigo-500",
-                text: "text-indigo-700",
-              }}
-            />
-
-            <StatusCard
-              Icon={Signature}
-              label="Last Activity"
-              value={contactInfo?.last_activity ?? "GPC"}
-              color={{
-                bg: "bg-yellow-50",
-                border: "border-yellow-200",
-                icon: "text-yellow-600",
-                label: "text-yellow-500",
-                text: "text-yellow-700",
-              }}
-            />
-
-            <StatusCard
-              Icon={CircleUser}
-              label="Last Activity By"
-              value={contactInfo?.last_user ?? "GPC User"}
-              color={{
-                bg: "bg-pink-50",
-                border: "border-pink-200",
-                icon: "text-pink-600",
-                label: "text-pink-500",
-                text: "text-pink-700",
-              }}
-            />
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
 export default ContactHeader;
 
-function StatusCard({ Icon, label, value, color }) {
+function StatusCard({ Icon, label, value }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${color.bg} border ${color.border}`}
+      className="
+        flex items-start gap-3
+        rounded-xl p-3
+        bg-gray-50
+        border border-gray-200
+        shadow-sm
+        hover:shadow-md
+        transition-all duration-200
+        min-w-[150px]
+      "
     >
-      <span className={`${color.icon} text-lg`}>
-        <Icon />
-      </span>
+      {/* Icon */}
+      <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100">
+        <Icon className="text-blue-500" size={18} />
+      </div>
 
-      <div>
-        <p className={`text-xs font-medium ${color.label}`}>{label}</p>
-        <p className={`font-semibold ${color.text}`}>{value || "N/A"}</p>
+      {/* Content */}
+      <div className="flex flex-col">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          {label}
+        </p>
+
+        <p className="text-sm font-bold text-gray-800 mt-1">
+          {value || "N/A"}
+        </p>
       </div>
     </div>
   );

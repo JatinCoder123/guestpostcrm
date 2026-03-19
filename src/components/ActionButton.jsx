@@ -295,11 +295,10 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
 
   return (
     <>
-      {/* <hr className="mt-4 border-gray-500" /> */}
 
       <div
-        className="mt-6 flex items-center justify-center flex-wrap gap-10
-  px-8 py-5 rounded-2xl
+        className="mt-4  flex items-center justify-center flex-wrap gap-10
+  p-4 rounded-b-2xl
   bg-gradient-to-r from-cyan-50 via-orange-50 to-cyan-50
   border-t border-gray-300
   shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
@@ -326,12 +325,12 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
                   style={
                     btn.active
                       ? {
-                          backgroundColor: btn.activeProps.fill,
-                          color: btn.activeProps.color,
-                          transform: "translateY(-2px) scale(1.09)",
-                          boxShadow:
-                            "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
-                        }
+                        backgroundColor: btn.activeProps.fill,
+                        color: btn.activeProps.color,
+                        transform: "translateY(-2px) scale(1.09)",
+                        boxShadow:
+                          "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
+                      }
                       : {}
                   }
                   className={`group flex items-center cursor-pointer justify-center w-12 h-12

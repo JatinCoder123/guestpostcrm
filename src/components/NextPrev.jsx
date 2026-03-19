@@ -56,9 +56,8 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
 
     >
         {props.first && <Icon className="w-5 h-5 text-gray-700" />}
-        <p className=' relative text-md font-bold
-        bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500
-        bg-[length:300%_100%] bg-clip-text text-transparent
+        <p className=' relative text-sm font-semibold
+         text-slate-800
       '>              {label}
         </p>
         {!props.first && <Icon className="w-5 h-5 text-gray-700" />}

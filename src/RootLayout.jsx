@@ -114,9 +114,9 @@ const RootLayout = () => {
               className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
                 }`}
             >
-              <div className="p-6">
+              <div className="p-3">
                 {isLowCredit && <LowCreditWarning score={currentScore} />}
-                <div className="p-6">
+                <div className="p-3">
                   <WelcomeHeader />
                   <Outlet />
                 </div>

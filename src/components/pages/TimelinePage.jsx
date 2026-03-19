@@ -203,10 +203,10 @@ export function TimelinePage() {
         {(loading || unrepliedLoading) && <LoadingSkeleton />}
         {!loading && !unrepliedLoading && (
           <>
-            <div className="flex flex-col p-6 border-b border-gray-200">
+            <div className="flex flex-col  border-b border-gray-200">
               <ContactHeader isMark={isMark} />
 
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-3xl">
+              <div className="mt-2 p-3 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-3xl">
                 {/* AI SUMMARY */}
 
                 <MailerSummaryHeader />
@@ -312,7 +312,7 @@ export function TimelinePage() {
                       </button>
                     )}
 
-                  <div className="bg-green-50 border border-green-200 flex items-center justify-between rounded-lg p-4 ">
+                  <div className="shadow-lg flex items-center justify-between rounded-2xl p-4 ">
                     <div className="flex  gap-4 ">
                       <div className="flex flex-col items-center gap-2">
                         <motion.button
