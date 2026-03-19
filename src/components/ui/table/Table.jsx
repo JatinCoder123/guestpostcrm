@@ -114,14 +114,7 @@ const TableView = ({
             <motion.div layout className='flex flex-col gap-2'>
 
                 <FilterRow />
-                {statusList.length > 0 && count > 0 && <div className="flex justify-start ">
-                    <button
-                        onClick={() => setShowStatus(prev => !prev)}
-                        className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
-                    >
-                        {showStatus ? <EyeOff className="w-4 h-4 text-gray-700" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                </div>}
+
 
 
                 {/* 🔥 Animated StatusRow (controlled by showStatus) */}
@@ -150,8 +143,16 @@ const TableView = ({
                         stiffness: 120,
                         damping: 18
                     }}
-                    className="bg-white rounded-xl border overflow-hidden"
+                    className=" rounded-xl border overflow-hidden relative"
                 >
+                    {statusList.length > 0 && count > 0 && <div className="flex justify-start absolute top-1 right-1 z-[100] ">
+                        <button
+                            onClick={() => setShowStatus(prev => !prev)}
+                            className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
+                        >
+                            {showStatus ? <EyeOff className="w-4 h-4 text-gray-700" /> : <Eye className="w-4 h-4 text-gray-700" />}
+                        </button>
+                    </div>}
                     {children}
                 </motion.div>
 

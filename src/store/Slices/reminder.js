@@ -69,7 +69,7 @@ const orderRemSlice = createSlice({
 
 export const sendReminder = (reminderId) => {
   return async (dispatch, getState) => {
-    dispatch(orderRemSlice.actions.sendReminderRequest());
+    dispatch(orderRemSlice.actions.sendReminderRequest(reminderId));
 
     try {
       const { data } = await axios.get(

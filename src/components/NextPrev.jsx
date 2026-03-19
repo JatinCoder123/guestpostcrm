@@ -47,7 +47,7 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
     return <button
         onClick={onClick}
         disabled={disabled}
-        className={`p-2 rounded-lg border bg-white flex items-center gap-2 shadow-sm active:scale-95 transition
+        className={`p-2 rounded-lg border bg-cyan-200 flex items-center gap-2 shadow-sm active:scale-95 transition
                         ${disabled
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-gray-100 cursor-pointer"
@@ -56,9 +56,8 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
 
     >
         {props.first && <Icon className="w-5 h-5 text-gray-700" />}
-        <p className=' relative text-md font-bold
-        bg-gradient-to-r from-violet-600 via-blue-500 to-pink-500
-        bg-[length:300%_100%] bg-clip-text text-transparent
+        <p className=' relative text-sm font-bold
+         text-cyan-900
       '>              {label}
         </p>
         {!props.first && <Icon className="w-5 h-5 text-gray-700" />}

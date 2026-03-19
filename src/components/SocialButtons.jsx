@@ -66,8 +66,8 @@ const SocialButtons = () => {
           onClick={handleDuplicateClick}
         >
           <img
-            width="55"
-            height="55"
+            width="48"
+            height="48"
             src={images.duplicateImg}
             alt="duplicate count"
           />
@@ -75,8 +75,8 @@ const SocialButtons = () => {
           <div
             className={`
             absolute top-1 right-3
-            bg-red-600 text-white text-xs font-medium
-            rounded-full w-6 h-6
+            bg-red-500 text-white text-xs font-medium
+            rounded-full w-4 h-4 p-1
             flex items-center justify-center
             transition-all duration-300 ease-out
             ${animate ? "scale-125" : "scale-100"}

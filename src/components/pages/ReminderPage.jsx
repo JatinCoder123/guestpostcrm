@@ -165,7 +165,9 @@ export function ReminderPage() {
                   : "cursor-pointer"
                 }
                           `}
-              onClick={() => sendReminder(row.id)}
+              onClick={() => {
+                dispatch(sendReminder(row.id))
+              }}
               disabled={
                 row.status === "Sent" || row.status === "cancel"
               }
