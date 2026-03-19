@@ -7,7 +7,7 @@ import { LoadingChase } from "./Loading";
 import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
-import { Eye, Plus, RefreshCcw, RefreshCcwIcon } from "lucide-react";
+import { Eye, FileIcon, FileText, Gift, Handshake, Plus, RefreshCcw, RefreshCcwIcon, ShoppingCart, TextIcon } from "lucide-react";
 import axios from "axios";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
@@ -94,7 +94,7 @@ const MailerSummaryHeader = () => {
       />
     }
 
-      <div className="mt-0 p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200">
+      <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
         {/* TOP INFO */}
         {mailersSummary ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div>
@@ -145,13 +145,14 @@ const MailerSummaryHeader = () => {
 
 
         {/* STATS CARDS */}
-        <div className="bg-white rounded-3xl shadow-sm p-4">
+        <div className="rounded-3xl shadow-sm p-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SummaryCard
               type="offers"
               title="NO OFFERS"
               subtitle="Click + to add"
-              icon="🎁"
+              Icon={Gift}
+              bg={"bg-green-500"}
               color="green"
               data={emailData.offers}
               handleSync={() => handleSync("offers")}
@@ -162,8 +163,9 @@ const MailerSummaryHeader = () => {
               type="orders"
               title="NO ORDERS"
               subtitle="Click + to add"
-              icon="📦"
-              color="blue"
+              Icon={ShoppingCart}
+              bg={"bg-cyan-500"}
+              color="cyan"
               data={emailData.orders}
               handleSync={() => handleSync("orders")}
               loading={ordersLoading}
@@ -174,8 +176,9 @@ const MailerSummaryHeader = () => {
               type="deals"
               title="NO DEALS"
               subtitle="Click + to add"
-              icon="🤝"
-              color="purple"
+              Icon={Handshake}
+              bg={"bg-blue-500"}
+              color="blue"
               data={emailData.deals}
               handleSync={() => handleSync("deals")}
               loading={dealsLoading}
@@ -185,7 +188,8 @@ const MailerSummaryHeader = () => {
               type="invoice"
               title="NO INVOICE"
               subtitle="Click + to add"
-              icon="🧾"
+              Icon={FileText}
+              bg={"bg-orange-500"}
               color="orange"
               data={emailData.invoice}
               handleSync={() => handleSync("invoice")}
@@ -206,8 +210,9 @@ function SummaryCard({
   type,
   title,
   subtitle,
-  icon,
+  Icon,
   handleSync,
+  bg,
   color,
   data,
   setData,
@@ -255,13 +260,13 @@ function SummaryCard({
   const colorMap = {
     green: "bg-green-50 border-green-300 text-green-600",
     blue: "bg-blue-50 border-blue-300 text-blue-600",
-    purple: "bg-purple-50 border-purple-300 text-purple-600",
+    cyan: "bg-cyan-100 border-cyan-300 text-cyan-600",
     orange: "bg-orange-50 border-orange-300 text-orange-600",
   };
 
   return (
     <div
-      className={`flex items-center justify-between rounded-2xl border-2 border-dashed px-4 py-4 ${colorMap[color]}`}
+      className={`flex items-center justify-between rounded-2xl border-t-2  p-3 ${colorMap[color]}`}
     >
       {(creating && type === "orders") || loading || (syncType == type && syncing) ? (
         <LoadingChase />
@@ -283,8 +288,8 @@ function SummaryCard({
                 />
               </button>
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-white shadow flex items-center justify-center text-xl">
-                {icon}
+              <div className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}>
+                <Icon />
               </div>
             )}
 

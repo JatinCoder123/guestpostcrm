@@ -166,7 +166,7 @@ const ContactHeader = ({ isMark }) => {
     flex items-center justify-between w-full
     py-4 px-4
     rounded-t-xl
-    bg-gradient-to-r from-sky-600 via-cyan-500 to-sky-500 
+    bg-gradient-to-r from-sky-600 via-cyan-500 to-cyan-400 
     text-white
     shadow-lg
   "
@@ -205,8 +205,7 @@ const ContactHeader = ({ isMark }) => {
                 flex items-center gap-4
                 p-1
                 rounded-4xl
-                bg-blue-200
-                border border-slate-200
+                bg-cyan-300
                 shadow-sm
                 cursor-pointer
                 hover:shadow-md
@@ -214,7 +213,7 @@ const ContactHeader = ({ isMark }) => {
                 transition-all
               "
               >
-                <div className="flex items-center  justify-center w-8 h-8 rounded-4xl  bg-gradient-to-r from-violet-600 via-blue-500 to-violet-500
+                <div className="flex items-center  justify-center w-8 h-8 rounded-4xl  bg-blue-500
 ">
                   <Handshake size={20} className="text-white" />
                 </div>
