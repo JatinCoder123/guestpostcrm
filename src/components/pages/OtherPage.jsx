@@ -20,7 +20,7 @@ export function OtherPage() {
       link: "/market-place",
     },
     {
-      title: "Moved Emails",
+      title: "Rejected/Stopped Emails",
       subtitle: "inside it Inbox-2 and Spam-2 will be shown",
       icon: <Inbox className="w-8 h-8 text-blue-600" />,
       bg: "bg-blue-50",
@@ -34,13 +34,7 @@ export function OtherPage() {
       bg: "bg-green-50",
       link: "/default-report",
     },
-    {
-      title: "Spam Detection",
-      subtitle: "Spam Emails will be shown here",
-      icon: <Shield className="w-8 h-8 text-green-600" />,
-      bg: "bg-green-50",
-      link: "/spam-detection",
-    },
+
     {
       title: "Tag Manager",
       subtitle: "Tag manager will be shown here",
@@ -49,20 +43,8 @@ export function OtherPage() {
       link: "/tag-manager",
     },
 
-    {
-      title: "System Suggestions",
-      subtitle: "Tag manager will be shown here",
-      icon: <Laptop className="w-8 h-8 text-green-600" />,
-      bg: "bg-green-50",
-      link: "/system-suggestion",
-    },
-    {
-      title: "Draft Invoice",
-      subtitle: "Contact tag will be shown here",
-      icon: <PencilOff className="w-8 h-8 text-red-500" />,
-      bg: "bg-green-50",
-      link: "/draft-invoice",
-    },
+
+
   ];
 
   return (
