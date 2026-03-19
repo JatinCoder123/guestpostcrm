@@ -285,7 +285,7 @@ export const createOrder2 = (email, order, send, threadId) => {
               child_bean: {
                 module: "outr_seo_backlinks",
                 ...link,
-                type_c: (order.order_type == "GUEST POST" || order.order_type == "BOTH") ? "GP" : "LI"
+                type_c: (order.order_type == "GUEST POST") ? "GP" : "LI"
               }
             },
             {

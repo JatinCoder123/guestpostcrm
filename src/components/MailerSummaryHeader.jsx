@@ -7,7 +7,19 @@ import { LoadingChase } from "./Loading";
 import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
-import { Eye, FileIcon, FileText, Gift, Handshake, Plus, RefreshCcw, RefreshCcwIcon, ShoppingCart, TextIcon } from "lucide-react";
+import { useRef } from "react";
+import {
+  Eye,
+  FileIcon,
+  FileText,
+  Gift,
+  Handshake,
+  Plus,
+  RefreshCcw,
+  RefreshCcwIcon,
+  ShoppingCart,
+  TextIcon,
+} from "lucide-react";
 import axios from "axios";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
@@ -15,9 +27,16 @@ import SyncSelectionModal from "./SyncSelectionModal";
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
   const { mailersSummary, email } = useSelector((state) => state.ladger);
-  const { syncType, syncData, loading: syncing, message, error, count } = useSelector(state => state.sync)
-  const [showSyncData, setShowSyncData] = useState(false)
-  const dispatch = useDispatch()
+  const {
+    syncType,
+    syncData,
+    loading: syncing,
+    message,
+    error,
+    count,
+  } = useSelector((state) => state.sync);
+  const [showSyncData, setShowSyncData] = useState(false);
+  const dispatch = useDispatch();
   const { orders, loading: ordersLoading } = useSelector(
     (state) => state.orders,
   );
@@ -32,8 +51,8 @@ const MailerSummaryHeader = () => {
     deals: [],
   });
   const handleSync = (type) => {
-    setShowSyncData(true)
-    dispatch(getSync(type))
+    setShowSyncData(true);
+    dispatch(getSync(type));
   };
   /* ---------------- ORDERS ---------------- */
   useEffect(() => {
@@ -52,12 +71,12 @@ const MailerSummaryHeader = () => {
   }, [email, orders, mailersSummary]);
   useEffect(() => {
     if (message) {
-      toast.success(message)
-      dispatch(syncAction.clearAllMessage())
+      toast.success(message);
+      dispatch(syncAction.clearAllMessage());
     }
     if (error) {
-      toast.error(error)
-      dispatch(syncAction.clearAllErrors())
+      toast.error(error);
+      dispatch(syncAction.clearAllErrors());
     }
   }, [message, error]);
 
@@ -83,66 +102,69 @@ const MailerSummaryHeader = () => {
     setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, mailersSummary]);
 
-
   /* ---------------- UI ---------------- */
   return (
-    <>{
-      showSyncData && count > 0 && <SyncSelectionModal
-        onClose={() => setShowSyncData(false)}
-        type={syncType}
-        data={syncData}
-      />
-    }
+    <>
+      {showSyncData && count > 0 && (
+        <SyncSelectionModal
+          onClose={() => setShowSyncData(false)}
+          type={syncType}
+          data={syncData}
+        />
+      )}
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
         {/* TOP INFO */}
-        {mailersSummary ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div>
-            <div className="text-xs text-gray-500 uppercase font-semibold">
-              Created At
-            </div>
-            <div className="font-semibold text-gray-900 mt-1">
-              {mailersSummary?.date_entered_formatted || ""}
-            </div>
-            <div className="text-xs text-gray-500">
-              {mailersSummary?.date_entered || ""}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-xs text-gray-500 uppercase font-semibold">
-              Subject
-            </div>
-            <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-              <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
-                {mailersSummary?.subject || ""}
+        {mailersSummary ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div>
+              <div className="text-xs text-gray-500 uppercase font-semibold">
+                Created At
               </div>
-            </Titletooltip>
-          </div>
-
-          <div>
-            <div className="text-xs text-gray-500 uppercase font-semibold">
-              Motive
-            </div>
-            <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
-              <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
-                {mailersSummary?.correct_motive || ""}
+              <div className="font-semibold text-gray-900 mt-1">
+                {mailersSummary?.date_entered_formatted || ""}
               </div>
-            </Titletooltip>
-          </div>
-        </div> : <div className=" p-6 bg-gray-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4 mb-2">
-          <p className="text-gray-800 font-semibold">
-            No mail summary available for this email.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
-          >
-            <RefreshCcwIcon className="w-4 h-4" />
-            Refresh
-          </button>
-        </div>}
+              <div className="text-xs text-gray-500">
+                {mailersSummary?.date_entered || ""}
+              </div>
+            </div>
 
+            <div>
+              <div className="text-xs text-gray-500 uppercase font-semibold">
+                Subject
+              </div>
+              <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+                <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+                  {mailersSummary?.subject || ""}
+                </div>
+              </Titletooltip>
+            </div>
+
+            <div>
+              <div className="text-xs text-gray-500 uppercase font-semibold">
+                Motive
+              </div>
+              <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+                <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+                  {mailersSummary?.correct_motive || ""}
+                </div>
+              </Titletooltip>
+            </div>
+          </div>
+        ) : (
+          <div className=" p-6 bg-gray-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4 mb-2">
+            <p className="text-gray-800 font-semibold">
+              No mail summary available for this email.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
+            >
+              <RefreshCcwIcon className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
+        )}
 
         {/* STATS CARDS */}
         <div className="rounded-3xl shadow-sm p-3">
@@ -199,7 +221,6 @@ const MailerSummaryHeader = () => {
         </div>
       </div>
     </>
-
   );
 };
 
@@ -219,7 +240,7 @@ function SummaryCard({
   loading,
 }) {
   const { setSidebarCollapsed } = useContext(PageContext);
-  const { syncType, loading: syncing, } = useSelector(state => state.sync)
+  const { syncType, loading: syncing } = useSelector((state) => state.sync);
 
   const { threadId } = useSelector((state) => state.viewEmail);
   const { creating, message, error } = useSelector((state) => state.orders);
@@ -227,10 +248,11 @@ function SummaryCard({
 
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
+  const [highlight, setHighlight] = useState(false);
+  const prevLengthRef = useRef(data?.length || 0);
 
   useEffect(() => {
     if (type !== "orders") return;
-
     if (message) {
       toast.success(message);
       dispatch(getOrders({ loading: false }));
@@ -243,6 +265,22 @@ function SummaryCard({
       dispatch(orderAction.clearAllErrors());
     }
   }, [dispatch, creating, message, error, type, setData]);
+
+  useEffect(() => {
+    if (type !== "orders") return;
+
+    if ((data?.length || 0) > prevLengthRef.current) {
+      setHighlight(true);
+
+      const timer = setTimeout(() => {
+        setHighlight(false);
+      }, 25000); // ✅ 25 seconds
+
+      return () => clearTimeout(timer); // cleanup
+    }
+
+    prevLengthRef.current = data?.length || 0;
+  }, [data, type]);
 
   const handleClick = () => {
     setSidebarCollapsed(true);
@@ -266,9 +304,15 @@ function SummaryCard({
 
   return (
     <div
-      className={`flex items-center justify-between rounded-2xl border-t-2  p-3 ${colorMap[color]}`}
+      className={`flex items-center justify-between rounded-2xl border-t-2 p-3 ${colorMap[color]} ${
+        highlight
+          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 animate-pulse"
+          : "transition-all duration-300"
+      }`}
     >
-      {(creating && type === "orders") || loading || (syncType == type && syncing) ? (
+      {(creating && type === "orders") ||
+      loading ||
+      (syncType == type && syncing) ? (
         <LoadingChase />
       ) : (
         <>
@@ -288,7 +332,9 @@ function SummaryCard({
                 />
               </button>
             ) : (
-              <div className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}>
+              <div
+                className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}
+              >
                 <Icon />
               </div>
             )}

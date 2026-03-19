@@ -15,12 +15,12 @@ const splitPromptSections = (prompt) => {
 const TABS = [
   "System Prompt",
   "Role Prompt",
-  "Common Prompt",
+  "Overwrite Prompt",
   "Output / Styling",
+  "Common Prompt",
   "Client Email",
   "Email Subject",
   "Email Body",
-  "Overwrite Rule",
 ];
 
 const PromptSectionsViewer = ({ prompt }) => {
@@ -39,11 +39,6 @@ const PromptSectionsViewer = ({ prompt }) => {
 
   return (
     <div className="border rounded-xl overflow-hidden bg-white">
-      {/* HEADER (like screenshot) */}
-      <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
-        <div className="font-semibold text-gray-700">Full Prompt</div>
-      </div>
-
       {/* TOP TABS */}
       <div className="flex gap-6 px-4 pt-3 border-b text-sm">
         {sections.map((_, i) => (

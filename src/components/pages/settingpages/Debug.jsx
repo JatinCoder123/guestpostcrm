@@ -70,6 +70,16 @@ const Debug = () => {
   const [timeline, setTimeline] = useState(1);
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [emailSearch, setEmailSearch] = useState("");
+  const getPromptStats = (text) => {
+    if (!text) return { words: 0, lines: 0 };
+
+    const cleaned = text.trim();
+
+    const words = cleaned.split(/\s+/).filter(Boolean).length;
+    const lines = cleaned.split(/\n/).length;
+
+    return { words, lines };
+  };
 
   const modalRef = useRef(null);
 
@@ -452,13 +462,28 @@ const Debug = () => {
                       </div>
 
                       {key === "full_prompt" ? (
-                        value?.includes(
-                          "----------------------------------------------------------------------",
-                        ) ? (
-                          <PromptSectionsViewer prompt={value} />
-                        ) : (
-                          <PromptViewer prompt={value} />
-                        )
+                        (() => {
+                          const stats = getPromptStats(value);
+
+                          return (
+                            <div className="space-y-2">
+                              {/* Stats */}
+                              <div className="flex gap-4 text-xs text-gray-600 bg-gray-200 px-3 py-1 rounded-md w-fit">
+                                <span>Words: {stats.words}</span>
+                                <span>Lines: {stats.lines}</span>
+                              </div>
+
+                              {/* Viewer */}
+                              {value?.includes(
+                                "----------------------------------------------------------------------",
+                              ) ? (
+                                <PromptSectionsViewer prompt={value} />
+                              ) : (
+                                <PromptViewer prompt={value} />
+                              )}
+                            </div>
+                          );
+                        })()
                       ) : large ? (
                         key === "response" ? (
                           <div

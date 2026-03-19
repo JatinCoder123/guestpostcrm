@@ -26,7 +26,7 @@ import {
   deleteMarketPlace,
   marketplaceActions,
 } from "../store/Slices/Marketplace";
-import { viewEmailAction, editContact } from "../store/Slices/viewEmail";
+import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
 
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
@@ -39,9 +39,8 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
 
   const { enteredEmail } = useContext(PageContext);
 
-  const { contactInfo, accountInfo, count, threadId } = useSelector(
-    (s) => s.viewEmail,
-  );
+  const { contactInfo, accountInfo, count, threadId, editMessage } =
+    useSelector((s) => s.viewEmail);
   const { sending, message, error } = useSelector((s) => s.threadEmail);
   const { email } = useSelector((s) => s.ladger);
 
@@ -165,6 +164,10 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
     if (message) {
       dispatch(threadEmailAction.clearAllMessage());
     }
+    if (editMessage) {
+      toast.success(editMessage);
+      dispatch(viewEmailAction.clearAllMessage());
+    }
   }, [
     dispatch,
     forwardError,
@@ -179,6 +182,7 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
     email,
     threadId,
     enteredEmail,
+    editMessage,
   ]);
 
   const actionButtons = [
@@ -278,13 +282,11 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
       icon: <CircleStop size={25} color="red" />,
       label: "Stop Future Emails",
       action: () => {
-        if (!contactInfo) return;
-
         dispatch(
           editContact({
             contact: {
               ...contactInfo,
-              customer_type: "rejected",
+              is_stop: contactInfo.is_stop === "1" ? "0" : "1",
             },
             account: accountInfo || {},
           }),
