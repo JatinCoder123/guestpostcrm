@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
-import { deleteDeal, getDeals } from "../../store/Slices/deals.js"
+import { deleteDeal, getDeals } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
@@ -23,26 +23,25 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { LoadingChase } from "../Loading.jsx"
+import { LoadingChase } from "../Loading.jsx";
 const STATUS_CONFIG = [
   {
     value: "active",
     label: "Active",
     icon: ShieldCheckIcon,
     color: "#F59E0B", // orange (amber-500)
-    showAmount: true
+    showAmount: true,
   },
   {
     value: "expired",
     label: "Expired",
     icon: ShieldAlert,
     color: "#EF4444", // red (red-500)
-  }
+  },
 ];
 export function DealsPage() {
-  const { count, deals, loading, pageIndex, deleting, deleteDealId, summary } = useSelector(
-    (state) => state.deals
-  );
+  const { count, deals, loading, pageIndex, deleting, deleteDealId, summary } =
+    useSelector((state) => state.deals);
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
     useContext(PageContext);
   const navigateTo = useNavigate();
@@ -68,7 +67,7 @@ export function DealsPage() {
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.date_entered}
         </span>
-      )
+      ),
     },
     {
       label: "Contact",
@@ -76,13 +75,14 @@ export function DealsPage() {
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/contacts"),
+      onClick: (row) =>
+        handleOnClick(extractEmail(row?.real_name), "/contacts"),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.real_name?.split("<")[0]?.trim()}
         </span>
-      )
+      ),
     },
     {
       label: "Website",
@@ -91,10 +91,8 @@ export function DealsPage() {
       icon: Globe,
       classes: "truncate ",
       render: (row) => (
-        <span className="font-medium text-blue-700 ">
-          {row?.website_c}
-        </span>
-      )
+        <span className="font-medium text-blue-700 ">{row?.website_c}</span>
+      ),
     },
     {
       label: "Client Offer",
@@ -104,10 +102,8 @@ export function DealsPage() {
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-green-700 ">
-          {row?.dealamount}
-        </span>
-      )
+        <span className="font-medium text-green-700 ">{row?.dealamount}</span>
+      ),
     },
 
     {
@@ -122,7 +118,18 @@ export function DealsPage() {
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
           {row?.status}
         </span>
-      )
+      ),
+    },
+    {
+      label: "Expiry Date",
+      accessor: "expiry_date",
+      headerClasses: "",
+      icon: Calendar,
+      classes: "truncate max-w-[300px]",
+
+      render: (row) => (
+        <span className="font-medium text-green-700 ">{row?.expiry_date}</span>
+      ),
     },
     {
       label: "Action",
@@ -137,7 +144,6 @@ export function DealsPage() {
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="Update"
             onClick={() =>
-
               navigateTo(`/deals/edit/${row.id}`, {
                 state: {
                   email: extractEmail(row.real_name),
@@ -155,30 +161,44 @@ export function DealsPage() {
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
-              onClick={() => dispatch(deleteDeal(extractEmail(row.real_name), row.id))}            >
+              onClick={() =>
+                dispatch(deleteDeal(extractEmail(row.real_name), row.id))
+              }
+            >
               <Trash className="w-5 h-5 text-red-600" />
             </button>
           )}
         </div>
-      )
+      ),
     },
-
-
-  ]
-  const statusList = STATUS_CONFIG.map(config => {
-
+  ];
+  const statusList = STATUS_CONFIG.map((config) => {
     return {
       ...config,
       count: Number(summary?.[`${config.value}_deals`] || 0),
       amount: config.showAmount && Number(summary?.[`active_deal_amount`] || 0),
     };
-
   });
 
   return (
-    <TableView tableData={deals} tableName={"Deals"} columns={columns} slice={"deals"} statusKey={"status"} statusList={statusList} fetchNextPage={() => dispatch(getDeals({ page: pageIndex + 1 }))}   >
-      <TableTitleBar Icon={Handshake} title={"Deals"} titleClass={"text-blue-700"} />
-      <Table headerStyle={"  bg-blue-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_1fr]"} />
+    <TableView
+      tableData={deals}
+      tableName={"Deals"}
+      columns={columns}
+      slice={"deals"}
+      statusKey={"status"}
+      statusList={statusList}
+      fetchNextPage={() => dispatch(getDeals({ page: pageIndex + 1 }))}
+    >
+      <TableTitleBar
+        Icon={Handshake}
+        title={"Deals"}
+        titleClass={"text-blue-700"}
+      />
+      <Table
+        headerStyle={"  bg-blue-600"}
+        layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_1fr_1fr]"}
+      />
     </TableView>
   );
 }

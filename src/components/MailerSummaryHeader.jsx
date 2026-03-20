@@ -306,7 +306,7 @@ function SummaryCard({
     <div
       className={`flex items-center justify-between rounded-2xl border-t-2 p-3 ${colorMap[color]} ${
         highlight
-          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 animate-pulse"
+          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
           : "transition-all duration-300"
       }`}
     >

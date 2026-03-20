@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
-import { deleteOffer, getOffers } from "../../store/Slices/offers.js"
+import { deleteOffer, getOffers } from "../../store/Slices/offers.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
@@ -22,7 +22,7 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { LoadingChase } from "../Loading.jsx"
+import { LoadingChase } from "../Loading.jsx";
 const STATUS_CONFIG = [
   {
     value: "active",
@@ -41,13 +41,18 @@ const STATUS_CONFIG = [
     label: "Expired",
     icon: ShieldAlert,
     color: "#EF4444", // red (red-500)
-  }
+  },
 ];
 export function OffersPage() {
-  const { count, offers, loading, pageIndex, deleting, deleteOfferId, summary } = useSelector(
-    (state) => state.offers
-  );
-
+  const {
+    count,
+    offers,
+    loading,
+    pageIndex,
+    deleting,
+    deleteOfferId,
+    summary,
+  } = useSelector((state) => state.offers);
 
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
     useContext(PageContext);
@@ -74,7 +79,7 @@ export function OffersPage() {
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.date_entered}
         </span>
-      )
+      ),
     },
     {
       label: "Contact",
@@ -82,13 +87,14 @@ export function OffersPage() {
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/contacts"),
+      onClick: (row) =>
+        handleOnClick(extractEmail(row?.real_name), "/contacts"),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.real_name?.split("<")[0]?.trim()}
         </span>
-      )
+      ),
     },
     {
       label: "Website",
@@ -97,10 +103,8 @@ export function OffersPage() {
       icon: Globe,
       classes: "truncate ",
       render: (row) => (
-        <span className="font-medium text-blue-700 ">
-          {row?.website}
-        </span>
-      )
+        <span className="font-medium text-blue-700 ">{row?.website}</span>
+      ),
     },
     {
       label: "Client Offer",
@@ -113,7 +117,7 @@ export function OffersPage() {
         <span className="font-medium text-green-700 ">
           {row?.client_offer_c}
         </span>
-      )
+      ),
     },
     {
       label: "Our OFfer",
@@ -123,10 +127,8 @@ export function OffersPage() {
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-gray-700 ">
-          {row?.our_offer_c}
-        </span>
-      )
+        <span className="font-medium text-gray-700 ">{row?.our_offer_c}</span>
+      ),
     },
     {
       label: "Stage",
@@ -140,7 +142,18 @@ export function OffersPage() {
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
           {row?.offer_status}
         </span>
-      )
+      ),
+    },
+    {
+      label: "Expiry Date",
+      accessor: "expiry_date",
+      headerClasses: "",
+      icon: Calendar,
+      classes: "truncate max-w-[300px]",
+
+      render: (row) => (
+        <span className="font-medium text-gray-700 ">{row?.expiry_date}</span>
+      ),
     },
     {
       label: "Action",
@@ -155,7 +168,6 @@ export function OffersPage() {
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="Update"
             onClick={() =>
-
               navigateTo(`/offers/edit/${row.id}`, {
                 state: {
                   email: extractEmail(row.real_name),
@@ -169,36 +181,49 @@ export function OffersPage() {
           {deleting && deleteOfferId === row.id ? (
             <>
               {console.log("HELLo")}
-              < LoadingChase size="20" color="red" />
+              <LoadingChase size="20" color="red" />
             </>
-
           ) : (
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
-              onClick={() => dispatch(deleteOffer(extractEmail(row.real_name), row.id))}            >
+              onClick={() =>
+                dispatch(deleteOffer(extractEmail(row.real_name), row.id))
+              }
+            >
               <Trash className="w-5 h-5 text-red-600" />
             </button>
           )}
         </div>
-      )
+      ),
     },
-
-
-  ]
-  const statusList = STATUS_CONFIG.map(config => {
-
+  ];
+  const statusList = STATUS_CONFIG.map((config) => {
     return {
       ...config,
       count: Number(summary?.[`${config.value}_offers`] || 0),
     };
-
   });
 
   return (
-    <TableView tableData={offers} tableName={"Offers"} columns={columns} slice={"offers"} statusKey={"offer_status"} statusList={statusList} fetchNextPage={() => dispatch(getOffers({ page: pageIndex + 1 }))}   >
-      <TableTitleBar Icon={Gift} title={"Offers"} titleClass={"text-green-700"} />
-      <Table headerStyle={"  bg-green-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_200px_1fr]"} />
+    <TableView
+      tableData={offers}
+      tableName={"Offers"}
+      columns={columns}
+      slice={"offers"}
+      statusKey={"offer_status"}
+      statusList={statusList}
+      fetchNextPage={() => dispatch(getOffers({ page: pageIndex + 1 }))}
+    >
+      <TableTitleBar
+        Icon={Gift}
+        title={"Offers"}
+        titleClass={"text-green-700"}
+      />
+      <Table
+        headerStyle={"  bg-green-600"}
+        layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_1fr_1fr_1fr_1fr]"}
+      />
     </TableView>
   );
 }
