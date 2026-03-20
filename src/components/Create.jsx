@@ -21,6 +21,7 @@ export default function Create({
   deleteId,
   sending,
   fields,
+  messageId,
   lists = [],
   threadId,
   setCurrentOrderSend,
@@ -169,7 +170,7 @@ export default function Create({
                       <button
                         onClick={() =>
                           navigate(`/${type}/create`, {
-                            state: { email, threadId },
+                            state: { email, threadId, messageId },
                           })
                         }
                         className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"

@@ -24,7 +24,11 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
-import { getOrders, orderAction, updateOrder } from "../../store/Slices/orders.js"
+import {
+  getOrders,
+  orderAction,
+  updateOrder,
+} from "../../store/Slices/orders.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
@@ -32,7 +36,7 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { LoadingAll, LoadingChase } from "../Loading.jsx"
+import { LoadingAll, LoadingChase } from "../Loading.jsx";
 const STATUS_CONFIG = [
   {
     value: "new",
@@ -83,15 +87,13 @@ const STATUS_CONFIG = [
     color: "#56cd1f", // purple
   },
 ];
-import { IoCheckmarkDoneCircleOutline } from "react-icons/io5"
+import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 
 export function OrdersPage() {
-  const { count, orders, loading, pageIndex, stats, updating, message, error } = useSelector(
-    (state) => state.orders
-  );
+  const { count, orders, loading, pageIndex, stats, updating, message, error } =
+    useSelector((state) => state.orders);
   const [updateOrderId, setUpdateOrderId] = useState(null);
-
 
   const { setWelcomeHeaderContent, setSearch, setEnteredEmail, enteredEmail } =
     useContext(PageContext);
@@ -118,7 +120,7 @@ export function OrdersPage() {
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.date_entered}
         </span>
-      )
+      ),
     },
     {
       label: "Contact",
@@ -126,13 +128,14 @@ export function OrdersPage() {
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/contacts"),
+      onClick: (row) =>
+        handleOnClick(extractEmail(row?.real_name), "/contacts"),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.real_name?.split("<")[0]?.trim()}
         </span>
-      )
+      ),
     },
     {
       label: "Amount",
@@ -142,8 +145,9 @@ export function OrdersPage() {
       classes: "truncate ",
       render: (row) => (
         <span className="font-medium text-blue-700 ">
-          ${row.total_amount_c || "0.00"}        </span>
-      )
+          ${row.total_amount_c || "0.00"}{" "}
+        </span>
+      ),
     },
     {
       label: "Status",
@@ -158,7 +162,7 @@ export function OrdersPage() {
         >
           {row.order_status || "Unknown"}
         </span>
-      )
+      ),
     },
     {
       label: "Type",
@@ -168,10 +172,8 @@ export function OrdersPage() {
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-gray-700 ">
-          {row?.order_type}
-        </span>
-      )
+        <span className="font-medium text-gray-700 ">{row?.order_type}</span>
+      ),
     },
     {
       label: "Modified At",
@@ -181,10 +183,8 @@ export function OrdersPage() {
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="px-3 py-1  rounded-full ">
-          {row?.date_modified}
-        </span>
-      )
+        <span className="px-3 py-1  rounded-full ">{row?.date_modified}</span>
+      ),
     },
     {
       label: "Order Id",
@@ -197,7 +197,7 @@ export function OrdersPage() {
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
           {row?.order_id}
         </span>
-      )
+      ),
     },
     {
       label: "Action",
@@ -227,7 +227,8 @@ export function OrdersPage() {
                 state: {
                   email: extractEmail(row.real_name),
                   threadId: row?.thread_id,
-                  orderId: row?.order_id
+                  orderId: row?.order_id,
+                  messageId: row?.message_id,
                 },
               })
             }
@@ -236,56 +237,79 @@ export function OrdersPage() {
           >
             <Eye className="w-5 h-5 text-blue-600" />
           </button>
-          {row.order_type == "MARKETPLACE" && row.order_status !== "completed" && <button
-            onClick={() => {
-              dispatch(updateOrder({ ...row, order_status: "completed" }, false, row.order_id))
-              setUpdateOrderId(row.order_id)
-
-            }
-
-            }
-            disabled={updating}
-            className="p-1 hover:bg-green-500 rounded-full transition-colors cursor-pointer"
-            title="Complete"
-          >
-            {updating && updateOrderId == row.order_id ? <LoadingAll /> : <IoCheckmarkDoneCircleOutline className="w-8 h-8 text-green-600 hover:text-white   " />
-            }
-          </button>}
+          {row.order_type == "MARKETPLACE" &&
+            row.order_status !== "completed" && (
+              <button
+                onClick={() => {
+                  dispatch(
+                    updateOrder(
+                      { ...row, order_status: "completed" },
+                      false,
+                      row.order_id,
+                    ),
+                  );
+                  setUpdateOrderId(row.order_id);
+                }}
+                disabled={updating}
+                className="p-1 hover:bg-green-500 rounded-full transition-colors cursor-pointer"
+                title="Complete"
+              >
+                {updating && updateOrderId == row.order_id ? (
+                  <LoadingAll />
+                ) : (
+                  <IoCheckmarkDoneCircleOutline className="w-8 h-8 text-green-600 hover:text-white   " />
+                )}
+              </button>
+            )}
         </div>
-      )
+      ),
     },
-
-
-  ]
-  const statusList = STATUS_CONFIG.map(config => {
-    const status = stats.find(s => s.status == config.value)
+  ];
+  const statusList = STATUS_CONFIG.map((config) => {
+    const status = stats.find((s) => s.status == config.value);
     return {
       ...config,
       count: status?.status_count || 0,
       amount: status?.total_amount || 0,
-      showAmount: true
+      showAmount: true,
     };
-
   });
   useEffect(() => {
     if (message) {
-      toast.success(message)
-      setUpdateOrderId(null)
-      dispatch(orderAction.clearAllMessages())
+      toast.success(message);
+      setUpdateOrderId(null);
+      dispatch(orderAction.clearAllMessages());
       dispatch(getOrders({ email: enteredEmail }));
-
     }
     if (error) {
-      setUpdateOrderId(null)
-      toast.error(error)
-      dispatch(orderAction.clearAllErrors())
+      setUpdateOrderId(null);
+      toast.error(error);
+      dispatch(orderAction.clearAllErrors());
     }
   }, [message, error]);
 
   return (
-    <TableView tableData={orders} tableName={"Orders"} columns={columns} slice={"orders"} defaultStatus={"new"} statusKey={"order_status"} statusList={statusList} fetchNextPage={() => dispatch(getOrders({ page: pageIndex + 1 }))}   >
-      <TableTitleBar Icon={ShoppingCart} title={"Orders"} titleClass={"text-cyan-700"} />
-      <Table headerStyle={"  bg-cyan-600"} layoutStyle={"grid grid-cols-[200px_200px_200px_200px_200px_200px_200px_1fr]"} />
+    <TableView
+      tableData={orders}
+      tableName={"Orders"}
+      columns={columns}
+      slice={"orders"}
+      defaultStatus={"new"}
+      statusKey={"order_status"}
+      statusList={statusList}
+      fetchNextPage={() => dispatch(getOrders({ page: pageIndex + 1 }))}
+    >
+      <TableTitleBar
+        Icon={ShoppingCart}
+        title={"Orders"}
+        titleClass={"text-cyan-700"}
+      />
+      <Table
+        headerStyle={"  bg-cyan-600"}
+        layoutStyle={
+          "grid grid-cols-[200px_200px_200px_200px_200px_200px_200px_1fr]"
+        }
+      />
     </TableView>
   );
 }

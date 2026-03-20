@@ -34,7 +34,7 @@ const fields = [
     name: "note",
     label: "Note",
     type: "textarea",
-  }
+  },
 ];
 const lists = [
   { name: "our_link", label: "Our Link" },
@@ -42,7 +42,7 @@ const lists = [
 ];
 export default function CreateOrder() {
   const { websites: websiteLists } = useSelector((state) => state.website);
-  const { handleMove } = useThreadContext()
+  const { handleMove } = useThreadContext();
 
   const { type, id } = useParams();
   const { state } = useLocation();
@@ -141,7 +141,6 @@ export default function CreateOrder() {
     );
     if (state?.orderId) {
       order = order.filter((d) => d.order_id == state?.orderId);
-
     }
     if (type == "edit" && id !== undefined) {
       order = order.filter((d) => d.id == id);
@@ -165,13 +164,21 @@ export default function CreateOrder() {
     setCurrentOrderSend(order);
   };
   const handleCreate = (order, send) => {
-    dispatch(createOrder2(state?.email, order, send, state?.threadId));
+    dispatch(
+      createOrder2(
+        state?.email,
+        order,
+        send,
+        state?.threadId,
+        state?.messageId,
+      ),
+    );
     setCurrentOrderSend(order);
   };
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => { };
+  const sendHandler = () => {};
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -222,11 +229,11 @@ export default function CreateOrder() {
 
   return (
     <Create
-      data={type == "orders" ? newOrder : currentOrders}
+      data={type == "create" ? newOrder : currentOrders}
       submitData={handleCreate}
       validWebsite={websiteLists}
       email={state?.email}
-      setData={type == "orders" ? setNewOrder : setCurrentOrders}
+      setData={type == "create" ? setNewOrder : setCurrentOrders}
       websiteKey="website_c"
       orderId="order_id"
       handleDelete={handleDelete}
@@ -236,6 +243,7 @@ export default function CreateOrder() {
       creating={creating}
       lists={lists}
       threadId={state?.threadId}
+      messageId={state?.messageId}
       showPreview={showPreview}
       setShowPreview={setShowPreview}
       sending={sending}
@@ -245,16 +253,22 @@ export default function CreateOrder() {
       renderPreview={({ data, email, onClose }) => {
         showConsole && console.log(currentOrderSend);
         const html = createPreviewOrder({
-          templateData: (currentOrderSend.order_status == "wrong" || currentOrderSend.order_status == "rejected_nontechnical") ? rejectOrderTemp :
-            currentOrderSend.order_type == "GUEST POST" ||
-              currentOrderSend.order_type == "BOTH"
-              ? gpTemplate
-              : liTemplate,
+          templateData:
+            currentOrderSend.order_status == "wrong" ||
+            currentOrderSend.order_status == "rejected_nontechnical"
+              ? rejectOrderTemp
+              : currentOrderSend.order_type == "GUEST POST" ||
+                  currentOrderSend.order_type == "BOTH"
+                ? gpTemplate
+                : liTemplate,
           order: currentOrderSend,
           userEmail: email,
         });
-        handleMove({ email: state?.email, threadId: state?.threadId, reply: html })
-
+        handleMove({
+          email: state?.email,
+          threadId: state?.threadId,
+          reply: html,
+        });
       }}
       amountKey={"total_amount_c"}
       pageType={type}

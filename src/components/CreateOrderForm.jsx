@@ -40,11 +40,10 @@ const CreateOrderForm = ({
       seo_backlinks: [
         ...(Array.isArray(prev.seo_backlinks) ? prev.seo_backlinks : []),
         {
-          anchor_text_c: "",
           backlink_url: "",
-          target_url_c: "",
-          link_amount: "",
           gp_doc_url_c: "",
+          website: "",
+          anchor_text_c: "",
         },
       ],
     }));
@@ -60,15 +59,9 @@ const CreateOrderForm = ({
       [key]: value,
     };
 
-    const totalAmount = links.reduce(
-      (sum, l) => sum + Number(l.link_amount || 0),
-      0
-    );
-
     setOrder((prev) => ({
       ...prev,
       seo_backlinks: links,
-      total_amount_c: totalAmount.toString(),
     }));
   };
 
@@ -78,15 +71,9 @@ const CreateOrderForm = ({
       ? order.seo_backlinks.filter((_, i) => i !== index)
       : [];
 
-    const totalAmount = links.reduce(
-      (sum, l) => sum + Number(l.link_amount || 0),
-      0
-    );
-
     setOrder((prev) => ({
       ...prev,
       seo_backlinks: links,
-      total_amount_c: totalAmount.toString(),
     }));
   };
 
@@ -98,12 +85,16 @@ const CreateOrderForm = ({
       return false;
 
     for (const link of order.seo_backlinks) {
+      // required in both
+      if (!link.website?.trim()) return false;
+
       if (order.order_type === "GUEST POST") {
         if (!link.gp_doc_url_c?.trim()) return false;
       }
 
       if (order.order_type === "LINK INSERTION") {
         if (!link.backlink_url?.trim()) return false;
+        if (!link.anchor_text_c?.trim()) return false;
       }
     }
 
@@ -117,31 +108,29 @@ const CreateOrderForm = ({
     if (creating || !formValid) return;
     handleSubmit(send);
   };
-  /* ---------------- DEFAULT ORDER TYPE ---------------- */
-  /* ---------------- DEFAULT SETUP ---------------- */
+
   /* ---------------- DEFAULT SETUP ---------------- */
   useEffect(() => {
     if (!order) return;
 
-    // Only run if something is missing
     if (!order.order_type || !order.seo_backlinks?.length) {
       setOrder((prev) => {
         const updated = { ...prev };
 
-        // Default order type
         if (!updated.order_type) {
           updated.order_type = "GUEST POST";
         }
 
-        // Ensure at least one SEO link exists
-        if (!Array.isArray(updated.seo_backlinks) || updated.seo_backlinks.length === 0) {
+        if (
+          !Array.isArray(updated.seo_backlinks) ||
+          updated.seo_backlinks.length === 0
+        ) {
           updated.seo_backlinks = [
             {
-              anchor_text_c: "",
               backlink_url: "",
-              target_url_c: "",
-              link_amount: "",
               gp_doc_url_c: "",
+              website: "",
+              anchor_text_c: "",
             },
           ];
         }
@@ -150,6 +139,7 @@ const CreateOrderForm = ({
       });
     }
   }, [order]);
+
   /* ---------------- RENDER ---------------- */
   return (
     <div className="space-y-6">
@@ -159,10 +149,11 @@ const CreateOrderForm = ({
           <button
             key={type}
             onClick={() => handleChange("order_type", type)}
-            className={`px-4 py-2 rounded-lg font-medium transition ${order.order_type === type
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 hover:bg-gray-300"
-              }`}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              order.order_type === type
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
           >
             {type}
           </button>
@@ -189,16 +180,16 @@ const CreateOrderForm = ({
             {order.order_type === "GUEST POST" && (
               <>
                 <input
-                  placeholder="Anchor Text (optional)"
-                  value={link.anchor_text_c || ""}
+                  placeholder="Website"
+                  value={link.website || ""}
                   onChange={(e) =>
-                    updateSeoLink(index, "anchor_text_c", e.target.value)
+                    updateSeoLink(index, "website", e.target.value)
                   }
                   className="border p-2 rounded w-full"
                 />
 
                 <input
-                  placeholder="Doc URL (Required)"
+                  placeholder="Doc URL"
                   value={link.gp_doc_url_c || ""}
                   onChange={(e) =>
                     updateSeoLink(index, "gp_doc_url_c", e.target.value)
@@ -212,16 +203,16 @@ const CreateOrderForm = ({
             {order.order_type === "LINK INSERTION" && (
               <>
                 <input
-                  placeholder="Anchor Text"
-                  value={link.anchor_text_c || ""}
+                  placeholder="Website"
+                  value={link.website || ""}
                   onChange={(e) =>
-                    updateSeoLink(index, "anchor_text_c", e.target.value)
+                    updateSeoLink(index, "website", e.target.value)
                   }
                   className="border p-2 rounded w-full"
                 />
 
                 <input
-                  placeholder="Backlink URL (Required)"
+                  placeholder="Backlink URL"
                   value={link.backlink_url || ""}
                   onChange={(e) =>
                     updateSeoLink(index, "backlink_url", e.target.value)
@@ -230,20 +221,10 @@ const CreateOrderForm = ({
                 />
 
                 <input
-                  placeholder="Target URL"
-                  value={link.target_url_c || ""}
+                  placeholder="Anchor Text"
+                  value={link.anchor_text_c || ""}
                   onChange={(e) =>
-                    updateSeoLink(index, "target_url_c", e.target.value)
-                  }
-                  className="border p-2 rounded w-full"
-                />
-
-                <input
-                  placeholder="Link Amount ($)"
-                  type="number"
-                  value={link.link_amount || ""}
-                  onChange={(e) =>
-                    updateSeoLink(index, "link_amount", e.target.value)
+                    updateSeoLink(index, "anchor_text_c", e.target.value)
                   }
                   className="border p-2 rounded w-full"
                 />
@@ -262,11 +243,7 @@ const CreateOrderForm = ({
       </button>
 
       {/* ---------------- ACTION BUTTONS ---------------- */}
-      <div className="flex justify-between items-center">
-        <div className="text-right font-semibold">
-          Order Amount: ${order.total_amount_c || 0}
-        </div>
-
+      <div className="flex justify-end items-center">
         <div className="flex gap-3">
           <button
             disabled={!formValid}
@@ -274,10 +251,11 @@ const CreateOrderForm = ({
               setButton(1);
               onSubmit(false);
             }}
-            className={`px-3 py-2 rounded-lg text-white ${!formValid
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
-              }`}
+            className={`px-3 py-2 rounded-lg text-white ${
+              !formValid
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
           >
             {creating && button === 1 ? "Saving..." : "Save"}
           </button>
@@ -288,10 +266,11 @@ const CreateOrderForm = ({
               setButton(2);
               onSubmit(true);
             }}
-            className={`px-3 py-2 rounded-lg text-white ${!formValid
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-              }`}
+            className={`px-3 py-2 rounded-lg text-white ${
+              !formValid
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             {creating && button === 2 ? "Sending..." : "Save & Send"}
           </button>

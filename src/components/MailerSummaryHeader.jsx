@@ -242,7 +242,7 @@ function SummaryCard({
   const { setSidebarCollapsed } = useContext(PageContext);
   const { syncType, loading: syncing } = useSelector((state) => state.sync);
 
-  const { threadId } = useSelector((state) => state.viewEmail);
+  const { threadId, contactInfo } = useSelector((state) => state.viewEmail);
   const { creating, message, error } = useSelector((state) => state.orders);
   const { email } = useSelector((state) => state.ladger);
 
@@ -291,8 +291,12 @@ function SummaryCard({
     }
 
     data?.length > 0
-      ? navigateTo(`/${type}/view`, { state: { email, threadId } })
-      : navigateTo(`/${type}/create`, { state: { email, threadId } });
+      ? navigateTo(`/${type}/view`, {
+          state: { email, threadId, messageId: contactInfo?.message_id },
+        })
+      : navigateTo(`/${type}/create`, {
+          state: { email, threadId, messageId: contactInfo?.message_id },
+        });
   };
 
   const colorMap = {
@@ -321,7 +325,13 @@ function SummaryCard({
               <button
                 className="cursor-pointer"
                 onClick={() =>
-                  navigateTo(`/${type}/create`, { state: { email, threadId } })
+                  navigateTo(`/${type}/create`, {
+                    state: {
+                      email,
+                      threadId,
+                      messageId: contactInfo?.message_id,
+                    },
+                  })
                 }
               >
                 <img
