@@ -23,11 +23,7 @@ const contactSlice = createSlice({
             const { count, pageCount, pageIndex, contacts } = action.payload;
             state.loading = false;
             state.count = count;
-            if (pageIndex === 1) {
-                state.contacts = contacts;
-            } else {
-                state.contacts = [...state.contacts, ...contacts];
-            }
+            state.contacts = contacts;
             state.pageCount = pageCount;
             state.pageIndex = pageIndex;
             state.error = null;

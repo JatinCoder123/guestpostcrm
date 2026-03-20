@@ -275,8 +275,8 @@ export default function ThreadView() {
                       )}
                       <div
                         className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700 border border-gray-200"
                           }`}
                       >
                         {/* NAME */}

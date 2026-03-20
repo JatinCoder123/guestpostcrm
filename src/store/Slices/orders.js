@@ -251,57 +251,38 @@ export const createOrder2 = (email, order, send, threadId) => {
     console.log("ORDER", order)
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
+      let orders= order.order_type=="GUEST POST"?order.seo_backlinks.map((link)=>{
+        return {
+          type: "Guest Post",
+          site: link.website,
+          content_doc:link.gp_doc_url_c,
+          
+        }
+      }):order.seo_backlinks.map((link)=>{
+        return {
+          type: "Link Insertion",
+          site: link.website,
+          post_url:link.website,
+          their_link:[{
+            url:link.backlink_url,
+            anchor_text:link.anchor_text_c
+          }]
+        }
+      })
+      console.log("ORDERS", orders)
       const res = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+        `${domain}?entryPoint=fetch_gpc&type=manual_order`,
 
         {
-          parent_bean: {
-            module: "outr_order_gp_li",
-            name: email,
-            client_email: email,
-            order_type: order.order_type,
-            thread_id: threadId
-          },
-        },
-        {
-          headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
-          },
+          email: email,
+          thread_id: threadId,
+          orders
         },
 
       );
       showConsole && console.log(`Create Order Manully`, res.data);
-      if (res.data?.parent_created) {
-        order.seo_backlinks.map(async (link) => {
-          const res1 = await axios.post(
-            `${domain}?entryPoint=get_post_all&action_type=post_data`,
-
-            {
-              parent_bean: {
-                module: "outr_order_gp_li",
-                id: res.data.parent_id
-              },
-              child_bean: {
-                module: "outr_seo_backlinks",
-                ...link,
-                type_c: (order.order_type == "GUEST POST" || order.order_type == "BOTH") ? "GP" : "LI"
-              }
-            },
-            {
-              headers: {
-                "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-                "Content-Type": "aplication/json",
-              },
-            },
-
-          );
-          console.log(res1.data)
-        })
-
-      }
-      else {
-        throw new Error("Failed To Create Order")
+      if (!res.data.success) {
+               throw new Error("Failed To Create Order")
       }
       dispatch(
         ordersSlice.actions.createOrder2Success({

@@ -27,11 +27,12 @@ import {
   marketplaceActions,
 } from "../store/Slices/Marketplace";
 import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
+import { getLadger } from "../store/Slices/ladger";
 
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
 
-const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
+const ActionButton = ({ setShowIP, isMark }) => {
   const dispatch = useDispatch();
 
   const [showUsers, setShowUsers] = useState(false);
@@ -39,10 +40,10 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
 
   const { enteredEmail } = useContext(PageContext);
 
-  const { contactInfo, accountInfo, count, threadId, editMessage } =
+  const { contactInfo, accountInfo, threadId, editMessage, contactLoading } =
     useSelector((s) => s.viewEmail);
   const { sending, message, error } = useSelector((s) => s.threadEmail);
-  const { email } = useSelector((s) => s.ladger);
+  const email = contactInfo?.email1
 
   const {
     forward,
@@ -312,7 +313,7 @@ const ActionButton = ({ handleMoveSuccess, setShowIP, isMark }) => {
               <>
                 <MoveToDropdown
                   currentThreadId={threadId}
-                  onMoveSuccess={handleMoveSuccess}
+                  onMoveSuccess={() => dispatch(getLadger({ email: contactInfo?.email1 }))}
                 />
                 <Separator />
               </>

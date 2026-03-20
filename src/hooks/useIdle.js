@@ -35,12 +35,9 @@ function useIdle({ idle }) {
             dispatch(getLadger({ email: firstEmail, search }));
             dispatch(getViewEmail(firstEmail));
             dispatch(getContact(firstEmail));
-        } else if (!loading) {
-            dispatch(getLadger({ search, isEmail: false }));
         }
         dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
         dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
-        dispatch(viewEmailAction.resetViewEmail());
     };
     useEffect(() => {
         if (emails?.length > 0) {
