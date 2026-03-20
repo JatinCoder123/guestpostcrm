@@ -14,14 +14,18 @@ const Thread = () => {
     context: { currentThread, currentEmail },
   } = useThreadContext();
 
-  const [emails, setEmails] = useState(state?.viewEmails || []);
+  const [emails, setEmails] = useState([]);
   useEffect(() => {
     if (currentEmail && currentThread && !state?.viewEmails) {
       dispatch(getThreadEmail(currentEmail, currentThread));
     }
+    else {
+      setEmails(state?.viewEmails)
+    }
   }, [currentEmail, currentThread]);
   useEffect(() => {
-    if (threadEmail?.length > 0) {
+
+    if (threadEmail?.length > 0 && !state?.viewEmails) {
       setEmails(threadEmail);
     }
   }, [threadEmail]);

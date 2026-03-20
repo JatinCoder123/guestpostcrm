@@ -159,6 +159,9 @@ const ContactHeader = ({ isMark }) => {
       value: contactInfo?.last_user ?? "GPC User",
     },
   ];
+  if (contactLoading) {
+    return <ContactHeaderSkeleton />;
+  }
   return (
     <div className="flex flex-col gap-4">
       <div
@@ -173,8 +176,6 @@ const ContactHeader = ({ isMark }) => {
       >
         {/* LEFT SIDE */}
         <div className="flex items-center gap-4">
-          {contactLoading && <LoadingChase size="30" color="white" />}
-
           {!contactLoading && (
             <div className="flex flex-col">
               {/* Name */}
@@ -307,3 +308,48 @@ function StatusCard({ Icon, label, value }) {
     </div>
   );
 }
+const ContactHeaderSkeleton = () => {
+  return (
+    <div className="flex flex-col gap-4 animate-pulse">
+      {/* HEADER */}
+      <div className="flex items-center justify-between w-full py-4 px-4 rounded-t-xl bg-gradient-to-r from-sky-300 via-cyan-200 to-cyan-100">
+
+        {/* LEFT */}
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-white/40 rounded-full"></div>
+
+          <div className="flex flex-col gap-2">
+            <div className="w-40 h-4 bg-white/50 rounded"></div>
+            <div className="w-24 h-3 bg-white/40 rounded"></div>
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div className="flex items-center gap-3">
+          <div className="w-24 h-10 bg-white/40 rounded-full"></div>
+
+          <div className="flex gap-2">
+            <div className="w-16 h-6 bg-white/40 rounded-full"></div>
+            <div className="w-20 h-6 bg-white/40 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* STATUS GRID */}
+      <div className="flex flex-wrap gap-3 p-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-start gap-3 rounded-xl p-3 bg-gray-100 border border-gray-200 min-w-[150px]"
+          >
+            <div className="w-9 h-9 bg-gray-200 rounded-lg"></div>
+            <div className="flex flex-col gap-2">
+              <div className="w-16 h-3 bg-gray-200 rounded"></div>
+              <div className="w-20 h-4 bg-gray-300 rounded"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

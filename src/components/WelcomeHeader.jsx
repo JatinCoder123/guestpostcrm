@@ -14,8 +14,9 @@ const WelcomeHeader = () => {
   const location = useLocation();
   const path = location.pathname;
 
-  const { email, timeline, loading } = useSelector((state) => state.ladger);
+  const { contactInfo, contactLoading } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
+  const email = contactInfo?.email1
   const { setEnteredEmail, setCurrentIndex, setSearch, welcomeHeaderContent, handleClear } =
     useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
@@ -112,6 +113,7 @@ const WelcomeHeader = () => {
               }}
               onClick={() => {
                 handleClear()
+                navigate("/")
                 dispatch(getUnrepliedEmail({ loading: true }))
                 setCurrentIndex(0)
               }}
@@ -147,7 +149,7 @@ const WelcomeHeader = () => {
             <span className="font-bold text-gray-900">Results for  </span>
             <span className="font-bold text-gray-900">{resultTitle}</span>
 
-            {shouldShowEmail && email && !loading && (
+            {shouldShowEmail && email && !contactLoading && (
               <>
                 {" • "}
                 <button
