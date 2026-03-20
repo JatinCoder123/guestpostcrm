@@ -25,9 +25,7 @@ export function TagManagerpage() {
   const navigate = useNavigate();
   const { tags, count, creating } = useSelector((state) => state.tag);
 
-  const [topsearch, setTopsearch] = useState("");
-  // Initialize with "hot" to show hot tags on load
-  const [selectedCategory, setSelectedCategory] = useState("hot");
+
   const [selectedTag, setSelectedTag] = useState("hot"); // For dropdown selection
   const [deletingId, setDeletingId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -62,20 +60,9 @@ export function TagManagerpage() {
     }
   };
 
-  const handleSearchChange = (value) => {
-    setTopsearch(value);
-  };
 
-  const handleCategoryChange = (value) => {
-    setSelectedCategory(value);
-    setSelectedTag(value);
-  };
 
-  const handleFilterApply = (filters) => {};
-
-  const handleDownload = () => {};
-
-  const handleConfirmDelete = (id, firstName) => {};
+  const handleConfirmDelete = (id, firstName) => { };
 
   const handleCreateTagSuccess = (tagName) => {
     setCreatedTagName(tagName);
@@ -96,19 +83,6 @@ export function TagManagerpage() {
     }
   };
 
-  const dropdownOptions = [
-    { value: "cold", label: "Cold" },
-    { value: "forwarded", label: "Forwarded" },
-    { value: "hot", label: "Hot" },
-    { value: "spammed", label: "Spammed" },
-    { value: "no_reply", label: "No Reply" },
-    { value: "non_relevant", label: "Non Relevant" },
-    { value: "reseller", label: "Reseller" },
-    { value: "unreplied", label: "Unreplied" },
-    { value: "sync_contact", label: "Sync Contact" },
-    { value: "invalid_email", label: "Invalid Email" },
-    { value: "do_not_call", label: "Do not call" },
-  ];
 
   return (
     <>
@@ -116,21 +90,7 @@ export function TagManagerpage() {
       <div
         className={`${showCreateForm ? "filter blur-sm pointer-events-none" : ""} transition-all duration-300`}
       >
-        <SearchComponent
-          dropdownOptions={dropdownOptions}
-          selectedDropdownValue={selectedCategory} // This will show "hot" as selected on load
-          onDropdownChange={handleCategoryChange}
-          dropdownPlaceholder="Select Tag"
-          searchValue={topsearch}
-          onSearchChange={handleSearchChange}
-          searchPlaceholder="Search here..."
-          onFilterApply={handleFilterApply}
-          filterPlaceholder="Filters"
-          showFilter={true}
-          onDownloadClick={handleDownload}
-          showDownload={true}
-          className="mb-6"
-        />
+
 
         {/* Success Toast Notification */}
         {showSuccessToast && createdTagName && (

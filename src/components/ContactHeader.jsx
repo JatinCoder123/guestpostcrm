@@ -179,11 +179,11 @@ const ContactHeader = ({ isMark }) => {
             <div className="flex flex-col">
               {/* Name */}
               <div className="flex items-center gap-2">
-                <span className="text-lg font-extrabold">
+                <Link to={'/contacts/id'} className="text-lg font-extrabold">
                   {contactInfo?.full_name?.trim()
                     ? contactInfo.full_name
                     : email}
-                </span>
+                </Link >
 
 
               </div>
