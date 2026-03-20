@@ -21,7 +21,7 @@ export function MovedPage() {
   const dispatch = useDispatch();
 
   const { count, emails } = useSelector((state) => state.moved);
-  const { crmEndpiont } = useSelector((state) => state.user);
+  const { crmEndpoint } = useSelector((state) => state.user);
 
   const [topsearch, setTopsearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -35,7 +35,7 @@ export function MovedPage() {
     try {
       setRestoringId(emailItem.thread_id);
       const res = await axios.get(
-        `${crmEndpiont}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}`,
+        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}`,
       );
       if (res?.data) {
         toast.success("Email restored successfully ✅");
