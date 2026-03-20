@@ -76,7 +76,6 @@ function useRefresh() {
         dispatch(getLinkExchange());
         dispatch(getFavEmails({}));
         dispatch(getAllContacts({}))
-
         dispatch(getForwardedEmails({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {

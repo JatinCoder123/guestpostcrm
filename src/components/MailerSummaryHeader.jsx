@@ -26,7 +26,7 @@ import SyncSelectionModal from "./SyncSelectionModal";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
-  const { mailersSummary, email } = useSelector((state) => state.ladger);
+  const { mailersSummary, email, loading } = useSelector((state) => state.ladger);
   const {
     syncType,
     syncData,
@@ -101,7 +101,10 @@ const MailerSummaryHeader = () => {
 
     setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, mailersSummary]);
-
+  const isLoading = loading && !mailersSummary;
+  if (isLoading) {
+    return <MailerSummarySkeleton />;
+  }
   /* ---------------- UI ---------------- */
   return (
     <>
@@ -115,7 +118,7 @@ const MailerSummaryHeader = () => {
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
         {/* TOP INFO */}
-        {mailersSummary ? (
+        {mailersSummary && !loading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div>
               <div className="text-xs text-gray-500 uppercase font-semibold">
@@ -296,23 +299,22 @@ function SummaryCard({
   };
 
   const colorMap = {
-    green: "bg-green-50 border-green-300 text-green-600",
-    blue: "bg-blue-50 border-blue-300 text-blue-600",
-    cyan: "bg-cyan-100 border-cyan-300 text-cyan-600",
-    orange: "bg-orange-50 border-orange-300 text-orange-600",
+    green: "text-green-600",
+    blue: "  text-blue-600",
+    cyan: " text-cyan-600",
+    orange: " text-orange-600",
   };
 
   return (
     <div
-      className={`flex items-center justify-between rounded-2xl border-t-2 p-3 ${colorMap[color]} ${
-        highlight
-          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 animate-pulse"
-          : "transition-all duration-300"
-      }`}
+      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${highlight
+        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 animate-pulse"
+        : "transition-all duration-300"
+        }`}
     >
       {(creating && type === "orders") ||
-      loading ||
-      (syncType == type && syncing) ? (
+        loading ||
+        (syncType == type && syncing) ? (
         <LoadingChase />
       ) : (
         <>
@@ -372,3 +374,45 @@ function SummaryCard({
     </div>
   );
 }
+const MailerSummarySkeleton = () => {
+  return (
+    <div className="p-4 bg-slate-100 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-4 animate-pulse">
+
+      {/* TOP INFO */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+        {[1, 2, 3].map((_, i) => (
+          <div key={i} className="flex flex-col gap-2">
+            <div className="w-24 h-3 bg-gray-300 rounded"></div>
+            <div className="w-40 h-4 bg-gray-400 rounded"></div>
+            <div className="w-28 h-3 bg-gray-300 rounded"></div>
+          </div>
+        ))}
+      </div>
+
+      {/* CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between rounded-2xl border p-3 bg-white"
+          >
+            {/* LEFT */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-300 rounded-xl"></div>
+              <div className="flex flex-col gap-2">
+                <div className="w-24 h-3 bg-gray-300 rounded"></div>
+                <div className="w-16 h-3 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+
+            {/* RIGHT */}
+            <div className="flex gap-2">
+              <div className="w-9 h-9 bg-gray-300 rounded-full"></div>
+              <div className="w-9 h-9 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

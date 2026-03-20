@@ -7,6 +7,7 @@ import update_With_send from "./update_With_send.jpg";
 import { time } from "framer-motion";
 export default logo;
 export const images = { duplicateImg };
+import DOMPurify from "dompurify";
 export const websiteLists = [
   "https://www.wp-1click.com/",
   "https://www.outrightcrm.com/",
@@ -173,7 +174,16 @@ export function unionByKey(arr1, arr2, key) {
 
   return result;
 }
-
+export const getSafeHTML = (html) => {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "b", "i", "em", "strong", "a", "p", "br", "ul", "ol", "li", "span", "div"
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+    FORBID_TAGS: ["style", "script"],
+    FORBID_ATTR: ["style", "onerror", "onclick"],
+  });
+};
 
 
 export const sendEmailBtn = send;
