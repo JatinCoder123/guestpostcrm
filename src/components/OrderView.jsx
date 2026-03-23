@@ -24,13 +24,22 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
   const onCompleteHandler = () => {
     setShowConsent(true);
   };
-  const { dofollowCount, nofollowCount } = data.seo_backlinks.reduce(
+  const stats = data.seo_backlinks.reduce(
     (acc, link) => {
-      if (link.link_type === "dofollow") acc.dofollowCount += 1;
-      if (link.link_type === "nofollow") acc.nofollowCount += 1;
+      if (link.link_type === "dofollow") acc.dofollow += 1;
+      if (link.link_type === "nofollow") acc.nofollow += 1;
+
+      if (link.category === "internal") acc.internal += 1;
+      if (link.category === "authority") acc.authority += 1;
+
       return acc;
     },
-    { dofollowCount: 0, nofollowCount: 0 }
+    {
+      internal: 0,
+      authority: 0,
+      dofollow: 0,
+      nofollow: 0,
+    }
   );
 
   useEffect(() => {
@@ -131,43 +140,32 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
           setStatus={setStatus}
           onCompleteHandler={onCompleteHandler}
         />
-        <div className="relative  rounded-3xl  p-2">
-          <div className="relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-              <Field label="Date" value={data.date_entered_formatted} />
-              <Field label="Type" value={data.order_type} />
-              <Field label="Amount" value={`$${data.total_amount_c}`} />
-              <Field label="Status">
-                <div className="relative inline-flex">
-                  <span className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xl bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(234,179,8,0.4)] ">
-                    {statusLists[data.order_status]}
-                  </span>
-                </div>
-              </Field>
-              <Field
-                label="Invoice Link"
-                value={data.invoice_link_c}
-                link
-                title="View Invoice"
-              />
-              <Field
-                label="Total Links"
-                value={data.seo_backlinks_count}
-                title="Total Links"
-                children={
-                  <div className="flex gap-4 text-sm">
-                    <span className="flex items-center gap-1 text-green-600 font-medium">
-                      DoFollow {dofollowCount}
-                    </span>
+        <div className="relative flex flex-col gap-3  rounded-3xl  p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+            <Field label="Date" value={data.date_entered_formatted} />
+            <Field label="Type" value={data.order_type} />
+            <Field label="Amount" value={`$${data.total_amount_c}`} />
+            <Field label="Status">
+              <div className="relative inline-flex">
+                <span className="relative inline-flex items-center gap-2 px-2 py-2 rounded-xl bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 text-yellow-900 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_8px_20px_rgba(234,179,8,0.4)] ">
+                  {statusLists[data.order_status]}
+                </span>
+              </div>
+            </Field>
+            <Field
+              label="Invoice Link"
+              value={data.invoice_link_c}
+              link
+              title="View Invoice"
+            />
+            <Field
+              label="Total Links"
+              value={data.seo_backlinks_count}
+              title="Total Links"
 
-                    <span className="flex items-center gap-1 text-gray-600 font-medium">
-                      NoFollow {nofollowCount}
-                    </span>
-                  </div>
-                }
-              />
-            </div>
+            />
           </div>
+          <LinkStatsRow stats={stats} />
           <div>
             <div className="flex items-center gap-3 ml-4 mt-6 mb-3">
               {/* Title */}
@@ -412,6 +410,38 @@ function Model({ setShowModel, showModel, handleSubmitConfirm }) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+function LinkStatsRow({ stats }) {
+  const items = [
+    {
+      label: "Internal Links",
+      value: stats.internal,
+      bg: "from-orange-300 to-orange-200",
+    },
+    {
+      label: "Authority Links",
+      value: stats.authority,
+      bg: "from-green-500 to-green-400",
+    },
+    {
+      label: "NoFollow Links",
+      value: stats.nofollow,
+      bg: "from-blue-500 to-blue-400",
+    },
+    {
+      label: "DoFollow Links",
+      value: stats.dofollow,
+      bg: "from-purple-500 to-purple-400",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      {items.map((item, i) => (
+        <Field label={item.label} value={item.value}></Field>
+      ))}
     </div>
   );
 }

@@ -47,6 +47,8 @@ function ValidTick() {
 }
 
 export default function SeoBacklinkList({ seo_backlink, orderId }) {
+  const gpLinks = seo_backlink.filter(l => l.type_c === "GP");
+  const liLinks = seo_backlink.filter(l => l.type_c === "LI");
   const { updateLinkLoading, deleting, updateLinkMessage } = useSelector(
     (state) => state.orders,
   );
@@ -91,17 +93,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                  label: "Our Link",
-                  name: "target_url_c",
-                  type: "text",
-                  value: item.target_url_c || "",
-                }
+                label: "Our Link",
+                name: "target_url_c",
+                type: "text",
+                value: item.target_url_c || "",
+              }
               : {
-                  label: "Doc Link",
-                  name: "gp_doc_url_c",
-                  type: "text",
-                  value: item.gp_doc_url_c || "",
-                },
+                label: "Doc Link",
+                name: "gp_doc_url_c",
+                type: "text",
+                value: item.gp_doc_url_c || "",
+              },
             {
               label: "Website",
               name: "name",
@@ -125,7 +127,13 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-3 group relative">
           <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3  border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)]">
-            {seo_backlink.map((item, index) => (
+            {gpLinks.length > 0 && (
+              <div className="mb-6 flex flex-col gap-5">
+                <DocumentAnalysisCard docLink={gpLinks[0]?.gp_doc_url_c} docNiche={gpLinks[0]?.niche} />
+                <GPLinksTable gpLinks={gpLinks} setItem={setItem} setOpen={setOpen} deleting={deleting} setLinkId={setLinkId} linkId={linkId} />
+              </div>
+            )}
+            {liLinks.map((item, index) => (
               <div
                 key={item.id}
                 className="relative flex flex-col p-1 gap-1 rounded-2xl border-b"
@@ -137,7 +145,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
         bg-gradient-to-r from-indigo-500 to-purple-600
         text-white text-xs font-bold shadow-md"
                   >
-                    #{index + 1}
+                    #{index + gpLinks.length + 1}
                   </span>
                 </div>
                 {/* Edit Button */}
@@ -663,3 +671,195 @@ const StatCard = ({ icon, label, value, iconBg, iconColor, cardBg }) => {
     </div>
   );
 };
+const getSpamLabel = (score) => {
+  if (score < 10) return { label: "Low", color: "text-green-600" };
+  if (score < 40) return { label: "Moderate", color: "text-yellow-600" };
+  return { label: "High", color: "text-red-600" };
+};
+
+const ValidationBadge = ({ valid }) => {
+  return valid === "1" ? (
+    <span className="flex items-center gap-1 text-green-600 font-medium">
+      <img
+        width="30"
+        height="30"
+        src="https://img.icons8.com/3d-fluency/94/ok.png"
+        alt="ok"
+      />
+      <span>Validated</span>
+    </span>
+  ) : (
+    <span className="flex items-center gap-1 text-red-600 font-medium">
+      <img
+        className="w-5 h-5 sm:w-7 sm:h-7"
+        src="https://img.icons8.com/3d-fluency/94/cancel.png"
+        alt="cross"
+      />
+      <span>High Spam Risk</span>
+    </span>
+  );
+};
+
+function GPLinksTable({ gpLinks, setItem, setOpen, deleting, setLinkId, linkId }) {
+  return (
+    <div className="overflow-hidden rounded-xl border-b border-gray-200 shadow-sm">
+      {/* HEADER */}
+      <div className="grid grid-cols-6  bg-blue-100 text-sm font-semibold text-gray-700 px-4 py-3">
+        <div className="col-span-2">URL / Anchor Text</div>
+        <div>Validation</div>
+        <div>Spam Score</div>
+        <div>Amount</div>
+        <div className="ml-auto">Action</div>
+      </div>
+
+      {/* ROWS */}
+      {gpLinks.map((item, index) => {
+        const spam = getSpamLabel(item.spam_score_c);
+
+        return (
+          <div
+            key={item.id}
+            className="grid grid-cols-6 px-4 py-3 border-t text-sm items-center"
+          >
+            {/* URL + Anchor */}
+            <div className="flex gap-2 items-center col-span-2">
+              <span
+                className="flex items-center justify-center w-7 h-7 rounded-full
+        bg-gradient-to-r from-indigo-500 to-purple-600
+        text-white text-xs font-bold shadow-md"
+              >
+                #{index + 1}
+              </span>
+              <a
+                href={item.backlink_url}
+                target="_blank"
+                className="text-blue-600 hover:underline truncate max-w-[150px]"
+              >
+                {item.backlink_url}
+              </a>
+              <span className="text-xs text-gray-500 truncate">
+                {item.anchor_text_c || "-"}
+              </span>
+            </div>
+
+            {/* Validation */}
+            <ValidationBadge valid={item.is_link_valid} />
+
+            {/* Spam Score */}
+            <div className={`font-medium ${spam.color}`}>
+              {item.spam_score_c} ({spam.label})
+            </div>
+
+            {/* Amount */}
+            <div className="font-semibold text-indigo-600">
+              {item.link_amount_c}
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setItem(item);
+                  setOpen(true);
+                }}
+                className="px-3 py-1 text-xs rounded-2xl 
+      bg-indigo-600 text-white hover:bg-indigo-700 transition shadow"
+              >
+                <Pencil size={16} />
+              </button>
+
+              <button
+                onClick={() => {
+                  setLinkId(item.id);
+                  handleDelete(item.id);
+                }}
+                disabled={deleting}
+                className="px-3 py-1 text-xs rounded-2xl 
+      bg-red-600 text-white hover:bg-red-700 transition shadow"
+              >
+                {deleting && linkId === item.id ? (
+                  <LoadingChase size="20" color="white" />
+                ) : (
+                  <Trash size={16} />
+                )}
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DocumentAnalysisCard({ docLink, docName, docNiche }) {
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-t-blue-200 rounded-xl shadow-md overflow-hidden">
+
+      {/* HEADER */}
+      <div className="bg-blue-600 text-white px-4 py-2 text-sm font-semibold">
+        Guest Post Order
+      </div>
+
+
+
+      {/* CONTENT */}
+      <div className="flex items-center gap-4 p-4">
+
+        {/* 🔹 LEFT: DOCUMENT PREVIEW (FAKE HTML PREVIEW) */}
+        <div className="w-32 h-20 bg-white rounded-md shadow-inner border relative overflow-hidden">
+          {/* fake lines */}
+          <a
+            href={docLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-32 h-20 bg-white rounded-md shadow-inner border relative overflow-hidden hover:scale-105 transition"
+          >
+            <div className="p-2 space-y-1">
+              <div className="h-2 bg-slate-300 rounded w-3/4"></div>
+              <div className="h-2 bg-slate-200 rounded w-full"></div>
+              <div className="h-2 bg-slate-200 rounded w-5/6"></div>
+              <div className="h-2 bg-slate-300 rounded w-2/3"></div>
+            </div>
+
+            {/* blur overlay */}
+            <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] pointer-events-none" />
+          </a>
+          {/* blur overlay */}
+        </div>
+
+        {/* 🔹 RIGHT: RESULT */}
+        <div className="flex-1 bg-white rounded-lg px-4 py-3 shadow flex items-center justify-between">
+
+          <a
+            href={docLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2
+    rounded-lg bg-indigo-50 px-3 py-2
+    text-sm hover:bg-indigo-100 transition max-w-fit"
+          >
+            {/* DOC NAME */}
+            <span className="font-semibold text-indigo-700 truncate max-w-[180px]">
+              {docName || "Untitled Document"}
+            </span>
+
+            {/* NICHE */}
+            <span className="text-xs text-slate-500 whitespace-nowrap">
+              • {docNiche || "No Niche"}
+            </span>
+
+            {/* HOVER ICON */}
+            <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
+              ↗
+            </span>
+          </a>
+
+          <img
+            width="30"
+            height="30"
+            src="https://img.icons8.com/3d-fluency/94/ok.png"
+            alt="ok"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
