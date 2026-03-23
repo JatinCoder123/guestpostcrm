@@ -10,8 +10,10 @@ import { LoadingChase } from './Loading';
 import { HandCoins, Mail, Pencil, Play, SparkleIcon, ThumbsDown } from 'lucide-react';
 import { motion } from "framer-motion";
 import { SocketContext } from '../context/SocketContext';
-import LoadingSkeleton from './LoadingSkeleton';
+
 import { BsRobot } from "react-icons/bs";
+import { editContact, viewEmailAction } from '../store/Slices/viewEmail';
+import { PageContext } from '../context/pageContext';
 const LatestMessage = ({ handleMessageClick }) => {
 
     const navigate = useNavigate();
@@ -39,8 +41,14 @@ const LatestMessage = ({ handleMessageClick }) => {
         sending,
         threadId,
         count,
-        contactInfo
+        contactInfo,
+        accountInfo
+
     } = useSelector((state) => state.viewEmail);
+    const hanldeConvDone = () => {
+        dispatch(editContact({ contact: { ...contactInfo, conversation_complete: "1" }, account: accountInfo }, null))
+        dispatch(viewEmailAction.compleConv({ message: `Conversion Complete with ${contactInfo?.email1}`, sendedEmail: contactInfo?.email1 }))
+    }
     const email1 = contactInfo?.email1
     const { loading: askBudgetTempLoading, data: askBudgetTemp } = useModule({
         url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
@@ -124,21 +132,6 @@ const LatestMessage = ({ handleMessageClick }) => {
             dispatch(quickActionBtnActions.clearErrors());
         }
     }, [dispatch, buttonsError, message]);
-    useEffect(() => {
-        if (error) {
-            toast.error(error);
-            dispatch(ladgerAction.clearAllErrors());
-        }
-        if (message) {
-            dispatch(
-                addEvent({
-                    email: email,
-                    thread_id: threadId,
-                    recent_activity: message,
-                }),
-            );
-        }
-    }, [dispatch, error, sendError, message]);
     if (viewEmailLoading) {
         return <LatestMessageSkeleton />;
     }
@@ -360,7 +353,7 @@ const LatestMessage = ({ handleMessageClick }) => {
                         )}
 
                     </div>
-                    <div className="flex flex-col items-center gap-2 relative group">
+                    {contactInfo?.conversation_complete == "0" && <div className="flex flex-col items-center gap-2 relative group">
                         {/* Tooltip */}
                         <div className="absolute -bottom-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs px-3 py-1 rounded-md ">
                             Done Conversation
@@ -371,15 +364,13 @@ const LatestMessage = ({ handleMessageClick }) => {
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400 }}
                             className="flex items-center justify-center bg-slate-600 hover:bg-green-700 cursor-pointer text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() =>
-                                alert(
-                                    "🚧 Coming soon!\n\nThis will complete the conversation without sending an email."
-                                )
+                            onClick={hanldeConvDone
                             }
                         >
                             <BiSolidMessageCheck className="w-6 h-6" />
                         </motion.button>
                     </div>
+                    }
 
                 </div>
             </div>
