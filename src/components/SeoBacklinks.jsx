@@ -89,6 +89,12 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
               type: "text",
               value: item.backlink_url,
             },
+            {
+              label: "Anchor Text",
+              name: "anchor_text_c",
+              type: "text",
+              value: item.anchor_text_c,
+            },
             item.type_c === "LI"
               ? {
                   label: "Our Link",
