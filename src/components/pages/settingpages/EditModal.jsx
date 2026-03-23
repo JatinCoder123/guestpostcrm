@@ -10,7 +10,7 @@ const TABS = [
   { key: "overwrite_prompt", label: "Overwrite Prompt" },
 ];
 
-export default function EditModal({ item, onClose, handleUpdate }) {
+export default function EditModal({ item, onClose, handleUpdate, stages }) {
   const [activeTab, setActiveTab] = useState("description");
 
   const [form, setForm] = useState({
@@ -18,6 +18,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
     name: "",
     motive: "",
     type: "",
+    stage: "",
     description: "",
     role_prompt: "",
     output_format: "",
@@ -31,6 +32,7 @@ export default function EditModal({ item, onClose, handleUpdate }) {
         name: item.name || "",
         motive: item.motive || "",
         type: item.type || "",
+        stage: item.stage,
         description: item.description || "",
         role_prompt: item.role_prompt || "",
         output_format: item.output_format || "",
@@ -83,9 +85,40 @@ export default function EditModal({ item, onClose, handleUpdate }) {
 
             {/* Top Fields */}
             <div className="flex gap-4 mb-6">
-              <Input label="Name" value={form.name} />
-              <Input label="Motive" value={form.motive} />
-              <Input label="Type" value={form.type} />
+              <Input
+                label="Name"
+                value={form.name}
+                onChange={(val) => updateField("name", val)}
+              />
+
+              <Input
+                label="Motive"
+                value={form.motive}
+                onChange={(val) => updateField("motive", val)}
+              />
+
+              <Input
+                label="Type"
+                value={form.type}
+                onChange={(val) => updateField("type", val)}
+              />
+              <div className="flex-1">
+                <label className="text-sm font-medium text-gray-600">Stage</label>
+
+                <select
+                  value={form.stage || ""}
+                  onChange={(e) => updateField("stage", e.target.value)}
+                  className="w-full mt-1 p-2 border rounded-lg bg-white"
+                >
+                  <option value="">Select Stage</option>
+
+                  {Object.keys(stages || {}).map((key) => (
+                    <option key={key} value={key}>
+                      {stages[key]}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Tabs */}
@@ -132,13 +165,16 @@ export default function EditModal({ item, onClose, handleUpdate }) {
   );
 }
 
-const Input = ({ label, value }) => (
+const Input = ({ label, value, onChange, disabled = false }) => (
   <div className="flex-1">
     <label className="text-sm font-medium text-gray-600">{label}</label>
     <input
       value={value}
-      disabled
-      className="w-full mt-1 p-2 border rounded-lg bg-gray-50"
+      onChange={(e) => onChange && onChange(e.target.value)}
+      disabled={disabled}
+      className={`w-full mt-1 p-2 border rounded-lg 
+        ${disabled ? "bg-gray-50 cursor-not-allowed" : "bg-white"}
+      `}
     />
   </div>
 );

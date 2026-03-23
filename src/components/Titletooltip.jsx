@@ -28,7 +28,7 @@ export const Titletooltip = ({ content, children }) => {
             </div>
             {show && content && (
                 <div
-                    className="fixed z-[99999] bg-gradient-to-br from-blue-600 to-purple-600 text-white text-sm rounded-xl py-3 px-4 whitespace-normal max-w-xs break-words shadow-2xl border border-white/20 backdrop-blur-sm"
+                    className="fixed z-[99999] bg-gradient-to-br from-blue-600 to-cyan-600 text-white text-sm rounded-xl py-3 px-4 whitespace-normal max-w-xs break-words shadow-2xl border border-white/20 backdrop-blur-sm"
                     style={{
                         left: `${coords.x}px`,
                         top: `${coords.y}px`,

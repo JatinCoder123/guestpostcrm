@@ -145,7 +145,7 @@ const LatestMessage = ({ handleMessageClick }) => {
     return (
         <>
 
-            <div className="bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ">
+            <div className=" flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ">
                 <div className="flex flex-col gap-2 justify-center mb-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -204,7 +204,7 @@ const LatestMessage = ({ handleMessageClick }) => {
                 </div>
                 <div className='text-gray-700 font-medium bg-slate-200 p-2 rounded-lg text-sm'>
                     <div
-                        className=" leading-relaxed whitespace-pre-line transition-all duration-300 max-h-24 overflow-hidden"
+                        className=" leading-relaxed whitespace-pre-line transition-all duration-300 h-24 overflow-hidden"
                         dangerouslySetInnerHTML={{
                             __html:
                                 viewEmail?.length > 0

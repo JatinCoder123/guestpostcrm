@@ -1,17 +1,12 @@
 import {
   Mail,
-  Shield,
-  MessageSquare,
   Handshake,
   Gift,
   ShoppingCart,
   FileText,
   CreditCard,
-  Link2,
-  Bell,
   ChevronLeft,
   ChevronRight,
-  ShoppingBag,
   Settings,
   Cpu,
   Radio,
@@ -24,8 +19,6 @@ import {
   RectangleEllipsis,
   Link2Off,
   Link,
-  Store,
-  ClipboardEdit,
   BellRing,
   Plus,
   Contact2Icon,
@@ -266,21 +259,6 @@ export function Sidebar() {
         >
           <Radio className="w-5 h-5 animate-pulse" />
           {!collapsed && <span className="font-medium">Live</span>}
-        </button>
-        {/* COMPOSE BUTTON */}
-        <button
-          onClick={() => {
-            setActivePage("compose");
-            navigateTo("compose");
-          }}
-          className={`w-full mt-3 flex items-center justify-center gap-3 px-3 py-3 rounded-lg transition-all
-    ${activePage === "compose"
-              ? "bg-blue-600 text-white"
-              : "bg-blue-50 text-blue-700"
-            }`}
-        >
-          <Plus className="w-5 h-5" />
-          {!collapsed && <span className="font-medium">Compose</span>}
         </button>
 
         {/* MENU ITEMS */}
