@@ -32,6 +32,7 @@ export default function TemplatesPage() {
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [newStageType, setNewStageType] = useState("");
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [templateId, setTemplateId] = useState(false);
@@ -92,6 +93,7 @@ export default function TemplatesPage() {
         );
 
         const result = await response.json();
+        console.log(result)
 
         if (result && typeof result === "object") {
           setStages(result);
@@ -251,6 +253,7 @@ export default function TemplatesPage() {
           body_html: newTemplateContent || "<p>New template content</p>",
           subject: "",
           type: "",
+          stage: newStageType || "",
           assigned_user_id: "",
           published: "off",
           text_only: "0",
@@ -262,7 +265,7 @@ export default function TemplatesPage() {
         },
       };
 
-      showConsole && console.log("Creating new template:", requestBody);
+      console.log("Creating new template:", requestBody);
 
       const response = await fetch(
         `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
@@ -330,7 +333,7 @@ export default function TemplatesPage() {
   }, [getTempError, temp]);
 
   const handleClose = () => {
-        setViewItem(null);
+    setViewItem(null);
 
     if (state?.templateId) {
       navigate(-1);
@@ -369,7 +372,8 @@ export default function TemplatesPage() {
 
           {/* Template Name Input */}
           <div className="px-6 py-4 bg-gray-50 border-b">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {/* Template Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Template Name *
@@ -384,6 +388,7 @@ export default function TemplatesPage() {
                 />
               </div>
 
+              {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description *
@@ -395,6 +400,27 @@ export default function TemplatesPage() {
                   placeholder="Enter Description"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                 />
+              </div>
+
+              {/* ✅ NEW STAGE DROPDOWN */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Stage
+                </label>
+                <select
+                  value={newStageType}
+                  onChange={(e) => setNewStageType(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                >
+                  <option value="">Select Stage</option>
+
+                  {/* from API (preferred) */}
+                  {Object.keys(stages || {}).map((key) => (
+                    <option key={key} value={key}>
+                      {stages[key]}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -544,11 +570,10 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${
-                  isCreating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700"
-                }`}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${isCreating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+                  }`}
               >
                 {isCreating ? (
                   <>
@@ -596,12 +621,11 @@ export default function TemplatesPage() {
                     value={selectedStage}
                     onChange={(e) => setSelectedStage(e.target.value)}
                     className="px-2 py-1 border rounded text-black"
-                  >
-                    {stageOptions.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
+                  >{Object.keys(stages || {}).map((key) => (
+                    <option key={key} value={key}>
+                      {stages[key]}
+                    </option>
+                  ))}
                   </select>
 
                   <button
@@ -624,11 +648,10 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                 >
                   {isSaving ? (
                     <>
@@ -811,11 +834,10 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                stageType === key
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
             >
               {label}
             </button>
@@ -873,16 +895,6 @@ export default function TemplatesPage() {
                 </div>
               </motion.div>
             ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <button
-              onClick={() => setShowNewTemplateModal(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium rounded-xl hover:shadow-lg active:scale-98 transition-all mx-auto"
-            >
-              <Plus size={20} />
-              Add Another Template
-            </button>
           </div>
         </>
       )}
