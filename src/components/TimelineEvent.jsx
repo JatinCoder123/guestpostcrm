@@ -22,6 +22,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [timelineData, setTimelineData] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedId, setExpandedId] = useState(null);
+  const [activeTab, setActiveTab] = useState(null);
+  const [messageData, setMessageData] = useState(null);
+  const [messageLoading, setMessageLoading] = useState(false);
   const topRef = useRef(null);
   const bottomRef = useRef(null);
 
@@ -265,12 +269,13 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     className={`absolute top-1 left-1 h-[calc(100%-8px)]
         w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${selectedView === "all"
-                        ? "translate-x-0"
-                        : selectedView === "important"
-                          ? "translate-x-full"
-                          : "translate-x-[200%]"
-                      }`}
+        ${
+          selectedView === "all"
+            ? "translate-x-0"
+            : selectedView === "important"
+              ? "translate-x-full"
+              : "translate-x-[200%]"
+        }`}
                   />
 
                   {[
@@ -283,10 +288,11 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       onClick={() => setSelectedView(tab.key)}
                       className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${selectedView === tab.key
-                          ? "text-white"
-                          : "text-gray-600 hover:text-purple-600"
-                        }`}
+          ${
+            selectedView === tab.key
+              ? "text-white"
+              : "text-gray-600 hover:text-purple-600"
+          }`}
                     >
                       {tab.label}
                     </button>
@@ -357,31 +363,74 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       />
                     </div>
                     <div
-                      className={`flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm
-                      ${index === 0
+                      className={`group flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm relative
+                      ${
+                        index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                        }`}
+                      }`}
                     >
+                      {/* 🔥 HOVER ACTION BAR */}
+                      <div
+                        className="absolute right-4 top-10 flex gap-3 bg-white border rounded-lg px-3 py-2 shadow-md
+             opacity-0 translate-y-1 pointer-events-none
+             group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto
+             transition-all duration-200 z-20"
+                      >
+                        {/* 👁 VIEW */}
+                        <button
+                          onClick={() => onEyeClick(type, event)}
+                          className="text-blue-600 hover:scale-110"
+                        >
+                          <Eye size={18} />
+                        </button>
+
+                        {/* 💬 MESSAGE */}
+                        {event.message_id_c && (
+                          <button
+                            onClick={() =>
+                              handleMessageClick(event.message_id_c)
+                            }
+                            className="text-purple-600 hover:scale-110"
+                          >
+                            <MessageSquare size={18} />
+                          </button>
+                        )}
+
+                        {/* 📄 TEMPLATE */}
+                        {event.template_id && (
+                          <button
+                            onClick={() =>
+                              navigateTo("/settings/templates", {
+                                state: { templateId: event.template_id },
+                              })
+                            }
+                            className="text-green-600 hover:scale-110"
+                          >
+                            <FileText size={18} />
+                          </button>
+                        )}
+
+                        {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
+                        {event.prompt_details && (
+                          <button
+                            onClick={() =>
+                              navigateTo("settings/debugging", {
+                                state: { prompt: event.prompt_details[0] },
+                              })
+                            }
+                            className="text-yellow-600 hover:scale-110"
+                          >
+                            <SparkleIcon size={18} />
+                          </button>
+                        )}
+                      </div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-gray-700 flex items-center gap-2">
                           <div
                             className="relative group cursor-pointer hover:cursor-pointer hover:opacity-90 transition-all duration-300
  "
-                            onClick={() => onEyeClick(type, event)}
                           >
-                            <Eye
-                              size={20}
-                              className={`transition-transform duration-200 group-hover:scale-110 hover:cursor-pointer hover:opacity-90 transition-all duration-300
-
-                              ${isReminderEvent
-                                  ? "text-purple-600"
-                                  : isContactEvent
-                                    ? "text-green-600"
-                                    : "text-blue-600"
-                                }`}
-                            />
-
                             <div
                               className="absolute left-1/2 -translate-x-1/2 -top-10
                                        whitespace-nowrap px-3 py-1.5 text-xs
@@ -420,71 +469,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
                         </span>
 
                         <div className="flex items-center gap-2">
-                          {hasMessageId && (
-                            <button
-                              onClick={() => handleMessageClick(event.message_id_c)}
-                              className="text-blue-600 hover:text-blue-700 hover:cursor-pointer hover:opacity-90 transition-all duration-300
- relative group message-icon-pulse"
-                              title="View Message"
-                            >
-                              <MessageSquare />
-
-                              <div
-                                className="absolute left-1/2 -translate-x-1/2 -top-8
-                                          whitespace-nowrap px-2 py-1 text-xs
-                                          bg-gray-900 text-white rounded-md
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                          pointer-events-none z-50"
-                              >
-                                View Message
-                                <div
-                                  className="absolute left-1/2 -translate-x-1/2 top-full
-                                            w-2 h-2 bg-gray-900 rotate-45"
-                                />
-                              </div>
-                            </button>
-                          )}
-
-                          {hasTemplate && (
-                            <button
-                              onClick={() =>
-                                navigateTo("/settings/templates", {
-                                  state: { templateId: event.template_id },
-                                })
-                              }
-                              className="text-green-600 hover:text-green-700 cursor-pointer relative group"
-                              title={`Preview Template: ${event.template_id}`}
-                            >
-                              <FileText size={20} />
-                              <div
-                                className="absolute left-1/2 -translate-x-1/2 -top-8
-                                          whitespace-nowrap px-2 py-1 text-xs
-                                          bg-gray-900 text-white rounded-md
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                          pointer-events-none z-50"
-                              >
-                                Preview Template
-                                <div
-                                  className="absolute left-1/2 -translate-x-1/2 top-full
-                                            w-2 h-2 bg-gray-900 rotate-45"
-                                />
-                              </div>
-                            </button>
-                          )}
-                          {event.prompt_details && (
-                            <button
-                              onClick={() => {
-                                navigateTo("/settings/debugging", {
-                                  state: { prompt: event.prompt_details[0] },
-                                });
-                              }}
-                              className="text-blue-600 hover:text-blue-700 cursor-pointer"
-                            >
-                              <SparkleIcon size={20} />
-                            </button>
-                          )}
                           <span className="text-gray-500 text-sm">
                             {event.date_entered}
                           </span>
