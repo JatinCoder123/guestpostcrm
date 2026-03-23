@@ -69,7 +69,9 @@ const RootLayout = () => {
       dispatch(unrepliedAction.removeUnreplied(sendedEmail))
       if (emails.length === currentIndex + 1) {
         navigate("/unreplied-emails");
-
+        localStorage.removeItem("email");
+        setSearch(null);
+        setEnteredEmail(null);
       }
       else {
         const input = extractEmail(emails[currentIndex + 1]?.from || "");

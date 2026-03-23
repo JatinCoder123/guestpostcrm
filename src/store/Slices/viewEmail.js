@@ -3,6 +3,7 @@ import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
+import { act } from "react";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -87,7 +88,7 @@ const viewEmailSlice = createSlice({
     },
     editContactSucess(state, action) {
       state.contactLoading = false;
-      state.editMessage = "Contact updated successfully";
+      state.editMessage = !action.payload.message ?? "Contact updated successfully";
       state.error = null;
     },
     editContactFailed(state, action) {
@@ -113,6 +114,10 @@ const viewEmailSlice = createSlice({
     },
     clearAllErrors(state) {
       state.error = null;
+    },
+    compleConv(state, action) {
+      state.message = action.payload.message;
+      state.sendedEmail = action.payload.sendedEmail
     },
     clearAllMessage(state) {
       state.message = null;
@@ -192,7 +197,7 @@ export const getContact = (email = null) => {
     }
   };
 };
-export const editContact = (contactData) => {
+export const editContact = (contactData, message = "") => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.editContactRequest());
 
@@ -226,7 +231,7 @@ export const editContact = (contactData) => {
       );
 
       showConsole && console.log("contact", data);
-      dispatch(viewEmailSlice.actions.editContactSucess());
+      dispatch(viewEmailSlice.actions.editContactSucess({ message }));
       dispatch(viewEmailSlice.actions.clearAllErrors());
       dispatch(getContact());
     } catch (error) {
