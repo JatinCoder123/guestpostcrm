@@ -4,6 +4,8 @@ import {
     User2,
     Contact2Icon,
     ChartNoAxesColumn,
+    TrendingUp,
+    ChartSpline,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -53,12 +55,27 @@ export default function AllContacts() {
                             </th>
                             <th className="px-4 py-3 text-left">
                                 <div className="flex items-center gap-2">
-                                    <User2 size={16} /> Contact
+                                    <User2 size={16} /> Name
                                 </div>
                             </th>
                             <th className="px-4 py-3 text-left">
                                 <div className="flex items-center gap-2">
                                     <ChartNoAxesColumn size={16} /> Type
+                                </div>
+                            </th>
+                            <th className="px-4 py-3 text-left">
+                                <div className="flex items-center gap-2">
+                                    <ChartSpline size={16} /> Stage
+                                </div>
+                            </th>
+                            <th className="px-4 py-3 text-left">
+                                <div className="flex items-center gap-2">
+                                    <TrendingUp size={16} /> Status
+                                </div>
+                            </th>
+                            <th className="px-4 py-3 text-left">
+                                <div className="flex items-center gap-2">
+                                    <ChartNoAxesColumn size={16} /> Category
                                 </div>
                             </th>
                         </tr>
@@ -95,13 +112,28 @@ export default function AllContacts() {
                                         }
                                         className="px-4 py-3 text-gray-700 font-medium"
                                     >
-                                        {row.email_address}
+                                        {row?.first_name || ""} {row?.last_name || ""}
                                     </td>
 
                                     {/* Type */}
                                     <td className="px-4 py-3">
                                         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
                                             {row?.type}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                            {row?.stage}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <span className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-medium">
+                                            {row?.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                            {row?.customer_type || ""}
                                         </span>
                                     </td>
                                 </tr>
