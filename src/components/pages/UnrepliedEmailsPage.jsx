@@ -1,17 +1,4 @@
-import {
-  Calendar,
-  Pen,
-  Globe,
-  BadgeDollarSign,
-  ChartNoAxesColumn,
-  Clapperboard,
-  FileText,
-  Link2Icon,
-  Mail,
-  User,
-  BarChart4,
-  ChartColumnStackedIcon,
-} from "lucide-react";
+
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { getInvoices } from "../../store/Slices/invoices.js";
@@ -24,7 +11,100 @@ import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import UpdatePopup from "../UpdatePopup.jsx";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails.js";
-
+import {
+  Calendar,
+  FileText,
+  Link2,
+  Mail,
+  User,
+  BarChart4,
+  BarChart3,
+  User2,
+  Gift,
+  Pen,
+  Globe,
+  BadgeDollarSign,
+  Clapperboard,
+  Package,
+  CheckCircle,
+  XCircle,
+  PauseCircle,
+  BadgeCheck,
+  Store,
+  ListFilter,
+  X,
+  ChartBar,
+  Handshake,
+  ShoppingCart,
+  MessageCircleReply,
+  Mails,
+} from "lucide-react";
+import { GiGoldBar } from "react-icons/gi";
+import { MdOutlineWorkspacePremium } from "react-icons/md";
+import { FaBtc } from "react-icons/fa";
+import { IoIosMailUnread } from "react-icons/io";
+const STATUS_CONFIG = [
+  {
+    value: "unreplied",
+    label: "Unreplied",
+    icon: Mails,
+    color: "#2563eb", // blue
+  },
+  {
+    value: "replied",
+    label: "Replied",
+    icon: MessageCircleReply,
+    color: "#16a34a", // green
+  },
+  {
+    value: "unread",
+    label: "Unread",
+    icon: IoIosMailUnread,
+    color: "#dc2626", // red
+  },
+  {
+    value: "offer",
+    label: "Offer",
+    icon: Gift,
+    color: "#1a931c", // red
+  },
+  {
+    value: "deal",
+    label: "Deal",
+    icon: Handshake,
+    color: "#ca8a04", // yellow
+  },
+  {
+    value: "order",
+    label: "Order",
+    icon: ShoppingCart,
+    color: "#7c3aed", // purple
+  },
+  {
+    value: "brand",
+    label: "Brand",
+    icon: FaBtc,
+    color: "#ed3ab7", // purple
+  },
+  {
+    value: "verified",
+    label: "Verified",
+    icon: BadgeCheck,
+    color: "#56cd1f", // purple
+  },
+  {
+    value: "premium",
+    label: "Premium",
+    icon: MdOutlineWorkspacePremium,
+    color: "#56cd1f", // purple
+  },
+  {
+    value: "gold",
+    label: "Gold",
+    icon: GiGoldBar,
+    color: "#ab9e11", // purple
+  },
+];
 export function UnrepliedEmailsPage() {
   const { count, emails, loading, pageIndex } = useSelector(
     (state) => state.unreplied,
@@ -126,7 +206,7 @@ export function UnrepliedEmailsPage() {
       label: "Count",
       accessor: "thread_count",
       headerClasses: "",
-      icon: ChartColumnStackedIcon,
+      icon: ChartBar,
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
@@ -144,8 +224,9 @@ export function UnrepliedEmailsPage() {
         tableName={"Unreplied"}
         columns={columns}
         slice={"unreplied"}
+        statusList={STATUS_CONFIG}
         fetchNextPage={() =>
-          dispatch(getUnrepliedEmail({ page: pageIndex + 1 }))
+          dispatch(getUnrepliedEmail({ page: 1 }))
         }
       >
         <TableTitleBar

@@ -6,6 +6,7 @@ import FilterRow from './FilterRow'
 import StatusRow from './StatusRow'
 import { useSelector } from 'react-redux'
 import { Eye, EyeOff } from 'lucide-react'
+import TableFooter from './TableFooter'
 
 const TableContext = createContext()
 
@@ -132,7 +133,7 @@ const TableView = ({
                     }}
                     style={{ overflow: "hidden" }}
                 >
-                    {statusList.length > 0 && count > 0 && <StatusRow />}
+                    {statusList.length > 0 && count >= 0 && <StatusRow />}
                 </motion.div>
 
                 {/* 🔥 Table smoothly moves up/down */}
@@ -143,7 +144,7 @@ const TableView = ({
                         stiffness: 120,
                         damping: 18
                     }}
-                    className=" rounded-xl border overflow-hidden relative"
+                    className=" rounded-xl border overflow-hidden  relative"
                 >
                     {statusList.length > 0 && count > 0 && <div className="flex justify-start absolute top-1 right-1 z-[100] ">
                         <button
@@ -155,7 +156,7 @@ const TableView = ({
                     </div>}
                     {children}
                 </motion.div>
-
+                {count > 0 && <TableFooter />}
             </motion.div>
 
         </TableContext.Provider>

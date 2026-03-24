@@ -2,14 +2,25 @@ import { VictoryPie } from "victory";
 
 function StatusDonut({
     label,
-    value,
-    total,
-    color,
+    value = 0,
+    total = 100,
+    color = "#2563eb",
     icon: Icon,
     active,
     amount,
     onClick,
 }) {
+    // ✅ Handle edge cases
+    const isZero = value === 0 || total === 0;
+
+    // ✅ Safe data for VictoryPie
+    const chartData = isZero
+        ? [{ x: "empty", y: 1 }] // full gray ring
+        : [
+            { x: "value", y: value },
+            { x: "rest", y: Math.max(total - value, 0) },
+        ];
+
     return (
         <button
             onClick={onClick}
@@ -17,23 +28,27 @@ function StatusDonut({
                 backgroundColor: active ? `${color}15` : "transparent",
             }}
             className={`flex flex-col items-center gap-1 p-3 rounded-xl transition
-    ${active ? "shadow-md" : "hover:bg-gray-50"}`}
-        >{amount && < div className="flex items-center justify-center gap-2">
-            <p className="text-sm font-medium text-gray-700">${amount}</p>
-        </div>}
+      ${active ? "shadow-md" : "hover:bg-gray-50"}`}
+        >
+            {/* Amount */}
+            {amount && (
+                <div className="flex items-center justify-center gap-2">
+                    <p className="text-sm font-medium text-gray-700">${amount}</p>
+                </div>
+            )}
 
             {/* Donut */}
             <div className="relative w-20 h-20">
                 <VictoryPie
-                    data={[
-                        { x: "value", y: value },
-                        { x: "rest", y: Math.max(total - value, 0) },
-                    ]}
+                    data={chartData}
+                    innerRadius={100} // ✅ FIXED (was too large before)
                     cornerRadius={2}
-                    startAngle={-6}
-                    innerRadius={100}
-                    padAngle={1}
-                    colorScale={[color, "#e5e7eb"]}
+                    startAngle={-90}
+                    endAngle={270}
+                    padAngle={2}
+                    colorScale={
+                        isZero ? ["#e5e7eb"] : [color, "#e5e7eb"]
+                    }
                     labels={() => null}
                     animate={{ duration: 700 }}
                 />
@@ -48,10 +63,10 @@ function StatusDonut({
 
             {/* Label */}
             <div className="flex items-center justify-center gap-2">
-                <Icon className="w-4 h-4 text-gray-500" />
+                {Icon && <Icon className="w-4 h-4 text-gray-500" />}
                 <p className="text-sm font-medium text-gray-700">{label}</p>
             </div>
-        </button >
+        </button>
     );
 }
 

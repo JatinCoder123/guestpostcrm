@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { AUTH_URL } from "../../store/constants.js";
 
@@ -12,10 +12,12 @@ export default function Login() {
   const handleLoginWithMicrosoft = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin`;
   };
-  const video = "https://example.guestpostcrm.com/images/Final%20G-Bot%201.mp4";
+
+  const video = "https://example.guestpostcrm.com/images/FINAL.webm";
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-[#e8f0ff] via-[#f3fffa] to-[#f8fff5]">
+
       {/* LEFT SECTION */}
       <motion.div
         initial={{ x: -50, opacity: 0 }}
@@ -63,31 +65,37 @@ export default function Login() {
 
         <p className="mt-6 text-gray-600 text-sm">
           Don’t have an account?
-          <button
-            onClick={() => setIsLogin(!isLogin)}
+          <a
+            href="https://www.guestpostcrm.com/rightee/intro.php"
             className="ml-1 text-purple-600 font-medium hover:underline"
           >
-            <a href="https://www.guestpostcrm.com/rightee/intro.php">Sign Up</a>
-          </button>
+            Sign Up
+          </a>
         </p>
       </motion.div>
 
-      {/* RIGHT SECTION (IMAGE / VIDEO) */}
+      {/* RIGHT SECTION (VIDEO) */}
       <motion.div
         initial={{ x: 50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="hidden lg:flex flex-1 items-center justify-center p-6"
       >
-        <div className="w-full h-[90vh] rounded-[30px] overflow-hidden shadow-xl relative">
+        <div className="w-full h-[90vh] rounded-[20px] overflow-hidden shadow-xl relative transparent">
+
           <video
             className="absolute w-full h-full object-cover"
-            src={video}
             autoPlay
             loop
             muted
             playsInline
-          />
+            preload="auto"
+          >
+            <source src={video} type="video/webm" />
+            {/* fallback if webm fails */}
+            Your browser does not support the video tag.
+          </video>
+
         </div>
       </motion.div>
     </div>
