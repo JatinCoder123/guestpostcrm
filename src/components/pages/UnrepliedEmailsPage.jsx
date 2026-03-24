@@ -29,8 +29,6 @@ export function UnrepliedEmailsPage() {
   const { count, emails, loading, pageIndex } = useSelector(
     (state) => state.unreplied,
   );
-  const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
-
   const { handleMove } = useThreadContext();
   const {
     setWelcomeHeaderContent,
