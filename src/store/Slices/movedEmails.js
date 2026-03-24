@@ -20,7 +20,11 @@ const movedSlice = createSlice({
     getEmailSucess(state, action) {
       const { count, emails, pageCount, pageIndex } = action.payload;
       state.loading = false;
-      state.emails = emails;
+      if (pageIndex === 1) {
+        state.emails = emails;
+      } else {
+        state.emails = [...state.emails, ...emails];
+      }
       state.count = count;
       state.pageCount = pageCount;
       state.pageIndex = pageIndex;
@@ -36,7 +40,7 @@ const movedSlice = createSlice({
   },
 });
 
-export const getmovedEmails = (email) => {
+export const getmovedEmails = (email, page = 1) => {
   return async (dispatch, getState) => {
     dispatch(movedSlice.actions.getEmailRequest());
 
@@ -45,12 +49,12 @@ export const getmovedEmails = (email) => {
       if (email) {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=moved_email&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
+          }&type=moved_email&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
         );
       } else {
         response = await axios.get(
           `${getState().user.crmEndpoint
-          }&type=moved_email&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
+          }&type=moved_email&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
         );
       }
 
