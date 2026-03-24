@@ -54,7 +54,7 @@ export function Sidebar() {
   }, []);
 
   // Redux counts
-  const { count: unrepliedCount, loading: unrepliedLoading } = useSelector(
+  const { count: unrepliedCount, countLoading, emailsCount } = useSelector(
     (s) => s.unreplied,
   );
   const { contactLoading } = useSelector(
@@ -97,8 +97,8 @@ export function Sidebar() {
       id: "unreplied-emails",
       label: "Unreplied ",
       icon: Mail,
-      loading: unrepliedLoading,
-      count: unrepliedCount,
+      loading: countLoading,
+      count: emailsCount?.unread,
       color: "text-rose-600",
       hover: "hover:bg-rose-50",
       countBg: "bg-rose-500 text-white",

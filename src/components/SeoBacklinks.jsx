@@ -99,17 +99,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                  label: "Our Link",
-                  name: "target_url_c",
-                  type: "text",
-                  value: item.target_url_c || "",
-                }
+                label: "Our Link",
+                name: "target_url_c",
+                type: "text",
+                value: item.target_url_c || "",
+              }
               : {
-                  label: "Doc Link",
-                  name: "gp_doc_url_c",
-                  type: "text",
-                  value: item.gp_doc_url_c || "",
-                },
+                label: "Doc Link",
+                name: "gp_doc_url_c",
+                type: "text",
+                value: item.gp_doc_url_c || "",
+              },
             {
               label: "Website",
               name: "name",
@@ -860,16 +860,16 @@ function DocumentAnalysisCard({ docLink, docName, docNiche }) {
             </span>
 
             {/* NICHE */}
-            <span className="text-xs text-slate-500 whitespace-nowrap">
-              • {docNiche || "No Niche"}
-            </span>
+
 
             {/* HOVER ICON */}
             <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
               ↗
             </span>
           </a>
-
+          <span className="text-md text-slate-500 whitespace-nowrap">
+            • {docNiche || "No Niche"}
+          </span>
           <img
             width="30"
             height="30"

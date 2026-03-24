@@ -4,7 +4,7 @@ import useRefresh from "./useRefresh";
 import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
-import { getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
+import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getUnansweredEmails } from "../store/Slices/unansweredEmails";
 import { getContact, getViewEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { getOrders } from "../store/Slices/orders";
@@ -36,6 +36,7 @@ function useIdle({ idle }) {
             dispatch(getViewEmail(firstEmail));
             dispatch(getContact(firstEmail));
         }
+        dispatch(getEmailsCount({}))
         dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
         dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
     };

@@ -148,7 +148,7 @@ export const getViewEmail = (email = null) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email
+        `${getState().user.crmEndpoint}&type=view_email&email=${email?.trim()
         }`,
       );
       showConsole && console.log(`viewEmail`, data);
@@ -176,7 +176,7 @@ export const getContact = (email = null) => {
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=get_contact&email=${email}&page=1&page_size=50`,
+        }&type=get_contact&email=${email?.trim()}&page=1&page_size=50`,
       );
       showConsole && console.log(`Get contact`, data);
       dispatch(

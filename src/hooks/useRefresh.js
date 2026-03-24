@@ -19,7 +19,7 @@ import {
     getDuplicateCount,
 } from "../store/Slices/duplicateEmailSlice";
 import { getUnansweredEmails } from "../store/Slices/unansweredEmails";
-import { getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
+import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getOrders } from "../store/Slices/orders";
 import { getDeals } from "../store/Slices/deals";
 import { getInvoices } from "../store/Slices/invoices";
@@ -71,7 +71,7 @@ function useRefresh() {
         dispatch(getDuplicateCount());
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {
-        dispatch(getUnansweredEmails({}));
+        dispatch(getEmailsCount({}))
         dispatch(getUnrepliedEmail({}));
         dispatch(getLinkExchange());
         dispatch(getFavEmails({}));
@@ -90,6 +90,7 @@ function useRefresh() {
                 dispatch(getViewEmail(firstEmail));
                 dispatch(getContact(firstEmail));
             }
+            dispatch(getEmailsCount({}))
             dispatch(getUnrepliedEmail({ loading: false }));
             dispatch(getUnansweredEmails({ loading: false }));
         }
