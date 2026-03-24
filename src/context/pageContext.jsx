@@ -9,11 +9,15 @@ export const PageContextProvider = (props) => {
   const [collapsed, setSidebarCollapsed] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
-    localStorage.getItem("email") || null
+    localStorage.getItem("email") || null,
   );
   const [search, setSearch] = useState(localStorage.getItem("email") || "");
   const [welcomeHeaderContent, setWelcomeHeaderContent] = useState(
-    localStorage.getItem("welcomeHeaderContent") ? localStorage.getItem("welcomeHeaderContent") : search.trim() !== "" ? "Search" : ""
+    localStorage.getItem("welcomeHeaderContent")
+      ? localStorage.getItem("welcomeHeaderContent")
+      : search?.trim() !== ""
+        ? "Search"
+        : "",
   );
 
   /* ❌ Clear */
@@ -24,7 +28,6 @@ export const PageContextProvider = (props) => {
     setEnteredEmail(null);
   };
 
-
   // Set activePage based on current URL
   useEffect(() => {
     const path = window.location.pathname;
@@ -34,9 +37,8 @@ export const PageContextProvider = (props) => {
     localStorage.setItem("showConsole", showConsole);
   }, []);
   useEffect(() => {
-    localStorage.setItem("welcomeHeaderContent", welcomeHeaderContent)
+    localStorage.setItem("welcomeHeaderContent", welcomeHeaderContent);
   }, [welcomeHeaderContent]);
-
 
   const value = {
     activePage,

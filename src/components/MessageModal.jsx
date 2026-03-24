@@ -16,8 +16,8 @@ const MessageModal = ({
 }) => {
   const [messageContent, setMessageContent] = useState("");
   const [isMessageLoading, setIsMessageLoading] = useState(false);
-  const {crmEndpoint} = useSelector((s) => s.user);
-const {handleMove} = useThreadContext();
+  const { crmEndpoint } = useSelector((s) => s.user);
+  const { handleMove } = useThreadContext();
   const [messageMeta, setMessageMeta] = useState({
     subject: "",
     from: "",
@@ -46,22 +46,21 @@ const {handleMove} = useThreadContext();
         const baseUrl = crmEndpoint.split("?")[0];
 
         const { data } = await axios.get(
-          `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}`
+          `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}`,
         );
-console.log("Fetched message data:", data);
-console.log("Fetched message Id:", messageId);
+        console.log("Fetched message data:", data);
+        console.log("Fetched message Id:", messageId);
         const htmlBody =
           data.email?.body ||
           data.email?.body_html ||
           data.email?.content ||
           "";
 
-        const subject = data.email?.subject  || "No Subject";
+        const subject = data.email?.subject || "No Subject";
 
-        const from =
-          data.email?.from_name ||  "Unknown Sender";
+        const from = data.email?.from_name || "Unknown Sender";
 
-        const fromEmail = data.email?.from_addr|| "";
+        const fromEmail = data.email?.from_addr || "";
 
         const createdDate = data.email?.date_created || "";
 
@@ -88,9 +87,7 @@ console.log("Fetched message Id:", messageId);
         });
 
         setMessageContent(
-          htmlBody
-            ? cleanHtmlContent(htmlBody)
-            :  "No content available"
+          htmlBody ? cleanHtmlContent(htmlBody) : "No content available",
         );
       } catch (err) {
         setMessageContent("No content available");

@@ -16,7 +16,10 @@ import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import { ladgerAction } from "./store/Slices/ladger";
-import { getUnrepliedEmail, unrepliedAction } from "./store/Slices/unrepliedEmails";
+import {
+  getUnrepliedEmail,
+  unrepliedAction,
+} from "./store/Slices/unrepliedEmails";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const { message, sendedEmail } = useSelector((state) => state.viewEmail);
@@ -66,21 +69,20 @@ const RootLayout = () => {
       }));
 
       toast.success(message);
-      dispatch(unrepliedAction.removeUnreplied(sendedEmail))
+      dispatch(unrepliedAction.removeUnreplied(sendedEmail));
       if (emails.length === currentIndex + 1) {
         navigate("/unreplied-emails");
         localStorage.removeItem("email");
-        setSearch(null);
-        setEnteredEmail(null);
-      }
-      else {
+        setSearch("");
+        setEnteredEmail("");
+      } else {
         const input = extractEmail(emails[currentIndex + 1]?.from || "");
         localStorage.setItem("email", input);
         setSearch(input);
         setEnteredEmail(input);
         dispatch(ladgerAction.setTimeline(null));
         setWelcomeHeaderContent("Unreplied");
-        navigate("/")
+        navigate("/");
       }
       dispatch(viewEmailAction.clearAllMessage());
 
@@ -113,8 +115,9 @@ const RootLayout = () => {
             {/* Main content scrolls independently */}
             <main
               ref={mainRef}
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-                }`}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
+                collapsed ? "ml-4" : "ml-0"
+              }`}
             >
               <div className="p-3">
                 {isLowCredit && <LowCreditWarning score={currentScore} />}
