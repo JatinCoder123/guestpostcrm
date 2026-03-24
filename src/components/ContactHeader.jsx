@@ -123,12 +123,12 @@ const ContactHeader = ({ isMark }) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-        ...emailDeals.map((d) =>
-          Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, "")
-          )
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+            ),
+          ),
         )
-      )
       : 0;
   const statusItems = [
     { Icon: Tag, label: "Type", value: contactInfo?.type },
@@ -180,20 +180,15 @@ const ContactHeader = ({ isMark }) => {
             <div className="flex flex-col">
               {/* Name */}
               <div className="flex items-center gap-2">
-                <Link to={'/contacts/id'} className="text-lg font-extrabold">
+                <Link to={"/contacts/id"} className="text-lg font-extrabold">
                   {contactInfo?.full_name?.trim()
                     ? contactInfo.full_name
                     : email}
-                </Link >
-
-
+                </Link>
               </div>
-
-
             </div>
           )}
           <SocialButtons />
-
         </div>
 
         {/* RIGHT SIDE (UNCHANGED) */}
@@ -214,8 +209,10 @@ const ContactHeader = ({ isMark }) => {
                 transition-all
               "
               >
-                <div className="flex items-center  justify-center w-8 h-8 rounded-4xl  bg-blue-500
-">
+                <div
+                  className="flex items-center  justify-center w-8 h-8 rounded-4xl  bg-blue-500
+"
+                >
                   <Handshake size={20} className="text-white" />
                 </div>
 
@@ -223,17 +220,13 @@ const ContactHeader = ({ isMark }) => {
                   $<CountUpWithBlast value={maxDeal} />
                 </span>
               </div>
-
             </div>
           )}
 
           {/* TAGS */}
           <div className="flex gap-2 flex-wrap">
             {contactInfo?.favorite === "1" && (
-              <HashTag
-                text="favorite"
-                color="from-pink-500 to-rose-500"
-              />
+              <HashTag text="favorite" color="from-pink-500 to-rose-500" />
             )}
 
             {contactInfo?.exchange === "1" && (
@@ -241,6 +234,10 @@ const ContactHeader = ({ isMark }) => {
                 text="linkexchange"
                 color="from-blue-500 to-indigo-500"
               />
+            )}
+
+            {contactInfo?.is_stop === "1" && (
+              <HashTag text="stop" color="from-red-500 to-rose-500" />
             )}
 
             {isMark && (
@@ -301,9 +298,7 @@ function StatusCard({ Icon, label, value }) {
           {label}
         </p>
 
-        <p className="text-sm font-bold text-gray-800 mt-1">
-          {value || "N/A"}
-        </p>
+        <p className="text-sm font-bold text-gray-800 mt-1">{value || "N/A"}</p>
       </div>
     </div>
   );
@@ -313,7 +308,6 @@ const ContactHeaderSkeleton = () => {
     <div className="flex flex-col gap-4 animate-pulse">
       {/* HEADER */}
       <div className="flex items-center justify-between w-full py-4 px-4 rounded-t-xl bg-gradient-to-r from-sky-300 via-cyan-200 to-cyan-100">
-
         {/* LEFT */}
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-white/40 rounded-full"></div>
