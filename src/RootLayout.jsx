@@ -16,7 +16,7 @@ import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import { ladgerAction } from "./store/Slices/ladger";
-import { getUnrepliedEmail, unrepliedAction } from "./store/Slices/unrepliedEmails";
+import { unrepliedAction } from "./store/Slices/unrepliedEmails";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const { message, sendedEmail } = useSelector((state) => state.viewEmail);

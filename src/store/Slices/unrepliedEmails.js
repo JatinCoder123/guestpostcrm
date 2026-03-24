@@ -10,13 +10,19 @@ const unrepliedSlice = createSlice({
     count: 0,
     pageCount: 1,
     pageIndex: 1,
+    emailType: "email_inbound",
     error: null,
     unread: 0,
     showNewEmailBanner: false,
+    countLoading: false,
+    emailsCount: {},
+    countError: null,
+    totalCount: 0
   },
   reducers: {
-    getEmailRequest(state) {
-      state.loading = true;
+    getEmailRequest(state, action) {
+      state.emailType = action.payload.type ?? state.emailType;
+      state.loading = action.payload.loading;
       state.error = null;
     },
     getEmailSucess(state, action) {
@@ -36,6 +42,20 @@ const unrepliedSlice = createSlice({
     getEmailFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
+    },
+    getEmailsCountRequest(state, action) {
+      state.countLoading = action.payload.loading;
+      state.countError = null;
+    },
+    getEmailsCountSucess(state, action) {
+      state.countLoading = false;
+      state.emailsCount = action.payload.emailsCount;
+      state.totalCount = action.payload.totalCount
+      state.countError = null;
+    },
+    getEmailsCountFailed(state, action) {
+      state.countLoading = false;
+      state.countError = action.payload;
     },
     clearAllErrors(state) {
       state.error = null;
@@ -59,25 +79,21 @@ const unrepliedSlice = createSlice({
   },
 });
 
-export const getUnrepliedEmail = ({ page = 1, loading = true }) => {
+export const getUnrepliedEmail = ({ page = 1, loading = true, type = null }) => {
   return async (dispatch, getState) => {
-    if (loading) {
-      dispatch(unrepliedSlice.actions.getEmailRequest());
-    }
-    try {
-      let response;
+    dispatch(unrepliedSlice.actions.getEmailRequest({ type, loading }));
 
-      response = await axios.get(
+    try {
+      const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=unreplied${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
+        }&type=${type ?? getState().unreplied.emailType}${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
       );
 
 
-      showConsole && console.log(`Unreplied emails`, response.data);
-      const data = response.data;
+      showConsole && console.log(`Unreplied emails`, data);
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
-          count: data.data_count ?? 0,
+          count: data.total ?? 0,
           emails: data.data ?? [],
           unread: data.unread ?? 0,
           pageCount: data.total_pages ?? 1,
@@ -89,6 +105,30 @@ export const getUnrepliedEmail = ({ page = 1, loading = true }) => {
       dispatch(
         unrepliedSlice.actions.getEmailFailed(
           "Fetching Unreplied Emails Failed"
+        )
+      );
+    }
+  };
+};
+export const getEmailsCount = ({ loading = true }) => {
+  return async (dispatch, getState) => {
+    dispatch(unrepliedSlice.actions.getEmailsCountRequest({ loading }));
+    try {
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=email_stats${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}`
+      );
+
+
+      showConsole && console.log(`EMAILS COUNT`, data);
+      dispatch(
+        unrepliedSlice.actions.getEmailsCountSucess({ emailsCount: data?.data, totalCount: data?.total_contacts })
+      );
+      dispatch(unrepliedSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(
+        unrepliedSlice.actions.getEmailsCountFailed(
+          "Fetching  Emails Count Failed"
         )
       );
     }

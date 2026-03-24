@@ -27,7 +27,7 @@ function StatusDonut({
             style={{
                 backgroundColor: active ? `${color}15` : "transparent",
             }}
-            className={`flex flex-col items-center gap-1 p-3 rounded-xl transition
+            className={`flex flex-col items-center gap-1 p-3 rounded-xl transition cursor-pointer
       ${active ? "shadow-md" : "hover:bg-gray-50"}`}
         >
             {/* Amount */}

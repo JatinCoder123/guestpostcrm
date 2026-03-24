@@ -25,6 +25,7 @@ const TableView = ({
     slice,
     statusList = [],
     statusKey = "status",
+    statusCount = null,
     defaultStatus,
     fetchNextPage,
     children,
@@ -133,7 +134,7 @@ const TableView = ({
                     }}
                     style={{ overflow: "hidden" }}
                 >
-                    {statusList.length > 0 && count >= 0 && <StatusRow />}
+                    {statusList.length > 0 && count >= 0 && <StatusRow statusCount={statusCount} />}
                 </motion.div>
 
                 {/* 🔥 Table smoothly moves up/down */}
