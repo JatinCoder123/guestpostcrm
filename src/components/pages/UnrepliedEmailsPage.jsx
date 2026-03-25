@@ -183,7 +183,7 @@ export function UnrepliedEmailsPage() {
 
           {row.contact_type === "Brand" && (
             <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
-              Brand
+              Market Place
             </span>
           )}
         </div>

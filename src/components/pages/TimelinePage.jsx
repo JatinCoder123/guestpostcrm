@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getLadger } from "../../store/Slices/ladger";
@@ -28,23 +27,17 @@ export function TimelinePage() {
       setIsMark(false);
     }
   }, [marketPlaces]);
-  const { searchNotFound } =
-    useSelector((state) => state.ladger);
+  const { searchNotFound } = useSelector((state) => state.ladger);
 
   const handleMessageClick = (id) => {
     console.log("Message clicked:", id);
     setSelectedMessage(id);
     setShowMessageModal(true);
   };
-  const {
-    viewEmail,
-    threadId,
-    count,
-    contactInfo
-  } = useSelector((state) => state.viewEmail);
-  const { loading: unrepliedLoading } = useSelector(
-    (state) => state.unreplied,
+  const { viewEmail, threadId, count, contactInfo } = useSelector(
+    (state) => state.viewEmail,
   );
+  const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
   if (searchNotFound) {
     return <NoSearchFoundPage />;
   }
@@ -75,15 +68,10 @@ export function TimelinePage() {
                 <MailerSummaryHeader />
                 <LatestMessage handleMessageClick={handleMessageClick} />
               </div>
-              <ActionButton
-                isMark={isMark}
-                setShowIP={setShowIP}
-              />
+              <ActionButton isMark={isMark} setShowIP={setShowIP} />
             </div>
 
-
             <TimelineEvent handleMessageClick={handleMessageClick} />
-
           </>
         )}
       </div>

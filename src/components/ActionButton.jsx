@@ -36,14 +36,16 @@ const ActionButton = ({ setShowIP, isMark }) => {
   const dispatch = useDispatch();
 
   const [showUsers, setShowUsers] = useState(false);
+  const [stopLoading, setStopLoading] = useState(false);
   const [showTags, setShowTags] = useState(false);
 
   const { enteredEmail } = useContext(PageContext);
+  const { crmEndpoint } = useSelector((state) => state.user);
 
   const { contactInfo, accountInfo, threadId, editMessage, contactLoading } =
     useSelector((s) => s.viewEmail);
   const { sending, message, error } = useSelector((s) => s.threadEmail);
-  const email = contactInfo?.email1
+  const email = contactInfo?.email1;
 
   const {
     forward,
@@ -280,25 +282,52 @@ const ActionButton = ({ setShowIP, isMark }) => {
         ),
     },
     {
-      icon: <CircleStop size={25} color="red" />,
-      label: "Stop Future Emails",
-      action: () => {
-        dispatch(
-          editContact({
-            contact: {
-              ...contactInfo,
-              is_stop: contactInfo.is_stop === "1" ? "0" : "1",
-            },
-            account: accountInfo || {},
-          }),
-        );
+      icon: stopLoading ? (
+        <LoadingChase />
+      ) : (
+        <CircleStop
+          size={25}
+          color={contactInfo?.is_stop === "1" ? "red" : "#eab308"}
+        />
+      ),
+
+      label:
+        contactInfo?.is_stop === "1" ? "Resume Emails" : "Stop Future Emails",
+
+      action: async () => {
+        setStopLoading(true);
+
+        try {
+          const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
+
+          const url = `${crmEndpoint}&type=force_stop&id=${contactInfo?.id}&new_value=${newValue}&user=${enteredEmail}`;
+
+          const result = await fetch(url);
+          const data = await result.json();
+          console.log(data);
+
+          dispatch(
+            viewEmailAction.updateContactInfo({
+              key: "is_stop",
+            }),
+          );
+
+          toast.success(
+            newValue === "1"
+              ? "Emails stopped successfully"
+              : "Emails resumed successfully",
+          );
+        } catch (err) {
+          toast.error("Something went wrong");
+        } finally {
+          setStopLoading(false);
+        }
       },
     },
   ];
 
   return (
     <>
-
       <div
         className="mt-4  flex items-center justify-center flex-wrap gap-10
   p-4 rounded-b-2xl
@@ -313,7 +342,9 @@ const ActionButton = ({ setShowIP, isMark }) => {
               <>
                 <MoveToDropdown
                   currentThreadId={threadId}
-                  onMoveSuccess={() => dispatch(getLadger({ email: contactInfo?.email1 }))}
+                  onMoveSuccess={() =>
+                    dispatch(getLadger({ email: contactInfo?.email1 }))
+                  }
                 />
                 <Separator />
               </>
@@ -328,12 +359,12 @@ const ActionButton = ({ setShowIP, isMark }) => {
                   style={
                     btn.active
                       ? {
-                        backgroundColor: btn.activeProps.fill,
-                        color: btn.activeProps.color,
-                        transform: "translateY(-2px) scale(1.09)",
-                        boxShadow:
-                          "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
-                      }
+                          backgroundColor: btn.activeProps.fill,
+                          color: btn.activeProps.color,
+                          transform: "translateY(-2px) scale(1.09)",
+                          boxShadow:
+                            "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
+                        }
                       : {}
                   }
                   className={`group flex items-center cursor-pointer justify-center w-12 h-12
@@ -343,7 +374,9 @@ const ActionButton = ({ setShowIP, isMark }) => {
   hover:shadow-xl hover:-translate-y-1
   active:scale-95
   transition-all duration-200
-  ${btn.active ? "ring-2 ring-black/30" : ""}`}
+  ${btn.active ? "ring-2 ring-black/30" : ""}
+  ${contactLoading && btn.label.includes("Emails") ? "opacity-60 pointer-events-none" : ""}
+`}
                 >
                   {btn.icon}
 
