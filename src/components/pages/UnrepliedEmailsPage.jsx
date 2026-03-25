@@ -255,7 +255,7 @@ export function UnrepliedEmailsPage() {
         statusList={status_list}
         statusCount={statusCount}
         fetchNextPage={() =>
-          dispatch(getUnrepliedEmail({ page: 1 }))
+          dispatch(getUnrepliedEmail({ page: pageIndex + 1 }))
         }
       >
         <TableTitleBar
