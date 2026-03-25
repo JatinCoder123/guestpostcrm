@@ -91,7 +91,7 @@ export function excludeEmail(str) {
 }
 export function excludeName(str) {
   if (str?.includes("<")) {
-    return str.split("<")[0];
+    return str.split("<")[0].trim();
   }
   return str;
 }
@@ -155,9 +155,9 @@ export function base64ToUtf8(base64) {
 
 export const extractEmail = (str) => {
   if (str?.includes("<")) {
-    return str.split("<")[1].split(">")[0];
+    return str.split("<")[1].split(">")[0].trim();
   }
-  return str;
+  return str.trim();
 
 }
 export function unionByKey(arr1, arr2, key) {

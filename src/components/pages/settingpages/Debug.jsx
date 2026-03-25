@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import PromptViewer from "../../PromptViewer.jsx";
 import PromptSectionsViewer from "../../PromptViewer.jsx";
+import Header from "./Header.jsx"
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
@@ -211,7 +212,7 @@ const Debug = () => {
     try {
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
-    } catch {}
+    } catch { }
 
     let content = parsed?.reply || parsed;
 
@@ -265,255 +266,262 @@ const Debug = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Tabs */}
-      <div className="flex gap-2 border-b">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
-              activeTab.key === tab.key
+    <> <Header
+      text={"QA PlayGround"}
+      handleCreate={() =>
+        setEditItem({
+          type: "new",
+        })
+      }
+    />
+      <div className="p-6 space-y-6">
+        {/* Tabs */}
+        <div className="flex gap-2 border-b">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition ${activeTab.key === tab.key
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className="flex justify-center gap-6 flex-wrap">
-        {/* Email Search */}
-        <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
-          <span className="text-sm font-medium text-gray-600">Email</span>
-
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search email..."
-              value={emailSearch}
-              onChange={(e) => setEmailSearch(e.target.value)}
-              className="bg-white border rounded-md px-3 py-1 pr-8 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-
-            {emailSearch && (
-              <button
-                onClick={() => setEmailSearch("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+                }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Timeline */}
-        <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
-          <span className="text-sm font-medium text-gray-600">Timeline</span>
+        {/* Filters */}
+        <div className="flex justify-center gap-6 flex-wrap">
+          {/* Email Search */}
+          <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
+            <span className="text-sm font-medium text-gray-600">Email</span>
 
-          <select
-            value={timeline}
-            onChange={(e) => {
-              const value =
-                e.target.value === "all" ? "all" : Number(e.target.value);
-              setTimeline(value);
-            }}
-            className="bg-white border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
-          >
-            {TIME_FILTERS.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search email..."
+                value={emailSearch}
+                onChange={(e) => setEmailSearch(e.target.value)}
+                className="bg-white border rounded-md px-3 py-1 pr-8 text-sm focus:ring-2 focus:ring-blue-500"
+              />
 
-        {/* Date */}
-        <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
-          <span className="text-sm font-medium text-gray-600">Date</span>
-
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="bg-white border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow border overflow-x-auto">
-        {loading && (
-          <div className="p-6 text-sm text-gray-500">
-            Loading {activeTab.label}...
-          </div>
-        )}
-
-        {error && (
-          <div className="p-6 text-sm text-red-600">Failed to load data</div>
-        )}
-
-        {!loading && !error && filteredData.length > 0 && (
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-left">
-              <tr>
-                {columns.map((col) => (
-                  <th
-                    key={col}
-                    className="px-4 py-3 font-semibold text-gray-600"
-                  >
-                    {col.replace(/_/g, " ").toUpperCase()}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredData.map((row, index) => (
-                <tr
-                  key={index}
-                  onClick={() => setSelectedRecord(row)}
-                  className="border-t hover:bg-gray-50 cursor-pointer"
+              {emailSearch && (
+                <button
+                  onClick={() => setEmailSearch("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
                 >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
+            <span className="text-sm font-medium text-gray-600">Timeline</span>
+
+            <select
+              value={timeline}
+              onChange={(e) => {
+                const value =
+                  e.target.value === "all" ? "all" : Number(e.target.value);
+                setTimeline(value);
+              }}
+              className="bg-white border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
+            >
+              {TIME_FILTERS.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date */}
+          <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
+            <span className="text-sm font-medium text-gray-600">Date</span>
+
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-white border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-lg shadow border overflow-x-auto">
+          {loading && (
+            <div className="p-6 text-sm text-gray-500">
+              Loading {activeTab.label}...
+            </div>
+          )}
+
+          {error && (
+            <div className="p-6 text-sm text-red-600">Failed to load data</div>
+          )}
+
+          {!loading && !error && filteredData.length > 0 && (
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-100 text-left">
+                <tr>
                   {columns.map((col) => (
-                    <td key={col} className="px-4 py-3 max-w-xs truncate">
-                      {truncate(row[col])}
-                    </td>
+                    <th
+                      key={col}
+                      className="px-4 py-3 font-semibold text-gray-600"
+                    >
+                      {col.replace(/_/g, " ").toUpperCase()}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
 
-        {!loading && !error && filteredData.length === 0 && (
-          <div className="p-6 text-sm text-gray-500">No records found.</div>
-        )}
-      </div>
-
-      {/* Modal */}
-      {selectedRecord && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div
-            ref={modalRef}
-            className="bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex justify-between items-center border-b px-6 py-4">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold">Record Details</h2>
-
-                {state?.prompt && (
-                  <button
-                    onClick={() => {
-                      navigateTo("/settings/machine-learning", {
-                        state: { promptId: state?.prompt.prompt_id },
-                      });
-                    }}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              <tbody>
+                {filteredData.map((row, index) => (
+                  <tr
+                    key={index}
+                    onClick={() => setSelectedRecord(row)}
+                    className="border-t hover:bg-gray-50 cursor-pointer"
                   >
-                    Edit
-                  </button>
-                )}
-              </div>
+                    {columns.map((col) => (
+                      <td key={col} className="px-4 py-3 max-w-xs truncate">
+                        {truncate(row[col])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
 
-              <button
-                onClick={() => {
-                  if (state?.prompt) navigateTo(-1);
-                  setSelectedRecord(null);
-                }}
-                className="text-gray-500 hover:text-black text-xl"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(selectedRecord)
-                .filter(([key]) => {
-                  // hide global fields
-                  if (HIDDEN_FIELDS.includes(key)) return false;
+          {!loading && !error && filteredData.length === 0 && (
+            <div className="p-6 text-sm text-gray-500">No records found.</div>
+          )}
+        </div>
 
-                  // hide description ONLY in prompt tab
-                  if (activeTab.key === "prompt" && key === "description")
-                    return false;
+        {/* Modal */}
+        {selectedRecord && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div
+              ref={modalRef}
+              className="bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex justify-between items-center border-b px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-semibold">Record Details</h2>
 
-                  return true;
-                })
-                .sort(([a], [b]) => {
-                  if (a === "response") return -1;
-                  if (b === "response") return 1;
-                  if (a === "full_prompt") return 1;
-                  if (b === "full_prompt") return -1;
-                  return 0;
-                })
-                .map(([key, value]) => {
-                  const large = isLargeField(key);
-
-                  return (
-                    <div
-                      key={key}
-                      className={`border rounded-lg p-3 bg-gray-50 ${
-                        large ? "md:col-span-2" : ""
-                      }`}
+                  {state?.prompt && (
+                    <button
+                      onClick={() => {
+                        navigateTo("/settings/machine-learning", {
+                          state: { promptId: state?.prompt.prompt_id },
+                        });
+                      }}
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
-                      <div className="text-xs text-gray-500 mb-1">
-                        {key.replace(/_/g, " ").toUpperCase()}
-                      </div>
+                      Edit
+                    </button>
+                  )}
+                </div>
 
-                      {key === "full_prompt" ? (
-                        (() => {
-                          const stats = getPromptStats(value);
+                <button
+                  onClick={() => {
+                    if (state?.prompt) navigateTo(-1);
+                    setSelectedRecord(null);
+                  }}
+                  className="text-gray-500 hover:text-black text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(selectedRecord)
+                  .filter(([key]) => {
+                    // hide global fields
+                    if (HIDDEN_FIELDS.includes(key)) return false;
 
-                          return (
-                            <div className="space-y-2">
-                              {/* Stats */}
-                              <div className="flex gap-4 text-xs text-gray-600 bg-gray-200 px-3 py-1 rounded-md w-fit">
-                                <span>Words: {stats.words}</span>
-                                <span>Lines: {stats.lines}</span>
-                              </div>
+                    // hide description ONLY in prompt tab
+                    if (activeTab.key === "prompt" && key === "description")
+                      return false;
 
-                              {/* Viewer */}
-                              {value?.includes(
-                                "----------------------------------------------------------------------",
-                              ) ? (
-                                <PromptSectionsViewer prompt={value} />
-                              ) : (
-                                <PromptViewer prompt={value} />
-                              )}
-                            </div>
-                          );
-                        })()
-                      ) : large ? (
-                        key === "response" ? (
-                          <div
-                            className="w-full max-h-[400px] overflow-auto text-sm bg-black text-green-400 p-4 rounded"
-                            dangerouslySetInnerHTML={{
-                              __html: parseAndDecode(value),
-                            }}
-                          />
-                        ) : (
-                          <textarea
-                            readOnly
-                            value={formatJSON(value)}
-                            className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded"
-                          />
-                        )
-                      ) : (
-                        <div className="text-sm break-words">
-                          {typeof value === "object"
-                            ? JSON.stringify(value)
-                            : String(value)}
+                    return true;
+                  })
+                  .sort(([a], [b]) => {
+                    if (a === "response") return -1;
+                    if (b === "response") return 1;
+                    if (a === "full_prompt") return 1;
+                    if (b === "full_prompt") return -1;
+                    return 0;
+                  })
+                  .map(([key, value]) => {
+                    const large = isLargeField(key);
+
+                    return (
+                      <div
+                        key={key}
+                        className={`border rounded-lg p-3 bg-gray-50 ${large ? "md:col-span-2" : ""
+                          }`}
+                      >
+                        <div className="text-xs text-gray-500 mb-1">
+                          {key.replace(/_/g, " ").toUpperCase()}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+
+                        {key === "full_prompt" ? (
+                          (() => {
+                            const stats = getPromptStats(value);
+
+                            return (
+                              <div className="space-y-2">
+                                {/* Stats */}
+                                <div className="flex gap-4 text-xs text-gray-600 bg-gray-200 px-3 py-1 rounded-md w-fit">
+                                  <span>Words: {stats.words}</span>
+                                  <span>Lines: {stats.lines}</span>
+                                </div>
+
+                                {/* Viewer */}
+                                {value?.includes(
+                                  "----------------------------------------------------------------------",
+                                ) ? (
+                                  <PromptSectionsViewer prompt={value} />
+                                ) : (
+                                  <PromptViewer prompt={value} />
+                                )}
+                              </div>
+                            );
+                          })()
+                        ) : large ? (
+                          key === "response" ? (
+                            <div
+                              className="w-full max-h-[400px] overflow-auto text-sm bg-black text-green-400 p-4 rounded"
+                              dangerouslySetInnerHTML={{
+                                __html: parseAndDecode(value),
+                              }}
+                            />
+                          ) : (
+                            <textarea
+                              readOnly
+                              value={formatJSON(value)}
+                              className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded"
+                            />
+                          )
+                        ) : (
+                          <div className="text-sm break-words">
+                            {typeof value === "object"
+                              ? JSON.stringify(value)
+                              : String(value)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div></>
+
   );
 };
 

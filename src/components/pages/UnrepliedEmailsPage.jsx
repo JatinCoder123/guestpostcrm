@@ -145,7 +145,6 @@ export function UnrepliedEmailsPage() {
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Unreplied");
-    console.log(index);
     setCurrentIndex(index);
     navigateTo(navigate);
   };

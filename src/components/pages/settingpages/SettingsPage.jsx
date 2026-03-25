@@ -89,7 +89,7 @@ export function SettingsPage() {
       link: "prompt-testing",
     },
     {
-      title: "Debugging",
+      title: "QA PlayGround",
       subtitle: "See Error Logs ",
       icon: <Bug className="w-8 h-8 text-red-600" />,
       bg: "bg-red-50",
