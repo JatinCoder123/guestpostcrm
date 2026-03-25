@@ -86,6 +86,16 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
               value: item.link_amount_c.split("$")[1],
             },
             {
+              label: "Type",
+              name: "type_c",
+              type: "select",
+              options: [
+                { value: "GP", label: "Guest Post" },
+                { value: "LI", label: "Link Insertion" },
+              ],
+              value: item.type_c || "",
+            },
+            {
               label: "Their Link",
               name: "backlink_url",
               type: "text",
@@ -727,11 +737,13 @@ function GPLinksTable({
   return (
     <div className="overflow-hidden rounded-xl border-b border-gray-200 shadow-sm">
       {/* HEADER */}
-      <div className="grid grid-cols-6  bg-blue-100 text-sm font-semibold text-gray-700 px-4 py-3">
+      <div className="grid grid-cols-8  bg-blue-100 text-sm font-semibold text-gray-700 px-4 py-3">
         <div className="col-span-2">URL / Anchor Text</div>
         <div>Validation</div>
         <div>Spam Score</div>
         <div>Amount</div>
+        <div>Type</div>
+        <div>Link Type</div>
         <div className="ml-auto">Action</div>
       </div>
 
@@ -742,7 +754,7 @@ function GPLinksTable({
         return (
           <div
             key={item.id}
-            className="grid grid-cols-6 px-4 py-3 border-t text-sm items-center"
+            className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center"
           >
             {/* URL + Anchor */}
             <div className="flex gap-2 items-center col-span-2">
@@ -776,6 +788,12 @@ function GPLinksTable({
             {/* Amount */}
             <div className="font-semibold text-indigo-600">
               {item.link_amount_c}
+            </div>
+            <div className="font-semibold text-indigo-600">
+              {item.type_c}
+            </div>
+            <div className={`font-semibold text-${item.link_type === "dofollow" ? "green" : "red"}-600`}>
+              {item.link_type}
             </div>
             <div className="flex gap-2 justify-end">
               <button

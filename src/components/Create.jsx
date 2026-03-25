@@ -149,7 +149,7 @@ export default function Create({
                     {pageType === "view"
                       ? ""
                       : pageType.charAt(0).toUpperCase() +
-                        pageType.slice(1)}{" "}
+                      pageType.slice(1)}{" "}
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </h2>
                 </div>
@@ -216,10 +216,9 @@ export default function Create({
                         key={item.id}
                         className={`
                           relative rounded-xl border overflow-hidden transition-all
-                          ${
-                            pageType === "view"
-                              ? "border-l-4 border-l-indigo-500 bg-indigo-50/30"
-                              : "border-gray-200 hover:border-gray-300 bg-white shadow-sm hover:shadow-md"
+                          ${pageType === "view"
+                            ? "border-l-4 border-l-indigo-500 bg-indigo-50/30"
+                            : "border-gray-200 hover:border-gray-300 bg-white shadow-sm hover:shadow-md"
                           }
                         `}
                       >
@@ -313,10 +312,9 @@ export default function Create({
                                   disabled={updating || sending}
                                   className={`
                                     px-6 py-3 rounded-xl font-medium text-white transition-colors min-w-[140px] shadow-sm
-                                    ${
-                                      (updating || sending) && button === 1
-                                        ? "bg-green-400 cursor-not-allowed"
-                                        : "bg-green-600 hover:bg-green-700"
+                                    ${(updating || sending) && button === 1
+                                      ? "bg-green-400 cursor-not-allowed"
+                                      : "bg-green-600 hover:bg-green-700"
                                     }
                                   `}
                                 >
@@ -333,10 +331,9 @@ export default function Create({
                                   disabled={updating || sending}
                                   className={`
                                     px-6 py-3 rounded-xl font-medium text-white transition-colors min-w-[140px] shadow-sm
-                                    ${
-                                      (updating || sending) && button === 2
-                                        ? "bg-blue-400 cursor-not-allowed"
-                                        : "bg-blue-600 hover:bg-blue-700"
+                                    ${(updating || sending) && button === 2
+                                      ? "bg-blue-400 cursor-not-allowed"
+                                      : "bg-blue-600 hover:bg-blue-700"
                                     }
                                   `}
                                 >
@@ -437,10 +434,9 @@ export default function Create({
                         }}
                         className={`
                           flex-1 py-3 rounded-xl font-medium text-white transition-colors
-                          ${
-                            data.length === 0 || !valid
-                              ? "bg-gray-300 cursor-not-allowed"
-                              : "bg-green-600 hover:bg-green-700"
+                          ${data.length === 0 || !valid
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-green-600 hover:bg-green-700"
                           }
                         `}
                       >
@@ -455,10 +451,9 @@ export default function Create({
                         }}
                         className={`
                           flex-1 py-3 rounded-xl font-medium text-white transition-colors
-                          ${
-                            data.length === 0 || !valid
-                              ? "bg-gray-300 cursor-not-allowed"
-                              : "bg-blue-600 hover:bg-blue-700"
+                          ${data.length === 0 || !valid
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700"
                           }
                         `}
                       >
@@ -538,10 +533,9 @@ function InputField({
           disabled={isDisabled}
           className={`
             w-full px-4 py-2.5 rounded-xl border transition-all
-            ${
-              isDisabled
-                ? "bg-gray-50 text-gray-500 border-gray-200"
-                : "bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            ${isDisabled
+              ? "bg-gray-50 text-gray-500 border-gray-200"
+              : "bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             }
           `}
         >
@@ -551,15 +545,20 @@ function InputField({
 
           {label === "Order Status"
             ? Object.entries(statusLists).map(([key, val]) => (
-                <option key={key} value={key}>
+              <option key={key} value={key}>
+                {val}
+              </option>
+            ))
+            : (label === "Order Type"
+              ? ["GUEST POST", "LINK INSERTION"].map(val => (
+                <option key={val} value={val}>
                   {val}
                 </option>
-              ))
-            : websiteLists.map((opt, i) => (
+              )) : websiteLists.map((opt, i) => (
                 <option key={i} value={opt}>
                   {opt}
                 </option>
-              ))}
+              )))}
         </select>
       ) : inputType === "textarea" ? (
         <textarea
@@ -571,10 +570,9 @@ function InputField({
           className={`
             w-full px-4 py-2.5 rounded-xl border resize-y
             min-h-[20px] max-h-[80px] transition-all
-            ${
-              isDisabled
-                ? "bg-gray-50 text-gray-500 border-gray-200"
-                : "bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            ${isDisabled
+              ? "bg-gray-50 text-gray-500 border-gray-200"
+              : "bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             }
           `}
         />
@@ -593,10 +591,9 @@ function InputField({
             className={`
               w-full px-4 py-2.5 rounded-xl border transition-all
               ${inputType === "number" ? "pl-8" : ""}
-              ${
-                isDisabled
-                  ? "bg-gray-50 text-gray-500 border-gray-200"
-                  : "bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              ${isDisabled
+                ? "bg-gray-50 text-gray-500 border-gray-200"
+                : "bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               }
             `}
           />

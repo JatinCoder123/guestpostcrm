@@ -24,6 +24,7 @@ const fields = [
   { name: "order_id", label: "Order Id", type: "text", disabled: true },
   { name: "total_amount_c", label: "Order Amount", type: "number" },
   { name: "order_status", label: "Order Status", type: "select" },
+  { name: "order_type", label: "Order Type", type: "select" },
   {
     name: "invoice_link_c",
     label: "Invoice Link",
@@ -178,7 +179,7 @@ export default function CreateOrder() {
   const handleDelete = (id) => {
     alert("Work in progress");
   };
-  const sendHandler = () => {};
+  const sendHandler = () => { };
   const okHandler = () => {
     if (enteredEmail) {
       dispatch(getLadger({ email: enteredEmail, search }));
@@ -255,10 +256,10 @@ export default function CreateOrder() {
         const html = createPreviewOrder({
           templateData:
             currentOrderSend.order_status == "wrong" ||
-            currentOrderSend.order_status == "rejected_nontechnical"
+              currentOrderSend.order_status == "rejected_nontechnical"
               ? rejectOrderTemp
               : currentOrderSend.order_type == "GUEST POST" ||
-                  currentOrderSend.order_type == "BOTH"
+                currentOrderSend.order_type == "BOTH"
                 ? gpTemplate
                 : liTemplate,
           order: currentOrderSend,
