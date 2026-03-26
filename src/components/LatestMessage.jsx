@@ -3,7 +3,7 @@ import { useThreadContext } from "../hooks/useThreadContext";
 import { useNavigate } from "react-router-dom";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
 import useModule from "../hooks/useModule";
-import { getDomain, getSafeHTML } from "../assets/assets";
+import { getDomain, getSafeHTML, showConsole } from "../assets/assets";
 import { BiSolidMessageCheck } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
