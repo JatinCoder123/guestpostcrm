@@ -218,7 +218,7 @@ const LatestMessage = ({ handleMessageClick }) => {
                                         viewEmail[viewEmail.length - 1]?.message_id,
                                     )
                                 }
-                                className="text-blue-600 hover:text-blue-700 transition-opacity flex  p-1 cursor-pointer ml-auto mb-1"
+                                className="text-blue-600 hover:text-blue-700 transition-opacity flex  cursor-pointer  "
                             >
                                 view more...
                             </button>

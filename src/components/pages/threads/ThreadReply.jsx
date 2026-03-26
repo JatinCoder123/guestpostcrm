@@ -32,6 +32,7 @@ import MailHeaderLeft from "./MailHeaderLeft";
 import TemplateSelectorModal from "../../TemplateSelectorModal";
 import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
+import axios from "axios";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const { emails } = useOutletContext() || [];
@@ -60,6 +61,7 @@ const ThreadReply = () => {
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
   const [bcc, setBcc] = useState([]);
+  const [checkingThreadId, setCheckingTheadId] = useState(false);
 
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
@@ -156,25 +158,53 @@ const ThreadReply = () => {
     console.log("FILES", files);
   }, [files]);
 
-  const handleSendClick = () => {
-    const contentToSend = editorContent;
+  const handleSendClick = async () => {
+    try {
+      setCheckingTheadId(true);
 
-    const formData = new FormData();
+      // 🔹 Call API to verify thread
+      const { data } = await axios.get(
+        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`
+      );
 
-    formData.append("threadId", currentThread);
-    formData.append("replyBody", contentToSend);
-    formData.append("email", currentEmail);
-    formData.append("current_email", user.email); // or user email from redux
+      console.log("MATHED THREAD ID", data)
 
-    formData.append("cc", cc.join(","));
-    formData.append("to", to.join(","));
-    formData.append("bcc", bcc.join(","));
+      if (!data?.success) {
+        toast.error("Failed to verify thread!");
+        return;
+      }
 
-    files.forEach((file) => {
-      formData.append("attachments[]", file.file);
-    });
+      // 🔹 Check thread match
+      if (data.thread_id !== currentThread) {
+        toast.error("Thread mismatch! Cannot send email ");
+        return;
+      }
 
-    dispatch(sendEmail(formData));
+      // ✅ If matched → proceed
+      const contentToSend = editorContent;
+      const formData = new FormData();
+
+      formData.append("threadId", currentThread);
+      formData.append("replyBody", contentToSend);
+      formData.append("email", currentEmail);
+      formData.append("current_email", user.email);
+
+      formData.append("cc", cc.join(","));
+      formData.append("to", to.join(","));
+      formData.append("bcc", bcc.join(","));
+
+      files.forEach((file) => {
+        formData.append("attachments[]", file.file);
+      });
+
+      dispatch(sendEmail(formData));
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while checking thread!");
+    } finally {
+      setCheckingTheadId(false);
+    }
   };
 
   const insertTextAtCursor = () => {
@@ -225,15 +255,15 @@ const ThreadReply = () => {
 
   return (
     <>
-    <MessageModal
-  showMessageModal={showMessageModal}
-  closeMessageModal={() => setShowMessageModal(false)}
-  messageId={lastMessage?.message_id}
-  email={currentEmail}
-  threadId={currentThread}
-  viewEmail={emails}
-  count={emails?.length || 0}
-/>
+      <MessageModal
+        showMessageModal={showMessageModal}
+        closeMessageModal={() => setShowMessageModal(false)}
+        messageId={lastMessage?.message_id}
+        email={currentEmail}
+        threadId={currentThread}
+        viewEmail={emails}
+        count={emails?.length || 0}
+      />
       {(aiLoading || templateLoading) && <PageLoader />}
       <motion.div
         className="
@@ -497,11 +527,17 @@ const ThreadReply = () => {
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleSendClick}
-                disabled={loading}
+                disabled={loading || checkingThreadId}
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
               >
                 <Send className="w-5 h-5" />
-                <span>{sending ? "Sending..." : "Send Email"}</span>
+                <span>
+                  {checkingThreadId
+                    ? "Checking..."
+                    : sending
+                      ? "Sending..."
+                      : "Send Email"}
+                </span>
               </motion.button>
             </div>
           </div>
