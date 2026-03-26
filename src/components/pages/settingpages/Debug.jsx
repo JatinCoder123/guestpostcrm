@@ -5,24 +5,62 @@ import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import PromptViewer from "../../PromptViewer.jsx";
 import PromptSectionsViewer from "../../PromptViewer.jsx";
-import Header from "./Header.jsx"
+import Header from "./Header.jsx";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
 const TABS = [
   { key: "error", label: "Error Logs", module: "outr_error_logs" },
+
   {
     key: "gpc",
     label: "GPC Request / Response",
     module: "outr_request_and_response",
   },
+
   {
     key: "api",
-    label: "Gmail/ChatGPT/Paypal/MOZ",
+    label: "API Request / Response",
     module: "outr_request_and_response",
   },
+
   { key: "prompt", label: "Prompt Ledger", module: "outr_prompt_ledger" },
+
   { key: "logger", label: "Logger", module: "outr_global_logger" },
+
+  // 👇 DUMMY / NOT WORKING YET
+  {
+    key: "prompt_testing",
+    label: "Prompt Testing",
+    module: "outr_prompt_testing",
+    disabled: false,
+  },
+
+  {
+    key: "process_audit",
+    label: "Process Audit",
+    module: "outr_process_audit",
+    disabled: true,
+  },
+
+  {
+    key: "visualize",
+    label: "Visualize",
+    module: "outr_visualization",
+    disabled: true,
+  },
+  {
+    key: "ml",
+    label: "Machine Learning",
+    module: "outr_machine_learning",
+    disabled: false,
+  },
+  {
+    key: "self_test",
+    label: "Self Test",
+    module: "outr_self_test",
+    disabled: false,
+  },
 ];
 
 const IMPORTANT_COLUMNS = {
@@ -212,7 +250,7 @@ const Debug = () => {
     try {
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
-    } catch { }
+    } catch {}
 
     let content = parsed?.reply || parsed;
 
@@ -266,29 +304,63 @@ const Debug = () => {
   };
 
   return (
-    <> <Header
-      text={"QA PlayGround"}
-      handleCreate={() =>
-        setEditItem({
-          type: "new",
-        })
-      }
-    />
+    <>
+      {" "}
+      <Header
+        text={"QA PlayGround"}
+        handleCreate={() =>
+          setEditItem({
+            type: "new",
+          })
+        }
+      />
       <div className="p-6 space-y-6">
-        {/* Tabs */}
-        <div className="flex gap-2 border-b">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition ${activeTab.key === tab.key
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
+        {/* Tabs (Replaced with Dropdown) */}
+        <div className="flex items-center justify-between border-b pb-3">
+          {/* ACTIVE TAB NAME */}
+          <div className="text-lg font-semibold text-blue-600">
+            {activeTab.label}
+          </div>
+
+          {/* DROPDOWN */}
+          <div>
+            <select
+              value={activeTab.key}
+              onChange={(e) => {
+                const selected = TABS.find((t) => t.key === e.target.value);
+
+                if (!selected) return;
+
+                // 🔥 Navigation logic
+                if (selected.key === "prompt_testing") {
+                  navigateTo("/settings/prompt-testing");
+                  return;
+                }
+
+                if (selected.key === "ml") {
+                  navigateTo("/settings/machine-learning");
+                  return;
+                }
+
+                if (selected.key === "self_test") {
+                  navigateTo("/settings/self-test");
+                  return;
+                }
+
+                // बाकी tabs same rahenge
+                if (selected?.disabled) return;
+
+                setActiveTab(selected);
+              }}
+              className="border px-4 py-2 rounded-md text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
             >
-              {tab.label}
-            </button>
-          ))}
+              {TABS.map((tab) => (
+                <option key={tab.key} value={tab.key} disabled={tab.disabled}>
+                  {tab.label} {tab.disabled ? " (Coming Soon)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Filters */}
@@ -461,8 +533,9 @@ const Debug = () => {
                     return (
                       <div
                         key={key}
-                        className={`border rounded-lg p-3 bg-gray-50 ${large ? "md:col-span-2" : ""
-                          }`}
+                        className={`border rounded-lg p-3 bg-gray-50 ${
+                          large ? "md:col-span-2" : ""
+                        }`}
                       >
                         <div className="text-xs text-gray-500 mb-1">
                           {key.replace(/_/g, " ").toUpperCase()}
@@ -520,8 +593,8 @@ const Debug = () => {
             </div>
           </div>
         )}
-      </div></>
-
+      </div>
+    </>
   );
 };
 
