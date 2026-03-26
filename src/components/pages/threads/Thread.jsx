@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getThreadEmail } from "../../../store/Slices/threadEmail";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { toast } from "react-toastify";
@@ -9,20 +9,21 @@ const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { threadId } = useParams()
   const { threadEmail, message, error } = useSelector((s) => s.threadEmail);
   const {
-    context: { currentThread, currentEmail },
+    context: { currentEmail },
   } = useThreadContext();
 
   const [emails, setEmails] = useState([]);
   useEffect(() => {
-    if (currentEmail && currentThread && !state?.viewEmails) {
-      dispatch(getThreadEmail(currentEmail, currentThread));
+    if (currentEmail && threadId && !state?.viewEmails) {
+      dispatch(getThreadEmail(currentEmail, threadId));
     }
     else {
       setEmails(state?.viewEmails)
     }
-  }, [currentEmail, currentThread]);
+  }, [currentEmail, threadId]);
   useEffect(() => {
 
     if (threadEmail?.length > 0 && !state?.viewEmails) {
@@ -30,7 +31,7 @@ const Thread = () => {
     }
   }, [threadEmail]);
   useEffect(() => {
-    if (!currentThread) {
+    if (!threadId) {
       toast.error("Thread id is missing!");
       navigate(-1);
       return;

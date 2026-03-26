@@ -32,9 +32,13 @@ import MailHeaderLeft from "./MailHeaderLeft";
 import TemplateSelectorModal from "../../TemplateSelectorModal";
 import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
+import { useParams } from "react-router-dom";
+
 import axios from "axios";
 const ThreadReply = () => {
   const editorRef = useRef(null);
+
+  const { threadId } = useParams();
   const { emails } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
@@ -43,7 +47,7 @@ const ThreadReply = () => {
     state?.initialContent || "",
   );
   const {
-    context: { currentThread, currentEmail },
+    context: { currentEmail },
   } = useThreadContext();
   useIdle({ idle: false });
   const dispatch = useDispatch();
@@ -138,16 +142,6 @@ const ThreadReply = () => {
       }
     }
   }, [template, editorReady]);
-  useEffect(() => {
-    if (!currentThread) {
-      toast.error("Thread id is missing!");
-      navigate(-1);
-    }
-    if (!currentEmail) {
-      toast.error("Email id is missing!");
-      navigate(-1);
-    }
-  }, []);
   function insertAiReply(input) {
     setOpenParent(null);
     setTemplateId(null);
@@ -173,9 +167,9 @@ const ThreadReply = () => {
         toast.error("Failed to verify thread!");
         return;
       }
-
+      console.log("THREAD", threadId)
       // 🔹 Check thread match
-      if (data.thread_id !== currentThread) {
+      if (data.thread_id !== threadId) {
         toast.error("Thread mismatch! Cannot send email ");
         return;
       }
@@ -184,7 +178,7 @@ const ThreadReply = () => {
       const contentToSend = editorContent;
       const formData = new FormData();
 
-      formData.append("threadId", currentThread);
+      formData.append("threadId", threadId);
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
@@ -260,7 +254,7 @@ const ThreadReply = () => {
         closeMessageModal={() => setShowMessageModal(false)}
         messageId={lastMessage?.message_id}
         email={currentEmail}
-        threadId={currentThread}
+        threadId={threadId}
         viewEmail={emails}
         count={emails?.length || 0}
       />
@@ -291,7 +285,7 @@ const ThreadReply = () => {
                 className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
                 onClick={() =>
                   window.open(
-                    `https://mail.google.com/mail/u/0/#inbox/${currentThread}`,
+                    `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
                     "_blank",
                   )
                 }
@@ -306,7 +300,7 @@ const ThreadReply = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // ⛔ prevent opening gmail
-                  const link = `https://mail.google.com/mail/u/0/#inbox/${currentThread}`;
+                  const link = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;
                   navigator.clipboard.writeText(link);
                   toast.success("Email thread link copied!");
                 }}
@@ -364,7 +358,7 @@ const ThreadReply = () => {
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
                   onClick={() => {
                     if (aiReplyContent == "") {
-                      dispatch(getAiReply(currentThread));
+                      dispatch(getAiReply(threadId));
                     }
                     insertAiReply(aiReplyContent);
                   }}
@@ -381,7 +375,7 @@ const ThreadReply = () => {
                   whileTap={{ scale: 0.98 }}
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
                   onClick={() => {
-                    dispatch(getAiReply(currentThread, 1, editorContent));
+                    dispatch(getAiReply(threadId, 1, editorContent));
 
                     insertAiReply(editorContent);
                   }}

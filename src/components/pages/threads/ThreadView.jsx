@@ -4,17 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
-import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
-import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 export default function ThreadView() {
   const scrollRef = useRef();
   const { emails } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
-  const {
-    context: { currentThread },
-  } = useThreadContext();
+  const { threadId } = useParams();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
@@ -23,7 +20,6 @@ export default function ThreadView() {
   const [messageLimit, setMessageLimit] = useState(3);
   const [openMessageId, setOpenMessageId] = useState(null);
   const [fullMessage, setFullMessage] = useState(null);
-  const [fullLoading, setFullLoading] = useState(false);
   const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
   const attachmentBoxRef = useRef(null);
   const visibleMessages = emails?.slice(-messageLimit);
@@ -39,7 +35,6 @@ export default function ThreadView() {
   };
   const fetchFullMessage = async (messageId) => {
     try {
-      setFullLoading(true);
       setFullMessage(null);
 
       const res = await fetch(
@@ -56,8 +51,6 @@ export default function ThreadView() {
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
-    } finally {
-      setFullLoading(false);
     }
   };
 
@@ -138,7 +131,7 @@ export default function ThreadView() {
                 className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
                 onClick={() =>
                   window.open(
-                    `https://mail.google.com/mail/u/0/#inbox/${currentThread}`,
+                    `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
                     "_blank",
                   )
                 }
@@ -153,7 +146,7 @@ export default function ThreadView() {
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // ⛔ prevent opening gmail
-                  const link = `https://mail.google.com/mail/u/0/#inbox/${currentThread}`;
+                  const link = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;
                   navigator.clipboard.writeText(link);
                   toast.success("Email thread link copied!");
                 }}
