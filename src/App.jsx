@@ -49,7 +49,6 @@ import { HotPage } from "./components/pages/HotPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
-import ComposePage from "./components/pages/ComposePage";
 import PromptTestingPage from "./components/pages/settingpages/PromptTestingPage";
 import ThreadReply from "./components/pages/threads/ThreadReply";
 import ThreadView from "./components/pages/threads/ThreadView";
@@ -57,6 +56,7 @@ import { ThreadContextProvider } from "./context/ThreadContext";
 import Debug from "./components/pages/settingpages/Debug";
 import Thread from "./components/pages/threads/Thread";
 import SelfTest from "./components/pages/settingpages/SelfTest";
+import DynamicRouteHandler from "./components/routing/DynamicRouteHandler";
 
 const router = createBrowserRouter([
   {
@@ -109,10 +109,6 @@ const router = createBrowserRouter([
         element: <UnansweredPage />,
       },
       {
-        path: "compose",
-        element: <ComposePage />,
-      },
-      {
         path: "console",
         element: <ConsoleHandler />,
       },
@@ -132,28 +128,24 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "deals",
-        element: <DealsPage />,
+        path: ":type(orders|offers|deals)",
+        element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: "deals/:type/:id?",
-        element: <CreateDeal />,
+        path: ":type(orders|offers|deals)/:threadId",
+        element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: "offers",
-        element: <OffersPage />,
+        path: ":type(orders|offers|deals)/:threadId/create",
+        element: <DynamicRouteHandler mode="create" />,
       },
       {
-        path: "offers/:type/:id?",
-        element: <CreateOffer />,
+        path: ":type(orders|offers|deals)/:threadId/:id/edit",
+        element: <DynamicRouteHandler mode="edit" />,
       },
       {
-        path: "orders",
-        element: <OrdersPage />,
-      },
-      {
-        path: "orders/:type/:id?",
-        element: <CreateOrder />,
+        path: ":type(orders|offers|deals)/:threadId/:id/view",
+        element: <DynamicRouteHandler mode="view" />,
       },
       {
         path: "invoices",

@@ -185,8 +185,6 @@ const ThreadReply = () => {
 
       formData.append("cc", cc.join(","));
       formData.append("to", to.join(","));
-      formData.append("bcc", bcc.join(","));
-
       files.forEach((file) => {
         formData.append("attachments[]", file.file);
       });
