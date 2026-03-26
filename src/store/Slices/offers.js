@@ -139,7 +139,7 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const updateOffer = (offer, send) => {
+export const updateOffer = (offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
     try {
@@ -169,7 +169,7 @@ export const updateOffer = (offer, send) => {
       dispatch(
         offersSlice.actions.updateOfferSuccess({
           offers: updatedOffers,
-          message: `Offer Updated ${send ? "and Send Successfully" : "Successfully"}`,
+          message: `Offer Updated Successfully`,
         }),
       );
 

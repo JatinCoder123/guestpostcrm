@@ -128,23 +128,23 @@ const router = createBrowserRouter([
       },
 
       {
-        path: ":type(orders|offers|deals)",
+        path: ":type",
         element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: ":type(orders|offers|deals)/:threadId",
+        path: ":type/:threadId",
         element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: ":type(orders|offers|deals)/:threadId/create",
+        path: ":type/:threadId/create",
         element: <DynamicRouteHandler mode="create" />,
       },
       {
-        path: ":type(orders|offers|deals)/:threadId/:id/edit",
+        path: ":type/:threadId/:id/edit",
         element: <DynamicRouteHandler mode="edit" />,
       },
       {
-        path: ":type(orders|offers|deals)/:threadId/:id/view",
+        path: ":type/:threadId/:id/view",
         element: <DynamicRouteHandler mode="view" />,
       },
       {

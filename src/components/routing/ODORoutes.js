@@ -19,7 +19,7 @@ import { DealsPage } from "../pages/DealsPage";
 // 🔥 CENTRAL CONFIG
 export const ODO_ROUTES = {
     orders: {
-        label: "Orders",
+        label: "orders",
         list: OrdersPage,
         create: CreateOrders,
         edit: EditOrder,
@@ -27,7 +27,7 @@ export const ODO_ROUTES = {
         threadList: ThreadOrders
     },
     offers: {
-        label: "Offers",
+        label: "offers",
         list: OffersPage,
         create: CreateOffers,
         edit: EditOffer,
@@ -35,7 +35,7 @@ export const ODO_ROUTES = {
         threadList: ThreadOffers
     },
     deals: {
-        label: "Deals",
+        label: "deals",
         list: DealsPage,
         create: CreateDeals,
         edit: EditDeal,
