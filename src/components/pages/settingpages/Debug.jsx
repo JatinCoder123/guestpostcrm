@@ -139,6 +139,7 @@ const Debug = () => {
     if (activeTab.key !== "prompt") return;
     if (state?.prompt) setSelectedRecord(state?.prompt);
   }, [loading, data, state?.promptId, activeTab]);
+
   useEffect(() => {
     refetch();
   }, [activeTab]);
