@@ -146,6 +146,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             {gpLinks.length > 0 && (
               <div className="mb-6 flex flex-col gap-5">
                 <DocumentAnalysisCard
+                  website={gpLinks[0].name}
                   docLink={gpLinks[0]?.gp_doc_url_c}
                   docNiche={gpLinks[0]?.niche}
                 />
@@ -737,14 +738,13 @@ function GPLinksTable({
   return (
     <div className="overflow-hidden rounded-xl border-b border-gray-200 shadow-sm">
       {/* HEADER */}
-      <div className="grid grid-cols-9  bg-blue-100 text-sm font-semibold text-gray-700 px-4 py-3">
+      <div className="grid grid-cols-8  bg-blue-100 text-sm font-semibold text-gray-700 px-4 py-3">
         <div className="col-span-2">URL / Anchor Text</div>
         <div>Validation</div>
         <div>Spam Score</div>
         <div>Amount</div>
         <div>Type</div>
         <div>Link Type</div>
-        <div>Website</div>
         <div className="ml-auto">Action</div>
       </div>
 
@@ -755,7 +755,7 @@ function GPLinksTable({
         return (
           <div
             key={item.id}
-            className="grid grid-cols-9 px-4 py-3 border-t text-sm items-center"
+            className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center"
           >
             {/* URL + Anchor */}
             <div className="flex gap-2 items-center col-span-2">
@@ -796,9 +796,7 @@ function GPLinksTable({
             <div className={`font-semibold text-${item.link_type === "dofollow" ? "green" : "red"}-600`}>
               {item.link_type}
             </div>
-            <div className={`font-semibold text-blue-500`}>
-              {item.name}
-            </div>
+
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => {
@@ -834,12 +832,14 @@ function GPLinksTable({
   );
 }
 
-function DocumentAnalysisCard({ docLink, docName, docNiche }) {
+function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
   return (
     <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-t-blue-200 rounded-xl shadow-md overflow-hidden">
       {/* HEADER */}
       <div className="bg-blue-600 text-white px-4 py-2 text-sm font-semibold">
-        Guest Post Order
+        Guest Post Order for
+        <span className="text-bold text-md ml-2 bg-sky-400 text-black p-1 rounded-2xl"> {website ?? "-"}</span>
+
       </div>
 
       {/* CONTENT */}
