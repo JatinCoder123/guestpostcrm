@@ -306,14 +306,7 @@ const Debug = () => {
   return (
     <>
       {" "}
-      <Header
-        text={"QA PlayGround"}
-        handleCreate={() =>
-          setEditItem({
-            type: "new",
-          })
-        }
-      />
+      <Header text={"QA PlayGround"} />
       <div className="p-6 space-y-6">
         {/* Tabs (Replaced with Dropdown) */}
         <div className="flex items-center justify-between border-b pb-3">
