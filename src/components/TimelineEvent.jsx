@@ -427,7 +427,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                           </button>
                         )}
                         {/* Visualization */}
-                        {event.visualization && (
+                        {event.visualization.length > 0 && (
                           <button
                             onClick={() => {
                               setActiveVisualization(event.visualization);
