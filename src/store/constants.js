@@ -10,9 +10,7 @@ export const LOCAL_KEY = "create_deals_draft_v1";
 
 // Tiny Editor Keys
 const TINY_EDITOR_KEYS = [
-  "wxe4mys7j12zx0xko06e83is704loyh2pqxqutnir94xkjdi", // key 1
-  "ywzwhwaf72xl7ncue9k3pwm9cgk0q84zs3ywgz7os7hcf48t", // key 2
-  "44h09wg6an3xavho0jhamesgpqutfzvao5o4lir1tjfngtln", // key 3
+  "2f8096h5xt9z0oi2cmdjt3klvuz43rax7t42mwi0qqbdjedf", // key 1
 ];
 
 

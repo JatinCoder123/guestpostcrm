@@ -549,84 +549,90 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
                   {/* Steps */}
                   <div className="flex flex-col gap-2">
-                    {activeVisualization?.map((step, index) => {
-                      const colors = [
-                        { card: "bg-[#1a73c8]", num: "bg-[#155eaa]" },
-                        { card: "bg-[#e07020]", num: "bg-[#c25e10]" },
-                        { card: "bg-[#3a9e3a]", num: "bg-[#2e852e]" },
-                      ];
-                      const arrowColors = ["#e07020", "#3a9e3a", "#888888"];
-                      const color = colors[index % colors.length];
+                    {[...activeVisualization]
+                      ?.sort(
+                        (a, b) => Number(a.process_no) - Number(b.process_no),
+                      )
+                      .map((step, index) => {
+                        const colors = [
+                          { card: "bg-[#1a73c8]", num: "bg-[#155eaa]" },
+                          { card: "bg-[#e07020]", num: "bg-[#c25e10]" },
+                          { card: "bg-[#3a9e3a]", num: "bg-[#2e852e]" },
+                        ];
+                        const arrowColors = ["#e07020", "#3a9e3a", "#888888"];
+                        const color = colors[index % colors.length];
 
-                      return (
-                        <div key={step.id}>
-                          {/* Step Card */}
-                          <div
-                            className={`flex items-stretch rounded-xl overflow-hidden ${color.card}`}
-                          >
-                            {/* Number Circle */}
+                        return (
+                          <div key={step.id}>
+                            {/* Step Card */}
                             <div
-                              className={`w-[72px] min-w-[72px] flex items-center justify-center ${color.num}`}
+                              className={`flex items-stretch rounded-xl overflow-hidden ${color.card}`}
                             >
-                              <span className="w-[50px] h-[50px] rounded-full border-2 border-white/60 flex items-center justify-center text-white text-2xl font-medium">
-                                {step.process_no}
-                              </span>
+                              {/* Number Circle */}
+                              <div
+                                className={`w-[72px] min-w-[72px] flex items-center justify-center ${color.num}`}
+                              >
+                                <span className="w-[50px] h-[50px] rounded-full border-2 border-white/60 flex items-center justify-center text-white text-2xl font-medium">
+                                  {step.process_no}
+                                </span>
+                              </div>
+
+                              {/* Content */}
+                              <div className="flex-1 px-5 py-3">
+                                <p className="text-white text-xl font-medium mb-1">
+                                  <strong>{step.name?.split(":")[0]}</strong>
+                                  {step.name?.includes(":") && (
+                                    <span className="font-normal">
+                                      {" "}
+                                      :{" "}
+                                      {step.name
+                                        .split(":")
+                                        .slice(1)
+                                        .join(":")
+                                        .trim()}
+                                    </span>
+                                  )}
+                                </p>
+                                {(() => {
+                                  const text =
+                                    step.description
+                                      ?.replace(/<[^>]*>/g, "")
+                                      .trim() || "No description available";
+                                  const words = text.split(/\s+/);
+                                  const preview =
+                                    words.length > 50
+                                      ? words.slice(0, 50).join(" ") + "..."
+                                      : text;
+
+                                  return (
+                                    <p
+                                      title={text}
+                                      className="text-white/90 text-sm leading-relaxed cursor-default"
+                                    >
+                                      {preview}
+                                    </p>
+                                  );
+                                })()}
+                              </div>
                             </div>
 
-                            {/* Content */}
-                            <div className="flex-1 px-5 py-3">
-                              <p className="text-white text-xl font-medium mb-1">
-                                <strong>{step.name?.split(":")[0]}</strong>
-                                {step.name?.includes(":") && (
-                                  <span className="font-normal">
-                                    {" "}
-                                    :{" "}
-                                    {step.name
-                                      .split(":")
-                                      .slice(1)
-                                      .join(":")
-                                      .trim()}
-                                  </span>
-                                )}
-                              </p>
-                              {(() => {
-                                const text =
-                                  step.description
-                                    ?.replace(/<[^>]*>/g, "")
-                                    .trim() || "No description available";
-                                const words = text.split(/\s+/);
-                                const preview =
-                                  words.length > 50
-                                    ? words.slice(0, 50).join(" ") + "..."
-                                    : text;
-
-                                return (
-                                  <p
-                                    title={text}
-                                    className="text-white/90 text-sm leading-relaxed cursor-default"
-                                  >
-                                    {preview}
-                                  </p>
-                                );
-                              })()}
-                            </div>
+                            {/* Arrow between steps */}
+                            {index < activeVisualization.length - 1 && (
+                              <div className="flex justify-center my-1">
+                                <svg width="32" height="28" viewBox="0 0 32 28">
+                                  <polygon
+                                    points="4,0 28,0 16,28"
+                                    fill={
+                                      arrowColors[index % arrowColors.length]
+                                    }
+                                    opacity="0.85"
+                                  />
+                                </svg>
+                              </div>
+                            )}
                           </div>
-
-                          {/* Arrow between steps */}
-                          {index < activeVisualization.length - 1 && (
-                            <div className="flex justify-center my-1">
-                              <svg width="32" height="28" viewBox="0 0 32 28">
-                                <polygon
-                                  points="4,0 28,0 16,28"
-                                  fill={arrowColors[index % arrowColors.length]}
-                                  opacity="0.85"
-                                />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 </div>
               </div>
