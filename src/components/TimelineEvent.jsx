@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Search,
   Cross,
+  Workflow,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -26,6 +27,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [activeTab, setActiveTab] = useState(null);
   const [messageData, setMessageData] = useState(null);
   const [messageLoading, setMessageLoading] = useState(false);
+  const [activeVisualization, setActiveVisualization] = useState(null);
   const topRef = useRef(null);
   const bottomRef = useRef(null);
 
@@ -424,7 +426,20 @@ const TimelineEvent = ({ handleMessageClick }) => {
                             <SparkleIcon size={18} />
                           </button>
                         )}
+                        {/* Visualization */}
+                        {event.visualization && (
+                          <button
+                            onClick={() => {
+                              setActiveVisualization(event.visualization);
+                              setShowVisualization(true);
+                            }}
+                            className="text-blue-600 hover:scale-110"
+                          >
+                            <Workflow size={18} />
+                          </button>
+                        )}
                       </div>
+
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-gray-700 flex items-center gap-2">
                           <div
@@ -516,6 +531,106 @@ const TimelineEvent = ({ handleMessageClick }) => {
                 </>
               );
             })}
+            {activeVisualization && (
+              <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+                <div className="bg-white w-[90vw] max-w-[600px] max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl p-6 relative">
+                  {/* Close */}
+                  <button
+                    onClick={() => setActiveVisualization(null)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-black text-lg"
+                  >
+                    ✕
+                  </button>
+
+                  {/* Title */}
+                  <h2 className="text-2xl font-bold mb-6 text-center">
+                    Process Visualization
+                  </h2>
+
+                  {/* Steps */}
+                  <div className="flex flex-col gap-2">
+                    {activeVisualization?.map((step, index) => {
+                      const colors = [
+                        { card: "bg-[#1a73c8]", num: "bg-[#155eaa]" },
+                        { card: "bg-[#e07020]", num: "bg-[#c25e10]" },
+                        { card: "bg-[#3a9e3a]", num: "bg-[#2e852e]" },
+                      ];
+                      const arrowColors = ["#e07020", "#3a9e3a", "#888888"];
+                      const color = colors[index % colors.length];
+
+                      return (
+                        <div key={step.id}>
+                          {/* Step Card */}
+                          <div
+                            className={`flex items-stretch rounded-xl overflow-hidden ${color.card}`}
+                          >
+                            {/* Number Circle */}
+                            <div
+                              className={`w-[72px] min-w-[72px] flex items-center justify-center ${color.num}`}
+                            >
+                              <span className="w-[50px] h-[50px] rounded-full border-2 border-white/60 flex items-center justify-center text-white text-2xl font-medium">
+                                {step.process_no}
+                              </span>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 px-5 py-3">
+                              <p className="text-white text-xl font-medium mb-1">
+                                <strong>{step.name?.split(":")[0]}</strong>
+                                {step.name?.includes(":") && (
+                                  <span className="font-normal">
+                                    {" "}
+                                    :{" "}
+                                    {step.name
+                                      .split(":")
+                                      .slice(1)
+                                      .join(":")
+                                      .trim()}
+                                  </span>
+                                )}
+                              </p>
+                              {(() => {
+                                const text =
+                                  step.description
+                                    ?.replace(/<[^>]*>/g, "")
+                                    .trim() || "No description available";
+                                const words = text.split(/\s+/);
+                                const preview =
+                                  words.length > 50
+                                    ? words.slice(0, 50).join(" ") + "..."
+                                    : text;
+
+                                return (
+                                  <p
+                                    title={text}
+                                    className="text-white/90 text-sm leading-relaxed cursor-default"
+                                  >
+                                    {preview}
+                                  </p>
+                                );
+                              })()}
+                            </div>
+                          </div>
+
+                          {/* Arrow between steps */}
+                          {index < activeVisualization.length - 1 && (
+                            <div className="flex justify-center my-1">
+                              <svg width="32" height="28" viewBox="0 0 32 28">
+                                <polygon
+                                  points="4,0 28,0 16,28"
+                                  fill={arrowColors[index % arrowColors.length]}
+                                  opacity="0.85"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -5,6 +5,8 @@ import {
   X,
   User2Icon,
   CircleAlert,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -26,12 +28,17 @@ export function TopNav() {
   const { notificationCount } = useContext(SocketContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
   const prevCountRef = useRef(errorLogCount);
-
+  const [copied, setCopied] = useState(false);
   const { user, error } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
 
-  const { search, setSearch, setEnteredEmail, setWelcomeHeaderContent, handleClear } =
-    useContext(PageContext);
+  const {
+    search,
+    setSearch,
+    setEnteredEmail,
+    setWelcomeHeaderContent,
+    handleClear,
+  } = useContext(PageContext);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
@@ -52,6 +59,17 @@ export function TopNav() {
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Search");
     navigateTo("");
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(search);
+      setCopied(true);
+
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Copy failed", err);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -141,6 +159,24 @@ export function TopNav() {
                 focus:border-purple-500 shadow-lg
               "
             />
+            {/* 📋 COPY BUTTON */}
+            {search && (
+              <motion.button
+                onClick={handleCopy}
+                whileTap={{ scale: 0.9 }}
+                className="
+        absolute right-10 top-1/2 -translate-y-1/2
+        w-6 h-6 flex items-center justify-center rounded-md
+        bg-blue-500 text-white hover:bg-blue-600
+      "
+              >
+                {copied ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </motion.button>
+            )}
 
             {/* ❌ CLEAR INSIDE INPUT */}
             {search && (
@@ -153,9 +189,10 @@ export function TopNav() {
                 className={`
                   absolute right-2 top-1/2 -translate-y-1/2
                   w-6 h-6 flex items-center justify-center rounded-md
-                  ${isBlinking
-                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                    : "bg-gray-300 text-gray-700"
+                  ${
+                    isBlinking
+                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                      : "bg-gray-300 text-gray-700"
                   }
                 `}
               >
@@ -191,23 +228,23 @@ export function TopNav() {
           animate={
             count > 0
               ? {
-                scale: [1, 1.12, 1],
-                boxShadow: [
-                  "0 0 0px rgba(59,130,246,0)",
-                  "0 0 18px rgba(59,130,246,0.9)",
-                  "0 0 18px rgba(239, 68, 213, 0.9)",
-                  "0 0 0px rgba(239,68,68,0)",
-                ],
-              }
+                  scale: [1, 1.12, 1],
+                  boxShadow: [
+                    "0 0 0px rgba(59,130,246,0)",
+                    "0 0 18px rgba(59,130,246,0.9)",
+                    "0 0 18px rgba(239, 68, 213, 0.9)",
+                    "0 0 0px rgba(239,68,68,0)",
+                  ],
+                }
               : {}
           }
           transition={
             count > 0
               ? {
-                repeat: Infinity,
-                duration: 1.6, // normal speed
-                ease: "easeInOut",
-              }
+                  repeat: Infinity,
+                  duration: 1.6, // normal speed
+                  ease: "easeInOut",
+                }
               : {}
           }
           className="relative p-4 bg-orange-500 text-white rounded-full"

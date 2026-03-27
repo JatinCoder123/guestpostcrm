@@ -145,11 +145,14 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
           <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3  border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)]">
             {gpLinks.length > 0 && (
               <div className="mb-6 flex flex-col gap-5">
-                <DocumentAnalysisCard
-                  website={gpLinks[0].name}
-                  docLink={gpLinks[0]?.gp_doc_url_c}
-                  docNiche={gpLinks[0]?.niche}
-                />
+                {gpLinks.map((gp, index) => (
+                  <DocumentAnalysisCard
+                    key={gp.id}
+                    website={gp.name}
+                    docLink={gp?.gp_doc_url_c}
+                    docNiche={gp?.niche}
+                  />
+                ))}
                 <GPLinksTable
                   gpLinks={gpLinks}
                   setItem={setItem}
@@ -834,11 +837,11 @@ function GPLinksTable({
 
 function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-t-blue-200 rounded-xl shadow-md overflow-hidden">
+    <div className=" border border-t-blue-200 rounded-xl shadow-md overflow-hidden">
       {/* HEADER */}
-      <div className="bg-blue-600 text-white px-4 py-2 text-sm font-semibold">
+      <div className="bg-blue-300 text-white px-4 py-2 text-md font-bold ">
         Guest Post Order for
-        <span className="text-bold text-md ml-2 bg-sky-400 text-black p-1 rounded-2xl"> {website ?? "-"}</span>
+        <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl"> {website ?? "-"}</span>
 
       </div>
 
