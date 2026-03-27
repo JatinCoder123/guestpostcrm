@@ -146,21 +146,24 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             {gpLinks.length > 0 && (
               <div className="mb-6 flex flex-col gap-5">
                 {gpLinks.map((gp, index) => (
-                  <DocumentAnalysisCard
-                    key={gp.id}
-                    website={gp.name}
-                    docLink={gp?.gp_doc_url_c}
-                    docNiche={gp?.niche}
-                  />
+                  <>
+                    <DocumentAnalysisCard
+                      key={gp.id}
+                      website={gp.name}
+                      docLink={gp?.gp_doc_url_c}
+                      docNiche={gp?.niche}
+                    />
+                    <GPLinksTable
+                      gpLinks={[gp]}
+                      setItem={setItem}
+                      setOpen={setOpen}
+                      deleting={deleting}
+                      setLinkId={setLinkId}
+                      linkId={linkId}
+                    /></>
+
                 ))}
-                <GPLinksTable
-                  gpLinks={gpLinks}
-                  setItem={setItem}
-                  setOpen={setOpen}
-                  deleting={deleting}
-                  setLinkId={setLinkId}
-                  linkId={linkId}
-                />
+
               </div>
             )}
             {liLinks.map((item, index) => (
