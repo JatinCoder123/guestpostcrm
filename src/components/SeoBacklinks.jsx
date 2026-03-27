@@ -755,24 +755,23 @@ function GPLinksTable({
         docLink={gpLink?.gp_doc_url_c}
         docNiche={gpLink?.niche}
       />
-      <div className="grid grid-cols-8   text-sm font-semibold text-gray-700 px-4 py-3">
-        <div className="col-span-2">URL / Anchor Text</div>
+      <div className="grid grid-cols-6   text-sm font-semibold text-gray-700 px-4 py-3">
+        <div>URL / Anchor Text</div>
         <div>Validation</div>
         <div>Spam Score</div>
         <div>Amount</div>
         <div>Type</div>
-
-        <div className="ml-auto">Action</div>
+        <div>Action</div>
       </div>
-      <div className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center">
+      <div className="grid grid-cols-6 px-4 py-3 border-t text-sm items-center">
         {/* URL + Anchor */}
-        <div className="flex gap-2 items-center col-span-2">
+        <div className="flex gap-2 items-center ">
           <a
             href={gpLink.backlink_url}
             target="_blank"
             className="text-blue-600 hover:underline truncate max-w-[150px]"
           >
-            <span className="text-xs text-gray-500 truncate">
+            <span className="text-md  truncate">
               {gpLink.anchor_text_c || "-"}
             </span>
           </a>
@@ -783,7 +782,16 @@ function GPLinksTable({
 
         {/* Spam Score */}
         <div className={`font-medium ${spam.color}`}>
-          {gpLink.spam_score_c} ({spam.label})
+          <div className="flex items-center gap-1">
+            {gpLink.spam_score_c}{" "}
+            <SparkleIcon className="w-5 h-5 text-green-500" />
+            <img
+              width="30"
+              height="30"
+              src="https://img.icons8.com/3d-fluency/94/ok.png"
+              alt="ok"
+            />
+          </div>
         </div>
 
         {/* Amount */}
@@ -797,7 +805,7 @@ function GPLinksTable({
           {gpLink.link_type}
         </div>
 
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-2">
           <button
             onClick={() => {
               setItem(gpLink);
@@ -843,7 +851,16 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
             {website ?? "-"}{" "}
           </span>
         </div>{" "}
+        <div className="text-sm font-semibold text-white-100">
+          Website Verdict
+        </div>
         <SparkleIcon className="w-5 h-5 text-green-700" />
+        <img
+          width="30"
+          height="30"
+          src="https://img.icons8.com/3d-fluency/94/ok.png"
+          alt="ok"
+        />
       </div>
 
       {/* CONTENT */}
@@ -871,11 +888,13 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
         </div>
 
         {/* 🔹 RIGHT: RESULT */}
-        <div className="flex-1 bg-white rounded-lg px-4 py-3 shadow grid grid-cols-3 gap-4 justify-center">
+        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-3 gap-4 justify-around">
           {/* HEADER ROW */}
           <div className="text-sm font-semibold text-gray-500">Doc Name</div>
           <div className="text-sm font-semibold text-gray-500">Niche</div>
-          <div className="text-sm font-semibold text-gray-500">Verdict</div>
+          <div className="text-sm font-semibold text-gray-500">
+            Content Verdict
+          </div>
 
           {/* VALUES ROW */}
 
@@ -888,7 +907,7 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
       rounded-lg bg-indigo-50 px-3 py-2
       text-sm hover:bg-indigo-100 transition w-fit"
           >
-            <span className="font-semibold text-indigo-700 truncate max-w-[180px]">
+            <span className="font-semibold text-indigo-700 truncate">
               {docName || "Untitled Document"}
             </span>
             <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
