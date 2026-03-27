@@ -109,17 +109,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                label: "Our Link",
-                name: "target_url_c",
-                type: "text",
-                value: item.target_url_c || "",
-              }
+                  label: "Our Link",
+                  name: "target_url_c",
+                  type: "text",
+                  value: item.target_url_c || "",
+                }
               : {
-                label: "Doc Link",
-                name: "gp_doc_url_c",
-                type: "text",
-                value: item.gp_doc_url_c || "",
-              },
+                  label: "Doc Link",
+                  name: "gp_doc_url_c",
+                  type: "text",
+                  value: item.gp_doc_url_c || "",
+                },
             {
               label: "Website",
               name: "name",
@@ -163,10 +163,9 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                       deleting={deleting}
                       setLinkId={setLinkId}
                       linkId={linkId}
-                    /></div>
-
+                    />
+                  </div>
                 ))}
-
               </div>
             )}
             {liLinks.map((item, index) => (
@@ -749,7 +748,8 @@ function GPLinksTable({
 
   return (
     <div className="overflow-hidden  mb-4 border-2 border-blue-300 p-2 rounded-xl">
-      {/* HEADER */} <DocumentAnalysisCard
+      {/* HEADER */}{" "}
+      <DocumentAnalysisCard
         key={gpLink.id}
         website={gpLink.name}
         docLink={gpLink?.gp_doc_url_c}
@@ -761,13 +761,10 @@ function GPLinksTable({
         <div>Spam Score</div>
         <div>Amount</div>
         <div>Type</div>
-        <div>Link Type</div>
+
         <div className="ml-auto">Action</div>
       </div>
-
-      <div
-        className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center"
-      >
+      <div className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center">
         {/* URL + Anchor */}
         <div className="flex gap-2 items-center col-span-2">
           <a
@@ -794,10 +791,10 @@ function GPLinksTable({
         <div className="font-semibold text-indigo-600">
           {gpLink.link_amount_c}
         </div>
-        <div className="font-semibold text-indigo-600">
-          {gpLink.type_c}
-        </div>
-        <div className={`font-semibold text-${gpLink.link_type === "dofollow" ? "green" : "red"}-600`}>
+
+        <div
+          className={`font-semibold text-${gpLink.link_type === "dofollow" ? "green" : "red"}-600`}
+        >
           {gpLink.link_type}
         </div>
 
@@ -838,14 +835,17 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
   return (
     <div className="  overflow-hidden ">
       {/* HEADER */}
-      <div className="flex items-center gap-2 bg-blue-300"> <div className=" text-white px-4 py-2 text-md font-bold ">
-        Guest Post Order for
-        <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl"> {website ?? "-"} </span>
-
-
-
-      </div> <SparkleIcon className="w-5 h-5 text-green-700" /></div>
-
+      <div className="flex items-center gap-2 bg-blue-300">
+        {" "}
+        <div className=" text-white px-4 py-2 text-md font-bold ">
+          Guest Post Order for
+          <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
+            {" "}
+            {website ?? "-"}{" "}
+          </span>
+        </div>{" "}
+        <SparkleIcon className="w-5 h-5 text-green-700" />
+      </div>
 
       {/* CONTENT */}
       <div className="flex items-center gap-4 p-4">
@@ -872,39 +872,46 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
         </div>
 
         {/* 🔹 RIGHT: RESULT */}
-        <div className="flex-1 bg-white rounded-lg px-4 py-3 shadow flex items-center justify-between">
+        <div className="flex-1 bg-white rounded-lg px-4 py-3 shadow grid grid-cols-3 gap-4 justify-center">
+          {/* HEADER ROW */}
+          <div className="text-sm font-semibold text-gray-500">Doc Name</div>
+          <div className="text-sm font-semibold text-gray-500">Niche</div>
+          <div className="text-sm font-semibold text-gray-500">Verdict</div>
+
+          {/* VALUES ROW */}
+
+          {/* DOC */}
           <a
             href={docLink}
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center gap-2
-    rounded-lg bg-indigo-50 px-3 py-2
-    text-sm hover:bg-indigo-100 transition max-w-fit"
+      rounded-lg bg-indigo-50 px-3 py-2
+      text-sm hover:bg-indigo-100 transition w-fit"
           >
-            {/* DOC NAME */}
             <span className="font-semibold text-indigo-700 truncate max-w-[180px]">
               {docName || "Untitled Document"}
             </span>
-
-            {/* NICHE */}
-
-
-            {/* HOVER ICON */}
             <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
               ↗
             </span>
           </a>
-          <span className="text-md text-slate-500 whitespace-nowrap">
-            • {docNiche || "No Niche"}
+
+          {/* NICHE */}
+          <span className="text-md text-slate-500">
+            {docNiche || "No Niche"}
           </span>
-          <div className="flex items-center gap-3"> <SparkleIcon className="w-5 h-5 text-green-500" />
+
+          {/* VERDICT */}
+          <div className="flex items-center gap-2">
+            <SparkleIcon className="w-5 h-5 text-green-500" />
             <img
               width="30"
               height="30"
               src="https://img.icons8.com/3d-fluency/94/ok.png"
               alt="ok"
-            /></div>
-
+            />
+          </div>
         </div>
       </div>
     </div>
