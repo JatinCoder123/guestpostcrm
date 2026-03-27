@@ -533,7 +533,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
             })}
             {activeVisualization && (
               <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
-                <div className="bg-white w-[90vw] max-w-[600px] max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl p-6 relative">
+                <div className="bg-white w-[1200px] max-w-[1200px] max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl p-6 relative">
                   {/* Close */}
                   <button
                     onClick={() => setActiveVisualization(null)}
