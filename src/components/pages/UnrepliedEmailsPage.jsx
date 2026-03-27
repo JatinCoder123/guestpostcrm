@@ -101,18 +101,18 @@ const STATUS_CONFIG = [
     emailType: "email_verified",
   },
   {
-    value: "premium",
-    label: "Premium",
+    value: "completed",
+    label: "Completed",
     icon: MdOutlineWorkspacePremium,
     color: "#56cd1f", // purple
-    emailType: "email_premium",
+    emailType: "email_completed",
   },
   {
-    value: "gold",
-    label: "Gold",
+    value: "stop",
+    label: "Stop",
     icon: GiGoldBar,
     color: "#ab9e11", // purple
-    emailType: "email_gold",
+    emailType: "email_stop",
   },
 ];
 export function UnrepliedEmailsPage() {

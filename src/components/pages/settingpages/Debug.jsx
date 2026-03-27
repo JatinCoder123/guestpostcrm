@@ -39,16 +39,10 @@ const TABS = [
   {
     key: "process_audit",
     label: "Process Audit",
-    module: "outr_process_audit",
-    disabled: true,
+    module: "outr_el_process_audit",
+    disabled: false,
   },
 
-  {
-    key: "visualize",
-    label: "Visualize",
-    module: "outr_visualization",
-    disabled: true,
-  },
   {
     key: "ml",
     label: "Machine Learning",
@@ -69,6 +63,13 @@ const IMPORTANT_COLUMNS = {
   gpc: ["date_entered", "request", "response"],
   prompt: ["date_entered", "response", "full_prompt"],
   logger: ["date_entered", "name", "description"],
+  process_audit: [
+    "date_entered",
+    "from_email_c",
+    "name",
+    "message_id",
+    "history_id",
+  ],
 };
 
 const HIDDEN_FIELDS = [
