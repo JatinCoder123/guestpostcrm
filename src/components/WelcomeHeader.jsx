@@ -115,6 +115,7 @@ const WelcomeHeader = () => {
                 handleClear()
                 navigate("/")
                 dispatch(getUnrepliedEmail({ loading: true, type: "email_inbound" }))
+                dispatch(unrepliedAction.setShowNewEmailBanner(false));
                 setCurrentIndex(0)
               }}
               transition={{ duration: 2, repeat: Infinity }}

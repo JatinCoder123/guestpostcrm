@@ -35,8 +35,7 @@ function StatusRow({ statusCount }) {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
                         transition={{ duration: 0.4, ease: "easeInOut" }}
-                        className="flex items-end justify-center gap-6 overflow-x-auto py-1"
-                    >
+                        className="flex flex-wrap items-end justify-center gap-4 py-2"                    >
                         {statusList.map(status => {
                             const Icon = status.icon
 
