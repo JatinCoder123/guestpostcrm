@@ -772,11 +772,10 @@ function GPLinksTable({
             target="_blank"
             className="text-blue-600 hover:underline truncate max-w-[150px]"
           >
-            {gpLink.backlink_url}
+            <span className="text-xs text-gray-500 truncate">
+              {gpLink.anchor_text_c || "-"}
+            </span>
           </a>
-          <span className="text-xs text-gray-500 truncate">
-            {gpLink.anchor_text_c || "-"}
-          </span>
         </div>
 
         {/* Validation */}
