@@ -15,7 +15,6 @@ import { extractEmail, getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
-import { ladgerAction } from "./store/Slices/ladger";
 import { unrepliedAction } from "./store/Slices/unrepliedEmails";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);

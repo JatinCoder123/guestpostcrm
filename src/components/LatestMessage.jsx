@@ -78,7 +78,7 @@ const LatestMessage = ({ handleMessageClick }) => {
             await fetch(
                 `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`,
             );
-            dispatch(viewEmailAction.compleConv({ message: `First reply sent successfully`, sendedEmail: contactInfo?.email1 }))
+            dispatch(viewEmailAction.compleConv({ message: `First reply sent successfully to ${contactInfo?.email1}`, sendedEmail: contactInfo?.email1 }))
             setShowFirstReplyBtn(false);
         } catch (err) {
             console.error("Error sending first reply:", err);

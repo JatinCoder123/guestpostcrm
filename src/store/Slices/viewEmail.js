@@ -253,7 +253,7 @@ export const sendEmail = (
 
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
-          message: data.message,
+          message: `Reply Successfully Sent To ${formData.get("email")}`,
           sendedEmail: formData.get("email")
         }),
       );
