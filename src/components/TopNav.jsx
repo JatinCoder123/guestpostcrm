@@ -22,7 +22,7 @@ export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const [animate, setAnimate] = useState(false);
-  const { enteredEmail, setEnteredEmail, setWelcomeHeaderContent, handleClear } =
+  const { enteredEmail, setEnteredEmail, handleClear, setShowNextPrev, handleDateClick } =
     useContext(PageContext);
   const [search, setSearch] = useState("");
 
@@ -51,11 +51,7 @@ export function TopNav() {
       toast.error("Please enter an email address");
       return;
     }
-    localStorage.setItem("email", search);
-    setEnteredEmail(search);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Search");
-    navigateTo("");
+    handleDateClick({ email: search, navigate: "/" })
   };
 
   const handleKeyPress = (e) => {

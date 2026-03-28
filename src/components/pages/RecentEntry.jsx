@@ -33,7 +33,7 @@ export function RecentEntry() {
   const [searchTerm, setSearchTerm] = useState("");
   const [emailFilter, setEmailFilter] = useState("all");
   const [timeFilter, setTimeFilter] = useState("all");
-  const { setEnteredEmail, setWelcomeHeaderContent } =
+  const { handleDateClick } =
     useContext(PageContext);
   const { handleMove } = useThreadContext();
   const navigateTo = useNavigate();
@@ -135,14 +135,7 @@ export function RecentEntry() {
                   {/* DATE */}
                   <div
                     className="flex items-center gap-3 text-[17px] min-w-0 cursor-pointer"
-                    onClick={() => {
-                      const input = extractEmail(event.name);
-                      localStorage.setItem("email", input);
-
-                      setEnteredEmail(input);
-                      setWelcomeHeaderContent("Recent");
-                      navigateTo("/");
-                    }}
+                    onClick={() => handleDateClick({ email: extractEmail(event?.real_name), navigate: "/" })}
                   >
                     <span className="truncate">
                       {event.date_entered ?? "—"}
@@ -167,14 +160,7 @@ export function RecentEntry() {
                   <Tooltip content={contactName}>
                     <div
                       className="text-[17px] text-blue-600 cursor-pointer truncate min-w-0"
-                      onClick={() => {
-                        const input = excludeName(event.real_name);
-                        localStorage.setItem("email", input);
-
-                        setEnteredEmail(input);
-                        setWelcomeHeaderContent("Recent");
-                        navigateTo("/contacts");
-                      }}
+                      onClick={() => handleDateClick({ email: extractEmail(event?.real_name), navigate: "/contacts" })}
                     >
                       {contactName}
                     </div>
@@ -185,13 +171,9 @@ export function RecentEntry() {
                     <div
                       className="flex items-center gap-2 text-[17px] text-blue-600 underline cursor-pointer min-w-0"
                       onClick={() => {
-                        const input = excludeEmail(event.real_name);
-                        localStorage.setItem("email", input);
 
-                        setEnteredEmail(input);
-                        setWelcomeHeaderContent("Recent");
                         handleMove({
-                          email: input,
+                          email: extractEmail(event?.real_name),
                           threadId: event.thread_id,
                         });
                       }}

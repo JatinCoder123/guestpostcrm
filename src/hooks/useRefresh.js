@@ -18,7 +18,6 @@ import {
     checkForDuplicates,
     getDuplicateCount,
 } from "../store/Slices/duplicateEmailSlice";
-import { getUnansweredEmails } from "../store/Slices/unansweredEmails";
 import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getOrders } from "../store/Slices/orders";
 import { getDeals } from "../store/Slices/deals";
@@ -43,7 +42,7 @@ function useRefresh() {
         enteredEmail,
         currentIndex,
         setCurrentIndex,
-        setWelcomeHeaderContent,
+
     } = useContext(PageContext);
     const dispatch = useDispatch();
 
@@ -92,13 +91,12 @@ function useRefresh() {
             }
             dispatch(getEmailsCount({}))
             dispatch(getUnrepliedEmail({ loading: false }));
-            dispatch(getUnansweredEmails({ loading: false }));
         }
     };
     useEffect(() => {
         if (emails?.length > 0) {
             setFirstEmail(
-                emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
+                emails[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
             );
             if (enteredEmail) {
                 const index = emails.findIndex((email) => extractEmail(email?.from) === enteredEmail)

@@ -27,10 +27,9 @@ const RootLayout = () => {
     collapsed,
     setEnteredEmail,
     currentIndex,
-    setCurrentIndex,
-    setWelcomeHeaderContent,
+    handleDateClick,
   } = useContext(PageContext);
-  const { currentAvatar, setCrm, setNotificationCount } =
+  const { currentAvatar, setCrm } =
     useContext(SocketContext);
   useRefresh();
   const dispatch = useDispatch();
@@ -80,19 +79,8 @@ const RootLayout = () => {
 
     if (!nextEmailObj) return;
 
-    const input = extractEmail(nextEmailObj.from || "");
+    handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), navigate: "/", nextPrev: true })
 
-    localStorage.setItem("email", input);
-
-    setEnteredEmail(input);
-
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Unreplied");
-
-    // ✅ slight delay to avoid race condition
-    setTimeout(() => {
-      navigate("/");
-    }, 0);
 
   }, [
     message,

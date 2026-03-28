@@ -18,7 +18,6 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
-
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
   return (
@@ -41,13 +40,10 @@ const ContactHeader = ({ isMark }) => {
   const goToDeal = () => {
     navigate("/deals");
   };
-
-  const { email } = useSelector((state) => state.ladger);
-
   const { contactInfo, contactLoading, stage, status, customer_type } =
     useSelector((state) => state.viewEmail);
-
-  const { welcomeHeaderContent } = useContext(PageContext);
+  const email = contactInfo?.email1
+  const { showNextPrev } = useContext(PageContext)
 
   const { deals } = useSelector((state) => state.deals);
 
@@ -235,8 +231,7 @@ const ContactHeader = ({ isMark }) => {
             )}
           </div>
 
-          {(welcomeHeaderContent === "Unreplied" ||
-            welcomeHeaderContent === "") && <NextPrev />}
+          {showNextPrev && <NextPrev />}
         </div>
       </div>
 

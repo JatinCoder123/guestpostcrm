@@ -1,29 +1,48 @@
 import { createContext, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { ladgerAction } from "../store/Slices/ladger";
+import { toast } from "react-toastify";
 
 export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
   const showConsole = localStorage.getItem("showConsole") || false;
+  const navigateTo = useNavigate()
+  const dispatch = useDispatch()
   const [displayIntro, setDisplayIntro] = useState(true);
   const [collapsed, setSidebarCollapsed] = useState(true);
+  const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
     localStorage.getItem("email") || null,
   );
-  const [welcomeHeaderContent, setWelcomeHeaderContent] = useState(
-    localStorage.getItem("welcomeHeaderContent")
-      ? localStorage.getItem("welcomeHeaderContent")
-      : enteredEmail?.trim() !== ""
-        ? "Search"
-        : "",
-  );
+
 
   /* ❌ Clear */
   const handleClear = () => {
     localStorage.removeItem("email");
-    setWelcomeHeaderContent("");
     setEnteredEmail("");
+    setCurrentIndex(prev => {
+      if (prev > 0) {
+        return 0
+      }
+      return 1
+    })
+    setShowNextPrev(true)
+  };
+  const handleDateClick = ({ email, navigate, index = null, nextPrev = false }) => {
+    if (email == null) {
+      toast.error("NO Email Is There!")
+      return
+    }
+    localStorage.setItem("email", email);
+    setEnteredEmail(email);
+    dispatch(ladgerAction.setTimeline(null));
+    if (index != null) setCurrentIndex(index);
+    setShowNextPrev(nextPrev)
+    navigateTo(navigate);
   };
 
   // Set activePage based on current URL
@@ -34,10 +53,6 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed(true);
     localStorage.setItem("showConsole", showConsole);
   }, []);
-  useEffect(() => {
-    localStorage.setItem("welcomeHeaderContent", welcomeHeaderContent);
-  }, [welcomeHeaderContent]);
-
   const value = {
     activePage,
     setActivePage,
@@ -46,11 +61,11 @@ export const PageContextProvider = (props) => {
     handleClear,
     enteredEmail,
     setEnteredEmail,
-    welcomeHeaderContent,
-    setWelcomeHeaderContent,
     collapsed,
     setSidebarCollapsed,
+    handleDateClick,
     currentIndex,
+    showNextPrev, setShowNextPrev,
     setCurrentIndex,
   };
 

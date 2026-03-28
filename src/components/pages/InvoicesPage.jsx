@@ -85,17 +85,10 @@ export function InvoicesPage() {
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
-  const { setWelcomeHeaderContent, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Invoices");
-    navigateTo(navigate);
-  };
+
   const columns = [
     {
       label: "Created At",
@@ -103,7 +96,7 @@ export function InvoicesPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.email_c), "/"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.email_c), navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -136,7 +129,7 @@ export function InvoicesPage() {
       headerClasses: "",
       icon: Globe,
       classes: "truncate ",
-      onClick: (row) => handleOnClick(extractEmail(row?.email_c), "/contacts"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.email_c), navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -185,7 +178,6 @@ export function InvoicesPage() {
       headerClasses: "",
       icon: ChartNoAxesColumn,
       classes: "truncate max-w-[300px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.from), "/"),
 
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
@@ -199,7 +191,6 @@ export function InvoicesPage() {
       headerClasses: "",
       icon: ChartNoAxesColumn,
       classes: "truncate max-w-[300px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.from), "/"),
 
       render: (row) => (
         <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">

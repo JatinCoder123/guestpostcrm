@@ -42,17 +42,10 @@ const STATUS_CONFIG = [
 export function DealsPage() {
   const { count, deals, loading, pageIndex, deleting, deleteDealId, summary } =
     useSelector((state) => state.deals);
-  const { setWelcomeHeaderContent, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Deals");
-    navigateTo(navigate);
-  };
   const columns = [
     {
       label: "Created At",
@@ -60,7 +53,7 @@ export function DealsPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -75,7 +68,7 @@ export function DealsPage() {
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleOnClick(extractEmail(row?.real_name), "/contacts"),
+        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -85,7 +78,7 @@ export function DealsPage() {
     },
     {
       label: "Website",
-      accessor: "website",
+      accessor: "website_c",
       headerClasses: "",
       icon: Globe,
       classes: "truncate ",
@@ -107,11 +100,10 @@ export function DealsPage() {
 
     {
       label: "Stage",
-      accessor: "offer_status",
+      accessor: "status",
       headerClasses: "",
       icon: ChartNoAxesColumn,
       classes: "truncate max-w-[300px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.from), "/"),
 
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">

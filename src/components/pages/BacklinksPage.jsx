@@ -39,17 +39,10 @@ export function BacklinksPage() {
   );
 
 
-  const { setWelcomeHeaderContent, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Backlinks");
-    navigateTo(navigate);
-  };
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -88,7 +81,7 @@ export function BacklinksPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.post_author_email_c), "/"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.post_author_email_c), navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -102,7 +95,7 @@ export function BacklinksPage() {
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.post_author_email_c), "/contacts"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.post_author_email_c), navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">

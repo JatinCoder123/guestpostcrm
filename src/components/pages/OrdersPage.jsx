@@ -95,17 +95,10 @@ export function OrdersPage() {
     useSelector((state) => state.orders);
   const [updateOrderId, setUpdateOrderId] = useState(null);
 
-  const { setWelcomeHeaderContent, setEnteredEmail, enteredEmail } =
+  const { handleDateClick, enteredEmail } =
     useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Orders");
-    navigateTo(navigate);
-  };
   const columns = [
     {
       label: "Created At",
@@ -113,7 +106,7 @@ export function OrdersPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -128,7 +121,7 @@ export function OrdersPage() {
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleOnClick(extractEmail(row?.real_name), "/contacts"),
+        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">

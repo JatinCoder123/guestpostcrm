@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
 import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
-import { getUnansweredEmails } from "../store/Slices/unansweredEmails";
 import { getContact, getViewEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { getOrders } from "../store/Slices/orders";
 import { getInvoices } from "../store/Slices/invoices";
@@ -35,7 +34,6 @@ function useIdle({ idle }) {
         }
         dispatch(getEmailsCount({}))
         dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
-        dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
     };
     useEffect(() => {
         if (emails?.length > 0) {
