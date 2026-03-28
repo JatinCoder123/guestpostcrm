@@ -39,18 +39,10 @@ export function LinkExchangePage() {
     (state) => state.linkExchange
   );
   const { handleMove } = useThreadContext()
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setSearch(email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Link-Exchange");
-    navigateTo(navigate);
-  };
+
   const columns = [
     {
       label: "Created At",
@@ -58,7 +50,8 @@ export function LinkExchangePage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(row?.email_address, "/"),
+      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/" })
+      ,
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -74,7 +67,8 @@ export function LinkExchangePage() {
       headerClasses: "",
       icon: User,
       classes: "truncate ",
-      onClick: (row) => handleOnClick(row?.email_address, "/contacts"),
+      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/contacts" })
+      ,
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">

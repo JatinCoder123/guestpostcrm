@@ -1,7 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import ladgerReducer from "./Slices/ladger.js";
 import unrepliedReducer from "./Slices/unrepliedEmails.js";
-import unansweredReducer from "./Slices/unansweredEmails.js";
 import favReducer from "./Slices/favEmailSlice.js";
 import bulkReducer from "./Slices/markBulkSlice.js";
 import forwarededReducer from "./Slices/forwardedEmailSlice.js";
@@ -38,7 +37,6 @@ export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
     unreplied: unrepliedReducer,
-    unanswered: unansweredReducer,
     fav: favReducer,
     moved: movederReducer,
     forwarded: forwarededReducer,

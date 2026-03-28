@@ -15,7 +15,6 @@ import { extractEmail, getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
-import { ladgerAction } from "./store/Slices/ladger";
 import { unrepliedAction } from "./store/Slices/unrepliedEmails";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
@@ -27,11 +26,9 @@ const RootLayout = () => {
     collapsed,
     setEnteredEmail,
     currentIndex,
-    setCurrentIndex,
-    setWelcomeHeaderContent,
-    setSearch,
+    handleDateClick,
   } = useContext(PageContext);
-  const { currentAvatar, setCrm, setNotificationCount } =
+  const { currentAvatar, setCrm } =
     useContext(SocketContext);
   useRefresh();
   const dispatch = useDispatch();
@@ -59,33 +56,34 @@ const RootLayout = () => {
     setShowAvatar(true);
   }, [currentAvatar]);
   useEffect(() => {
-    if (message) {
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
+    if (!message) return;
+    const isLast = emails.length === currentIndex + 1;
+    const nextEmailObj = emails[currentIndex + 1];
 
-      toast.success(message);
-      dispatch(unrepliedAction.removeUnreplied(sendedEmail));
-      if (emails.length === currentIndex + 1) {
-        navigate("/unreplied-emails");
-        localStorage.removeItem("email");
-        setSearch("");
-        setEnteredEmail("");
-      } else {
-        const input = extractEmail(emails[currentIndex + 1]?.from || "");
-        localStorage.setItem("email", input);
-        setSearch(input);
-        setEnteredEmail(input);
-        dispatch(ladgerAction.setTimeline(null));
-        setWelcomeHeaderContent("Unreplied");
-        navigate("/");
-      }
-      dispatch(viewEmailAction.clearAllMessage());
+    // ✅ prevent duplicate execution ASAP
+    dispatch(viewEmailAction.clearAllMessage());
 
-      // dispatch(getUnansweredEmails({ loading: false }))
+    toast.success(message);
+
+    dispatch(unrepliedAction.removeUnreplied(sendedEmail));
+
+
+    if (isLast) {
+      localStorage.removeItem("email");
+      setEnteredEmail("");
+
+      navigate("/unreplied-emails");
+      return;
     }
-  }, [message]);
+
+    if (!nextEmailObj) return;
+
+    handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), navigate: "/", nextPrev: true })
+
+
+  }, [
+    message,
+  ]);
 
   // Set active page based on URL
   useEffect(() => {
@@ -112,9 +110,8 @@ const RootLayout = () => {
             {/* Main content scrolls independently */}
             <main
               ref={mainRef}
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                collapsed ? "ml-4" : "ml-0"
-              }`}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+                }`}
             >
               <div className="p-3">
                 {isLowCredit && <LowCreditWarning score={currentScore} />}

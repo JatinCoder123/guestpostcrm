@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { TimelinePage } from "./components/pages/TimelinePage";
 import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
-import { UnansweredPage } from "./components/pages/UnansweredPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
@@ -66,9 +65,16 @@ const router = createBrowserRouter([
   {
     path: "",
     element: (
-      <ErrorBoundary>
-        <RootLayout />
-      </ErrorBoundary>
+      <ThreadContextProvider>
+        <PageContextProvider>
+          <SocketContextProvider>
+            <ErrorBoundary>
+              <RootLayout />
+            </ErrorBoundary>
+          </SocketContextProvider>
+        </PageContextProvider>
+      </ThreadContextProvider>
+
     ),
     children: [
       {
@@ -105,8 +111,13 @@ const router = createBrowserRouter([
         element: <Contactpage />,
       },
       {
+<<<<<<< HEAD
         path: "unanswered",
         element: <UnansweredPage />,
+=======
+        path: "compose",
+        element: <ComposePage />,
+>>>>>>> fixingTimeline
       },
       {
         path: "console",
@@ -293,14 +304,9 @@ export default function App() {
   return (
     <>
       {isAuthenticated && (
-        <ThreadContextProvider>
-          <PageContextProvider>
-            <SocketContextProvider>
-              <RouterProvider router={router} />
-            </SocketContextProvider>
-          </PageContextProvider>
-        </ThreadContextProvider>
-      )}
+        <RouterProvider router={router} />
+      )
+      }
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}
       <ToastContainer

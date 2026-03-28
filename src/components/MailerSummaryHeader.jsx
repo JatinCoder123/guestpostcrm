@@ -103,10 +103,6 @@ const MailerSummaryHeader = () => {
 
     setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, mailersSummary]);
-  const isLoading = loading && !mailersSummary;
-  if (isLoading) {
-    return <MailerSummarySkeleton />;
-  }
   /* ---------------- UI ---------------- */
   return (
     <>
@@ -120,7 +116,7 @@ const MailerSummaryHeader = () => {
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
         {/* TOP INFO */}
-        {mailersSummary && !loading ? (
+        {mailersSummary ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div>
               <div className="text-xs text-gray-500 uppercase font-semibold">
@@ -317,70 +313,76 @@ function SummaryCard({
         ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
         : "transition-all duration-300"
         }`}
+      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${highlight
+        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
+        : "transition-all duration-300"
+        }`}
     >
       {(creating && type === "orders") ||
         loading ||
         (syncType == type && syncing) ? (
-        <LoadingChase />
-      ) : (
-        <>
-          <div className="flex items-center gap-3">
-            {type == "orders" ? (
-              <button
-                className="cursor-pointer"
-                onClick={() =>
-                  navigateTo(`/orders/${threadId}/create`, {
-                    state: {
-                      email,
-                    },
-                  })
-                }
-              >
-                <img
-                  width="36"
-                  height="36"
-                  src="https://img.icons8.com/arcade/64/plus.png"
-                  alt="plus"
-                />
-              </button>
-            ) : (
-              <div
-                className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}
-              >
-                <Icon />
-              </div>
-            )}
-
-            <div>
-              <p className="text-sm font-semibold">
-                {data?.length > 0
-                  ? `${data.length} ${data.length === 1 ? type.slice(0, -1).toUpperCase() : type.toUpperCase()}`
-                  : title}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleClick}
-              disabled={type == "invoice"}
-              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-            >
-              {data?.length > 0 ? (
-                <Eye className="w-4 h-4" />
+        loading ||
+          (syncType == type && syncing) ? (
+          <LoadingChase />
+        ) : (
+          <>
+            <div className="flex items-center gap-3">
+              {type == "orders" ? (
+                <button
+                  className="cursor-pointer"
+                  onClick={() =>
+                    navigateTo(`/orders/${threadId}/create`, {
+                      state: {
+                        email,
+                      },
+                    })
+                  }
+                >
+                  <img
+                    width="36"
+                    height="36"
+                    src="https://img.icons8.com/arcade/64/plus.png"
+                    alt="plus"
+                  />
+                </button>
               ) : (
-                <Plus className="w-4 h-4" />
+                <div
+                  className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}
+                >
+                  <Icon />
+                </div>
               )}
-            </button>
-            <button
-              onClick={handleSync}
-              disabled={syncing || type == "invoice"}
-              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-            >
-              <RefreshCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </>
-      )}
+
+              <div>
+                <p className="text-sm font-semibold">
+                  {data?.length > 0
+                    ? `${data.length} ${data.length === 1 ? type.slice(0, -1).toUpperCase() : type.toUpperCase()}`
+                    : title}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleClick}
+                disabled={type == "invoice"}
+                className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
+              >
+                {data?.length > 0 ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+              </button>
+              <button
+                onClick={handleSync}
+                disabled={syncing || type == "invoice"}
+                className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
+              >
+                <RefreshCcw className="w-4 h-4" />
+              </button>
+            </div>
+          </>
+        )}
     </div>
   );
 }

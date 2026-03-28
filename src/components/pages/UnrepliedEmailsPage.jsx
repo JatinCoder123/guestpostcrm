@@ -1,38 +1,20 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
-import { getInvoices } from "../../store/Slices/invoices.js";
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
 import { excludeName, extractEmail } from "../../assets/assets";
-import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import UpdatePopup from "../UpdatePopup.jsx";
 import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails.js";
 import {
   Calendar,
   FileText,
-  Link2,
   Mail,
   User,
   BarChart4,
-  BarChart3,
-  User2,
   Gift,
-  Pen,
-  Globe,
-  BadgeDollarSign,
-  Clapperboard,
-  Package,
-  CheckCircle,
-  XCircle,
-  PauseCircle,
   BadgeCheck,
-  Store,
-  ListFilter,
-  X,
   ChartBar,
   Handshake,
   ShoppingCart,
@@ -132,22 +114,10 @@ export function UnrepliedEmailsPage() {
   );
   const { handleMove } = useThreadContext();
   const {
-    setWelcomeHeaderContent,
-    setSearch,
-    setEnteredEmail,
     setCurrentIndex,
+    handleDateClick
   } = useContext(PageContext);
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate, index) => {
-    localStorage.setItem("email", email);
-    setSearch(email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Unreplied");
-    setCurrentIndex(index);
-    navigateTo(navigate);
-  };
   const columns = [
     {
       label: "Created At",
@@ -156,7 +126,7 @@ export function UnrepliedEmailsPage() {
       icon: Calendar,
 
       onClick: (row, index) =>
-        handleOnClick(extractEmail(row?.from), "/", index),
+        handleDateClick({ email: extractEmail(row?.from), navigate: "/", index, nextPrev: true }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -172,7 +142,7 @@ export function UnrepliedEmailsPage() {
       icon: User,
       classes: "truncate ",
       onClick: (row, index) =>
-        handleOnClick(extractEmail(row?.from), "/contacts", index),
+        handleDateClick({ email: extractEmail(row?.from), navigate: "/contacts", index, nextPrev: true }),
 
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
