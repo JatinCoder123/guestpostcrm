@@ -91,13 +91,13 @@ export default function CreateDeal() {
   const dispatch = useDispatch();
   const okHandler = () => {
     if (enteredEmail) {
-      dispatch(getLadger({ email: enteredEmail, search }));
+      dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
     } else if (unrepliedEmails?.length > 0) {
       const firstEmail =
         unrepliedEmails[0].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
-      dispatch(getLadger({ email: firstEmail, search }));
+      dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
     } else {
-      dispatch(getLadger({ email: state?.email, search }));
+      dispatch(getLadger({ email: state?.email, search: enteredEmail }));
     }
   };
   useEffect(() => {

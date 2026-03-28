@@ -18,9 +18,6 @@ function useIdle({ idle }) {
     const {
         enteredEmail,
         currentIndex,
-        setCurrentIndex,
-        search,
-        setWelcomeHeaderContent,
     } = useContext(PageContext);
     const dispatch = useDispatch();
     const { emails, loading } = useSelector((state) => state.unreplied);
@@ -28,11 +25,11 @@ function useIdle({ idle }) {
 
     const refreshLadger = () => {
         if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, search }));
+            dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
             dispatch(getViewEmail(enteredEmail));
             dispatch(getContact(enteredEmail));
         } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, search }));
+            dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
             dispatch(getViewEmail(firstEmail));
             dispatch(getContact(firstEmail));
         }
@@ -75,7 +72,7 @@ function useIdle({ idle }) {
         setUserIdle(idle)
         return () => {
             setUserIdle(true)
-            flushQueue()
+            // flushQueue()
         }
     }, [])
     return [refreshLadger

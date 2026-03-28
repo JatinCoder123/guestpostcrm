@@ -39,13 +39,12 @@ export function BacklinksPage() {
   );
 
 
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { setWelcomeHeaderContent, setEnteredEmail } =
     useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const handleOnClick = (email, navigate) => {
     localStorage.setItem("email", email);
-    setSearch(email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Backlinks");

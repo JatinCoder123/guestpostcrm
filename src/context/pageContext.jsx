@@ -11,11 +11,10 @@ export const PageContextProvider = (props) => {
   const [enteredEmail, setEnteredEmail] = useState(
     localStorage.getItem("email") || null,
   );
-  const [search, setSearch] = useState(localStorage.getItem("email") || "");
   const [welcomeHeaderContent, setWelcomeHeaderContent] = useState(
     localStorage.getItem("welcomeHeaderContent")
       ? localStorage.getItem("welcomeHeaderContent")
-      : search?.trim() !== ""
+      : enteredEmail?.trim() !== ""
         ? "Search"
         : "",
   );
@@ -24,8 +23,7 @@ export const PageContextProvider = (props) => {
   const handleClear = () => {
     localStorage.removeItem("email");
     setWelcomeHeaderContent("");
-    setSearch("");
-    setEnteredEmail(null);
+    setEnteredEmail("");
   };
 
   // Set activePage based on current URL
@@ -48,8 +46,6 @@ export const PageContextProvider = (props) => {
     handleClear,
     enteredEmail,
     setEnteredEmail,
-    search,
-    setSearch,
     welcomeHeaderContent,
     setWelcomeHeaderContent,
     collapsed,

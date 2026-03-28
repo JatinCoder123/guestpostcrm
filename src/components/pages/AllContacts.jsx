@@ -18,14 +18,13 @@ export default function AllContacts() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+    const { setWelcomeHeaderContent, setEnteredEmail } =
         useContext(PageContext);
 
 
 
     const handleOnClick = (email, path) => {
         localStorage.setItem("email", email);
-        setSearch(email);
         setEnteredEmail(email);
         dispatch(ladgerAction.setTimeline(null));
         setWelcomeHeaderContent("Offers");

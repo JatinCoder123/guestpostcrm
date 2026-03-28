@@ -33,7 +33,7 @@ export function RecentEntry() {
   const [searchTerm, setSearchTerm] = useState("");
   const [emailFilter, setEmailFilter] = useState("all");
   const [timeFilter, setTimeFilter] = useState("all");
-  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+  const { setEnteredEmail, setWelcomeHeaderContent } =
     useContext(PageContext);
   const { handleMove } = useThreadContext();
   const navigateTo = useNavigate();
@@ -138,7 +138,7 @@ export function RecentEntry() {
                     onClick={() => {
                       const input = extractEmail(event.name);
                       localStorage.setItem("email", input);
-                      setSearch(input);
+
                       setEnteredEmail(input);
                       setWelcomeHeaderContent("Recent");
                       navigateTo("/");
@@ -170,7 +170,7 @@ export function RecentEntry() {
                       onClick={() => {
                         const input = excludeName(event.real_name);
                         localStorage.setItem("email", input);
-                        setSearch(input);
+
                         setEnteredEmail(input);
                         setWelcomeHeaderContent("Recent");
                         navigateTo("/contacts");
@@ -187,7 +187,7 @@ export function RecentEntry() {
                       onClick={() => {
                         const input = excludeEmail(event.real_name);
                         localStorage.setItem("email", input);
-                        setSearch(input);
+
                         setEnteredEmail(input);
                         setWelcomeHeaderContent("Recent");
                         handleMove({

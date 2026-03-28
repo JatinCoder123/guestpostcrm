@@ -43,14 +43,14 @@ function useRefresh() {
         enteredEmail,
         currentIndex,
         setCurrentIndex,
-        search,
         setWelcomeHeaderContent,
     } = useContext(PageContext);
     const dispatch = useDispatch();
 
     const { emails } = useSelector((state) => state.unreplied);
     const { timeline } = useSelector((state) => state.ladger);
-    const { threadId } = useSelector((state) => state.viewEmail);
+    const { contactInfo } = useSelector((state) => state.viewEmail);
+    const threadId = contactInfo?.thread_id
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
         dispatch(getAiCredits());
@@ -82,11 +82,11 @@ function useRefresh() {
         if (currentEventThreadId.current == threadId) {
             console.log("REFRESH LADGER")
             if (enteredEmail) {
-                dispatch(getLadger({ email: enteredEmail, search }));
+                dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
                 dispatch(getViewEmail(enteredEmail));
                 dispatch(getContact(enteredEmail));
             } else if (firstEmail) {
-                dispatch(getLadger({ email: firstEmail, search }));
+                dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
                 dispatch(getViewEmail(firstEmail));
                 dispatch(getContact(firstEmail));
             }
@@ -110,14 +110,23 @@ function useRefresh() {
     }, [emails?.length, currentIndex]);
 
     useEffect(() => {
-        if (!enteredEmail && !firstEmail) return;
+        if (!enteredEmail) return;
 
-        const emailToUse = enteredEmail || firstEmail;
+        const emailToUse = enteredEmail
 
-        dispatch(getLadger({ email: emailToUse, search }));
+        dispatch(getLadger({ email: emailToUse, search: enteredEmail }));
         dispatch(getViewEmail(emailToUse));
         dispatch(getContact(emailToUse));
-    }, [enteredEmail, firstEmail, dispatch]);
+    }, [enteredEmail]);
+    useEffect(() => {
+        if (!firstEmail) return;
+        const emailToUse = firstEmail;
+        if (!enteredEmail) {
+            dispatch(getLadger({ email: emailToUse, search: enteredEmail }));
+            dispatch(getViewEmail(emailToUse));
+            dispatch(getContact(emailToUse));
+        }
+    }, [firstEmail]);
 
     useEffect(() => {
         if (notificationCount.unreplied_email) {

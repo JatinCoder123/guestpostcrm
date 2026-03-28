@@ -30,7 +30,7 @@ export function MovedPage() {
     pageIndex,
   } = useSelector((state) => state.moved);
   const [restoringId, setRestoringId] = useState(null);
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { setWelcomeHeaderContent, setEnteredEmail } =
     useContext(PageContext);
   const { handleMove } =
     useThreadContext();
@@ -38,7 +38,6 @@ export function MovedPage() {
   const dispatch = useDispatch();
   const handleOnClick = (email, navigate) => {
     localStorage.setItem("email", email);
-    setSearch(email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Offers");

@@ -23,7 +23,7 @@ export function HotPage() {
   const { currentHot } = useContext(PageContext);
   const { hots, loading, error, count } = useSelector((state) => state.hot);
   const dispatch = useDispatch();
-  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+  const { setEnteredEmail, setWelcomeHeaderContent } =
     useContext(PageContext);
   const navigateTo = useNavigate();
 
@@ -105,7 +105,6 @@ export function HotPage() {
                         onClick={() => {
                           const input = extractEmail(email.email);
                           localStorage.setItem("email", input);
-                          setSearch(input);
                           setEnteredEmail(input);
                           setWelcomeHeaderContent("Hot");
                           navigateTo("/");
@@ -121,7 +120,6 @@ export function HotPage() {
                       onClick={() => {
                         const input = extractEmail(email.email);
                         localStorage.setItem("email", input);
-                        setSearch(input);
                         setEnteredEmail(input);
                         setWelcomeHeaderContent("Hot");
                         navigateTo("/contacts");
@@ -135,7 +133,6 @@ export function HotPage() {
                       onClick={() => {
                         const input = extractEmail(email.email);
                         localStorage.setItem("email", input);
-                        setSearch(input);
                         setEnteredEmail(input);
                         setWelcomeHeaderContent("Hot");
                         navigateTo("/");
@@ -148,7 +145,6 @@ export function HotPage() {
                       onClick={() => {
                         const input = extractEmail(email.email);
                         localStorage.setItem("email", input);
-                        setSearch(input);
                         setEnteredEmail(input);
                         setWelcomeHeaderContent("Hot");
                         navigateTo("/");

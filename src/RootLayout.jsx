@@ -29,7 +29,6 @@ const RootLayout = () => {
     currentIndex,
     setCurrentIndex,
     setWelcomeHeaderContent,
-    setSearch,
   } = useContext(PageContext);
   const { currentAvatar, setCrm, setNotificationCount } =
     useContext(SocketContext);
@@ -73,7 +72,6 @@ const RootLayout = () => {
 
     if (isLast) {
       localStorage.removeItem("email");
-      setSearch("");
       setEnteredEmail("");
 
       navigate("/unreplied-emails");
@@ -86,8 +84,6 @@ const RootLayout = () => {
 
     localStorage.setItem("email", input);
 
-    // ✅ update state before navigation
-    setSearch(input);
     setEnteredEmail(input);
 
     dispatch(ladgerAction.setTimeline(null));

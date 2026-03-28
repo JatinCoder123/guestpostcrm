@@ -133,7 +133,6 @@ export function UnrepliedEmailsPage() {
   const { handleMove } = useThreadContext();
   const {
     setWelcomeHeaderContent,
-    setSearch,
     setEnteredEmail,
     setCurrentIndex,
   } = useContext(PageContext);
@@ -141,7 +140,6 @@ export function UnrepliedEmailsPage() {
   const dispatch = useDispatch();
   const handleOnClick = (email, navigate, index) => {
     localStorage.setItem("email", email);
-    setSearch(email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Unreplied");

@@ -17,7 +17,7 @@ const WelcomeHeader = () => {
   const { contactInfo, contactLoading } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
   const email = contactInfo?.email1
-  const { setEnteredEmail, setCurrentIndex, setSearch, welcomeHeaderContent, handleClear } =
+  const { setEnteredEmail, setCurrentIndex, welcomeHeaderContent, handleClear } =
     useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
@@ -30,7 +30,6 @@ const WelcomeHeader = () => {
           className="text-blue-600 hover:underline cursor-pointer"
           onClick={() => {
             localStorage.setItem("email", email);
-            setSearch(email);
             setEnteredEmail(email);
           }}
         >
@@ -156,7 +155,6 @@ const WelcomeHeader = () => {
                   className="font-bold text-blue-600"
                   onClick={() => {
                     localStorage.setItem("email", email);
-                    setSearch(email);
                     setEnteredEmail(email);
                   }}
                 >

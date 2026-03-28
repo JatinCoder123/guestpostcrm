@@ -35,7 +35,7 @@ export function Marketplace() {
     useSelector((state) => state.marketplace);
   const [selectedSort, setSelectedSort] = useState("");
 
-  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+  const { setEnteredEmail, setWelcomeHeaderContent } =
     useContext(PageContext);
 
   const [topsearch, setTopsearch] = useState("");
@@ -150,7 +150,6 @@ export function Marketplace() {
                   onClick={() => {
                     const input = extractEmail(row.name);
                     localStorage.setItem("email", input);
-                    setSearch(input);
                     setEnteredEmail(input);
                     dispatch(ladgerAction.setTimeline(null));
                     setWelcomeHeaderContent("MarketPlace");

@@ -95,13 +95,12 @@ export function OrdersPage() {
     useSelector((state) => state.orders);
   const [updateOrderId, setUpdateOrderId] = useState(null);
 
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail, enteredEmail } =
+  const { setWelcomeHeaderContent, setEnteredEmail, enteredEmail } =
     useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const handleOnClick = (email, navigate) => {
     localStorage.setItem("email", email);
-    setSearch(email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Orders");

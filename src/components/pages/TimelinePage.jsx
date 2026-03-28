@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getLadger } from "../../store/Slices/ladger";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
 import Ip from "../Ip";

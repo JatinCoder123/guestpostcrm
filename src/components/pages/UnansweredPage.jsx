@@ -26,7 +26,7 @@ export function UnansweredPage() {
     (state) => state.unanswered
   );
 
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { setWelcomeHeaderContent, setEnteredEmail } =
     useContext(PageContext);
 
   const navigateTo = useNavigate();
@@ -36,7 +36,6 @@ export function UnansweredPage() {
 
   const handleOnClick = (email, navigate) => {
     localStorage.setItem("email", email);
-    setSearch(email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     setWelcomeHeaderContent("Replied");

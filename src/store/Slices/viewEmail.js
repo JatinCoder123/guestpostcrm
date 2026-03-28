@@ -67,9 +67,9 @@ const viewEmailSlice = createSlice({
       state.stage = stage;
       state.status = status;
       state.customer_type = customer_type;
-      state.contactInfo = contactInfo;
-      state.accountInfo = accountInfo;
-      state.dealInfo = dealInfo;
+      state.contactInfo = contactInfo ? { ...contactInfo } : null;
+      state.accountInfo = accountInfo ? { ...accountInfo } : null;
+      state.dealInfo = dealInfo ? { ...dealInfo } : null;
       state.error = null;
     },
     getContactFailed(state, action) {
@@ -124,17 +124,7 @@ const viewEmailSlice = createSlice({
       state.sendedEmail = null
       state.editMessage = null
     },
-    resetViewEmail(state) {
-      state.viewEmail = null;
-      state.threadId = null;
-      state.count = null;
-      state.accountInfo = null;
-      state.contactInfo = null;
-      state.dealInfo = null;
-      state.stage = null;
-      state.status = null;
-      state.customer_type = null;
-    },
+
     updateContactInfo(state, action) {
       const { key } = action.payload;
       state.contactInfo[key] = state.contactInfo[key] === "1" ? "0" : "1";
@@ -233,7 +223,7 @@ export const editContact = (contactData, message = "") => {
       showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess({ message }));
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      dispatch(getContact());
+      dispatch(getContact(contactData?.email1));
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed"),
