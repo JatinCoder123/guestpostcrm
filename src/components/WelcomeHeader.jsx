@@ -92,11 +92,10 @@ const WelcomeHeader = () => {
               }}
               onClick={() => {
                 dispatch(unrepliedAction.setShowNewEmailBanner(false)); // ✅ ADD THIS
-
                 handleClear();
                 navigate("/");
                 dispatch(getUnrepliedEmail({ loading: true, type: "email_inbound" }));
-                setCurrentIndex(0);
+                // setCurrentIndex(0);
               }}
               transition={{ duration: 2, repeat: Infinity }}
               className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:cursor-pointer

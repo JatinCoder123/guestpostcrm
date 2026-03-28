@@ -24,12 +24,7 @@ export const PageContextProvider = (props) => {
   const handleClear = () => {
     localStorage.removeItem("email");
     setEnteredEmail("");
-    setCurrentIndex(prev => {
-      if (prev > 0) {
-        return 0
-      }
-      return 1
-    })
+    setCurrentIndex(0)
     setShowNextPrev(true)
   };
   const handleDateClick = ({ email, navigate, index = null, nextPrev = false }) => {
