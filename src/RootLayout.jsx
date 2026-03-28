@@ -59,33 +59,48 @@ const RootLayout = () => {
     setShowAvatar(true);
   }, [currentAvatar]);
   useEffect(() => {
-    if (message) {
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
+    if (!message) return;
+    const isLast = emails.length === currentIndex + 1;
+    const nextEmailObj = emails[currentIndex + 1];
 
-      toast.success(message);
-      dispatch(unrepliedAction.removeUnreplied(sendedEmail));
-      if (emails.length === currentIndex + 1) {
-        navigate("/unreplied-emails");
-        localStorage.removeItem("email");
-        setSearch("");
-        setEnteredEmail("");
-      } else {
-        const input = extractEmail(emails[currentIndex + 1]?.from || "");
-        localStorage.setItem("email", input);
-        setSearch(input);
-        setEnteredEmail(input);
-        dispatch(ladgerAction.setTimeline(null));
-        setWelcomeHeaderContent("Unreplied");
-        navigate("/");
-      }
-      dispatch(viewEmailAction.clearAllMessage());
+    // ✅ prevent duplicate execution ASAP
+    dispatch(viewEmailAction.clearAllMessage());
 
-      // dispatch(getUnansweredEmails({ loading: false }))
+    toast.success(message);
+
+    dispatch(unrepliedAction.removeUnreplied(sendedEmail));
+
+
+    if (isLast) {
+      localStorage.removeItem("email");
+      setSearch("");
+      setEnteredEmail("");
+
+      navigate("/unreplied-emails");
+      return;
     }
-  }, [message]);
+
+    if (!nextEmailObj) return;
+
+    const input = extractEmail(nextEmailObj.from || "");
+
+    localStorage.setItem("email", input);
+
+    // ✅ update state before navigation
+    setSearch(input);
+    setEnteredEmail(input);
+
+    dispatch(ladgerAction.setTimeline(null));
+    setWelcomeHeaderContent("Unreplied");
+
+    // ✅ slight delay to avoid race condition
+    setTimeout(() => {
+      navigate("/");
+    }, 0);
+
+  }, [
+    message,
+  ]);
 
   // Set active page based on URL
   useEffect(() => {
@@ -112,9 +127,8 @@ const RootLayout = () => {
             {/* Main content scrolls independently */}
             <main
               ref={mainRef}
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${
-                collapsed ? "ml-4" : "ml-0"
-              }`}
+              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+                }`}
             >
               <div className="p-3">
                 {isLowCredit && <LowCreditWarning score={currentScore} />}

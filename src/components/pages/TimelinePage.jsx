@@ -27,14 +27,14 @@ export function TimelinePage() {
       setIsMark(false);
     }
   }, [marketPlaces]);
-  const { searchNotFound } = useSelector((state) => state.ladger);
+  const { searchNotFound, loading: ladgerLoading } = useSelector((state) => state.ladger);
 
   const handleMessageClick = (id) => {
     console.log("Message clicked:", id);
     setSelectedMessage(id);
     setShowMessageModal(true);
   };
-  const { viewEmail, threadId, count, contactInfo } = useSelector(
+  const { viewEmail, threadId, count, contactInfo, contactLoading, loading } = useSelector(
     (state) => state.viewEmail,
   );
   const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
@@ -58,22 +58,20 @@ export function TimelinePage() {
       />
 
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {unrepliedLoading && <LoadingSkeleton />}
-        {!unrepliedLoading && (
-          <>
-            <div className="flex flex-col  border-b border-gray-200">
-              <ContactHeader isMark={isMark} />
+        {(unrepliedLoading || contactLoading || loading || ladgerLoading) ? <LoadingSkeleton /> : <>
+          <div className="flex flex-col  border-b border-gray-200">
+            <ContactHeader isMark={isMark} />
 
-              <div className="mt-2 p-2 grid grid-cols-1 md:grid-cols-2 gap-4 ">
-                <MailerSummaryHeader />
-                <LatestMessage handleMessageClick={handleMessageClick} />
-              </div>
-              <ActionButton isMark={isMark} setShowIP={setShowIP} />
+            <div className="mt-2 p-2 grid grid-cols-1 md:grid-cols-2 gap-4 ">
+              <MailerSummaryHeader />
+              <LatestMessage handleMessageClick={handleMessageClick} />
             </div>
+            <ActionButton isMark={isMark} setShowIP={setShowIP} />
+          </div>
+          <TimelineEvent handleMessageClick={handleMessageClick} />
 
-            <TimelineEvent handleMessageClick={handleMessageClick} />
-          </>
-        )}
+        </>}
+
       </div>
 
       {showAvatar && <Avatar setShowAvatar={setShowAvatar} onPlay={true} />}

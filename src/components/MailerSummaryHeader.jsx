@@ -103,10 +103,6 @@ const MailerSummaryHeader = () => {
 
     setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, mailersSummary]);
-  const isLoading = loading && !mailersSummary;
-  if (isLoading) {
-    return <MailerSummarySkeleton />;
-  }
   /* ---------------- UI ---------------- */
   return (
     <>
@@ -120,7 +116,7 @@ const MailerSummaryHeader = () => {
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
         {/* TOP INFO */}
-        {mailersSummary && !loading ? (
+        {mailersSummary ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div>
               <div className="text-xs text-gray-500 uppercase font-semibold">
@@ -297,11 +293,11 @@ function SummaryCard({
 
     data?.length > 0
       ? navigateTo(`/${type}/view`, {
-          state: { email, threadId, messageId: contactInfo?.message_id },
-        })
+        state: { email, threadId, messageId: contactInfo?.message_id },
+      })
       : navigateTo(`/${type}/create`, {
-          state: { email, threadId, messageId: contactInfo?.message_id },
-        });
+        state: { email, threadId, messageId: contactInfo?.message_id },
+      });
   };
 
   const colorMap = {
@@ -313,15 +309,14 @@ function SummaryCard({
 
   return (
     <div
-      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${
-        highlight
-          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
-          : "transition-all duration-300"
-      }`}
+      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${highlight
+        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
+        : "transition-all duration-300"
+        }`}
     >
       {(creating && type === "orders") ||
-      loading ||
-      (syncType == type && syncing) ? (
+        loading ||
+        (syncType == type && syncing) ? (
         <LoadingChase />
       ) : (
         <>

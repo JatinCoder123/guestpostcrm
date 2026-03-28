@@ -48,8 +48,8 @@ function useRefresh() {
     } = useContext(PageContext);
     const dispatch = useDispatch();
 
-    const { emails, loading } = useSelector((state) => state.unreplied);
-    const { timeline, email, latest } = useSelector((state) => state.ladger);
+    const { emails } = useSelector((state) => state.unreplied);
+    const { timeline } = useSelector((state) => state.ladger);
     const { threadId } = useSelector((state) => state.viewEmail);
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
@@ -110,26 +110,16 @@ function useRefresh() {
     }, [emails?.length, currentIndex]);
 
     useEffect(() => {
-        if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, search }));
-            dispatch(getViewEmail(enteredEmail));
-            dispatch(getContact(enteredEmail));
-        } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, search }));
-            dispatch(getViewEmail(firstEmail));
-            dispatch(getContact(firstEmail));
-        }
-        dispatch(viewEmailAction.resetViewEmail());
-    }, [enteredEmail, firstEmail, timeline, dispatch]);
+        if (!enteredEmail && !firstEmail) return;
+
+        const emailToUse = enteredEmail || firstEmail;
+
+        dispatch(getLadger({ email: emailToUse, search }));
+        dispatch(getViewEmail(emailToUse));
+        dispatch(getContact(emailToUse));
+    }, [enteredEmail, firstEmail, dispatch]);
 
     useEffect(() => {
-        if (notificationCount.refreshUnreplied) {
-            refreshLadger();
-            setNotificationCount((prev) => ({
-                ...prev,
-                refreshUnreplied: null,
-            }));
-        }
         if (notificationCount.unreplied_email) {
             refreshLadger();
             dispatch(checkForDuplicates());
