@@ -12,14 +12,13 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 import { deleteOffer, offersAction, updateOffer } from "../../../store/Slices/offers";
 import { LoadingChase } from "../../Loading";
 import { toast } from "react-toastify";
+import { Save, Send, X, Loader2 } from "lucide-react";
+import IconButton from "../../ui/Buttons/IconButton";
 
 export default function ThreadOffers({ threadId, email }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [showAddDrawer, setShowAddDrawer] = useState(false);
-  const [newOffers, setNewOffers] = useState([
-    { website: "", client_offer_c: "", our_offer_c: "" },
-  ]);
+  const [send, setSend] = useState(false);
   const [currentOffers, setCurrentOffers] = useState([]);
 
   // 🔥 INLINE EDIT STATE
@@ -88,17 +87,12 @@ export default function ThreadOffers({ threadId, email }) {
     setEditData({ ...offer });
   };
 
-  const handleSave = (id, send = false) => {
-    dispatch(updateOffer(editData));
-
-    if (send) {
-      handlePreview([editData]); // ✅ only updated offer
-    }
+  const handleSave = (offer, isSend = false) => {
+    setSend(isSend); // 🔥 track intent
+    dispatch(updateOffer(offer));
   };
 
-  const handleCancel = () => {
-    setEditingId(null);
-  };
+
 
   const handleDelete = (id) => {
     dispatch(deleteOffer(email, id));
@@ -133,13 +127,23 @@ export default function ThreadOffers({ threadId, email }) {
     if (!updating) {
       setEditingId(null);
     }
+
     if (message) {
-      toast.success(message)
-      dispatch(offersAction.clearAllMessages())
+      toast.success(message);
+
+      // 🔥 only move if send was true
+      if (send && message?.includes("Updated")) {
+        handlePreview([editData]); // or handleMove directly
+        setSend(false); // reset after action
+      }
+
+      dispatch(offersAction.clearAllMessages());
     }
+
     if (error) {
-      toast.error(error)
-      dispatch(offersAction.clearAllErrors())
+      toast.error(error);
+      setSend(false); // reset on error too
+      dispatch(offersAction.clearAllErrors());
     }
   }, [updating, message, error]);
   return (
@@ -249,36 +253,28 @@ export default function ThreadOffers({ threadId, email }) {
                 {/* Actions */}
                 <div className="col-span-2 flex justify-center gap-2">
                   {isEditing ? (
-                    <>
-                      <>
-                        {/* SAVE */}
-                        <button
-                          onClick={() => handleSave(offer.id, false)}
-                          disabled={updating && editingId === offer.id}
-                          className="px-3 py-1 rounded-lg text-sm text-white bg-green-600"
-                        >
-                          Save
-                        </button>
+                    <div className="flex gap-2">
+                      <IconButton
+                        icon={Save}
+                        label="Save"
+                        loading={editingId == offer.id && updating && !send}
+                        onClick={() => handleSave(editData, false)}
+                      />
 
-                        {/* SAVE & SEND 🔥 */}
-                        <button
-                          onClick={() => handleSave(offer.id, true)}
-                          disabled={updating && editingId === offer.id}
-                          className="px-3 py-1 rounded-lg text-sm text-white bg-indigo-600"
-                        >
-                          Save & Send
-                        </button>
+                      <IconButton
+                        icon={Send}
+                        label="Save & Send"
+                        loading={editingId == offer.id && updating && send}
+                        onClick={() => handleSave(editData, true)}
+                      />
 
-                        {/* CANCEL */}
-                        <button
-                          onClick={handleCancel}
-                          disabled={updating && editingId === offer.id}
-                          className="px-3 py-1 rounded-lg text-sm text-white bg-gray-400"
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    </>
+                      <IconButton
+                        icon={X}
+                        label="Cancel"
+                        onClick={() => setEditingId(null)}
+                        className="bg-red-100 hover:bg-red-200"
+                      />
+                    </div>
                   ) : (
                     <>
                       <button
@@ -334,3 +330,5 @@ export default function ThreadOffers({ threadId, email }) {
     </div>
   );
 }
+
+

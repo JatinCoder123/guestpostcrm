@@ -1,23 +1,28 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import SummaryCard from "../../SummaryCard";
 import PageHeader from "../../PageHeader";
 import { buildTable } from "../../Preview";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { Trash2 } from "lucide-react";
+import { Save, Send } from "lucide-react";
+import IconButton from "../../ui/Buttons/IconButton";
+import { createOffer, offersAction } from "../../../store/Slices/offers";
+import { toast } from "react-toastify";
 
 export default function CreateOffers() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const location = useLocation();
     const { threadId } = useParams();
     const email = location.state?.email;
 
     const { websites: websiteLists } = useSelector((state) => state.website);
     const { deals } = useSelector((state) => state.deals);
-    const { offers } = useSelector((state) => state.offers);
-
+    const { offers, creating, message, error } = useSelector((state) => state.offers);
+    const [send, setSend] = useState(false);
     const { handleMove } = useThreadContext();
 
     const [newOffers, setNewOffers] = useState([
@@ -82,14 +87,10 @@ export default function CreateOffers() {
         setNewOffers(newOffers.filter((_, i) => i !== index));
     };
 
-    const handleSave = (send = false) => {
-        console.log("Saving:", newOffers);
+    const handleSave = async (isSend = false) => {
+        setSend(isSend);
 
-        if (send) {
-            handlePreview();
-        }
-
-        navigate(-1); // go back
+        dispatch(createOffer({ threadId, email, offers: newOffers, isSend }))
     };
 
     const handlePreview = () => {
@@ -106,7 +107,31 @@ export default function CreateOffers() {
             reply: tableHtml,
         });
     };
+    useEffect(() => {
 
+        if (message) {
+            toast.success(message);
+
+            // 🔥 only move if send was true
+            if (send && message?.includes("Created")) {
+                handlePreview(); // or handleMove directly
+                setSend(false); // reset after action
+                dispatch(offersAction.clearAllMessages());
+
+            }
+            else {
+                navigate(-1)
+                dispatch(offersAction.clearAllMessages());
+
+            }
+        }
+
+        if (error) {
+            toast.error(error);
+            setSend(false); // reset on error too
+            dispatch(offersAction.clearAllErrors());
+        }
+    }, [message, error]);
     return (
         <div className="w-full flex gap-6 items-start">
 
@@ -205,26 +230,27 @@ export default function CreateOffers() {
                 websiteKey={"website"}
                 amountKey={"our_offer_c"}
             >
-                <div className="flex gap-2 w-full">
-                    <button
-                        onClick={() => handleSave(false)}
-                        disabled={!isFormValid}
-                        className={`flex-1 py-3 rounded-xl text-white transition
-    ${isFormValid ? "bg-green-600 hover:bg-green-700" : "bg-gray-300 cursor-not-allowed"}
-  `}
-                    >
-                        Save
-                    </button>
 
-                    <button
-                        onClick={() => handleSave(true)}
+                <div className="flex gap-2 w-full justify-evenly ">
+                    <IconButton
+                        icon={Save}
+                        label="Save"
+                        onClick={() => handleSave(false)}
+                        loading={creating && !send}
                         disabled={!isFormValid}
-                        className={`flex-1 py-3 rounded-xl text-white transition
-    ${isFormValid ? "bg-indigo-600 hover:bg-indigo-700" : "bg-gray-300 cursor-not-allowed"}
-  `}
-                    >
-                        Save & Send
-                    </button>
+                        className={`bg-green-100 hover:bg-green-200 
+      ${!isFormValid ? "opacity-50 cursor-not-allowed" : ""}`}
+                    />
+
+                    <IconButton
+                        icon={Send}
+                        label="Save & Send"
+                        onClick={() => handleSave(true)}
+                        loading={creating && send}
+                        disabled={!isFormValid}
+                        className={`bg-indigo-100 hover:bg-indigo-200 
+      ${!isFormValid ? "opacity-50 cursor-not-allowed" : ""}`}
+                    />
                 </div>
             </SummaryCard>
         </div>

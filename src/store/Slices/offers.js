@@ -182,7 +182,7 @@ export const updateOffer = (offer) => {
     }
   };
 };
-export const createOffer = (threadId, offers = [], send = false) => {
+export const createOffer = ({ threadId, email, offers = [], send = false }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
@@ -196,9 +196,9 @@ export const createOffer = (threadId, offers = [], send = false) => {
             client_offer_c: offer.client_offer_c,
             our_offer_c: offer.our_offer_c,
             website: offer.website,
-            email_c: offer.email,
+            email_c: email,
             thread_id: threadId,
-            name: offer.email,
+            name: email,
           })),
           child_bean: {
             module: "Contacts",
