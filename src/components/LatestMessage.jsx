@@ -3,7 +3,7 @@ import { useThreadContext } from '../hooks/useThreadContext';
 import { useNavigate } from 'react-router-dom';
 import { CREATE_DEAL_API_KEY } from '../store/constants';
 import useModule from '../hooks/useModule';
-import { getDomain, getSafeHTML } from '../assets/assets';
+import { getDomain, getSafeHTML, showConsole } from '../assets/assets';
 import { BiSolidMessageCheck } from "react-icons/bi";
 import { useDispatch, useSelector } from 'react-redux';
 import { LoadingChase } from './Loading';
@@ -14,6 +14,7 @@ import { SocketContext } from '../context/SocketContext';
 import { BsRobot } from "react-icons/bs";
 import { editContact, viewEmailAction } from '../store/Slices/viewEmail';
 import { PageContext } from '../context/pageContext';
+import { toast } from 'react-toastify';
 const LatestMessage = ({ handleMessageClick }) => {
 
     const navigate = useNavigate();

@@ -33,8 +33,8 @@ const NextPrev = () => {
     return (
 
         <div className="flex items-center gap-3">
-            <NextPrevButton first={true} onClick={handlePrev} disabled={currentIndex == 0} label={excludeName(emails[currentIndex - 1]?.from)} Icon={ChevronLeft} emails={emails} currentIndex={currentIndex} />
-            <NextPrevButton onClick={handleNext} disabled={currentIndex === emails?.length - 1} label={excludeName(emails[currentIndex + 1]?.from)} Icon={ChevronRight} emails={emails} currentIndex={currentIndex} />
+            <NextPrevButton first={true} onClick={handlePrev} disabled={currentIndex == 0} label={excludeName(emails[currentIndex - 1]?.from)?.trim() !== "" ? excludeName(emails[currentIndex - 1]?.from) : emails[currentIndex - 1]?.email1} Icon={ChevronLeft} emails={emails} currentIndex={currentIndex} />
+            <NextPrevButton onClick={handleNext} disabled={currentIndex === emails?.length - 1} label={excludeName(emails[currentIndex + 1]?.from)?.trim() !== "" ? excludeName(emails[currentIndex + 1]?.from) : emails[currentIndex + 1]?.email1} Icon={ChevronRight} emails={emails} currentIndex={currentIndex} />
         </div>
     )
 }
@@ -57,7 +57,7 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
     >
         {props.first && <Icon className="w-5 h-5 text-gray-700" />}
         <p className=' relative text-sm font-bold
-         text-cyan-900
+         text-cyan-900 truncate max-w-[150px]
       '>              {label}
         </p>
         {!props.first && <Icon className="w-5 h-5 text-gray-700" />}

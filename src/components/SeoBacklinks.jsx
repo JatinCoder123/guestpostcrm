@@ -145,18 +145,28 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
           <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3  border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)]">
             {gpLinks.length > 0 && (
               <div className="mb-6 flex flex-col gap-5">
-                <DocumentAnalysisCard
-                  docLink={gpLinks[0]?.gp_doc_url_c}
-                  docNiche={gpLinks[0]?.niche}
-                />
-                <GPLinksTable
-                  gpLinks={gpLinks}
-                  setItem={setItem}
-                  setOpen={setOpen}
-                  deleting={deleting}
-                  setLinkId={setLinkId}
-                  linkId={linkId}
-                />
+                {gpLinks.map((gp, index) => (
+                  <div className="relative">
+                    <div className="absolute top-2 -left-1 z-20">
+                      <span
+                        className="flex items-center justify-center w-7 h-7 rounded-full
+        bg-gradient-to-r from-indigo-500 to-purple-600
+        text-white text-xs font-bold shadow-md"
+                      >
+                        #{index + 1}
+                      </span>
+                    </div>
+                    <GPLinksTable
+                      gpLink={gp}
+                      setItem={setItem}
+                      setOpen={setOpen}
+                      deleting={deleting}
+                      setLinkId={setLinkId}
+                      linkId={linkId}
+                    /></div>
+
+                ))}
+
               </div>
             )}
             {liLinks.map((item, index) => (
@@ -706,6 +716,7 @@ const getSpamLabel = (score) => {
 const ValidationBadge = ({ valid }) => {
   return valid === "1" ? (
     <span className="flex items-center gap-1 text-green-600 font-medium">
+      <SparkleIcon className="w-5 h-5 text-green-500" />
       <img
         width="30"
         height="30"
@@ -727,17 +738,24 @@ const ValidationBadge = ({ valid }) => {
 };
 
 function GPLinksTable({
-  gpLinks,
+  gpLink,
   setItem,
   setOpen,
   deleting,
   setLinkId,
   linkId,
 }) {
+  const spam = getSpamLabel(gpLink.spam_score_c);
+
   return (
-    <div className="overflow-hidden rounded-xl border-b border-gray-200 shadow-sm">
-      {/* HEADER */}
-      <div className="grid grid-cols-8  bg-blue-100 text-sm font-semibold text-gray-700 px-4 py-3">
+    <div className="overflow-hidden  mb-4 border-2 border-blue-300 p-2 rounded-xl">
+      {/* HEADER */} <DocumentAnalysisCard
+        key={gpLink.id}
+        website={gpLink.name}
+        docLink={gpLink?.gp_doc_url_c}
+        docNiche={gpLink?.niche}
+      />
+      <div className="grid grid-cols-8   text-sm font-semibold text-gray-700 px-4 py-3">
         <div className="col-span-2">URL / Anchor Text</div>
         <div>Validation</div>
         <div>Spam Score</div>
@@ -747,96 +765,87 @@ function GPLinksTable({
         <div className="ml-auto">Action</div>
       </div>
 
-      {/* ROWS */}
-      {gpLinks.map((item, index) => {
-        const spam = getSpamLabel(item.spam_score_c);
-
-        return (
-          <div
-            key={item.id}
-            className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center"
+      <div
+        className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center"
+      >
+        {/* URL + Anchor */}
+        <div className="flex gap-2 items-center col-span-2">
+          <a
+            href={gpLink.backlink_url}
+            target="_blank"
+            className="text-blue-600 hover:underline truncate max-w-[150px]"
           >
-            {/* URL + Anchor */}
-            <div className="flex gap-2 items-center col-span-2">
-              <span
-                className="flex items-center justify-center w-7 h-7 rounded-full
-        bg-gradient-to-r from-indigo-500 to-purple-600
-        text-white text-xs font-bold shadow-md"
-              >
-                #{index + 1}
-              </span>
-              <a
-                href={item.backlink_url}
-                target="_blank"
-                className="text-blue-600 hover:underline truncate max-w-[150px]"
-              >
-                {item.backlink_url}
-              </a>
-              <span className="text-xs text-gray-500 truncate">
-                {item.anchor_text_c || "-"}
-              </span>
-            </div>
+            {gpLink.backlink_url}
+          </a>
+          <span className="text-xs text-gray-500 truncate">
+            {gpLink.anchor_text_c || "-"}
+          </span>
+        </div>
 
-            {/* Validation */}
-            <ValidationBadge valid={item.is_link_valid} />
+        {/* Validation */}
+        <ValidationBadge valid={gpLink.is_link_valid} />
 
-            {/* Spam Score */}
-            <div className={`font-medium ${spam.color}`}>
-              {item.spam_score_c} ({spam.label})
-            </div>
+        {/* Spam Score */}
+        <div className={`font-medium ${spam.color}`}>
+          {gpLink.spam_score_c} ({spam.label})
+        </div>
 
-            {/* Amount */}
-            <div className="font-semibold text-indigo-600">
-              {item.link_amount_c}
-            </div>
-            <div className="font-semibold text-indigo-600">
-              {item.type_c}
-            </div>
-            <div className={`font-semibold text-${item.link_type === "dofollow" ? "green" : "red"}-600`}>
-              {item.link_type}
-            </div>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => {
-                  setItem(item);
-                  setOpen(true);
-                }}
-                className="px-3 py-1 text-xs rounded-2xl 
+        {/* Amount */}
+        <div className="font-semibold text-indigo-600">
+          {gpLink.link_amount_c}
+        </div>
+        <div className="font-semibold text-indigo-600">
+          {gpLink.type_c}
+        </div>
+        <div className={`font-semibold text-${gpLink.link_type === "dofollow" ? "green" : "red"}-600`}>
+          {gpLink.link_type}
+        </div>
+
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={() => {
+              setItem(gpLink);
+              setOpen(true);
+            }}
+            className="px-3 py-1 text-xs rounded-2xl 
       bg-indigo-600 text-white hover:bg-indigo-700 transition shadow"
-              >
-                <Pencil size={16} />
-              </button>
+          >
+            <Pencil size={16} />
+          </button>
 
-              <button
-                onClick={() => {
-                  setLinkId(item.id);
-                  handleDelete(item.id);
-                }}
-                disabled={deleting}
-                className="px-3 py-1 text-xs rounded-2xl 
+          <button
+            onClick={() => {
+              setLinkId(gpLink.id);
+              handleDelete(gpLink.id);
+            }}
+            disabled={deleting}
+            className="px-3 py-1 text-xs rounded-2xl 
       bg-red-600 text-white hover:bg-red-700 transition shadow"
-              >
-                {deleting && linkId === item.id ? (
-                  <LoadingChase size="20" color="white" />
-                ) : (
-                  <Trash size={16} />
-                )}
-              </button>
-            </div>
-          </div>
-        );
-      })}
+          >
+            {deleting && linkId === gpLink.id ? (
+              <LoadingChase size="20" color="white" />
+            ) : (
+              <Trash size={16} />
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-function DocumentAnalysisCard({ docLink, docName, docNiche }) {
+function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-t-blue-200 rounded-xl shadow-md overflow-hidden">
+    <div className="  overflow-hidden ">
       {/* HEADER */}
-      <div className="bg-blue-600 text-white px-4 py-2 text-sm font-semibold">
-        Guest Post Order
-      </div>
+      <div className="flex items-center gap-2 bg-blue-300"> <div className=" text-white px-4 py-2 text-md font-bold ">
+        Guest Post Order for
+        <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl"> {website ?? "-"} </span>
+
+
+
+      </div> <SparkleIcon className="w-5 h-5 text-green-700" /></div>
+
 
       {/* CONTENT */}
       <div className="flex items-center gap-4 p-4">
@@ -850,10 +859,10 @@ function DocumentAnalysisCard({ docLink, docName, docNiche }) {
             className="block w-32 h-20 bg-white rounded-md shadow-inner border relative overflow-hidden hover:scale-105 transition"
           >
             <div className="p-2 space-y-1">
-              <div className="h-2 bg-slate-300 rounded w-3/4"></div>
-              <div className="h-2 bg-slate-200 rounded w-full"></div>
+              <div className="h-2 bg-slate-400 rounded w-3/4"></div>
+              <div className="h-2 bg-slate-300 rounded w-full"></div>
               <div className="h-2 bg-slate-200 rounded w-5/6"></div>
-              <div className="h-2 bg-slate-300 rounded w-2/3"></div>
+              <div className="h-2 bg-slate-400 rounded w-2/3"></div>
             </div>
 
             {/* blur overlay */}
@@ -888,12 +897,14 @@ function DocumentAnalysisCard({ docLink, docName, docNiche }) {
           <span className="text-md text-slate-500 whitespace-nowrap">
             • {docNiche || "No Niche"}
           </span>
-          <img
-            width="30"
-            height="30"
-            src="https://img.icons8.com/3d-fluency/94/ok.png"
-            alt="ok"
-          />
+          <div className="flex items-center gap-3"> <SparkleIcon className="w-5 h-5 text-green-500" />
+            <img
+              width="30"
+              height="30"
+              src="https://img.icons8.com/3d-fluency/94/ok.png"
+              alt="ok"
+            /></div>
+
         </div>
       </div>
     </div>

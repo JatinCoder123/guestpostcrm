@@ -44,6 +44,7 @@ export const NoSearchFoundPage = () => {
     ) {
       setSearch(currentMessageId?.customer_email);
       setEnteredEmail(currentMessageId?.customer_email);
+      toast.success(manualScanResponse?.message)
 
       localStorage.setItem("email", currentMessageId?.customer_email);
 
@@ -140,7 +141,7 @@ export const NoSearchFoundPage = () => {
               onClick={(e) => {
                 e.stopPropagation();
                 setCurrentMessageId(item);
-                dispatch(manualEmailScan(item.message_id));
+                dispatch(manualEmailScan(item.message_id, item.customer_email, item.thread_id));
               }}
               className="px-3 py-1 text-xs rounded-md cursor-pointer bg-purple-100 text-purple-700 hover:bg-purple-200 disabled:opacity-50"
               title="Scan Email"

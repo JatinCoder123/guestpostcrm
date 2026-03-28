@@ -235,14 +235,13 @@ export const getNoSearchResultData = (search) => {
     }
   };
 };
-export const manualEmailScan = (messageId) => {
+export const manualEmailScan = (messageId, email, threadId) => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.manualScanRequest());
     try {
-      const crmDomain = getState().user.crmEndpoint.split("?")[0];
 
       const response = await axios.get(
-        `${crmDomain}?entryPoint=manual_email_scanning&message_id=${messageId}`,
+        `${getState().user.crmEndpoint}&type=manual_scanning&message_id=${messageId}&email=${email}&thread_id=${threadId}`,
       );
       showConsole && console.log("ManualScan", response.data);
       dispatch(ladgerSlice.actions.manualScanSuccess(response.data));
