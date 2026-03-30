@@ -271,12 +271,13 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     className={`absolute top-1 left-1 h-[calc(100%-8px)]
         w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${selectedView === "all"
-                        ? "translate-x-0"
-                        : selectedView === "important"
-                          ? "translate-x-full"
-                          : "translate-x-[200%]"
-                      }`}
+        ${
+          selectedView === "all"
+            ? "translate-x-0"
+            : selectedView === "important"
+              ? "translate-x-full"
+              : "translate-x-[200%]"
+        }`}
                   />
 
                   {[
@@ -289,10 +290,11 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       onClick={() => setSelectedView(tab.key)}
                       className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${selectedView === tab.key
-                          ? "text-white"
-                          : "text-gray-600 hover:text-purple-600"
-                        }`}
+          ${
+            selectedView === tab.key
+              ? "text-white"
+              : "text-gray-600 hover:text-purple-600"
+          }`}
                     >
                       {tab.label}
                     </button>
@@ -364,10 +366,11 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     </div>
                     <div
                       className={`group flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm relative
-                      ${index === 0
+                      ${
+                        index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                        }`}
+                      }`}
                     >
                       {/* 🔥 HOVER ACTION BAR */}
                       <div
@@ -591,10 +594,41 @@ const TimelineEvent = ({ handleMessageClick }) => {
                                   )}
                                 </p>
                                 {(() => {
-                                  const text =
-                                    step.description
-                                      ?.replace(/<[^>]*>/g, "")
-                                      .trim() || "No description available";
+                                  let text = "No description available";
+
+                                  try {
+                                    if (typeof step.description === "string") {
+                                      // fallback for old format
+                                      text = step.description
+                                        .replace(/<[^>]*>/g, "")
+                                        .trim();
+                                    } else if (
+                                      typeof step.description === "object"
+                                    ) {
+                                      // NEW JSON format handling
+                                      const orders =
+                                        step.description?.orders || [];
+
+                                      text = orders
+                                        .map((order) => {
+                                          const docName =
+                                            order.document_name || "";
+                                          const niche =
+                                            order.niche_validation?.niche || "";
+                                          const reasons =
+                                            order.niche_validation?.reasons?.join(
+                                              " ",
+                                            ) || "";
+
+                                          return `${docName} ${niche} ${reasons}`;
+                                        })
+                                        .join(" ")
+                                        .trim();
+                                    }
+                                  } catch (e) {
+                                    text = "Invalid description format";
+                                  }
+
                                   const words = text.split(/\s+/);
                                   const preview =
                                     words.length > 50

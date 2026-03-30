@@ -459,11 +459,27 @@ const Debug = () => {
                 {filteredData.map((row, index) => (
                   <tr
                     key={index}
-                    onClick={() => handleRowClick(row)}
+                    onClick={() => setSelectedRecord(row)}
                     className="border-t hover:bg-gray-50 cursor-pointer"
                   >
                     {columns.map((col) => (
-                      <td key={col} className="px-4 py-3 max-w-xs truncate">
+                      <td
+                        key={col}
+                        className={`px-4 py-3 max-w-xs truncate ${
+                          activeTab.key === "process_audit" &&
+                          col === "message_id"
+                            ? "cursor-pointer text-blue-600 hover:underline"
+                            : ""
+                        }`}
+                        onClick={() => {
+                          if (
+                            activeTab.key === "process_audit" &&
+                            col === "message_id"
+                          ) {
+                            handleRowClick(row);
+                          }
+                        }}
+                      >
                         {truncate(row[col])}
                       </td>
                     ))}

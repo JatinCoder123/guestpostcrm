@@ -764,6 +764,7 @@ function GPLinksTable({
         docNiche={gpLink?.niche}
         url={gpLink?.backlink_url}
         ContentValid={gpLink.is_content_valid}
+        DocName={gpLink?.document_name}
       />
       <div className="grid grid-cols-6   text-sm font-semibold text-gray-700 px-4 py-3">
         <div>Anchor Text</div>
@@ -870,6 +871,7 @@ function DocumentAnalysisCard({
   url,
   valid,
   ContentValid,
+  DocName,
 }) {
   return (
     <div className="  overflow-hidden ">
@@ -951,11 +953,11 @@ function DocumentAnalysisCard({
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center gap-2
-      rounded-lg bg-indigo-50 px-3 py-2
-      text-sm hover:bg-indigo-100 transition w-fit"
+      rounded-lg bg-indigo-50 px-1 py-1
+      text-sm hover:bg-indigo-100 transition w-full"
           >
             <span className="font-semibold text-indigo-700 truncate">
-              {docName || "Untitled Document"}
+              {DocName || "Untitled Document"}
             </span>
             <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
               ↗
