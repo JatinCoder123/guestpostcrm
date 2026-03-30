@@ -742,6 +742,17 @@ function GPLinksTable({
   linkId,
 }) {
   const spam = getSpamLabel(gpLink.spam_score_c);
+  const formatLinkType = (str) => {
+    if (!str) return "";
+
+    return str
+      .toLowerCase()
+      .split("")
+      .map((char, index) =>
+        index === 0 || index === 2 ? char.toUpperCase() : char,
+      )
+      .join("");
+  };
 
   return (
     <div className="overflow-hidden  mb-4 border-2 border-blue-300 p-2 rounded-xl">
@@ -815,7 +826,7 @@ function GPLinksTable({
         <div
           className={`font-semibold text-${gpLink.link_type === "dofollow" ? "green" : "red"}-600`}
         >
-          {gpLink.link_type}
+          {formatLinkType(gpLink.link_type)}
         </div>
 
         <div className="flex gap-2">
@@ -923,13 +934,14 @@ function DocumentAnalysisCard({
         </div>
 
         {/* 🔹 RIGHT: RESULT */}
-        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-3 gap-4 justify-around">
+        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-4 gap-4 justify-around">
           {/* HEADER ROW */}
           <div className="text-sm font-semibold text-gray-500">Doc Name</div>
           <div className="text-sm font-semibold text-gray-500">Niche</div>
           <div className="text-sm font-semibold text-gray-500">
             Content Verdict
           </div>
+          <div className="text-sm font-semibold text-gray-500">AI Score</div>
 
           {/* VALUES ROW */}
 
@@ -951,7 +963,7 @@ function DocumentAnalysisCard({
           </a>
 
           {/* NICHE */}
-          <span className="text-md text-slate-500">
+          <span className="text-md text-slate-500 truncate">
             {docNiche || "No Niche"}
           </span>
 
@@ -960,6 +972,8 @@ function DocumentAnalysisCard({
             <SparkleIcon className="w-5 h-5 text-green-500" />
             <ValidationBadge valid={ContentValid} />
           </div>
+
+          <div className="flex items-center gap-2">1%</div>
         </div>
       </div>
     </div>
