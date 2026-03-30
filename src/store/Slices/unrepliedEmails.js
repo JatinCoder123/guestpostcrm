@@ -61,7 +61,7 @@ const unrepliedSlice = createSlice({
     },
     removeUnreplied(state, action) {
       state.emails = state.emails.filter(e => extractEmail(e?.from) !== action.payload);
-      state.count = state.emails.length;
+      state.emailsCount[state.emailType]--;
     },
     setShowNewEmailBanner(state, action) {
       state.showNewEmailBanner = action.payload;
