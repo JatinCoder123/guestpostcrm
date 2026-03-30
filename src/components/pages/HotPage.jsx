@@ -23,7 +23,7 @@ export function HotPage() {
   const { currentHot } = useContext(PageContext);
   const { hots, loading, error, count } = useSelector((state) => state.hot);
   const dispatch = useDispatch();
-  const { setEnteredEmail, setWelcomeHeaderContent, setSearch } =
+  const { setEnteredEmail, handleDateClick } =
     useContext(PageContext);
   const navigateTo = useNavigate();
 
@@ -102,14 +102,7 @@ export function HotPage() {
                     <td className="px-6 py-4">
                       <div
                         className="flex items-center gap-2 text-gray-600"
-                        onClick={() => {
-                          const input = extractEmail(email.email);
-                          localStorage.setItem("email", input);
-                          setSearch(input);
-                          setEnteredEmail(input);
-                          setWelcomeHeaderContent("Hot");
-                          navigateTo("/");
-                        }}
+                        onClick={() => handleDateClick({ email: email?.email, navigate: "/" })}
                       >
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span>{email?.date_entered}</span>
@@ -118,28 +111,16 @@ export function HotPage() {
 
                     <td
                       className="px-6 py-4 text-gray-900"
-                      onClick={() => {
-                        const input = extractEmail(email.email);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        setWelcomeHeaderContent("Hot");
-                        navigateTo("/contacts");
-                      }}
+                      onClick={() => handleDateClick({ email: email?.email, navigate: "/contacts" })}
+
                     >
                       {email?.name}
                     </td>
 
                     <td
                       className="px-6 py-4 text-gray-700"
-                      onClick={() => {
-                        const input = extractEmail(email.email);
-                        localStorage.setItem("email", input);
-                        setSearch(input);
-                        setEnteredEmail(input);
-                        setWelcomeHeaderContent("Hot");
-                        navigateTo("/");
-                      }}
+                      onClick={() => handleDateClick({ email: email?.email, navigate: "/" })}
+
                     >
                       {email.description}
                     </td>
@@ -148,9 +129,7 @@ export function HotPage() {
                       onClick={() => {
                         const input = extractEmail(email.email);
                         localStorage.setItem("email", input);
-                        setSearch(input);
                         setEnteredEmail(input);
-                        setWelcomeHeaderContent("Hot");
                         navigateTo("/");
                       }}
                     >

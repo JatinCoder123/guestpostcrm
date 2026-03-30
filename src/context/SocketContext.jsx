@@ -41,7 +41,6 @@ export const SocketContextProvider = ({ children }) => {
     outr_deal_fetch: null,
     outr_order_gp_li: null,
     outr_self_test: null,
-    refreshUnreplied: null,
     outr_paypal_invoice_links: null,
     error_log_created: null,
   });

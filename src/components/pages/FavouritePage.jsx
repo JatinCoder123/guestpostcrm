@@ -19,18 +19,9 @@ export function FavouritePage() {
     (state) => state.fav
   );
   const { handleMove } = useThreadContext()
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setSearch(email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Favourite");
-    navigateTo(navigate);
-  };
   const columns = [
     {
       label: "Created At",
@@ -38,7 +29,8 @@ export function FavouritePage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(row?.email_address, "/"),
+      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/" })
+      ,
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -46,15 +38,14 @@ export function FavouritePage() {
         </span>
       )
     },
-
-
     {
       label: "Contact",
       accessor: "email_address",
       headerClasses: "",
       icon: User,
       classes: "truncate ",
-      onClick: (row) => handleOnClick(row?.email_address, "/contacts"),
+      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/contacts" })
+      ,
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">

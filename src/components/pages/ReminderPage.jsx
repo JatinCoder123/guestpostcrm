@@ -58,18 +58,10 @@ export function ReminderPage() {
     (state) => state.reminders
   );
 
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setSearch(email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Reminders");
-    navigateTo(navigate);
-  };
+
   const columns = [
     {
       label: "Created At",
@@ -77,7 +69,7 @@ export function ReminderPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -91,7 +83,7 @@ export function ReminderPage() {
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/contacts"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -118,7 +110,6 @@ export function ReminderPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/"),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-green-700 cursor-pointer">

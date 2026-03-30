@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
 import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
-import { getUnansweredEmails } from "../store/Slices/unansweredEmails";
 import { getContact, getViewEmail, viewEmailAction } from "../store/Slices/viewEmail";
 import { getOrders } from "../store/Slices/orders";
 import { getInvoices } from "../store/Slices/invoices";
@@ -18,9 +17,6 @@ function useIdle({ idle }) {
     const {
         enteredEmail,
         currentIndex,
-        setCurrentIndex,
-        search,
-        setWelcomeHeaderContent,
     } = useContext(PageContext);
     const dispatch = useDispatch();
     const { emails, loading } = useSelector((state) => state.unreplied);
@@ -28,17 +24,16 @@ function useIdle({ idle }) {
 
     const refreshLadger = () => {
         if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, search }));
+            dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
             dispatch(getViewEmail(enteredEmail));
             dispatch(getContact(enteredEmail));
         } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, search }));
+            dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
             dispatch(getViewEmail(firstEmail));
             dispatch(getContact(firstEmail));
         }
         dispatch(getEmailsCount({}))
         dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
-        dispatch(getUnansweredEmails({ email: enteredEmail, loading: false }));
     };
     useEffect(() => {
         if (emails?.length > 0) {
@@ -75,7 +70,7 @@ function useIdle({ idle }) {
         setUserIdle(idle)
         return () => {
             setUserIdle(true)
-            flushQueue()
+            // flushQueue()
         }
     }, [])
     return [refreshLadger

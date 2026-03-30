@@ -23,13 +23,13 @@ export const NoSearchFoundPage = () => {
 
   const [currentMessageId, setCurrentMessageId] = useState(null);
 
-  const { setSearch, search, setEnteredEmail } = useContext(PageContext);
+  const { enteredEmail, setEnteredEmail } = useContext(PageContext);
   const { handleMove } = useThreadContext();
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getNoSearchResultData(search));
+    dispatch(getNoSearchResultData(enteredEmail));
   }, []);
 
   useEffect(() => {
@@ -42,7 +42,6 @@ export const NoSearchFoundPage = () => {
       manualScanResponse &&
       manualScanResponse?.message_id == currentMessageId?.message_id
     ) {
-      setSearch(currentMessageId?.customer_email);
       setEnteredEmail(currentMessageId?.customer_email);
       toast.success(manualScanResponse?.message)
 
@@ -106,7 +105,6 @@ export const NoSearchFoundPage = () => {
               <button
                 disabled={manualScanLoading}
                 onClick={() => {
-                  setSearch(item.customer_email);
                   setEnteredEmail(item.customer_email);
 
                   localStorage.setItem("email", item.customer_email);

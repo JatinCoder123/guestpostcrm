@@ -54,18 +54,10 @@ export function OffersPage() {
     summary,
   } = useSelector((state) => state.offers);
 
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setSearch(email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Offers");
-    navigateTo(navigate);
-  };
   const columns = [
     {
       label: "Created At",
@@ -73,7 +65,8 @@ export function OffersPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(extractEmail(row?.real_name), "/"),
+      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" })
+      ,
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -88,7 +81,7 @@ export function OffersPage() {
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleOnClick(extractEmail(row?.real_name), "/contacts"),
+        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -136,8 +129,6 @@ export function OffersPage() {
       headerClasses: "",
       icon: ChartNoAxesColumn,
       classes: "truncate max-w-[300px]",
-      onClick: (row) => handleOnClick(extractEmail(row?.from), "/"),
-
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
           {row?.offer_status}

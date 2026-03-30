@@ -30,20 +30,12 @@ export function MovedPage() {
     pageIndex,
   } = useSelector((state) => state.moved);
   const [restoringId, setRestoringId] = useState(null);
-  const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
+  const { handleDateClick } =
     useContext(PageContext);
   const { handleMove } =
     useThreadContext();
-  const navigateTo = useNavigate();
   const dispatch = useDispatch();
-  const handleOnClick = (email, navigate) => {
-    localStorage.setItem("email", email);
-    setSearch(email);
-    setEnteredEmail(email);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Offers");
-    navigateTo(navigate);
-  };
+
   const handleRestore = async (emailItem) => {
     try {
       setRestoringId(emailItem.thread_id);
@@ -79,7 +71,8 @@ export function MovedPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleOnClick(row?.email, "/"),
+      onClick: (row) => handleDateClick({ email: row?.email, navigate: "/" })
+      ,
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -94,7 +87,7 @@ export function MovedPage() {
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleOnClick(row?.email, "/contacts"),
+        handleDateClick({ email: row?.email, navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">

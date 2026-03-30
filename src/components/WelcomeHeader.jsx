@@ -13,24 +13,22 @@ const WelcomeHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
-
-  const { contactInfo, contactLoading } = useSelector((state) => state.viewEmail);
+  const { contactInfo } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
   const email = contactInfo?.email1
-  const { setEnteredEmail, setCurrentIndex, setSearch, welcomeHeaderContent, handleClear } =
+  const { setEnteredEmail, setCurrentIndex, handleClear } =
     useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
-
   const [animate, setAnimate] = useState(false);
   const formatRouteName = (route) => {
+
     if (route === "/") {
       return (
         <span
           className="text-blue-600 hover:underline cursor-pointer"
           onClick={() => {
             localStorage.setItem("email", email);
-            setSearch(email);
             setEnteredEmail(email);
           }}
         >
@@ -38,30 +36,11 @@ const WelcomeHeader = () => {
         </span>
       );
     }
+    return route.split("/")[1].toUpperCase()
 
-    return route
-      .replace("/", "")
-      .replace(/-/g, " ")
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   const resultTitle = formatRouteName(path);
-
-  /* ---------------- EMAIL VISIBILITY ---------------- */
-
-  const emailVisibleRoutes = [
-    "/unreplied-emails",
-    "/unanswered",
-    "/offers/view",
-    "/orders/view",
-    "/deals/view",
-  ];
-
-  const shouldShowEmail = emailVisibleRoutes.some((route) =>
-    path.startsWith(route),
-  );
-
   /* ---------------- EFFECTS ---------------- */
 
   useEffect(() => {
@@ -112,10 +91,11 @@ const WelcomeHeader = () => {
                 ],
               }}
               onClick={() => {
-                handleClear()
-                navigate("/")
-                dispatch(getUnrepliedEmail({ loading: true, type: "email_inbound" }))
-                setCurrentIndex(0)
+                dispatch(unrepliedAction.setShowNewEmailBanner(false)); // ✅ ADD THIS
+                handleClear();
+                navigate("/");
+                dispatch(getUnrepliedEmail({ loading: true, type: "email_inbound" }));
+                // setCurrentIndex(0);
               }}
               transition={{ duration: 2, repeat: Infinity }}
               className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:cursor-pointer
@@ -148,22 +128,6 @@ const WelcomeHeader = () => {
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
             <span className="font-bold text-gray-900">Results for  </span>
             <span className="font-bold text-gray-900">{resultTitle}</span>
-
-            {shouldShowEmail && email && !contactLoading && (
-              <>
-                {" • "}
-                <button
-                  className="font-bold text-blue-600"
-                  onClick={() => {
-                    localStorage.setItem("email", email);
-                    setSearch(email);
-                    setEnteredEmail(email);
-                  }}
-                >
-                  {email}
-                </button>
-              </>
-            )}
           </p>
 
           {/* BADGES */}

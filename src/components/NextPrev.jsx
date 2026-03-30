@@ -5,17 +5,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import { excludeName, extractEmail } from '../assets/assets'
 import { ladgerAction } from '../store/Slices/ladger'
 const NextPrev = () => {
-    const { currentIndex, setCurrentIndex, setEnteredEmail, setSearch, setWelcomeHeaderContent } = useContext(PageContext)
+    const { currentIndex, setCurrentIndex, setEnteredEmail } = useContext(PageContext)
     const { emails } = useSelector((state) => state.unreplied);
     const dispatch = useDispatch()
     const handleNext = () => {
         if (currentIndex < emails?.length - 1) {
             const input = extractEmail(emails[currentIndex + 1].from);
             localStorage.setItem("email", input);
-            setSearch(input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
-            setWelcomeHeaderContent("Unreplied");
             setCurrentIndex((p) => p + 1);
         }
     };
@@ -23,10 +21,8 @@ const NextPrev = () => {
         if (currentIndex > 0) {
             const input = extractEmail(emails[currentIndex - 1].from);
             localStorage.setItem("email", input);
-            setSearch(input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
-            setWelcomeHeaderContent("Unreplied");
             setCurrentIndex((p) => p - 1);
         }
     };

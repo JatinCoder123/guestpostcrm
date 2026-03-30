@@ -18,7 +18,6 @@ import {
     checkForDuplicates,
     getDuplicateCount,
 } from "../store/Slices/duplicateEmailSlice";
-import { getUnansweredEmails } from "../store/Slices/unansweredEmails";
 import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getOrders } from "../store/Slices/orders";
 import { getDeals } from "../store/Slices/deals";
@@ -43,14 +42,14 @@ function useRefresh() {
         enteredEmail,
         currentIndex,
         setCurrentIndex,
-        search,
-        setWelcomeHeaderContent,
+
     } = useContext(PageContext);
     const dispatch = useDispatch();
 
-    const { emails, loading } = useSelector((state) => state.unreplied);
-    const { timeline, email, latest } = useSelector((state) => state.ladger);
-    const { threadId } = useSelector((state) => state.viewEmail);
+    const { emails } = useSelector((state) => state.unreplied);
+    const { timeline } = useSelector((state) => state.ladger);
+    const { contactInfo } = useSelector((state) => state.viewEmail);
+    const threadId = contactInfo?.thread_id
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
         dispatch(getAiCredits());
@@ -82,23 +81,22 @@ function useRefresh() {
         if (currentEventThreadId.current == threadId) {
             console.log("REFRESH LADGER")
             if (enteredEmail) {
-                dispatch(getLadger({ email: enteredEmail, search }));
+                dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
                 dispatch(getViewEmail(enteredEmail));
                 dispatch(getContact(enteredEmail));
             } else if (firstEmail) {
-                dispatch(getLadger({ email: firstEmail, search }));
+                dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
                 dispatch(getViewEmail(firstEmail));
                 dispatch(getContact(firstEmail));
             }
             dispatch(getEmailsCount({}))
             dispatch(getUnrepliedEmail({ loading: false }));
-            dispatch(getUnansweredEmails({ loading: false }));
         }
     };
     useEffect(() => {
         if (emails?.length > 0) {
             setFirstEmail(
-                emails[currentIndex].from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
+                emails[currentIndex]?.from?.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0],
             );
             if (enteredEmail) {
                 const index = emails.findIndex((email) => extractEmail(email?.from) === enteredEmail)
@@ -110,26 +108,25 @@ function useRefresh() {
     }, [emails?.length, currentIndex]);
 
     useEffect(() => {
-        if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, search }));
-            dispatch(getViewEmail(enteredEmail));
-            dispatch(getContact(enteredEmail));
-        } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, search }));
-            dispatch(getViewEmail(firstEmail));
-            dispatch(getContact(firstEmail));
+        if (!enteredEmail) return;
+
+        const emailToUse = enteredEmail
+
+        dispatch(getLadger({ email: emailToUse, search: enteredEmail }));
+        dispatch(getViewEmail(emailToUse));
+        dispatch(getContact(emailToUse));
+    }, [enteredEmail]);
+    useEffect(() => {
+        if (!firstEmail) return;
+        const emailToUse = firstEmail;
+        if (!enteredEmail) {
+            dispatch(getLadger({ email: emailToUse, search: enteredEmail }));
+            dispatch(getViewEmail(emailToUse));
+            dispatch(getContact(emailToUse));
         }
-        dispatch(viewEmailAction.resetViewEmail());
-    }, [enteredEmail, firstEmail, timeline, dispatch]);
+    }, [firstEmail]);
 
     useEffect(() => {
-        if (notificationCount.refreshUnreplied) {
-            refreshLadger();
-            setNotificationCount((prev) => ({
-                ...prev,
-                refreshUnreplied: null,
-            }));
-        }
         if (notificationCount.unreplied_email) {
             refreshLadger();
             dispatch(checkForDuplicates());

@@ -17,39 +17,25 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SocketContext } from "../context/SocketContext";
-import { toast } from "react-toastify";
-
 import { BsRobot } from "react-icons/bs";
 import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
-import { PageContext } from "../context/pageContext";
+import { toast } from "react-toastify";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [aiReply, setAiReply] = useState("");
-
   const { handleMove } = useThreadContext();
   const { crmEndpoint } = useSelector((state) => state.user);
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
   const [frLoading, setFrLoading] = useState(false);
-  const { setNotificationCount } = useContext(SocketContext);
-  const { email, mailersSummary, error } = useSelector((state) => state.ladger);
+  const { mailersSummary } = useSelector((state) => state.ladger);
   const {
     buttons,
     error: buttonsError,
     loading: buttonsLoading,
   } = useSelector((s) => s.quickActionBtn);
-  const {
-    error: sendError,
-    message,
-    loading: viewEmailLoading,
-    viewEmail,
-    sending,
-    threadId,
-    count,
-    contactInfo,
-    accountInfo,
-  } = useSelector((state) => state.viewEmail);
+  const { message, viewEmail, sending, count, contactInfo, accountInfo } =
+    useSelector((state) => state.viewEmail);
   const hanldeConvDone = () => {
     dispatch(
       editContact(
@@ -68,6 +54,7 @@ const LatestMessage = ({ handleMessageClick }) => {
     );
   };
   const email1 = contactInfo?.email1;
+  const threadId = contactInfo?.thread_id;
   const { loading: askBudgetTempLoading, data: askBudgetTemp } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
@@ -95,21 +82,20 @@ const LatestMessage = ({ handleMessageClick }) => {
     name: `Sorry TEMPLATE`,
   });
   const handleSendFirstReply = async () => {
-    const showConsole = true;
     if (!reminderId) return;
 
     try {
       setFrLoading(true);
-      showConsole && console.log(crmEndpoint);
+      showConsole && console.log("First rply send button clicked");
       await fetch(
         `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`,
       );
-      showConsole && console.log("First rply send button clicked");
-      setNotificationCount((prev) => ({
-        ...prev,
-        refreshUnreplied: Date.now(),
-      }));
-      toast.success("First reply sent successfully");
+      dispatch(
+        viewEmailAction.compleConv({
+          message: `First reply sent successfully to ${contactInfo?.email1}`,
+          sendedEmail: contactInfo?.email1,
+        }),
+      );
       setShowFirstReplyBtn(false);
     } catch (err) {
       console.error("Error sending first reply:", err);
@@ -142,18 +128,14 @@ const LatestMessage = ({ handleMessageClick }) => {
 
     fetchFRButtonStatus();
   }, [email1]);
-  useEffect(() => {
-    setAiReply(mailersSummary?.ai_response);
-  }, [mailersSummary]);
+
   useEffect(() => {
     if (buttonsError) {
       toast.error(buttonsError);
       dispatch(quickActionBtnActions.clearErrors());
     }
   }, [dispatch, buttonsError, message]);
-  if (viewEmailLoading) {
-    return <LatestMessageSkeleton />;
-  }
+
   return (
     <>
       <div className=" flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ">
@@ -183,7 +165,7 @@ const LatestMessage = ({ handleMessageClick }) => {
               </button>
             </div>
 
-            {viewEmail?.length > 0 && (
+            {email1 && viewEmail?.length > 0 && (
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
       ${

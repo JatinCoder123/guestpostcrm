@@ -24,6 +24,15 @@ export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const [animate, setAnimate] = useState(false);
+  const {
+    enteredEmail,
+    setEnteredEmail,
+    handleClear,
+    setShowNextPrev,
+    handleDateClick,
+  } = useContext(PageContext);
+  const [search, setSearch] = useState("");
+
   const profileMenuRef = useRef(null);
   const { notificationCount } = useContext(SocketContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
@@ -32,33 +41,22 @@ export function TopNav() {
   const { user, error } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
 
-  const {
-    search,
-    setSearch,
-    setEnteredEmail,
-    setWelcomeHeaderContent,
-    handleClear,
-  } = useContext(PageContext);
-
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
 
   /* 🔴 Blink while input has value */
   useEffect(() => {
-    setIsBlinking(!!search.trim());
-  }, [search]);
+    setIsBlinking(enteredEmail?.trim());
+    setSearch(enteredEmail);
+  }, [enteredEmail]);
 
   /* 🔍 Search */
   const handleSearch = () => {
-    if (!search.trim()) {
+    if (!search?.trim()) {
       toast.error("Please enter an email address");
       return;
     }
-    localStorage.setItem("email", search);
-    setEnteredEmail(search);
-    dispatch(ladgerAction.setTimeline(null));
-    setWelcomeHeaderContent("Search");
-    navigateTo("");
+    handleDateClick({ email: search, navigate: "/" });
   };
 
   const handleCopy = async () => {
@@ -181,7 +179,9 @@ export function TopNav() {
             {/* ❌ CLEAR INSIDE INPUT */}
             {search && (
               <motion.button
-                onClick={handleClear}
+                onClick={() => {
+                  (setSearch(""), handleClear());
+                }}
                 animate={isBlinking ? { scale: [1, 1.1, 1] } : {}}
                 transition={
                   isBlinking ? { repeat: Infinity, duration: 0.7 } : {}

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import { useContext } from "react";
 import {
     Calendar,
     User2,
@@ -7,31 +7,13 @@ import {
     TrendingUp,
     ChartSpline,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { PageContext } from "../../context/pageContext";
-import { ladgerAction } from "../../store/Slices/ladger";
-import { getAllContacts } from "../../store/Slices/contacts";
+
 
 export default function AllContacts() {
     const { contacts, loading } = useSelector((state) => state.contacts);
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-
-    const { setWelcomeHeaderContent, setSearch, setEnteredEmail } =
-        useContext(PageContext);
-
-
-
-    const handleOnClick = (email, path) => {
-        localStorage.setItem("email", email);
-        setSearch(email);
-        setEnteredEmail(email);
-        dispatch(ladgerAction.setTimeline(null));
-        setWelcomeHeaderContent("Offers");
-        navigate(path);
-    };
-
+    const { handleDateClick } = useContext(PageContext);
     return (
         <div className="p-4">
             {/* Header */}
@@ -98,7 +80,7 @@ export default function AllContacts() {
                                     {/* Created At */}
                                     <td
                                         onClick={() =>
-                                            handleOnClick(row?.email_address, "/")
+                                            handleDateClick({ email: row?.email_address, navigate: "/" })
                                         }
                                         className="px-4 py-3 text-gray-700"
                                     >
@@ -108,7 +90,7 @@ export default function AllContacts() {
                                     {/* Email */}
                                     <td
                                         onClick={() =>
-                                            handleOnClick(row?.email_address, "/contacts/id")
+                                            handleDateClick({ email: row?.email_address, navigate: "/contacts" })
                                         }
                                         className="px-4 py-3 text-gray-700 font-medium"
                                     >

@@ -22,6 +22,7 @@ const viewEmailSlice = createSlice({
     dealInfo: null,
     threadId: null,
     message: null,
+    sendFailedResponse: null,
     editMessage: null,
     error: null,
   },
@@ -67,9 +68,9 @@ const viewEmailSlice = createSlice({
       state.stage = stage;
       state.status = status;
       state.customer_type = customer_type;
-      state.contactInfo = contactInfo;
-      state.accountInfo = accountInfo;
-      state.dealInfo = dealInfo;
+      state.contactInfo = contactInfo ? { ...contactInfo } : null;
+      state.accountInfo = accountInfo ? { ...accountInfo } : null;
+      state.dealInfo = dealInfo ? { ...dealInfo } : null;
       state.error = null;
     },
     getContactFailed(state, action) {
@@ -100,6 +101,13 @@ const viewEmailSlice = createSlice({
       state.sending = true;
       state.message = null;
       state.error = null;
+      state.sendFailedResponse = null;
+
+    },
+    sendEmailWrong(state, action) {
+      const { response } = action.payload;
+      state.sending = false;
+      state.sendFailedResponse = response;
     },
     sendEmailSucess(state, action) {
       const { message, sendedEmail } = action.payload;
@@ -124,17 +132,10 @@ const viewEmailSlice = createSlice({
       state.sendedEmail = null
       state.editMessage = null
     },
-    resetViewEmail(state) {
-      state.viewEmail = null;
-      state.threadId = null;
-      state.count = null;
-      state.accountInfo = null;
-      state.contactInfo = null;
-      state.dealInfo = null;
-      state.stage = null;
-      state.status = null;
-      state.customer_type = null;
+    clearFailedResponse(state) {
+      state.sendFailedResponse = null
     },
+
     updateContactInfo(state, action) {
       const { key } = action.payload;
       state.contactInfo[key] = state.contactInfo[key] === "1" ? "0" : "1";
@@ -176,7 +177,7 @@ export const getContact = (email = null) => {
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=get_contact&email=${email?.trim()}&page=1&page_size=50`,
+        }&type=get_contact&email=${email?.trim()}`,
       );
       showConsole && console.log(`Get contact`, data);
       dispatch(
@@ -233,7 +234,7 @@ export const editContact = (contactData, message = "") => {
       showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess({ message }));
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      dispatch(getContact());
+      dispatch(getContact(contactData?.email1));
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed"),
@@ -247,7 +248,6 @@ export const sendEmail = (
 ) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
-    console.log(formData)
     try {
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
@@ -260,10 +260,14 @@ export const sendEmail = (
       );
 
       showConsole && console.log("Reply Data", data);
+      if (!data.success && data.response) {
+        dispatch(viewEmailSlice.actions.sendEmailWrong({ response: data.response }))
+        return
+      }
 
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
-          message: data.message,
+          message: `Reply Successfully Sent To ${formData.get("email")}`,
           sendedEmail: formData.get("email")
         }),
       );
