@@ -95,6 +95,16 @@ const TIME_FILTERS = [
 ];
 
 const Debug = () => {
+  const handleRowClick = (row) => {
+    const messageId = row.message_id;
+    const recordId = row.id;
+
+    const url = `https://testcrm.guestpostcrm.com/index.php?entryPoint=handle_push_notification&message_id=${messageId}&test_now=${recordId}`;
+
+    window.open(url, "_blank");
+
+    setSelectedRecord(row);
+  };
   const { state } = useLocation();
   const navigateTo = useNavigate();
 
@@ -361,7 +371,7 @@ const Debug = () => {
         {/* Filters */}
         <div className="flex justify-center gap-6 flex-wrap">
           {/* Email Search */}
-          <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
+          {/* <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
             <span className="text-sm font-medium text-gray-600">Email</span>
 
             <div className="relative">
@@ -382,7 +392,7 @@ const Debug = () => {
                 </button>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Timeline */}
           <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
@@ -449,7 +459,7 @@ const Debug = () => {
                 {filteredData.map((row, index) => (
                   <tr
                     key={index}
-                    onClick={() => setSelectedRecord(row)}
+                    onClick={() => handleRowClick(row)}
                     className="border-t hover:bg-gray-50 cursor-pointer"
                   >
                     {columns.map((col) => (
