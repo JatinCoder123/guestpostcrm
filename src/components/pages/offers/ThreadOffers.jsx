@@ -14,8 +14,10 @@ import { LoadingChase } from "../../Loading";
 import { toast } from "react-toastify";
 import { Save, Send, X, Loader2 } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
+import { ManualSideCall } from "../../../services/utils";
+import { getLadger } from "../../../store/Slices/ladger";
 
-export default function ThreadOffers({ threadId, email }) {
+export default function ThreadOffers({ threadId, email, id }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [send, setSend] = useState(false);
@@ -26,7 +28,7 @@ export default function ThreadOffers({ threadId, email }) {
   const [editData, setEditData] = useState({});
   const { websites: websiteLists } = useSelector((state) => state.website);
 
-  const { offers, deleteOfferId, deleting, updating, updateOfferId, message, error } = useSelector(
+  const { offers, deleteOfferId, deleting, updating, message, error } = useSelector(
     (state) => state.offers
   );
   const { deals } = useSelector(
@@ -63,22 +65,26 @@ export default function ThreadOffers({ threadId, email }) {
     );
 
     const valid = websiteLists.filter((w) => {
-      // ❌ already used in OTHER offers
       const usedInOffers = threadOffers.some(
         (o) => o.website === w && o.id !== editData.id
       );
 
-      // ❌ already used in deals
       const usedInDeals = threadDeals.some(
         (d) => d.website_c === w
       );
 
       return !usedInOffers && !usedInDeals;
     });
-    const activeOffers = threadOffers.filter(o => o.offer_status == "active")
+    let activeOffers = []
+    if (id) {
+      activeOffers = threadOffers.filter(o => o.id == id)
+    }
+    else {
+      activeOffers = threadOffers.filter(o => o.offer_status == "active")
+    }
     setValidWebsite(valid);
     setCurrentOffers(activeOffers);
-  }, [offers, deals, editData, threadId]);
+  }, [offers, deals, editData, threadId, id]);
 
 
   // 🔥 INLINE EDIT HANDLERS
@@ -99,9 +105,10 @@ export default function ThreadOffers({ threadId, email }) {
   };
 
   const handleCreate = () => {
-    navigate(`/offers/${threadId}/create`, {
+    navigate(`/offers/create`, {
       state: {
         email,
+        threadId
       },
     });
   };
@@ -130,11 +137,18 @@ export default function ThreadOffers({ threadId, email }) {
 
     if (message) {
       toast.success(message);
-
-      // 🔥 only move if send was true
-      if (send && message?.includes("Updated")) {
-        handlePreview([editData]); // or handleMove directly
-        setSend(false); // reset after action
+      if (message?.includes("Updated")) {
+        ManualSideCall(
+          crmEndpoint,
+          email,
+          "Our Offer Updated Successfully",
+          1,
+          () => dispatch(getLadger({ email })),
+        );
+        if (send) {
+          handlePreview([editData]);
+          setSend(false);
+        }
       }
 
       dispatch(offersAction.clearAllMessages());

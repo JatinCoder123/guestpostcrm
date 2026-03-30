@@ -4,7 +4,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 import useIdle from "../../hooks/useIdle";
 
 export default function DynamicRouteHandler({ mode }) {
-    const { type, threadId, id } = useParams();
+    const { type, } = useParams();
     const { state } = useLocation()
     useIdle({ idle: false })
 
@@ -12,13 +12,12 @@ export default function DynamicRouteHandler({ mode }) {
 
     if (!config) return <NotFoundPage />;
     let Component = null;
-    if (mode === "list" && !threadId) Component = config.list;
-    if (mode === "list" && threadId) Component = config.threadList;
+    if (mode === "list" && !state?.threadId) Component = config.list;
+    if (mode === "list" && state?.threadId) Component = config.threadList;
     if (mode === "create") Component = config.create;
     if (mode === "edit") Component = config.edit;
-    if (mode === "view") Component = config.view;
 
     if (!Component) return <NotFoundPage />;
 
-    return <Component threadId={threadId} id={id} email={state?.email} />;
+    return <Component threadId={state?.threadId} id={state?.id} email={state?.email} />;
 }

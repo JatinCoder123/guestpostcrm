@@ -292,11 +292,11 @@ function SummaryCard({
     }
 
     data?.length > 0
-      ? navigateTo(`/${type}/${threadId}`, {
-        state: { email },
+      ? navigateTo(`/${type}/view`, {
+        state: { email, threadId },
       })
-      : navigateTo(`/${type}/${threadId}/create`, {
-        state: { email },
+      : navigateTo(`/${type}/create`, {
+        state: { email, threadId },
       });
   };
 
@@ -313,76 +313,70 @@ function SummaryCard({
         ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
         : "transition-all duration-300"
         }`}
-      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${highlight
-        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
-        : "transition-all duration-300"
-        }`}
     >
       {(creating && type === "orders") ||
         loading ||
         (syncType == type && syncing) ? (
-        loading ||
-          (syncType == type && syncing) ? (
-          <LoadingChase />
-        ) : (
-          <>
-            <div className="flex items-center gap-3">
-              {type == "orders" ? (
-                <button
-                  className="cursor-pointer"
-                  onClick={() =>
-                    navigateTo(`/orders/${threadId}/create`, {
-                      state: {
-                        email,
-                      },
-                    })
-                  }
-                >
-                  <img
-                    width="36"
-                    height="36"
-                    src="https://img.icons8.com/arcade/64/plus.png"
-                    alt="plus"
-                  />
-                </button>
-              ) : (
-                <div
-                  className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}
-                >
-                  <Icon />
-                </div>
-              )}
-
-              <div>
-                <p className="text-sm font-semibold">
-                  {data?.length > 0
-                    ? `${data.length} ${data.length === 1 ? type.slice(0, -1).toUpperCase() : type.toUpperCase()}`
-                    : title}
-                </p>
+        <LoadingChase />
+      ) : (
+        <>
+          <div className="flex items-center gap-3">
+            {type == "orders" ? (
+              <button
+                className="cursor-pointer"
+                onClick={() =>
+                  navigateTo(`/orders/${threadId}/create`, {
+                    state: {
+                      email,
+                    },
+                  })
+                }
+              >
+                <img
+                  width="36"
+                  height="36"
+                  src="https://img.icons8.com/arcade/64/plus.png"
+                  alt="plus"
+                />
+              </button>
+            ) : (
+              <div
+                className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}
+              >
+                <Icon />
               </div>
+            )}
+
+            <div>
+              <p className="text-sm font-semibold">
+                {data?.length > 0
+                  ? `${data.length} ${data.length === 1 ? type.slice(0, -1).toUpperCase() : type.toUpperCase()}`
+                  : title}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleClick}
-                disabled={type == "invoice"}
-                className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-              >
-                {data?.length > 0 ? (
-                  <Eye className="w-4 h-4" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-              </button>
-              <button
-                onClick={handleSync}
-                disabled={syncing || type == "invoice"}
-                className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-              >
-                <RefreshCcw className="w-4 h-4" />
-              </button>
-            </div>
-          </>
-        )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleClick}
+              disabled={type == "invoice"}
+              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
+            >
+              {data?.length > 0 ? (
+                <Eye className="w-4 h-4" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+            </button>
+            <button
+              onClick={handleSync}
+              disabled={syncing || type == "invoice"}
+              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
+            >
+              <RefreshCcw className="w-4 h-4" />
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

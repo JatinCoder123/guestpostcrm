@@ -52,8 +52,6 @@ const offersSlice = createSlice({
     createOfferSuccess(state, action) {
       state.creating = false;
       state.message = action.payload.message;
-      state.offers = action.payload.offers;
-      state.count = action.payload.count;
       state.error = null;
     },
     createOfferFailed(state, action) {
@@ -182,7 +180,7 @@ export const updateOffer = (offer) => {
     }
   };
 };
-export const createOffer = ({ threadId, email, offers = [], send = false }) => {
+export const createOffer = ({ threadId, email, offers = [], isSend = false }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
@@ -207,14 +205,11 @@ export const createOffer = ({ threadId, email, offers = [], send = false }) => {
         },
       );
       showConsole && console.log(`Create Offer`, data);
-      const updatedOffers = [...offers, ...getState().offers.offers];
       dispatch(
         offersSlice.actions.createOfferSuccess({
-          message: send
+          message: isSend
             ? "Offers Created and Send Successfully"
             : "Offers Created Successfully",
-          offers: updatedOffers,
-          count: updatedOffers.length,
         }),
       );
       dispatch(offersSlice.actions.clearAllErrors());

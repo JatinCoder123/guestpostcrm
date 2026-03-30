@@ -4,9 +4,6 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
-import { DealsPage } from "./components/pages/DealsPage";
-import { OffersPage } from "./components/pages/OffersPage";
-import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
@@ -111,15 +108,6 @@ const router = createBrowserRouter([
         element: <Contactpage />,
       },
       {
-<<<<<<< HEAD
-        path: "unanswered",
-        element: <UnansweredPage />,
-=======
-        path: "compose",
-        element: <ComposePage />,
->>>>>>> fixingTimeline
-      },
-      {
         path: "console",
         element: <ConsoleHandler />,
       },
@@ -143,20 +131,16 @@ const router = createBrowserRouter([
         element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: ":type/:threadId",
+        path: ":type/view",
         element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: ":type/:threadId/create",
+        path: ":type/create",
         element: <DynamicRouteHandler mode="create" />,
       },
       {
-        path: ":type/:threadId/:id/edit",
+        path: ":type/edit",
         element: <DynamicRouteHandler mode="edit" />,
-      },
-      {
-        path: ":type/:threadId/:id/view",
-        element: <DynamicRouteHandler mode="view" />,
       },
       {
         path: "invoices",

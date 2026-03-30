@@ -51,8 +51,6 @@ const dealsSlice = createSlice({
     createDealSucess(state, action) {
       state.creating = false;
       state.message = action.payload.message;
-      state.deals = action.payload.deals;
-      state.count = action.payload.count;
       state.error = null;
     },
     createDealFailed(state, action) {
@@ -141,7 +139,7 @@ export const getDeals = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const createDeal = (threadId, deals = [], send = false) => {
+export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
@@ -164,16 +162,13 @@ export const createDeal = (threadId, deals = [], send = false) => {
         }
       );
       showConsole && console.log(`Create Deal`, res);
-      const updatedDeals = [...deals, ...getState().deals.deals];
       dispatch(
         dealsSlice.actions.createDealSucess({
           message: send ? "Deals Created and Send Successfully" : "Deals Created Successfully",
-          deals: updatedDeals,
-          count: updatedDeals.length,
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Deal Created")
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Deal Created")
 
     } catch (error) {
       dispatch(dealsSlice.actions.createDealFailed("Deal Creation Failed! Please Try Again"));

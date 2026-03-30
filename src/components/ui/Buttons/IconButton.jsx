@@ -14,8 +14,8 @@ const IconButton = ({
             <button
                 onClick={onClick}
                 disabled={disabled || loading}
-                className={`p-3 rounded-xl transition flex items-center justify-center
-          ${disabled || loading ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}
+                className={`p-3 rounded-xl transition flex items-center justify-center 
+          ${disabled || loading ? "opacity-50 cursor-not-allowed" : "hover:scale-105 cursor-pointer"}
           ${className}`}
             >
                 {loading

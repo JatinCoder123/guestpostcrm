@@ -9,22 +9,35 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 import { Trash2 } from "lucide-react";
 import { Save, Send } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
-import { createOffer, offersAction } from "../../../store/Slices/offers";
+import { createOffer, getOffers, offersAction } from "../../../store/Slices/offers";
 import { toast } from "react-toastify";
+import useModule from "../../../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import { ManualSideCall } from "../../../services/utils";
+import { getLadger } from "../../../store/Slices/ladger";
 
-export default function CreateOffers() {
+export default function CreateOffers({ threadId, email }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const location = useLocation();
-    const { threadId } = useParams();
-    const email = location.state?.email;
-
     const { websites: websiteLists } = useSelector((state) => state.website);
+    const { crmEndpoint } = useSelector((state) => state.user);
     const { deals } = useSelector((state) => state.deals);
     const { offers, creating, message, error } = useSelector((state) => state.offers);
     const [send, setSend] = useState(false);
     const { handleMove } = useThreadContext();
-
+    const { data: templateData } = useModule({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        method: "POST",
+        body: {
+            module: "EmailTemplates",
+            where: { name: "OfferORG" },
+        },
+        headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        name: "TemplateData",
+    });
     const [newOffers, setNewOffers] = useState([
         { website: "", client_offer_c: "", our_offer_c: "" },
     ]);
@@ -94,6 +107,8 @@ export default function CreateOffers() {
     };
 
     const handlePreview = () => {
+        let html = templateData?.[0]?.body_html || "";
+
         const tableHtml = buildTable(
             newOffers,
             "Offers",
@@ -101,28 +116,35 @@ export default function CreateOffers() {
             "our_offer_c"
         );
 
-        handleMove({
-            email,
-            threadId,
-            reply: tableHtml,
-        });
+        html = html
+            .replace("{{USER_EMAIL}}", email)
+            .replace("{{TABLE}}", tableHtml);
+
+        handleMove({ email, threadId, reply: html });
     };
     useEffect(() => {
 
         if (message) {
             toast.success(message);
-
+            dispatch(getOffers({ email }))
             // 🔥 only move if send was true
-            if (send && message?.includes("Created")) {
-                handlePreview(); // or handleMove directly
-                setSend(false); // reset after action
-                dispatch(offersAction.clearAllMessages());
-
+            if (message?.includes("Created")) {
+                ManualSideCall(
+                    crmEndpoint,
+                    email,
+                    "Our Offer Created Successfully",
+                    1,
+                    () => dispatch(getLadger({ email })),
+                );
+                if (send) {
+                    setSend(false);
+                    dispatch(offersAction.clearAllMessages());
+                    handlePreview();
+                }
             }
             else {
                 navigate(-1)
                 dispatch(offersAction.clearAllMessages());
-
             }
         }
 
