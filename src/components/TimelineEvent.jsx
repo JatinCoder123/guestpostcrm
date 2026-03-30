@@ -28,6 +28,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [messageData, setMessageData] = useState(null);
   const [messageLoading, setMessageLoading] = useState(false);
   const [activeVisualization, setActiveVisualization] = useState(null);
+  const [showVisualization, setShowVisualization] = useState(false);
   const topRef = useRef(null);
   const bottomRef = useRef(null);
 
@@ -597,51 +598,33 @@ const TimelineEvent = ({ handleMessageClick }) => {
                                   let text = "No description available";
 
                                   try {
-                                    if (typeof step.description === "string") {
-                                      // fallback for old format
-                                      text = step.description
+                                    const desc = step.description;
+
+                                    if (!desc) {
+                                      text = "No description available";
+                                    } else if (typeof desc === "string") {
+                                      // string (old case)
+                                      text = desc
                                         .replace(/<[^>]*>/g, "")
                                         .trim();
-                                    } else if (
-                                      typeof step.description === "object"
-                                    ) {
-                                      // NEW JSON format handling
-                                      const orders =
-                                        step.description?.orders || [];
-
-                                      text = orders
-                                        .map((order) => {
-                                          const docName =
-                                            order.document_name || "";
-                                          const niche =
-                                            order.niche_validation?.niche || "";
-                                          const reasons =
-                                            order.niche_validation?.reasons?.join(
-                                              " ",
-                                            ) || "";
-
-                                          return `${docName} ${niche} ${reasons}`;
-                                        })
-                                        .join(" ")
-                                        .trim();
+                                    } else if (typeof desc === "object") {
+                                      // array OR object → stringify safely
+                                      text = JSON.stringify(desc, null, 2);
+                                    } else {
+                                      // fallback (number, boolean, etc.)
+                                      text = String(desc);
                                     }
                                   } catch (e) {
                                     text = "Invalid description format";
                                   }
 
-                                  const words = text.split(/\s+/);
-                                  const preview =
-                                    words.length > 50
-                                      ? words.slice(0, 50).join(" ") + "..."
-                                      : text;
-
                                   return (
-                                    <p
+                                    <pre
                                       title={text}
-                                      className="text-white/90 text-sm leading-relaxed cursor-default"
+                                      className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap break-words max-h-[300px] overflow-auto"
                                     >
-                                      {preview}
-                                    </p>
+                                      {text}
+                                    </pre>
                                   );
                                 })()}
                               </div>
