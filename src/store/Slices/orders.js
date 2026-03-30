@@ -327,7 +327,7 @@ export const createOrder3 = (email, orders = [], send) => {
   };
 };
 
-export const updateOrder = (order, send = true, id = null) => {
+export const updateOrder = ({ order, email }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
     showConsole && console.log("Update Order", order);
@@ -342,6 +342,7 @@ export const updateOrder = (order, send = true, id = null) => {
           "notes": order.note
         }
       );
+      console.log("NOTE RES", noteRes)
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
@@ -367,14 +368,13 @@ export const updateOrder = (order, send = true, id = null) => {
       dispatch(
         ordersSlice.actions.updateOrderSuccess({
           orders: updatedOrders,
-          message: `Order Updated ${send ? "and Send Successfully" : "Successfully"}`,
-          id: id,
+          message: `Order Updated Successfully`,
         }),
       );
 
       dispatch(ordersSlice.actions.clearAllErrors());
 
-      updateActivity(getState().user.crmEndpoint, extractEmail(order.real_name), getState().user.user.name, getState().user.user.email, "Order Updated ")
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Order Updated ")
 
     } catch (error) {
       showConsole && console.log(error);

@@ -14,6 +14,7 @@ import {
 import { useSelector } from "react-redux";
 import PageHeader from "../../PageHeader";
 import IconButton from "../../ui/Buttons/IconButton";
+import { updateOrder } from "../../../store/Slices/orders";
 
 export default function EditOrder({ threadId, id, email }) {
     const [order, setOrder] = useState({})
@@ -27,7 +28,7 @@ export default function EditOrder({ threadId, id, email }) {
 
     const handleUpdate = (isSend = false) => {
         setSend(isSend)
-        dispatch(createOrder2({ email, order, threadId }));
+        dispatch(updateOrder({ email, order }));
     };
     useEffect(() => {
         const order = orders.find(o => o.thread_id == threadId && o.id == id)
