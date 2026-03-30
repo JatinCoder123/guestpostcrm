@@ -229,7 +229,7 @@ export function UnrepliedEmailsPage() {
       >
         <TableTitleBar
           Icon={Mail}
-          title={"Unreplied Emails"}
+          title={STATUS_CONFIG.find(s => s.emailType == emailType).label + " Emails"}
           titleClass={"text-rose-700"}
         />
 

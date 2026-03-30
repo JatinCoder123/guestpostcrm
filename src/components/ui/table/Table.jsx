@@ -152,7 +152,7 @@ const TableView = ({
                             onClick={() => setShowStatus(prev => !prev)}
                             className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
                         >
-                            {showStatus ? <EyeOff className="w-4 h-4 text-gray-700" /> : <Eye className="w-4 h-4 text-gray-700" />}
+                            {showStatus ? <Eye className="w-4 h-4 text-gray-700" /> : <EyeOff className="w-4 h-4 text-gray-700" />}
                         </button>
                     </div>}
                     {children}
