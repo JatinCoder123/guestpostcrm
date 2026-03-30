@@ -715,7 +715,6 @@ const getSpamLabel = (score) => {
 const ValidationBadge = ({ valid }) => {
   return valid === "1" ? (
     <span className="flex items-center gap-1 text-green-600 font-medium">
-      <SparkleIcon className="w-5 h-5 text-green-500" />
       <img
         width="30"
         height="30"
@@ -730,7 +729,6 @@ const ValidationBadge = ({ valid }) => {
         src="https://img.icons8.com/3d-fluency/94/cancel.png"
         alt="cross"
       />
-      <span>High Spam Risk</span>
     </span>
   );
 };
@@ -754,6 +752,7 @@ function GPLinksTable({
         docLink={gpLink?.gp_doc_url_c}
         docNiche={gpLink?.niche}
         url={gpLink?.backlink_url}
+        ContentValid={gpLink.is_content_valid}
       />
       <div className="grid grid-cols-6   text-sm font-semibold text-gray-700 px-4 py-3">
         <div>Anchor Text</div>
@@ -778,21 +777,33 @@ function GPLinksTable({
         </div>
 
         {/* Validation */}
-        <ValidationBadge valid={gpLink.is_link_valid} />
+        <div className="flex items-center gap-2">
+          <SparkleIcon className="w-5 h-5 text-green-500" />
+          <ValidationBadge valid={gpLink.is_anchor_text_valid} />
+        </div>
 
         {/* Spam Score */}
         <div className={`font-medium ${spam.color}`}>
           <div className="flex items-center gap-1">
+            MOZ{" "}
+            <span className="text-yellow-400 text-xs sm:text-sm mr-1">★</span>
             {gpLink.spam_score_c}{" "}
-            <div className="flex items-center ml-3">
-              <SparkleIcon className="w-5 h-5 text-green-500" />
+            {gpLink.spam_score_c < 7 ? (
               <img
                 width="30"
                 height="30"
                 src="https://img.icons8.com/3d-fluency/94/ok.png"
                 alt="ok"
               />
-            </div>
+            ) : (
+              <img
+                src="https://img.icons8.com/3d-fluency/94/cancel.png"
+                alt="cross"
+                width="30"
+                height="30"
+              />
+            )}
+            <div className="flex items-center ml-3"></div>
           </div>
         </div>
 
@@ -840,14 +851,22 @@ function GPLinksTable({
   );
 }
 
-function DocumentAnalysisCard({ docLink, docName, docNiche, website, url }) {
+function DocumentAnalysisCard({
+  docLink,
+  docName,
+  docNiche,
+  website,
+  url,
+  valid,
+  ContentValid,
+}) {
   return (
     <div className="  overflow-hidden ">
       {/* HEADER */}
       <div className="flex items-center justify-around gap-2 bg-blue-300">
         {" "}
         <div className=" text-white px-4 py-2 text-md font-bold ">
-          Domain
+          GuestPost Result for
           <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
             {" "}
             <a href={website} target="_blank">
@@ -855,7 +874,7 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website, url }) {
             </a>
           </span>
         </div>{" "}
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <SparkleIcon className="w-5 h-5 text-green-700" />
           <img
             width="30"
@@ -863,7 +882,7 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website, url }) {
             src="https://img.icons8.com/3d-fluency/94/ok.png"
             alt="ok"
           />
-        </div>
+        </div> */}
         <div className=" text-white px-4 py-2 text-md font-bold ml-10 ">
           URL
           <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
@@ -875,12 +894,7 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website, url }) {
         </div>{" "}
         <div className="flex items-center gap-2">
           <SparkleIcon className="w-5 h-5 text-green-700" />
-          <img
-            width="30"
-            height="30"
-            src="https://img.icons8.com/3d-fluency/94/ok.png"
-            alt="ok"
-          />
+          <ValidationBadge valid={valid} />
         </div>
       </div>
 
@@ -944,12 +958,7 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website, url }) {
           {/* VERDICT */}
           <div className="flex items-center gap-2">
             <SparkleIcon className="w-5 h-5 text-green-500" />
-            <img
-              width="30"
-              height="30"
-              src="https://img.icons8.com/3d-fluency/94/ok.png"
-              alt="ok"
-            />
+            <ValidationBadge valid={ContentValid} />
           </div>
         </div>
       </div>
