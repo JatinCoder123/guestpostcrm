@@ -22,6 +22,7 @@ const viewEmailSlice = createSlice({
     dealInfo: null,
     threadId: null,
     message: null,
+    sendFailedResponse: null,
     editMessage: null,
     error: null,
   },
@@ -100,6 +101,13 @@ const viewEmailSlice = createSlice({
       state.sending = true;
       state.message = null;
       state.error = null;
+      state.sendFailedResponse = null;
+
+    },
+    sendEmailWrong(state, action) {
+      const { response } = action.payload;
+      state.sending = false;
+      state.sendFailedResponse = response;
     },
     sendEmailSucess(state, action) {
       const { message, sendedEmail } = action.payload;
@@ -123,6 +131,9 @@ const viewEmailSlice = createSlice({
       state.message = null;
       state.sendedEmail = null
       state.editMessage = null
+    },
+    clearFailedResponse(state) {
+      state.sendFailedResponse = null
     },
 
     updateContactInfo(state, action) {
@@ -237,7 +248,6 @@ export const sendEmail = (
 ) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
-    console.log(formData)
     try {
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=thread_reply`,
@@ -250,6 +260,10 @@ export const sendEmail = (
       );
 
       showConsole && console.log("Reply Data", data);
+      if (!data.success && data.response) {
+        dispatch(viewEmailSlice.actions.sendEmailWrong({ response: data.response }))
+        return
+      }
 
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({

@@ -55,6 +55,7 @@ const ThreadReply = () => {
     message: sendMessage,
     sending,
     error: sendError,
+    sendFailedResponse
   } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
@@ -64,7 +65,6 @@ const ThreadReply = () => {
   const [openParent, setOpenParent] = useState(null);
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
-  const [bcc, setBcc] = useState([]);
   const [checkingThreadId, setCheckingTheadId] = useState(false);
 
   const [templateId, setTemplateId] = useState(null);
@@ -148,11 +148,8 @@ const ThreadReply = () => {
     setEditorContent(input);
   }
 
-  useEffect(() => {
-    console.log("FILES", files);
-  }, [files]);
 
-  const handleSendClick = async () => {
+  const handleSendClick = async (forceSend = 0) => {
     try {
       setCheckingTheadId(true);
 
@@ -168,6 +165,7 @@ const ThreadReply = () => {
         return;
       }
       console.log("THREAD", threadId)
+      console.log("FORCE SEND", forceSend)
       // 🔹 Check thread match
       if (data.thread_id !== threadId) {
         toast.error("Thread mismatch! Cannot send email ");
@@ -182,10 +180,9 @@ const ThreadReply = () => {
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
-
+      formData.append("force_send", forceSend);
       formData.append("cc", cc.join(","));
       formData.append("to", to.join(","));
-      formData.append("bcc", bcc.join(","));
 
       files.forEach((file) => {
         formData.append("attachments[]", file.file);
@@ -232,7 +229,7 @@ const ThreadReply = () => {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [sendMessage, sendError]);
+  }, [sendMessage, sendError, sendFailedResponse]);
   useEffect(() => {
     if (message && aiResponse) {
       if (message == "User") setAiNewContent(aiResponse);
@@ -325,8 +322,6 @@ const ThreadReply = () => {
             setTo={setTo}
             cc={cc}
             setCc={setCc}
-            bcc={bcc}
-            setBcc={setBcc}
           />
         </div>
         <div className="flex flex-col h-full w-full">
@@ -336,8 +331,6 @@ const ThreadReply = () => {
             setEditorReady={setEditorReady}
             editorRef={editorRef}
           />
-
-          {/* ACTION ROW */}
 
           <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
             <div className="flex items-center gap-3 flex-wrap">
@@ -520,7 +513,7 @@ const ThreadReply = () => {
               <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={handleSendClick}
+                onClick={() => handleSendClick()}
                 disabled={loading || checkingThreadId}
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
               >
@@ -537,6 +530,82 @@ const ThreadReply = () => {
           </div>
         </div>
       </motion.div>
+      <AnimatePresence>
+        {sendFailedResponse && (
+          <motion.div
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 40 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 40 }}
+              transition={{ type: "spring", stiffness: 120 }}
+              className="bg-white w-[90%] max-w-2xl rounded-2xl shadow-2xl p-6"
+            >
+              {/* HEADER */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold text-red-600">
+                  ⚠️ Email Not Sent
+                </h2>
+                <button
+                  onClick={() => setShowFailedModal(false)}
+                  className="text-gray-500 hover:text-black"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* REASON */}
+              <div className="mb-4">
+                <p className="text-sm font-semibold text-red-600">Reason:</p>
+                <p className="text-sm text-gray-700">
+                  {sendFailedResponse.reason}
+                </p>
+              </div>
+
+              {/* SUGGESTED REPLY */}
+              <div className="mb-5">
+                <p className="text-sm font-semibold text-indigo-600">
+                  Suggested Reply:
+                </p>
+                <div className="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-lg border max-h-60 overflow-auto">
+                  {sendFailedResponse.suggested_reply}
+                </div>
+              </div>
+
+              {/* ACTIONS */}
+              <div className="flex justify-end gap-3">
+
+                {/* USE SUGGESTED */}
+                <button
+                  onClick={() => {
+                    setEditorContent(
+                      sendFailedResponse.suggested_reply
+                    );
+                    dispatch(viewEmailAction.clearFailedResponse());
+                  }}
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+                >
+                  Use Suggested Reply
+                </button>
+
+                {/* FORCE SEND */}
+                <button
+                  onClick={() => {
+                    handleSendClick(1);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700"
+                >
+                  Force Send
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

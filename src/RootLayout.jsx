@@ -76,7 +76,13 @@ const RootLayout = () => {
       return;
     }
 
-    if (!nextEmailObj) return;
+    if (!nextEmailObj) {
+      localStorage.removeItem("email");
+      setEnteredEmail("");
+
+      navigate("/unreplied-emails");
+      return;
+    }
 
     handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), navigate: "/", nextPrev: true })
 
