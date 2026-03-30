@@ -722,7 +722,6 @@ const ValidationBadge = ({ valid }) => {
         src="https://img.icons8.com/3d-fluency/94/ok.png"
         alt="ok"
       />
-      <span>Validated</span>
     </span>
   ) : (
     <span className="flex items-center gap-1 text-red-600 font-medium">
@@ -754,10 +753,11 @@ function GPLinksTable({
         website={gpLink.name}
         docLink={gpLink?.gp_doc_url_c}
         docNiche={gpLink?.niche}
+        url={gpLink?.backlink_url}
       />
       <div className="grid grid-cols-6   text-sm font-semibold text-gray-700 px-4 py-3">
-        <div>URL / Anchor Text</div>
-        <div>Validation</div>
+        <div>Anchor Text</div>
+        <div>Anchor Verdict</div>
         <div>Spam Score</div>
         <div>Amount</div>
         <div>Type</div>
@@ -784,13 +784,15 @@ function GPLinksTable({
         <div className={`font-medium ${spam.color}`}>
           <div className="flex items-center gap-1">
             {gpLink.spam_score_c}{" "}
-            <SparkleIcon className="w-5 h-5 text-green-500" />
-            <img
-              width="30"
-              height="30"
-              src="https://img.icons8.com/3d-fluency/94/ok.png"
-              alt="ok"
-            />
+            <div className="flex items-center ml-3">
+              <SparkleIcon className="w-5 h-5 text-green-500" />
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/3d-fluency/94/ok.png"
+                alt="ok"
+              />
+            </div>
           </div>
         </div>
 
@@ -838,29 +840,48 @@ function GPLinksTable({
   );
 }
 
-function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
+function DocumentAnalysisCard({ docLink, docName, docNiche, website, url }) {
   return (
     <div className="  overflow-hidden ">
       {/* HEADER */}
-      <div className="flex items-center gap-2 bg-blue-300">
+      <div className="flex items-center justify-around gap-2 bg-blue-300">
         {" "}
         <div className=" text-white px-4 py-2 text-md font-bold ">
-          Guest Post Order for
+          Domain
           <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
             {" "}
-            {website ?? "-"}{" "}
+            <a href={website} target="_blank">
+              {website ?? "-"}
+            </a>
           </span>
         </div>{" "}
-        <div className="text-sm font-semibold text-white-100">
-          Website Verdict
+        <div className="flex items-center gap-2">
+          <SparkleIcon className="w-5 h-5 text-green-700" />
+          <img
+            width="30"
+            height="30"
+            src="https://img.icons8.com/3d-fluency/94/ok.png"
+            alt="ok"
+          />
         </div>
-        <SparkleIcon className="w-5 h-5 text-green-700" />
-        <img
-          width="30"
-          height="30"
-          src="https://img.icons8.com/3d-fluency/94/ok.png"
-          alt="ok"
-        />
+        <div className=" text-white px-4 py-2 text-md font-bold ml-10 ">
+          URL
+          <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
+            {" "}
+            <a href={url} target="_blank">
+              {url ?? "-"}
+            </a>
+          </span>
+        </div>{" "}
+        <div className="flex items-center gap-2">
+          <SparkleIcon className="w-5 h-5 text-green-700" />
+          <img
+            width="30"
+            height="30"
+            src="https://img.icons8.com/3d-fluency/94/ok.png"
+            alt="ok"
+          />
+        </div>
       </div>
 
       {/* CONTENT */}
