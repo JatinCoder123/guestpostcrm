@@ -150,21 +150,21 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
         {
           records: deals.map((deal) => ({
             amount: deal.dealamount,
-            email: deal.email,
+            email: email,
             website: deal.website_c,
             thread_id: threadId
           })),
           child_bean: {
             module: "Contacts",
             id: getState().viewEmail.contactInfo.id,
-            email: deals[0].email
+            email: email
           },
         }
       );
-      showConsole && console.log(`Create Deal`, res);
+      showConsole && console.log(`Create Deal`, res.data);
       dispatch(
         dealsSlice.actions.createDealSucess({
-          message: send ? "Deals Created and Send Successfully" : "Deals Created Successfully",
+          message: "Deals Created Successfully",
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());

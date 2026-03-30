@@ -1,27 +1,27 @@
-import { Trash2 } from "lucide-react";
+import { Save, Send, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PageHeader from "../../PageHeader";
+import { createOrder2, getOrders, orderAction } from "../../../store/Slices/orders";
+import { toast } from "react-toastify";
+import { getLadger } from "../../../store/Slices/ladger";
+import { useNavigate } from "react-router-dom";
+import IconButton from "../../ui/Buttons/IconButton";
+import useModule from "../../../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import { useThreadContext } from "../../../hooks/useThreadContext";
+import { createPreviewOrder } from "../../PreviewOrder";
+import { ManualSideCall } from "../../../services/utils";
 
 const ORDER_TYPES = ["GUEST POST", "LINK INSERTION"];
 
 const CreateOrders = ({ email, threadId }) => {
-    const [button, setButton] = useState(null);
-    const { creating } = useSelector(state => state.orders)
-    // 🔥 INTERNAL STATE
-    const [order, setOrder] = useState({
-        order_type: "GUEST POST",
-        seo_backlinks: [
-            {
-                backlink_url: "",
-                gp_doc_url_c: "",
-                website: "",
-                anchor_text_c: "",
-            },
-        ],
-    });
-
-    /* ---------------- DATE FORMAT ---------------- */
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const { creating, message, error } = useSelector(state => state.orders)
+    const { crmEndpoint } = useSelector(state => state.user)
+    const [send, setSend] = useState(false);
+    const { handleMove } = useThreadContext();
     const getFormattedDate = () => {
         const d = new Date();
         return d.toLocaleString("en-IN", {
@@ -33,6 +33,51 @@ const CreateOrders = ({ email, threadId }) => {
             hour12: true,
         });
     };
+    const [order, setOrder] = useState({
+        order_type: "GUEST POST",
+        seo_backlinks: [
+            {
+                backlink_url: "",
+                gp_doc_url_c: "",
+                website: "",
+                anchor_text_c: "",
+            },
+        ],
+    });
+    const {
+        data: gpTemplate,
+    } = useModule({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        method: "POST",
+        body: {
+            module: "EmailTemplates",
+            where: {
+                name: "OrderORG",
+            },
+        },
+        headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        name: "GP TEMPLATE",
+    });
+    const {
+        data: liTemplate,
+    } = useModule({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        method: "POST",
+        body: {
+            module: "EmailTemplates",
+            where: {
+                name: "LI_ORDER_TEMPLATE",
+            },
+        },
+        headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        name: "LI TEMPLATE",
+    });
 
     /* ---------------- CHANGE ---------------- */
     const handleChange = (key, value) => {
@@ -40,6 +85,7 @@ const CreateOrders = ({ email, threadId }) => {
             ...prev,
             [key]: value,
             date_entered_formatted: getFormattedDate(),
+
         }));
     };
 
@@ -107,22 +153,55 @@ const CreateOrders = ({ email, threadId }) => {
     const formValid = isFormValid();
 
     /* ---------------- SUBMIT ---------------- */
-    const handleSubmit = (send) => {
+    const handleSubmit = (isSend) => {
         if (creating || !formValid) return;
-
         const finalOrder = {
             ...order,
-            date_entered_formatted: getFormattedDate(),
         };
-
+        setSend(isSend)
         console.log("FINAL ORDER:", finalOrder);
-
-        // 🔥 Call parent or API
-        if (onSubmitFinal) {
-            onSubmitFinal(finalOrder, send);
-        }
+        dispatch(createOrder2({ email, order, threadId }));
     };
+    const handlePreview = () => {
+        const html = createPreviewOrder({
+            templateData: order.order_type == "GUEST POST" ? gpTemplate : liTemplate,
+            order: { ...order, order_status: "New" },
+            userEmail: email,
+        });
+        handleMove({ email, threadId, reply: html });
+    }
+    useEffect(() => {
 
+        if (message) {
+            toast.success(message);
+            dispatch(getOrders({ email }))
+            if (message?.includes("Created")) {
+                ManualSideCall(
+                    crmEndpoint,
+                    email,
+                    "Our Order Created Successfully",
+                    1,
+                    () => dispatch(getLadger({ email })),
+                );
+                if (send) {
+                    setSend(false);
+                    dispatch(orderAction.clearAllMessages());
+                    handlePreview();
+                }
+                else {
+                    navigate(-1)
+                    dispatch(orderAction.clearAllMessages());
+                }
+            }
+
+        }
+
+        if (error) {
+            toast.error(error);
+            setSend(false); // reset on error too
+            dispatch(orderAction.clearAllErrors());
+        }
+    }, [message, error]);
     /* ---------------- RENDER ---------------- */
     return (
         <div className="flex-1 flex flex-col gap-3 relative border rounded-2xl p-6 bg-white shadow-sm">
@@ -134,7 +213,7 @@ const CreateOrders = ({ email, threadId }) => {
                     <button
                         key={type}
                         onClick={() => handleChange("order_type", type)}
-                        className={`px-4 py-2 rounded-lg font-medium transition ${order.order_type === type
+                        className={`px-3 py-2 rounded-lg  transition ${order.order_type === type
                             ? "bg-blue-600 text-white"
                             : "bg-gray-200 hover:bg-gray-300"
                             }`}
@@ -153,9 +232,9 @@ const CreateOrders = ({ email, threadId }) => {
                     <button
                         type="button"
                         onClick={() => removeSeoLink(index)}
-                        className="absolute -top-3 -right-2 bg-red-500 text-white rounded-full p-1"
+                        className="absolute -top-3 -right-2 bg-red-100 text-red-500 rounded-full p-1"
                     >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-6 h-6" />
                     </button>
 
                     {/* GUEST POST */}
@@ -218,36 +297,32 @@ const CreateOrders = ({ email, threadId }) => {
             {/* ADD */}
             <button
                 onClick={addSeoLink}
-                className="px-4 py-2 w-fit bg-blue-600 text-white rounded-lg ml-5"
+                className="px-3 py-2 w-fit bg-blue-100 text-blue-500 rounded-lg "
             >
                 + Add Link
             </button>
 
             {/* ACTIONS */}
             <div className="flex justify-end gap-3">
-                <button
+                <IconButton
+                    icon={Save}
+                    label="Save"
+                    onClick={() => handleSubmit(false)}
+                    loading={creating && !send}
                     disabled={!formValid}
-                    onClick={() => {
-                        setButton(1);
-                        handleSubmit(false);
-                    }}
-                    className={`px-4 py-2 rounded-lg text-white ${formValid ? "bg-green-600" : "bg-gray-300"
-                        }`}
-                >
-                    {creating && button === 1 ? "Saving..." : "Save"}
-                </button>
+                    className={`bg-green-100 hover:bg-green-200 
+      ${!formValid ? "opacity-60 cursor-not-allowed" : ""}`}
+                />
 
-                <button
+                <IconButton
+                    icon={Send}
+                    label="Save & Send"
+                    onClick={() => handleSubmit(true)}
+                    loading={creating && send}
                     disabled={!formValid}
-                    onClick={() => {
-                        setButton(2);
-                        handleSubmit(true);
-                    }}
-                    className={`px-4 py-2 rounded-lg text-white ${formValid ? "bg-indigo-600" : "bg-gray-300"
-                        }`}
-                >
-                    {creating && button === 2 ? "Sending..." : "Save & Send"}
-                </button>
+                    className={`bg-indigo-100 hover:bg-indigo-200 
+      ${!formValid ? "opacity-60 cursor-not-allowed" : ""}`}
+                />
             </div>
         </div>
     );

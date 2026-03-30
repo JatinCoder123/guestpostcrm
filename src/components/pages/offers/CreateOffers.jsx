@@ -141,11 +141,12 @@ export default function CreateOffers({ threadId, email }) {
                     dispatch(offersAction.clearAllMessages());
                     handlePreview();
                 }
+                else {
+                    navigate(-1)
+                    dispatch(offersAction.clearAllMessages());
+                }
             }
-            else {
-                navigate(-1)
-                dispatch(offersAction.clearAllMessages());
-            }
+
         }
 
         if (error) {
@@ -168,7 +169,7 @@ export default function CreateOffers({ threadId, email }) {
                     <div className="col-span-3">Website</div>
                     <div className="col-span-2 text-center">Client Offer</div>
                     <div className="col-span-2 text-center">Our Offer</div>
-                    <div className="col-span-2 text-center">Action</div>
+                    <div className="col-span-2 text-center ml-auto">Action</div>
                 </div>
 
                 {/* ROWS */}
@@ -221,7 +222,7 @@ export default function CreateOffers({ threadId, email }) {
                                 />
                             </div>
 
-                            <div className="col-span-2 text-center">
+                            <div className="col-span-2 text-center ml-auto">
                                 <button
                                     onClick={() => handleRemoveRow(index)}
                                     className="text-red-500"

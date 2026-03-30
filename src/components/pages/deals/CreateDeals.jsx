@@ -15,6 +15,7 @@ import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { ManualSideCall } from "../../../services/utils";
 import { getLadger } from "../../../store/Slices/ladger";
 import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
+import { getOffers } from "../../../store/Slices/offers";
 
 // 🔥 renamed component also
 export default function CreateDeals({ threadId, email }) {
@@ -24,7 +25,6 @@ export default function CreateDeals({ threadId, email }) {
 
     const { websites: websiteLists } = useSelector((state) => state.website);
     const { crmEndpoint } = useSelector((state) => state.user);
-    const [currentDeals, setCurrentDeals] = useState([]);
 
     // 🔥 now using deals everywhere
     const { deals, creating, message, error } = useSelector((state) => state.deals);
@@ -49,7 +49,7 @@ export default function CreateDeals({ threadId, email }) {
 
     // 🔥 NEW STATE (deal structure)
     const [newDeals, setNewDeals] = useState([
-        { website_c: "", dealamount: "", note: "" },
+        { website_c: "", dealamount: "" },
     ]);
 
     const [validWebsite, setValidWebsite] = useState([]);
@@ -64,10 +64,6 @@ export default function CreateDeals({ threadId, email }) {
 
     // 🔥 FILTER VALID WEBSITES
     useEffect(() => {
-        const threadOffers = offers.filter(
-            (d) => d.thread_id == threadId && d.offer_status == "active"
-        );
-
         const threadDeals = deals.filter(
             (d) => d.thread_id == threadId
         );
@@ -79,9 +75,7 @@ export default function CreateDeals({ threadId, email }) {
 
             return !usedInDeals;
         });
-        let activeDeals = threadDeals.filter(o => o.status == "active")
         setValidWebsite(valid);
-        setCurrentDeals(activeDeals);
 
     }, [offers, deals, threadId]);
 
@@ -90,7 +84,7 @@ export default function CreateDeals({ threadId, email }) {
     const handleAddRow = () => {
         setNewDeals([
             ...newDeals,
-            { website_c: "", dealamount: "", note: "" },
+            { website_c: "", dealamount: "" },
         ]);
     };
 
@@ -128,7 +122,8 @@ export default function CreateDeals({ threadId, email }) {
             newDeals,
             "Deals",
             "website_c",
-            "note"
+            "dealamount"
+
         );
 
         html = html
@@ -142,6 +137,7 @@ export default function CreateDeals({ threadId, email }) {
         if (message) {
             toast.success(message);
             dispatch(getDeals({ email }))
+            dispatch(getOffers({ email }))
             if (message?.includes("Created")) {
                 ManualSideCall(
                     crmEndpoint,
@@ -156,9 +152,10 @@ export default function CreateDeals({ threadId, email }) {
                     dispatch(dealsAction.clearAllMessages());
                     handlePreview();
                 }
-            } else {
-                navigate(-1);
-                dispatch(dealsAction.clearAllMessages());
+                else {
+                    navigate(-1);
+                    dispatch(dealsAction.clearAllMessages());
+                }
             }
         }
 
@@ -169,18 +166,26 @@ export default function CreateDeals({ threadId, email }) {
         }
     }, [message, error]);
     useEffect(() => {
-        const currentOfferWithoutDeal =
-            offers.filter(
-                (o) => o.thread_id == threadId && !currentDeals.some((d) => d.website_c == o.website),
-            )
+        const currentOfferWithoutDeal = offers.filter((o) => {
+            const isSameThread = o.thread_id == threadId;
+
+            // ✅ check against ALL deals (not only active)
+            const alreadyHasDeal = deals.some(
+                (d) => d.thread_id == threadId && d.website_c == o.website
+            );
+
+            return isSameThread && !alreadyHasDeal;
+        });
+
         if (currentOfferWithoutDeal?.length > 0) {
             const newDeals = currentOfferWithoutDeal.map((offer) => ({
                 website_c: offer.website,
                 dealamount: offer.our_offer_c,
             }));
+
             setNewDeals(newDeals);
         }
-    }, [currentDeals, offers]);
+    }, [deals, offers, threadId]);
     return (
         <div className="w-full flex gap-6 items-start">
 
@@ -190,12 +195,11 @@ export default function CreateDeals({ threadId, email }) {
                 <PageHeader title={"Create Deals"} showAdd={false} />
 
                 {/* HEADER */}
-                <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
+                <div className="grid grid-cols-8 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
                     <div className="col-span-1">No</div>
                     <div className="col-span-3">Website</div>
                     <div className="col-span-3 text-center">Deal Amount</div>
-                    <div className="col-span-2 text-center">Note</div>
-                    <div className="col-span-1 text-center">Action</div>
+                    <div className="col-span-1 text-center ml-auto">Action</div>
                 </div>
 
                 {/* ROWS */}
@@ -203,7 +207,7 @@ export default function CreateDeals({ threadId, email }) {
                     {newDeals.map((row, index) => (
                         <motion.div
                             key={index}
-                            className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
+                            className="grid grid-cols-8 items-center px-4 py-3 bg-gray-50 rounded-xl border"
                         >
                             <div>{index + 1}</div>
 
@@ -237,20 +241,9 @@ export default function CreateDeals({ threadId, email }) {
                                 />
                             </div>
 
-                            {/* NOTE */}
-                            <div className="col-span-2 text-center">
-                                <input
-                                    type="text"
-                                    value={row.note}
-                                    onChange={(e) =>
-                                        handleChangeRow(index, "note", e.target.value)
-                                    }
-                                    className="w-full border rounded px-2 py-1 text-center"
-                                />
-                            </div>
 
                             {/* DELETE */}
-                            <div className="text-center">
+                            <div className="text-center ml-auto">
                                 <button
                                     onClick={() => handleRemoveRow(index)}
                                     className="text-red-500"

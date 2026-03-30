@@ -207,13 +207,11 @@ export const createOffer = ({ threadId, email, offers = [], isSend = false }) =>
       showConsole && console.log(`Create Offer`, data);
       dispatch(
         offersSlice.actions.createOfferSuccess({
-          message: isSend
-            ? "Offers Created and Send Successfully"
-            : "Offers Created Successfully",
+          message: "Offers Created Successfully"
         }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Offer Created ")
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Created ")
 
     } catch (error) {
       dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));

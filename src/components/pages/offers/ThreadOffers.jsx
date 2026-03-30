@@ -174,7 +174,7 @@ export default function ThreadOffers({ threadId, email, id }) {
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Client Offer</div>
           <div className="col-span-2 text-center">Our Offer</div>
-          <div className="col-span-2 text-center">Actions</div>
+          <div className="col-span-2 text-center ml-auto">Actions</div>
         </div>
 
         {/* ROWS */}
@@ -265,7 +265,7 @@ export default function ThreadOffers({ threadId, email, id }) {
                 </div>
 
                 {/* Actions */}
-                <div className="col-span-2 flex justify-center gap-2">
+                <div className="col-span-2 flex justify-center gap-2 ml-auto">
                   {isEditing ? (
                     <div className="flex gap-2">
                       <IconButton

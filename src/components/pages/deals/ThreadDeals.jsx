@@ -28,7 +28,7 @@ export default function ThreadDeals({ threadId, email, id }) {
     const [editData, setEditData] = useState({});
     const { websites: websiteLists } = useSelector((state) => state.website);
 
-    const { deals, deleting, updating, message, error } = useSelector(
+    const { deals, deleting, updating, message, error, deleteDealId } = useSelector(
         (state) => state.deals
     );
     const { offers } = useSelector(
@@ -174,7 +174,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                     <div className="col-span-3">Website</div>
                     <div className="col-span-2 text-center">Deal Amount</div>
                     <div className="col-span-2 text-center">Note</div>
-                    <div className="col-span-2 text-center">Actions</div>
+                    <div className="col-span-2 text-center ml-auto">Actions</div>
                 </div>
 
                 {/* ROWS */}
@@ -265,7 +265,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="col-span-2 flex justify-center gap-2">
+                                <div className="col-span-2 flex justify-center gap-2 ml-auto">
                                     {isEditing ? (
                                         <div className="flex gap-2">
                                             <IconButton
@@ -302,10 +302,10 @@ export default function ThreadDeals({ threadId, email, id }) {
                                                 onClick={() => handleDelete(deal.id)}
                                                 className="p-2.5 rounded-lg bg-red-100 text-red-600"
                                                 disabled={
-                                                    deleting && editingId === deal.id
+                                                    deleting && deleteDealId === deal.id
                                                 }
                                             >
-                                                {deleting && editingId === deal.id ? (
+                                                {deleting && deleteDealId === deal.id ? (
                                                     <LoadingChase size="18" color="red" />
                                                 ) : (
                                                     <Trash2 size={18} />

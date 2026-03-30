@@ -325,9 +325,10 @@ function SummaryCard({
               <button
                 className="cursor-pointer"
                 onClick={() =>
-                  navigateTo(`/orders/${threadId}/create`, {
+                  navigateTo(`/orders/create`, {
                     state: {
                       email,
+                      threadId
                     },
                   })
                 }

@@ -201,10 +201,11 @@ export function OrdersPage() {
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() =>
-              navigateTo(`/orders/edit/${row.id}`, {
+              navigateTo(`/orders/edit`, {
                 state: {
                   email: extractEmail(row.real_name),
                   threadId: row?.thread_id,
+                  id: row?.id,
                 },
               })
             }
@@ -219,8 +220,7 @@ export function OrdersPage() {
                 state: {
                   email: extractEmail(row.real_name),
                   threadId: row?.thread_id,
-                  orderId: row?.order_id,
-                  messageId: row?.message_id,
+                  id: row?.id,
                 },
               })
             }
