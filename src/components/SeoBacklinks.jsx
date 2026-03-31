@@ -20,26 +20,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
+
 function ValidTick() {
   return (
     <span className="relative group ml-2 inline-flex items-center">
-      {/* Tick */}
-      <span
-        className="inline-flex items-center justify-center 
-        w-5 h-5 rounded-full 
-        bg-green-100 text-green-600"
-      >
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600">
         <Check size={12} strokeWidth={3} />
       </span>
-
-      {/* Tooltip */}
-      <span
-        className="absolute -top-7 left-1/2 -translate-x-1/2
-        px-2 py-0.5 rounded-md
-        bg-slate-900 text-white text-[10px]
-        opacity-0 group-hover:opacity-100
-        transition whitespace-nowrap"
-      >
+      <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md bg-slate-900 text-white text-[10px] opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
         Valid
       </span>
     </span>
@@ -56,9 +44,11 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const [item, setItem] = useState(null);
   const [linkId, setLinkId] = useState(null);
   const dispatch = useDispatch();
+
   const handleUpdate = (data) => {
     dispatch(updateSeoLink(orderId, { ...item, ...data }));
   };
+
   useEffect(() => {
     if (updateLinkMessage) {
       setOpen(false);
@@ -69,6 +59,22 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const handleDelete = (linkId) => {
     dispatch(deleteLink(orderId, linkId));
   };
+
+  // Group GP links by their doc URL
+  const gpLinkGroups = gpLinks.reduce((acc, link) => {
+    const key = link.gp_doc_url_c || "__no_doc__";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(link);
+    return acc;
+  }, {});
+
+  // Group LI links by their target URL
+  const liLinkGroups = liLinks.reduce((acc, link) => {
+    const key = link.target_url_c || "__no_target__";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(link);
+    return acc;
+  }, {});
 
   return (
     <>
@@ -140,94 +146,454 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
           onUpdate={handleUpdate}
         />
       )}
+
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-3 group relative">
-          <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3  border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)]">
-            {gpLinks.length > 0 && (
-              <div className="mb-6 flex flex-col gap-5">
-                {gpLinks.map((gp, index) => (
-                  <div className="relative">
-                    <div className="absolute top-2 -left-1 z-20">
-                      <span
-                        className="flex items-center justify-center w-7 h-7 rounded-full
+          <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)]">
+            {/* GP LINKS: one card per unique doc URL */}
+            {Object.entries(gpLinkGroups).map(([docUrl, links], groupIndex) => (
+              <div key={docUrl} className="relative mb-4">
+                <span
+                  className="flex items-center justify-center w-7 h-7 rounded-full absolute top-0 left-0
         bg-gradient-to-r from-indigo-500 to-purple-600
         text-white text-xs font-bold shadow-md"
-                      >
-                        #{index + 1}
-                      </span>
-                    </div>
-                    <GPLinksTable
-                      gpLink={gp}
-                      setItem={setItem}
-                      setOpen={setOpen}
-                      deleting={deleting}
-                      setLinkId={setLinkId}
-                      linkId={linkId}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-            {liLinks.map((item, index) => (
-              <div
-                key={item.id}
-                className="relative flex flex-col p-1 gap-1 rounded-2xl border-b"
-              >
-                {/* Index Badge */}
-                <div className="absolute top-2 -left-1 z-20">
-                  <span
-                    className="flex items-center justify-center w-7 h-7 rounded-full
-        bg-gradient-to-r from-indigo-500 to-purple-600
-        text-white text-xs font-bold shadow-md"
-                  >
-                    #{index + gpLinks.length + 1}
-                  </span>
-                </div>
-                {/* Edit Button */}
-                <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => {
-                      setItem(item);
-                      setOpen(true);
-                    }}
-                    className="px-3 py-1 text-xs rounded-2xl 
-      bg-indigo-600 text-white hover:bg-indigo-700 transition shadow"
-                  >
-                    <Pencil size={16} />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setLinkId(item.id);
-                      handleDelete(item.id);
-                    }}
-                    disabled={deleting}
-                    className="px-3 py-1 text-xs rounded-2xl 
-      bg-red-600 text-white hover:bg-red-700 transition shadow"
-                  >
-                    {deleting && linkId === item.id ? (
-                      <LoadingChase size="20" color="white" />
-                    ) : (
-                      <Trash size={16} />
-                    )}
-                  </button>
-                </div>
-
-                {/* Links Box */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 rounded-lg p-4">
-                  <TheirLink data={item} />
-                  <OurLink data={item} />
-                </div>
+                >
+                  #{groupIndex + 1}
+                </span>
+                <GPLinksTable
+                  gpLinks={links}
+                  groupIndex={groupIndex}
+                  setItem={setItem}
+                  setOpen={setOpen}
+                  deleting={deleting}
+                  setLinkId={setLinkId}
+                  linkId={linkId}
+                  handleDelete={handleDelete}
+                />
               </div>
             ))}
+
+            {/* LI LINKS: one card per unique target URL */}
+            {Object.entries(liLinkGroups).map(
+              ([targetUrl, links], groupIndex) => (
+                <div key={targetUrl} className="relative mb-4">
+                  <span
+                    className="flex items-center justify-center w-7 h-7 rounded-full absolute top-0 left-0
+        bg-gradient-to-r from-indigo-500 to-purple-600
+        text-white text-xs font-bold shadow-md"
+                  >
+                    #{groupIndex + 1}
+                  </span>
+                  <LILinksTable
+                    liLinks={links}
+                    groupIndex={groupIndex}
+                    setItem={setItem}
+                    setOpen={setOpen}
+                    deleting={deleting}
+                    setLinkId={setLinkId}
+                    linkId={linkId}
+                    handleDelete={handleDelete}
+                  />
+                </div>
+              ),
+            )}
           </div>
         </div>
       </div>
     </>
   );
 }
+
+/* ─────────────────────────────────────────────
+   Shared table header & row used by both GP + LI
+───────────────────────────────────────────── */
+function LinkTableHeader() {
+  return (
+    <div className="grid grid-cols-8 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
+      <div>#</div>
+      <div>Anchor Text</div>
+      <div>Anchor Verdict</div>
+      <div>Backlink URL</div>
+      <div>Backlink Verdict</div>
+      <div>Spam Score</div>
+      <div>Amount &amp; Type</div>
+      <div>Action</div>
+    </div>
+  );
+}
+
+const getSpamLabel = (score) => {
+  if (score < 10) return { label: "Low", color: "text-green-600" };
+  if (score < 40) return { label: "Moderate", color: "text-yellow-600" };
+  return { label: "High", color: "text-red-600" };
+};
+
+const formatLinkType = (str) => {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+function LinkTableRow({
+  link,
+  rowIndex,
+  setItem,
+  setOpen,
+  setLinkId,
+  linkId,
+  deleting,
+  handleDelete,
+}) {
+  const spam = getSpamLabel(link.spam_score_c);
+  return (
+    <div className="grid grid-cols-8 px-4 py-3 border-t border-slate-100 text-sm items-center hover:bg-slate-50 transition">
+      {/* Index */}
+      <div>
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold shadow-sm">
+          {rowIndex + 1}
+        </span>
+      </div>
+
+      {/* Anchor Text */}
+      <div className="flex gap-1 items-center">
+        <span className="truncate max-w-[130px] font-medium text-slate-800">
+          {link.anchor_text_c || "-"}
+        </span>
+      </div>
+
+      {/* Anchor Verdict */}
+      <div className="flex items-center gap-2">
+        <SparkleIcon className="w-4 h-4 text-green-500 shrink-0" />
+        <ValidationBadge valid={link.is_anchor_text_valid} />
+      </div>
+
+      {/* Backlink URL */}
+      <div>
+        <a
+          href={link.backlink_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition"
+        >
+          <span className="truncate max-w-[120px]">
+            {link.backlink_url || "-"}
+          </span>
+          <span className="opacity-0 group-hover:opacity-100 transition">
+            ↗
+          </span>
+        </a>
+      </div>
+
+      {/* Backlink Verdict */}
+      <div className="flex items-center gap-2">
+        <SparkleIcon className="w-4 h-4 text-green-500 shrink-0" />
+        <ValidationBadge valid={link.is_link_valid} />
+      </div>
+
+      {/* Spam Score */}
+      <div className={`font-medium ${spam.color}`}>
+        <div className="flex items-center gap-1 flex-wrap">
+          <span className="text-xs font-bold text-slate-500">MOZ</span>
+          <span className="text-yellow-400 text-xs">★</span>
+          <span>{link.spam_score_c}%</span>
+          {link.spam_score_c < 7 ? (
+            <img
+              width="22"
+              height="22"
+              src="https://img.icons8.com/3d-fluency/94/ok.png"
+              alt="ok"
+            />
+          ) : (
+            <img
+              width="22"
+              height="22"
+              src="https://img.icons8.com/3d-fluency/94/cancel.png"
+              alt="cross"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Amount & Type */}
+      <div className="flex flex-col gap-0.5">
+        <span className="font-semibold text-indigo-600">
+          {link.link_amount_c}
+        </span>
+        <span
+          className={`text-xs font-semibold ${link.link_type === "dofollow" ? "text-green-600" : "text-red-600"}`}
+        >
+          {formatLinkType(link.link_type)}
+        </span>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            setItem(link);
+            setOpen(true);
+          }}
+          className="px-2 py-1 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow"
+        >
+          <Pencil size={14} />
+        </button>
+        <button
+          onClick={() => {
+            setLinkId(link.id);
+            handleDelete(link.id);
+          }}
+          disabled={deleting}
+          className="px-2 py-1 rounded-xl bg-red-600 text-white hover:bg-red-700 transition shadow"
+        >
+          {deleting && linkId === link.id ? (
+            <LoadingChase size="16" color="white" />
+          ) : (
+            <Trash size={14} />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   GPLinksTable
+───────────────────────────────────────────── */
+function GPLinksTable({
+  gpLinks,
+  groupIndex,
+  setItem,
+  setOpen,
+  deleting,
+  setLinkId,
+  linkId,
+  handleDelete,
+}) {
+  const rep = gpLinks[0];
+  return (
+    <div className="overflow-hidden mb-4 border-2 border-blue-300 rounded-xl">
+      <DocumentAnalysisCard
+        website={rep.name}
+        docLink={rep.gp_doc_url_c}
+        docNiche={rep.niche}
+        ContentValid={rep.is_content_valid}
+        DocName={rep.document_name}
+        DomainValid={rep.is_domain_valid}
+        linkCount={gpLinks.length}
+      />
+      <LinkTableHeader />
+      {gpLinks.map((gpLink, rowIndex) => (
+        <LinkTableRow
+          key={gpLink.id}
+          link={gpLink}
+          rowIndex={rowIndex}
+          setItem={setItem}
+          setOpen={setOpen}
+          setLinkId={setLinkId}
+          linkId={linkId}
+          deleting={deleting}
+          handleDelete={handleDelete}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   LILinksTable  –  mirrors GPLinksTable structure
+───────────────────────────────────────────── */
+function LILinksTable({
+  liLinks,
+  groupIndex,
+  setItem,
+  setOpen,
+  deleting,
+  setLinkId,
+  linkId,
+  handleDelete,
+}) {
+  const rep = liLinks[0];
+  return (
+    <div className="overflow-hidden mb-4 border-2 border-emerald-300 rounded-xl">
+      <LIAnalysisCard
+        targetUrl={rep.target_url_c}
+        website={rep.name}
+        DomainValid={rep.is_domain_valid}
+        linkCount={liLinks.length}
+      />
+      <LinkTableHeader />
+      {liLinks.map((liLink, rowIndex) => (
+        <LinkTableRow
+          key={liLink.id}
+          link={liLink}
+          rowIndex={rowIndex}
+          setItem={setItem}
+          setOpen={setOpen}
+          setLinkId={setLinkId}
+          linkId={linkId}
+          deleting={deleting}
+          handleDelete={handleDelete}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   DocumentAnalysisCard  –  GP header (with link count)
+───────────────────────────────────────────── */
+function DocumentAnalysisCard({
+  docLink,
+  docNiche,
+  website,
+  ContentValid,
+  DocName,
+  DomainValid,
+  linkCount,
+}) {
+  return (
+    <div className="overflow-hidden">
+      {/* HEADER */}
+      <div className="flex items-center justify-center gap-2 bg-blue-300 px-4 py-2">
+        <div className="text-white text-md font-bold flex items-center gap-2">
+          GuestPost Result for
+          <a
+            href={website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-md ml-2 text-black p-1 rounded-2xl hover:underline"
+          >
+            {website ?? "-"}
+          </a>
+          <SparkleIcon className="w-5 h-5 text-green-600" />
+          <ValidationBadge valid={DomainValid} />
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="flex items-center gap-4 p-4">
+        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-5 gap-4">
+          <div className="text-sm font-semibold text-gray-500">Doc Name</div>
+          <div className="text-sm font-semibold text-gray-500">Niche</div>
+          <div className="text-sm font-semibold text-gray-500">
+            Content Verdict
+          </div>
+          <div className="text-sm font-semibold text-gray-500">AI Score</div>
+          <div className="text-sm font-semibold text-gray-500">Link Count</div>
+
+          <a
+            href={docLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 rounded-lg bg-indigo-50 px-1 py-1 text-sm hover:bg-indigo-100 transition w-full"
+          >
+            <span className="font-semibold text-indigo-700 truncate">
+              {DocName || "Untitled Document"}
+            </span>
+            <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
+              ↗
+            </span>
+          </a>
+
+          <span className="text-md text-slate-500 truncate">
+            {docNiche || "No Niche"}
+          </span>
+
+          <div className="flex items-center gap-2">
+            <SparkleIcon className="w-5 h-5 text-green-500" />
+            <ValidationBadge valid={ContentValid} />
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            1%
+          </div>
+
+          <div className="flex items-center">
+            <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
+              {linkCount}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   LIAnalysisCard  –  LI header (mirrors GP card style)
+───────────────────────────────────────────── */
+function LIAnalysisCard({ targetUrl, website, DomainValid, linkCount }) {
+  return (
+    <div className="overflow-hidden">
+      {/* HEADER */}
+      <div className="flex items-center justify-center gap-2 bg-emerald-400 px-4 py-2">
+        <div className="text-white text-md font-bold flex items-center gap-2">
+          Link Insertion for
+          <a
+            href={targetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-md ml-2 text-black p-1 rounded-2xl hover:underline"
+          >
+            {website ?? targetUrl ?? "-"}
+          </a>
+          <SparkleIcon className="w-5 h-5 text-white" />
+          <ValidationBadge valid={DomainValid} />
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="flex items-center gap-4 p-4">
+        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-3 gap-4">
+          <div className="text-sm font-semibold text-gray-500">Target URL</div>
+          <div className="text-sm font-semibold text-gray-500">
+            Monthly Traffic
+          </div>
+          <div className="text-sm font-semibold text-gray-500">
+            Domain Valid
+          </div>
+
+          {/* Target URL value */}
+          <a
+            href={targetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 rounded-lg bg-emerald-50 px-1 py-1 text-sm hover:bg-emerald-100 transition w-full"
+          >
+            <span className="font-semibold text-emerald-700 truncate w-full">
+              {targetUrl || "No Target URL"}
+            </span>
+            <span className="opacity-0 group-hover:opacity-100 transition text-emerald-500 ml-1">
+              ↗
+            </span>
+          </a>
+
+          {/* Traffic mini badges */}
+          <div className="flex flex-wrap gap-1.5 items-center">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold">
+              <FaGoogle size={10} /> 100
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 text-orange-600 text-xs font-semibold">
+              <Fa500Px size={10} /> 100
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">
+              <FaAccusoft size={10} /> 100
+            </span>
+          </div>
+
+          {/* Domain Valid */}
+          <div className="flex items-center gap-2">
+            <SparkleIcon className="w-5 h-5 text-emerald-500" />
+            <ValidationBadge valid={DomainValid} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Shared helpers ── */
 const getSpamStyle = (score) => {
-  if (score < 10) {
+  if (score < 10)
     return {
       label: "Low",
       bg: "bg-green-100",
@@ -235,8 +601,6 @@ const getSpamStyle = (score) => {
       border: "border-green-700",
       icon: "check",
     };
-  }
-
   return {
     label: "High",
     bg: "bg-red-100",
@@ -245,21 +609,17 @@ const getSpamStyle = (score) => {
     icon: "cross",
   };
 };
+
 export function TheirLink({ data }) {
   const spam = getSpamStyle(data.spam_score_c);
-
   return (
     <div className="relative p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-5 hover:shadow-md transition">
-      {/* HEADER */}
       <div className="flex items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
         <h3 className="text-sm font-bold text-white uppercase tracking-widest">
           Their Link
         </h3>
       </div>
-
-      {/* ROW 1: Anchor Text | vertical line | Amount */}
       <div className="flex items-start gap-0">
-        {/* LEFT: Anchor Text */}
         <div className="flex-1 flex flex-col gap-1 pr-4">
           <div className="flex items-center gap-2">
             <FiTag className="text-slate-400" size={13} />
@@ -267,30 +627,14 @@ export function TheirLink({ data }) {
           </div>
           <p className="text-sm font-semibold text-slate-800 break-all flex items-center gap-1">
             {data.anchor_text_c || "-"}
-            {/* {data.is_anchor_text_valid && <ValidTick />} */}
           </p>
         </div>
-        {/* RIGHT: Sparkle + Check pill (original) */}
         <div className="relative inline-flex items-center">
-          <div
-            className="
-              flex items-center gap-2
-              pl-3 pr-8 py-1.5
-              rounded-full border-2
-              border-green-700
-              bg-green-100 text-green-700
-              text-sm font-medium
-            "
-          >
+          <div className="flex items-center gap-2 pl-3 pr-8 py-1.5 rounded-full border-2 border-green-700 bg-green-100 text-green-700 text-sm font-medium">
             <SparkleIcon className="w-4 h-4 text-green-600" />
           </div>
           <div
-            className={`
-                absolute -right-1
-                flex items-center justify-center
-                w-8 h-8 rounded-full shadow-md
-                ${data.is_anchor_text_valid === "1" ? "bg-green-600" : "bg-red-600"}
-              `}
+            className={`absolute -right-1 flex items-center justify-center w-8 h-8 rounded-full shadow-md ${data.is_anchor_text_valid === "1" ? "bg-green-600" : "bg-red-600"}`}
           >
             {data.is_anchor_text_valid === "1" ? (
               <img
@@ -310,26 +654,18 @@ export function TheirLink({ data }) {
           </div>
         </div>
       </div>
-
-      {/* Horizontal Divider */}
       <span className="block border-t border-gray-200"></span>
-
-      {/* ROW 2: Backlink URL | Sparkle+Check pill */}
       <div className="flex items-center justify-between gap-0">
-        {/* RIGHT: Amount */}
         <div className="flex flex-col gap-1 pl-4 items-end">
           <div className="flex items-center gap-2">
             <FiLayers className="text-indigo-500" size={14} />
             <p className="text-xs text-slate-500">Amount</p>
           </div>
-
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-base">
             {data.link_amount_c ?? "-"}
           </div>
         </div>
-        {/* Vertical Divider */}
         <span className="self-stretch border-l border-gray-200 mx-2"></span>
-        {/* LEFT: Backlink URL */}
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-indigo-50">
             <FiLink size={14} className="text-indigo-600" />
@@ -340,10 +676,7 @@ export function TheirLink({ data }) {
               <a
                 href={data.backlink_url}
                 target="_blank"
-                className="group inline-flex items-center gap-2
-                  rounded-lg bg-indigo-50 px-3 py-1.5
-                  text-sm font-medium text-indigo-600
-                  hover:bg-indigo-100 transition"
+                className="group inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-100 transition"
               >
                 <span className="truncate max-w-[220px] lg:max-w-[150px]">
                   {data.backlink_url}
@@ -355,29 +688,11 @@ export function TheirLink({ data }) {
             </div>
           </div>
         </div>
-
-        {/* RIGHT: Sparkle + Check pill (original) */}
         <div className="relative inline-flex items-center">
-          <div
-            className="
-              flex items-center gap-2
-              pl-2 pr-8 py-1.5
-              rounded-full border-2
-              border-green-700
-              bg-green-100 text-green-700
-              text-sm font-medium
-            "
-          >
+          <div className="flex items-center gap-2 pl-2 pr-8 py-1.5 rounded-full border-2 border-green-700 bg-green-100 text-green-700 text-sm font-medium">
             <SparkleIcon className="w-4 h-4 text-green-600" />
           </div>
-          <div
-            className="
-              absolute -right-1
-              flex items-center justify-center
-              w-8 h-8 rounded-full
-              bg-green-600 shadow-md
-            "
-          >
+          <div className="absolute -right-1 flex items-center justify-center w-8 h-8 rounded-full bg-green-600 shadow-md">
             <img
               width="65"
               height="65"
@@ -387,24 +702,15 @@ export function TheirLink({ data }) {
           </div>
         </div>
       </div>
-
-      {/* Horizontal Divider */}
       <span className="block border-t border-gray-200"></span>
-
-      {/* ROW 3: Type | Link Type | vertical line | Spam Badge */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* LEFT: Type + Link Type */}
         <div className="flex-1 flex items-center gap-4 pr-2 min-w-[220px]">
           <Meta icon={FiLink} label="Type" value={data.type_c} />
-
-          {/* Vertical Divider */}
           <span className="self-stretch border-l border-gray-200 mx-2"></span>
-
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-slate-100">
               <FiTag size={14} className="text-slate-500" />
             </div>
-
             <div>
               <p className="text-xs text-slate-500 font-medium">Link Type</p>
               <p className="text-sm font-semibold text-slate-800 capitalize">
@@ -413,44 +719,25 @@ export function TheirLink({ data }) {
             </div>
           </div>
         </div>
-
-        {/* Vertical Divider */}
         <span className="hidden sm:block self-stretch border-l border-gray-200 mx-4"></span>
-
-        {/* RIGHT: Spam Badge */}
         <div className="flex items-center">
           <div className="relative inline-flex justify-end max-w-[500px] lg:max-w-[100px]">
             <div
-              className={`
-          flex items-center gap-1 sm:gap-2
-          pl-1 sm:pl-2 pr-6 sm:pr-8 py-1
-          rounded-full border-2
-          ${spam.bg} ${spam.text} ${spam.border}
-          text-xs sm:text-sm font-medium
-          whitespace-nowrap
-        `}
+              className={`flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 pr-6 sm:pr-8 py-1 rounded-full border-2 ${spam.bg} ${spam.text} ${spam.border} text-xs sm:text-sm font-medium whitespace-nowrap`}
             >
               <FiAlertTriangle
                 className={`w-3 h-3 sm:w-4 sm:h-4 ${spam.text}`}
               />
-
               <span>
                 Spam {data.spam_score_c}% · {spam.label}
               </span>
-
               <span className="ml-1 flex items-center gap-1 font-bold text-blue-600">
                 MOZ{" "}
                 <span className="text-yellow-400 text-xs sm:text-sm">★</span>
               </span>
             </div>
-
             <div
-              className={`
-          absolute -right-1
-          flex items-center justify-center
-          w-6 h-6 sm:w-8 sm:h-8 rounded-full shadow-md
-          ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}
-        `}
+              className={`absolute -right-1 flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full shadow-md ${spam.icon === "check" ? "bg-green-600" : "bg-red-600"}`}
             >
               {spam.icon === "check" ? (
                 <img
@@ -474,37 +761,26 @@ export function TheirLink({ data }) {
 }
 
 export function OurLink({ data }) {
-  const spam = getSpamStyle(data?.spam_score_c);
-
   return (
     <div className="relative p-5 rounded-xl bg-white shadow-sm space-y-5 hover:shadow-md transition">
-      {/* HEADER */}
       <div className="flex items-center justify-center rounded-xl gap-3 bg-gradient-to-r from-blue-500 to-purple-500 p-3">
         <h3 className="text-sm font-bold text-white uppercase tracking-widest">
           Our Link
         </h3>
       </div>
-
-      {/* BACKLINK + SPAM */}
       <div className="flex flex-wrap items-center justify-center">
         {data?.type_c === "LI" && (
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
-            {/* TARGET URL */}
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-indigo-50">
                 <FiLink className="text-indigo-600" size={14} />
               </div>
-
               <div className="flex-1">
                 <p className="text-sm font-medium text-slate-600">Target URL</p>
-
                 <a
                   href={data?.target_url_c}
                   target="_blank"
-                  className="group mt-2 inline-flex items-center gap-2
-                    rounded-lg bg-indigo-50 px-3 py-1.5
-                    text-sm font-medium text-indigo-600
-                    hover:bg-indigo-100 transition"
+                  className="group mt-2 inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-100 transition"
                 >
                   <span className="truncate max-w-[280px]">
                     {data?.target_url_c}
@@ -515,8 +791,6 @@ export function OurLink({ data }) {
                 </a>
               </div>
             </div>
-
-            {/* STATS GRID */}
             <div className="flex">
               <div className="p-2 rounded-lg bg-indigo-50">
                 <FiTrendingUp className="text-indigo-600" size={14} />
@@ -561,12 +835,9 @@ export function OurLink({ data }) {
             </div>
           </div>
         )}
-
         {data?.type_c === "GP" && (
           <div className="w-full flex flex-col gap-0">
-            {/* ROW 1: Website | Doc Link */}
             <div className="flex items-start gap-0 py-3">
-              {/* LEFT: Website */}
               <div className="flex-1 flex flex-col gap-1 pr-4">
                 <div className="flex items-center gap-1">
                   <FiGlobe className="text-slate-400" size={13} />
@@ -578,11 +849,7 @@ export function OurLink({ data }) {
                   {data?.name || "-"}
                 </p>
               </div>
-
-              {/* Vertical Divider */}
               <span className="self-stretch border-l border-gray-200 mx-2"></span>
-
-              {/* RIGHT: Doc Link */}
               <div className="flex-1 flex flex-col gap-1 pl-4">
                 <div className="flex items-center gap-1">
                   <LinkIcon className="text-slate-400" size={13} />
@@ -594,10 +861,7 @@ export function OurLink({ data }) {
                   <a
                     href={data?.gp_doc_url_c}
                     target="_blank"
-                    className="group inline-flex items-center gap-2
-                      rounded-lg bg-indigo-50 px-3 py-1.5
-                      text-sm font-medium text-indigo-600
-                      hover:bg-indigo-100 transition max-w-fit"
+                    className="group inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-100 transition max-w-fit"
                   >
                     <span className="truncate max-w-[160px]">
                       {data?.gp_doc_url_c}
@@ -608,27 +872,12 @@ export function OurLink({ data }) {
                   </a>
                 </div>
               </div>
-              {/* RIGHT: Sparkle + Check pill (original) */}
               <div className="relative inline-flex items-center">
-                <div
-                  className="
-              flex items-center gap-2
-              pl-4 pr-10 py-1.5
-              rounded-full border-2
-              border-green-700
-              bg-green-100 text-green-700
-              text-sm font-semibold
-            "
-                >
+                <div className="flex items-center gap-2 pl-4 pr-10 py-1.5 rounded-full border-2 border-green-700 bg-green-100 text-green-700 text-sm font-semibold">
                   <SparkleIcon className="w-5 h-5 text-green-600" />
                 </div>
                 <div
-                  className={`
-                absolute -right-1
-                flex items-center justify-center
-                w-10 h-10 rounded-full shadow-md
-                ${data.is_link_valid === "1" ? "bg-green-600" : "bg-red-600"}
-              `}
+                  className={`absolute -right-1 flex items-center justify-center w-10 h-10 rounded-full shadow-md ${data.is_link_valid === "1" ? "bg-green-600" : "bg-red-600"}`}
                 >
                   {data.is_link_valid === "1" ? (
                     <img
@@ -648,11 +897,7 @@ export function OurLink({ data }) {
                 </div>
               </div>
             </div>
-
-            {/* Horizontal Divider */}
             <span className="block border-t border-gray-200"></span>
-
-            {/* ROW 2: Doc Niche */}
             <div className="flex items-start gap-0 py-3">
               <div className="flex-1 flex flex-col gap-1 pr-4">
                 <div className="flex items-center gap-1">
@@ -672,13 +917,13 @@ export function OurLink({ data }) {
     </div>
   );
 }
+
 function Meta({ icon: Icon, label, value, valid }) {
   return (
     <div className="flex items-start gap-2">
       <Icon className="text-slate-400 mt-0.5" size={14} />
       <div>
         <p className="text-xs text-slate-500">{label}</p>
-
         <p className="text-sm text-slate-700 font-medium break-all">
           {value || "-"}
           {valid && <ValidTick />}
@@ -687,33 +932,21 @@ function Meta({ icon: Icon, label, value, valid }) {
     </div>
   );
 }
-const StatCard = ({ icon, label, value, iconBg, iconColor, cardBg }) => {
-  return (
-    <div
-      className={`flex items-center justify-between
-      rounded-xl border border-slate-200
-      bg-gradient-to-br ${cardBg}
-      px-4 py-3
-      hover:shadow-md hover:-translate-y-0.5
-      transition`}
-    >
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${iconBg} ${iconColor}`}>{icon}</div>
-        <p className="text-sm font-medium text-slate-700">{label}</p>
-      </div>
 
-      <span className="text-sm font-semibold text-slate-900">{value}</span>
+const StatCard = ({ icon, label, value, iconBg, iconColor, cardBg }) => (
+  <div
+    className={`flex items-center justify-between rounded-xl border border-slate-200 bg-gradient-to-br ${cardBg} px-4 py-3 hover:shadow-md hover:-translate-y-0.5 transition`}
+  >
+    <div className="flex items-center gap-3">
+      <div className={`p-2 rounded-lg ${iconBg} ${iconColor}`}>{icon}</div>
+      <p className="text-sm font-medium text-slate-700">{label}</p>
     </div>
-  );
-};
-const getSpamLabel = (score) => {
-  if (score < 10) return { label: "Low", color: "text-green-600" };
-  if (score < 40) return { label: "Moderate", color: "text-yellow-600" };
-  return { label: "High", color: "text-red-600" };
-};
+    <span className="text-sm font-semibold text-slate-900">{value}</span>
+  </div>
+);
 
-const ValidationBadge = ({ valid }) => {
-  return valid === "1" ? (
+const ValidationBadge = ({ valid }) =>
+  valid === "1" ? (
     <span className="flex items-center gap-1 text-green-600 font-medium">
       <img
         width="30"
@@ -731,253 +964,3 @@ const ValidationBadge = ({ valid }) => {
       />
     </span>
   );
-};
-
-function GPLinksTable({
-  gpLink,
-  setItem,
-  setOpen,
-  deleting,
-  setLinkId,
-  linkId,
-}) {
-  const spam = getSpamLabel(gpLink.spam_score_c);
-  const formatLinkType = (str) => {
-    if (!str) return "";
-
-    return str
-      .toLowerCase()
-      .split("")
-      .map((char, index) =>
-        index === 0 || index === 2 ? char.toUpperCase() : char,
-      )
-      .join("");
-  };
-
-  return (
-    <div className="overflow-hidden  mb-4 border-2 border-blue-300 p-2 rounded-xl">
-      {/* HEADER */}{" "}
-      <DocumentAnalysisCard
-        key={gpLink.id}
-        website={gpLink.name}
-        docLink={gpLink?.gp_doc_url_c}
-        docNiche={gpLink?.niche}
-        url={gpLink?.backlink_url}
-        ContentValid={gpLink.is_content_valid}
-        DocName={gpLink?.document_name}
-      />
-      <div className="grid grid-cols-6   text-sm font-semibold text-gray-700 px-4 py-3">
-        <div>Anchor Text</div>
-        <div>Anchor Verdict</div>
-        <div>Spam Score</div>
-        <div>Amount</div>
-        <div>Type</div>
-        <div>Action</div>
-      </div>
-      <div className="grid grid-cols-6 px-4 py-3 border-t text-sm items-center">
-        {/* URL + Anchor */}
-        <div className="flex gap-2 items-center ">
-          <a
-            href={gpLink.backlink_url}
-            target="_blank"
-            className="text-blue-600 hover:underline truncate max-w-[150px]"
-          >
-            <span className="text-md  truncate">
-              {gpLink.anchor_text_c || "-"}
-            </span>
-          </a>
-        </div>
-
-        {/* Validation */}
-        <div className="flex items-center gap-2">
-          <SparkleIcon className="w-5 h-5 text-green-500" />
-          <ValidationBadge valid={gpLink.is_anchor_text_valid} />
-        </div>
-
-        {/* Spam Score */}
-        <div className={`font-medium ${spam.color}`}>
-          <div className="flex items-center gap-1">
-            MOZ{" "}
-            <span className="text-yellow-400 text-xs sm:text-sm mr-1">★</span>
-            {gpLink.spam_score_c}{" "}
-            {gpLink.spam_score_c < 7 ? (
-              <img
-                width="30"
-                height="30"
-                src="https://img.icons8.com/3d-fluency/94/ok.png"
-                alt="ok"
-              />
-            ) : (
-              <img
-                src="https://img.icons8.com/3d-fluency/94/cancel.png"
-                alt="cross"
-                width="30"
-                height="30"
-              />
-            )}
-            <div className="flex items-center ml-3"></div>
-          </div>
-        </div>
-
-        {/* Amount */}
-        <div className="font-semibold text-indigo-600">
-          {gpLink.link_amount_c}
-        </div>
-
-        <div
-          className={`font-semibold text-${gpLink.link_type === "dofollow" ? "green" : "red"}-600`}
-        >
-          {formatLinkType(gpLink.link_type)}
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setItem(gpLink);
-              setOpen(true);
-            }}
-            className="px-3 py-1 text-xs rounded-2xl 
-      bg-indigo-600 text-white hover:bg-indigo-700 transition shadow"
-          >
-            <Pencil size={16} />
-          </button>
-
-          <button
-            onClick={() => {
-              setLinkId(gpLink.id);
-              handleDelete(gpLink.id);
-            }}
-            disabled={deleting}
-            className="px-3 py-1 text-xs rounded-2xl 
-      bg-red-600 text-white hover:bg-red-700 transition shadow"
-          >
-            {deleting && linkId === gpLink.id ? (
-              <LoadingChase size="20" color="white" />
-            ) : (
-              <Trash size={16} />
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DocumentAnalysisCard({
-  docLink,
-  docName,
-  docNiche,
-  website,
-  url,
-  valid,
-  ContentValid,
-  DocName,
-}) {
-  return (
-    <div className="  overflow-hidden ">
-      {/* HEADER */}
-      <div className="flex items-center justify-around gap-2 bg-blue-300">
-        {" "}
-        <div className=" text-white px-4 py-2 text-md font-bold ">
-          GuestPost Result for
-          <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
-            {" "}
-            <a href={website} target="_blank">
-              {website ?? "-"}
-            </a>
-          </span>
-        </div>{" "}
-        {/* <div className="flex items-center gap-2">
-          <SparkleIcon className="w-5 h-5 text-green-700" />
-          <img
-            width="30"
-            height="30"
-            src="https://img.icons8.com/3d-fluency/94/ok.png"
-            alt="ok"
-          />
-        </div> */}
-        <div className=" text-white px-4 py-2 text-md font-bold ml-10 ">
-          URL
-          <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
-            {" "}
-            <a href={url} target="_blank">
-              {url ?? "-"}
-            </a>
-          </span>
-        </div>{" "}
-        <div className="flex items-center gap-2">
-          <SparkleIcon className="w-5 h-5 text-green-700" />
-          <ValidationBadge valid={valid} />
-        </div>
-      </div>
-
-      {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4">
-        {/* 🔹 LEFT: DOCUMENT PREVIEW (FAKE HTML PREVIEW) */}
-        <div className="w-32 h-20 bg-white rounded-md shadow-inner border relative overflow-hidden">
-          {/* fake lines */}
-          <a
-            href={docLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-32 h-20 bg-white rounded-md shadow-inner border relative overflow-hidden hover:scale-105 transition"
-          >
-            <div className="p-2 space-y-1">
-              <div className="h-2 bg-slate-400 rounded w-3/4"></div>
-              <div className="h-2 bg-slate-300 rounded w-full"></div>
-              <div className="h-2 bg-slate-200 rounded w-5/6"></div>
-              <div className="h-2 bg-slate-400 rounded w-2/3"></div>
-            </div>
-
-            {/* blur overlay */}
-            <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] pointer-events-none" />
-          </a>
-          {/* blur overlay */}
-        </div>
-
-        {/* 🔹 RIGHT: RESULT */}
-        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-4 gap-4 justify-around">
-          {/* HEADER ROW */}
-          <div className="text-sm font-semibold text-gray-500">Doc Name</div>
-          <div className="text-sm font-semibold text-gray-500">Niche</div>
-          <div className="text-sm font-semibold text-gray-500">
-            Content Verdict
-          </div>
-          <div className="text-sm font-semibold text-gray-500">AI Score</div>
-
-          {/* VALUES ROW */}
-
-          {/* DOC */}
-          <a
-            href={docLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-2
-      rounded-lg bg-indigo-50 px-1 py-1
-      text-sm hover:bg-indigo-100 transition w-full"
-          >
-            <span className="font-semibold text-indigo-700 truncate">
-              {DocName || "Untitled Document"}
-            </span>
-            <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
-              ↗
-            </span>
-          </a>
-
-          {/* NICHE */}
-          <span className="text-md text-slate-500 truncate">
-            {docNiche || "No Niche"}
-          </span>
-
-          {/* VERDICT */}
-          <div className="flex items-center gap-2">
-            <SparkleIcon className="w-5 h-5 text-green-500" />
-            <ValidationBadge valid={ContentValid} />
-          </div>
-
-          <div className="flex items-center gap-2">1%</div>
-        </div>
-      </div>
-    </div>
-  );
-}
