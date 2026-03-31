@@ -512,7 +512,7 @@ const Debug = () => {
                         navigateTo("/settings/machine-learning", {
                           state: {
                             promptId: state?.prompt.prompt_id,
-                            promptStatus: state?.prompt.prompt_status,
+                            promptStatus: state?.prompt.prompt_stage,
                           },
                         });
                       }}

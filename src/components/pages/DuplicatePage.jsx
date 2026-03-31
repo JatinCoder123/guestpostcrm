@@ -76,7 +76,7 @@ export const Duplicate = () => {
                   onClick={() =>
                     handleMove({ email: item.from_email, threadId })
                   }
-                  className="text-gray-800 font-medium text-left"
+                  className="text-gray-800 font-medium text-left cursor-pointer hover:text-blue-600"
                 >
                   {item.subject}
                 </button>
