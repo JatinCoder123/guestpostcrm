@@ -15,6 +15,7 @@ import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { ManualSideCall } from "../../../services/utils";
 import { getLadger } from "../../../store/Slices/ladger";
+import { extractEmail } from "../../../assets/assets";
 
 export default function CreateOffers({ threadId, email }) {
     const navigate = useNavigate();

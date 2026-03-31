@@ -7,7 +7,7 @@ import { createLink, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
 import { SocketContext } from "../context/SocketContext";
-export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
+export const OrderView = ({ data, sending, }) => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null);
   const [item, setItem] = useState(null);
@@ -62,13 +62,6 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
           data.order_id,
         ),
       );
-      setData((prev) => {
-        const next = prev.map((d) =>
-          d?.order_id === data?.order_id ? updatedOrder : d,
-        );
-        return next;
-      });
-      setCurrentOrderSend(updatedOrder);
     }
   }, [status]);
   useEffect(() => {
@@ -133,8 +126,8 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
 
       {/* PROCESSING PAYPAL */}
       {processingPayment && <ProcessingLoader />}
-      {(updating || sending) && <PageLoader />}
-      <div className="w-full relative ">
+      {(updating) && <PageLoader />}
+      <div className="w-full relative p-6 ">
         <OrderHeader
           data={data}
           setStatus={setStatus}

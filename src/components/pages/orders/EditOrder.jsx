@@ -20,6 +20,7 @@ import useModule from "../../../hooks/useModule";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { createPreviewOrder } from "../../PreviewOrder";
 import { useNavigate } from "react-router-dom";
+import { extractEmail } from "../../../assets/assets";
 
 
 export default function EditOrder({ threadId, id, email }) {

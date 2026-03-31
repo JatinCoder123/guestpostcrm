@@ -5,7 +5,6 @@ import CreateOrders from "../pages/orders/CreateOrders";
 import ThreadOffers from "../pages/offers/ThreadOffers";
 import ThreadDeals from "../pages/deals/ThreadDeals";
 import ThreadOrders from "../pages/orders/ThreadOrders";
-import ViewOrder from "../pages/orders/ViewOrder";
 import { OffersPage } from "../pages/OffersPage";
 import { OrdersPage } from "../pages/OrdersPage";
 import { DealsPage } from "../pages/DealsPage";
@@ -18,7 +17,6 @@ export const ODO_ROUTES = {
         list: OrdersPage,
         create: CreateOrders,
         edit: EditOrder,
-        view: ViewOrder,
         threadList: ThreadOrders
     },
     offers: {

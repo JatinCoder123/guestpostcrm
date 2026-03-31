@@ -181,7 +181,8 @@ export function DealsPage() {
       slice={"deals"}
       statusKey={"status"}
       statusList={statusList}
-      fetchNextPage={() => dispatch(getDeals({ page: pageIndex + 1 }))}
+      fetchNextPage={() => dispatch(
+        getDeals({ page: pageIndex + 1 }))}
     >
       <TableTitleBar
         Icon={Handshake}
