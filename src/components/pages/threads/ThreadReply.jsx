@@ -577,6 +577,7 @@ const ThreadReply = () => {
                 </h2>
                 <button
                   onClick={() => {
+                    handleSendClick(1);
                     setShowFailedModal(false);
                     dispatch(viewEmailAction.clearFailedResponse());
                   }}
