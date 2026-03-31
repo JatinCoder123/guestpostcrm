@@ -109,17 +109,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                label: "Our Link",
-                name: "target_url_c",
-                type: "text",
-                value: item.target_url_c || "",
-              }
+                  label: "Our Link",
+                  name: "target_url_c",
+                  type: "text",
+                  value: item.target_url_c || "",
+                }
               : {
-                label: "Doc Link",
-                name: "gp_doc_url_c",
-                type: "text",
-                value: item.gp_doc_url_c || "",
-              },
+                  label: "Doc Link",
+                  name: "gp_doc_url_c",
+                  type: "text",
+                  value: item.gp_doc_url_c || "",
+                },
             {
               label: "Website",
               name: "name",
@@ -163,10 +163,9 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                       deleting={deleting}
                       setLinkId={setLinkId}
                       linkId={linkId}
-                    /></div>
-
+                    />
+                  </div>
                 ))}
-
               </div>
             )}
             {liLinks.map((item, index) => (
@@ -716,14 +715,12 @@ const getSpamLabel = (score) => {
 const ValidationBadge = ({ valid }) => {
   return valid === "1" ? (
     <span className="flex items-center gap-1 text-green-600 font-medium">
-      <SparkleIcon className="w-5 h-5 text-green-500" />
       <img
         width="30"
         height="30"
         src="https://img.icons8.com/3d-fluency/94/ok.png"
         alt="ok"
       />
-      <span>Validated</span>
     </span>
   ) : (
     <span className="flex items-center gap-1 text-red-600 font-medium">
@@ -732,7 +729,6 @@ const ValidationBadge = ({ valid }) => {
         src="https://img.icons8.com/3d-fluency/94/cancel.png"
         alt="cross"
       />
-      <span>High Spam Risk</span>
     </span>
   );
 };
@@ -746,62 +742,95 @@ function GPLinksTable({
   linkId,
 }) {
   const spam = getSpamLabel(gpLink.spam_score_c);
+  const formatLinkType = (str) => {
+    if (!str) return "";
+
+    return str
+      .toLowerCase()
+      .split("")
+      .map((char, index) =>
+        index === 0 || index === 2 ? char.toUpperCase() : char,
+      )
+      .join("");
+  };
 
   return (
     <div className="overflow-hidden  mb-4 border-2 border-blue-300 p-2 rounded-xl">
-      {/* HEADER */} <DocumentAnalysisCard
+      {/* HEADER */}{" "}
+      <DocumentAnalysisCard
         key={gpLink.id}
         website={gpLink.name}
         docLink={gpLink?.gp_doc_url_c}
         docNiche={gpLink?.niche}
+        url={gpLink?.backlink_url}
+        ContentValid={gpLink.is_content_valid}
+        DocName={gpLink?.document_name}
       />
-      <div className="grid grid-cols-8   text-sm font-semibold text-gray-700 px-4 py-3">
-        <div className="col-span-2">URL / Anchor Text</div>
-        <div>Validation</div>
+      <div className="grid grid-cols-6   text-sm font-semibold text-gray-700 px-4 py-3">
+        <div>Anchor Text</div>
+        <div>Anchor Verdict</div>
         <div>Spam Score</div>
         <div>Amount</div>
         <div>Type</div>
-        <div>Link Type</div>
-        <div className="ml-auto">Action</div>
+        <div>Action</div>
       </div>
-
-      <div
-        className="grid grid-cols-8 px-4 py-3 border-t text-sm items-center"
-      >
+      <div className="grid grid-cols-6 px-4 py-3 border-t text-sm items-center">
         {/* URL + Anchor */}
-        <div className="flex gap-2 items-center col-span-2">
+        <div className="flex gap-2 items-center ">
           <a
             href={gpLink.backlink_url}
             target="_blank"
             className="text-blue-600 hover:underline truncate max-w-[150px]"
           >
-            {gpLink.backlink_url}
+            <span className="text-md  truncate">
+              {gpLink.anchor_text_c || "-"}
+            </span>
           </a>
-          <span className="text-xs text-gray-500 truncate">
-            {gpLink.anchor_text_c || "-"}
-          </span>
         </div>
 
         {/* Validation */}
-        <ValidationBadge valid={gpLink.is_link_valid} />
+        <div className="flex items-center gap-2">
+          <SparkleIcon className="w-5 h-5 text-green-500" />
+          <ValidationBadge valid={gpLink.is_anchor_text_valid} />
+        </div>
 
         {/* Spam Score */}
         <div className={`font-medium ${spam.color}`}>
-          {gpLink.spam_score_c} ({spam.label})
+          <div className="flex items-center gap-1">
+            MOZ{" "}
+            <span className="text-yellow-400 text-xs sm:text-sm mr-1">★</span>
+            {gpLink.spam_score_c}{" "}
+            {gpLink.spam_score_c < 7 ? (
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/3d-fluency/94/ok.png"
+                alt="ok"
+              />
+            ) : (
+              <img
+                src="https://img.icons8.com/3d-fluency/94/cancel.png"
+                alt="cross"
+                width="30"
+                height="30"
+              />
+            )}
+            <div className="flex items-center ml-3"></div>
+          </div>
         </div>
 
         {/* Amount */}
         <div className="font-semibold text-indigo-600">
           {gpLink.link_amount_c}
         </div>
-        <div className="font-semibold text-indigo-600">
-          {gpLink.type_c}
-        </div>
-        <div className={`font-semibold text-${gpLink.link_type === "dofollow" ? "green" : "red"}-600`}>
-          {gpLink.link_type}
+
+        <div
+          className={`font-semibold text-${gpLink.link_type === "dofollow" ? "green" : "red"}-600`}
+        >
+          {formatLinkType(gpLink.link_type)}
         </div>
 
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-2">
           <button
             onClick={() => {
               setItem(gpLink);
@@ -834,18 +863,53 @@ function GPLinksTable({
   );
 }
 
-function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
+function DocumentAnalysisCard({
+  docLink,
+  docName,
+  docNiche,
+  website,
+  url,
+  valid,
+  ContentValid,
+  DocName,
+}) {
   return (
     <div className="  overflow-hidden ">
       {/* HEADER */}
-      <div className="flex items-center gap-2 bg-blue-300"> <div className=" text-white px-4 py-2 text-md font-bold ">
-        Guest Post Order for
-        <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl"> {website ?? "-"} </span>
-
-
-
-      </div> <SparkleIcon className="w-5 h-5 text-green-700" /></div>
-
+      <div className="flex items-center justify-around gap-2 bg-blue-300">
+        {" "}
+        <div className=" text-white px-4 py-2 text-md font-bold ">
+          GuestPost Result for
+          <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
+            {" "}
+            <a href={website} target="_blank">
+              {website ?? "-"}
+            </a>
+          </span>
+        </div>{" "}
+        {/* <div className="flex items-center gap-2">
+          <SparkleIcon className="w-5 h-5 text-green-700" />
+          <img
+            width="30"
+            height="30"
+            src="https://img.icons8.com/3d-fluency/94/ok.png"
+            alt="ok"
+          />
+        </div> */}
+        <div className=" text-white px-4 py-2 text-md font-bold ml-10 ">
+          URL
+          <span className="text-bold text-md ml-2  text-black p-1 rounded-2xl">
+            {" "}
+            <a href={url} target="_blank">
+              {url ?? "-"}
+            </a>
+          </span>
+        </div>{" "}
+        <div className="flex items-center gap-2">
+          <SparkleIcon className="w-5 h-5 text-green-700" />
+          <ValidationBadge valid={valid} />
+        </div>
+      </div>
 
       {/* CONTENT */}
       <div className="flex items-center gap-4 p-4">
@@ -872,39 +936,46 @@ function DocumentAnalysisCard({ docLink, docName, docNiche, website }) {
         </div>
 
         {/* 🔹 RIGHT: RESULT */}
-        <div className="flex-1 bg-white rounded-lg px-4 py-3 shadow flex items-center justify-between">
+        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-4 gap-4 justify-around">
+          {/* HEADER ROW */}
+          <div className="text-sm font-semibold text-gray-500">Doc Name</div>
+          <div className="text-sm font-semibold text-gray-500">Niche</div>
+          <div className="text-sm font-semibold text-gray-500">
+            Content Verdict
+          </div>
+          <div className="text-sm font-semibold text-gray-500">AI Score</div>
+
+          {/* VALUES ROW */}
+
+          {/* DOC */}
           <a
             href={docLink}
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center gap-2
-    rounded-lg bg-indigo-50 px-3 py-2
-    text-sm hover:bg-indigo-100 transition max-w-fit"
+      rounded-lg bg-indigo-50 px-1 py-1
+      text-sm hover:bg-indigo-100 transition w-full"
           >
-            {/* DOC NAME */}
-            <span className="font-semibold text-indigo-700 truncate max-w-[180px]">
-              {docName || "Untitled Document"}
+            <span className="font-semibold text-indigo-700 truncate">
+              {DocName || "Untitled Document"}
             </span>
-
-            {/* NICHE */}
-
-
-            {/* HOVER ICON */}
             <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
               ↗
             </span>
           </a>
-          <span className="text-md text-slate-500 whitespace-nowrap">
-            • {docNiche || "No Niche"}
-          </span>
-          <div className="flex items-center gap-3"> <SparkleIcon className="w-5 h-5 text-green-500" />
-            <img
-              width="30"
-              height="30"
-              src="https://img.icons8.com/3d-fluency/94/ok.png"
-              alt="ok"
-            /></div>
 
+          {/* NICHE */}
+          <span className="text-md text-slate-500 truncate">
+            {docNiche || "No Niche"}
+          </span>
+
+          {/* VERDICT */}
+          <div className="flex items-center gap-2">
+            <SparkleIcon className="w-5 h-5 text-green-500" />
+            <ValidationBadge valid={ContentValid} />
+          </div>
+
+          <div className="flex items-center gap-2">1%</div>
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { viewEmailAction } from "./store/Slices/viewEmail";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
-import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
@@ -76,7 +75,13 @@ const RootLayout = () => {
       return;
     }
 
-    if (!nextEmailObj) return;
+    if (!nextEmailObj) {
+      localStorage.removeItem("email");
+      setEnteredEmail("");
+
+      navigate("/unreplied-emails");
+      return;
+    }
 
     handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), navigate: "/", nextPrev: true })
 
@@ -89,61 +94,45 @@ const RootLayout = () => {
   useEffect(() => {
     setActivePage(location);
   }, [location, setActivePage]);
-
-  // Initial data fetch when timeline or email changes
-
   const isLowCredit = Number(currentScore) <= 0;
+  if (displayIntro) {
+    return <DisplayIntro key="intro" />
 
+
+  }
   return (
-    <AnimatePresence mode="wait">
-      {displayIntro ? (
-        <DisplayIntro key="intro" />
-      ) : (
-        <div className="min-h-screen bg-[#F8FAFC] ">
-          <TopNav setShowAvatar={setShowAvatar} />
-          <div className="flex h-[calc(100vh-100px)] ">
-            {/* Sidebar scrolls independently */}
-            <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-              <Sidebar />
+    <div className="min-h-screen bg-[#F8FAFC] ">
+      <TopNav setShowAvatar={setShowAvatar} />
+      <div className="flex h-[calc(100vh-100px)] ">
+        <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
+          <Sidebar />
+        </div>
+        <main
+          ref={mainRef}
+          className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+            }`}
+        >
+          <div className="p-3">
+            {isLowCredit && <LowCreditWarning score={currentScore} />}
+            <div className="p-3">
+              <WelcomeHeader />
+              <Outlet />
             </div>
 
-            {/* Main content scrolls independently */}
-            <main
-              ref={mainRef}
-              className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-                }`}
-            >
-              <div className="p-3">
-                {isLowCredit && <LowCreditWarning score={currentScore} />}
-                <div className="p-3">
-                  <WelcomeHeader />
-                  <Outlet />
-                </div>
-
-                {/* {showAvatar && currentAvatar && (
+            {/* {showAvatar && currentAvatar && (
                   <Avatar
                     setShowAvatar={setShowAvatar}
                     avatarUrl={currentAvatar?.url}
                     mute={currentAvatar}
                   />
                 )} */}
-              </div>
-              <Footer />
-            </main>
           </div>
+          <Footer />
+        </main>
+      </div>
+    </div>
+  )
+}
 
-          {/* <div className="fixed bottom-1 right-2 cursor-pointer">
-            <img
-              width="80"
-              height="80"
-              src="https://img.icons8.com/3d-fluency/94/whatsapp-logo.png"
-              alt="whatsapp-logo"
-            />
-          </div> */}
-        </div>
-      )}
-    </AnimatePresence>
-  );
-};
 
 export default RootLayout;

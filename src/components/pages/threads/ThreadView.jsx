@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
-import { useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 export default function ThreadView() {
@@ -236,6 +241,61 @@ export default function ThreadView() {
                 // ✅ REAL index calculation
                 const baseIndex = emails?.length - visibleMessages?.length;
                 const realIndex = baseIndex + idx + 1;
+                const formatMessage = (html) => {
+                  if (!html) return "";
+
+                  const parser = new DOMParser();
+                  const doc = parser.parseFromString(html, "text/html");
+
+                  // ✅ 1. Fix already existing <a> tags
+                  doc.querySelectorAll("a").forEach((a) => {
+                    const href = a.getAttribute("href");
+                    if (!href) return;
+
+                    // keep original text IF it's meaningful
+                    const text = a.textContent.trim();
+
+                    if (!text || text === href) {
+                      // if ugly or same as URL → shorten it
+                      let short = href.replace(/^https?:\/\//, "");
+                      if (short.length > 50) short = short.slice(0, 50) + "...";
+                      a.textContent = short;
+                    }
+
+                    a.setAttribute("target", "_blank");
+                    a.setAttribute("rel", "noopener noreferrer");
+                  });
+
+                  // ✅ 2. Convert ONLY plain text URLs (not inside <a>)
+                  const walk = (node) => {
+                    if (node.nodeType === 3) {
+                      const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+                      if (urlRegex.test(node.nodeValue)) {
+                        const span = document.createElement("span");
+
+                        span.innerHTML = node.nodeValue.replace(
+                          urlRegex,
+                          (url) => {
+                            let short = url.replace(/^https?:\/\//, "");
+                            if (short.length > 50)
+                              short = short.slice(0, 50) + "...";
+
+                            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${short}</a>`;
+                          },
+                        );
+
+                        node.replaceWith(...span.childNodes);
+                      }
+                    } else if (node.nodeType === 1 && node.tagName !== "A") {
+                      node.childNodes.forEach(walk);
+                    }
+                  };
+
+                  walk(doc.body);
+
+                  return doc.body.innerHTML;
+                };
                 return (
                   <motion.div
                     key={mail.message_id || idx}
@@ -249,10 +309,11 @@ export default function ThreadView() {
                   >
                     <div
                       className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${isUser
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                        }
+  ${
+    isUser
+      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+  }
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
                     >
@@ -267,10 +328,11 @@ export default function ThreadView() {
                         />
                       )}
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
-                          ? "bg-white/20 text-white"
-                          : "bg-gray-100 text-gray-700 border border-gray-200"
-                          }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
+                          isUser
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                        }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">
@@ -295,9 +357,12 @@ export default function ThreadView() {
 
                       <div
                         dangerouslySetInnerHTML={{
-                          __html: mail.body_html ? mail.body_html : mail.body,
+                          __html: formatMessage(
+                            mail.body_html ? mail.body_html : mail.body,
+                          ),
                         }}
-                        className="mail-content text-sm leading-relaxed"
+                        className="mail-content text-sm leading-relaxed max-w-full
+    overflow-x-auto break-words [&_*]:max-w-full"
                       />
                       {/* ATTACHMENTS BUTTON */}
                       {mail?.attachment?.length > 0 && (

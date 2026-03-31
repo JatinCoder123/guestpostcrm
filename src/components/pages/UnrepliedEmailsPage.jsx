@@ -1,4 +1,3 @@
-
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { PageContext } from "../../context/pageContext";
@@ -31,24 +30,21 @@ const STATUS_CONFIG = [
     label: "Unread",
     icon: IoIosMailUnread,
     color: "#dc2626", // red
-    emailType: "email_unread"
-
+    emailType: "email_unread",
   },
   {
     value: "unreplied",
     label: "Unreplied",
     icon: Mails,
     color: "#2563eb", // blue
-    emailType: "email_inbound"
+    emailType: "email_inbound",
   },
   {
     value: "replied",
     label: "Replied",
     icon: MessageCircleReply,
     color: "#16a34a", // green
-    emailType: "email_outbound"
-
-
+    emailType: "email_outbound",
   },
 
   {
@@ -56,62 +52,54 @@ const STATUS_CONFIG = [
     label: "Offer",
     icon: Gift,
     color: "#1a931c", // red
-    emailType: "email_offer"
-
+    emailType: "email_offer",
   },
   {
     value: "deal",
     label: "Deal",
     icon: Handshake,
     color: "#ca8a04", // yellow
-    emailType: "email_deal"
-
+    emailType: "email_deal",
   },
   {
     value: "order",
     label: "Order",
     icon: ShoppingCart,
     color: "#7c3aed", // purple
-    emailType: "email_order"
-
+    emailType: "email_order",
   },
   {
     value: "brand",
     label: "Brand",
     icon: FaBtc,
     color: "#ed3ab7", // purple
-    emailType: "email_brand"
-
+    emailType: "email_brand",
   },
   {
     value: "verified",
     label: "Verified",
     icon: BadgeCheck,
     color: "#56cd1f", // purple
-    emailType: "email_verified"
-
+    emailType: "email_verified",
   },
   {
-    value: "premium",
-    label: "Premium",
+    value: "completed",
+    label: "Completed",
     icon: MdOutlineWorkspacePremium,
     color: "#56cd1f", // purple
-    emailType: "email_premium"
-
+    emailType: "email_completed",
   },
   {
-    value: "gold",
-    label: "Gold",
+    value: "stop",
+    label: "Stop",
     icon: GiGoldBar,
     color: "#ab9e11", // purple
-    emailType: "email_gold"
-
+    emailType: "email_stop",
   },
 ];
 export function UnrepliedEmailsPage() {
-  const { count, emails, loading, pageIndex, emailsCount, emailType } = useSelector(
-    (state) => state.unreplied,
-  );
+  const { count, emails, loading, pageIndex, emailsCount, emailType } =
+    useSelector((state) => state.unreplied);
   const { handleMove } = useThreadContext();
   const {
     setCurrentIndex,
@@ -150,9 +138,9 @@ export function UnrepliedEmailsPage() {
             {excludeName(row?.from)}
           </span>
 
-          {row.contact_type === "Brand" && (
+          {row.type === "Brand" && (
             <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
-              Market Place
+              Brand
             </span>
           )}
         </div>
@@ -208,11 +196,18 @@ export function UnrepliedEmailsPage() {
   ];
   const status_list = STATUS_CONFIG.map((s) => ({
     ...s,
-    handleStatusClick: () => { setCurrentIndex(0), dispatch(getUnrepliedEmail({ type: s.emailType })) },
+    handleStatusClick: () => {
+      (setCurrentIndex(0), dispatch(getUnrepliedEmail({ type: s.emailType })));
+    },
     checkActive: () => emailType === s.emailType,
-    count: emailsCount[s.emailType.split('_')[1]] ? emailsCount[s.emailType.split('_')[1]] : 0
-  }))
-  const statusCount = Object.values(emailsCount).reduce((acc, curr) => acc + curr, 0)
+    count: emailsCount[s.emailType.split("_")[1]]
+      ? emailsCount[s.emailType.split("_")[1]]
+      : 0,
+  }));
+  const statusCount = Object.values(emailsCount).reduce(
+    (acc, curr) => acc + curr,
+    0,
+  );
 
   return (
     <>
@@ -229,21 +224,17 @@ export function UnrepliedEmailsPage() {
       >
         <TableTitleBar
           Icon={Mail}
-          title={"Unreplied Emails"}
+          title={STATUS_CONFIG.find(s => s.emailType == emailType).label + " Emails"}
           titleClass={"text-rose-700"}
         />
 
         {/* 🔥 TABLE WRAPPER */}
         <div className="relative">
-
           <Table
             headerStyle={"bg-rose-600"}
-            body
             layoutStyle={"grid grid-cols-[200px_1fr_1fr_200px_200px]"}
             rowClassName={(row) =>
-              row.contact_type === "Brand"
-                ? "bg-orange-50 hover:bg-orange-100"
-                : ""
+              row.type === "Brand" ? "bg-orange-50 hover:bg-orange-100" : ""
             }
           />
 
@@ -251,21 +242,18 @@ export function UnrepliedEmailsPage() {
           {loading && (
             <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] flex items-center justify-center z-50">
               <div className="flex flex-col items-center gap-3">
-
                 {/* Spinner */}
                 <div className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
 
                 {/* Dynamic Text */}
                 <p className="text-gray-700 font-medium">
-                  {
-                    STATUS_CONFIG.find(s => s.emailType === emailType)?.label || "Emails"
-                  } Emails Loading...
+                  {STATUS_CONFIG.find((s) => s.emailType === emailType)
+                    ?.label || "Emails"}{" "}
+                  Emails Loading...
                 </p>
-
               </div>
             </div>
           )}
-
         </div>
       </TableView>
     </>

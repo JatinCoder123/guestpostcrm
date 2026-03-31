@@ -5,24 +5,56 @@ import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import PromptViewer from "../../PromptViewer.jsx";
 import PromptSectionsViewer from "../../PromptViewer.jsx";
-import Header from "./Header.jsx"
+import Header from "./Header.jsx";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
 const TABS = [
   { key: "error", label: "Error Logs", module: "outr_error_logs" },
+
   {
     key: "gpc",
     label: "GPC Request / Response",
     module: "outr_request_and_response",
   },
+
   {
     key: "api",
-    label: "Gmail/ChatGPT/Paypal/MOZ",
+    label: "API Request / Response",
     module: "outr_request_and_response",
   },
+
   { key: "prompt", label: "Prompt Ledger", module: "outr_prompt_ledger" },
+
   { key: "logger", label: "Logger", module: "outr_global_logger" },
+
+  // 👇 DUMMY / NOT WORKING YET
+  {
+    key: "prompt_testing",
+    label: "Prompt Testing",
+    module: "outr_prompt_testing",
+    disabled: false,
+  },
+
+  {
+    key: "process_audit",
+    label: "Process Audit",
+    module: "outr_el_process_audit",
+    disabled: false,
+  },
+
+  {
+    key: "ml",
+    label: "Machine Learning",
+    module: "outr_machine_learning",
+    disabled: false,
+  },
+  {
+    key: "self_test",
+    label: "Self Test",
+    module: "outr_self_test",
+    disabled: false,
+  },
 ];
 
 const IMPORTANT_COLUMNS = {
@@ -31,6 +63,13 @@ const IMPORTANT_COLUMNS = {
   gpc: ["date_entered", "request", "response"],
   prompt: ["date_entered", "response", "full_prompt"],
   logger: ["date_entered", "name", "description"],
+  process_audit: [
+    "date_entered",
+    "from_email_c",
+    "name",
+    "message_id",
+    "history_id",
+  ],
 };
 
 const HIDDEN_FIELDS = [
@@ -56,6 +95,16 @@ const TIME_FILTERS = [
 ];
 
 const Debug = () => {
+  const handleRowClick = (row) => {
+    const messageId = row.message_id;
+    const recordId = row.id;
+
+    const url = `https://testcrm.guestpostcrm.com/index.php?entryPoint=handle_push_notification&message_id=${messageId}&test_now=${recordId}`;
+
+    window.open(url, "_blank");
+
+    setSelectedRecord(row);
+  };
   const { state } = useLocation();
   const navigateTo = useNavigate();
 
@@ -101,6 +150,7 @@ const Debug = () => {
     if (activeTab.key !== "prompt") return;
     if (state?.prompt) setSelectedRecord(state?.prompt);
   }, [loading, data, state?.promptId, activeTab]);
+
   useEffect(() => {
     refetch();
   }, [activeTab]);
@@ -212,7 +262,7 @@ const Debug = () => {
     try {
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
-    } catch { }
+    } catch {}
 
     let content = parsed?.reply || parsed;
 
@@ -266,35 +316,62 @@ const Debug = () => {
   };
 
   return (
-    <> <Header
-      text={"QA PlayGround"}
-      handleCreate={() =>
-        setEditItem({
-          type: "new",
-        })
-      }
-    />
+    <>
+      {" "}
+      <Header text={"QA PlayGround"} />
       <div className="p-6 space-y-6">
-        {/* Tabs */}
-        <div className="flex gap-2 border-b">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition ${activeTab.key === tab.key
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
+        {/* Tabs (Replaced with Dropdown) */}
+        <div className="flex items-center justify-between border-b pb-3">
+          {/* ACTIVE TAB NAME */}
+          <div className="text-lg font-semibold text-blue-600">
+            {activeTab.label}
+          </div>
+
+          {/* DROPDOWN */}
+          <div>
+            <select
+              value={activeTab.key}
+              onChange={(e) => {
+                const selected = TABS.find((t) => t.key === e.target.value);
+
+                if (!selected) return;
+
+                // 🔥 Navigation logic
+                if (selected.key === "prompt_testing") {
+                  navigateTo("/settings/prompt-testing");
+                  return;
+                }
+
+                if (selected.key === "ml") {
+                  navigateTo("/settings/machine-learning");
+                  return;
+                }
+
+                if (selected.key === "self_test") {
+                  navigateTo("/settings/self-test");
+                  return;
+                }
+
+                // बाकी tabs same rahenge
+                if (selected?.disabled) return;
+
+                setActiveTab(selected);
+              }}
+              className="border px-4 py-2 rounded-md text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
             >
-              {tab.label}
-            </button>
-          ))}
+              {TABS.map((tab) => (
+                <option key={tab.key} value={tab.key} disabled={tab.disabled}>
+                  {tab.label} {tab.disabled ? " (Coming Soon)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Filters */}
         <div className="flex justify-center gap-6 flex-wrap">
           {/* Email Search */}
-          <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
+          {/* <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
             <span className="text-sm font-medium text-gray-600">Email</span>
 
             <div className="relative">
@@ -315,7 +392,7 @@ const Debug = () => {
                 </button>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Timeline */}
           <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
@@ -386,7 +463,23 @@ const Debug = () => {
                     className="border-t hover:bg-gray-50 cursor-pointer"
                   >
                     {columns.map((col) => (
-                      <td key={col} className="px-4 py-3 max-w-xs truncate">
+                      <td
+                        key={col}
+                        className={`px-4 py-3 max-w-xs truncate ${
+                          activeTab.key === "process_audit" &&
+                          col === "message_id"
+                            ? "cursor-pointer text-blue-600 hover:underline"
+                            : ""
+                        }`}
+                        onClick={() => {
+                          if (
+                            activeTab.key === "process_audit" &&
+                            col === "message_id"
+                          ) {
+                            handleRowClick(row);
+                          }
+                        }}
+                      >
                         {truncate(row[col])}
                       </td>
                     ))}
@@ -461,8 +554,9 @@ const Debug = () => {
                     return (
                       <div
                         key={key}
-                        className={`border rounded-lg p-3 bg-gray-50 ${large ? "md:col-span-2" : ""
-                          }`}
+                        className={`border rounded-lg p-3 bg-gray-50 ${
+                          large ? "md:col-span-2" : ""
+                        }`}
                       >
                         <div className="text-xs text-gray-500 mb-1">
                           {key.replace(/_/g, " ").toUpperCase()}
@@ -520,8 +614,8 @@ const Debug = () => {
             </div>
           </div>
         )}
-      </div></>
-
+      </div>
+    </>
   );
 };
 
