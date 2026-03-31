@@ -251,21 +251,21 @@ export const createOrder2 = (email, order, send, threadId) => {
     console.log("ORDER", order)
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      let orders= order.order_type=="GUEST POST"?order.seo_backlinks.map((link)=>{
+      let orders = order.order_type == "GUEST POST" ? order.seo_backlinks.map((link) => {
         return {
           type: "Guest Post",
           site: link.website,
-          content_doc:link.gp_doc_url_c,
-          
+          content_doc: link.gp_doc_url_c,
+
         }
-      }):order.seo_backlinks.map((link)=>{
+      }) : order.seo_backlinks.map((link) => {
         return {
           type: "Link Insertion",
           site: link.website,
-          post_url:link.website,
-          their_link:[{
-            url:link.backlink_url,
-            anchor_text:link.anchor_text_c
+          post_url: link.website,
+          their_link: [{
+            url: link.backlink_url,
+            anchor_text: link.anchor_text_c
           }]
         }
       })
@@ -282,7 +282,7 @@ export const createOrder2 = (email, order, send, threadId) => {
       );
       showConsole && console.log(`Create Order Manully`, res.data);
       if (!res.data.success) {
-               throw new Error("Failed To Create Order")
+        throw new Error("Failed To Create Order")
       }
       dispatch(
         ordersSlice.actions.createOrder2Success({

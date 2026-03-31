@@ -37,7 +37,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 const ThreadReply = () => {
   const editorRef = useRef(null);
-
+  const [showFailedModal, setShowFailedModal] = useState(false);
   const { threadId } = useParams();
   const { emails } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -72,6 +72,9 @@ const ThreadReply = () => {
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
   const attachmentBoxRef = useRef(null);
   const [favourites, setFavourites] = useState([]);
+  const modalRef = useRef(null);
+
+
   const {
     loading: aiLoading,
     aiReply: aiResponse,
@@ -129,7 +132,11 @@ const ThreadReply = () => {
     dependencies: [templateId],
     enabled: templateId,
   });
-
+  useEffect(() => {
+    if (sendFailedResponse) {
+      setShowFailedModal(true);
+    }
+  }, [sendFailedResponse]);
   // LOAD TEMPLATE INTO EDITOR
   useEffect(() => {
     if (template && editorReady && editorRef.current) {
@@ -243,7 +250,24 @@ const ThreadReply = () => {
       dispatch(aiReplyAction.clearAllErrors());
     }
   }, [message, aiResponse, dispatch]);
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        showFailedModal &&
+        modalRef.current &&
+        !modalRef.current.contains(e.target)
+      ) {
+        // 🔥 Force send on outside click
+        handleSendClick(1);
 
+        setShowFailedModal(false);
+        dispatch(viewEmailAction.clearFailedResponse());
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [showFailedModal]);
   return (
     <>
       <MessageModal
@@ -531,7 +555,7 @@ const ThreadReply = () => {
         </div>
       </motion.div>
       <AnimatePresence>
-        {sendFailedResponse && (
+        {showFailedModal && sendFailedResponse && (
           <motion.div
             className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
@@ -539,6 +563,7 @@ const ThreadReply = () => {
             exit={{ opacity: 0 }}
           >
             <motion.div
+              ref={modalRef}
               initial={{ scale: 0.9, y: 40 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 40 }}
@@ -551,8 +576,11 @@ const ThreadReply = () => {
                   ⚠️ Email Not Sent
                 </h2>
                 <button
-                  onClick={() => setShowFailedModal(false)}
-                  className="text-gray-500 hover:text-black"
+                  onClick={() => {
+                    handleSendClick(1);
+                    setShowFailedModal(false);
+                    dispatch(viewEmailAction.clearFailedResponse());
+                  }}
                 >
                   ✕
                 </button>
