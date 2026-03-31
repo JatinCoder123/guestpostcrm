@@ -53,11 +53,11 @@ export default function CreateOffers({ threadId, email }) {
     // 🔥 FILTER VALID WEBSITES
     useEffect(() => {
         const threadOffers = offers.filter(
-            (d) => d.thread_id == threadId
+            (d) => extractEmail(d.real_name ?? d.email) == email
         );
 
         const threadDeals = deals.filter(
-            (d) => d.thread_id == threadId
+            (d) => extractEmail(d.real_name ?? d.email) == email
         );
 
         const valid = websiteLists.filter((w) => {
@@ -68,7 +68,7 @@ export default function CreateOffers({ threadId, email }) {
         });
 
         setValidWebsite(valid);
-    }, [offers, deals, threadId]);
+    }, [offers, deals, email]);
 
     // 🔥 HANDLERS
     const handleAddRow = () => {

@@ -30,8 +30,8 @@ const ordersSlice = createSlice({
 
   },
   reducers: {
-    getOrdersRequest(state) {
-      state.loading = true;
+    getOrdersRequest(state, action) {
+      state.loading = action.payload;
       state.error = null;
     },
     getOrdersSucess(state, action) {
@@ -108,7 +108,6 @@ const ordersSlice = createSlice({
     updateOrderSuccess(state, action) {
       state.updating = false;
       state.message = action.payload.message;
-      state.orders = action.payload.orders;
       state.error = null;
     },
     updateOrderFailed(state, action) {
@@ -179,22 +178,12 @@ const ordersSlice = createSlice({
 
 export const getOrders = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    loading && dispatch(ordersSlice.actions.getOrdersRequest());
-
+    dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`,
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${localStorage.getItem("email") ? `&email=${localStorage.getItem("email")}` : ""}`,
-        );
-      }
-      const data = response.data;
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+      );
       showConsole && console.log(`Orders orders`, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({
@@ -359,15 +348,8 @@ export const updateOrder = ({ order, email }) => {
         },
       );
       showConsole && console.log(`Update Order`, data);
-      const updatedOrders = getState().orders.orders.map((o) => {
-        if (o.id === order.id) {
-          return order;
-        }
-        return o;
-      });
       dispatch(
         ordersSlice.actions.updateOrderSuccess({
-          orders: updatedOrders,
           message: `Order Updated Successfully`,
         }),
       );

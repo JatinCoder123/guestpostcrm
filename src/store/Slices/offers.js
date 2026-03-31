@@ -108,19 +108,11 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
 
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`,
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${localStorage.getItem("email") ? `&email=${localStorage.getItem("email")}` : ""}`,
-        );
-      }
-      const data = response.data;
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+      );
+
       showConsole && console.log(`offers`, data);
       dispatch(
         offersSlice.actions.getOffersSucess({

@@ -16,6 +16,7 @@ import IconButton from "../../ui/Buttons/IconButton";
 import { ManualSideCall } from "../../../services/utils";
 import { getLadger } from "../../../store/Slices/ladger";
 import { dealsAction, deleteDeal, updateDeal } from "../../../store/Slices/deals";
+import { extractEmail } from "../../../assets/assets";
 
 export default function ThreadDeals({ threadId, email, id }) {
     const navigate = useNavigate();
@@ -57,11 +58,11 @@ export default function ThreadDeals({ threadId, email, id }) {
 
     useEffect(() => {
         const threadOffers = offers.filter(
-            (d) => d.thread_id == threadId && d.offer_status == "active"
+            (d) => extractEmail(d.real_name ?? d.email) == email && d.offer_status == "active"
         );
 
         const threadDeals = deals.filter(
-            (d) => d.thread_id == threadId
+            (d) => extractEmail(d.real_name ?? d.email) == email
         );
 
         const valid = websiteLists.filter((w) => {
@@ -84,7 +85,7 @@ export default function ThreadDeals({ threadId, email, id }) {
         }
         setValidWebsite(valid);
         setCurrentDeals(activeDeals);
-    }, [offers, deals, editData, threadId, id]);
+    }, [offers, deals, editData, email, id]);
 
 
     // 🔥 INLINE EDIT HANDLERS

@@ -16,6 +16,7 @@ import { Save, Send, X, Loader2 } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
 import { ManualSideCall } from "../../../services/utils";
 import { getLadger } from "../../../store/Slices/ladger";
+import { extractEmail } from "../../../assets/assets";
 
 export default function ThreadOffers({ threadId, email, id }) {
   const navigate = useNavigate();
@@ -57,11 +58,11 @@ export default function ThreadOffers({ threadId, email, id }) {
 
   useEffect(() => {
     const threadOffers = offers.filter(
-      (d) => d.thread_id == threadId
+      (d) => extractEmail(d.real_name ?? d.email) == email
     );
 
     const threadDeals = deals.filter(
-      (d) => d.thread_id == threadId
+      (d) => extractEmail(d.real_name ?? d.email) == email
     );
 
     const valid = websiteLists.filter((w) => {
@@ -84,7 +85,7 @@ export default function ThreadOffers({ threadId, email, id }) {
     }
     setValidWebsite(valid);
     setCurrentOffers(activeOffers);
-  }, [offers, deals, editData, threadId, id]);
+  }, [offers, deals, editData, email, id]);
 
 
   // 🔥 INLINE EDIT HANDLERS

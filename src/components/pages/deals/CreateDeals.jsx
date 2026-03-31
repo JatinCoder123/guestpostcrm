@@ -16,6 +16,7 @@ import { ManualSideCall } from "../../../services/utils";
 import { getLadger } from "../../../store/Slices/ladger";
 import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
 import { getOffers } from "../../../store/Slices/offers";
+import { extractEmail } from "../../../assets/assets";
 
 // 🔥 renamed component also
 export default function CreateDeals({ threadId, email }) {
@@ -64,12 +65,12 @@ export default function CreateDeals({ threadId, email }) {
 
     // 🔥 FILTER VALID WEBSITES
     useEffect(() => {
-        const threadDeals = deals.filter(
-            (d) => d.thread_id == threadId
+        const emailDeals = deals.filter(
+            (d) => extractEmail(d.real_name ?? d.email) == email
         );
 
         const valid = websiteLists.filter((w) => {
-            const usedInDeals = threadDeals.some(
+            const usedInDeals = emailDeals.some(
                 (d) => d.website_c === w
             );
 
@@ -77,7 +78,7 @@ export default function CreateDeals({ threadId, email }) {
         });
         setValidWebsite(valid);
 
-    }, [offers, deals, threadId]);
+    }, [offers, deals, email]);
 
 
     // 🔥 HANDLERS

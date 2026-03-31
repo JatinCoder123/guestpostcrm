@@ -1,57 +1,138 @@
 import { useEffect, useState } from "react";
 import {
-    ArrowLeft,
     DollarSign,
-    FileText,
     Package,
     Send,
     Save,
-    Link2,
     FileEdit,
     Dot,
     Link2Icon,
 } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PageHeader from "../../PageHeader";
 import IconButton from "../../ui/Buttons/IconButton";
-import { updateOrder } from "../../../store/Slices/orders";
+import { getOrders, orderAction, updateOrder } from "../../../store/Slices/orders";
+import { toast } from "react-toastify";
+import { ManualSideCall } from "../../../services/utils";
+import { getLadger } from "../../../store/Slices/ladger";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import useModule from "../../../hooks/useModule";
+import { useThreadContext } from "../../../hooks/useThreadContext";
+import { createPreviewOrder } from "../../PreviewOrder";
+import { useNavigate } from "react-router-dom";
+
 
 export default function EditOrder({ threadId, id, email }) {
     const [order, setOrder] = useState({})
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
     const { orders, updating, statusLists, message, error } = useSelector(s => s.orders)
+    const { crmEndpoint } = useSelector(s => s.user)
+    const { handleMove } = useThreadContext()
     const [send, setSend] = useState(false)
-
+    const {
+        data: gpTemplate,
+    } = useModule({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        method: "POST",
+        body: {
+            module: "EmailTemplates",
+            where: {
+                name: "OrderORG",
+            },
+        },
+        headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        name: "GP TEMPLATE",
+    });
+    const {
+        data: liTemplate,
+    } = useModule({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        method: "POST",
+        body: {
+            module: "EmailTemplates",
+            where: {
+                name: "LI_ORDER_TEMPLATE",
+            },
+        },
+        headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        name: "LI TEMPLATE",
+    });
 
     const handleChange = (key, value) => {
         setOrder((prev) => ({ ...prev, [key]: value }));
     };
-
     const handleUpdate = (isSend = false) => {
         setSend(isSend)
         dispatch(updateOrder({ email, order }));
     };
     useEffect(() => {
-        const order = orders.find(o => o.thread_id == threadId && o.id == id)
+        const order = orders.find(o => extractEmail(o.real_name ?? o.email) == email && o.id == id)
+        if (!order) {
+            navigate('/')
+            return
+        }
         setOrder(order)
     }, [orders, threadId, id]);
+    const handlePreview = () => {
+        const html = createPreviewOrder({
+            templateData: order.order_type == "GUEST POST" ? gpTemplate : liTemplate,
+            order: { ...order },
+            userEmail: email,
+        });
+        handleMove({ email, threadId, reply: html });
+    }
+    useEffect(() => {
+        if (message) {
+            dispatch(getOrders({ email }))
+            toast.success(message);
+            if (message?.includes("Updated")) {
+                ManualSideCall(
+                    crmEndpoint,
+                    email,
+                    "Our Order Updated Successfully",
+                    1,
+                    () => dispatch(getLadger({ email })),
+                );
+                if (send) {
+                    setSend(false);
+                    dispatch(orderAction.clearAllMessages());
+                    handlePreview();
+                }
+                else {
+                    dispatch(orderAction.clearAllMessages());
+                    navigate(-1)
+                }
+            }
 
+        }
+
+        if (error) {
+            toast.error(error);
+            setSend(false); // reset on error too
+            dispatch(orderAction.clearAllMessages());
+        }
+    }, [message, error]);
 
     return (
         <div className="w-full flex gap-6 items-start">
 
             {/* 🔥 TABLE */}
             <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
-
                 <PageHeader title={"Edit Order"} showAdd={false} />
-
-
                 {/* Card */}
                 <div className="bg-white ">
 
                     {/* Order Info */}
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                            <Package className="h-4 w-4 text-blue-500" />
+                            <Package className="h-4 w-4 text-violet-500" />
                             Order Information
                         </h2>
 
@@ -62,8 +143,9 @@ export default function EditOrder({ threadId, id, email }) {
                                 <label className="block text-sm mb-1"># Order ID</label>
                                 <input
                                     value={order.order_id}
+                                    disabled={true}
                                     onChange={(e) => handleChange("order_id", e.target.value)}
-                                    className="w-full border rounded-lg px-3 h-11 bg-slate-50"
+                                    className="w-full border rounded-lg px-3 h-11 bg-slate-200"
                                 />
                             </div>
 
