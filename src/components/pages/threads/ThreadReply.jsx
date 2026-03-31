@@ -236,7 +236,7 @@ const ThreadReply = () => {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [sendMessage, sendError, sendFailedResponse]);
+  }, [sendMessage, sendError]);
   useEffect(() => {
     if (message && aiResponse) {
       if (message == "User") setAiNewContent(aiResponse);
@@ -257,9 +257,6 @@ const ThreadReply = () => {
         modalRef.current &&
         !modalRef.current.contains(e.target)
       ) {
-        // 🔥 Force send on outside click
-        handleSendClick(1);
-
         setShowFailedModal(false);
         dispatch(viewEmailAction.clearFailedResponse());
       }
@@ -577,7 +574,6 @@ const ThreadReply = () => {
                 </h2>
                 <button
                   onClick={() => {
-                    handleSendClick(1);
                     setShowFailedModal(false);
                     dispatch(viewEmailAction.clearFailedResponse());
                   }}
