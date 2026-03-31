@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { viewEmailAction } from "./store/Slices/viewEmail";
 import { PageContext } from "./context/pageContext";
 import DisplayIntro from "./components/DisplayIntro";
-import { AnimatePresence } from "framer-motion";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
