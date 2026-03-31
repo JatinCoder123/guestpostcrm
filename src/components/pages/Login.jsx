@@ -1,10 +1,7 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { AUTH_URL } from "../../store/constants.js";
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
-
   const handleLoginWithGoogle = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=googleLogin`;
   };

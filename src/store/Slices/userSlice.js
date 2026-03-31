@@ -96,7 +96,7 @@ export const getUser = () => {
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       showConsole && console.log(error);
-
+      localStorage.setItem('displayIntro', "true")
       let message = "Something went wrong. Please try again.";
 
       if (error.response) {
@@ -138,6 +138,8 @@ export const getUser = () => {
 export const logout = () => {
   return async (dispatch) => {
     dispatch(userSlice.actions.logoutRequest());
+    localStorage.setItem('displayIntro', "true")
+
     try {
       const { data } = await axios.get(
         `${AUTH_URL}?controller=auth&action=logout`,

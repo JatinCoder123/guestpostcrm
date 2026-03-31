@@ -11,7 +11,7 @@ export const PageContextProvider = (props) => {
   const showConsole = localStorage.getItem("showConsole") || false;
   const navigateTo = useNavigate()
   const dispatch = useDispatch()
-  const [displayIntro, setDisplayIntro] = useState(true);
+  const [displayIntro, setDisplayIntro] = useState(localStorage.getItem("displayIntro") === "true");
   const [collapsed, setSidebarCollapsed] = useState(true);
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
