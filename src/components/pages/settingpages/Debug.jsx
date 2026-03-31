@@ -508,8 +508,12 @@ const Debug = () => {
                   {state?.prompt && (
                     <button
                       onClick={() => {
+                        console.log("prompt id", state?.prompt.prompt_id);
                         navigateTo("/settings/machine-learning", {
-                          state: { promptId: state?.prompt.prompt_id },
+                          state: {
+                            promptId: state?.prompt.prompt_id,
+                            promptStatus: state?.prompt.prompt_status,
+                          },
                         });
                       }}
                       className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"

@@ -84,9 +84,10 @@ export function MachineLearningPage() {
             key={key}
             onClick={() => setActiveStage(key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition
-              ${activeStage === key
-                ? "bg-blue-600 text-white shadow"
-                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              ${
+                activeStage === key
+                  ? "bg-blue-600 text-white shadow"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
               }`}
           >
             {label}
@@ -156,7 +157,11 @@ export function MachineLearningPage() {
       )}
 
       {/* Modal */}
-      <EditModal item={editItem} onClose={() => setEditItem(null)} stages={stages} />
+      <EditModal
+        item={editItem}
+        onClose={() => setEditItem(null)}
+        stages={stages}
+      />
     </div>
   );
 }
