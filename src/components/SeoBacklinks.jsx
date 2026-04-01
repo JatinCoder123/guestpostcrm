@@ -245,7 +245,9 @@ function LinkTableRow({
 }) {
   const spam = getSpamLabel(link.spam_score_c);
   return (
-    <div className="grid grid-cols-8 px-4 py-3 border-t border-slate-100 text-sm items-center hover:bg-slate-50 transition">
+    <div
+      className={`grid grid-cols-8 px-4 py-3 border-t border-slate-100 text-sm items-center ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
+    >
       {/* Index */}
       <div>
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold shadow-sm">
