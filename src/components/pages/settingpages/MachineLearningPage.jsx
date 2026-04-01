@@ -7,9 +7,14 @@ import Header from "./Header";
 import Loading from "../../Loading";
 import ErrorBox from "./ErrorBox";
 import EditModal from "./EditModal";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function MachineLearningPage() {
   const { crmEndpoint } = useSelector((state) => state.user);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const promptId = location.state?.promptId;
+  const promptStatus = location.state?.promptStatus;
 
   const [stages, setStages] = useState({});
   const [activeStage, setActiveStage] = useState("");
@@ -31,9 +36,12 @@ export function MachineLearningPage() {
 
       setStages(data);
 
-      // ✅ set first stage as default
       const firstKey = Object.keys(data)[0];
-      if (firstKey) {
+
+      // ✅ If coming from navigation → use that stage
+      if (promptStatus && data[promptStatus]) {
+        setActiveStage(promptStatus);
+      } else if (firstKey) {
         setActiveStage(firstKey);
       }
     } catch (err) {
@@ -65,6 +73,16 @@ export function MachineLearningPage() {
   useEffect(() => {
     fetchStages();
   }, []);
+
+  useEffect(() => {
+    if (promptId && rows.length > 0) {
+      const found = rows.find((r) => r.id === promptId);
+
+      if (found) {
+        setEditItem(found);
+      }
+    }
+  }, [rows, promptId]);
 
   // fetch data when stage changes
   useEffect(() => {
@@ -159,7 +177,10 @@ export function MachineLearningPage() {
       {/* Modal */}
       <EditModal
         item={editItem}
-        onClose={() => setEditItem(null)}
+        onClose={() => {
+          setEditItem(null);
+          if (promptId) navigate(-1);
+        }}
         stages={stages}
       />
     </div>

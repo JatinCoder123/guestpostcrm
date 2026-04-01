@@ -224,7 +224,7 @@ const ThreadReply = () => {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [sendMessage, sendError, sendFailedResponse]);
+  }, [sendMessage, sendError]);
   useEffect(() => {
     if (message && aiResponse) {
       if (message == "User") setAiNewContent(aiResponse);
