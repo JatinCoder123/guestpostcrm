@@ -3,27 +3,31 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
-import SummaryCard from "../../SummaryCard";
 import PageHeader from "../../PageHeader";
-import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { buildTable } from "../../Preview";
 import { useThreadContext } from "../../../hooks/useThreadContext";
-import { LoadingChase } from "../../Loading";
-import { toast } from "react-toastify";
 import { Save, Send, X, Loader2 } from "lucide-react";
-import IconButton from "../../ui/Buttons/IconButton";
-import { ManualSideCall } from "../../../services/utils";
-import { getLadger } from "../../../store/Slices/ladger";
 import { extractEmail } from "../../../assets/assets";
 import { OrderView } from "../../OrderView";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import useModule from "../../../hooks/useModule";
+import { createPreviewOrder } from "../../PreviewOrder";
+import { getOrders, orderAction } from "../../../store/Slices/orders";
+import { toast } from "react-toastify";
+import { getLadger } from "../../../store/Slices/ladger";
+import { ManualSideCall } from "../../../services/utils";
 
 export default function ThreadOrders({ threadId, email, id }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [currentOrders, setCurrentOrders] = useState([]);
-    const { orders } = useSelector(
+    const [send, setSend] = useState()
+
+    const { orders, message, error } = useSelector(
         (state) => state.orders
+    );
+    const { crmEndpoint } = useSelector(
+        (state) => state.user
     );
     const { handleMove } = useThreadContext();
     useEffect(() => {
@@ -53,24 +57,76 @@ export default function ThreadOrders({ threadId, email, id }) {
             },
         });
     };
-
+    const {
+        data: gpTemplate,
+    } = useModule({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        method: "POST",
+        body: {
+            module: "EmailTemplates",
+            where: {
+                name: "OrderORG",
+            },
+        },
+        headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        name: "GP TEMPLATE",
+    });
+    const {
+        data: liTemplate,
+    } = useModule({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        method: "POST",
+        body: {
+            module: "EmailTemplates",
+            where: {
+                name: "LI_ORDER_TEMPLATE",
+            },
+        },
+        headers: {
+            "x-api-key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        name: "LI TEMPLATE",
+    });
 
     const handlePreview = (order) => {
-        let html = templateData?.[0]?.body_html || "";
-
-        const tableHtml = buildTable(
-            offersData,
-            "Offers",
-            "website",
-            "our_offer_c"
-        );
-
-        html = html
-            .replace("{{USER_EMAIL}}", email)
-            .replace("{{TABLE}}", tableHtml);
-
+        const html = createPreviewOrder({
+            templateData: order.order_type == "GUEST POST" ? gpTemplate : liTemplate,
+            order,
+            userEmail: email,
+        });
         handleMove({ email, threadId, reply: html });
-    };
+    }
+    useEffect(() => {
+        if (message) {
+            dispatch(getOrders({ email }))
+            toast.success(message)
+            if (message?.includes("Updated")) {
+                ManualSideCall(
+                    crmEndpoint,
+                    email,
+                    "Our Order Updated Successfully",
+                    1,
+                    () => dispatch(getLadger({ email })),
+                );
+                if (send) {
+                    setSend(undefined);
+                    dispatch(orderAction.clearAllMessages());
+                    handlePreview(send);
+                }
+                else {
+                    dispatch(orderAction.clearAllMessages());
+                }
+            }
+        }
+        if (error) {
+            toast.error(error)
+            dispatch(orderAction.clearAllMessages());
+        }
+    }, [message, error]);
     return (
         <div className="w-full flex gap-6 items-start">
 
@@ -82,12 +138,9 @@ export default function ThreadOrders({ threadId, email, id }) {
                 {currentOrders.map((item, idx) => (
                     <div
                         key={item.id}
-                        className={`
-                          relative rounded-xl border overflow-hidden transition-all
-                        border-l-4 border-l-indigo-500 bg-indigo-50/30
-                        `}
+                        className="relative rounded-xl border overflow-hidden transition-all 
+                        border-l-4 border-l-indigo-500 bg-indigo-50/30 mb-10"
                     >
-                        {/* Action buttons – high z-index */}
                         <div className="absolute top-2 right-4 flex gap-2 z-30">
                             <button
                                 onClick={() =>
@@ -113,7 +166,11 @@ export default function ThreadOrders({ threadId, email, id }) {
 
                         </div>
                         <OrderView
+                            send={send}
+                            setSend={setSend}
+                            handlePreview={(order) => handlePreview(order)}
                             data={item}
+                            email={email}
                         />
                     </div>
                 ))}

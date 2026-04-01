@@ -15,8 +15,8 @@ import {
   NotepadTextDashed,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { useContext, useState } from "react";
-import { getInvoices } from "../../store/Slices/invoices.js"
+import { useContext, useEffect, useState } from "react";
+import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices.js"
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
@@ -26,6 +26,7 @@ import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import UpdatePopup from "../UpdatePopup.jsx"
 import { LoadingChase } from "../Loading.jsx"
+import { toast } from "react-toastify";
 const STATUS_CONFIG = [
   {
     value: "SENT",
@@ -47,7 +48,7 @@ const STATUS_CONFIG = [
   }
 ];
 export function InvoicesPage() {
-  const { count, updating, invoices, loading, pageIndex, stats, } = useSelector(
+  const { count, updating, invoices, loading, pageIndex, stats, message, error } = useSelector(
     (state) => state.invoices
   );
   const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
@@ -89,6 +90,25 @@ export function InvoicesPage() {
     useContext(PageContext);
   const dispatch = useDispatch();
 
+  const updateInvoiceHandler = (invoice, data) => {
+    const updatedInvoice = {
+      ...invoice,
+      ...data,
+    };
+    dispatch(updateInvoice(updatedInvoice));
+  };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(invoicesAction.clearAllErrors());
+    }
+    if (message) {
+      toast.success(message);
+      setCurrentUpdateInvoice(null);
+      dispatch(invoicesAction.clearAllMessages());
+    }
+  }, [dispatch, message, error]);
   const columns = [
     {
       label: "Created At",

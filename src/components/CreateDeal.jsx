@@ -82,9 +82,6 @@ export default function CreateDeal() {
   const [newDealsCreated, setNewDealsCreated] = useState([]);
   const [currentOffers, setCurrentOffers] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
-
-  const [editorContent, setEditorContent] = useState("");
-
   const { enteredEmail, search } = useContext(PageContext);
   const [newDeals, setNewDeals] = useState([]);
   const navigate = useNavigate();

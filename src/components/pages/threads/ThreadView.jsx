@@ -5,18 +5,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
 import {
-  useLocation,
   useNavigate,
   useOutletContext,
-  useParams,
 } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
+import { useThreadContext } from "../../../hooks/useThreadContext.js";
 export default function ThreadView() {
   const scrollRef = useRef();
   const { emails } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
-  const { threadId } = useParams();
+  const { context: { currentThread: threadId } } = useThreadContext();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
@@ -309,11 +308,10 @@ export default function ThreadView() {
                   >
                     <div
                       className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${
-    isUser
-      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-  }
+  ${isUser
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                        }
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
                     >
@@ -328,11 +326,10 @@ export default function ThreadView() {
                         />
                       )}
                       <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
-                          isUser
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
-                        }`}
+                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
+                          ? "bg-white/20 text-white"
+                          : "bg-gray-100 text-gray-700 border border-gray-200"
+                          }`}
                       >
                         {/* NAME */}
                         <div className="flex items-center gap-2 font-semibold">
@@ -468,7 +465,7 @@ export default function ThreadView() {
               <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`reply`)}
+                onClick={() => navigate(`/thread/reply`)}
                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Send className="w-5 h-5" />

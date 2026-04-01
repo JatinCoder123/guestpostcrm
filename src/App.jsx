@@ -208,11 +208,11 @@ const router = createBrowserRouter([
         element: <Thread />,
         children: [
           {
-            path: ":threadId",
+            path: "view",
             element: <ThreadView />,
           },
           {
-            path: ":threadId/reply",
+            path: "reply",
             element: <ThreadReply />,
           },
         ],
