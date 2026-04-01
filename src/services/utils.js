@@ -30,3 +30,48 @@ export const updateActivity = async (entryPoint, email, last_user, last_user_ema
     }
 
 }
+export const createLedgerEntry = async ({
+  domain,
+  email,
+  thread_id,
+  message_id,
+  group = "General",
+  items = [],
+}) => {
+  try {
+    const payload = {
+      email,
+      thread_id,
+      message_id,
+      group,
+      item: items,
+    };
+
+    await axios.post(
+      `${domain}?entryPoint=fetch_gpc&type=make_ledger`,
+      payload
+    );
+
+    showConsole && console.log("Ledger Created", payload);
+  } catch (error) {
+    showConsole && console.log("Ledger API Failed", error);
+  }
+};
+
+export const buildLedgerItem = ({
+  status,
+  detail,
+  ladgerState,
+  user,
+  parent_name,
+}) => ({
+  status,
+  detail,
+  prompt_id: ladgerState.prompt_id || "",
+  prompt_ledger_id: ladgerState.prompt_ledger_id || "",
+  parent_id: ladgerState.parent_id || "",
+  parent_name,
+  template_id: ladgerState.template_id || "",
+  assigned_user_id: user?.id || "",
+});
+

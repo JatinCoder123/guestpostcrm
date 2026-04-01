@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
-import { updateActivity } from "../../services/utils";
+import { updateActivity ,createLedgerEntry, buildLedgerItem} from "../../services/utils";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -143,6 +143,7 @@ export const updateOffer = (offer, send) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
     try {
+      const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
@@ -175,10 +176,29 @@ export const updateOffer = (offer, send) => {
 
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, extractEmail(offer.real_name), getState().user.user.name, getState().user.user.email, "Offer Updated ")
+     
+      await createLedgerEntry({
+  domain,
+  email: extractEmail(offer.real_name),
+  thread_id: offer.thread_id,
+  message_id: offer.thread_id,
+  group: "Offer",
+  items: [
+    buildLedgerItem({
+      status: "offer_updated",
+      detail: `website: {${offer.website}} amount: {${offer.our_offer_c}}`,
+      ladgerState: state.ladger,
+      user: state.user.user,
+      parent_name: "outr_offer",
+    }),
+  ],
+});
 
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
-      dispatch(offersSlice.actions.updateOfferFailed("Updating Offer Failed"));
+      dispatch(
+        offersSlice.actions.updateOfferFailed("Updating Offer Failed"),
+      );
     }
   };
 };
@@ -186,6 +206,7 @@ export const createOffer = (threadId, offers = [], send = false) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
+      const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
       const { data } = await axios.post(
         `${domain}?entryPoint=get_offer`,
@@ -219,6 +240,23 @@ export const createOffer = (threadId, offers = [], send = false) => {
       );
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Offer Created ")
+      // 🔥 Ledger API Call
+await createLedgerEntry({
+  domain,
+  email: offers[0]?.email,
+  thread_id: threadId,
+  message_id: threadId,
+  group: "Offer",
+  items: offers.map((offer) =>
+    buildLedgerItem({
+      status: "offer_created",
+      detail: `website: {${offer.website}} amount: {${offer.our_offer_c}}`,
+      ladgerState: state.ladger,
+      user: state.user.user,
+      parent_name: "outr_offer",
+    })
+  ),
+});
 
     } catch (error) {
       dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));

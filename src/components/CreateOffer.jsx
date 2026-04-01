@@ -15,9 +15,7 @@ import {
   updateOffer,
 } from "../store/Slices/offers";
 import { useNavigate } from "react-router-dom";
-import {
-  viewEmailAction,
-} from "../store/Slices/viewEmail";
+import { viewEmailAction } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { ManualSideCall } from "../services/utils";
 import { SocketContext } from "../context/SocketContext";
@@ -30,7 +28,7 @@ import { useThreadContext } from "../hooks/useThreadContext";
 
 export default function CreateOffer() {
   const { websites: websiteLists } = useSelector((state) => state.website);
-  const { handleMove } = useThreadContext()
+  const { handleMove } = useThreadContext();
 
   const fields = [
     {
@@ -91,7 +89,7 @@ export default function CreateOffer() {
   ]);
 
   const dispatch = useDispatch();
-  useIdle({ idle: false })
+  useIdle({ idle: false });
 
   const {
     updating,
@@ -168,14 +166,6 @@ export default function CreateOffer() {
     if (message) {
       dispatch(getOffers({}));
       if (message.includes("Updated")) {
-        ManualSideCall(
-          crmEndpoint,
-          state?.email,
-          "Our Offer Updated Successfully",
-          1,
-          okHandler,
-        );
-
         if (message.includes("Send")) {
           navigate("/offers/view", {
             state: { email: state?.email, threadId: state?.threadId },
@@ -186,13 +176,6 @@ export default function CreateOffer() {
           navigate("/");
         }
       } else {
-        ManualSideCall(
-          crmEndpoint,
-          state?.email,
-          "Our Offer Created Successfully",
-          1,
-          okHandler,
-        );
         if (message.includes("Send")) {
           const data = unionByKey(newOffers, currentOffers, "website");
           console.log("DATA", data);
@@ -213,13 +196,12 @@ export default function CreateOffer() {
       dispatch(offersAction.clearAllErrors());
     }
 
-
     if (sendError) {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
     if (sendMessage) {
-      setNewOffers([])
+      setNewOffers([]);
     }
   }, [message, error, sendError, sendMessage]);
 
@@ -251,8 +233,11 @@ export default function CreateOffer() {
         html = html
           .replace("{{USER_EMAIL}}", email)
           .replace("{{TABLE}}", tableHtml);
-        handleMove({ email: state?.email, threadId: state?.threadId, reply: html })
-
+        handleMove({
+          email: state?.email,
+          threadId: state?.threadId,
+          reply: html,
+        });
       }}
     />
   );
