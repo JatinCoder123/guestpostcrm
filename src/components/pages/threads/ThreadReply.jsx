@@ -38,7 +38,6 @@ import axios from "axios";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showFailedModal, setShowFailedModal] = useState(false);
-  const { threadId } = useParams();
   const { emails } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
@@ -47,7 +46,7 @@ const ThreadReply = () => {
     state?.initialContent || "",
   );
   const {
-    context: { currentEmail },
+    context: { currentEmail, currentThread: threadId },
   } = useThreadContext();
   useIdle({ idle: false });
   const dispatch = useDispatch();
@@ -55,7 +54,7 @@ const ThreadReply = () => {
     message: sendMessage,
     sending,
     error: sendError,
-    sendFailedResponse
+    sendFailedResponse,
   } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
@@ -73,7 +72,6 @@ const ThreadReply = () => {
   const attachmentBoxRef = useRef(null);
   const [favourites, setFavourites] = useState([]);
   const modalRef = useRef(null);
-
 
   const {
     loading: aiLoading,
@@ -155,48 +153,38 @@ const ThreadReply = () => {
     setEditorContent(input);
   }
 
-
   const handleSendClick = async (forceSend = 0) => {
     try {
       setCheckingTheadId(true);
-
-      // 🔹 Call API to verify thread
       const { data } = await axios.get(
-        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`
+        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`,
       );
-
-      console.log("MATHED THREAD ID", data)
+      console.log("MATHED THREAD ID", data);
 
       if (!data?.success) {
         toast.error("Failed to verify thread!");
         return;
       }
-      console.log("THREAD", threadId)
-      console.log("FORCE SEND", forceSend)
+      console.log("THREAD", threadId);
       // 🔹 Check thread match
       if (data.thread_id !== threadId) {
         toast.error("Thread mismatch! Cannot send email ");
         return;
       }
-
-      // ✅ If matched → proceed
       const contentToSend = editorContent;
       const formData = new FormData();
-
-      formData.append("threadId", threadId);
+      formData.append("threadId", data.thread_id);
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
       formData.append("force_send", forceSend);
       formData.append("cc", cc.join(","));
       formData.append("to", to.join(","));
-
       files.forEach((file) => {
         formData.append("attachments[]", file.file);
       });
 
       dispatch(sendEmail(formData));
-
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong while checking thread!");
@@ -236,7 +224,7 @@ const ThreadReply = () => {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [sendMessage, sendError, sendFailedResponse]);
+  }, [sendMessage, sendError]);
   useEffect(() => {
     if (message && aiResponse) {
       if (message == "User") setAiNewContent(aiResponse);
@@ -257,9 +245,6 @@ const ThreadReply = () => {
         modalRef.current &&
         !modalRef.current.contains(e.target)
       ) {
-        // 🔥 Force send on outside click
-        handleSendClick(1);
-
         setShowFailedModal(false);
         dispatch(viewEmailAction.clearFailedResponse());
       }
@@ -577,7 +562,6 @@ const ThreadReply = () => {
                 </h2>
                 <button
                   onClick={() => {
-                    handleSendClick(1);
                     setShowFailedModal(false);
                     dispatch(viewEmailAction.clearFailedResponse());
                   }}
@@ -606,13 +590,10 @@ const ThreadReply = () => {
 
               {/* ACTIONS */}
               <div className="flex justify-end gap-3">
-
                 {/* USE SUGGESTED */}
                 <button
                   onClick={() => {
-                    setEditorContent(
-                      sendFailedResponse.suggested_reply
-                    );
+                    setEditorContent(sendFailedResponse.suggested_reply);
                     dispatch(viewEmailAction.clearFailedResponse());
                   }}
                   className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700"

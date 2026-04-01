@@ -52,8 +52,6 @@ const offersSlice = createSlice({
     createOfferSuccess(state, action) {
       state.creating = false;
       state.message = action.payload.message;
-      state.offers = action.payload.offers;
-      state.count = action.payload.count;
       state.error = null;
     },
     createOfferFailed(state, action) {
@@ -110,19 +108,11 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
 
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`,
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${localStorage.getItem("email") ? `&email=${localStorage.getItem("email")}` : ""}`,
-        );
-      }
-      const data = response.data;
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+      );
+
       showConsole && console.log(`offers`, data);
       dispatch(
         offersSlice.actions.getOffersSucess({
@@ -139,7 +129,7 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const updateOffer = (offer, send) => {
+export const updateOffer = (offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
     try {
@@ -170,7 +160,7 @@ export const updateOffer = (offer, send) => {
       dispatch(
         offersSlice.actions.updateOfferSuccess({
           offers: updatedOffers,
-          message: `Offer Updated ${send ? "and Send Successfully" : "Successfully"}`,
+          message: `Offer Updated Successfully`,
         }),
       );
 
@@ -202,7 +192,7 @@ export const updateOffer = (offer, send) => {
     }
   };
 };
-export const createOffer = (threadId, offers = [], send = false) => {
+export const createOffer = ({ threadId, email, offers = [], isSend = false }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
@@ -217,9 +207,9 @@ export const createOffer = (threadId, offers = [], send = false) => {
             client_offer_c: offer.client_offer_c,
             our_offer_c: offer.our_offer_c,
             website: offer.website,
-            email_c: offer.email,
+            email_c: email,
             thread_id: threadId,
-            name: offer.email,
+            name: email,
           })),
           child_bean: {
             module: "Contacts",
@@ -228,14 +218,9 @@ export const createOffer = (threadId, offers = [], send = false) => {
         },
       );
       showConsole && console.log(`Create Offer`, data);
-      const updatedOffers = [...offers, ...getState().offers.offers];
       dispatch(
         offersSlice.actions.createOfferSuccess({
-          message: send
-            ? "Offers Created and Send Successfully"
-            : "Offers Created Successfully",
-          offers: updatedOffers,
-          count: updatedOffers.length,
+          message: "Offers Created Successfully"
         }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
@@ -257,6 +242,7 @@ await createLedgerEntry({
     })
   ),
 });
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Created ")
 
     } catch (error) {
       dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));

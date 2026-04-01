@@ -15,7 +15,7 @@ const TableFooter = () => {
     return (
         <motion.div
             layout
-            className="flex items-center justify-between px-4 py-3 border-t bg-gradient-to-r from-gray-50 to-gray-100"
+            className="flex  items-center justify-between px-4 py-3  bg-gradient-to-r from-gray-50 to-gray-100"
         >
             {/* LEFT - RESULT INFO */}
             <div className="text-sm text-gray-600 font-medium">
@@ -31,7 +31,7 @@ const TableFooter = () => {
             </div>
 
             {/* CENTER - PAGE INFO */}
-            <div className="text-sm font-semibold text-gray-700">
+            <div className="text-sm font-semibold text-gray-700 ml-50">
                 Page {pageIndex} of {pageCount}
             </div>
         </motion.div>

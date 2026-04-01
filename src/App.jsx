@@ -4,9 +4,6 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
-import { DealsPage } from "./components/pages/DealsPage";
-import { OffersPage } from "./components/pages/OffersPage";
-import { OrdersPage } from "./components/pages/OrdersPage";
 import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
 import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
@@ -48,7 +45,6 @@ import { HotPage } from "./components/pages/HotPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
 import ConsoleHandler from "./components/ConsoleHandler";
-import ComposePage from "./components/pages/ComposePage";
 import PromptTestingPage from "./components/pages/settingpages/PromptTestingPage";
 import ThreadReply from "./components/pages/threads/ThreadReply";
 import ThreadView from "./components/pages/threads/ThreadView";
@@ -56,6 +52,7 @@ import { ThreadContextProvider } from "./context/ThreadContext";
 import Debug from "./components/pages/settingpages/Debug";
 import Thread from "./components/pages/threads/Thread";
 import SelfTest from "./components/pages/settingpages/SelfTest";
+import DynamicRouteHandler from "./components/routing/DynamicRouteHandler";
 
 const router = createBrowserRouter([
   {
@@ -111,10 +108,6 @@ const router = createBrowserRouter([
         element: <Contactpage />,
       },
       {
-        path: "compose",
-        element: <ComposePage />,
-      },
-      {
         path: "console",
         element: <ConsoleHandler />,
       },
@@ -134,28 +127,20 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "deals",
-        element: <DealsPage />,
+        path: ":type",
+        element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: "deals/:type/:id?",
-        element: <CreateDeal />,
+        path: ":type/view",
+        element: <DynamicRouteHandler mode="list" />,
       },
       {
-        path: "offers",
-        element: <OffersPage />,
+        path: ":type/create",
+        element: <DynamicRouteHandler mode="create" />,
       },
       {
-        path: "offers/:type/:id?",
-        element: <CreateOffer />,
-      },
-      {
-        path: "orders",
-        element: <OrdersPage />,
-      },
-      {
-        path: "orders/:type/:id?",
-        element: <CreateOrder />,
+        path: ":type/edit",
+        element: <DynamicRouteHandler mode="edit" />,
       },
       {
         path: "invoices",
@@ -223,11 +208,11 @@ const router = createBrowserRouter([
         element: <Thread />,
         children: [
           {
-            path: ":threadId",
+            path: "view",
             element: <ThreadView />,
           },
           {
-            path: ":threadId/reply",
+            path: "reply",
             element: <ThreadReply />,
           },
         ],

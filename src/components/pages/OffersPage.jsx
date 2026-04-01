@@ -2,7 +2,6 @@ import {
   Calendar,
   User2,
   Gift,
-  Pen,
   Globe,
   BadgeDollarSign,
   ChartNoAxesColumn,
@@ -11,6 +10,7 @@ import {
   ShieldCheckIcon,
   HandCoins,
   ShieldAlert,
+  Eye,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
@@ -18,8 +18,6 @@ import { deleteOffer, getOffers } from "../../store/Slices/offers.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
-import { ladgerAction } from "../../store/Slices/ladger";
-import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";
@@ -157,23 +155,22 @@ export function OffersPage() {
           {/* Update Button */}
           <button
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-            title="Update"
+            title="View"
             onClick={() =>
-              navigateTo(`/offers/edit/${row.id}`, {
+              navigateTo(`/offers/view`, {
                 state: {
                   email: extractEmail(row.real_name),
                   threadId: row?.thread_id,
+                  id: row?.id
                 },
               })
             }
           >
-            <Pen className="w-5 h-5 text-blue-600" />
+            <Eye className="w-5 h-5 text-blue-600" />
           </button>
           {deleting && deleteOfferId === row.id ? (
-            <>
-              {console.log("HELLo")}
-              <LoadingChase size="20" color="red" />
-            </>
+            <LoadingChase size="20" color="red" />
+
           ) : (
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"

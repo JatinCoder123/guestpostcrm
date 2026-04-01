@@ -26,9 +26,13 @@ import SyncSelectionModal from "./SyncSelectionModal";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
-  const { mailersSummary, email, loading } = useSelector(
+  const { mailersSummary, loading } = useSelector(
     (state) => state.ladger,
   );
+  const { contactInfo } = useSelector(
+    (state) => state.viewEmail,
+  );
+  const email = contactInfo?.email1
   const {
     syncType,
     syncData,
@@ -88,7 +92,7 @@ const MailerSummaryHeader = () => {
 
     const deal = deals?.filter(
       (d) => excludeEmail(d.real_name ?? d.email) === email,
-    );
+    ).filter((d) => d.status === "active");;
 
     setEmailData((prev) => ({ ...prev, deals: deal }));
   }, [email, deals, mailersSummary]);
@@ -293,10 +297,10 @@ function SummaryCard({
 
     data?.length > 0
       ? navigateTo(`/${type}/view`, {
-        state: { email, threadId, messageId: contactInfo?.message_id },
+        state: { email, threadId },
       })
       : navigateTo(`/${type}/create`, {
-        state: { email, threadId, messageId: contactInfo?.message_id },
+        state: { email, threadId },
       });
   };
 
@@ -325,11 +329,10 @@ function SummaryCard({
               <button
                 className="cursor-pointer"
                 onClick={() =>
-                  navigateTo(`/${type}/create`, {
+                  navigateTo(`/orders/create`, {
                     state: {
                       email,
-                      threadId,
-                      messageId: contactInfo?.message_id,
+                      threadId
                     },
                   })
                 }

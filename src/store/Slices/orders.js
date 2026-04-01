@@ -30,8 +30,8 @@ const ordersSlice = createSlice({
 
   },
   reducers: {
-    getOrdersRequest(state) {
-      state.loading = true;
+    getOrdersRequest(state, action) {
+      state.loading = action.payload;
       state.error = null;
     },
     getOrdersSucess(state, action) {
@@ -75,7 +75,6 @@ const ordersSlice = createSlice({
     createOrder2Success(state, action) {
       state.creating = false;
       state.message = action.payload.message;
-      state.newlyOrder = action.payload.order;
       state.error = null;
     },
     createOrder3Success(state, action) {
@@ -109,7 +108,6 @@ const ordersSlice = createSlice({
     updateOrderSuccess(state, action) {
       state.updating = false;
       state.message = action.payload.message;
-      state.orders = action.payload.orders;
       state.error = null;
     },
     updateOrderFailed(state, action) {
@@ -180,22 +178,12 @@ const ordersSlice = createSlice({
 
 export const getOrders = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
-    loading && dispatch(ordersSlice.actions.getOrdersRequest());
-
+    dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`,
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${localStorage.getItem("email") ? `&email=${localStorage.getItem("email")}` : ""}`,
-        );
-      }
-      const data = response.data;
+      const { data } = await axios.get(
+        `${getState().user.crmEndpoint
+        }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+      );
       showConsole && console.log(`Orders orders`, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({
@@ -244,7 +232,7 @@ export const createOrder = () => {
     }
   };
 };
-export const createOrder2 = (email, order, send, threadId) => {
+export const createOrder2 = ({ email, order, threadId }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     console.log("EMAIL", email)
@@ -286,10 +274,7 @@ export const createOrder2 = (email, order, send, threadId) => {
       }
       dispatch(
         ordersSlice.actions.createOrder2Success({
-          message: send
-            ? "Order Created and Send Successfully"
-            : "Order Created Successfully",
-          order: { ...order, order_status: "new", order_id: res.data.parent_id }
+          message: "Order Created Successfully"
         }))
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Manual Order Created ")
@@ -319,9 +304,7 @@ export const createOrder3 = (email, orders = [], send) => {
 
       dispatch(
         ordersSlice.actions.createOrder3Success({
-          message: send
-            ? "Order Created and Send Successfully"
-            : "Order Created Successfully",
+          message: "Order Created Successfully"
         }))
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Order Fetched ")
@@ -333,7 +316,7 @@ export const createOrder3 = (email, orders = [], send) => {
   };
 };
 
-export const updateOrder = (order, send = true, id = null) => {
+export const updateOrder = ({ order, email }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
     showConsole && console.log("Update Order", order);
@@ -348,6 +331,7 @@ export const updateOrder = (order, send = true, id = null) => {
           "notes": order.note
         }
       );
+      console.log("NOTE RES", noteRes)
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
@@ -364,23 +348,15 @@ export const updateOrder = (order, send = true, id = null) => {
         },
       );
       showConsole && console.log(`Update Order`, data);
-      const updatedOrders = getState().orders.orders.map((o) => {
-        if (o.id === order.id) {
-          return order;
-        }
-        return o;
-      });
       dispatch(
         ordersSlice.actions.updateOrderSuccess({
-          orders: updatedOrders,
-          message: `Order Updated ${send ? "and Send Successfully" : "Successfully"}`,
-          id: id,
+          message: `Order Updated Successfully`,
         }),
       );
 
       dispatch(ordersSlice.actions.clearAllErrors());
 
-      updateActivity(getState().user.crmEndpoint, extractEmail(order.real_name), getState().user.user.name, getState().user.user.email, "Order Updated ")
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Order Updated ")
 
     } catch (error) {
       showConsole && console.log(error);

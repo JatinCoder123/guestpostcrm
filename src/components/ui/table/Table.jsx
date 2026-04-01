@@ -147,7 +147,7 @@ const TableView = ({
                     }}
                     className=" rounded-xl border overflow-hidden  relative"
                 >
-                    {statusList.length > 0 && count > 0 && <div className="flex justify-start absolute top-1 right-1 z-[100] ">
+                    {statusList.length > 0 && count > 0 && <div className="flex justify-start absolute top-0 right-1 z-[100] ">
                         <button
                             onClick={() => setShowStatus(prev => !prev)}
                             className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
@@ -157,7 +157,7 @@ const TableView = ({
                     </div>}
                     {children}
                 </motion.div>
-                {count > 0 && <TableFooter />}
+
             </motion.div>
 
         </TableContext.Provider>

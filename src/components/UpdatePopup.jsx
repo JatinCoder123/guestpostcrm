@@ -18,7 +18,7 @@ export default function UpdatePopup({
       initial[f.name] = f.value ?? "";
     });
     setFormData(initial);
-  }, [fields]);
+  }, []);
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));

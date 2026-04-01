@@ -4,31 +4,19 @@ import {
   Gift,
   Pen,
   Globe,
-  BadgeDollarSign,
   ChartNoAxesColumn,
   Clapperboard,
-  Trash,
-  ShieldCheckIcon,
-  HandCoins,
-  ShieldAlert,
   Cable,
   Text,
-  Edit,
-  Pencil,
   X,
   Eye,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
-import { deleteOffer, getOffers } from "../../store/Slices/offers.js"
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
-import { ladgerAction } from "../../store/Slices/ladger";
-import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { LoadingChase } from "../Loading.jsx"
 import { getBacklinks, updateBacklink } from "../../store/Slices/backlinks.js";
 import BacklinkDetailBox from "./BacklinkDetailBox.jsx"
 import { toast } from "react-toastify";

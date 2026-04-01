@@ -12,6 +12,7 @@ import {
   HandCoins,
   ShieldAlert,
   Handshake,
+  Eye,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
@@ -133,17 +134,18 @@ export function DealsPage() {
           {/* Update Button */}
           <button
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-            title="Update"
+            title="View"
             onClick={() =>
-              navigateTo(`/deals/edit/${row.id}`, {
+              navigateTo(`/deals/view`, {
                 state: {
                   email: extractEmail(row.real_name),
                   threadId: row?.thread_id,
+                  id: row?.id
                 },
               })
             }
           >
-            <Pen className="w-5 h-5 text-blue-600" />
+            <Eye className="w-5 h-5 text-blue-600" />
           </button>
           {/* Delete Button */}
           {deleting && deleteDealId === row.id ? (
@@ -179,7 +181,8 @@ export function DealsPage() {
       slice={"deals"}
       statusKey={"status"}
       statusList={statusList}
-      fetchNextPage={() => dispatch(getDeals({ page: pageIndex + 1 }))}
+      fetchNextPage={() => dispatch(
+        getDeals({ page: pageIndex + 1 }))}
     >
       <TableTitleBar
         Icon={Handshake}

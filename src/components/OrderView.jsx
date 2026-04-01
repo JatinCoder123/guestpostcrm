@@ -7,11 +7,10 @@ import { createLink, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
 import { SocketContext } from "../context/SocketContext";
-export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
+export const OrderView = ({ data, email, setSend }) => {
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState(null);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, statusLists, updating } = useSelector(
+  const { creatingLinkMessage, statusLists, updating, } = useSelector(
     (state) => state.orders,
   );
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -42,35 +41,20 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
     }
   );
 
-  useEffect(() => {
-    if (status) {
-      const updatedOrder = {
-        ...data,
-        order_status: status,
-        seo_backlinks:
-          status === "rejected_nontechnical"
-            ? data.seo_backlinks.map((link) => ({
-              ...link,
-              status_c: "rejected",
-            }))
-            : [...data.seo_backlinks],
-      };
-      dispatch(
-        updateOrder(
-          updatedOrder,
-          status !== "accepted" ? true : false,
-          data.order_id,
-        ),
-      );
-      setData((prev) => {
-        const next = prev.map((d) =>
-          d?.order_id === data?.order_id ? updatedOrder : d,
-        );
-        return next;
-      });
-      setCurrentOrderSend(updatedOrder);
+  const updateStatus = (status, isSend) => {
+    const updatedOrder = {
+      ...data,
+      order_status: status,
+    };
+    if (isSend) {
+      setSend(updatedOrder)
     }
-  }, [status]);
+
+    dispatch(
+      updateOrder({ order: updatedOrder, email }),
+    );
+  }
+
   useEffect(() => {
     if (creatingLinkMessage) {
       setOpen(false);
@@ -84,7 +68,7 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
       invoiceOrderId === data.order_id
     ) {
       setProcessingPayment(false);
-      setStatus("completed");
+      updateStatus("complete")
     }
   }, [invoiceOrderId, processingPayment, data.order_id]);
 
@@ -133,14 +117,14 @@ export const OrderView = ({ data, setData, sending, setCurrentOrderSend }) => {
 
       {/* PROCESSING PAYPAL */}
       {processingPayment && <ProcessingLoader />}
-      {(updating || sending) && <PageLoader />}
-      <div className="w-full relative ">
+      {(updating) && <PageLoader />}
+      <div className="w-full relative p-6 ">
         <OrderHeader
           data={data}
-          setStatus={setStatus}
+          updateStatus={(status, isSend) => updateStatus(status, isSend)}
           onCompleteHandler={onCompleteHandler}
         />
-        <div className="relative flex flex-col gap-3  rounded-3xl  p-2">
+        <div className="relative flex flex-col gap-3  rounded-3xl  p-2 ">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <Field label="Date" value={data.date_entered_formatted} />
             <Field label="Type" value={data.order_type} />
@@ -252,7 +236,7 @@ function ProcessingLoader() {
     </div>
   );
 }
-function OrderHeader({ data, setStatus, onCompleteHandler }) {
+function OrderHeader({ data, updateStatus, onCompleteHandler }) {
   const [showModel, setShowModel] = useState(null);
   return (
     <>
@@ -261,7 +245,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
           setShowModel={setShowModel}
           showModel={showModel}
           handleSubmitConfirm={() => {
-            (setStatus(showModel), setShowModel(null));
+            (updateStatus(showModel, showModel == "rejected_nontechnical"), setShowModel(null));
           }}
         />
       )}
@@ -283,7 +267,7 @@ function OrderHeader({ data, setStatus, onCompleteHandler }) {
               {/* Action Buttons */}
               <div className="flex gap-3 flex-wrap justify-center">
                 {/* Accept */}
-                {data.order_status !== "accepted" && (
+                {data.order_status == "new" && (
                   <>
                     <button
                       onClick={() => {

@@ -9,21 +9,20 @@ const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { threadId } = useParams()
   const { threadEmail, message, error } = useSelector((s) => s.threadEmail);
   const {
-    context: { currentEmail },
+    context: { currentEmail, currentThread },
   } = useThreadContext();
 
   const [emails, setEmails] = useState([]);
   useEffect(() => {
-    if (currentEmail && threadId && !state?.viewEmails) {
-      dispatch(getThreadEmail(currentEmail, threadId));
+    if (currentEmail && currentThread && !state?.viewEmails) {
+      dispatch(getThreadEmail(currentEmail, currentThread));
     }
     else {
       setEmails(state?.viewEmails)
     }
-  }, [currentEmail, threadId]);
+  }, [currentEmail, currentThread]);
   useEffect(() => {
 
     if (threadEmail?.length > 0 && !state?.viewEmails) {
@@ -31,7 +30,7 @@ const Thread = () => {
     }
   }, [threadEmail]);
   useEffect(() => {
-    if (!threadId) {
+    if (!currentThread) {
       toast.error("Thread id is missing!");
       navigate(-1);
       return;
