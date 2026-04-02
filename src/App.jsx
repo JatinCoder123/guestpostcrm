@@ -53,6 +53,7 @@ import Debug from "./components/pages/settingpages/Debug";
 import Thread from "./components/pages/threads/Thread";
 import SelfTest from "./components/pages/settingpages/SelfTest";
 import DynamicRouteHandler from "./components/routing/DynamicRouteHandler";
+import GroupReport from "./components/pages/GroupReport";
 
 const router = createBrowserRouter([
   {
@@ -157,8 +158,12 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "view-reports/:id?",
+        path: "view-reports",
         element: <ViewReports />,
+      },
+      {
+        path: "view-reports/:grp",
+        element: <GroupReport />,
       },
 
       {
