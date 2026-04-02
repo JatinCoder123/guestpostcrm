@@ -136,6 +136,13 @@ export const updateOffer = ({email,offer}) => {
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const getDomain = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return url; 
+  }
+};
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
@@ -178,7 +185,7 @@ export const updateOffer = ({email,offer}) => {
   items: [
     buildLedgerItem({
       status: "offer_updated",
-      detail: `website: {${offer.website}} amount: {${offer.our_offer_c}}`,
+      detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
       ladgerState: state.ladger,
       user: state.user.user,
       parent_name: "outr_offer",
@@ -200,6 +207,13 @@ export const createOffer = ({ threadId, email, offers = [], isSend = false }) =>
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const getDomain = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return url; 
+  }
+};
       const { data } = await axios.post(
         `${domain}?entryPoint=get_offer`,
 
@@ -238,7 +252,7 @@ await createLedgerEntry({
   items: offers.map((offer) =>
     buildLedgerItem({
       status: "offer_created",
-      detail: `website: {${offer.website}} amount: {${offer.our_offer_c}}`,
+      detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
       ladgerState: state.ladger,
       user: state.user.user,
       parent_name: "outr_offer",
@@ -256,6 +270,13 @@ export const deleteOffer = (email, id, offer ) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest({ id }));
     const state = getState();
+    const getDomain = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return url; 
+  }
+};
 
     try {
       const { data } = await axios.post(
@@ -284,7 +305,7 @@ export const deleteOffer = (email, id, offer ) => {
   items: [
     buildLedgerItem({
       status: "offer_deleted",
-      detail: `website: {${offer?.website}}`,
+      detail: `website: {${getDomain(offer?.website)}}`,
       ladgerState: state.ladger,
       user: state.user.user,
       parent_name: "outr_offer",
