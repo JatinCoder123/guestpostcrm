@@ -264,6 +264,9 @@ export const sendEmail = (
         dispatch(viewEmailSlice.actions.sendEmailWrong({ response: data.response }))
         return
       }
+      if (!data.success) {
+        throw Error("Error While Sending Email")
+      }
 
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({

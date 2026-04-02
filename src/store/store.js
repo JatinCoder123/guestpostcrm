@@ -33,6 +33,7 @@ import gpcControllerReducer from "./Slices/gpcControllerSlice";
 import websiteReducer from "./Slices/webSlice";
 import syncReducer from "./Slices/syncSlice.js";
 import contactReducer from "./Slices/contacts.js"
+import reportReducer from "./Slices/reportSlice.js"
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -69,6 +70,7 @@ export const store = configureStore({
     gpcController: gpcControllerReducer,
     website: websiteReducer,
     sync: syncReducer,
-    contacts: contactReducer
+    contacts: contactReducer,
+    report: reportReducer
   },
 });

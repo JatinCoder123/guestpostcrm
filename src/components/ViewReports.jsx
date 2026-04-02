@@ -4,8 +4,9 @@ import autoTable from "jspdf-autotable";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { ArrowLeft, ChevronDown, Download } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import IdReportView from "./pages/GroupReport";
 
 export default function ViewReports() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function ViewReports() {
   const [loading, setLoading] = useState(false);
   const [openExport, setOpenExport] = useState(false);
   const { crmEndpoint } = useSelector(state => state.user);
+
 
   const { timeline } = useSelector((state) => state.ladger);
 
@@ -78,7 +80,7 @@ export default function ViewReports() {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const url = `${crmEndpoint}&type=report&duration=${timeline}`;
+      const url = `${crmEndpoint}&type=report&filter=${timeline}`;
       const res = await fetch(url);
       const json = await res.json();
 
@@ -93,7 +95,9 @@ export default function ViewReports() {
       setLoading(false);
     }
   };
-
+  const handleActionClick = (row) => {
+    navigate(row.action)
+  }
   useEffect(() => {
     if (timeline) fetchReports();
   }, [timeline]);
@@ -186,7 +190,7 @@ export default function ViewReports() {
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <tr key={i} className="border-b">
+                <tr onClick={() => handleActionClick(row)} key={i} className="border-b cursor-pointer">
                   <td className="p-3">{row.action}</td>
                   <td className="p-3 text-right">{row.total}</td>
                 </tr>
