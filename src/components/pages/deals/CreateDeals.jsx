@@ -12,7 +12,6 @@ import IconButton from "../../ui/Buttons/IconButton";
 import { toast } from "react-toastify";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
-import { ManualSideCall } from "../../../services/utils";
 import { getLadger } from "../../../store/Slices/ladger";
 import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
 import { getOffers } from "../../../store/Slices/offers";
@@ -20,278 +19,248 @@ import { extractEmail } from "../../../assets/assets";
 
 // 🔥 renamed component also
 export default function CreateDeals({ threadId, email }) {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+  const { websites: websiteLists } = useSelector((state) => state.website);
+  const { crmEndpoint } = useSelector((state) => state.user);
 
-    const { websites: websiteLists } = useSelector((state) => state.website);
-    const { crmEndpoint } = useSelector((state) => state.user);
+  // 🔥 now using deals everywhere
+  const { deals, creating, message, error } = useSelector(
+    (state) => state.deals,
+  );
+  const { offers } = useSelector((state) => state.offers);
 
-    // 🔥 now using deals everywhere
-    const { deals, creating, message, error } = useSelector((state) => state.deals);
-    const { offers } = useSelector((state) => state.offers);
+  const [send, setSend] = useState(false);
+  const { handleMove } = useThreadContext();
 
-    const [send, setSend] = useState(false);
-    const { handleMove } = useThreadContext();
+  const { data: templateData } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: { name: "DealORG" },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "TemplateData",
+  });
 
-    const { data: templateData } = useModule({
-        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-        method: "POST",
-        body: {
-            module: "EmailTemplates",
-            where: { name: "DealORG" },
-        },
-        headers: {
-            "x-api-key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "application/json",
-        },
-        name: "TemplateData",
+  // 🔥 NEW STATE (deal structure)
+  const [newDeals, setNewDeals] = useState([{ website_c: "", dealamount: "" }]);
+
+  const [validWebsite, setValidWebsite] = useState([]);
+
+  const getAvailableWebsites = (currentIndex) => {
+    return validWebsite.filter((site) => {
+      return !newDeals.some(
+        (deal, i) => i !== currentIndex && deal.website_c === site,
+      );
+    });
+  };
+
+  // 🔥 FILTER VALID WEBSITES
+  useEffect(() => {
+    const emailDeals = deals.filter(
+      (d) => extractEmail(d.real_name ?? d.email) == email,
+    );
+
+    const valid = websiteLists.filter((w) => {
+      const usedInDeals = emailDeals.some((d) => d.website_c === w);
+
+      return !usedInDeals;
+    });
+    setValidWebsite(valid);
+  }, [offers, deals, email]);
+
+  // 🔥 HANDLERS
+  const handleAddRow = () => {
+    setNewDeals([...newDeals, { website_c: "", dealamount: "" }]);
+  };
+
+  const isFormValid =
+    newDeals.length > 0 &&
+    newDeals.every((deal) => deal.website_c && deal.dealamount !== "");
+
+  const canAddRow = isFormValid;
+
+  const handleChangeRow = (index, field, value) => {
+    const updated = [...newDeals];
+    updated[index][field] = value;
+    setNewDeals(updated);
+  };
+
+  const handleRemoveRow = (index) => {
+    setNewDeals(newDeals.filter((_, i) => i !== index));
+  };
+
+  // 🔥 SAVE DEAL
+  const handleSave = async (isSend = false) => {
+    setSend(isSend);
+
+    dispatch(createDeal({ threadId, email, deals: newDeals, isSend }));
+  };
+
+  const handlePreview = () => {
+    let html = templateData?.[0]?.body_html || "";
+
+    const tableHtml = buildTable(newDeals, "Deals", "website_c", "dealamount");
+
+    html = html
+      .replace("{{USER_EMAIL}}", email)
+      .replace("{{TABLE}}", tableHtml);
+
+    handleMove({ email, threadId, reply: html });
+  };
+
+  useEffect(() => {
+    if (message) {
+      toast.success(message);
+      dispatch(getDeals({ email }));
+      dispatch(getOffers({ email }));
+      if (message?.includes("Created")) {
+        if (send) {
+          setSend(false);
+          dispatch(dealsAction.clearAllMessages());
+          handlePreview();
+        } else {
+          navigate(-1);
+          dispatch(dealsAction.clearAllMessages());
+        }
+      }
+    }
+
+    if (error) {
+      toast.error(error);
+      setSend(false);
+      dispatch(dealsAction.clearAllErrors());
+    }
+  }, [message, error]);
+  useEffect(() => {
+    const currentOfferWithoutDeal = offers.filter((o) => {
+      const isSameThread = o.thread_id == threadId;
+
+      // ✅ check against ALL deals (not only active)
+      const alreadyHasDeal = deals.some(
+        (d) => d.thread_id == threadId && d.website_c == o.website,
+      );
+
+      return isSameThread && !alreadyHasDeal;
     });
 
-    // 🔥 NEW STATE (deal structure)
-    const [newDeals, setNewDeals] = useState([
-        { website_c: "", dealamount: "" },
-    ]);
+    if (currentOfferWithoutDeal?.length > 0) {
+      const newDeals = currentOfferWithoutDeal.map((offer) => ({
+        website_c: offer.website,
+        dealamount: offer.our_offer_c,
+      }));
 
-    const [validWebsite, setValidWebsite] = useState([]);
+      setNewDeals(newDeals);
+    }
+  }, [deals, offers, threadId]);
+  return (
+    <div className="w-full flex gap-6 items-start">
+      {/* LEFT SIDE */}
+      <div className="flex-1 border rounded-2xl p-6 bg-white shadow-sm">
+        <PageHeader title={"Create Deals"} showAdd={false} />
 
-    const getAvailableWebsites = (currentIndex) => {
-        return validWebsite.filter((site) => {
-            return !newDeals.some(
-                (deal, i) => i !== currentIndex && deal.website_c === site
-            );
-        });
-    };
-
-    // 🔥 FILTER VALID WEBSITES
-    useEffect(() => {
-        const emailDeals = deals.filter(
-            (d) => extractEmail(d.real_name ?? d.email) == email
-        );
-
-        const valid = websiteLists.filter((w) => {
-            const usedInDeals = emailDeals.some(
-                (d) => d.website_c === w
-            );
-
-            return !usedInDeals;
-        });
-        setValidWebsite(valid);
-
-    }, [offers, deals, email]);
-
-
-    // 🔥 HANDLERS
-    const handleAddRow = () => {
-        setNewDeals([
-            ...newDeals,
-            { website_c: "", dealamount: "" },
-        ]);
-    };
-
-    const isFormValid =
-        newDeals.length > 0 &&
-        newDeals.every(
-            (deal) =>
-                deal.website_c &&
-                deal.dealamount !== ""
-        );
-
-    const canAddRow = isFormValid;
-
-    const handleChangeRow = (index, field, value) => {
-        const updated = [...newDeals];
-        updated[index][field] = value;
-        setNewDeals(updated);
-    };
-
-    const handleRemoveRow = (index) => {
-        setNewDeals(newDeals.filter((_, i) => i !== index));
-    };
-
-    // 🔥 SAVE DEAL
-    const handleSave = async (isSend = false) => {
-        setSend(isSend);
-
-        dispatch(createDeal({ threadId, email, deals: newDeals, isSend }));
-    };
-
-    const handlePreview = () => {
-        let html = templateData?.[0]?.body_html || "";
-
-        const tableHtml = buildTable(
-            newDeals,
-            "Deals",
-            "website_c",
-            "dealamount"
-
-        );
-
-        html = html
-            .replace("{{USER_EMAIL}}", email)
-            .replace("{{TABLE}}", tableHtml);
-
-        handleMove({ email, threadId, reply: html });
-    };
-
-    useEffect(() => {
-        if (message) {
-            toast.success(message);
-            dispatch(getDeals({ email }))
-            dispatch(getOffers({ email }))
-            if (message?.includes("Created")) {
-                ManualSideCall(
-                    crmEndpoint,
-                    email,
-                    "Our Deal Created Successfully",
-                    1,
-                    () => dispatch(getLadger({ email })),
-                );
-
-                if (send) {
-                    setSend(false);
-                    dispatch(dealsAction.clearAllMessages());
-                    handlePreview();
-                }
-                else {
-                    navigate(-1);
-                    dispatch(dealsAction.clearAllMessages());
-                }
-            }
-        }
-
-        if (error) {
-            toast.error(error);
-            setSend(false);
-            dispatch(dealsAction.clearAllErrors());
-        }
-    }, [message, error]);
-    useEffect(() => {
-        const currentOfferWithoutDeal = offers.filter((o) => {
-            const isSameThread = o.thread_id == threadId;
-
-            // ✅ check against ALL deals (not only active)
-            const alreadyHasDeal = deals.some(
-                (d) => d.thread_id == threadId && d.website_c == o.website
-            );
-
-            return isSameThread && !alreadyHasDeal;
-        });
-
-        if (currentOfferWithoutDeal?.length > 0) {
-            const newDeals = currentOfferWithoutDeal.map((offer) => ({
-                website_c: offer.website,
-                dealamount: offer.our_offer_c,
-            }));
-
-            setNewDeals(newDeals);
-        }
-    }, [deals, offers, threadId]);
-    return (
-        <div className="w-full flex gap-6 items-start">
-
-            {/* LEFT SIDE */}
-            <div className="flex-1 border rounded-2xl p-6 bg-white shadow-sm">
-
-                <PageHeader title={"Create Deals"} showAdd={false} />
-
-                {/* HEADER */}
-                <div className="grid grid-cols-8 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
-                    <div className="col-span-1">No</div>
-                    <div className="col-span-3">Website</div>
-                    <div className="col-span-3 text-center">Deal Amount</div>
-                    <div className="col-span-1 text-center ml-auto">Action</div>
-                </div>
-
-                {/* ROWS */}
-                <div className="space-y-2 mt-2">
-                    {newDeals.map((row, index) => (
-                        <motion.div
-                            key={index}
-                            className="grid grid-cols-8 items-center px-4 py-3 bg-gray-50 rounded-xl border"
-                        >
-                            <div>{index + 1}</div>
-
-                            {/* WEBSITE */}
-                            <div className="col-span-3">
-                                <select
-                                    value={row.website_c}
-                                    onChange={(e) =>
-                                        handleChangeRow(index, "website_c", e.target.value)
-                                    }
-                                    className="w-full border rounded-lg px-2 py-1"
-                                >
-                                    <option value="">Select</option>
-                                    {getAvailableWebsites(index).map((site, i) => (
-                                        <option key={i} value={site}>
-                                            {site}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* DEAL AMOUNT */}
-                            <div className="col-span-3 text-center">
-                                <input
-                                    type="number"
-                                    value={row.dealamount}
-                                    onChange={(e) =>
-                                        handleChangeRow(index, "dealamount", e.target.value)
-                                    }
-                                    className="w-24 border rounded px-2 py-1 text-center"
-                                />
-                            </div>
-
-
-                            {/* DELETE */}
-                            <div className="text-center ml-auto">
-                                <button
-                                    onClick={() => handleRemoveRow(index)}
-                                    className="text-red-500"
-                                >
-                                    <Trash2 />
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-
-                {/* ADD */}
-                <button
-                    onClick={handleAddRow}
-                    disabled={!canAddRow}
-                    className={`mt-4 px-4 py-2 rounded-lg
-      ${canAddRow ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
-                >
-                    + Add Deal
-                </button>
-            </div>
-
-            {/* SUMMARY */}
-            <SummaryCard
-                data={newDeals}
-                type={"deals"}
-                websiteKey={"website_c"}
-                amountKey={"dealamount"}
-            >
-                <div className="flex gap-2 w-full justify-evenly">
-                    <IconButton
-                        icon={Save}
-                        label="Save"
-                        onClick={() => handleSave(false)}
-                        loading={creating && !send}
-                        disabled={!isFormValid}
-                    />
-
-                    <IconButton
-                        icon={Send}
-                        label="Save & Send"
-                        onClick={() => handleSave(true)}
-                        loading={creating && send}
-                        disabled={!isFormValid}
-                    />
-                </div>
-            </SummaryCard>
+        {/* HEADER */}
+        <div className="grid grid-cols-8 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
+          <div className="col-span-1">No</div>
+          <div className="col-span-3">Website</div>
+          <div className="col-span-3 text-center">Deal Amount</div>
+          <div className="col-span-1 text-center ml-auto">Action</div>
         </div>
-    );
+
+        {/* ROWS */}
+        <div className="space-y-2 mt-2">
+          {newDeals.map((row, index) => (
+            <motion.div
+              key={index}
+              className="grid grid-cols-8 items-center px-4 py-3 bg-gray-50 rounded-xl border"
+            >
+              <div>{index + 1}</div>
+
+              {/* WEBSITE */}
+              <div className="col-span-3">
+                <select
+                  value={row.website_c}
+                  onChange={(e) =>
+                    handleChangeRow(index, "website_c", e.target.value)
+                  }
+                  className="w-full border rounded-lg px-2 py-1"
+                >
+                  <option value="">Select</option>
+                  {getAvailableWebsites(index).map((site, i) => (
+                    <option key={i} value={site}>
+                      {site}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* DEAL AMOUNT */}
+              <div className="col-span-3 text-center">
+                <input
+                  type="number"
+                  value={row.dealamount}
+                  onChange={(e) =>
+                    handleChangeRow(index, "dealamount", e.target.value)
+                  }
+                  className="w-24 border rounded px-2 py-1 text-center"
+                />
+              </div>
+
+              {/* DELETE */}
+              <div className="text-center ml-auto">
+                <button
+                  onClick={() => handleRemoveRow(index)}
+                  className="text-red-500"
+                >
+                  <Trash2 />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ADD */}
+        <button
+          onClick={handleAddRow}
+          disabled={!canAddRow}
+          className={`mt-4 px-4 py-2 rounded-lg
+      ${canAddRow ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+        >
+          + Add Deal
+        </button>
+      </div>
+
+      {/* SUMMARY */}
+      <SummaryCard
+        data={newDeals}
+        type={"deals"}
+        websiteKey={"website_c"}
+        amountKey={"dealamount"}
+      >
+        <div className="flex gap-2 w-full justify-evenly">
+          <IconButton
+            icon={Save}
+            label="Save"
+            onClick={() => handleSave(false)}
+            loading={creating && !send}
+            disabled={!isFormValid}
+          />
+
+          <IconButton
+            icon={Send}
+            label="Save & Send"
+            onClick={() => handleSave(true)}
+            loading={creating && send}
+            disabled={!isFormValid}
+          />
+        </div>
+      </SummaryCard>
+    </div>
+  );
 }
