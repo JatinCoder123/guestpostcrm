@@ -2,7 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
-import { updateActivity } from "../../services/utils";
+import { updateActivity, buildLedgerItem, createLedgerEntry } from "../../services/utils";
+import { getLadger } from "./ladger";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -135,6 +136,14 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
+    const state = getState();
+          const getDomain = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return url; 
+  }
+};
 
     try {
       const res = await axios.post(
@@ -148,7 +157,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
           })),
           child_bean: {
             module: "Contacts",
-            id: getState().viewEmail.contactInfo.id,
+            id: state.viewEmail.contactInfo.id,
             email: email
           },
         }
@@ -160,7 +169,25 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
         })
       );
       dispatch(dealsSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Deal Created")
+      updateActivity(state.user.crmEndpoint, email, state.user.user.name, state.user.user.email, "Deal Created")
+        console.log("deals data check",deals);
+      createLedgerEntry({
+        domain,
+        email,
+        thread_id: threadId,
+        message_id: res.data.id,
+        group: "Deal",
+        items: deals.map((deal) =>
+          buildLedgerItem({
+            status: "Deal-Created",
+            detail: `website: {${getDomain(deal.website_c)}} amount: {${deal.dealamount}}`,
+            ladgerState: state.ladger,
+            user: state.user.user,
+            parent_name: "outr_deal",
+          })
+        ),
+        okHandler: () => getLadger({email}),
+      });
 
     } catch (error) {
       dispatch(dealsSlice.actions.createDealFailed("Deal Creation Failed! Please Try Again"));
@@ -233,6 +260,7 @@ export const deleteDeal = (email, id) => {
       );
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Deal Deleted")
+      
 
     } catch (error) {
       dispatch(dealsSlice.actions.deleteDealFailed(error.message));
