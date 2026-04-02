@@ -553,7 +553,7 @@ const ThreadReply = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 40 }}
               transition={{ type: "spring", stiffness: 120 }}
-              className="bg-white w-[90%] max-w-2xl rounded-2xl shadow-2xl p-6"
+              className="bg-white w-[90%] max-w-3xl rounded-2xl shadow-2xl p-6"
             >
               {/* HEADER */}
               <div className="flex justify-between items-center mb-4">
@@ -569,7 +569,15 @@ const ThreadReply = () => {
                   ✕
                 </button>
               </div>
-
+              {/* BRIEF REASON */}
+              <div className="mb-4">
+                <p className="text-sm font-semibold text-yellow-600">
+                  Brief Reason:
+                </p>
+                <p className="text-sm text-gray-700">
+                  {sendFailedResponse.brief_reason || "No brief reason available"}
+                </p>
+              </div>
               {/* REASON */}
               <div className="mb-4">
                 <p className="text-sm font-semibold text-red-600">Reason:</p>
@@ -590,6 +598,18 @@ const ThreadReply = () => {
 
               {/* ACTIONS */}
               <div className="flex justify-end gap-3">
+
+                {/* USE BRIEF REASON */}
+                <button
+                  onClick={() => {
+                    setEditorContent(sendFailedResponse.brief_reason);
+                    dispatch(viewEmailAction.clearFailedResponse());
+                  }}
+                  className="px-4 py-2 rounded-lg bg-yellow-500 text-white text-sm hover:bg-yellow-600"
+                >
+                  Use Brief Reason
+                </button>
+
                 {/* USE SUGGESTED */}
                 <button
                   onClick={() => {

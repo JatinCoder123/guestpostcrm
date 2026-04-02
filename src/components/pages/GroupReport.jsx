@@ -97,7 +97,7 @@ export default function GroupReport() {
         <>
             <TableView
                 tableData={data}
-                tableName={"Group Report"}
+                tableName={`${grp} Group Report`}
                 columns={columns}
                 slice={"report"}
                 fetchNextPage={() =>
@@ -106,7 +106,7 @@ export default function GroupReport() {
             >
                 <TableTitleBar
                     Icon={Mail}
-                    title={"Group Report"}
+                    title={`${grp.toUpperCase()} Group Report`}
                     titleClass={"text-teal-700"}
                 />
 
