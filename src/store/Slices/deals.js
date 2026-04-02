@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { extractEmail, showConsole } from "../../assets/assets";
+import { extractEmail, getDomain, showConsole } from "../../assets/assets";
 import { updateActivity, buildLedgerItem, createLedgerEntry } from "../../services/utils";
 import { getLadger } from "./ladger";
 
@@ -194,8 +194,16 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     }
   };
 };
-export const updateDeal = (deal, send) => {
+export const updateDeal = ({deal,email}) => {
   return async (dispatch, getState) => {
+    const state = getState();
+          const getDomain1 = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return url; 
+  }
+};
     dispatch(dealsSlice.actions.updateDealRequest());
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
@@ -219,7 +227,7 @@ export const updateDeal = (deal, send) => {
         {
           headers: {
             "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
+            "Content-Type": "application/json",
           },
         }
       );
@@ -232,18 +240,41 @@ export const updateDeal = (deal, send) => {
         }
         return d;
       });
-      dispatch(dealsSlice.actions.updateDealSucess({ message: `Deal Updated ${send ? "and Send Successfully" : "Successfully"}`, deals: updatedDeals }));
+      dispatch(dealsSlice.actions.updateDealSucess({ message: `Deal Updated successfully`, deals: updatedDeals }));
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, extractEmail(deal.real_name), getState().user.user.name, getState().user.user.email, "Deal Updated")
-
-
+      console.log(`Deal`, deal);
+     const res = await createLedgerEntry({
+        domain,
+        email,
+        group: "Deal",
+        items: [
+          buildLedgerItem({
+            status: "Deal-Updated",
+            detail: `website: {${getDomain1(deal.website_c)}} amount: {${deal.dealamount}}`,
+            ladgerState: state.ladger,
+            user: state.user.user,
+            parent_name: "outr_deal",
+          })
+        ],
+        okHandler: () => dispatch(getLadger({email})),
+      });
+      console.log(`Ledger Entry`, res);
     } catch (error) {
       dispatch(dealsSlice.actions.updateDealFailed("Deal Update Failed"));
     }
   };
 };
-export const deleteDeal = (email, id) => {
+export const deleteDeal = (deal, email, id) => {
   return async (dispatch, getState) => {
+              const getDomain1 = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return url; 
+  }
+};
+    const state = getState();
     dispatch(dealsSlice.actions.deleteDealRequest({ id }));
     try {
       const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`
@@ -261,6 +292,25 @@ export const deleteDeal = (email, id) => {
       );
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Deal Deleted")
+
+      console.log(`Deal`, deal);
+
+  const res = await createLedgerEntry({
+        domain: state.user.crmEndpoint.split("?")[0],
+  email: email,
+  group: "Deal",
+  okHandler:()=>dispatch(getLadger({email})),
+  items: [
+    buildLedgerItem({
+      status: "Deal-Deleted",
+      detail: `website: {${getDomain1(deal?.website_c)}}`,
+      ladgerState: state.ladger,
+      user: state.user.user,
+      parent_name: "outr_deal",
+    }),
+  ],
+});
+      console.log(`Ledger Entry`, res);
       
 
     } catch (error) {

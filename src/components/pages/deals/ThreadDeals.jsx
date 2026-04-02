@@ -92,11 +92,11 @@ export default function ThreadDeals({ threadId, email, id }) {
 
   const handleSave = (deal, isSend = false) => {
     setSend(isSend); // 🔥 track intent
-    dispatch(updateDeal(deal));
+    dispatch(updateDeal({ deal, email }));
   };
 
-  const handleDelete = (id) => {
-    dispatch(deleteDeal(email, id));
+  const handleDelete = (deal, id) => {
+    dispatch(deleteDeal(deal, email, id));
   };
 
   const handleCreate = () => {
@@ -275,7 +275,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                       </button>
 
                       <button
-                        onClick={() => handleDelete(deal.id)}
+                        onClick={() => handleDelete(deal, deal.id)}
                         className="p-2.5 rounded-lg bg-red-100 text-red-600"
                         disabled={deleting && deleteDealId === deal.id}
                       >

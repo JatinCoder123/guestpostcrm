@@ -82,7 +82,7 @@ export function SettingsPage() {
       link: "controller",
     },
     {
-      title: "Prompt Testing",
+      title: "Prompt Explorer",
       subtitle: "Test and optimize prompts",
       icon: <Sparkle className="w-8 h-8 text-cyan-600" />,
       bg: "bg-cyan-50",
