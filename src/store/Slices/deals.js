@@ -170,7 +170,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
       );
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(state.user.crmEndpoint, email, state.user.user.name, state.user.user.email, "Deal Created")
-        console.log("deals data check",deals);
+
       createLedgerEntry({
         domain,
         email,
@@ -235,6 +235,7 @@ export const updateDeal = (deal, send) => {
       dispatch(dealsSlice.actions.updateDealSucess({ message: `Deal Updated ${send ? "and Send Successfully" : "Successfully"}`, deals: updatedDeals }));
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, extractEmail(deal.real_name), getState().user.user.name, getState().user.user.email, "Deal Updated")
+
 
     } catch (error) {
       dispatch(dealsSlice.actions.updateDealFailed("Deal Update Failed"));

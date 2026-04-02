@@ -21,37 +21,26 @@ import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getmovedEmails } from "../../store/Slices/movedEmails.js"
-import { LoadingChase } from "../Loading.jsx";;
+import { getmovedEmails } from "../../store/Slices/movedEmails.js";
+import { LoadingChase } from "../Loading.jsx";
+import { toast } from "react-toastify";
+import axios from "axios";
 export function MovedPage() {
-  const {
-    count,
-    emails,
-    pageIndex,
-  } = useSelector((state) => state.moved);
+  const { count, emails, pageIndex } = useSelector((state) => state.moved);
+  const { crmEndpoint } = useSelector((state) => state.user);
+
   const [restoringId, setRestoringId] = useState(null);
-  const { handleDateClick } =
-    useContext(PageContext);
-  const { handleMove } =
-    useThreadContext();
+  const { handleDateClick } = useContext(PageContext);
+  const { handleMove } = useThreadContext();
   const dispatch = useDispatch();
 
   const handleRestore = async (emailItem) => {
     try {
       setRestoringId(emailItem.thread_id);
-
       const res = await axios.get(
-        crmEndpiont,
-        {
-          params: {
-            type: "restore_email",
-            email: emailItem.email,
-            label_id: emailItem.label_name,
-            thread_id: emailItem.thread_id,
-          },
-        }
+        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}`,
       );
-
+      console.log("res", res);
       if (res?.data) {
         toast.success("Email restored successfully ✅");
 
@@ -71,8 +60,7 @@ export function MovedPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: row?.email, navigate: "/" })
-      ,
+      onClick: (row) => handleDateClick({ email: row?.email, navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -107,7 +95,9 @@ export function MovedPage() {
           threadId: row.thread_id,
         }),
       render: (row) => (
-        <span className="font-medium text-purple-700 cursor-pointer ">{row?.subject}</span>
+        <span className="font-medium text-purple-700 cursor-pointer ">
+          {row?.subject}
+        </span>
       ),
     },
     {
@@ -118,9 +108,7 @@ export function MovedPage() {
       classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-green-700 ">
-          {row?.label_name}
-        </span>
+        <span className="font-medium text-green-700 ">{row?.label_name}</span>
       ),
     },
     {

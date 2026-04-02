@@ -13,7 +13,6 @@ import { LoadingChase } from "../../Loading";
 import { toast } from "react-toastify";
 import { Save, Send, X, Loader2 } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
-import { getLadger } from "../../../store/Slices/ladger";
 import {
   dealsAction,
   deleteDeal,
