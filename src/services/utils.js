@@ -37,6 +37,7 @@ export const createLedgerEntry = async ({
   message_id,
   group = "General",
   items = [],
+  okHandler
 }) => {
   try {
     const payload = {
@@ -47,12 +48,13 @@ export const createLedgerEntry = async ({
       item: items,
     };
 
-    await axios.post(
+  const {data} =  await axios.post(
       `${domain}?entryPoint=fetch_gpc&type=make_ledger`,
       payload
     );
 
     showConsole && console.log("Ledger Created", payload);
+     okHandler()
   } catch (error) {
     showConsole && console.log("Ledger API Failed", error);
   }

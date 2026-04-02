@@ -9,13 +9,15 @@ import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { buildTable } from "../../Preview";
 import { useThreadContext } from "../../../hooks/useThreadContext";
-import { deleteOffer, offersAction, updateOffer } from "../../../store/Slices/offers";
+import {
+  deleteOffer,
+  offersAction,
+  updateOffer,
+} from "../../../store/Slices/offers";
 import { LoadingChase } from "../../Loading";
 import { toast } from "react-toastify";
 import { Save, Send, X, Loader2 } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
-import { ManualSideCall } from "../../../services/utils";
-import { getLadger } from "../../../store/Slices/ladger";
 import { extractEmail } from "../../../assets/assets";
 
 export default function ThreadOffers({ threadId, email, id }) {
@@ -29,17 +31,13 @@ export default function ThreadOffers({ threadId, email, id }) {
   const [editData, setEditData] = useState({});
   const { websites: websiteLists } = useSelector((state) => state.website);
 
-  const { offers, deleteOfferId, deleting, updating, message, error } = useSelector(
-    (state) => state.offers
-  );
-  const { deals } = useSelector(
-    (state) => state.deals
-  );
+  const { offers, deleteOfferId, deleting, updating, message, error } =
+    useSelector((state) => state.offers);
+  const { deals } = useSelector((state) => state.deals);
   const { crmEndpoint } = useSelector((state) => state.user);
   const { handleMove } = useThreadContext();
 
   const [validWebsite, setValidWebsite] = useState([]);
-
 
   // 🔥 TEMPLATE FETCH
   const { data: templateData } = useModule({
@@ -58,35 +56,31 @@ export default function ThreadOffers({ threadId, email, id }) {
 
   useEffect(() => {
     const threadOffers = offers.filter(
-      (d) => extractEmail(d.real_name ?? d.email) == email
+      (d) => extractEmail(d.real_name ?? d.email) == email,
     );
 
     const threadDeals = deals.filter(
-      (d) => extractEmail(d.real_name ?? d.email) == email
+      (d) => extractEmail(d.real_name ?? d.email) == email,
     );
 
     const valid = websiteLists.filter((w) => {
       const usedInOffers = threadOffers.some(
-        (o) => o.website === w && o.id !== editData.id
+        (o) => o.website === w && o.id !== editData.id,
       );
 
-      const usedInDeals = threadDeals.some(
-        (d) => d.website_c === w
-      );
+      const usedInDeals = threadDeals.some((d) => d.website_c === w);
 
       return !usedInOffers && !usedInDeals;
     });
-    let activeOffers = []
+    let activeOffers = [];
     if (id) {
-      activeOffers = threadOffers.filter(o => o.id == id)
-    }
-    else {
-      activeOffers = threadOffers.filter(o => o.offer_status == "active")
+      activeOffers = threadOffers.filter((o) => o.id == id);
+    } else {
+      activeOffers = threadOffers.filter((o) => o.offer_status == "active");
     }
     setValidWebsite(valid);
     setCurrentOffers(activeOffers);
   }, [offers, deals, editData, email, id]);
-
 
   // 🔥 INLINE EDIT HANDLERS
   const handleEdit = (offer) => {
@@ -96,24 +90,21 @@ export default function ThreadOffers({ threadId, email, id }) {
 
   const handleSave = (offer, isSend = false) => {
     setSend(isSend); // 🔥 track intent
-    dispatch(updateOffer(offer));
+    dispatch(updateOffer({ email, offer }));
   };
 
-
-
-  const handleDelete = (id) => {
-    dispatch(deleteOffer(email, id));
+  const handleDelete = (id, offer) => {
+    dispatch(deleteOffer(email, id, offer));
   };
 
   const handleCreate = () => {
     navigate(`/offers/create`, {
       state: {
         email,
-        threadId
+        threadId,
       },
     });
   };
-
 
   const handlePreview = (offersData = currentOffers) => {
     let html = templateData?.[0]?.body_html || "";
@@ -122,7 +113,7 @@ export default function ThreadOffers({ threadId, email, id }) {
       offersData,
       "Offers",
       "website",
-      "our_offer_c"
+      "our_offer_c",
     );
 
     html = html
@@ -139,20 +130,16 @@ export default function ThreadOffers({ threadId, email, id }) {
     if (message) {
       toast.success(message);
       if (message?.includes("Updated")) {
-        ManualSideCall(
-          crmEndpoint,
-          email,
-          "Our Offer Updated Successfully",
-          1,
-          () => dispatch(getLadger({ email })),
-        );
         if (send) {
+          dispatch(offersAction.clearAllMessages());
+
           handlePreview([editData]);
           setSend(false);
+        } else {
+          navigate(-1);
+          dispatch(offersAction.clearAllMessages());
         }
       }
-
-      dispatch(offersAction.clearAllMessages());
     }
 
     if (error) {
@@ -163,10 +150,8 @@ export default function ThreadOffers({ threadId, email, id }) {
   }, [updating, message, error]);
   return (
     <div className="w-full flex gap-6 items-start">
-
       {/* 🔥 TABLE */}
       <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
-
         <PageHeader title={"OFFERS"} onAdd={handleCreate} />
 
         {/* HEADER */}
@@ -300,11 +285,9 @@ export default function ThreadOffers({ threadId, email, id }) {
                       </button>
 
                       <button
-                        onClick={() => handleDelete(offer.id)}
+                        onClick={() => handleDelete(offer.id, offer)}
                         className="p-2.5 rounded-lg bg-red-100 text-red-600"
-                        disabled={
-                          deleting && deleteOfferId === offer.id
-                        }
+                        disabled={deleting && deleteOfferId === offer.id}
                       >
                         {deleting && deleteOfferId === offer.id ? (
                           <LoadingChase size="18" color="red" />
@@ -319,7 +302,6 @@ export default function ThreadOffers({ threadId, email, id }) {
             );
           })}
         </div>
-
       </div>
 
       {/* 🔥 SUMMARY */}
@@ -333,17 +315,15 @@ export default function ThreadOffers({ threadId, email, id }) {
           disabled={currentOffers.length === 0}
           onClick={() => handlePreview()}
           className={`flex-1 py-3 rounded-xl font-medium text-white transition
-          ${currentOffers.length === 0
+          ${
+            currentOffers.length === 0
               ? "bg-gray-300"
               : "bg-indigo-600 hover:bg-indigo-700"
-            }`}
+          }`}
         >
           Preview
         </button>
       </SummaryCard>
-
     </div>
   );
 }
-
-

@@ -3,6 +3,7 @@ import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
 import { updateActivity ,createLedgerEntry, buildLedgerItem} from "../../services/utils";
+import { getLadger } from "./ladger";
 
 const offersSlice = createSlice({
   name: "offers",
@@ -129,7 +130,7 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const updateOffer = (offer) => {
+export const updateOffer = ({email,offer}) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
     try {
@@ -165,14 +166,15 @@ export const updateOffer = (offer) => {
       );
 
       dispatch(offersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, extractEmail(offer.real_name), getState().user.user.name, getState().user.user.email, "Offer Updated ")
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Updated ")
      
       await createLedgerEntry({
   domain,
-  email: extractEmail(offer.real_name),
+  email: email,
   thread_id: offer.thread_id,
   message_id: offer.thread_id,
   group: "Offer",
+  okHandler:()=>dispatch(getLadger({email})),
   items: [
     buildLedgerItem({
       status: "offer_updated",
@@ -228,10 +230,11 @@ export const createOffer = ({ threadId, email, offers = [], isSend = false }) =>
       // 🔥 Ledger API Call
 await createLedgerEntry({
   domain,
-  email: offers[0]?.email,
+  email: email,
   thread_id: threadId,
   message_id: threadId,
   group: "Offer",
+  okHandler:()=>dispatch(getLadger({email})),
   items: offers.map((offer) =>
     buildLedgerItem({
       status: "offer_created",
@@ -249,9 +252,10 @@ await createLedgerEntry({
     }
   };
 };
-export const deleteOffer = (email, id) => {
+export const deleteOffer = (email, id, offer ) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest({ id }));
+    const state = getState();
 
     try {
       const { data } = await axios.post(
@@ -272,6 +276,21 @@ export const deleteOffer = (email, id) => {
       );
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Deleted")
+      await createLedgerEntry({
+        domain: state.user.crmEndpoint.split("?")[0],
+  email: email,
+  group: "Offer",
+  okHandler:()=>dispatch(getLadger({email})),
+  items: [
+    buildLedgerItem({
+      status: "offer_deleted",
+      detail: `website: {${offer?.website}}`,
+      ladgerState: state.ladger,
+      user: state.user.user,
+      parent_name: "outr_offer",
+    }),
+  ],
+});
 
     } catch (error) {
       dispatch(offersSlice.actions.deleteOfferFailed(error.message));

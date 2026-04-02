@@ -32,15 +32,12 @@ import ButtonPage from "./components/pages/settingpages/ButtonPage";
 import { DefaulterPage } from "./components/pages/Defaulterpage";
 import { OtherPage } from "./components/pages/OtherPage";
 import NotFoundPage from "./components/pages/NotFoundPage";
-import CreateDeal from "./components/CreateDeal";
 import AvatarPage from "./components/pages/AvatarPage";
 import { MovedPage } from "./components/pages/MovedEmails";
 import { SocketContextProvider } from "./context/SocketContext";
 import { BacklinksPage } from "./components/pages/BacklinksPage";
-import CreateOrder from "./components/CreateOrder";
 import { ReminderPage } from "./components/pages/ReminderPage";
 import { LinkExchangePage } from "./components/pages/LinkExchangePage";
-import CreateOffer from "./components/CreateOffer";
 import { HotPage } from "./components/pages/HotPage";
 import ViewReports from "./components/ViewReports";
 import GpcControllerPage from "./components/pages/GpcControllerPage";
@@ -71,7 +68,6 @@ const router = createBrowserRouter([
           </SocketContextProvider>
         </PageContextProvider>
       </ThreadContextProvider>
-
     ),
     children: [
       {
@@ -287,10 +283,7 @@ export default function App() {
   }, [dispatch, error]);
   return (
     <>
-      {isAuthenticated && (
-        <RouterProvider router={router} />
-      )
-      }
+      {isAuthenticated && <RouterProvider router={router} />}
       {!isAuthenticated && loading && <LoadingPage />}
       {!isAuthenticated && !loading && <Login />}
       <ToastContainer

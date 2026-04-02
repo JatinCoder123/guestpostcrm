@@ -52,8 +52,7 @@ export function OffersPage() {
     summary,
   } = useSelector((state) => state.offers);
 
-  const { handleDateClick } =
-    useContext(PageContext);
+  const { handleDateClick } = useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const columns = [
@@ -63,8 +62,8 @@ export function OffersPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" })
-      ,
+      onClick: (row) =>
+        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -79,7 +78,10 @@ export function OffersPage() {
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
+        handleDateClick({
+          email: extractEmail(row?.real_name),
+          navigate: "/contacts",
+        }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -161,7 +163,7 @@ export function OffersPage() {
                 state: {
                   email: extractEmail(row.real_name),
                   threadId: row?.thread_id,
-                  id: row?.id
+                  id: row?.id,
                 },
               })
             }
@@ -170,13 +172,12 @@ export function OffersPage() {
           </button>
           {deleting && deleteOfferId === row.id ? (
             <LoadingChase size="20" color="red" />
-
           ) : (
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
               onClick={() =>
-                dispatch(deleteOffer(extractEmail(row.real_name), row.id))
+                dispatch(deleteOffer(extractEmail(row.real_name), row.id, row))
               }
             >
               <Trash className="w-5 h-5 text-red-600" />
