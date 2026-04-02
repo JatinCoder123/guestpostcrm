@@ -600,15 +600,7 @@ const ThreadReply = () => {
               <div className="flex justify-end gap-3">
 
                 {/* USE BRIEF REASON */}
-                <button
-                  onClick={() => {
-                    setEditorContent(sendFailedResponse.brief_reason);
-                    dispatch(viewEmailAction.clearFailedResponse());
-                  }}
-                  className="px-4 py-2 rounded-lg bg-yellow-500 text-white text-sm hover:bg-yellow-600"
-                >
-                  Use Brief Reason
-                </button>
+
 
                 {/* USE SUGGESTED */}
                 <button
