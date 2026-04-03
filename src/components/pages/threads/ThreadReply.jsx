@@ -37,6 +37,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 const ThreadReply = () => {
   const editorRef = useRef(null);
+  const [showBriefReason, setShowBriefReason] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
   const { emails } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -570,13 +571,21 @@ const ThreadReply = () => {
                 </button>
               </div>
               {/* BRIEF REASON */}
+              {/* BRIEF REASON BUTTON */}
               <div className="mb-4">
-                <p className="text-sm font-semibold text-yellow-600">
-                  Brief Reason:
-                </p>
-                <p className="text-sm text-gray-700">
-                  {sendFailedResponse.brief_reason || "No brief reason available"}
-                </p>
+
+
+                {/* CONDITIONAL RENDER */}
+                {showBriefReason && (
+                  <div className="mt-2">
+                    <p className="text-sm font-semibold text-yellow-600">
+                      Brief Reason:
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      {sendFailedResponse.brief_reason || "No brief reason available"}
+                    </p>
+                  </div>
+                )}
               </div>
               {/* REASON */}
               <div className="mb-4">
@@ -600,7 +609,12 @@ const ThreadReply = () => {
               <div className="flex justify-end gap-3">
 
                 {/* USE BRIEF REASON */}
-
+                <button
+                  onClick={() => setShowBriefReason(!showBriefReason)}
+                  className="px-4 py-2 rounded-lg bg-yellow-500 text-white text-sm hover:bg-yellow-600"
+                >
+                  {showBriefReason ? "Hide Brief" : "Brief Reason"}
+                </button>
 
                 {/* USE SUGGESTED */}
                 <button
