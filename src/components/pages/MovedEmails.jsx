@@ -38,7 +38,7 @@ export function MovedPage() {
     try {
       setRestoringId(emailItem.thread_id);
       const res = await axios.get(
-        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}`,
+        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}&subject=${emailItem.subject}`,
       );
       console.log("res", res);
       if (res?.data) {
