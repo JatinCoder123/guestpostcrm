@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { ladgerAction } from "../../store/Slices/ladger";
+import { getLadger, ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
@@ -38,7 +38,7 @@ export function MovedPage() {
     try {
       setRestoringId(emailItem.thread_id);
       const res = await axios.get(
-        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}`,
+        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}&subject=${emailItem.subject}`,
       );
       console.log("res", res);
       if (res?.data) {
@@ -46,6 +46,7 @@ export function MovedPage() {
 
         // 🔥 Refresh list
         dispatch(getmovedEmails());
+        dispatch(getLadger({ email: emailItem.email }));
       }
     } catch (err) {
       toast.error("Failed to restore email ❌");

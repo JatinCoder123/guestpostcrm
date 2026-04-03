@@ -184,7 +184,7 @@ export const updateOffer = ({email,offer}) => {
   okHandler:()=>dispatch(getLadger({email})),
   items: [
     buildLedgerItem({
-      status: "offer_updated",
+      status: "Our-Offer-Updated",
       detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
       ladgerState: state.ladger,
       user: state.user.user,
@@ -251,7 +251,7 @@ await createLedgerEntry({
   okHandler:()=>dispatch(getLadger({email})),
   items: offers.map((offer) =>
     buildLedgerItem({
-      status: "offer_created",
+      status: "Our-Offer-Created",
       detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
       ladgerState: state.ladger,
       user: state.user.user,
