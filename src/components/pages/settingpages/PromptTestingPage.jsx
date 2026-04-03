@@ -182,7 +182,7 @@ const PromptTestingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <Header text="Prompt Testing" />
+      <Header text="Prompt Explorer" />
 
       <div className="mx-auto px-6 py-10 space-y-10">
         {/* FORM CARD */}

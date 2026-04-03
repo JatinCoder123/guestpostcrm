@@ -51,8 +51,8 @@ const MessageModal = ({
         console.log("Fetched message data:", data);
         console.log("Fetched message Id:", messageId);
         const htmlBody =
-          data.email?.body ||
           data.email?.body_html ||
+          data.email?.body ||
           data.email?.content ||
           "";
 
