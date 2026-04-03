@@ -111,13 +111,6 @@ const ActionButton = ({ setShowIP, isMark }) => {
 
     if (favouriteMessage) {
       toast.success(favouriteMessage);
-      dispatch(
-        addEvent({
-          email,
-          thread_id: threadId,
-          recent_activity: favouriteMessage,
-        }),
-      );
       dispatch(favAction.clearAllMessages());
       dispatch(viewEmailAction.updateContactInfo({ key: "favorite" }));
 

@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { ladgerAction } from "../../store/Slices/ladger";
+import { getLadger, ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
@@ -46,6 +46,7 @@ export function MovedPage() {
 
         // 🔥 Refresh list
         dispatch(getmovedEmails());
+        dispatch(getLadger({ email: emailItem.email }));
       }
     } catch (err) {
       toast.error("Failed to restore email ❌");

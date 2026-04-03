@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
-import { updateActivity } from "../../services/utils";
+import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
+
 
 const favSlice = createSlice({
   name: "fav",
@@ -106,6 +107,22 @@ export const favEmail = () => {
       );
       dispatch(favSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, data.new_value === 1 ? "Email Favorited " : "Email Unfavorited ")
+
+      await createLedgerEntry({
+        domain: domain,
+        email: getState().ladger.email,
+        thread_id: getState().ladger.threadId,
+        group: "Activity",
+        items: [
+          buildLedgerItem({
+            status: data.new_value === 1 ? "Mark-Favourite" : "Mark-Unfavourite",
+            detail: `email: {${getState().ladger.email}}`,
+            ladgerState: getState().ladger,
+            user: getState().user.user,
+          }),
+        ],
+        okHandler: () => dispatch(getLadger({email: getState().ladger.email})),
+      });
 
     } catch (error) {
       dispatch(favSlice.actions.favouriteEmailFailed(error.message));
