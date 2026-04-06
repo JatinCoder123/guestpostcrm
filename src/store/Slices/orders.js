@@ -27,7 +27,6 @@ const ordersSlice = createSlice({
     newlyOrder: null,
     creatingPost: false,
     postMessage: null,
-
   },
   reducers: {
     getOrdersRequest(state, action) {
@@ -35,8 +34,15 @@ const ordersSlice = createSlice({
       state.error = null;
     },
     getOrdersSucess(state, action) {
-      const { count, orders, pageCount, pageIndex, statusLists, summary, stats } =
-        action.payload;
+      const {
+        count,
+        orders,
+        pageCount,
+        pageIndex,
+        statusLists,
+        summary,
+        stats,
+      } = action.payload;
       state.loading = false;
       if (pageIndex === 1) {
         state.orders = orders;
@@ -45,7 +51,7 @@ const ordersSlice = createSlice({
       }
       state.statusLists = statusLists;
       state.count = count;
-      state.stats = stats
+      state.stats = stats;
       state.updateId = null;
       state.summary = summary;
       state.pageCount = pageCount;
@@ -87,7 +93,6 @@ const ordersSlice = createSlice({
       state.error = action.payload;
       state.message = null;
       state.newlyOrder = null;
-
     },
     createLinkRequest(state) {
       state.creatingLink = true;
@@ -181,7 +186,8 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
     dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint
+        `${
+          getState().user.crmEndpoint
         }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
       );
       showConsole && console.log(`Orders orders`, data);
@@ -198,9 +204,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
       );
       dispatch(ordersSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(
-        ordersSlice.actions.getOrdersFailed("Fetching Orders Failed"),
-      );
+      dispatch(ordersSlice.actions.getOrdersFailed("Fetching Orders Failed"));
     }
   };
 };
@@ -212,7 +216,7 @@ export const createOrder = () => {
     try {
       let response;
       response = await axios.get(
-        `${domain}?entryPoint=manual_order&email=${getState().ladger.email}`,
+        `${domain}?entryPoint=manual_order&email=${getState().ladger.email}&assigned_user_id=${getState().crmUser.currentUser.id}`,
       );
       const data = response.data;
       showConsole && console.log(`Orders created`, data);
@@ -225,8 +229,13 @@ export const createOrder = () => {
         ordersSlice.actions.createOrderSuccess("Order Created Successfully"),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Order Fetched ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Order Fetched ",
+      );
     } catch (error) {
       dispatch(ordersSlice.actions.createOrderFailed("Creating Order Failed"));
     }
@@ -235,54 +244,63 @@ export const createOrder = () => {
 export const createOrder2 = ({ email, order, threadId }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
-    console.log("EMAIL", email)
-    console.log("ORDER", order)
+    console.log("EMAIL", email);
+    console.log("ORDER", order);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      let orders = order.order_type == "GUEST POST" ? order.seo_backlinks.map((link) => {
-        return {
-          type: "Guest Post",
-          site: link.website,
-          content_doc: link.gp_doc_url_c,
-          assigned_user_id: getState().crmUser.currentUser.id,
-
-        }
-      }) : order.seo_backlinks.map((link) => {
-        return {
-          type: "Link Insertion",
-          site: link.website,
-          post_url: link.website,
-          their_link: [{
-            url: link.backlink_url,
-            anchor_text: link.anchor_text_c
-          }],
-          assigned_user_id: getState().crmUser.currentUser.id,
-        }
-      })
-      console.log("ORDERS", orders)
+      let orders =
+        order.order_type == "GUEST POST"
+          ? order.seo_backlinks.map((link) => {
+              return {
+                type: "Guest Post",
+                site: link.website,
+                content_doc: link.gp_doc_url_c,
+              };
+            })
+          : order.seo_backlinks.map((link) => {
+              return {
+                type: "Link Insertion",
+                site: link.website,
+                post_url: link.website,
+                their_link: [
+                  {
+                    url: link.backlink_url,
+                    anchor_text: link.anchor_text_c,
+                  },
+                ],
+              };
+            });
+      console.log("ORDERS", orders);
       const res = await axios.post(
         `${domain}?entryPoint=fetch_gpc&type=manual_order`,
 
         {
           email: email,
           thread_id: threadId,
-          orders
-        },
+          assigned_user_id: getState().crmUser.currentUser.id,
 
+          orders,
+        },
       );
       showConsole && console.log(`Create Order Manully`, res.data);
       if (!res.data.success) {
-        throw new Error("Failed To Create Order")
+        throw new Error("Failed To Create Order");
       }
       dispatch(
         ordersSlice.actions.createOrder2Success({
-          message: "Order Created Successfully"
-        }))
+          message: "Order Created Successfully",
+        }),
+      );
       dispatch(ordersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Manual Order Created ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Manual Order Created ",
+      );
     } catch (error) {
-      console.log("ERROR", error)
+      console.log("ERROR", error);
       dispatch(ordersSlice.actions.createOrderFailed("Order Creation Failed"));
     }
   };
@@ -290,29 +308,35 @@ export const createOrder2 = ({ email, order, threadId }) => {
 export const createOrder3 = (email, orders = [], send) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
-    console.log("EMAIL", email)
-    console.log("ORDER", orders)
+    console.log("EMAIL", email);
+    console.log("ORDER", orders);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       let res;
       {
         orders.map(async (order) => {
-
           res = await axios.get(
-            `${domain}?entryPoint=manual_order&email=${email}&message_id=${order.message_id}&website=${order.website}&amount=${order.amount}`);
+            `${domain}?entryPoint=manual_order&email=${email}&message_id=${order.message_id}&website=${order.website}&amount=${order.amount}`,
+          );
           showConsole && console.log(`Create Order Manully`, res.data);
-        })
+        });
       }
 
       dispatch(
         ordersSlice.actions.createOrder3Success({
-          message: "Order Created Successfully"
-        }))
+          message: "Order Created Successfully",
+        }),
+      );
       dispatch(ordersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Order Fetched ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Order Fetched ",
+      );
     } catch (error) {
-      console.log("ERROR", error)
+      console.log("ERROR", error);
       dispatch(ordersSlice.actions.createOrderFailed("Order Creation Failed"));
     }
   };
@@ -328,12 +352,11 @@ export const updateOrder = ({ order, email }) => {
       const noteRes = await axios.post(
         `${getState().user.crmEndpoint}&type=take_notes`,
         {
-
-          "record_id": order.id,
-          "notes": order.note
-        }
+          record_id: order.id,
+          notes: order.note,
+        },
       );
-      console.log("NOTE RES", noteRes)
+      console.log("NOTE RES", noteRes);
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
@@ -358,8 +381,13 @@ export const updateOrder = ({ order, email }) => {
 
       dispatch(ordersSlice.actions.clearAllErrors());
 
-      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Order Updated ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Order Updated ",
+      );
     } catch (error) {
       showConsole && console.log(error);
       dispatch(ordersSlice.actions.updateOrderFailed("Updating Order Failed"));
@@ -410,8 +438,13 @@ export const updateSeoLink = (orderId, link) => {
         }),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, " Order Link Updated ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        " Order Link Updated ",
+      );
     } catch (error) {
       showConsole && console.log(error);
       dispatch(
@@ -446,8 +479,13 @@ export const deleteLink = (orderId, linkId) => {
         }),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Order Link Deleted ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Order Link Deleted ",
+      );
     } catch (error) {
       dispatch(ordersSlice.actions.deleteLinkFailed(error.message));
     }
@@ -492,8 +530,13 @@ export const createLink = (orderId, link) => {
         }),
       );
       dispatch(ordersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Order Link Created ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Order Link Created ",
+      );
     } catch (error) {
       dispatch(ordersSlice.actions.createLinkFailed("Link Creation Failed"));
     }
