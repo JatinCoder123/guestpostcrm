@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import {createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
 
 const marketplaceSlice = createSlice({
   name: "marketplace",
@@ -136,6 +137,20 @@ export const addMarketPlace = (email, brand = false) => {
           count: getState().marketplace.count + 1,
         })
       );
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Add To MarketPlace")
+      await createLedgerEntry({
+        domain: getState().user.crmEndpoint.split("?")[0],
+        email: getState().ladger.email,
+        group: "Activity",
+        items: [
+          buildLedgerItem({
+            status: "Marketplace-Added",
+            detail: `email: {${getState().ladger.email}}`,
+            ladgerState: getState().ladger,
+            user: getState().crmUser.currentUser,
+          }),
+        ],
+      });
       dispatch(marketplaceSlice.actions.clearErrors());
     } catch (error) {
       dispatch(
@@ -164,6 +179,20 @@ export const deleteMarketPlace = (id) => {
           count: getState().marketplace.count - 1,
         })
       );
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Remove From MarketPlace")
+      await createLedgerEntry({
+        domain: getState().user.crmEndpoint.split("?")[0],
+        email: getState().ladger.email,
+        group: "Activity",
+        items: [
+          buildLedgerItem({
+            status: "Marketplace-Removed",
+            detail: `email: {${getState().ladger.email}}`,
+            ladgerState: getState().ladger,
+            user: getState().crmUser.currentUser,
+          }),
+        ],
+      });
       dispatch(marketplaceSlice.actions.clearErrors());
     } catch (error) {
       dispatch(marketplaceSlice.actions.deleteMarketplaceFailed(error.message));

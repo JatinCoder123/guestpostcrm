@@ -33,8 +33,7 @@ export function RecentEntry() {
   const [searchTerm, setSearchTerm] = useState("");
   const [emailFilter, setEmailFilter] = useState("all");
   const [timeFilter, setTimeFilter] = useState("all");
-  const { handleDateClick } =
-    useContext(PageContext);
+  const { handleDateClick } = useContext(PageContext);
   const { handleMove } = useThreadContext();
   const navigateTo = useNavigate();
 
@@ -135,7 +134,12 @@ export function RecentEntry() {
                   {/* DATE */}
                   <div
                     className="flex items-center gap-3 text-[17px] min-w-0 cursor-pointer"
-                    onClick={() => handleDateClick({ email: extractEmail(event?.real_name), navigate: "/" })}
+                    onClick={() =>
+                      handleDateClick({
+                        email: extractEmail(event?.real_name),
+                        navigate: "/",
+                      })
+                    }
                   >
                     <span className="truncate">
                       {event.date_entered ?? "—"}
@@ -144,9 +148,11 @@ export function RecentEntry() {
                       {event?.prompt_details && (
                         <button
                           onClick={(e) => {
-                            e.stopPropagation()
+                            e.stopPropagation();
 
-                            navigateTo("/settings/debugging", { state: { prompt: event.prompt_details[0] } })
+                            navigateTo("/settings/debugging", {
+                              state: { prompt: event.prompt_details[0] },
+                            });
                           }}
                           className="text-blue-600 hover:text-blue-700"
                         >
@@ -160,7 +166,12 @@ export function RecentEntry() {
                   <Tooltip content={contactName}>
                     <div
                       className="text-[17px] text-blue-600 cursor-pointer truncate min-w-0"
-                      onClick={() => handleDateClick({ email: extractEmail(event?.real_name), navigate: "/contacts" })}
+                      onClick={() =>
+                        handleDateClick({
+                          email: extractEmail(event?.real_name),
+                          navigate: "/contacts",
+                        })
+                      }
                     >
                       {contactName}
                     </div>
@@ -171,7 +182,6 @@ export function RecentEntry() {
                     <div
                       className="flex items-center gap-2 text-[17px] text-blue-600 underline cursor-pointer min-w-0"
                       onClick={() => {
-
                         handleMove({
                           email: extractEmail(event?.real_name),
                           threadId: event.thread_id,
@@ -192,6 +202,8 @@ export function RecentEntry() {
                   {/* PROMPT */}
                   <div className="flex items-center justify-center">
                     <UserCircle size={20} />
+                    {(event.user_details == false && "GPC") ||
+                      event.user_details.name}
                   </div>
                 </div>
               );

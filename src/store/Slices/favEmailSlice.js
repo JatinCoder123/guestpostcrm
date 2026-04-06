@@ -91,7 +91,6 @@ export const favEmail = () => {
     dispatch(favSlice.actions.favouriteEmailRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const domain = getState().user.crmEndpoint.split("?")[0];
       const response = await axios.get(
         `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
         {}

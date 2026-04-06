@@ -79,6 +79,7 @@ export const applyTag = (selectedTag) => {
       dispatch(markTagSlice.actions.getTagsSuccess(data.alltags || []));
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Tag Applied ")
       await createLedgerEntry({
+        domain: domain,
         email: getState().ladger.email,
         group: "Activity",
         items: [
