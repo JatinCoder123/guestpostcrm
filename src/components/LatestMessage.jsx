@@ -20,6 +20,7 @@ import { SocketContext } from "../context/SocketContext";
 import { BsRobot } from "react-icons/bs";
 import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { toast } from "react-toastify";
+import EmojiInput from "./EmojiPicker";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -168,11 +169,10 @@ const LatestMessage = ({ handleMessageClick }) => {
             {email1 && viewEmail?.length > 0 && (
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email1
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email1
+                    ? "bg-green-100 text-green-700"
+                    : "bg-blue-100 text-blue-700"
+                  }
     `}
               >
                 <Mail className="w-4 h-4" />
@@ -204,10 +204,10 @@ const LatestMessage = ({ handleMessageClick }) => {
               __html:
                 viewEmail?.length > 0
                   ? getSafeHTML(
-                      viewEmail[viewEmail.length - 1]?.body_html ||
-                        viewEmail[viewEmail.length - 1]?.body ||
-                        "",
-                    )
+                    viewEmail[viewEmail.length - 1]?.body_html ||
+                    viewEmail[viewEmail.length - 1]?.body ||
+                    "",
+                  )
                   : "No Message Found!",
             }}
           />
@@ -301,11 +301,10 @@ const LatestMessage = ({ handleMessageClick }) => {
             )}
             {showFirstReplyBtn && (
               <div
-                className={`flex items-center transition-opacity duration-200 ${
-                  showFirstReplyBtn
-                    ? "opacity-100"
-                    : "opacity-0 pointer-events-none"
-                }`}
+                className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                  ? "opacity-100"
+                  : "opacity-0 pointer-events-none"
+                  }`}
               >
                 <div className="relative group flex items-center justify-center">
                   <button
@@ -352,6 +351,8 @@ const LatestMessage = ({ handleMessageClick }) => {
                 </div>
               </div>
             )}
+            <EmojiInput />
+
           </div>
           {contactInfo?.conversation_complete == "0" && (
             <div className="flex flex-col items-center gap-2 relative group">

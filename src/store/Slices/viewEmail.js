@@ -3,7 +3,6 @@ import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
-import { act } from "react";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
