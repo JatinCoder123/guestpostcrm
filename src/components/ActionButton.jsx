@@ -93,13 +93,6 @@ const ActionButton = ({ setShowIP, isMark }) => {
 
     if (forwardMessage) {
       toast.success(forwardMessage);
-      dispatch(
-        addEvent({
-          email,
-          thread_id: threadId,
-          recent_activity: "forwarded",
-        }),
-      );
       dispatch(forwardedAction.clearAllMessages());
       dispatch(getForwardedEmails({ loading: false }));
     }
@@ -124,25 +117,11 @@ const ActionButton = ({ setShowIP, isMark }) => {
 
     if (markingMessage) {
       toast.success(markingMessage);
-      dispatch(
-        addEvent({
-          email,
-          thread_id: threadId,
-          recent_activity: markingMessage,
-        }),
-      );
       dispatch(marketplaceActions.clearMessage());
     }
 
     if (changeMessage) {
       toast.success(changeMessage);
-      dispatch(
-        addEvent({
-          email,
-          thread_id: threadId,
-          recent_activity: "link exchange status changed",
-        }),
-      );
       dispatch(viewEmailAction.updateContactInfo({ key: "exchange" }));
       dispatch(linkExchangeaction.clearAllMessages());
     }

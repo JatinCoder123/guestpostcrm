@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
-import { updateActivity } from "../../services/utils";
+import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
 
 const exchangeSlice = createSlice({
   name: "linkExchange",
@@ -117,6 +117,19 @@ export const linkExchange = () => {  // Assuming 'id' is the email/contact ident
 
       dispatch(exchangeSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
+      await createLedgerEntry({
+        domain: domain,
+        email: getState().ladger.email,
+        group: "Activity",
+        items: [
+          buildLedgerItem({
+            status: data.new_value === 1 ? "Mark-Link-Exchange" : "Unmark-Link-Exchange",
+            detail: `email: {${getState().ladger.email}}`,
+            ladgerState: getState().ladger,
+            user: getState().crmUser.currentUser,
+          }),
+        ],
+      });
 
     } catch (error) {
       dispatch(exchangeSlice.actions.exchangingFailed(error.message));

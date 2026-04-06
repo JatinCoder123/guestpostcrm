@@ -118,7 +118,7 @@ export const favEmail = () => {
             status: data.new_value === 1 ? "Mark-Favourite" : "Mark-Unfavourite",
             detail: `email: {${getState().ladger.email}}`,
             ladgerState: getState().ladger,
-            user: getState().user.user,
+            user: getState().crmUser.currentUser,
           }),
         ],
         okHandler: () => dispatch(getLadger({email: getState().ladger.email})),

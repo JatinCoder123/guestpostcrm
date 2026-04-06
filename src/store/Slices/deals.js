@@ -182,7 +182,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
             status: "Deal-Created",
             detail: `website: {${getDomain(deal.website_c)}} amount: {${deal.dealamount}}`,
             ladgerState: state.ladger,
-            user: state.user.user,
+            user: state.crmUser.currentUser,
             parent_name: "outr_deal",
           })
         ),
@@ -253,7 +253,7 @@ export const updateDeal = ({deal,email}) => {
             status: "Deal-Updated",
             detail: `website: {${getDomain1(deal.website_c)}} amount: {${deal.dealamount}}`,
             ladgerState: state.ladger,
-            user: state.user.user,
+            user: state.crmUser.currentUser,
             parent_name: "outr_deal",
           })
         ],
@@ -305,7 +305,7 @@ export const deleteDeal = (deal, email, id) => {
       status: "Deal-Deleted",
       detail: `website: {${getDomain1(deal?.website_c)}}`,
       ladgerState: state.ladger,
-      user: state.user.user,
+      user: state.crmUser.currentUser,
       parent_name: "outr_deal",
     }),
   ],

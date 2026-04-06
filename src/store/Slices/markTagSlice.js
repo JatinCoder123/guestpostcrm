@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
 
 const initialState = {
   loading: false,
@@ -76,6 +77,19 @@ export const applyTag = (selectedTag) => {
           : "Tag removed successfully";
 
       dispatch(markTagSlice.actions.getTagsSuccess(data.alltags || []));
+      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Tag Applied ")
+      await createLedgerEntry({
+        email: getState().ladger.email,
+        group: "Activity",
+        items: [
+          buildLedgerItem({
+            status: "Mark-tag",
+            detail: `email: {${getState().ladger.email}} tag: {${selectedTag}}`,
+            ladgerState: getState().ladger,
+            user: getState().crmUser.currentUser,
+          }),
+        ],
+      });
 
       // ✅ toast with dynamic text
       toast.success(message);
