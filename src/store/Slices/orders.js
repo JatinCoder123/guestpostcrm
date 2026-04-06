@@ -244,6 +244,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
           type: "Guest Post",
           site: link.website,
           content_doc: link.gp_doc_url_c,
+          assigned_user_id: getState().crmUser.currentUser.id,
 
         }
       }) : order.seo_backlinks.map((link) => {
@@ -254,7 +255,8 @@ export const createOrder2 = ({ email, order, threadId }) => {
           their_link: [{
             url: link.backlink_url,
             anchor_text: link.anchor_text_c
-          }]
+          }],
+          assigned_user_id: getState().crmUser.currentUser.id,
         }
       })
       console.log("ORDERS", orders)
