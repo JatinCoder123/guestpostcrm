@@ -19,6 +19,7 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
+
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
   return (
@@ -143,12 +144,13 @@ const ContactHeader = ({ isMark }) => {
     {
       Icon: CircleUser,
       label: "Last Activity By",
-      value: contactInfo?.last_user ?? "GPC User",
+      value:
+        useSelector((state) => state.crmUser.currentUser?.name) ?? "GPC User",
     },
     {
       Icon: Clock,
       label: "Last Updated At",
-      value: contactInfo?.last_updated_at ?? "-",
+      value: contactInfo?.last_activity_date ?? "-",
     },
   ];
   return (
