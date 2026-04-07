@@ -2,7 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
-import { updateActivity } from "../../services/utils";
+import {
+  updateActivity,
+  createLedgerEntry,
+  buildLedgerItem,
+} from "../../services/utils";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -388,6 +392,33 @@ export const updateOrder = ({ order, email }) => {
         getState().user.user.email,
         "Order Updated ",
       );
+
+      // Determine ledger status based on order_status
+      let ledgerStatus = "Order-Updated"; // default
+
+      if (order.order_status === "accepted") {
+        ledgerStatus = "Order-Accepted";
+      } else if (order.order_status === "rejected_nontechnical") {
+        ledgerStatus = "Order-Rejected";
+      } else if (order.order_status === "completed") {
+        ledgerStatus = "Order-Completed";
+      }
+      await createLedgerEntry({
+        domain: getState().user.crmEndpoint.split("?")[0],
+        email: email,
+        thread_id: order.thread_id,
+        group: "Order",
+        okHandler: () => dispatch(getLadger({ email })),
+        items: [
+          buildLedgerItem({
+            status: ledgerStatus,
+            detail: `order_id: {${order.id}}`,
+            ladgerState: getState().ladger,
+            user: getState().crmUser.currentUser,
+            parent_name: "outr_order_gp_li",
+          }),
+        ],
+      });
     } catch (error) {
       showConsole && console.log(error);
       dispatch(ordersSlice.actions.updateOrderFailed("Updating Order Failed"));

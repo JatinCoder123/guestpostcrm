@@ -172,6 +172,7 @@ const ThreadReply = () => {
         toast.error("Thread mismatch! Cannot send email ");
         return;
       }
+      console.log("TO AND CC", cc, to);
       const contentToSend = editorContent;
       const formData = new FormData();
       formData.append("threadId", data.thread_id);
@@ -573,8 +574,6 @@ const ThreadReply = () => {
               {/* BRIEF REASON */}
               {/* BRIEF REASON BUTTON */}
               <div className="mb-4">
-
-
                 {/* CONDITIONAL RENDER */}
                 {showBriefReason && (
                   <div className="mt-2">
@@ -582,7 +581,8 @@ const ThreadReply = () => {
                       Brief Reason:
                     </p>
                     <p className="text-sm text-gray-700">
-                      {sendFailedResponse.brief_reason || "No brief reason available"}
+                      {sendFailedResponse.brief_reason ||
+                        "No brief reason available"}
                     </p>
                   </div>
                 )}
@@ -601,13 +601,16 @@ const ThreadReply = () => {
                   Suggested Reply:
                 </p>
                 <div className="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-lg border max-h-60 overflow-auto">
-                  {sendFailedResponse.suggested_reply}
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: sendFailedResponse.suggested_reply,
+                    }}
+                  />
                 </div>
               </div>
 
               {/* ACTIONS */}
               <div className="flex justify-end gap-3">
-
                 {/* USE BRIEF REASON */}
                 <button
                   onClick={() => setShowBriefReason(!showBriefReason)}
