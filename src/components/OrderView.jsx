@@ -29,13 +29,13 @@ export const OrderView = ({ data, email, setSend }) => {
       if (link.link_type === "nofollow") acc.nofollow += 1;
 
       if (link.category === "internal") acc.internal += 1;
-      if (link.category === "authority") acc.authority += 1;
+      if (link.link_type === "authoritative") acc.authoritative += 1;
 
       return acc;
     },
     {
       internal: 0,
-      authority: 0,
+      authoritative: 0,
       dofollow: 0,
       nofollow: 0,
     },
@@ -413,7 +413,7 @@ function LinkStatsRow({ stats }) {
     },
     {
       label: "Authority Links",
-      value: stats.authority,
+      value: stats.authoritative,
       bg: "from-green-500 to-green-400",
     },
     {
