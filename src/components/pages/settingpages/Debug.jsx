@@ -86,6 +86,8 @@ const HIDDEN_FIELDS = [
   "date_entered",
   "prompt_id",
   "parent_id",
+  "system_prompt",
+  "user_prompt",
 ];
 
 const TIME_FILTERS = [
