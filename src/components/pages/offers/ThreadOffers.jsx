@@ -131,14 +131,10 @@ export default function ThreadOffers({ threadId, email, id }) {
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {
-          dispatch(offersAction.clearAllMessages());
-
           handlePreview([editData]);
           setSend(false);
-        } else {
-          navigate(-1);
-          dispatch(offersAction.clearAllMessages());
         }
+        dispatch(offersAction.clearAllMessages());
       }
     }
 
@@ -212,21 +208,8 @@ export default function ThreadOffers({ threadId, email, id }) {
 
                 {/* Client Offer */}
                 <div className="col-span-2 text-center">
-                  {isEditing ? (
-                    <input
-                      type="number"
-                      value={editData.client_offer_c}
-                      onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          client_offer_c: e.target.value,
-                        })
-                      }
-                      className="w-20 border rounded px-2 py-1 text-center"
-                    />
-                  ) : (
-                    <span>${offer.client_offer_c || "-"}</span>
-                  )}
+                  <span>${offer.client_offer_c || "-"}</span>
+
                 </div>
 
                 {/* Our Offer */}
@@ -315,11 +298,10 @@ export default function ThreadOffers({ threadId, email, id }) {
           disabled={currentOffers.length === 0}
           onClick={() => handlePreview()}
           className={`flex-1 py-3 rounded-xl font-medium text-white transition
-          ${
-            currentOffers.length === 0
+          ${currentOffers.length === 0
               ? "bg-gray-300"
               : "bg-indigo-600 hover:bg-indigo-700"
-          }`}
+            }`}
         >
           Preview
         </button>

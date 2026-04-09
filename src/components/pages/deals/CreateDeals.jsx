@@ -82,7 +82,9 @@ export default function CreateDeals({ threadId, email }) {
 
   const isFormValid =
     newDeals.length > 0 &&
-    newDeals.every((deal) => deal.website_c && deal.dealamount !== "");
+    newDeals.every((deal) => deal.website_c && !(deal.dealamount === "" ||
+      deal.dealamount === null ||
+      Number(deal.dealamount) <= 0));
 
   const canAddRow = isFormValid;
 
