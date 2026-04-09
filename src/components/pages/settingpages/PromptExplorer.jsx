@@ -1,20 +1,26 @@
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import Header from "./Header";
 
-const PromptExplorer = ({ initialSystem = "", initialUser = "" }) => {
+const PromptExplorer = () => {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [userPrompt, setUserPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
   const { crmEndpoint } = useSelector((state) => state.user);
+  const { state } = useLocation();
+  const navigateTo = useNavigate();
 
   const isValid = systemPrompt.trim() && userPrompt.trim();
-  useEffect(() => {
-    if (initialSystem) setSystemPrompt(initialSystem);
-    if (initialUser) setUserPrompt(initialUser);
-  }, [initialSystem, initialUser]);
-  const handleSubmit = async () => {
+
+  const handleSubmit = async (sysOverride, userOverride) => {
+    const sys = sysOverride ?? systemPrompt;
+    const usr = userOverride ?? userPrompt;
+
+    if (!sys.trim() || !usr.trim()) return;
+
     try {
       setLoading(true);
       setResponse("");
@@ -22,8 +28,8 @@ const PromptExplorer = ({ initialSystem = "", initialUser = "" }) => {
       const res = await axios.post(
         `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=prompt_explorer`,
         {
-          system_prompt: systemPrompt,
-          user_prompt: userPrompt,
+          system_prompt: sys,
+          user_prompt: usr,
         },
       );
 
@@ -36,17 +42,25 @@ const PromptExplorer = ({ initialSystem = "", initialUser = "" }) => {
     }
   };
 
+  // Auto-fill and auto-run when navigated from Debug
+  useEffect(() => {
+    if (state?.system && state?.user) {
+      setSystemPrompt(state.system);
+      setUserPrompt(state.user);
+      handleSubmit(state.system, state.user);
+    }
+  }, []);
+
   return (
     <div className="h-full w-full bg-gray-50 flex justify-center p-6">
       <div className="w-full space-y-5">
-        {/* Header */}
+        <Header text="Prompt Explorer" />
         <div>
           <h1 className="text-xl font-semibold text-gray-800">
             Prompt Explorer
           </h1>
         </div>
 
-        {/* Card */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-sm">
           {/* System Prompt */}
           <div>
@@ -80,7 +94,7 @@ const PromptExplorer = ({ initialSystem = "", initialUser = "" }) => {
           {isValid && (
             <div className="flex justify-end">
               <button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit()}
                 disabled={loading}
                 className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition disabled:opacity-50"
               >
@@ -90,13 +104,24 @@ const PromptExplorer = ({ initialSystem = "", initialUser = "" }) => {
           )}
         </div>
 
+        {/* Loading state */}
+        {loading && (
+          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+            <div className="text-xs font-semibold text-gray-500 mb-2">
+              RESPONSE
+            </div>
+            <div className="text-sm text-gray-400 animate-pulse">
+              Running prompt...
+            </div>
+          </div>
+        )}
+
         {/* Response */}
         {response && (
           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
             <div className="text-xs font-semibold text-gray-500 mb-2">
               RESPONSE
             </div>
-
             <div className="text-sm text-gray-800 whitespace-pre-wrap max-h-80 overflow-y-auto">
               {typeof response === "object"
                 ? JSON.stringify(response, null, 2)

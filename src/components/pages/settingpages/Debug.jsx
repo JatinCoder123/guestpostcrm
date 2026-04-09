@@ -219,27 +219,14 @@ const Debug = () => {
         .split(separator)
         .map((p) => p.trim())
         .filter(Boolean);
-      // Convention: first block = system, last block = user
-      return {
-        system: parts[0] || "",
-        user: parts[parts.length - 1] || "",
-      };
+
+      const system = parts[0] || "";
+      // All remaining sections joined back with separator
+      const user = parts.slice(1).join(`\n\n${separator}\n\n`) || "";
+
+      return { system, user };
     }
 
-    // Fallback: try splitting on common markers
-    const sysMatch = fullPrompt.match(/system\s*prompt[:\-]?\s*/i);
-    const userMatch = fullPrompt.match(/user\s*prompt[:\-]?\s*/i);
-
-    if (sysMatch && userMatch) {
-      const sysIdx = fullPrompt.search(/system\s*prompt[:\-]?\s*/i);
-      const userIdx = fullPrompt.search(/user\s*prompt[:\-]?\s*/i);
-      return {
-        system: fullPrompt.slice(sysIdx + sysMatch[0].length, userIdx).trim(),
-        user: fullPrompt.slice(userIdx + userMatch[0].length).trim(),
-      };
-    }
-
-    // Last fallback: entire prompt goes to system
     return { system: fullPrompt.trim(), user: "" };
   };
 
@@ -618,9 +605,27 @@ const Debug = () => {
                                 {value?.includes(
                                   "----------------------------------------------------------------------",
                                 ) ? (
-                                  <PromptSectionsViewer prompt={value} />
+                                  <PromptSectionsViewer
+                                    prompt={value}
+                                    onExplore={(fullPrompt) => {
+                                      const { system, user } =
+                                        splitPrompt(fullPrompt);
+                                      navigateTo("/settings/prompt-explorer", {
+                                        state: { system, user },
+                                      });
+                                    }}
+                                  />
                                 ) : (
-                                  <PromptViewer prompt={value} />
+                                  <PromptViewer
+                                    prompt={value}
+                                    onExplore={(fullPrompt) => {
+                                      const { system, user } =
+                                        splitPrompt(fullPrompt);
+                                      navigateTo("/settings/prompt-explorer", {
+                                        state: { system, user },
+                                      });
+                                    }}
+                                  />
                                 )}
                               </div>
                             );
