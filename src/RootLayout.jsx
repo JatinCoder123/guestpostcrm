@@ -34,7 +34,7 @@ const RootLayout = () => {
   const location = useLocation().pathname.split("/")[2];
   const pathname = useLocation().pathname;
   const mainRef = useRef(null);
-  const { emails } = useSelector((state) => state.unreplied);
+  const { emails, emailType } = useSelector((state) => state.unreplied);
   const navigate = useNavigate();
   useEffect(() => {
     if (mainRef.current) {
@@ -58,37 +58,17 @@ const RootLayout = () => {
     if (!message) return;
     const isLast = emails.length === currentIndex + 1;
     const nextEmailObj = emails[currentIndex + 1];
-
-    // ✅ prevent duplicate execution ASAP
     dispatch(viewEmailAction.clearAllMessage());
-
     toast.success(message);
-
-    dispatch(unrepliedAction.removeUnreplied(sendedEmail));
-
-
-    if (isLast) {
+    emailType === "email_inbound" && dispatch(unrepliedAction.removeUnreplied(sendedEmail));
+    if (isLast || !nextEmailObj) {
       localStorage.removeItem("email");
       setEnteredEmail("");
-
       navigate("/unreplied-emails");
       return;
     }
-
-    if (!nextEmailObj) {
-      localStorage.removeItem("email");
-      setEnteredEmail("");
-
-      navigate("/unreplied-emails");
-      return;
-    }
-
     handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), navigate: "/", nextPrev: true })
-
-
-  }, [
-    message,
-  ]);
+  }, [message]);
 
   // Set active page based on URL
   useEffect(() => {

@@ -14,13 +14,9 @@ import {
   User,
   Forward,
   Heart,
-  Cog,
-  Layers,
   RectangleEllipsis,
-  Link2Off,
   Link,
   BellRing,
-  Plus,
   Contact2Icon,
   Cable,
 } from "lucide-react";
@@ -54,11 +50,8 @@ export function Sidebar() {
   }, []);
 
   // Redux counts
-  const { count: unrepliedCount, countLoading, emailsCount } = useSelector(
+  const { countLoading, emailsCount } = useSelector(
     (s) => s.unreplied,
-  );
-  const { contactLoading } = useSelector(
-    (s) => s.viewEmail,
   );
   const { count: dealCount, loading: dealsLoading } = useSelector(
     (s) => s.deals,
@@ -98,7 +91,7 @@ export function Sidebar() {
       label: "Unreplied ",
       icon: Mail,
       loading: countLoading,
-      count: emailsCount?.unread,
+      count: emailsCount?.inbound,
       color: "text-rose-600",
       hover: "hover:bg-rose-50",
       countBg: "bg-rose-500 text-white",
