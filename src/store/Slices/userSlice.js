@@ -3,20 +3,22 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { AUTH_URL } from "../constants";
 import { showConsole } from "../../assets/assets";
-
+const initialState = {
+  loading: false,
+  user: {},
+  isAuthenticated: false,
+  userType: null,
+  permissions: {},
+  crmEndpoint: null,
+  id: null,
+  currentScore: null,
+  businessEmail: null,
+  error: null,
+  message: null,
+}
 const userSlice = createSlice({
   name: "user",
-  initialState: {
-    loading: false,
-    user: {},
-    isAuthenticated: false,
-    crmEndpoint: null,
-    id: null,
-    currentScore: null,
-    businessEmail: null,
-    error: null,
-    message: null,
-  },
+  initialState,
   reducers: {
     loadUserRequest(state) {
       state.loading = true;
@@ -29,9 +31,11 @@ const userSlice = createSlice({
       state.error = null;
     },
     loadUserSuccess(state, action) {
-      const { crmEndpoint, businessEmail, user, currentScore, id } = action.payload;
+      const { crmEndpoint, businessEmail, user, currentScore, id, userType, permissions } = action.payload;
       state.loading = false;
       state.isAuthenticated = true;
+      state.userType = userType;
+      state.permissions = permissions;
       state.user = user;
       state.crmEndpoint = crmEndpoint;
       state.id = id;
@@ -82,10 +86,16 @@ export const getUser = () => {
         `${AUTH_URL}?controller=auth&action=me`,
         { withCredentials: true }
       );
+      const { data: permission } = await axios.get(
+        `${data.crmEndpoint}&type=check_access&email=${data.user.email}`,
+      );
       showConsole && console.log("user", data);
+      showConsole && console.log("permissions", permission);
       dispatch(
         userSlice.actions.loadUserSuccess({
           user: data.user,
+          userType: permission.type,
+          permissions: permission.permissions,
           crmEndpoint: data.crmEndpoint,
           currentScore: data.current_score,
           businessEmail: data.businessEmail,
@@ -94,6 +104,7 @@ export const getUser = () => {
       );
 
       dispatch(userSlice.actions.clearAllErrors());
+
     } catch (error) {
       showConsole && console.log(error);
       localStorage.setItem('displayIntro', "true")

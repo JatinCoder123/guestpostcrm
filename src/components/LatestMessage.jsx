@@ -301,12 +301,12 @@ const LatestMessage = ({ handleMessageClick }) => {
             )}
             {showFirstReplyBtn && (
               <div
-                className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                className={` transition-opacity duration-200 ${showFirstReplyBtn
                   ? "opacity-100"
                   : "opacity-0 pointer-events-none"
                   }`}
               >
-                <div className="relative group flex items-center justify-center">
+                <div className="relative group flex items-center ">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -321,13 +321,13 @@ const LatestMessage = ({ handleMessageClick }) => {
         transition-all
       "
                   >
-                    <div className="w-6 h-6 flex items-center justify-center">
+                    <div className="w-8 h-8 flex items-center justify-center">
                       {frLoading ? (
                         <LoadingChase size="20" />
                       ) : (
                         <img
                           src="https://img.icons8.com/color/48/reply.png"
-                          className="w-6 h-6"
+                          className="w-8 h-8"
                           alt="first-reply"
                         />
                       )}
@@ -380,41 +380,7 @@ const LatestMessage = ({ handleMessageClick }) => {
 
 export default LatestMessage;
 
-const LatestMessageSkeleton = () => {
-  return (
-    <div className="bg-slate-50 border border-slate-200 rounded-3xl p-4 shadow-sm animate-pulse">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-3">
-        <div className="w-32 h-4 bg-slate-200 rounded"></div>
-        <div className="w-20 h-6 bg-gray-200 rounded-full"></div>
-      </div>
 
-      {/* DATE */}
-      <div className="flex gap-2 mb-3">
-        <div className="w-24 h-3 bg-gray-200 rounded"></div>
-        <div className="w-16 h-3 bg-gray-200 rounded"></div>
-      </div>
-
-      {/* MESSAGE */}
-      <div className="space-y-2 mb-4">
-        <div className="w-full h-3 bg-gray-200 rounded"></div>
-        <div className="w-5/6 h-3 bg-gray-200 rounded"></div>
-        <div className="w-4/6 h-3 bg-gray-200 rounded"></div>
-      </div>
-
-      {/* BUTTONS */}
-      <div className="flex justify-between items-center">
-        <div className="flex gap-3">
-          {[1, 2, 3].map((_, i) => (
-            <div key={i} className="w-12 h-12 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
-
-        <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-      </div>
-    </div>
-  );
-};
 
 function QuickBtn({
   icon,

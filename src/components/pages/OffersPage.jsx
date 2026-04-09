@@ -21,6 +21,7 @@ import { extractEmail } from "../../assets/assets";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";
+import useAccess from "../../hooks/useAccess.js";
 const STATUS_CONFIG = [
   {
     value: "active",
@@ -53,6 +54,7 @@ export function OffersPage() {
   } = useSelector((state) => state.offers);
 
   const { handleDateClick } = useContext(PageContext);
+  const { isAllow } = useAccess()
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const columns = [
@@ -198,6 +200,7 @@ export function OffersPage() {
     <TableView
       tableData={offers}
       tableName={"Offers"}
+      allowToView={isAllow("view_offer")}
       columns={columns}
       slice={"offers"}
       statusKey={"offer_status"}

@@ -25,6 +25,7 @@ import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";
+import useAccess from "../../hooks/useAccess.js";
 const STATUS_CONFIG = [
   {
     value: "active",
@@ -45,6 +46,7 @@ export function DealsPage() {
     useSelector((state) => state.deals);
   const { handleDateClick } =
     useContext(PageContext);
+  const { isAllow } = useAccess()
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const columns = [
@@ -177,6 +179,7 @@ export function DealsPage() {
     <TableView
       tableData={deals}
       tableName={"Deals"}
+      allowToView={isAllow("view_deal")}
       columns={columns}
       slice={"deals"}
       statusKey={"status"}

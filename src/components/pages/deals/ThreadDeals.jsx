@@ -110,7 +110,7 @@ export default function ThreadDeals({ threadId, email, id }) {
 
   const handlePreview = (dealsData = currentDeals) => {
     let html = templateData?.[0]?.body_html || "";
-
+    l
     const tableHtml = buildTable(dealsData, "Deals", "website_c", "dealamount");
 
     html = html
@@ -305,11 +305,10 @@ export default function ThreadDeals({ threadId, email, id }) {
           disabled={currentDeals.length === 0}
           onClick={() => handlePreview()}
           className={`flex-1 py-3 rounded-xl font-medium text-white transition
-          ${
-            currentDeals.length === 0
+          ${currentDeals.length === 0
               ? "bg-gray-300"
               : "bg-indigo-600 hover:bg-indigo-700"
-          }`}
+            }`}
         >
           Preview
         </button>

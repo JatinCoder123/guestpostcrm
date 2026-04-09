@@ -19,6 +19,7 @@ export const useTableContext = () => {
 }
 
 const TableView = ({
+    allowToView = true,
     tableData,
     tableName,
     columns,
@@ -111,55 +112,68 @@ const TableView = ({
 
     return (
         <TableContext.Provider value={value}>
+            {!allowToView ? (
+                <div className="w-full rounded-2xl border border-gray-200 bg-gray-50 p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                    <EyeOff className="w-10 h-10 text-gray-400 mb-3" />
+                    <h3 className="text-lg font-semibold text-gray-700">
+                        Access Restricted
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1 max-w-md">
+                        You don’t have permission to view the{" "}
+                        <span className="font-medium text-gray-700">{tableName}</span> .
+                    </p>
+                </div>
+            ) : (
+                <motion.div layout className='flex flex-col gap-2'>
+                    <FilterRow />
 
-            {/* 🔥 Layout animation wrapper */}
-            <motion.div layout className='flex flex-col gap-2'>
+                    <motion.div
+                        layout
+                        initial={false}
+                        animate={{
+                            height: showStatus ? "auto" : 0,
+                            opacity: showStatus ? 1 : 0
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 120,
+                            damping: 18
+                        }}
+                        style={{ overflow: "hidden" }}
+                    >
+                        {statusList.length > 0 && count >= 0 && (
+                            <StatusRow statusCount={statusCount} />
+                        )}
+                    </motion.div>
 
-                <FilterRow />
+                    <motion.div
+                        layout
+                        transition={{
+                            type: "spring",
+                            stiffness: 120,
+                            damping: 18
+                        }}
+                        className="rounded-xl border overflow-hidden relative"
+                    >
+                        {statusList.length > 0 && count > 0 && (
+                            <div className="flex justify-start absolute top-0 right-1 z-[100]">
+                                <button
+                                    onClick={() => setShowStatus(prev => !prev)}
+                                    className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
+                                >
+                                    {showStatus ? (
+                                        <Eye className="w-4 h-4 text-gray-700" />
+                                    ) : (
+                                        <EyeOff className="w-4 h-4 text-gray-700" />
+                                    )}
+                                </button>
+                            </div>
+                        )}
 
-
-
-                {/* 🔥 Animated StatusRow (controlled by showStatus) */}
-                <motion.div
-                    layout
-                    initial={false}
-                    animate={{
-                        height: showStatus ? "auto" : 0,
-                        opacity: showStatus ? 1 : 0
-                    }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 120,
-                        damping: 18
-                    }}
-                    style={{ overflow: "hidden" }}
-                >
-                    {statusList.length > 0 && count >= 0 && <StatusRow statusCount={statusCount} />}
+                        {children}
+                    </motion.div>
                 </motion.div>
-
-                {/* 🔥 Table smoothly moves up/down */}
-                <motion.div
-                    layout
-                    transition={{
-                        type: "spring",
-                        stiffness: 120,
-                        damping: 18
-                    }}
-                    className=" rounded-xl border overflow-hidden  relative"
-                >
-                    {statusList.length > 0 && count > 0 && <div className="flex justify-start absolute top-0 right-1 z-[100] ">
-                        <button
-                            onClick={() => setShowStatus(prev => !prev)}
-                            className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
-                        >
-                            {showStatus ? <Eye className="w-4 h-4 text-gray-700" /> : <EyeOff className="w-4 h-4 text-gray-700" />}
-                        </button>
-                    </div>}
-                    {children}
-                </motion.div>
-
-            </motion.div>
-
+            )}
         </TableContext.Provider>
     )
 }

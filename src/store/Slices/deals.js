@@ -137,13 +137,13 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     const state = getState();
-          const getDomain = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch (e) {
-    return url; 
-  }
-};
+    const getDomain = (url) => {
+      try {
+        return new URL(url).hostname.replace(/^www\./, "");
+      } catch (e) {
+        return url;
+      }
+    };
 
     try {
       const res = await axios.post(
@@ -186,7 +186,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
             parent_name: "outr_deal",
           })
         ),
-        okHandler: () => getLadger({email}),
+        okHandler: () => getLadger({ email }),
       });
 
     } catch (error) {
@@ -194,16 +194,16 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     }
   };
 };
-export const updateDeal = ({deal,email}) => {
+export const updateDeal = ({ deal, email }) => {
   return async (dispatch, getState) => {
     const state = getState();
-          const getDomain1 = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch (e) {
-    return url; 
-  }
-};
+    const getDomain1 = (url) => {
+      try {
+        return new URL(url).hostname.replace(/^www\./, "");
+      } catch (e) {
+        return url;
+      }
+    };
     dispatch(dealsSlice.actions.updateDealRequest());
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
@@ -244,7 +244,7 @@ export const updateDeal = ({deal,email}) => {
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, extractEmail(deal.real_name), getState().user.user.name, getState().user.user.email, "Deal Updated")
       console.log(`Deal`, deal);
-     const res = await createLedgerEntry({
+      const res = await createLedgerEntry({
         domain,
         email,
         group: "Deal",
@@ -257,7 +257,7 @@ export const updateDeal = ({deal,email}) => {
             parent_name: "outr_deal",
           })
         ],
-        okHandler: () => dispatch(getLadger({email})),
+        okHandler: () => dispatch(getLadger({ email })),
       });
       console.log(`Ledger Entry`, res);
     } catch (error) {
@@ -267,13 +267,13 @@ export const updateDeal = ({deal,email}) => {
 };
 export const deleteDeal = (deal, email, id) => {
   return async (dispatch, getState) => {
-              const getDomain1 = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch (e) {
-    return url; 
-  }
-};
+    const getDomain1 = (url) => {
+      try {
+        return new URL(url).hostname.replace(/^www\./, "");
+      } catch (e) {
+        return url;
+      }
+    };
     const state = getState();
     dispatch(dealsSlice.actions.deleteDealRequest({ id }));
     try {
@@ -295,23 +295,23 @@ export const deleteDeal = (deal, email, id) => {
 
       console.log(`Deal`, deal);
 
-  const res = await createLedgerEntry({
+      const res = await createLedgerEntry({
         domain: state.user.crmEndpoint.split("?")[0],
-  email: email,
-  group: "Deal",
-  okHandler:()=>dispatch(getLadger({email})),
-  items: [
-    buildLedgerItem({
-      status: "Deal-Deleted",
-      detail: `website: {${getDomain1(deal?.website_c)}}`,
-      ladgerState: state.ladger,
-      user: state.user.user,
-      parent_name: "outr_deal",
-    }),
-  ],
-});
+        email: email,
+        group: "Deal",
+        okHandler: () => dispatch(getLadger({ email })),
+        items: [
+          buildLedgerItem({
+            status: "Deal-Deleted",
+            detail: `website: {${getDomain1(deal?.website_c)}}`,
+            ladgerState: state.ladger,
+            user: state.user.user,
+            parent_name: "outr_deal",
+          }),
+        ],
+      });
       console.log(`Ledger Entry`, res);
-      
+
 
     } catch (error) {
       dispatch(dealsSlice.actions.deleteDealFailed(error.message));

@@ -38,7 +38,7 @@ export function TopNav() {
   const [errorLogCount, setErrorLogCount] = useState(0);
   const prevCountRef = useRef(errorLogCount);
   const [copied, setCopied] = useState(false);
-  const { user, error } = useSelector((state) => state.user);
+  const { user, error, userType } = useSelector((state) => state.user);
   const { count } = useSelector((state) => state.hot);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -189,10 +189,9 @@ export function TopNav() {
                 className={`
                   absolute right-2 top-1/2 -translate-y-1/2
                   w-6 h-6 flex items-center justify-center rounded-md
-                  ${
-                    isBlinking
-                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                      : "bg-gray-300 text-gray-700"
+                  ${isBlinking
+                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                    : "bg-gray-300 text-gray-700"
                   }
                 `}
               >
@@ -228,23 +227,23 @@ export function TopNav() {
           animate={
             count > 0
               ? {
-                  scale: [1, 1.12, 1],
-                  boxShadow: [
-                    "0 0 0px rgba(59,130,246,0)",
-                    "0 0 18px rgba(59,130,246,0.9)",
-                    "0 0 18px rgba(239, 68, 213, 0.9)",
-                    "0 0 0px rgba(239,68,68,0)",
-                  ],
-                }
+                scale: [1, 1.12, 1],
+                boxShadow: [
+                  "0 0 0px rgba(59,130,246,0)",
+                  "0 0 18px rgba(59,130,246,0.9)",
+                  "0 0 18px rgba(239, 68, 213, 0.9)",
+                  "0 0 0px rgba(239,68,68,0)",
+                ],
+              }
               : {}
           }
           transition={
             count > 0
               ? {
-                  repeat: Infinity,
-                  duration: 1.6, // normal speed
-                  ease: "easeInOut",
-                }
+                repeat: Infinity,
+                duration: 1.6, // normal speed
+                ease: "easeInOut",
+              }
               : {}
           }
           className="relative p-4 bg-orange-500 text-white rounded-full"
@@ -266,22 +265,22 @@ export function TopNav() {
             animate={
               errorLogCount > 0
                 ? {
-                    scale: [1, 1.08, 1],
-                    boxShadow: [
-                      "0 0 0px rgba(239,68,68,0)",
-                      "0 0 20px rgba(239,68,68,0.9)",
-                      "0 0 0px rgba(239,68,68,0)",
-                    ],
-                  }
+                  scale: [1, 1.08, 1],
+                  boxShadow: [
+                    "0 0 0px rgba(239,68,68,0)",
+                    "0 0 20px rgba(239,68,68,0.9)",
+                    "0 0 0px rgba(239,68,68,0)",
+                  ],
+                }
                 : {}
             }
             transition={
               errorLogCount > 0
                 ? {
-                    repeat: Infinity,
-                    duration: 1.4,
-                    ease: "easeInOut",
-                  }
+                  repeat: Infinity,
+                  duration: 1.4,
+                  ease: "easeInOut",
+                }
                 : {}
             }
           >
@@ -301,37 +300,48 @@ export function TopNav() {
         >
           <Sparkles />
         </button>
+        <div className="flex items-center gap-3">
 
-        {/* PROFILE */}
-        <div ref={profileMenuRef} className="relative">
-          <div
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
-          >
-            <span className="font-semibold">{getUserInitials()}</span>
-          </div>
+          {userType === "power" && (
+            <div className="px-3 py-1 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Power User
+            </div>
+          )}
 
-          <AnimatePresence>
-            {showProfileMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl"
-              >
-                <div className="p-4">
-                  <p className="font-semibold">{user?.name}</p>
-                  <p className="text-sm text-gray-500">{user?.email}</p>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+          {/* PROFILE */}
+
+          {/* PROFILE */}
+          <div ref={profileMenuRef} className="relative">
+            <div
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+            >
+              <span className="font-semibold">{getUserInitials()}</span>
+            </div>
+
+            <AnimatePresence>
+              {showProfileMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl"
                 >
-                  Logout
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <div className="p-4">
+                    <p className="font-semibold">{user?.name}</p>
+                    <p className="text-sm text-gray-500">{user?.email}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                  >
+                    Logout
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>

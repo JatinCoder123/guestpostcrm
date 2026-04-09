@@ -89,12 +89,13 @@ const STATUS_CONFIG = [
 ];
 import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
+import useAccess from "../../hooks/useAccess.js";
 
 export function OrdersPage() {
   const { count, orders, loading, pageIndex, stats, updating, message, error } =
     useSelector((state) => state.orders);
   const [updateOrderId, setUpdateOrderId] = useState(null);
-
+  const { isAllow } = useAccess()
   const { handleDateClick, enteredEmail } =
     useContext(PageContext);
   const navigateTo = useNavigate();
@@ -284,6 +285,8 @@ export function OrdersPage() {
     <TableView
       tableData={orders}
       tableName={"Orders"}
+      allowToView={isAllow("view_order")}
+
       columns={columns}
       slice={"orders"}
       defaultStatus={"new"}
