@@ -144,6 +144,10 @@ export default function ThreadOffers({ threadId, email, id }) {
       dispatch(offersAction.clearAllErrors());
     }
   }, [updating, message, error]);
+  const isEditValid =
+    editData.website &&
+    Number(editData.client_offer_c) > 0 &&
+    Number(editData.our_offer_c) > 0;
   return (
     <div className="w-full flex gap-6 items-start">
       {/* 🔥 TABLE */}
@@ -218,6 +222,7 @@ export default function ThreadOffers({ threadId, email, id }) {
                     <input
                       type="number"
                       value={editData.our_offer_c}
+                      min={1}
                       onChange={(e) =>
                         setEditData({
                           ...editData,
@@ -242,6 +247,7 @@ export default function ThreadOffers({ threadId, email, id }) {
                         label="Save"
                         loading={editingId == offer.id && updating && !send}
                         onClick={() => handleSave(editData, false)}
+                        disabled={!isEditValid}
                       />
 
                       <IconButton
@@ -249,6 +255,7 @@ export default function ThreadOffers({ threadId, email, id }) {
                         label="Save & Send"
                         loading={editingId == offer.id && updating && send}
                         onClick={() => handleSave(editData, true)}
+                        disabled={!isEditValid}
                       />
 
                       <IconButton

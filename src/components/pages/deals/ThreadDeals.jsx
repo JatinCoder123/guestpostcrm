@@ -216,6 +216,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                     <input
                       type="number"
                       value={editData.dealamount}
+                      min={1}
                       onChange={(e) =>
                         setEditData({
                           ...editData,

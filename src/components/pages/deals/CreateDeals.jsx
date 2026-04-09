@@ -207,6 +207,7 @@ export default function CreateDeals({ threadId, email }) {
                 <input
                   type="number"
                   value={row.dealamount}
+                  min={1}
                   onChange={(e) =>
                     handleChangeRow(index, "dealamount", e.target.value)
                   }
