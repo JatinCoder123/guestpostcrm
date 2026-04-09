@@ -302,11 +302,18 @@ const LatestMessage = ({ handleMessageClick }) => {
             )}
             {showFirstReplyBtn && (
               <div
+<<<<<<< HEAD
                 className={` transition-opacity duration-200 ${
                   showFirstReplyBtn
                     ? "opacity-100"
                     : "opacity-0 pointer-events-none"
                 }`}
+=======
+                className={` transition-opacity duration-200 ${showFirstReplyBtn
+                  ? "opacity-100"
+                  : "opacity-0 pointer-events-none"
+                  }`}
+>>>>>>> ee77af1f40dae01bc9c2504ce4084aa6292d0906
               >
                 <div className="relative group flex items-center justify-center">
                   <button
