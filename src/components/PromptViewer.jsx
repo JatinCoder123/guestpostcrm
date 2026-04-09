@@ -68,7 +68,7 @@ const PromptSectionsViewer = ({ prompt, onExplore }) => {
           {onExplore && (
             <button
               onClick={() => onExplore(prompt)}
-              className="px-3 py-1 text-xs rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="px-3 py-1 ml-2 text-xs rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               Explore
             </button>
