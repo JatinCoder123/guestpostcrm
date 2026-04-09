@@ -87,14 +87,14 @@ export default function CreateOffers({ threadId, email }) {
     newOffers.every(
       (offer) =>
         offer.website &&
-        Number(offer.client_offer_c) > 0 &&
+        Number(offer.client_offer_c) >= 0 &&
         Number(offer.our_offer_c) > 0
     );
 
   const canAddRow = newOffers.every(
     (offer) =>
       offer.website &&
-      Number(offer.client_offer_c) > 0 &&
+      Number(offer.client_offer_c) >= 0 &&
       Number(offer.our_offer_c) > 0
   );
 

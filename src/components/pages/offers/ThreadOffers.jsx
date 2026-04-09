@@ -146,7 +146,7 @@ export default function ThreadOffers({ threadId, email, id }) {
   }, [updating, message, error]);
   const isEditValid =
     editData.website &&
-    Number(editData.client_offer_c) > 0 &&
+    Number(editData.client_offer_c) >= 0 &&
     Number(editData.our_offer_c) > 0;
   return (
     <div className="w-full flex gap-6 items-start">
