@@ -65,6 +65,16 @@ const PromptSectionsViewer = ({ prompt }) => {
           >
             Copy
           </button>
+          {/* Explore Button */}
+          <button
+            onClick={() => {
+              const { system, user } = splitPrompt(value);
+              setExploreData({ system, user });
+            }}
+            className="px-3 py-1 text-xs rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
+            Explore
+          </button>
         </div>
       </div>
 
