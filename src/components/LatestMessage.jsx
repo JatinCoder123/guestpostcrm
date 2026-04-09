@@ -301,7 +301,7 @@ const LatestMessage = ({ handleMessageClick }) => {
             )}
             {showFirstReplyBtn && (
               <div
-                className={`flex items-center transition-opacity duration-200 ${showFirstReplyBtn
+                className={` transition-opacity duration-200 ${showFirstReplyBtn
                   ? "opacity-100"
                   : "opacity-0 pointer-events-none"
                   }`}
@@ -321,13 +321,13 @@ const LatestMessage = ({ handleMessageClick }) => {
         transition-all
       "
                   >
-                    <div className="w-6 h-6 flex items-center justify-center">
+                    <div className="w-8 h-8 flex items-center justify-center">
                       {frLoading ? (
                         <LoadingChase size="20" />
                       ) : (
                         <img
                           src="https://img.icons8.com/color/48/reply.png"
-                          className="w-6 h-6"
+                          className="w-8 h-8"
                           alt="first-reply"
                         />
                       )}

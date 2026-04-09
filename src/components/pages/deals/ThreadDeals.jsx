@@ -91,6 +91,10 @@ export default function ThreadDeals({ threadId, email, id }) {
   };
 
   const handleSave = (deal, isSend = false) => {
+    if (!deal.dealamount || Number(deal.dealamount) <= 0) {
+      toast.error("Deal amount must be greater than 0");
+      return;
+    }
     setSend(isSend); // 🔥 track intent
     dispatch(updateDeal({ deal, email }));
   };
@@ -142,6 +146,10 @@ export default function ThreadDeals({ threadId, email, id }) {
       dispatch(dealsAction.clearAllErrors());
     }
   }, [updating, message, error]);
+  const isInvalidDealAmount =
+    editData.dealamount === "" ||
+    editData.dealamount === null ||
+    Number(editData.dealamount) <= 0;
   return (
     <div className="w-full flex gap-6 items-start">
       {/* 🔥 TABLE */}
@@ -247,6 +255,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                       <IconButton
                         icon={Save}
                         label="Save"
+                        disabled={isInvalidDealAmount}
                         loading={editingId == deal.id && updating && !send}
                         onClick={() => handleSave(editData, false)}
                       />
@@ -254,6 +263,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                       <IconButton
                         icon={Send}
                         label="Save & Send"
+                        disabled={isInvalidDealAmount}
                         loading={editingId == deal.id && updating && send}
                         onClick={() => handleSave(editData, true)}
                       />
@@ -305,11 +315,10 @@ export default function ThreadDeals({ threadId, email, id }) {
           disabled={currentDeals.length === 0}
           onClick={() => handlePreview()}
           className={`flex-1 py-3 rounded-xl font-medium text-white transition
-          ${
-            currentDeals.length === 0
+          ${currentDeals.length === 0
               ? "bg-gray-300"
               : "bg-indigo-600 hover:bg-indigo-700"
-          }`}
+            }`}
         >
           Preview
         </button>
