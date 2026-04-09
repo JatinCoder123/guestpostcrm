@@ -205,7 +205,6 @@ const PromptTestingPage = () => {
 
           <div className="space-y-6">
             {/* Stage */}
-            {/* Stage */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Stage
