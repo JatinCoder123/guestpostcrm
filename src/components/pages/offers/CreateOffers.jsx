@@ -87,12 +87,15 @@ export default function CreateOffers({ threadId, email }) {
     newOffers.every(
       (offer) =>
         offer.website &&
-        offer.client_offer_c !== "" &&
-        offer.our_offer_c !== "",
+        Number(offer.client_offer_c) > 0 &&
+        Number(offer.our_offer_c) > 0
     );
+
   const canAddRow = newOffers.every(
     (offer) =>
-      offer.website && offer.client_offer_c !== "" && offer.our_offer_c !== "",
+      offer.website &&
+      Number(offer.client_offer_c) > 0 &&
+      Number(offer.our_offer_c) > 0
   );
 
   const handleChangeRow = (index, field, value) => {
@@ -192,6 +195,7 @@ export default function CreateOffers({ threadId, email }) {
                 <input
                   type="number"
                   value={row.client_offer_c}
+                  min={1}
                   onChange={(e) =>
                     handleChangeRow(index, "client_offer_c", e.target.value)
                   }
@@ -202,6 +206,7 @@ export default function CreateOffers({ threadId, email }) {
               <div className="col-span-2 text-center">
                 <input
                   type="number"
+                  min={1}
                   value={row.our_offer_c}
                   onChange={(e) =>
                     handleChangeRow(index, "our_offer_c", e.target.value)
