@@ -209,7 +209,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
 ───────────────────────────────────────────── */
 function LinkTableHeader() {
   return (
-    <div className="grid grid-cols-8 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
+    <div className="grid grid-cols-9 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
       <div>#</div>
       <div>Anchor Text</div>
       <div>Anchor Verdict</div>
@@ -217,6 +217,7 @@ function LinkTableHeader() {
       <div>Backlink Verdict</div>
       <div>Spam Score</div>
       <div>Amount &amp; Type</div>
+      <div>Domain</div>
       <div>Action</div>
     </div>
   );
@@ -246,7 +247,7 @@ function LinkTableRow({
   const spam = getSpamLabel(link.spam_score_c);
   return (
     <div
-      className={`grid grid-cols-8 px-4 py-3 border-t border-slate-100 text-sm items-center ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
+      className={`grid grid-cols-9 px-4 py-3 border-t border-slate-100 text-sm items-center ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
     >
       {/* Index */}
       <div>
@@ -325,6 +326,18 @@ function LinkTableRow({
         >
           {formatLinkType(link.link_type)}
         </span>
+      </div>
+
+      <div className="flex flex-row gap-0.5">
+        {(() => {
+          try {
+            return new URL(link.backlink_url).hostname.replace(/^www\./, "");
+          } catch {
+            return link.backlink_url;
+          }
+        })()}
+        {/* <SparkleIcon className="w-5 h-5 text-green-600" /> */}
+        <ValidationBadge valid={link.is_domain_valid} />
       </div>
 
       {/* Actions */}
@@ -466,8 +479,6 @@ function DocumentAnalysisCard({
           >
             {website ?? "-"}
           </a>
-          <SparkleIcon className="w-5 h-5 text-green-600" />
-          <ValidationBadge valid={DomainValid} />
         </div>
       </div>
 
