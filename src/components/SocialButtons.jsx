@@ -106,7 +106,7 @@ const SocialButtons = () => {
         <span className="text-sm font-semibold tracking-wide">Trust Score</span>
 
         <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm font-bold backdrop-blur-sm">
-          {contactInfo.trust_score}
+          {contactInfo?.trust_score}
         </span>
       </button>
     </div>

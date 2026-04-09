@@ -1,4 +1,5 @@
 import {
+  Bot,
   Bug,
   BugOff,
   Clock9Icon,
@@ -14,6 +15,7 @@ import {
   Sparkle,
   Users,
 } from "lucide-react";
+import { FaInternetExplorer } from "react-icons/fa";
 import { Link, Outlet } from "react-router-dom";
 
 export function SettingsPage() {
@@ -82,11 +84,18 @@ export function SettingsPage() {
       link: "controller",
     },
     {
-      title: "Prompt Explorer",
+      title: "Prompt Testing",
       subtitle: "Test and optimize prompts",
       icon: <Sparkle className="w-8 h-8 text-cyan-600" />,
       bg: "bg-cyan-50",
       link: "prompt-testing",
+    },
+    {
+      title: "Prompt Explorer",
+      subtitle: "Explore prompts",
+      icon: <Bot className="w-8 h-8 text-cyan-600" />,
+      bg: "bg-cyan-50",
+      link: "prompt-explorer",
     },
     {
       title: "QA PlayGround",
