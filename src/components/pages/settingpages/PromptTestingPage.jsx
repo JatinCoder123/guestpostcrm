@@ -49,8 +49,7 @@ function CustomDropdown({
           {selectedOption?.label || placeholder}
         </span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""
-            }`}
+          className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -93,9 +92,10 @@ function CustomDropdown({
                     w-full flex items-center justify-between
                     px-4 py-2 text-sm
                     transition
-                    ${isSelected
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "text-gray-700 hover:bg-gray-100"
+                    ${
+                      isSelected
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-gray-700 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -150,9 +150,23 @@ const PromptTestingPage = () => {
   };
 
   useEffect(() => {
-    if (data?.data) setPrompts(data.data);
-    if (data?.stage_list) setStages(data.stage_list);
-  }, [data]);
+    if (!state) return;
+
+    const sys = state.system?.trim();
+    const usr = state.user?.trim();
+
+    if (sys && usr) {
+      // Both exist — use them directly
+      setSystemPrompt(sys);
+      setUserPrompt(usr);
+      handleSubmit(sys, usr);
+    } else if (sys) {
+      // Only system came through — put full prompt in both
+      setSystemPrompt(sys);
+      setUserPrompt(sys);
+      handleSubmit(sys, sys);
+    }
+  }, []);
 
   /** 🔽 Auto-scroll when response arrives */
   useEffect(() => {
@@ -167,9 +181,7 @@ const PromptTestingPage = () => {
   const handleSubmit = () => {
     refetch();
   };
-  useEffect(() => {
-
-  }, [responseError])
+  useEffect(() => {}, [responseError]);
 
   const handleReset = () => {
     setFormData({
@@ -182,7 +194,7 @@ const PromptTestingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <Header text="Prompt Explorer" />
+      <Header text="Prompt Testing" />
 
       <div className="mx-auto px-6 py-10 space-y-10">
         {/* FORM CARD */}
@@ -325,7 +337,6 @@ const PromptTestingPage = () => {
             </div>
 
             {/* RESPONSE */}
-
           </div>
         )}
       </div>
@@ -334,5 +345,3 @@ const PromptTestingPage = () => {
 };
 
 export default PromptTestingPage;
-
-

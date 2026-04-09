@@ -607,23 +607,59 @@ const Debug = () => {
                                 ) ? (
                                   <PromptSectionsViewer
                                     prompt={value}
-                                    onExplore={(fullPrompt) => {
-                                      const { system, user } =
-                                        splitPrompt(fullPrompt);
-                                      navigateTo("/settings/prompt-explorer", {
-                                        state: { system, user },
-                                      });
+                                    onExplore={() => {
+                                      const sys =
+                                        selectedRecord?.system_prompt?.trim();
+                                      const usr =
+                                        selectedRecord?.user_prompt?.trim();
+                                      if (sys || usr) {
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          {
+                                            state: {
+                                              system: sys || "",
+                                              user: usr || "",
+                                            },
+                                          },
+                                        );
+                                      } else {
+                                        // Both empty/null → split fullPrompt
+                                        const { system, user } =
+                                          splitPrompt(value);
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          { state: { system, user } },
+                                        );
+                                      }
                                     }}
                                   />
                                 ) : (
                                   <PromptViewer
                                     prompt={value}
-                                    onExplore={(fullPrompt) => {
-                                      const { system, user } =
-                                        splitPrompt(fullPrompt);
-                                      navigateTo("/settings/prompt-explorer", {
-                                        state: { system, user },
-                                      });
+                                    onExplore={() => {
+                                      const sys =
+                                        selectedRecord?.system_prompt?.trim();
+                                      const usr =
+                                        selectedRecord?.user_prompt?.trim();
+                                      if (sys || usr) {
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          {
+                                            state: {
+                                              system: sys || "",
+                                              user: usr || "",
+                                            },
+                                          },
+                                        );
+                                      } else {
+                                        // Both empty/null → split fullPrompt
+                                        const { system, user } =
+                                          splitPrompt(value);
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          { state: { system, user } },
+                                        );
+                                      }
                                     }}
                                   />
                                 )}
