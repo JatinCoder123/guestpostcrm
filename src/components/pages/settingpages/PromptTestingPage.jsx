@@ -94,6 +94,7 @@ const PromptTestingPage = () => {
     body: "",
     prompt: "",
     email: "",
+    thread_size: "",
   });
 
   const [stages, setStages] = useState({});
@@ -187,7 +188,13 @@ const PromptTestingPage = () => {
   const handleSubmit = () => refetch();
 
   const handleReset = () => {
-    setFormData({ stage: "", body: "", prompt: "", email: "" });
+    setFormData({
+      stage: "",
+      body: "",
+      prompt: "",
+      email: "",
+      thread_size: "",
+    });
     setStagePrompts([]);
   };
 
@@ -253,6 +260,26 @@ const PromptTestingPage = () => {
                   handleChange({ target: { name: "prompt", value } })
                 }
                 options={stagePrompts}
+              />
+            </div>
+
+            {/* Thread Size */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Thread Size
+              </label>
+              <CustomDropdown
+                value={formData.thread_size}
+                placeholder="Select Thread Size"
+                onChange={(value) =>
+                  handleChange({ target: { name: "thread_size", value } })
+                }
+                options={[
+                  { value: "1", label: "1" },
+                  { value: "2", label: "2" },
+                  { value: "5", label: "5" },
+                  { value: "all", label: "All" },
+                ]}
               />
             </div>
 
