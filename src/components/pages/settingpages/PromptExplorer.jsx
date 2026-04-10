@@ -52,80 +52,101 @@ const PromptExplorer = () => {
   }, []);
 
   return (
-    <div className="h-full w-full bg-gray-50 flex justify-center p-6">
-      <div className="w-full space-y-5">
+    <div className="h-full w-full bg-gray-100 flex justify-center py-8 px-4">
+      <div className="w-full max-w-5xl space-y-6">
         <Header text="Prompt Explorer" />
-        <div>
-          <h1 className="text-xl font-semibold text-gray-800">
+
+        {/* Title */}
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold text-gray-900">
             Prompt Explorer
           </h1>
+          <p className="text-sm text-gray-500">
+            Test and evaluate system + user prompts in real time
+          </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-sm">
+        {/* Prompt Card */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-6 shadow-sm">
           {/* System Prompt */}
-          <div>
-            <label className="text-xs font-semibold text-gray-600">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-500 tracking-wide">
               SYSTEM PROMPT
             </label>
             <textarea
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               placeholder="Define AI behavior..."
-              rows={3}
-              className="mt-1 w-full p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+              rows={4}
+              className="w-full p-3 text-sm border border-gray-300 rounded-xl bg-gray-50 
+              focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 
+              focus:border-indigo-500 transition-all duration-200"
             />
           </div>
 
           {/* User Prompt */}
-          <div>
-            <label className="text-xs font-semibold text-gray-600">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-500 tracking-wide">
               USER PROMPT
             </label>
             <textarea
               value={userPrompt}
               onChange={(e) => setUserPrompt(e.target.value)}
               placeholder="Ask something..."
-              rows={3}
-              className="mt-1 w-full p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+              rows={4}
+              className="w-full p-3 text-sm border border-gray-300 rounded-xl bg-gray-50 
+              focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 
+              focus:border-purple-500 transition-all duration-200"
             />
           </div>
 
           {/* Submit */}
-          {isValid && (
-            <div className="flex justify-end">
-              <button
-                onClick={() => handleSubmit()}
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition disabled:opacity-50"
-              >
-                {loading ? "Running..." : "Run Prompt"}
-              </button>
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-gray-400">
+              {isValid ? "Ready to run" : "Fill both prompts"}
             </div>
-          )}
+
+            <button
+              onClick={() => handleSubmit()}
+              disabled={!isValid || loading}
+              className="px-5 py-2.5 text-sm font-medium rounded-xl 
+              bg-gray-900 text-white hover:bg-gray-800 
+              active:scale-[0.98] transition-all duration-150 
+              disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {loading ? "Running..." : "Run Prompt"}
+            </button>
+          </div>
         </div>
 
-        {/* Loading state */}
-        {loading && (
-          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-            <div className="text-xs font-semibold text-gray-500 mb-2">
-              RESPONSE
+        {/* Response Section */}
+        {(loading || response) && (
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">
+              <span className="text-xs font-semibold text-gray-500 tracking-wide">
+                RESPONSE
+              </span>
+              {loading && (
+                <span className="text-xs text-indigo-500 animate-pulse">
+                  Processing...
+                </span>
+              )}
             </div>
-            <div className="text-sm text-gray-400 animate-pulse">
-              Running prompt...
-            </div>
-          </div>
-        )}
 
-        {/* Response */}
-        {response && (
-          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-            <div className="text-xs font-semibold text-gray-500 mb-2">
-              RESPONSE
-            </div>
-            <div className="text-sm text-gray-800 whitespace-pre-wrap max-h-80 overflow-y-auto">
-              {typeof response === "object"
-                ? JSON.stringify(response, null, 2)
-                : response}
+            {/* Body */}
+            <div className="p-5">
+              {loading ? (
+                <div className="text-sm text-gray-400 animate-pulse">
+                  Running prompt...
+                </div>
+              ) : (
+                <pre className="text-sm text-gray-800 whitespace-pre-wrap max-h-[400px] overflow-y-auto leading-relaxed">
+                  {typeof response === "object"
+                    ? JSON.stringify(response, null, 2)
+                    : response}
+                </pre>
+              )}
             </div>
           </div>
         )}
