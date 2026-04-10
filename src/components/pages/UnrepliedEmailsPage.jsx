@@ -205,7 +205,7 @@ export function UnrepliedEmailsPage() {
       : 0,
   }));
   const statusCount = Object.values(emailsCount).reduce(
-    (acc, curr) => acc + curr,
+    (acc, curr) => acc + Number(curr),
     0,
   );
 
