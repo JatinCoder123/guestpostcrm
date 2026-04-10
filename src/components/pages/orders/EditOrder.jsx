@@ -99,7 +99,7 @@ export default function EditOrder({ threadId, id, email }) {
                     email,
                     "Our Order Updated Successfully",
                     1,
-                    () => dispatch(getLadger({ email })),
+                    () => dispatch(getLadger({ email, loading: false })),
                 );
                 if (send) {
                     setSend(false);

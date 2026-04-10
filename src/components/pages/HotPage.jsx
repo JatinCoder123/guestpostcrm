@@ -128,7 +128,7 @@ export function HotPage() {
                       className="px-6 py-4 text-purple-600"
                       onClick={() => {
                         const input = extractEmail(email.email);
-                        localStorage.setItem("email", input);
+                        localStorage.setItem("searchTerm", input);
                         setEnteredEmail(input);
                         navigateTo("/");
                       }}

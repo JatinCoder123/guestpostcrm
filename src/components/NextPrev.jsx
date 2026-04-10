@@ -11,7 +11,7 @@ const NextPrev = () => {
     const handleNext = () => {
         if (currentIndex < emails?.length - 1) {
             const input = extractEmail(emails[currentIndex + 1].from);
-            localStorage.setItem("email", input);
+            localStorage.setItem("searchTerm", input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
             setCurrentIndex((p) => p + 1);
@@ -20,7 +20,7 @@ const NextPrev = () => {
     const handlePrev = () => {
         if (currentIndex > 0) {
             const input = extractEmail(emails[currentIndex - 1].from);
-            localStorage.setItem("email", input);
+            localStorage.setItem("searchTerm", input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
             setCurrentIndex((p) => p - 1);

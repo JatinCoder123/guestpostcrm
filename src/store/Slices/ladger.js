@@ -18,16 +18,13 @@ const ladgerSlice = createSlice({
     timeline: localStorage.getItem("timeline") || "today",
     message: null,
     duplicate: 0,
-    searchNotFound: false,
     noSearchFoundLoading: false,
-    latest: false,
     manualScanResponse: null,
     manualScanLoading: false,
   },
   reducers: {
     getLadgerRequest(state) {
       state.loading = true;
-      state.searchNotFound = false;
       state.ladger = [];
       state.mailersSummary = null
       state.error = null;
@@ -41,8 +38,6 @@ const ladgerSlice = createSlice({
         email,
         pageCount,
         pageIndex,
-        search,
-        latest,
         mailersSummary,
       } = action.payload;
 
@@ -55,19 +50,15 @@ const ladgerSlice = createSlice({
       state.mailersSummary = mailersSummary || null;
       state.pageCount = pageCount || 1;
       state.pageIndex = pageIndex || 1;
-      state.latest = latest
       state.email = email || null;
       state.duplicate = duplicate || 0;
-
-      state.searchNotFound =
-        (ladger?.length ?? 0) === 0 && (search?.trim() ?? "") !== "";
       state.error = null;
     },
 
     getLadgerFailed(state, action) {
       state.loading = false;
       state.error = action.payload || "Something went wrong";
-      state.searchNotFound = false;
+      state.ladger = []
     },
 
     setTimeline(state, action) {
@@ -136,28 +127,20 @@ const ladgerSlice = createSlice({
   },
 });
 
-export const getLadger = ({
-  email = null,
-  isEmail = true,
-  search = "",
-  loading = true,
-  page = 1,
-}) => {
+export const getLadger = ({ email = null, loading = true, page = 1, }) => {
   return async (dispatch, getState) => {
     if (loading) dispatch(ladgerSlice.actions.getLadgerRequest());
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${isEmail ? `&email=${email?.trim()}` : ""}`,
+        `${getState().user.crmEndpoint}&type=ledger${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email?.trim()}` : ""}`,
       );
       showConsole && console.log("Ladger", data);
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
-          search,
           duplicate: data.duplicate_threads_count,
           ladger: data.data ?? [],
           mailersSummary: data.mailers_summary,
-          email: email ?? getState().ladger.timeline,
-          latest: !isEmail,
+          email: email,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
         }),

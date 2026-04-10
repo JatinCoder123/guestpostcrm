@@ -121,7 +121,7 @@ export const favEmail = () => {
             user: getState().user.user,
           }),
         ],
-        okHandler: () => dispatch(getLadger({email: getState().ladger.email})),
+        okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),
       });
 
     } catch (error) {

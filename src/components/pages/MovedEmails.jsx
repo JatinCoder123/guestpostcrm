@@ -46,7 +46,7 @@ export function MovedPage() {
 
         // 🔥 Refresh list
         dispatch(getmovedEmails());
-        dispatch(getLadger({ email: emailItem.email }));
+        dispatch(getLadger({ email: emailItem.email, loading: false }));
       }
     } catch (err) {
       toast.error("Failed to restore email ❌");

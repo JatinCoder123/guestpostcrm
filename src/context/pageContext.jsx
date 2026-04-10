@@ -16,13 +16,13 @@ export const PageContextProvider = (props) => {
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
-    localStorage.getItem("email") || null,
+    localStorage.getItem("searchTerm") || null,
   );
 
 
   /* ❌ Clear */
   const handleClear = () => {
-    localStorage.removeItem("email");
+    localStorage.removeItem("searchTerm");
     setEnteredEmail("");
     setCurrentIndex(0)
     setShowNextPrev(true)
@@ -32,7 +32,7 @@ export const PageContextProvider = (props) => {
       toast.error("NO Email Is There!")
       return
     }
-    localStorage.setItem("email", email);
+    localStorage.setItem("searchTerm", email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     if (index != null) setCurrentIndex(index);

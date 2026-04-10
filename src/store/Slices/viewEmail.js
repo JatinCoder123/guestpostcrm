@@ -142,7 +142,7 @@ const viewEmailSlice = createSlice({
   },
 });
 
-export const getViewEmail = (email = null) => {
+export const getViewEmail = (email = null, force = true) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getViewEmailRequest());
 
@@ -169,7 +169,7 @@ export const getViewEmail = (email = null) => {
     }
   };
 };
-export const getContact = (email = null) => {
+export const getContact = (email = null, force = true) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getContactRequest());
 
