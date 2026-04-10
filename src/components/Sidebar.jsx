@@ -98,7 +98,7 @@ export function Sidebar() {
       label: "Unreplied ",
       icon: Mail,
       loading: countLoading,
-      count: emailsCount?.unread,
+      count: emailsCount?.inbound,
       color: "text-rose-600",
       hover: "hover:bg-rose-50",
       countBg: "bg-rose-500 text-white",
