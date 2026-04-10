@@ -23,12 +23,12 @@ function useIdle({ idle }) {
 
     const refreshLadger = () => {
         if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
-            dispatch(getViewEmail(enteredEmail));
+            dispatch(getLadger({ email: enteredEmail }));
+            dispatch(getViewEmail({ email: enteredEmail }));
             dispatch(getContact(enteredEmail));
         } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
-            dispatch(getViewEmail(firstEmail));
+            dispatch(getLadger({ email: firstEmail }));
+            dispatch(getViewEmail({ email: firstEmail }));
             dispatch(getContact(firstEmail));
         }
         dispatch(getEmailsCount({}))

@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { getCache, setCache } from "../../services/cache";
 
 const ladgerSlice = createSlice({
   name: "ladger",
@@ -127,29 +128,135 @@ const ladgerSlice = createSlice({
   },
 });
 
-export const getLadger = ({ email = null, loading = true, page = 1, }) => {
+export const getLadger = ({
+  email = null,
+  loading = true,
+  page = 1,
+  force = false,
+}) => {
   return async (dispatch, getState) => {
-    if (loading) dispatch(ladgerSlice.actions.getLadgerRequest());
+    const trimmedEmail = email?.trim() || "";
+    const timeline = getState().ladger.timeline;
+
+    const buildCacheKey = (targetEmail, targetPage = 1) =>
+      `${targetEmail?.trim() || ""}_${targetPage}_${timeline || "all"}`;
+
+    const cacheKey = buildCacheKey(trimmedEmail, page);
+
+    if (loading) {
+      dispatch(ladgerSlice.actions.getLadgerRequest());
+    }
+
     try {
+      // Serve cache instantly
+      if (!force) {
+        const cachedData = getCache("ledgers", cacheKey);
+
+        if (cachedData) {
+          dispatch(
+            ladgerSlice.actions.getLadgerSuccess({
+              duplicate: cachedData.duplicate,
+              ladger: cachedData.ladger,
+              mailersSummary: cachedData.mailersSummary,
+              email: trimmedEmail,
+              pageCount: cachedData.pageCount,
+              pageIndex: cachedData.pageIndex,
+            })
+          );
+        }
+      }
+
+      // Fetch fresh current ledger
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=ledger${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email?.trim()}` : ""}`,
+        `${getState().user.crmEndpoint}
+        &type=ledger
+        ${timeline !== null && timeline !== "null"
+            ? `&filter=${timeline}`
+            : ""
+          }
+        &page=${page}
+        &page_size=50
+        ${trimmedEmail ? `&email=${trimmedEmail}` : ""}`
+          .replace(/\s+/g, "")
       );
-      showConsole && console.log("Ladger", data);
+
+      const freshData = {
+        duplicate: data.duplicate_threads_count,
+        ladger: data.data ?? [],
+        mailersSummary: data.mailers_summary,
+        pageCount: data.total_pages,
+        pageIndex: data.current_page,
+      };
+
+      setCache("ledgers", cacheKey, freshData);
+
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
-          duplicate: data.duplicate_threads_count,
-          ladger: data.data ?? [],
-          mailersSummary: data.mailers_summary,
-          email: email,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-        }),
+          duplicate: freshData.duplicate,
+          ladger: freshData.ladger,
+          mailersSummary: freshData.mailersSummary,
+          email: trimmedEmail,
+          pageCount: freshData.pageCount,
+          pageIndex: freshData.pageIndex,
+        })
       );
+
+      // PREFETCH NEXT / PREV EMAIL LEDGER
+      const index = localStorage.getItem("currentIndex") && Number(localStorage.getItem("currentIndex"))
+
+      if (index !== null) {
+        const unreplied = getState().unreplied;
+
+        const nextEmail =
+          index + 1 < unreplied.count
+            ? unreplied.emails[index + 1]?.email1
+            : null;
+
+        const prevEmail =
+          index > 0
+            ? unreplied.emails[index - 1]?.email1
+            : null;
+
+        [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
+          if (!prefetchEmail) return;
+
+          const prefetchCacheKey = buildCacheKey(prefetchEmail, 1);
+
+          if (!getCache("ledgers", prefetchCacheKey)) {
+            try {
+              const { data } = await axios.get(
+                `${getState().user.crmEndpoint}
+                &type=ledger
+                ${timeline !== null && timeline !== "null"
+                    ? `&filter=${timeline}`
+                    : ""
+                  }
+                &page=1
+                &page_size=50
+                &email=${prefetchEmail.trim()}`
+                  .replace(/\s+/g, "")
+              );
+
+              setCache("ledgers", prefetchCacheKey, {
+                duplicate: data.duplicate_threads_count,
+                ladger: data.data ?? [],
+                mailersSummary: data.mailers_summary,
+                pageCount: data.total_pages,
+                pageIndex: data.current_page,
+              });
+            } catch (err) {
+              console.error("Ledger Prefetch Failed", err);
+            }
+          }
+        });
+      }
 
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        ladgerSlice.actions.getLadgerFailed(error.response?.data?.message),
+        ladgerSlice.actions.getLadgerFailed(
+          error.response?.data?.message
+        )
       );
     }
   };

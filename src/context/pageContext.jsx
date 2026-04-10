@@ -8,7 +8,7 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
-  const showConsole = localStorage.getItem("showConsole") || false;
+  const showConsole = true;
   const navigateTo = useNavigate()
   const dispatch = useDispatch()
   const [displayIntro, setDisplayIntro] = useState(localStorage.getItem("displayIntro") === "true");
@@ -48,6 +48,9 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed(true);
     localStorage.setItem("showConsole", showConsole);
   }, []);
+  useEffect(() => {
+    localStorage.setItem("currentIndex", currentIndex)
+  }, [currentIndex]);
   const value = {
     activePage,
     setActivePage,

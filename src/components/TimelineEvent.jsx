@@ -21,10 +21,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [timelineData, setTimelineData] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedId, setExpandedId] = useState(null);
-  const [activeTab, setActiveTab] = useState(null);
-  const [messageData, setMessageData] = useState(null);
-  const [messageLoading, setMessageLoading] = useState(false);
   const [activeVisualization, setActiveVisualization] = useState(null);
   const [showVisualization, setShowVisualization] = useState(false);
   const topRef = useRef(null);
@@ -36,9 +32,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
       block: "end",
     });
   };
-
-  const dispatch = useDispatch();
-
   useEffect(() => {
     if (!ladger) return;
 
