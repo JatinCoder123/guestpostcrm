@@ -34,6 +34,7 @@ import websiteReducer from "./Slices/webSlice";
 import syncReducer from "./Slices/syncSlice.js";
 import contactReducer from "./Slices/contacts.js"
 import reportReducer from "./Slices/reportSlice.js"
+import crmUserReducer from "./Slices/crmUser.js"
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -71,6 +72,7 @@ export const store = configureStore({
     website: websiteReducer,
     sync: syncReducer,
     contacts: contactReducer,
-    report: reportReducer
+    report: reportReducer,
+    crmUser: crmUserReducer
   },
 });
