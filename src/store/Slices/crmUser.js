@@ -42,19 +42,28 @@ export const getAllUsers = () => {
     dispatch(crmUserSlice.actions.getAllUsersRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const { data } = await axios.get(`${domain}?entryPoint=fetch_gpc&type=get_users`);
+      const { data } = await axios.get(
+        `${domain}?entryPoint=fetch_gpc&type=get_users`,
+      );
       showConsole && console.log(`users data`, data);
-      const currentUser = data.find((user) => user.description === getState().user.user.email);
-      dispatch(crmUserSlice.actions.getAllUsersSucess({ count: data.length ?? 0, users: data ?? [], currentUser }));
+      const currentUser = data.find(
+        (user) => user.description === getState().user.user.email,
+      );
+      dispatch(
+        crmUserSlice.actions.getAllUsersSucess({
+          count: data.length ?? 0,
+          users: data ?? [],
+          currentUser,
+        }),
+      );
       dispatch(crmUserSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        crmUserSlice.actions.getAllUsersFailed("Fetching All Users Failed")
+        crmUserSlice.actions.getAllUsersFailed("Fetching All Users Failed"),
       );
     }
   };
 };
-
 
 export const crmUserAction = crmUserSlice.actions;
 export default crmUserSlice.reducer;

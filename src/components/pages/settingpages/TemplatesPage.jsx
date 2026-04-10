@@ -29,24 +29,17 @@ export default function TemplatesPage() {
   const [stagesLoading, setStagesLoading] = useState(false);
 
   const { crmEndpoint } = useSelector((state) => state.user);
+  const { users } = useSelector((state) => state.crmUser);
   const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newStageType, setNewStageType] = useState("");
+  const [newStageType, setNewStageType] = useState("others");
   const [newTemplateContent, setNewTemplateContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [templateId, setTemplateId] = useState(false);
   const { showConsole } = useContext(PageContext);
   const { state } = useLocation();
-  const stageOptions = [
-    "first_reply",
-    "team_outreach",
-    "offer",
-    "deal",
-    "order",
-    "reminders",
-    "others",
-  ];
+
 
   const { loading, data, error, refetch } = useModule({
     url: stageType
@@ -389,17 +382,28 @@ export default function TemplatesPage() {
               </div>
 
               {/* Description */}
+              {/* User Label Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description *
+                  User
                 </label>
-                <input
-                  type="text"
+
+                <select
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Enter Description"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                />
+                >
+                  <option value="">Select User</option>
+
+                  {(users || []).map((user, index) => (
+                    <option
+                      key={user.id || index}
+                      value={user.description || ""}
+                    >
+                      {user.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* ✅ NEW STAGE DROPDOWN */}

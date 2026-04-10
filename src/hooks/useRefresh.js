@@ -56,6 +56,9 @@ function useRefresh() {
         dispatch(getAllUsers())
     },[])
     useEffect(() => {
+        dispatch(getAllUsers())
+    }, [])
+    useEffect(() => {
         dispatch(getAiCredits());
         dispatch(getAllWebsites());
         dispatch(getOrderRem(null, 1));
