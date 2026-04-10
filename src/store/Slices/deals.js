@@ -164,7 +164,16 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
           email: email,
         },
       });
+      const remRes = await axios.post(
+        `${getState().user.crmEndpoint}&type=set_reminder`,
+        {
+          websites: deals.map((deal) => deal.website_c),
+          email: email,
+          reminder_type: "deal",
+        },
+      );
       showConsole && console.log(`Create Deal`, res.data);
+      showConsole && console.log(`Reminder Response`, remRes);
       dispatch(
         dealsSlice.actions.createDealSucess({
           message: "Deals Created Successfully",
@@ -242,7 +251,12 @@ export const updateDeal = ({ deal, email }) => {
         },
       );
       const remRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=set_reminder&website=${deal.website_c}&email=${email}&reminder_type=deal`,
+        `${getState().user.crmEndpoint}&type=set_reminder`,
+        {
+          websites: [deal.website_c],
+          email: email,
+          reminder_type: "deal",
+        },
       );
       showConsole && console.log(`Update Deal`, data);
       showConsole && console.log(`Reminder Response`, remRes);

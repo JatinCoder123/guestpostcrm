@@ -165,7 +165,12 @@ export const updateOffer = ({ email, offer }) => {
         },
       );
       const remRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=set_reminder&website=${offer.website}&email=${email}&reminder_type=offer`,
+        `${getState().user.crmEndpoint}&type=set_reminder`,
+        {
+          websites: [offer.website],
+          email: email,
+          reminder_type: "offer",
+        },
       );
       showConsole && console.log(`Update Offer`, data);
       showConsole && console.log(`Reminder Response`, remRes);
@@ -252,6 +257,7 @@ export const createOffer = ({
           },
         },
       );
+
       showConsole && console.log(`Create Offer`, data);
       dispatch(
         offersSlice.actions.createOfferSuccess({
