@@ -479,7 +479,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                           <span className="text-gray-500 text-sm">
                             {event.user_details == false
                               ? "-by GPC"
-                              : "-by " + event.user_details.name}
+                              : "-by " + event?.user_details?.name}
                           </span>
                         </div>
                       </div>
@@ -574,12 +574,12 @@ const TimelineEvent = ({ handleMessageClick }) => {
                               {/* Content */}
                               <div className="flex-1 px-5 py-3">
                                 <p className="text-white text-xl font-medium mb-1">
-                                  <strong>{step.name?.split(":")[0]}</strong>
-                                  {step.name?.includes(":") && (
+                                  <strong>{step?.name?.split(":")[0]}</strong>
+                                  {step?.name?.includes(":") && (
                                     <span className="font-normal">
                                       {" "}
                                       :{" "}
-                                      {step.name
+                                      {step?.name
                                         .split(":")
                                         .slice(1)
                                         .join(":")

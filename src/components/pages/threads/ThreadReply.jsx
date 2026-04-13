@@ -525,7 +525,7 @@ const ThreadReply = () => {
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleSendClick()}
-                disabled={loading || checkingThreadId}
+                disabled={loading || checkingThreadId || sending}
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
               >
                 <Send className="w-5 h-5" />

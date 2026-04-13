@@ -41,29 +41,6 @@ export default function ThreadOrders({ threadId, email, id }) {
           d.order_status !== "completed",
       );
     }
-<<<<<<< HEAD
-    useEffect(() => {
-        if (message) {
-            dispatch(getOrders({ email }))
-            toast.success(message)
-            if (message?.includes("Updated")) {
-                ManualSideCall(
-                    crmEndpoint,
-                    email,
-                    "Our Order Updated Successfully",
-                    1,
-                    () => dispatch(getLadger({ email, loading: false })),
-                );
-                if (send) {
-                    setSend(undefined);
-                    dispatch(orderAction.clearAllMessages());
-                    handlePreview(send);
-                }
-                else {
-                    dispatch(orderAction.clearAllMessages());
-                }
-            }
-=======
     setCurrentOrders(activeOrders);
   }, [orders, email, id]);
 
@@ -125,7 +102,6 @@ export default function ThreadOrders({ threadId, email, id }) {
           handlePreview(send);
         } else {
           dispatch(orderAction.clearAllMessages());
->>>>>>> b95b0be96b8d18d5d7cb594bc4991f4a3ec403e9
         }
       }
     }
