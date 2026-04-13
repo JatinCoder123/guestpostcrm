@@ -26,13 +26,9 @@ import SyncSelectionModal from "./SyncSelectionModal";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
-  const { mailersSummary, loading } = useSelector(
-    (state) => state.ladger,
-  );
-  const { contactInfo } = useSelector(
-    (state) => state.viewEmail,
-  );
-  const email = contactInfo?.email1
+  const { mailersSummary, loading } = useSelector((state) => state.ladger);
+  const { contactInfo } = useSelector((state) => state.viewEmail);
+  const email = contactInfo?.email1;
   const {
     syncType,
     syncData,
@@ -90,9 +86,9 @@ const MailerSummaryHeader = () => {
   useEffect(() => {
     if (!mailersSummary) return;
 
-    const deal = deals?.filter(
-      (d) => excludeEmail(d.real_name ?? d.email) === email,
-    ).filter((d) => d.status === "active");;
+    const deal = deals
+      ?.filter((d) => excludeEmail(d.real_name ?? d.email) === email)
+      .filter((d) => d.status === "active");
 
     setEmailData((prev) => ({ ...prev, deals: deal }));
   }, [email, deals, mailersSummary]);
@@ -297,11 +293,11 @@ function SummaryCard({
 
     data?.length > 0
       ? navigateTo(`/${type}/view`, {
-        state: { email, threadId },
-      })
+          state: { email, threadId },
+        })
       : navigateTo(`/${type}/create`, {
-        state: { email, threadId },
-      });
+          state: { email, threadId },
+        });
   };
 
   const colorMap = {
@@ -313,14 +309,15 @@ function SummaryCard({
 
   return (
     <div
-      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${highlight
-        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
-        : "transition-all duration-300"
-        }`}
+      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${
+        highlight
+          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
+          : "transition-all duration-300"
+      }`}
     >
       {(creating && type === "orders") ||
-        loading ||
-        (syncType == type && syncing) ? (
+      loading ||
+      (syncType == type && syncing) ? (
         <LoadingChase />
       ) : (
         <>
@@ -332,7 +329,7 @@ function SummaryCard({
                   navigateTo(`/orders/create`, {
                     state: {
                       email,
-                      threadId
+                      threadId,
                     },
                   })
                 }
@@ -385,44 +382,3 @@ function SummaryCard({
     </div>
   );
 }
-const MailerSummarySkeleton = () => {
-  return (
-    <div className="p-4 bg-slate-100 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-4 animate-pulse">
-      {/* TOP INFO */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-        {[1, 2, 3].map((_, i) => (
-          <div key={i} className="flex flex-col gap-2">
-            <div className="w-24 h-3 bg-gray-300 rounded"></div>
-            <div className="w-40 h-4 bg-gray-400 rounded"></div>
-            <div className="w-28 h-3 bg-gray-300 rounded"></div>
-          </div>
-        ))}
-      </div>
-
-      {/* CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between rounded-2xl border p-3 bg-white"
-          >
-            {/* LEFT */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-300 rounded-xl"></div>
-              <div className="flex flex-col gap-2">
-                <div className="w-24 h-3 bg-gray-300 rounded"></div>
-                <div className="w-16 h-3 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-
-            {/* RIGHT */}
-            <div className="flex gap-2">
-              <div className="w-9 h-9 bg-gray-300 rounded-full"></div>
-              <div className="w-9 h-9 bg-gray-200 rounded-full"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};

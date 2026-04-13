@@ -35,6 +35,7 @@ import { getOrderRem } from "../store/Slices/reminder.js";
 import { extractEmail } from "../assets/assets";
 import { getBacklinks } from "../store/Slices/backlinks.js";
 import { getAllContacts } from "../store/Slices/contacts.js";
+import { getAllUsers } from "../store/Slices/crmUser.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -51,6 +52,12 @@ function useRefresh() {
     const { contactInfo } = useSelector((state) => state.viewEmail);
     const threadId = contactInfo?.thread_id
     const [firstEmail, setFirstEmail] = useState(null);
+    useEffect(()=>{
+        dispatch(getAllUsers())
+    },[])
+    useEffect(() => {
+        dispatch(getAllUsers())
+    }, [])
     useEffect(() => {
         dispatch(getAiCredits());
         dispatch(getAllWebsites());

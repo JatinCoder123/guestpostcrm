@@ -8,10 +8,12 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
-  const showConsole = true;
-  const navigateTo = useNavigate()
-  const dispatch = useDispatch()
-  const [displayIntro, setDisplayIntro] = useState(localStorage.getItem("displayIntro") === "true");
+  const showConsole = localStorage.getItem("showConsole") || false;
+  const navigateTo = useNavigate();
+  const dispatch = useDispatch();
+  const [displayIntro, setDisplayIntro] = useState(
+    localStorage.getItem("displayIntro") === "true",
+  );
   const [collapsed, setSidebarCollapsed] = useState(true);
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -19,24 +21,28 @@ export const PageContextProvider = (props) => {
     localStorage.getItem("searchTerm") || null,
   );
 
-
   /* ❌ Clear */
   const handleClear = () => {
     localStorage.removeItem("searchTerm");
     setEnteredEmail("");
-    setCurrentIndex(0)
-    setShowNextPrev(true)
+    setCurrentIndex(0);
+    setShowNextPrev(true);
   };
-  const handleDateClick = ({ email, navigate, index = null, nextPrev = false }) => {
+  const handleDateClick = ({
+    email,
+    navigate,
+    index = null,
+    nextPrev = false,
+  }) => {
     if (email == null) {
-      toast.error("NO Email Is There!")
-      return
+      toast.error("NO Email Is There!");
+      return;
     }
     localStorage.setItem("searchTerm", email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     if (index != null) setCurrentIndex(index);
-    setShowNextPrev(nextPrev)
+    setShowNextPrev(nextPrev);
     navigateTo(navigate);
   };
 
@@ -63,7 +69,8 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed,
     handleDateClick,
     currentIndex,
-    showNextPrev, setShowNextPrev,
+    showNextPrev,
+    setShowNextPrev,
     setCurrentIndex,
   };
 

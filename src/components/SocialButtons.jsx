@@ -82,7 +82,9 @@ const SocialButtons = () => {
             ${animate ? "scale-125" : "scale-100"}
           `}
           >
-            {contactInfo?.duplicate_threads > 99 ? "99+" : contactInfo?.duplicate_threads}
+            {contactInfo?.duplicate_threads > 99
+              ? "99+"
+              : contactInfo?.duplicate_threads}
           </div>
 
           {displayCount === 0 && (
@@ -99,6 +101,16 @@ const SocialButtons = () => {
           )}
         </button>
       )}
+
+      <button className="group cursor-pointer flex items-center justify-center gap-2 px-4 py-2 mt-3 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+        <span className="text-sm font-semibold tracking-wide">Trust Score</span>
+
+        <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm font-bold backdrop-blur-sm">
+          {contactInfo?.trust_score == "unverified"
+            ? "50%"
+            : contactInfo?.trust_score}
+        </span>
+      </button>
     </div>
   );
 };

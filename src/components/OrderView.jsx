@@ -10,7 +10,7 @@ import { SocketContext } from "../context/SocketContext";
 export const OrderView = ({ data, email, setSend }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, statusLists, updating, } = useSelector(
+  const { creatingLinkMessage, statusLists, updating } = useSelector(
     (state) => state.orders,
   );
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -29,16 +29,16 @@ export const OrderView = ({ data, email, setSend }) => {
       if (link.link_type === "nofollow") acc.nofollow += 1;
 
       if (link.category === "internal") acc.internal += 1;
-      if (link.category === "authority") acc.authority += 1;
+      if (link.link_type === "authoritative") acc.authoritative += 1;
 
       return acc;
     },
     {
       internal: 0,
-      authority: 0,
+      authoritative: 0,
       dofollow: 0,
       nofollow: 0,
-    }
+    },
   );
 
   const updateStatus = (status, isSend) => {
@@ -47,13 +47,11 @@ export const OrderView = ({ data, email, setSend }) => {
       order_status: status,
     };
     if (isSend) {
-      setSend(updatedOrder)
+      setSend(updatedOrder);
     }
 
-    dispatch(
-      updateOrder({ order: updatedOrder, email }),
-    );
-  }
+    dispatch(updateOrder({ order: updatedOrder, email }));
+  };
 
   useEffect(() => {
     if (creatingLinkMessage) {
@@ -68,7 +66,7 @@ export const OrderView = ({ data, email, setSend }) => {
       invoiceOrderId === data.order_id
     ) {
       setProcessingPayment(false);
-      updateStatus("complete")
+      updateStatus("complete");
     }
   }, [invoiceOrderId, processingPayment, data.order_id]);
 
@@ -117,7 +115,7 @@ export const OrderView = ({ data, email, setSend }) => {
 
       {/* PROCESSING PAYPAL */}
       {processingPayment && <ProcessingLoader />}
-      {(updating) && <PageLoader />}
+      {updating && <PageLoader />}
       <div className="w-full relative p-6 ">
         <OrderHeader
           data={data}
@@ -146,7 +144,6 @@ export const OrderView = ({ data, email, setSend }) => {
               label="Total Links"
               value={data.seo_backlinks_count}
               title="Total Links"
-
             />
           </div>
           <LinkStatsRow stats={stats} />
@@ -199,7 +196,8 @@ function Field({ label, value, link, children, title }) {
           <div className="relative z-10">
             <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
-              {label}  {children && (
+              {label}{" "}
+              {children && (
                 <span className="ml-2 mb-1 text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
                   {value}
                 </span>
@@ -245,7 +243,8 @@ function OrderHeader({ data, updateStatus, onCompleteHandler }) {
           setShowModel={setShowModel}
           showModel={showModel}
           handleSubmitConfirm={() => {
-            (updateStatus(showModel, showModel == "rejected_nontechnical"), setShowModel(null));
+            (updateStatus(showModel, showModel == "rejected_nontechnical"),
+              setShowModel(null));
           }}
         />
       )}
@@ -262,6 +261,14 @@ function OrderHeader({ data, updateStatus, onCompleteHandler }) {
                 <h2 className="text-xl font-black bg-clip-text bg-gradient-to-r from-slate-100 via-white to-slate-100 tracking-tight">
                   {data.order_id}
                 </h2>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-black-500 uppercase tracking-widest">
+                    Order Proximity:
+                  </span>
+                  <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow">
+                    {data.order_proximity || "N/A"}
+                  </span>
+                </div>
               </div>
 
               {/* Action Buttons */}
@@ -406,7 +413,7 @@ function LinkStatsRow({ stats }) {
     },
     {
       label: "Authority Links",
-      value: stats.authority,
+      value: stats.authoritative,
       bg: "from-green-500 to-green-400",
     },
     {

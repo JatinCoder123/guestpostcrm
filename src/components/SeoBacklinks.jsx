@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function ValidTick() {
   return (
@@ -209,7 +210,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
 ───────────────────────────────────────────── */
 function LinkTableHeader() {
   return (
-    <div className="grid grid-cols-8 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
+    <div className="grid grid-cols-9 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
       <div>#</div>
       <div>Anchor Text</div>
       <div>Anchor Verdict</div>
@@ -217,6 +218,7 @@ function LinkTableHeader() {
       <div>Backlink Verdict</div>
       <div>Spam Score</div>
       <div>Amount &amp; Type</div>
+      <div>Domain</div>
       <div>Action</div>
     </div>
   );
@@ -244,9 +246,10 @@ function LinkTableRow({
   handleDelete,
 }) {
   const spam = getSpamLabel(link.spam_score_c);
+  const navigateTo = useNavigate();
   return (
     <div
-      className={`grid grid-cols-8 px-4 py-3 border-t border-slate-100 text-sm items-center ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
+      className={`grid grid-cols-9 px-4 py-3 border-t border-slate-100 text-sm items-center ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
     >
       {/* Index */}
       <div>
@@ -264,7 +267,19 @@ function LinkTableRow({
 
       {/* Anchor Verdict */}
       <div className="flex items-center gap-2">
-        <SparkleIcon className="w-4 h-4 text-green-500 shrink-0" />
+        {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
+        {link.link_verdict_prompt_ledger && (
+          <button
+            onClick={() =>
+              navigateTo("/settings/debugging", {
+                state: { prompt: link.link_verdict_prompt_ledger[0] },
+              })
+            }
+            className="text-yellow-600 hover:scale-110"
+          >
+            <SparkleIcon size={18} />
+          </button>
+        )}
         <ValidationBadge valid={link.is_anchor_text_valid} />
       </div>
 
@@ -276,7 +291,7 @@ function LinkTableRow({
           rel="noopener noreferrer"
           className="group inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition"
         >
-          <span className="truncate max-w-[120px]">
+          <span className="truncate max-w-[80px]">
             {link.backlink_url || "-"}
           </span>
           <span className="opacity-0 group-hover:opacity-100 transition">
@@ -287,7 +302,19 @@ function LinkTableRow({
 
       {/* Backlink Verdict */}
       <div className="flex items-center gap-2">
-        <SparkleIcon className="w-4 h-4 text-green-500 shrink-0" />
+        {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
+        {link.link_verdict_prompt_ledger && (
+          <button
+            onClick={() =>
+              navigateTo("/settings/debugging", {
+                state: { prompt: link.link_verdict_prompt_ledger[0] },
+              })
+            }
+            className="text-yellow-600 hover:scale-110"
+          >
+            <SparkleIcon size={18} />
+          </button>
+        )}
         <ValidationBadge valid={link.is_link_valid} />
       </div>
 
@@ -327,8 +354,34 @@ function LinkTableRow({
         </span>
       </div>
 
+      <div className="flex flex-row gap-0.5 mr-12">
+        {(() => {
+          try {
+            return new URL(link.backlink_url).hostname.replace(/^www\./, "");
+          } catch {
+            return link.backlink_url;
+          }
+        })()}
+        {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
+        {link.link_verdict_prompt_ledger && (
+          <button
+            onClick={() =>
+              navigateTo("/settings/debugging", {
+                state: { prompt: link.link_verdict_prompt_ledger[0] },
+              })
+            }
+            className="text-yellow-600 hover:scale-110"
+          >
+            <SparkleIcon size={18} />
+          </button>
+        )}
+        <span className="truncate max-w-[30px]">
+          <ValidationBadge valid={link.is_domain_valid} />
+        </span>
+      </div>
+
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 ml-10">
         <button
           onClick={() => {
             setItem(link);
@@ -381,6 +434,7 @@ function GPLinksTable({
         DocName={rep.document_name}
         DomainValid={rep.is_domain_valid}
         linkCount={gpLinks.length}
+        ContentVerdictPromptLedger={rep.guestpost_prompt_ledger[0]}
       />
       <LinkTableHeader />
       {gpLinks.map((gpLink, rowIndex) => (
@@ -419,7 +473,6 @@ function LILinksTable({
       <LIAnalysisCard
         targetUrl={rep.target_url_c}
         website={rep.name}
-        DomainValid={rep.is_domain_valid}
         linkCount={liLinks.length}
       />
       <LinkTableHeader />
@@ -451,7 +504,9 @@ function DocumentAnalysisCard({
   DocName,
   DomainValid,
   linkCount,
+  ContentVerdictPromptLedger,
 }) {
+  const navigateTo = useNavigate();
   return (
     <div className="overflow-hidden">
       {/* HEADER */}
@@ -466,8 +521,6 @@ function DocumentAnalysisCard({
           >
             {website ?? "-"}
           </a>
-          <SparkleIcon className="w-5 h-5 text-green-600" />
-          <ValidationBadge valid={DomainValid} />
         </div>
       </div>
 
@@ -501,7 +554,19 @@ function DocumentAnalysisCard({
           </span>
 
           <div className="flex items-center gap-2">
-            <SparkleIcon className="w-5 h-5 text-green-500" />
+            {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
+            {ContentVerdictPromptLedger && (
+              <button
+                onClick={() =>
+                  navigateTo("/settings/debugging", {
+                    state: { prompt: ContentVerdictPromptLedger },
+                  })
+                }
+                className="text-yellow-600 hover:scale-110"
+              >
+                <SparkleIcon size={18} />
+              </button>
+            )}
             <ValidationBadge valid={ContentValid} />
           </div>
 
@@ -523,7 +588,7 @@ function DocumentAnalysisCard({
 /* ─────────────────────────────────────────────
    LIAnalysisCard  –  LI header (mirrors GP card style)
 ───────────────────────────────────────────── */
-function LIAnalysisCard({ targetUrl, website, DomainValid, linkCount }) {
+function LIAnalysisCard({ targetUrl, website, linkCount }) {
   return (
     <div className="overflow-hidden">
       {/* HEADER */}
@@ -538,20 +603,15 @@ function LIAnalysisCard({ targetUrl, website, DomainValid, linkCount }) {
           >
             {website ?? targetUrl ?? "-"}
           </a>
-          <SparkleIcon className="w-5 h-5 text-white" />
-          <ValidationBadge valid={DomainValid} />
         </div>
       </div>
 
       {/* CONTENT */}
       <div className="flex items-center gap-4 p-4">
-        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-3 gap-4">
+        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-2 gap-4">
           <div className="text-sm font-semibold text-gray-500">Target URL</div>
           <div className="text-sm font-semibold text-gray-500">
             Monthly Traffic
-          </div>
-          <div className="text-sm font-semibold text-gray-500">
-            Domain Valid
           </div>
 
           {/* Target URL value */}
@@ -580,12 +640,6 @@ function LIAnalysisCard({ targetUrl, website, DomainValid, linkCount }) {
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">
               <FaAccusoft size={10} /> 100
             </span>
-          </div>
-
-          {/* Domain Valid */}
-          <div className="flex items-center gap-2">
-            <SparkleIcon className="w-5 h-5 text-emerald-500" />
-            <ValidationBadge valid={DomainValid} />
           </div>
         </div>
       </div>
