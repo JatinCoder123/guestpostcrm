@@ -520,13 +520,25 @@ const ThreadReply = () => {
             </div>
 
             {/* SEND BUTTON */}
-            <div className="flex gap-2 item-center justify-center">
+            <div className="flex gap-2 items-center justify-center">
               <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={
+                  !(loading || checkingThreadId || sending)
+                    ? { scale: 1.05, y: -2 }
+                    : {}
+                }
+                whileTap={
+                  !(loading || checkingThreadId || sending)
+                    ? { scale: 0.98 }
+                    : {}
+                }
                 onClick={() => handleSendClick()}
-                disabled={loading || checkingThreadId || sending}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                disabled={loading || checkingThreadId || sending || editorContent == ""}
+                className={`px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 transition-all duration-200
+      ${loading || checkingThreadId || sending || editorContent == ""
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed shadow-none"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl"
+                  }`}
               >
                 <Send className="w-5 h-5" />
                 <span>
