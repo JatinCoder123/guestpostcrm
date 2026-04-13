@@ -172,6 +172,7 @@ const ThreadReply = () => {
         toast.error("Thread mismatch! Cannot send email ");
         return;
       }
+      console.log("TO AND CC", cc, to);
       const contentToSend = editorContent;
       const formData = new FormData();
       formData.append("threadId", data.thread_id);
@@ -519,13 +520,25 @@ const ThreadReply = () => {
             </div>
 
             {/* SEND BUTTON */}
-            <div className="flex gap-2 item-center justify-center">
+            <div className="flex gap-2 items-center justify-center">
               <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={
+                  !(loading || checkingThreadId || sending)
+                    ? { scale: 1.05, y: -2 }
+                    : {}
+                }
+                whileTap={
+                  !(loading || checkingThreadId || sending)
+                    ? { scale: 0.98 }
+                    : {}
+                }
                 onClick={() => handleSendClick()}
-                disabled={loading || checkingThreadId}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                disabled={loading || checkingThreadId || sending || editorContent == ""}
+                className={`px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 transition-all duration-200
+      ${loading || checkingThreadId || sending || editorContent == ""
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed shadow-none"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl"
+                  }`}
               >
                 <Send className="w-5 h-5" />
                 <span>
@@ -573,8 +586,6 @@ const ThreadReply = () => {
               {/* BRIEF REASON */}
               {/* BRIEF REASON BUTTON */}
               <div className="mb-4">
-
-
                 {/* CONDITIONAL RENDER */}
                 {showBriefReason && (
                   <div className="mt-2">
@@ -582,7 +593,8 @@ const ThreadReply = () => {
                       Brief Reason:
                     </p>
                     <p className="text-sm text-gray-700">
-                      {sendFailedResponse.brief_reason || "No brief reason available"}
+                      {sendFailedResponse.brief_reason ||
+                        "No brief reason available"}
                     </p>
                   </div>
                 )}
@@ -601,13 +613,16 @@ const ThreadReply = () => {
                   Suggested Reply:
                 </p>
                 <div className="text-sm text-gray-700 whitespace-pre-line bg-gray-50 p-3 rounded-lg border max-h-60 overflow-auto">
-                  {sendFailedResponse.suggested_reply}
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: sendFailedResponse.suggested_reply,
+                    }}
+                  />
                 </div>
               </div>
 
               {/* ACTIONS */}
               <div className="flex justify-end gap-3">
-
                 {/* USE BRIEF REASON */}
                 <button
                   onClick={() => setShowBriefReason(!showBriefReason)}
