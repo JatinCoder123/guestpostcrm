@@ -143,7 +143,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_deal_fetch) {
-            dispatch(getDeals({}));
+            dispatch(getDeals({ loading: false }));
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
                 ...prev,
@@ -151,7 +151,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_order_gp_li) {
-            dispatch(getOrders({}));
+            dispatch(getOrders({ loading: false }));
             dispatch(getInvoices({ loading: false }));
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
@@ -168,7 +168,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_offer) {
-            dispatch(getOffers({}));
+            dispatch(getOffers({ loading: false }));
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
                 ...prev,
