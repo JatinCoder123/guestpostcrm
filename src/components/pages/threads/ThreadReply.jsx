@@ -9,10 +9,11 @@ import {
   Edit,
   Trash2,
   LayoutTemplateIcon,
+  MoonIcon,
 } from "lucide-react";
 import { TbMessageStar } from "react-icons/tb";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply";
@@ -35,6 +36,7 @@ import MessageModal from "../../MessageModal";
 import { useParams } from "react-router-dom";
 
 import axios from "axios";
+import { PageContext } from "../../../context/pageContext";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
@@ -49,6 +51,9 @@ const ThreadReply = () => {
   const {
     context: { currentEmail, currentThread: threadId },
   } = useThreadContext();
+  const {
+    superfastReply
+  } = useContext(PageContext);
   useIdle({ idle: false });
   const dispatch = useDispatch();
   const {
@@ -61,12 +66,11 @@ const ThreadReply = () => {
   const [files, setFiles] = useState([]);
   const { crmEndpoint, user } = useSelector((s) => s.user);
   const [aiReplyContent, setAiReplyContent] = useState("");
-  const [aiNewContent, setAiNewContent] = useState("");
   const [openParent, setOpenParent] = useState(null);
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
   const [checkingThreadId, setCheckingTheadId] = useState(false);
-
+  const [showSuccessAnim, setShowSuccessAnim] = useState(false);
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
@@ -217,10 +221,15 @@ const ThreadReply = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   useEffect(() => {
-    if (sendMessage) {
-      setFiles([]);
+    if (sendMessage && superfastReply) {
+      setShowSuccessAnim(true);
       setEditorContent("");
+      setFiles([]);
+      setTimeout(() => {
+        setShowSuccessAnim(false);
+      }, 1200); // animation duration
     }
+
     if (sendError) {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
@@ -228,9 +237,6 @@ const ThreadReply = () => {
   }, [sendMessage, sendError]);
   useEffect(() => {
     if (message && aiResponse) {
-      if (message == "User") setAiNewContent(aiResponse);
-      else if (message == "New") setAiNewContent(aiResponse);
-      else setAiReplyContent(aiResponse);
       insertAiReply(aiResponse);
       dispatch(aiReplyAction.clearMessge());
     }
@@ -267,13 +273,9 @@ const ThreadReply = () => {
       />
       {(aiLoading || templateLoading) && <PageLoader />}
       <motion.div
-        className="
-    fixed inset-0 z-[999]
-    bg-white
-    w-screen h-screen
-    flex flex-col
-    overflow-hidden
-  "
+        initial={{ x: 0, opacity: 1 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="fixed inset-0 z-[999] bg-white w-screen h-screen flex flex-col overflow-hidden"
       >
         {/* HEADER */}
         <div className="flex gap-3 justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
@@ -341,6 +343,9 @@ const ThreadReply = () => {
             setEditorReady={setEditorReady}
             editorRef={editorRef}
           />
+
+          {/* ✅ SUCCESS OVERLAY */}
+          <MovingAnimation showSuccessAnim={showSuccessAnim} />
 
           <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
             <div className="flex items-center gap-3 flex-wrap">
@@ -529,11 +534,9 @@ const ThreadReply = () => {
               >
                 <Send className="w-5 h-5" />
                 <span>
-                  {checkingThreadId
-                    ? "Checking..."
-                    : sending
-                      ? "Sending..."
-                      : "Send Email"}
+                  {checkingThreadId || sending
+                    ? "Sending..."
+                    : "Send Email"}
                 </span>
               </motion.button>
             </div>
@@ -646,3 +649,75 @@ const ThreadReply = () => {
 };
 
 export default ThreadReply;
+
+
+
+function MovingAnimation({ showSuccessAnim }) {
+  return <AnimatePresence>
+    {showSuccessAnim && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden"
+      >
+
+        {/* ✉️ Flying Mail */}
+        <motion.div
+          initial={{ x: -200, rotate: -20, opacity: 0 }}
+          animate={{
+            x: [-200, 0, 200],
+            rotate: [-20, 0, 10],
+            opacity: [0, 1, 0]
+          }}
+          transition={{
+            duration: 1.2,
+            ease: "easeInOut"
+          }}
+          className="text-6xl mb-4"
+        >
+          ✉️
+        </motion.div>
+
+        {/* 🚀 Rocket moving forward */}
+        <motion.div
+          initial={{ x: -50 }}
+          animate={{ x: 50 }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          }}
+          className="text-4xl mb-2"
+        >
+          🚀
+        </motion.div>
+
+        {/* Heading */}
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-xl font-semibold text-gray-700"
+        >
+          Message Sent
+        </motion.h2>
+
+        {/* Animated text typing effect */}
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-md text-gray-700 mt-2" >
+          Moving forward to next email...
+        </motion.p>
+
+        {/* Progress line (feels like loading next email) */}
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: "60%" }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mt-4 rounded-full"
+        />
+
+      </motion.div>
+    )}
+  </AnimatePresence>
+}
