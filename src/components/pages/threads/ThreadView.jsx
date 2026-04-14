@@ -569,6 +569,16 @@ export default function ThreadView() {
                           <p className="text-xs opacity-90 mt-1">
                             Send quick AI-powered responses instantly
                           </p></div>
+                        <div className="flex items-center gap-2 text-lg opacity-80">
+                          {["🔥", "🚀", "💬", "🤖"].map((emoji, i) => (
+                            <span
+                              key={i}
+                              className="transition transform hover:scale-125 cursor-pointer text-2xl"
+                            >
+                              {emoji}
+                            </span>
+                          ))}
+                        </div>
 
                       </div>
 
