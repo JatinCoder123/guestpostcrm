@@ -1,6 +1,6 @@
-import { User, Globe, Send, X, ChevronLeft } from "lucide-react";
+import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
@@ -11,22 +11,31 @@ import {
 import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
+import { PageContext } from "../../../context/pageContext.jsx";
+import TinyEditor, { SmallTinyEditor } from "../../TinyEditor.jsx";
+import { getAiReply } from "../../../store/Slices/aiReply.js";
+import MessageOverlay from "./MessageOverlay.jsx";
 export default function ThreadView() {
   const scrollRef = useRef();
-  const { emails } = useOutletContext() || [];
+  const { emails, loadAiReply = true, showSuccessAnim } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
   const { context: { currentThread: threadId } } = useThreadContext();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
   const { loading } = useSelector((s) => s.threadEmail);
+  const { message: sendMessage } = useSelector((s) => s.viewEmail);
   const [messageLimit, setMessageLimit] = useState(3);
   const [openMessageId, setOpenMessageId] = useState(null);
   const [fullMessage, setFullMessage] = useState(null);
   const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
   const attachmentBoxRef = useRef(null);
   const visibleMessages = emails?.slice(-messageLimit);
+  const [editorContent, setEditorContent] = useState("");
+  const [editorReady, setEditorReady] = useState(false);
+  const editorRef = useRef(null);
   const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
   const downloadAttachment = (att) => {
     const link = document.createElement("a");
@@ -37,6 +46,27 @@ export default function ThreadView() {
     link.click();
     document.body.removeChild(link);
   };
+  const {
+    loading: aiLoading,
+    aiReply: aiResponse,
+    error: aiError,
+    message,
+  } = useSelector((state) => state.aiReply);
+  useEffect(() => {
+    if (!loading && loadAiReply) {
+      dispatch(getAiReply(threadId));
+    }
+  }, [loading, loadAiReply]);
+  useEffect(() => {
+    if (sendMessage) {
+      setEditorContent("");
+    }
+  }, [sendMessage]);
+  useEffect(() => {
+    if (message && aiResponse) {
+      setEditorContent(aiResponse)
+    }
+  }, [aiResponse, aiError, message]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -109,6 +139,8 @@ export default function ThreadView() {
   }, []);
   return (
     <>
+      <MessageOverlay showSuccessAnim={showSuccessAnim} />
+
       <motion.div
         className="
                 fixed inset-0 z-[999]
@@ -461,16 +493,62 @@ export default function ThreadView() {
               })}
             </div>
 
-            <div className="p-6 border-t bg-white shadow-2xl">
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/thread/reply`)}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <Send className="w-5 h-5" />
-                <span>Reply</span>
-              </motion.button>
+            <div className="p-6 border-t bg-white shadow-2xl relative">
+              {loadAiReply ? (
+                <>
+                  <div className="relative border border-gray-300 rounded-xl overflow-hidden h-[200px]">
+                    {/* Tiny Editor */}
+                    <SmallTinyEditor
+                      setEditorContent={setEditorContent}
+                      editorContent={editorContent}
+                      setEditorReady={setEditorReady}
+                      editorRef={editorRef}
+                    />
+
+                    {/* Send Button INSIDE editor */}
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/thread/reply`)}
+                      className="
+          absolute bottom-2 right-3
+          bg-gradient-to-r from-blue-500 to-indigo-600
+          text-white p-2 rounded-full
+          shadow-lg hover:shadow-xl
+          z-10
+        "
+                    >
+                      <Send className="w-5 h-5" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/thread/reply`)}
+                      className="
+          absolute bottom-2 right-18
+          bg-gradient-to-r from-blue-500 to-indigo-600
+          text-white p-2 rounded-full
+          shadow-lg hover:shadow-xl
+          z-10
+        "
+                    >
+                      <CornerUpRight className="w-5 h-5" />
+                    </motion.button>
+                  </div>
+
+                </>
+
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate(`/thread/reply`)}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  <span>Reply</span>
+                </motion.button>
+              )}
             </div>
           </>
         )}
