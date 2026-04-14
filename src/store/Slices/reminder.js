@@ -47,13 +47,11 @@ const orderRemSlice = createSlice({
 
     sendReminderSuccess(state, action) {
       state.sending = false;
-      state.sendReminderId = null;
       state.message = action.payload
 
     },
     sendReminderFailed(state, action) {
       state.sending = false;
-      state.sendReminderId = null;
       state.error = action.payload
 
 
