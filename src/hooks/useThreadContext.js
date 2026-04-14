@@ -8,7 +8,7 @@ export const useThreadContext = () => {
     const moveToThread = (viewEmails, loadAiReply) => {
         navigateTo(`/thread/view`, {
             state: {
-                viewEmails: loadAiReply ? false : viewEmails,
+                viewEmails: loadAiReply ? undefined : viewEmails,
                 loadAiReply
             }
         })
