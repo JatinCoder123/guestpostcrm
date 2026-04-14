@@ -20,6 +20,13 @@ export const PageContextProvider = (props) => {
   const [enteredEmail, setEnteredEmail] = useState(
     localStorage.getItem("searchTerm") || null,
   );
+  const [superfastReply, setSuperfastReply] = useState(() => {
+    return localStorage.getItem("superfastreply") === "true";
+  });
+  const superfastToggle = () => {
+    setSuperfastReply((prev) => !prev);
+    localStorage.setItem("superfastreply", !superfastReply);
+  };
 
   /* ❌ Clear */
   const handleClear = () => {
@@ -28,12 +35,7 @@ export const PageContextProvider = (props) => {
     setCurrentIndex(0);
     setShowNextPrev(true);
   };
-  const handleDateClick = ({
-    email,
-    navigate,
-    index = null,
-    nextPrev = false,
-  }) => {
+  const handleDateClick = ({ email, navigate, index = null, nextPrev = false }) => {
     if (email == null) {
       toast.error("NO Email Is There!");
       return;
@@ -42,7 +44,7 @@ export const PageContextProvider = (props) => {
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     if (index != null) setCurrentIndex(index);
-    setShowNextPrev(nextPrev);
+    setShowNextPrev(nextPrev)
     navigateTo(navigate);
   };
 
@@ -66,6 +68,8 @@ export const PageContextProvider = (props) => {
     enteredEmail,
     setEnteredEmail,
     collapsed,
+    superfastToggle,
+    superfastReply,
     setSidebarCollapsed,
     handleDateClick,
     currentIndex,

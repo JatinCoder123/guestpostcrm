@@ -12,7 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-
+import { getLadger } from "../store/Slices/ladger";
+import Pagination from "./Pagination"
 const TimelineEvent = ({ handleMessageClick }) => {
   const { ladger, email, pageCount, pageIndex, loading } = useSelector(
     (state) => state.ladger,
