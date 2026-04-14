@@ -22,7 +22,7 @@ const Thread = () => {
 
   const [emails, setEmails] = useState([]);
   useEffect(() => {
-    if (currentEmail && currentThread && !state?.viewEmails) {
+    if (currentEmail && currentThread && !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)) {
       dispatch(getThreadEmail(currentEmail, currentThread));
     }
     else {
