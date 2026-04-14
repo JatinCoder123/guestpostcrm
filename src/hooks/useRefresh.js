@@ -85,12 +85,12 @@ function useRefresh() {
         if (currentEventThreadId.current == threadId) {
             console.log("REFRESH LADGER")
             if (enteredEmail) {
-                dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
-                dispatch(getViewEmail(enteredEmail));
+                dispatch(getLadger({ email: enteredEmail }));
+                dispatch(getViewEmail({ email: enteredEmail }));
                 dispatch(getContact(enteredEmail));
             } else if (firstEmail) {
-                dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
-                dispatch(getViewEmail(firstEmail));
+                dispatch(getLadger({ email: firstEmail }));
+                dispatch(getViewEmail({ email: firstEmail }));
                 dispatch(getContact(firstEmail));
             }
             dispatch(getEmailsCount({}))
@@ -116,16 +116,16 @@ function useRefresh() {
 
         const emailToUse = enteredEmail
 
-        dispatch(getLadger({ email: emailToUse, search: enteredEmail }));
-        dispatch(getViewEmail(emailToUse));
+        dispatch(getLadger({ email: emailToUse }));
+        dispatch(getViewEmail({ email: emailToUse }));
         dispatch(getContact(emailToUse));
     }, [enteredEmail]);
     useEffect(() => {
         if (!firstEmail) return;
         const emailToUse = firstEmail;
         if (!enteredEmail) {
-            dispatch(getLadger({ email: emailToUse, search: enteredEmail }));
-            dispatch(getViewEmail(emailToUse));
+            dispatch(getLadger({ email: emailToUse }));
+            dispatch(getViewEmail({ email: emailToUse }));
             dispatch(getContact(emailToUse));
         }
     }, [firstEmail]);
@@ -147,7 +147,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_deal_fetch) {
-            dispatch(getDeals({}));
+            dispatch(getDeals({ loading: false }));
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
                 ...prev,
@@ -155,7 +155,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_order_gp_li) {
-            dispatch(getOrders({}));
+            dispatch(getOrders({ loading: false }));
             dispatch(getInvoices({ loading: false }));
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
@@ -172,7 +172,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_offer) {
-            dispatch(getOffers({}));
+            dispatch(getOffers({ loading: false }));
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
                 ...prev,

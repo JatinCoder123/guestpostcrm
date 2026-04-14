@@ -28,7 +28,7 @@ const WelcomeHeader = () => {
         <span
           className="text-blue-600 hover:underline cursor-pointer"
           onClick={() => {
-            localStorage.setItem("email", email);
+            localStorage.setItem("searchTerm", email);
             setEnteredEmail(email);
           }}
         >

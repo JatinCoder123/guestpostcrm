@@ -141,3 +141,69 @@ const TinyEditor = ({
 };
 
 export default TinyEditor;
+
+
+
+export const SmallTinyEditor = ({
+  editorContent,
+  setEditorContent,
+  editorRef,
+  setEditorReady,
+}) => {
+  return (
+    <div className="overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Editor
+          apiKey={TINY_EDITOR_API_KEY}
+          value={editorContent}
+          onEditorChange={setEditorContent}
+          onInit={(e, editor) => {
+            editorRef.current = editor;
+            setEditorReady(true);
+          }}
+          init={{
+            height: 200, // ✅ FIXED HEIGHT
+            menubar: false,
+            branding: false,
+            statusbar: false,
+
+            plugins: `link lists`, // ❌ removed autoresize
+
+            toolbar: `
+              bold italic underline |
+              bullist numlist |
+              link |
+              undo redo
+            `,
+
+            resize: false,
+
+            content_style: `
+              html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+              }
+
+              body {
+                font-family: -apple-system, BlinkMacSystemFont,
+                  'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.5;
+                color: #18181cff;
+
+                padding: 10px;
+                padding-bottom: 80px;
+
+                overflow-y: auto;
+              }
+            `,
+          }}
+        />
+      </motion.div>
+    </div>
+  );
+};

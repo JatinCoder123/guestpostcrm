@@ -110,7 +110,7 @@ export default function ThreadOrders({ threadId, email, id }) {
                     email,
                     "Our Order Updated Successfully",
                     1,
-                    () => dispatch(getLadger({ email })),
+                    () => dispatch(getLadger({ email, loading: false })),
                 );
                 if (send) {
                     setSend(undefined);

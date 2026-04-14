@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
-import { updateActivity ,createLedgerEntry, buildLedgerItem} from "../../services/utils";
+import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
 import { getLadger } from "./ladger";
 
 const offersSlice = createSlice({
@@ -130,19 +130,19 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const updateOffer = ({email,offer}) => {
+export const updateOffer = ({ email, offer }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
       const getDomain = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch (e) {
-    return url; 
-  }
-};
+        try {
+          return new URL(url).hostname.replace(/^www\./, "");
+        } catch (e) {
+          return url;
+        }
+      };
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
@@ -158,6 +158,7 @@ export const updateOffer = ({email,offer}) => {
           },
         },
       );
+
       showConsole && console.log(`Update Offer`, data);
       const updatedOffers = getState().offers.offers.map((o) => {
         if (o.id === offer.id) {
@@ -174,24 +175,24 @@ export const updateOffer = ({email,offer}) => {
 
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Updated ")
-     
+
       await createLedgerEntry({
-  domain,
-  email: email,
-  thread_id: offer.thread_id,
-  message_id: offer.thread_id,
-  group: "Offer",
-  okHandler:()=>dispatch(getLadger({email})),
-  items: [
-    buildLedgerItem({
-      status: "Our-Offer-Updated",
-      detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
-      ladgerState: state.ladger,
-      user: state.user.user,
-      parent_name: "outr_offer",
-    }),
-  ],
-});
+        domain,
+        email: email,
+        thread_id: offer.thread_id,
+        message_id: offer.thread_id,
+        group: "Offer",
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
+        items: [
+          buildLedgerItem({
+            status: "Our-Offer-Updated",
+            detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
+            ladgerState: state.ladger,
+            user: state.user.user,
+            parent_name: "outr_offer",
+          }),
+        ],
+      });
 
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
@@ -208,12 +209,12 @@ export const createOffer = ({ threadId, email, offers = [], isSend = false }) =>
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
       const getDomain = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch (e) {
-    return url; 
-  }
-};
+        try {
+          return new URL(url).hostname.replace(/^www\./, "");
+        } catch (e) {
+          return url;
+        }
+      };
       const { data } = await axios.post(
         `${domain}?entryPoint=get_offer`,
 
@@ -242,23 +243,23 @@ export const createOffer = ({ threadId, email, offers = [], isSend = false }) =>
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Offer Created ")
       // 🔥 Ledger API Call
-await createLedgerEntry({
-  domain,
-  email: email,
-  thread_id: threadId,
-  message_id: threadId,
-  group: "Offer",
-  okHandler:()=>dispatch(getLadger({email})),
-  items: offers.map((offer) =>
-    buildLedgerItem({
-      status: "Our-Offer-Created",
-      detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
-      ladgerState: state.ladger,
-      user: state.user.user,
-      parent_name: "outr_offer",
-    })
-  ),
-});
+      await createLedgerEntry({
+        domain,
+        email: email,
+        thread_id: threadId,
+        message_id: threadId,
+        group: "Offer",
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
+        items: offers.map((offer) =>
+          buildLedgerItem({
+            status: "Our-Offer-Created",
+            detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
+            ladgerState: state.ladger,
+            user: state.user.user,
+            parent_name: "outr_offer",
+          })
+        ),
+      });
       updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Created ")
 
     } catch (error) {
@@ -266,17 +267,17 @@ await createLedgerEntry({
     }
   };
 };
-export const deleteOffer = (email, id, offer ) => {
+export const deleteOffer = (email, id, offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest({ id }));
     const state = getState();
     const getDomain = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch (e) {
-    return url; 
-  }
-};
+      try {
+        return new URL(url).hostname.replace(/^www\./, "");
+      } catch (e) {
+        return url;
+      }
+    };
 
     try {
       const { data } = await axios.post(
@@ -299,19 +300,19 @@ export const deleteOffer = (email, id, offer ) => {
       updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Deleted")
       await createLedgerEntry({
         domain: state.user.crmEndpoint.split("?")[0],
-  email: email,
-  group: "Offer",
-  okHandler:()=>dispatch(getLadger({email})),
-  items: [
-    buildLedgerItem({
-      status: "offer_deleted",
-      detail: `website: {${getDomain(offer?.website)}}`,
-      ladgerState: state.ladger,
-      user: state.user.user,
-      parent_name: "outr_offer",
-    }),
-  ],
-});
+        email: email,
+        group: "Offer",
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
+        items: [
+          buildLedgerItem({
+            status: "offer_deleted",
+            detail: `website: {${getDomain(offer?.website)}}`,
+            ladgerState: state.ladger,
+            user: state.user.user,
+            parent_name: "outr_offer",
+          }),
+        ],
+      });
 
     } catch (error) {
       dispatch(offersSlice.actions.deleteOfferFailed(error.message));

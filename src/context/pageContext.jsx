@@ -8,7 +8,7 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
-  const showConsole = localStorage.getItem("showConsole") || false;
+  const showConsole = true;
   const navigateTo = useNavigate()
   const dispatch = useDispatch()
   const [displayIntro, setDisplayIntro] = useState(localStorage.getItem("displayIntro") === "true");
@@ -16,28 +16,35 @@ export const PageContextProvider = (props) => {
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
-    localStorage.getItem("email") || null,
+    localStorage.getItem("searchTerm") || null,
   );
-
+  const [superfastReply, setSuperfastReply] = useState(() => {
+    return localStorage.getItem("superfastreply") === "true";
+  });
+  const superfastToggle = () => {
+    setSuperfastReply((prev) => !prev);
+    localStorage.setItem("superfastreply", !superfastReply);
+  };
 
   /* ❌ Clear */
   const handleClear = () => {
-    localStorage.removeItem("email");
+    localStorage.removeItem("searchTerm");
     setEnteredEmail("");
     setCurrentIndex(0)
     setShowNextPrev(true)
   };
-  const handleDateClick = ({ email, navigate, index = null, nextPrev = false }) => {
+  const handleDateClick = ({ email, navigate = null, index = null, nextPrev = false }) => {
     if (email == null) {
       toast.error("NO Email Is There!")
       return
     }
-    localStorage.setItem("email", email);
+    localStorage.setItem("searchTerm", email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     if (index != null) setCurrentIndex(index);
     setShowNextPrev(nextPrev)
-    navigateTo(navigate);
+    navigate != null && navigateTo(navigate);
+
   };
 
   // Set activePage based on current URL
@@ -48,6 +55,9 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed(true);
     localStorage.setItem("showConsole", showConsole);
   }, []);
+  useEffect(() => {
+    localStorage.setItem("currentIndex", currentIndex)
+  }, [currentIndex]);
   const value = {
     activePage,
     setActivePage,
@@ -57,6 +67,8 @@ export const PageContextProvider = (props) => {
     enteredEmail,
     setEnteredEmail,
     collapsed,
+    superfastToggle,
+    superfastReply,
     setSidebarCollapsed,
     handleDateClick,
     currentIndex,
