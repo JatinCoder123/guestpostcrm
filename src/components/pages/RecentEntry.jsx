@@ -40,7 +40,7 @@ export function RecentEntry() {
   // ✅ Updated states
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [timeFilter, setTimeFilter] = useState("all");
+  const [timeFilter, setTimeFilter] = useState(null);
 
   const { handleDateClick } = useContext(PageContext);
   const { handleMove } = useThreadContext();
