@@ -33,16 +33,14 @@ import MailHeaderLeft from "./MailHeaderLeft";
 import TemplateSelectorModal from "../../TemplateSelectorModal";
 import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
-import { useParams } from "react-router-dom";
-
 import axios from "axios";
-import { PageContext } from "../../../context/pageContext";
 import MessageOverlay from "./MessageOverlay";
+import { SendingOverlay } from "./ThreadView";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
-  const { emails } = useOutletContext() || [];
+  const { emails, showSuccessAnim } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
   const { state } = useLocation();
@@ -249,6 +247,7 @@ const ThreadReply = () => {
   }, [showFailedModal]);
   return (
     <>
+      <SendingOverlay sending={sending} email={currentEmail} />
       <MessageModal
         showMessageModal={showMessageModal}
         closeMessageModal={() => setShowMessageModal(false)}
@@ -332,7 +331,6 @@ const ThreadReply = () => {
           />
 
           {/* ✅ SUCCESS OVERLAY */}
-          <MessageOverlay showSuccessAnim={showSuccessAnim} />
 
           <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
             <div className="flex items-center gap-3 flex-wrap">

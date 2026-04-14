@@ -5,6 +5,7 @@ import { getThreadEmail } from "../../../store/Slices/threadEmail";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
+import { viewEmailAction } from "../../../store/Slices/viewEmail";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -13,7 +14,7 @@ const Thread = () => {
   const { superfastReply } = useContext(PageContext)
 
   const { state } = useLocation();
-  const { threadEmail, message, error } = useSelector((s) => s.threadEmail);
+  const { threadEmail } = useSelector((s) => s.threadEmail);
   const { message: sendMessage, error: sendError } = useSelector((s) => s.viewEmail);
   const {
     context: { currentEmail, currentThread },
@@ -58,7 +59,7 @@ const Thread = () => {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [sendMessage, sendError]);
-  return <Outlet context={{ emails, loadAiReply: state?.loadAiReply, showSuccessAnim }} />;
+  return <Outlet context={{ emails, loadAiReply: state?.loadAiReply, showSuccessAnim, superfastReply }} />;
 };
 
 export default Thread;

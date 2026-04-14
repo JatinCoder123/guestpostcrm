@@ -1,5 +1,4 @@
-import { AnimatePresence } from 'framer-motion'
-import React from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const MessageOverlay = ({ showSuccessAnim }) => {
     return <AnimatePresence>
@@ -8,7 +7,7 @@ const MessageOverlay = ({ showSuccessAnim }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden"
+                className="fixed inset-0 z-[999] flex flex-col items-center justify-center backdrop-blur-sm overflow-hidden"
             >
 
                 {/* ✉️ Flying Mail */}

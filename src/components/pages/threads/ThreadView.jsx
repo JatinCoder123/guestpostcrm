@@ -1,4 +1,4 @@
-import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight } from "lucide-react";
+import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,18 +15,22 @@ import { PageContext } from "../../../context/pageContext.jsx";
 import TinyEditor, { SmallTinyEditor } from "../../TinyEditor.jsx";
 import { getAiReply } from "../../../store/Slices/aiReply.js";
 import MessageOverlay from "./MessageOverlay.jsx";
+import { sendEmail } from "../../../store/Slices/viewEmail.js";
+import axios from "axios";
+import NextPrev from "../../NextPrev.jsx";
+import EmojiInput from "../../EmojiPicker.jsx";
 export default function ThreadView() {
   const scrollRef = useRef();
-  const { emails, loadAiReply = true, showSuccessAnim } = useOutletContext() || [];
+  const { emails, loadAiReply = true, superfastReply } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
-  const { context: { currentThread: threadId } } = useThreadContext();
+  const { context: { currentThread: threadId, currentEmail } } = useThreadContext();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
+  const { businessEmail, crmEndpoint, user } = useSelector((s) => s.user);
   const { loading } = useSelector((s) => s.threadEmail);
-  const { message: sendMessage } = useSelector((s) => s.viewEmail);
+  const { message: sendMessage, sending } = useSelector((s) => s.viewEmail);
   const [messageLimit, setMessageLimit] = useState(3);
   const [openMessageId, setOpenMessageId] = useState(null);
   const [fullMessage, setFullMessage] = useState(null);
@@ -36,6 +40,8 @@ export default function ThreadView() {
   const [editorContent, setEditorContent] = useState("");
   const [editorReady, setEditorReady] = useState(false);
   const editorRef = useRef(null);
+  const [checkingThreadId, setCheckingTheadId] = useState(false);
+
   const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
   const downloadAttachment = (att) => {
     const link = document.createElement("a");
@@ -53,10 +59,10 @@ export default function ThreadView() {
     message,
   } = useSelector((state) => state.aiReply);
   useEffect(() => {
-    if (!loading && loadAiReply) {
+    if (!loading && (loadAiReply || superfastReply)) {
       dispatch(getAiReply(threadId));
     }
-  }, [loading, loadAiReply]);
+  }, [loading, loadAiReply, superfastReply]);
   useEffect(() => {
     if (sendMessage) {
       setEditorContent("");
@@ -137,9 +143,48 @@ export default function ThreadView() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  const handleSendClick = async () => {
+    try {
+      setCheckingTheadId(true);
+      const { data } = await axios.get(
+        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`,
+      );
+      console.log("MATHED THREAD ID", data);
+
+      if (!data?.success) {
+        toast.error("Failed to verify thread!");
+        return;
+      }
+      console.log("THREAD", threadId);
+      // 🔹 Check thread match
+      if (data.thread_id !== threadId) {
+        toast.error("Thread mismatch! Cannot send email ");
+        return;
+      }
+      const contentToSend = editorContent;
+      const formData = new FormData();
+      formData.append("threadId", data.thread_id);
+      formData.append("replyBody", contentToSend);
+      formData.append("email", currentEmail);
+      formData.append("current_email", user.email);
+      formData.append("force_send", 1);
+      formData.append("cc", "");
+      formData.append("to", "");
+      [].forEach((file) => {
+        formData.append("attachments[]", file.file);
+      });
+
+      dispatch(sendEmail(formData));
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while checking thread!");
+    } finally {
+      setCheckingTheadId(false);
+    }
+  };
   return (
     <>
-      <MessageOverlay showSuccessAnim={showSuccessAnim} />
+      <SendingOverlay sending={sending || checkingThreadId} email={currentEmail} />
 
       <motion.div
         className="
@@ -152,6 +197,8 @@ export default function ThreadView() {
       >
         {/* HEADER */}
         <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+
+          {/* 🔹 LEFT SIDE */}
           <div className="flex items-center gap-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -161,6 +208,7 @@ export default function ThreadView() {
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
+
             <div className="flex items-center gap-3">
               {/* OPEN GMAIL */}
               <div
@@ -168,20 +216,20 @@ export default function ThreadView() {
                 onClick={() =>
                   window.open(
                     `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
-                    "_blank",
+                    "_blank"
                   )
                 }
               >
                 <Send className="w-5 h-5" />
                 <h2 className="text-xl font-bold tracking-tight">
-                  Email Thread{" "}
+                  Email Thread
                 </h2>
               </div>
 
               {/* COPY LINK */}
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // ⛔ prevent opening gmail
+                  e.stopPropagation();
                   const link = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;
                   navigator.clipboard.writeText(link);
                   toast.success("Email thread link copied!");
@@ -193,6 +241,18 @@ export default function ThreadView() {
               </button>
             </div>
           </div>
+
+          {/* 🔥 RIGHT SIDE (CLIENT EMAIL) */}
+          <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl backdrop-blur-md shadow-sm">
+
+            <Mail className="w-4 h-4 opacity-80" />
+
+            <span className="text-sm font-medium truncate max-w-[250px]">
+              {currentEmail}
+            </span>
+
+          </div>
+          <NextPrev />
         </div>
         {loading ? (
           <ThreadSkeleton />
@@ -493,47 +553,65 @@ export default function ThreadView() {
               })}
             </div>
 
-            <div className="p-6 border-t bg-white shadow-2xl relative">
-              {loadAiReply ? (
+            <div className="p-2 border-t bg-gradient-to-r from-blue-500 to-indigo-600 shadow-2xl relative rounded-t-lg">
+              {loadAiReply || superfastReply ? (
                 <>
-                  <div className="relative border border-gray-300 rounded-xl overflow-hidden h-[200px]">
-                    {/* Tiny Editor */}
-                    <SmallTinyEditor
-                      setEditorContent={setEditorContent}
-                      editorContent={editorContent}
-                      setEditorReady={setEditorReady}
-                      editorRef={editorRef}
-                    />
+                  <div className="relative  rounded-2xl overflow-hidden h-[250px]  flex justify-end gap-4 shadow-lg">
 
-                    {/* Send Button INSIDE editor */}
-                    <motion.button
-                      whileHover={{ scale: 1.08 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => navigate(`/thread/reply`)}
-                      className="
-          absolute bottom-2 right-3
-          bg-gradient-to-r from-blue-500 to-indigo-600
-          text-white p-2 rounded-full
-          shadow-lg hover:shadow-xl
-          z-10
-        "
-                    >
-                      <Send className="w-5 h-5" />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.08 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => navigate(`/thread/reply`)}
-                      className="
-          absolute bottom-2 right-18
-          bg-gradient-to-r from-blue-500 to-indigo-600
-          text-white p-2 rounded-full
-          shadow-lg hover:shadow-xl
-          z-10
-        "
-                    >
-                      <CornerUpRight className="w-5 h-5" />
-                    </motion.button>
+                    {/* 🔥 LEFT PANEL */}
+                    <div className="w-[35%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col justify-between rounded-lg">
+
+                      {/* ✨ Title Section */}
+                      <div className="flex justify-between">
+                        <div> <h2 className="text-lg font-bold flex items-center gap-2">
+                          ⚡ Super Fast Reply
+                        </h2>
+                          <p className="text-xs opacity-90 mt-1">
+                            Send quick AI-powered responses instantly
+                          </p></div>
+
+                      </div>
+
+                      {/* 🚀 Buttons Section */}
+                      <div className="flex flex-col gap-3 mt-4">
+
+                        {/* Direction Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => navigate(`/thread/reply`)}
+                          className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/30 transition"
+                        >
+                          <CornerUpRight className="w-4 h-4" />
+                          Compose
+                        </motion.button>
+
+                        {/* Send Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleSendClick}
+                          disabled={checkingThreadId || sending}
+                          className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+                        >
+                          <Send className="w-4 h-4" />
+                          Send
+                        </motion.button>
+
+                      </div>
+                    </div>
+
+                    {/* ✨ RIGHT PANEL (EDITOR ONLY) */}
+                    <div className="w-[50%] bg-white p-2 rounded-lg">
+
+                      <SmallTinyEditor
+                        setEditorContent={setEditorContent}
+                        editorContent={editorContent}
+                        setEditorReady={setEditorReady}
+                        editorRef={editorRef}
+                      />
+
+                    </div>
                   </div>
 
                 </>
@@ -622,3 +700,57 @@ export default function ThreadView() {
     </>
   );
 }
+
+
+export const SendingOverlay = ({ sending, email }) => {
+  return (
+    <AnimatePresence>
+      {sending && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/60 backdrop-blur-md"
+        >
+          {/* 📤 Icon animation */}
+          <motion.div
+            initial={{ y: 0 }}
+            animate={{ y: [-10, 10, -10] }}
+            transition={{ repeat: Infinity, duration: 1 }}
+            className="text-5xl mb-4"
+          >
+            📤
+          </motion.div>
+
+          {/* Heading */}
+          <h2 className="text-xl font-semibold text-gray-800">
+            Sending Email
+          </h2>
+
+          {/* Email */}
+          <p className="text-sm text-gray-600 mt-1">
+            To: <span className="font-medium">{email}</span>
+          </p>
+
+          {/* Moving text */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-sm text-gray-600 mt-2"
+          >
+            Moving forward to next email...
+          </motion.p>
+
+          {/* Progress bar */}
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: "50%" }}
+            transition={{ duration: 1 }}
+            className="h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mt-4 rounded-full"
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
