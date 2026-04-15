@@ -202,7 +202,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
             parent_name: "outr_deal",
           }),
         ),
-        okHandler: () => getLadger({ email }),
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
       });
     } catch (error) {
       dispatch(
@@ -295,7 +295,7 @@ export const updateDeal = ({ deal, email }) => {
             parent_name: "outr_deal",
           }),
         ],
-        okHandler: () => dispatch(getLadger({ email })),
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
       });
       console.log(`Ledger Entry`, res);
     } catch (error) {
@@ -304,7 +304,7 @@ export const updateDeal = ({ deal, email }) => {
   };
 };
 export const deleteDeal = (deal, email, id) => {
-  0
+  0;
   return async (dispatch, getState) => {
     const getDomain1 = (url) => {
       try {
@@ -353,7 +353,7 @@ export const deleteDeal = (deal, email, id) => {
             status: "Deal-Deleted",
             detail: `website: {${getDomain1(deal?.website_c)}}`,
             ladgerState: state.ladger,
-            user: state.crmUser.currentUser,
+            user: state.user.user,
             parent_name: "outr_deal",
           }),
         ],

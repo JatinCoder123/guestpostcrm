@@ -8,7 +8,7 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
-  const showConsole = localStorage.getItem("showConsole") || false;
+  const showConsole = true;
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const [displayIntro, setDisplayIntro] = useState(
@@ -45,7 +45,12 @@ export const PageContextProvider = (props) => {
     setCurrentIndex(0);
     setShowNextPrev(true);
   };
-  const handleDateClick = ({ email, navigate = null, index = null, nextPrev = false }) => {
+  const handleDateClick = ({
+    email,
+    navigate = null,
+    index = null,
+    nextPrev = false,
+  }) => {
     if (email == null) {
       toast.error("NO Email Is There!");
       return;
@@ -54,9 +59,8 @@ export const PageContextProvider = (props) => {
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     if (index != null) setCurrentIndex(index);
-    setShowNextPrev(nextPrev)
+    setShowNextPrev(nextPrev);
     navigate != null && navigateTo(navigate);
-
   };
 
   // Set activePage based on current URL
@@ -68,7 +72,7 @@ export const PageContextProvider = (props) => {
     localStorage.setItem("showConsole", showConsole);
   }, []);
   useEffect(() => {
-    localStorage.setItem("currentIndex", currentIndex)
+    localStorage.setItem("currentIndex", currentIndex);
   }, [currentIndex]);
   const value = {
     activePage,
