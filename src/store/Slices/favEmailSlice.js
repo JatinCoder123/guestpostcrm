@@ -120,7 +120,7 @@ export const favEmail = () => {
             user: getState().crmUser.currentUser,
           }),
         ],
-        okHandler: () => dispatch(getLadger({email: getState().ladger.email})),
+        okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),
       });
 
     } catch (error) {

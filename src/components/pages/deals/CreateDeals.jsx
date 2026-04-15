@@ -12,7 +12,6 @@ import IconButton from "../../ui/Buttons/IconButton";
 import { toast } from "react-toastify";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
-import { getLadger } from "../../../store/Slices/ladger";
 import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
 import { getOffers } from "../../../store/Slices/offers";
 import { extractEmail } from "../../../assets/assets";

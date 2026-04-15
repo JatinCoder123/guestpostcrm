@@ -32,7 +32,7 @@ const TinyEditor = ({
 
             /* ================= PLUGINS ================= */
             plugins: `
-          advlist autolink autosave directionality
+          advlist autolink directionality
           visualblocks visualchars wordcount
           fullscreen preview searchreplace
           insertdatetime lists link image media
@@ -63,10 +63,7 @@ const TinyEditor = ({
               "bold italic underline | quicklink h2 h3 blockquote",
             quickbars_insert_toolbar: "image media table",
 
-            /* ================= AUTOSAVE ================= */
-            autosave_ask_before_unload: true,
-            autosave_interval: "30s",
-            autosave_restore_when_empty: true,
+
 
             /* ================= IMAGES ================= */
             image_advtab: true,
@@ -141,3 +138,69 @@ const TinyEditor = ({
 };
 
 export default TinyEditor;
+
+
+
+export const SmallTinyEditor = ({
+  editorContent,
+  setEditorContent,
+  editorRef,
+  setEditorReady,
+}) => {
+  return (
+    <div className="overflow-hidden h-full">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Editor
+          apiKey={TINY_EDITOR_API_KEY}
+          value={editorContent}
+          onEditorChange={setEditorContent}
+          onInit={(e, editor) => {
+            editorRef.current = editor;
+            setEditorReady(true);
+          }}
+          init={{
+            height: "100vh", // ✅ FIXED HEIGHT
+            menubar: false,
+            branding: false,
+            statusbar: false,
+
+            plugins: `link lists`, // ❌ removed autoresize
+
+            toolbar: `
+              bold italic underline |
+              bullist numlist |
+              link |
+              undo redo
+            `,
+
+            resize: false,
+
+            content_style: `
+              html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+              }
+
+              body {
+                font-family: -apple-system, BlinkMacSystemFont,
+                  'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.5;
+                color: #18181cff;
+
+                padding: 10px;
+                padding-bottom: 80px;
+
+                overflow-y: auto;
+              }
+            `,
+          }}
+        />
+      </motion.div>
+    </div>
+  );
+};

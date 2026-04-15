@@ -3,6 +3,7 @@ import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
+import { getCache, setCache } from "../../services/cache";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -142,57 +143,180 @@ const viewEmailSlice = createSlice({
   },
 });
 
-export const getViewEmail = (email = null) => {
+export const getViewEmail = ({
+  email = null,
+  force = false
+}) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getViewEmailRequest());
 
     try {
+      const trimmedEmail = email?.trim();
+
+      if (!force) {
+        const cachedData = getCache("viewMails", trimmedEmail);
+
+        if (cachedData) {
+          dispatch(
+            viewEmailSlice.actions.getViewEmailSucess({
+              viewEmail: cachedData.emails,
+              threadId: cachedData.threadId,
+              count: cachedData.count,
+            })
+          );
+        }
+      }
+
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${email?.trim()
-        }`,
+        `${getState().user.crmEndpoint}&type=view_email&email=${trimmedEmail}`
       );
-      showConsole && console.log(`viewEmail`, data);
+
+      const freshData = {
+        emails: data.emails,
+        threadId: data.thread_id,
+        count: data.total_emails,
+      };
+
+      setCache("viewMails", trimmedEmail, freshData);
+
       dispatch(
         viewEmailSlice.actions.getViewEmailSucess({
-          viewEmail: data.emails,
-          threadId: data.thread_id,
-          count: data.total_emails,
-        }),
+          viewEmail: freshData.emails,
+          threadId: freshData.threadId,
+          count: freshData.count,
+        })
       );
+
+      // PREFETCH NEXT / PREV
+      const index = localStorage.getItem("currentIndex") && Number(localStorage.getItem("currentIndex"))
+      if (index !== null) {
+        const unreplied = getState().unreplied;
+
+        const nextEmail =
+          index + 1 < unreplied.count
+            ? unreplied.emails[index + 1]?.email1
+            : null;
+
+        const prevEmail =
+          index > 0
+            ? unreplied.emails[index - 1]?.email1
+            : null;
+
+        [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
+          if (
+            prefetchEmail &&
+            !getCache("viewMails", prefetchEmail.trim())
+          ) {
+            try {
+              const { data } = await axios.get(
+                `${getState().user.crmEndpoint}&type=view_email&email=${prefetchEmail.trim()}`
+              );
+
+              setCache("viewMails", prefetchEmail.trim(), {
+                emails: data.emails,
+                threadId: data.thread_id,
+                count: data.total_emails,
+              });
+            } catch (err) {
+              console.error("Prefetch ViewEmail Failed", err);
+            }
+          }
+        });
+      }
+
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.getViewEmailFailed(
-          "Fetching View Emails  Failed",
-        ),
+          "Fetching View Emails Failed"
+        )
       );
     }
   };
 };
-export const getContact = (email = null) => {
+export const getContact = (email = null, force = false) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getContactRequest());
 
     try {
+      const trimmedEmail = email?.trim();
+
+      if (!force) {
+        const cachedData = getCache("contacts", trimmedEmail);
+
+        if (cachedData) {
+          dispatch(
+            viewEmailSlice.actions.getContactSucess(cachedData)
+          );
+        }
+      }
+
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=get_contact&email=${email?.trim()}`,
+        `${getState().user.crmEndpoint}&type=get_contact&email=${trimmedEmail}`
       );
-      showConsole && console.log(`Get contact`, data);
+
+      const freshData = {
+        stage: data.stage,
+        status: data.status,
+        contactInfo: data.contact ?? null,
+        accountInfo: data.account ?? null,
+        customer_type: data.customer_type ?? null,
+        dealInfo: data.deal_fetch ?? null,
+      };
+
+      setCache("contacts", trimmedEmail, freshData);
+
       dispatch(
-        viewEmailSlice.actions.getContactSucess({
-          stage: data.stage,
-          status: data.status,
-          contactInfo: data.contact ?? null,
-          accountInfo: data.account ?? null,
-          customer_type: data.customer_type ?? null,
-          dealInfo: data.deal_fetch ?? null,
-        }),
+        viewEmailSlice.actions.getContactSucess(freshData)
       );
+
+      // PREFETCH NEXT / PREV
+      const index = localStorage.getItem("currentIndex") && Number(localStorage.getItem("currentIndex"))
+
+      if (index !== null) {
+        const unreplied = getState().unreplied;
+
+        const nextEmail =
+          index + 1 < unreplied.count
+            ? unreplied.emails[index + 1]?.email1
+            : null;
+
+        const prevEmail =
+          index > 0
+            ? unreplied.emails[index - 1]?.email1
+            : null;
+
+        [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
+          if (
+            prefetchEmail &&
+            !getCache("contacts", prefetchEmail.trim())
+          ) {
+            try {
+              const { data } = await axios.get(
+                `${getState().user.crmEndpoint}&type=get_contact&email=${prefetchEmail.trim()}`
+              );
+
+              setCache("contacts", prefetchEmail.trim(), {
+                stage: data.stage,
+                status: data.status,
+                contactInfo: data.contact ?? null,
+                accountInfo: data.account ?? null,
+                customer_type: data.customer_type ?? null,
+                dealInfo: data.deal_fetch ?? null,
+              });
+            } catch (err) {
+              console.error("Prefetch Contact Failed", err);
+            }
+          }
+        });
+      }
+
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getContactFailed("Fetching View Details failed"),
+        viewEmailSlice.actions.getContactFailed(
+          "Fetching View Details failed"
+        )
       );
     }
   };
@@ -275,8 +399,7 @@ export const sendEmail = (
       );
 
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      localStorage.getItem("addActivity") && updateActivity(getState().user.crmEndpoint, formData.email, getState().user.user.name, getState().user.user.email, "Email Sent")
-      dispatch(getViewEmail());
+      localStorage.getItem("addActivity") && updateActivity(getState().user.crmEndpoint, formData.get("email"), getState().user.user.name, getState().user.user.email, "Email Sent")
     } catch (error) {
       showConsole && console.log(error);
       dispatch(

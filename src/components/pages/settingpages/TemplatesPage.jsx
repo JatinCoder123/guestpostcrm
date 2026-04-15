@@ -443,7 +443,7 @@ export default function TemplatesPage() {
 
                 /* ================= PLUGINS ================= */
                 plugins: `
-    advlist autolink autosave directionality
+    advlist autolink  directionality
     visualblocks visualchars wordcount
     fullscreen preview searchreplace
     insertdatetime lists link image media
@@ -476,11 +476,6 @@ export default function TemplatesPage() {
                   "bold italic underline | quicklink h2 h3 blockquote",
                 quickbars_insert_toolbar: "image media table",
 
-                /* ================= AUTOSAVE ================= */
-                autosave_ask_before_unload: true,
-                autosave_interval: "30s",
-                autosave_prefix: "{path}{query}-{id}-",
-                autosave_restore_when_empty: true,
 
                 /* ================= IMAGES ================= */
                 image_advtab: true,
@@ -690,7 +685,6 @@ export default function TemplatesPage() {
           <div className="flex-1 overflow-hidden">
             <Editor
               apiKey={TINY_EDITOR_API_KEY}
-              // tinymceScriptSrc="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js"
               value={editorContent}
               onEditorChange={setEditorContent}
               initialValue={viewItem.body_html}
@@ -702,7 +696,7 @@ export default function TemplatesPage() {
 
                 /* ================= PLUGINS ================= */
                 plugins: `
-      advlist autolink autosave directionality
+      advlist autolink directionality
       visualblocks visualchars wordcount
       fullscreen preview searchreplace
       insertdatetime lists link image media
@@ -733,10 +727,6 @@ export default function TemplatesPage() {
                   "bold italic underline | quicklink h2 h3 blockquote",
                 quickbars_insert_toolbar: "image media table",
 
-                /* ================= AUTOSAVE ================= */
-                autosave_ask_before_unload: true,
-                autosave_interval: "30s",
-                autosave_restore_when_empty: true,
 
                 /* ================= IMAGES ================= */
                 image_advtab: true,

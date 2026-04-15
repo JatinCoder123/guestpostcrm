@@ -8,7 +8,7 @@ export const PageContext = createContext();
 
 export const PageContextProvider = (props) => {
   const [activePage, setActivePage] = useState("");
-  const showConsole = localStorage.getItem("showConsole") || false;
+  const showConsole = true;
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const [displayIntro, setDisplayIntro] = useState(
@@ -18,19 +18,36 @@ export const PageContextProvider = (props) => {
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
-    localStorage.getItem("email") || null,
+    localStorage.getItem("searchTerm") || null,
   );
+  const [superfastReply, setSuperfastReply] = useState(() => {
+    const stored = localStorage.getItem("superfastreply");
+
+    if (stored === null) {
+      localStorage.setItem("superfastreply", "true"); // set default
+      return true;
+    }
+
+    return stored === "true";
+  });
+  const superfastToggle = () => {
+    setSuperfastReply((prev) => {
+      const newValue = !prev;
+      localStorage.setItem("superfastreply", newValue);
+      return newValue;
+    });
+  };
 
   /* ❌ Clear */
   const handleClear = () => {
-    localStorage.removeItem("email");
+    localStorage.removeItem("searchTerm");
     setEnteredEmail("");
     setCurrentIndex(0);
     setShowNextPrev(true);
   };
   const handleDateClick = ({
     email,
-    navigate,
+    navigate = null,
     index = null,
     nextPrev = false,
   }) => {
@@ -38,12 +55,12 @@ export const PageContextProvider = (props) => {
       toast.error("NO Email Is There!");
       return;
     }
-    localStorage.setItem("email", email);
+    localStorage.setItem("searchTerm", email);
     setEnteredEmail(email);
     dispatch(ladgerAction.setTimeline(null));
     if (index != null) setCurrentIndex(index);
     setShowNextPrev(nextPrev);
-    navigateTo(navigate);
+    navigate != null && navigateTo(navigate);
   };
 
   // Set activePage based on current URL
@@ -54,6 +71,9 @@ export const PageContextProvider = (props) => {
     setSidebarCollapsed(true);
     localStorage.setItem("showConsole", showConsole);
   }, []);
+  useEffect(() => {
+    localStorage.setItem("currentIndex", currentIndex);
+  }, [currentIndex]);
   const value = {
     activePage,
     setActivePage,
@@ -63,6 +83,8 @@ export const PageContextProvider = (props) => {
     enteredEmail,
     setEnteredEmail,
     collapsed,
+    superfastToggle,
+    superfastReply,
     setSidebarCollapsed,
     handleDateClick,
     currentIndex,

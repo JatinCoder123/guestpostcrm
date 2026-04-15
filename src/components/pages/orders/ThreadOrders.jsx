@@ -96,6 +96,13 @@ export default function ThreadOrders({ threadId, email, id }) {
       dispatch(getOrders({ email }));
       toast.success(message);
       if (message?.includes("Updated")) {
+        ManualSideCall(
+          crmEndpoint,
+          email,
+          "Our Order Updated Successfully",
+          1,
+          () => dispatch(getLadger({ email, loading: false })),
+        );
         if (send) {
           setSend(undefined);
           dispatch(orderAction.clearAllMessages());

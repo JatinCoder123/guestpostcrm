@@ -1,22 +1,28 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getThreadEmail } from "../../../store/Slices/threadEmail";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { toast } from "react-toastify";
+import { PageContext } from "../../../context/pageContext";
+import { viewEmailAction } from "../../../store/Slices/viewEmail";
 
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showSuccessAnim, setShowSuccessAnim] = useState(false);
+  const { superfastReply } = useContext(PageContext)
+
   const { state } = useLocation();
-  const { threadEmail, message, error } = useSelector((s) => s.threadEmail);
+  const { threadEmail } = useSelector((s) => s.threadEmail);
+  const { message: sendMessage, error: sendError } = useSelector((s) => s.viewEmail);
   const {
     context: { currentEmail, currentThread },
   } = useThreadContext();
 
   const [emails, setEmails] = useState([]);
   useEffect(() => {
-    if (currentEmail && currentThread && !state?.viewEmails) {
+    if (currentEmail && currentThread && !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)) {
       dispatch(getThreadEmail(currentEmail, currentThread));
     }
     else {
@@ -25,7 +31,7 @@ const Thread = () => {
   }, [currentEmail, currentThread]);
   useEffect(() => {
 
-    if (threadEmail?.length > 0 && !state?.viewEmails) {
+    if (threadEmail?.length > 0 && !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)) {
       setEmails(threadEmail);
     }
   }, [threadEmail]);
@@ -40,7 +46,20 @@ const Thread = () => {
       navigate(-1);
     }
   }, []);
-  return <Outlet context={{ emails }} />;
+  useEffect(() => {
+    if (sendMessage && superfastReply) {
+      setShowSuccessAnim(true);
+      setTimeout(() => {
+        setShowSuccessAnim(false);
+      }, 1200); // animation duration
+    }
+
+    if (sendError) {
+      toast.error(sendError);
+      dispatch(viewEmailAction.clearAllErrors());
+    }
+  }, [sendMessage, sendError]);
+  return <Outlet context={{ emails, loadAiReply: state?.loadAiReply, showSuccessAnim, superfastReply }} />;
 };
 
 export default Thread;

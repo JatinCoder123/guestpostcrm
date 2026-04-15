@@ -26,7 +26,7 @@ export function TimelinePage() {
       setIsMark(false);
     }
   }, [marketPlaces]);
-  const { searchNotFound, loading: ladgerLoading } = useSelector((state) => state.ladger);
+  const { loading: ladgerLoading, ladger } = useSelector((state) => state.ladger);
 
   const handleMessageClick = (id) => {
     console.log("Message clicked:", id);
@@ -37,7 +37,7 @@ export function TimelinePage() {
     (state) => state.viewEmail,
   );
   const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
-  if (searchNotFound) {
+  if (ladger?.length == 0 && !ladgerLoading) {
     return <NoSearchFoundPage />;
   }
   if (showIP) {

@@ -15,10 +15,12 @@ import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import { unrepliedAction } from "./store/Slices/unrepliedEmails";
+import { useThreadContext } from "./hooks/useThreadContext";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const { message, sendedEmail } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, currentScore } = useSelector((state) => state.user);
+  const { handleMove } = useThreadContext();
   const {
     displayIntro,
     setActivePage,
@@ -26,6 +28,7 @@ const RootLayout = () => {
     setEnteredEmail,
     currentIndex,
     handleDateClick,
+    superfastReply
   } = useContext(PageContext);
   const { currentAvatar, setCrm } =
     useContext(SocketContext);
@@ -82,13 +85,16 @@ const RootLayout = () => {
       navigate("/unreplied-emails");
       return;
     }
-
+    console.log("SUPER FAST REPLY", superfastReply)
+    if (superfastReply) {
+      handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), nextPrev: true })
+      handleMove({ email: extractEmail(nextEmailObj?.from || ""), threadId: nextEmailObj?.thread_id, loadAiReply: true })
+      return
+    }
     handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), navigate: "/", nextPrev: true })
 
 
-  }, [
-    message,
-  ]);
+  }, [message, superfastReply]);
 
   // Set active page based on URL
   useEffect(() => {

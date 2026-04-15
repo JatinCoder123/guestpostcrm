@@ -1,6 +1,6 @@
-import { User, Globe, Send, X, ChevronLeft } from "lucide-react";
+import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
@@ -11,22 +11,36 @@ import {
 import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
+import { SmallTinyEditor } from "../../TinyEditor.jsx";
+import { getAiReply } from "../../../store/Slices/aiReply.js";
+import { sendEmail } from "../../../store/Slices/viewEmail.js";
+import axios from "axios";
+import NextPrev from "../../NextPrev.jsx";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { SendingOverlay } from "./SendingOverlay.jsx";
 export default function ThreadView() {
   const scrollRef = useRef();
-  const { emails } = useOutletContext() || [];
+  const { emails, loadAiReply = true, superfastReply } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
-  const { context: { currentThread: threadId } } = useThreadContext();
+  const { context: { currentThread: threadId, currentEmail } } = useThreadContext();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
-  const { businessEmail, crmEndpoint } = useSelector((s) => s.user);
+  const dispatch = useDispatch();
+  const { businessEmail, crmEndpoint, user } = useSelector((s) => s.user);
   const { loading } = useSelector((s) => s.threadEmail);
+  const { message: sendMessage, sending } = useSelector((s) => s.viewEmail);
   const [messageLimit, setMessageLimit] = useState(3);
   const [openMessageId, setOpenMessageId] = useState(null);
   const [fullMessage, setFullMessage] = useState(null);
   const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
   const attachmentBoxRef = useRef(null);
   const visibleMessages = emails?.slice(-messageLimit);
+  const [editorContent, setEditorContent] = useState("");
+  const [editorReady, setEditorReady] = useState(false);
+  const editorRef = useRef(null);
+  const [checkingThreadId, setCheckingTheadId] = useState(false);
+
   const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
   const downloadAttachment = (att) => {
     const link = document.createElement("a");
@@ -37,6 +51,28 @@ export default function ThreadView() {
     link.click();
     document.body.removeChild(link);
   };
+  const {
+    loading: aiLoading,
+    aiReply: aiResponse,
+    error: aiError,
+    message,
+  } = useSelector((state) => state.aiReply);
+  useEffect(() => {
+    if (!loading && (loadAiReply || superfastReply)) {
+      dispatch(getAiReply(threadId));
+      setEditorContent("")
+    }
+  }, [loading, loadAiReply, superfastReply]);
+  useEffect(() => {
+    if (sendMessage) {
+      setEditorContent("");
+    }
+  }, [sendMessage]);
+  useEffect(() => {
+    if (message && aiResponse) {
+      setEditorContent(aiResponse)
+    }
+  }, [aiResponse, aiError, message]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -107,8 +143,49 @@ export default function ThreadView() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  const handleSendClick = async () => {
+    try {
+      setCheckingTheadId(true);
+      const { data } = await axios.get(
+        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`,
+      );
+      console.log("MATHED THREAD ID", data);
+
+      if (!data?.success) {
+        toast.error("Failed to verify thread!");
+        return;
+      }
+      console.log("THREAD", threadId);
+      // 🔹 Check thread match
+      if (data.thread_id !== threadId) {
+        toast.error("Thread mismatch! Cannot send email ");
+        return;
+      }
+      const contentToSend = editorContent;
+      const formData = new FormData();
+      formData.append("threadId", data.thread_id);
+      formData.append("replyBody", contentToSend);
+      formData.append("email", currentEmail);
+      formData.append("current_email", user.email);
+      formData.append("force_send", 1);
+      formData.append("cc", "");
+      formData.append("to", "");
+      [].forEach((file) => {
+        formData.append("attachments[]", file.file);
+      });
+
+      dispatch(sendEmail(formData));
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while checking thread!");
+    } finally {
+      setCheckingTheadId(false);
+    }
+  };
   return (
     <>
+      <SendingOverlay sending={sending || checkingThreadId} email={currentEmail} />
+
       <motion.div
         className="
                 fixed inset-0 z-[999]
@@ -120,6 +197,8 @@ export default function ThreadView() {
       >
         {/* HEADER */}
         <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+
+          {/* 🔹 LEFT SIDE */}
           <div className="flex items-center gap-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -129,6 +208,7 @@ export default function ThreadView() {
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
+
             <div className="flex items-center gap-3">
               {/* OPEN GMAIL */}
               <div
@@ -136,20 +216,20 @@ export default function ThreadView() {
                 onClick={() =>
                   window.open(
                     `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
-                    "_blank",
+                    "_blank"
                   )
                 }
               >
                 <Send className="w-5 h-5" />
                 <h2 className="text-xl font-bold tracking-tight">
-                  Email Thread{" "}
+                  Email Thread
                 </h2>
               </div>
 
               {/* COPY LINK */}
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // ⛔ prevent opening gmail
+                  e.stopPropagation();
                   const link = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;
                   navigator.clipboard.writeText(link);
                   toast.success("Email thread link copied!");
@@ -161,6 +241,18 @@ export default function ThreadView() {
               </button>
             </div>
           </div>
+
+          {/* 🔥 RIGHT SIDE (CLIENT EMAIL) */}
+          <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl backdrop-blur-md shadow-sm">
+
+            <Mail className="w-4 h-4 opacity-80" />
+
+            <span className="text-sm font-medium truncate max-w-[250px]">
+              {currentEmail}
+            </span>
+
+          </div>
+          <NextPrev />
         </div>
         {loading ? (
           <ThreadSkeleton />
@@ -227,164 +319,164 @@ export default function ThreadView() {
                 </>
               )}
             </div>
+            <PanelGroup direction="vertical" className="h-full">
+              <Panel defaultSize={70} minSize={20}> <div
+                ref={scrollRef}
+                className="h-full overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
+              >
+                {visibleMessages?.map((mail, idx) => {
+                  const isUser = mail.from_email.includes(businessEmail);
+                  const isFirst = idx === 0;
+                  const isLast = idx === visibleMessages?.length - 1;
 
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
-            >
-              {visibleMessages?.map((mail, idx) => {
-                const isUser = mail.from_email.includes(businessEmail);
-                const isFirst = idx === 0;
-                const isLast = idx === visibleMessages?.length - 1;
+                  // ✅ REAL index calculation
+                  const baseIndex = emails?.length - visibleMessages?.length;
+                  const realIndex = baseIndex + idx + 1;
+                  const formatMessage = (html) => {
+                    if (!html) return "";
 
-                // ✅ REAL index calculation
-                const baseIndex = emails?.length - visibleMessages?.length;
-                const realIndex = baseIndex + idx + 1;
-                const formatMessage = (html) => {
-                  if (!html) return "";
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
 
-                  const parser = new DOMParser();
-                  const doc = parser.parseFromString(html, "text/html");
+                    // ✅ 1. Fix already existing <a> tags
+                    doc.querySelectorAll("a").forEach((a) => {
+                      const href = a.getAttribute("href");
+                      if (!href) return;
 
-                  // ✅ 1. Fix already existing <a> tags
-                  doc.querySelectorAll("a").forEach((a) => {
-                    const href = a.getAttribute("href");
-                    if (!href) return;
+                      // keep original text IF it's meaningful
+                      const text = a.textContent.trim();
 
-                    // keep original text IF it's meaningful
-                    const text = a.textContent.trim();
-
-                    if (!text || text === href) {
-                      // if ugly or same as URL → shorten it
-                      let short = href.replace(/^https?:\/\//, "");
-                      if (short.length > 50) short = short.slice(0, 50) + "...";
-                      a.textContent = short;
-                    }
-
-                    a.setAttribute("target", "_blank");
-                    a.setAttribute("rel", "noopener noreferrer");
-                  });
-
-                  // ✅ 2. Convert ONLY plain text URLs (not inside <a>)
-                  const walk = (node) => {
-                    if (node.nodeType === 3) {
-                      const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-                      if (urlRegex.test(node.nodeValue)) {
-                        const span = document.createElement("span");
-
-                        span.innerHTML = node.nodeValue.replace(
-                          urlRegex,
-                          (url) => {
-                            let short = url.replace(/^https?:\/\//, "");
-                            if (short.length > 50)
-                              short = short.slice(0, 50) + "...";
-
-                            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${short}</a>`;
-                          },
-                        );
-
-                        node.replaceWith(...span.childNodes);
+                      if (!text || text === href) {
+                        // if ugly or same as URL → shorten it
+                        let short = href.replace(/^https?:\/\//, "");
+                        if (short.length > 50) short = short.slice(0, 50) + "...";
+                        a.textContent = short;
                       }
-                    } else if (node.nodeType === 1 && node.tagName !== "A") {
-                      node.childNodes.forEach(walk);
-                    }
-                  };
 
-                  walk(doc.body);
+                      a.setAttribute("target", "_blank");
+                      a.setAttribute("rel", "noopener noreferrer");
+                    });
 
-                  return doc.body.innerHTML;
-                };
-                return (
-                  <motion.div
-                    key={mail.message_id || idx}
-                    ref={
-                      isFirst ? firstMessageRef : isLast ? lastMessageRef : null
-                    }
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className={`flex ${isUser ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${isUser
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                          : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                    // ✅ 2. Convert ONLY plain text URLs (not inside <a>)
+                    const walk = (node) => {
+                      if (node.nodeType === 3) {
+                        const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+                        if (urlRegex.test(node.nodeValue)) {
+                          const span = document.createElement("span");
+
+                          span.innerHTML = node.nodeValue.replace(
+                            urlRegex,
+                            (url) => {
+                              let short = url.replace(/^https?:\/\//, "");
+                              if (short.length > 50)
+                                short = short.slice(0, 50) + "...";
+
+                              return `<a href="${url}" target="_blank" rel="noopener noreferrer">${short}</a>`;
+                            },
+                          );
+
+                          node.replaceWith(...span.childNodes);
                         }
+                      } else if (node.nodeType === 1 && node.tagName !== "A") {
+                        node.childNodes.forEach(walk);
+                      }
+                    };
+
+                    walk(doc.body);
+
+                    return doc.body.innerHTML;
+                  };
+                  return (
+                    <motion.div
+                      key={mail.message_id || idx}
+                      ref={
+                        isFirst ? firstMessageRef : isLast ? lastMessageRef : null
+                      }
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
+  ${isUser
+                            ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                            : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                          }
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
-                    >
-                      <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
-                        {realIndex}
-                      </div>
-                      {isLast && (
-                        <div
-                          className={`absolute -inset-1 rounded-3xl blur-2xl opacity-50 -z-10
+                      >
+                        <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
+                          {realIndex}
+                        </div>
+                        {isLast && (
+                          <div
+                            className={`absolute -inset-1 rounded-3xl blur-2xl opacity-50 -z-10
         ${isUser ? "bg-indigo-500" : "bg-blue-400"}
       `}
-                        />
-                      )}
-                      <div
-                        className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
-                          ? "bg-white/20 text-white"
-                          : "bg-gray-100 text-gray-700 border border-gray-200"
-                          }`}
-                      >
-                        {/* NAME */}
-                        <div className="flex items-center gap-2 font-semibold">
-                          <User className="w-3.5 h-3.5 opacity-70" />
-                          <span>
-                            {isUser ? "You" : mail.from_name || "Sender"}
-                          </span>
+                          />
+                        )}
+                        <div
+                          className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                            }`}
+                        >
+                          {/* NAME */}
+                          <div className="flex items-center gap-2 font-semibold">
+                            <User className="w-3.5 h-3.5 opacity-70" />
+                            <span>
+                              {isUser ? "You" : mail.from_name || "Sender"}
+                            </span>
+                          </div>
+
+                          {/* DATE & TIME */}
+                          <div className="flex flex-col text-right leading-tight">
+                            <span
+                              className={`${isUser ? "opacity-90" : "text-gray-500"}`}
+                            >
+                              {mail.date_created}
+                            </span>
+                            <span className="text-[10px] opacity-70">
+                              {mail.date_created_ago}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* DATE & TIME */}
-                        <div className="flex flex-col text-right leading-tight">
-                          <span
-                            className={`${isUser ? "opacity-90" : "text-gray-500"}`}
-                          >
-                            {mail.date_created}
-                          </span>
-                          <span className="text-[10px] opacity-70">
-                            {mail.date_created_ago}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: formatMessage(
-                            mail.body_html ? mail.body_html : mail.body,
-                          ),
-                        }}
-                        className="mail-content text-sm leading-relaxed max-w-full
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: formatMessage(
+                              mail.body_html ? mail.body_html : mail.body,
+                            ),
+                          }}
+                          className="mail-content text-sm leading-relaxed max-w-full
     overflow-x-auto break-words [&_*]:max-w-full"
-                      />
-                      {/* ATTACHMENTS BUTTON */}
-                      {mail?.attachment?.length > 0 && (
-                        <button
-                          onClick={() =>
-                            setOpenAttachmentsFor(
-                              openAttachmentsFor === mail.message_id
-                                ? null
-                                : mail.message_id,
-                            )
-                          }
-                          className="mt-3 flex items-center gap-2 text-xs font-medium
+                        />
+                        {/* ATTACHMENTS BUTTON */}
+                        {mail?.attachment?.length > 0 && (
+                          <button
+                            onClick={() =>
+                              setOpenAttachmentsFor(
+                                openAttachmentsFor === mail.message_id
+                                  ? null
+                                  : mail.message_id,
+                              )
+                            }
+                            className="mt-3 flex items-center gap-2 text-xs font-medium
       bg-gray-100 hover:bg-gray-200
       px-3 py-1.5 rounded-lg
       text-gray-700 border border-gray-300"
-                        >
-                          📎 Attachments ({mail.attachment.length})
-                        </button>
-                      )}
+                          >
+                            📎 Attachments ({mail.attachment.length})
+                          </button>
+                        )}
 
-                      {/* ATTACHMENT BOX */}
-                      {openAttachmentsFor === mail.message_id && (
-                        <div
-                          ref={attachmentBoxRef}
-                          className="
+                        {/* ATTACHMENT BOX */}
+                        {openAttachmentsFor === mail.message_id && (
+                          <div
+                            ref={attachmentBoxRef}
+                            className="
       absolute z-30 bottom-14 left-0
       w-72 max-h-64
       bg-white border border-gray-200
@@ -392,12 +484,12 @@ export default function ThreadView() {
       p-2
       overflow-y-auto
     "
-                        >
-                          {mail.attachment?.map((att) => (
-                            <button
-                              key={att.id}
-                              onClick={() => downloadAttachment(att)}
-                              className="
+                          >
+                            {mail.attachment?.map((att) => (
+                              <button
+                                key={att.id}
+                                onClick={() => downloadAttachment(att)}
+                                className="
           w-full flex items-center gap-3
           px-3 py-2
           rounded-lg
@@ -406,33 +498,33 @@ export default function ThreadView() {
           transition
           overflow-hidden
         "
-                            >
-                              <div className="text-xl shrink-0">📄</div>
+                              >
+                                <div className="text-xl shrink-0">📄</div>
 
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-800 truncate">
-                                  {att.filename}
-                                </p>
-                                <p className="text-xs text-gray-500 truncate">
-                                  {att.file_mime_type}
-                                </p>
-                              </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-800 truncate">
+                                    {att.filename}
+                                  </p>
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {att.file_mime_type}
+                                  </p>
+                                </div>
 
-                              <span className="text-xs text-blue-600 font-semibold shrink-0">
-                                Download
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                                <span className="text-xs text-blue-600 font-semibold shrink-0">
+                                  Download
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
 
-                      {/* THREE DOT MENU */}
-                      <button
-                        onClick={() => {
-                          setOpenMessageId(mail.message_id);
-                          fetchFullMessage(mail.message_id);
-                        }}
-                        className="
+                        {/* THREE DOT MENU */}
+                        <button
+                          onClick={() => {
+                            setOpenMessageId(mail.message_id);
+                            fetchFullMessage(mail.message_id);
+                          }}
+                          className="
     absolute bottom-2 left-2
     z-20
     bg-white
@@ -442,36 +534,106 @@ export default function ThreadView() {
     shadow-md
     hover:bg-gray-100
   "
-                        title="View full message"
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
+                          title="View full message"
                         >
-                          <circle cx="12" cy="5" r="2" />
-                          <circle cx="12" cy="12" r="2" />
-                          <circle cx="12" cy="19" r="2" />
-                        </svg>
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <circle cx="12" cy="5" r="2" />
+                            <circle cx="12" cy="12" r="2" />
+                            <circle cx="12" cy="19" r="2" />
+                          </svg>
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div></Panel>
+              <PanelResizeHandle className="cursor-row-resize" disabled={!superfastReply} />
+              <Panel defaultSize={!superfastReply ? 1 : 35} minSize={10}>
+                <div className="h-full p-2 border-t bg-gradient-to-r from-blue-500 to-indigo-600 shadow-2xl relative rounded-t-3xl">
+                  {loadAiReply || superfastReply ? (
+                    <>
+                      <div className="relative  rounded-2xl overflow-hidden h-full  flex justify-end gap-4 shadow-lg">
 
-            <div className="p-6 border-t bg-white shadow-2xl">
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/thread/reply`)}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <Send className="w-5 h-5" />
-                <span>Reply</span>
-              </motion.button>
-            </div>
+                        {/* 🔥 LEFT PANEL */}
+                        <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col justify-between rounded-lg">
+
+                          {/* ✨ Title Section */}
+                          <div className="flex justify-between">
+                            <div> <h2 className="text-lg font-bold flex items-center gap-2">
+                              ⚡ Super Fast Reply
+                            </h2>
+                            </div>
+                            <div className="flex items-center gap-2 text-lg opacity-80">
+                              {["🔥", "🚀", "💬", "🤖"].map((emoji, i) => (
+                                <span
+                                  key={i}
+                                  className="transition transform hover:scale-125 cursor-pointer text-2xl"
+                                >
+                                  {emoji}
+                                </span>
+                              ))}
+                            </div>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              title="Compose"
+
+                              onClick={() => navigate(`/thread/reply`)}
+                              className="bg-white/20 backdrop-blur-md cursor-pointer px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/30 transition"
+                            >
+                              <CornerUpRight className="w-4 h-4" />
+                            </motion.button>
+
+                          </div>
+
+                          {/* Send Button */}
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleSendClick}
+                            disabled={checkingThreadId || sending}
+                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+                          >
+                            <Send className="w-4 h-4" />
+                            Send
+                          </motion.button>
+                        </div>
+
+                        {/* ✨ RIGHT PANEL (EDITOR ONLY) */}
+                        <div className="w-[60%] bg-white p-2 rounded-lg h-full">
+
+                          <SmallTinyEditor
+                            setEditorContent={setEditorContent}
+                            editorContent={editorContent}
+                            setEditorReady={setEditorReady}
+                            editorRef={editorRef}
+                          />
+
+                        </div>
+                      </div>
+
+                    </>
+
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate(`/thread/reply`)}
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <Send className="w-5 h-5" />
+                      <span>Reply</span>
+                    </motion.button>
+                  )}
+                </div></Panel>
+            </PanelGroup >
+
+
           </>
         )}
 
@@ -544,3 +706,5 @@ export default function ThreadView() {
     </>
   );
 }
+
+

@@ -10,11 +10,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import Pagination from "./Pagination";
-import { getLadger } from "../store/Slices/ladger";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-
+import { getLadger } from "../store/Slices/ladger";
+import Pagination from "./Pagination"
 const TimelineEvent = ({ handleMessageClick }) => {
   const { ladger, email, pageCount, pageIndex, loading } = useSelector(
     (state) => state.ladger,
@@ -23,10 +22,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [timelineData, setTimelineData] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedId, setExpandedId] = useState(null);
-  const [activeTab, setActiveTab] = useState(null);
-  const [messageData, setMessageData] = useState(null);
-  const [messageLoading, setMessageLoading] = useState(false);
   const [activeVisualization, setActiveVisualization] = useState(null);
   const [showVisualization, setShowVisualization] = useState(false);
   const topRef = useRef(null);
@@ -38,9 +33,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
       block: "end",
     });
   };
-
-  const dispatch = useDispatch();
-
   useEffect(() => {
     if (!ladger) return;
 

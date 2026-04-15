@@ -45,7 +45,7 @@ export const NoSearchFoundPage = () => {
       setEnteredEmail(currentMessageId?.customer_email);
       toast.success(manualScanResponse?.message)
 
-      localStorage.setItem("email", currentMessageId?.customer_email);
+      localStorage.setItem("searchTerm", currentMessageId?.customer_email);
 
       dispatch(ladgerAction.setTimeline(null));
     }
@@ -107,7 +107,7 @@ export const NoSearchFoundPage = () => {
                 onClick={() => {
                   setEnteredEmail(item.customer_email);
 
-                  localStorage.setItem("email", item.customer_email);
+                  localStorage.setItem("searchTerm", item.customer_email);
 
                   dispatch(ladgerAction.setTimeline(null));
                 }}

@@ -9,10 +9,11 @@ import {
   Edit,
   Trash2,
   LayoutTemplateIcon,
+  MoonIcon,
 } from "lucide-react";
 import { TbMessageStar } from "react-icons/tb";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply";
@@ -32,14 +33,13 @@ import MailHeaderLeft from "./MailHeaderLeft";
 import TemplateSelectorModal from "../../TemplateSelectorModal";
 import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
-import { useParams } from "react-router-dom";
-
 import axios from "axios";
+import { SendingOverlay } from "./SendingOverlay";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
-  const { emails } = useOutletContext() || [];
+  const { emails, showSuccessAnim } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
   const { state } = useLocation();
@@ -54,19 +54,16 @@ const ThreadReply = () => {
   const {
     message: sendMessage,
     sending,
-    error: sendError,
     sendFailedResponse,
   } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const { crmEndpoint, user } = useSelector((s) => s.user);
   const [aiReplyContent, setAiReplyContent] = useState("");
-  const [aiNewContent, setAiNewContent] = useState("");
   const [openParent, setOpenParent] = useState(null);
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
   const [checkingThreadId, setCheckingTheadId] = useState(false);
-
   const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
@@ -219,19 +216,12 @@ const ThreadReply = () => {
   }, []);
   useEffect(() => {
     if (sendMessage) {
-      setFiles([]);
       setEditorContent("");
+      setFiles([]);
     }
-    if (sendError) {
-      toast.error(sendError);
-      dispatch(viewEmailAction.clearAllErrors());
-    }
-  }, [sendMessage, sendError]);
+  }, [sendMessage]);
   useEffect(() => {
     if (message && aiResponse) {
-      if (message == "User") setAiNewContent(aiResponse);
-      else if (message == "New") setAiNewContent(aiResponse);
-      else setAiReplyContent(aiResponse);
       insertAiReply(aiResponse);
       dispatch(aiReplyAction.clearMessge());
     }
@@ -257,6 +247,7 @@ const ThreadReply = () => {
   }, [showFailedModal]);
   return (
     <>
+      <SendingOverlay sending={sending} email={currentEmail} />
       <MessageModal
         showMessageModal={showMessageModal}
         closeMessageModal={() => setShowMessageModal(false)}
@@ -268,13 +259,9 @@ const ThreadReply = () => {
       />
       {(aiLoading || templateLoading) && <PageLoader />}
       <motion.div
-        className="
-    fixed inset-0 z-[999]
-    bg-white
-    w-screen h-screen
-    flex flex-col
-    overflow-hidden
-  "
+        initial={{ x: 0, opacity: 1 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="fixed inset-0 z-[999] bg-white w-screen h-screen flex flex-col overflow-hidden"
       >
         {/* HEADER */}
         <div className="flex gap-3 justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
@@ -342,6 +329,8 @@ const ThreadReply = () => {
             setEditorReady={setEditorReady}
             editorRef={editorRef}
           />
+
+          {/* ✅ SUCCESS OVERLAY */}
 
           <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
             <div className="flex items-center gap-3 flex-wrap">
@@ -520,21 +509,31 @@ const ThreadReply = () => {
             </div>
 
             {/* SEND BUTTON */}
-            <div className="flex gap-2 item-center justify-center">
+            <div className="flex gap-2 items-center justify-center">
               <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={
+                  !(loading || checkingThreadId || sending)
+                    ? { scale: 1.05, y: -2 }
+                    : {}
+                }
+                whileTap={
+                  !(loading || checkingThreadId || sending)
+                    ? { scale: 0.98 }
+                    : {}
+                }
                 onClick={() => handleSendClick()}
-                disabled={loading || checkingThreadId}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                disabled={loading || checkingThreadId || sending || editorContent == ""}
+                className={`px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 transition-all duration-200
+      ${loading || checkingThreadId || sending || editorContent == ""
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed shadow-none"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl"
+                  }`}
               >
                 <Send className="w-5 h-5" />
                 <span>
-                  {checkingThreadId
-                    ? "Checking..."
-                    : sending
-                      ? "Sending..."
-                      : "Send Email"}
+                  {checkingThreadId || sending
+                    ? "Sending..."
+                    : "Send Email"}
                 </span>
               </motion.button>
             </div>
@@ -649,3 +648,9 @@ const ThreadReply = () => {
 };
 
 export default ThreadReply;
+
+
+
+function MovingAnimation({ showSuccessAnim }) {
+
+}

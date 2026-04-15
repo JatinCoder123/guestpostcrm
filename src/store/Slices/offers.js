@@ -164,14 +164,7 @@ export const updateOffer = ({ email, offer }) => {
           },
         },
       );
-      const remRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=set_reminder`,
-        {
-          websites: [offer.website],
-          email: email,
-          reminder_type: "offer",
-        },
-      );
+
       showConsole && console.log(`Update Offer`, data);
       showConsole && console.log(`Reminder Response`, remRes);
 
@@ -203,13 +196,13 @@ export const updateOffer = ({ email, offer }) => {
         thread_id: offer.thread_id,
         message_id: offer.thread_id,
         group: "Offer",
-        okHandler: () => dispatch(getLadger({ email })),
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
         items: [
           buildLedgerItem({
             status: "Our-Offer-Updated",
             detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
             ladgerState: state.ladger,
-            user: state.crmUser.currentUser,
+            user: state.user.user,
             parent_name: "outr_offer",
           }),
         ],
@@ -279,13 +272,13 @@ export const createOffer = ({
         thread_id: threadId,
         message_id: threadId,
         group: "Offer",
-        okHandler: () => dispatch(getLadger({ email })),
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
         items: offers.map((offer) =>
           buildLedgerItem({
             status: "Our-Offer-Created",
             detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
             ladgerState: state.ladger,
-            user: state.crmUser.currentUser,
+            user: state.user.user,
             parent_name: "outr_offer",
           }),
         ),
@@ -343,13 +336,13 @@ export const deleteOffer = (email, id, offer) => {
         domain: state.user.crmEndpoint.split("?")[0],
         email: email,
         group: "Offer",
-        okHandler: () => dispatch(getLadger({ email })),
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
         items: [
           buildLedgerItem({
             status: "offer_deleted",
             detail: `website: {${getDomain(offer?.website)}}`,
             ladgerState: state.ladger,
-            user: state.crmUser.currentUser,
+            user: state.user.user,
             parent_name: "outr_offer",
           }),
         ],

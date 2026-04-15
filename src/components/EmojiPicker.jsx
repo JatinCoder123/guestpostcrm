@@ -168,7 +168,7 @@ const EmojiInput = () => {
                         onClick={() => setShowPicker(!showPicker)}
                         className="absolute -top-3 -right-4 p-2 bg-gray-50 border rounded-full cursor-pointer hover:bg-gray-200"
                     >
-                        <Plus size={10} />
+                        <Plus size={10} color="black" />
                     </button>
                 </div>
 

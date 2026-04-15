@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { SocketContext } from "../context/SocketContext";
-import useRefresh from "./useRefresh";
 import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
@@ -24,12 +23,12 @@ function useIdle({ idle }) {
 
     const refreshLadger = () => {
         if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, search: enteredEmail }));
-            dispatch(getViewEmail(enteredEmail));
+            dispatch(getLadger({ email: enteredEmail }));
+            dispatch(getViewEmail({ email: enteredEmail }));
             dispatch(getContact(enteredEmail));
         } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, search: enteredEmail }));
-            dispatch(getViewEmail(firstEmail));
+            dispatch(getLadger({ email: firstEmail }));
+            dispatch(getViewEmail({ email: firstEmail }));
             dispatch(getContact(firstEmail));
         }
         dispatch(getEmailsCount({}))
