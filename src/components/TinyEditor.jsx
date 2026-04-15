@@ -32,7 +32,7 @@ const TinyEditor = ({
 
             /* ================= PLUGINS ================= */
             plugins: `
-          advlist autolink autosave directionality
+          advlist autolink directionality
           visualblocks visualchars wordcount
           fullscreen preview searchreplace
           insertdatetime lists link image media
@@ -63,10 +63,7 @@ const TinyEditor = ({
               "bold italic underline | quicklink h2 h3 blockquote",
             quickbars_insert_toolbar: "image media table",
 
-            /* ================= AUTOSAVE ================= */
-            autosave_ask_before_unload: true,
-            autosave_interval: "30s",
-            autosave_restore_when_empty: true,
+
 
             /* ================= IMAGES ================= */
             image_advtab: true,
