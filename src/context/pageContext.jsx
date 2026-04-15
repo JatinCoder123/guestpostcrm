@@ -21,11 +21,21 @@ export const PageContextProvider = (props) => {
     localStorage.getItem("searchTerm") || null,
   );
   const [superfastReply, setSuperfastReply] = useState(() => {
-    return localStorage.getItem("superfastreply") === "true";
+    const stored = localStorage.getItem("superfastreply");
+
+    if (stored === null) {
+      localStorage.setItem("superfastreply", "true"); // set default
+      return true;
+    }
+
+    return stored === "true";
   });
   const superfastToggle = () => {
-    setSuperfastReply((prev) => !prev);
-    localStorage.setItem("superfastreply", !superfastReply);
+    setSuperfastReply((prev) => {
+      const newValue = !prev;
+      localStorage.setItem("superfastreply", newValue);
+      return newValue;
+    });
   };
 
   /* ❌ Clear */
