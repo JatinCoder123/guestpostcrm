@@ -31,7 +31,7 @@ const Thread = () => {
   }, [currentEmail, currentThread]);
   useEffect(() => {
 
-    if (threadEmail?.length > 0 && !state?.viewEmails) {
+    if (threadEmail?.length > 0 && !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)) {
       setEmails(threadEmail);
     }
   }, [threadEmail]);

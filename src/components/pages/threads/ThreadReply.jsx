@@ -34,8 +34,7 @@ import TemplateSelectorModal from "../../TemplateSelectorModal";
 import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
 import axios from "axios";
-import MessageOverlay from "./MessageOverlay";
-import { SendingOverlay } from "./ThreadView";
+import { SendingOverlay } from "./SendingOverlay";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);

@@ -4,8 +4,10 @@ import { PageContext } from "../context/pageContext"
 import { useDispatch, useSelector } from 'react-redux'
 import { excludeName, extractEmail } from '../assets/assets'
 import { ladgerAction } from '../store/Slices/ladger'
+import { ThreadContext } from '../context/ThreadContext'
 const NextPrev = () => {
     const { currentIndex, setCurrentIndex, setEnteredEmail } = useContext(PageContext)
+    const { handleSetCurrent } = useContext(ThreadContext)
     const { emails } = useSelector((state) => state.unreplied);
     const dispatch = useDispatch()
     const handleNext = () => {
@@ -14,6 +16,7 @@ const NextPrev = () => {
             localStorage.setItem("searchTerm", input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
+            handleSetCurrent({ email: input, thread: emails[currentIndex + 1].thread_id })
             setCurrentIndex((p) => p + 1);
         }
     };
@@ -23,6 +26,8 @@ const NextPrev = () => {
             localStorage.setItem("searchTerm", input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
+            handleSetCurrent({ email: input, thread: emails[currentIndex - 1].thread_id })
+
             setCurrentIndex((p) => p - 1);
         }
     };

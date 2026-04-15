@@ -148,7 +148,7 @@ export const SmallTinyEditor = ({
   setEditorReady,
 }) => {
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden h-full">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -162,7 +162,7 @@ export const SmallTinyEditor = ({
             setEditorReady(true);
           }}
           init={{
-            height: 200, // ✅ FIXED HEIGHT
+            height: "100vh", // ✅ FIXED HEIGHT
             menubar: false,
             branding: false,
             statusbar: false,
