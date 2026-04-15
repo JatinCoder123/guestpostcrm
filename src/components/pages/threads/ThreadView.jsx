@@ -1,5 +1,5 @@
-import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail, Edit, DollarSign } from "lucide-react";
+import { motion, AnimatePresence, useMotionTemplate } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -18,6 +18,10 @@ import axios from "axios";
 import NextPrev from "../../NextPrev.jsx";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { SendingOverlay } from "./SendingOverlay.jsx";
+import useModule from "../../../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants.js";
+import { ViewButton } from "../../ViewButton.jsx";
+
 export default function ThreadView() {
   const scrollRef = useRef();
   const { emails, loadAiReply = true, superfastReply } = useOutletContext() || [];
@@ -51,6 +55,38 @@ export default function ThreadView() {
     link.click();
     document.body.removeChild(link);
   };
+  const { loading: priceTempLoading, data: priceTemp } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "PRICE_LIST",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "Price Template",
+    dependencies: [currentEmail],
+  });
+  const { loading: finalOfferTempLoading, data: finalOfferTemp } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "EmailTemplates",
+      where: {
+        name: "Final Discounted Offer",
+      },
+    },
+    headers: {
+      "x-api-key": `${CREATE_DEAL_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    name: "Final Discounted Offer Template",
+    dependencies: [currentEmail],
+  });
   const {
     loading: aiLoading,
     aiReply: aiResponse,
@@ -93,7 +129,11 @@ export default function ThreadView() {
       toast.error("Something went wrong");
     }
   };
-
+  const insertTextAtCursor = (temp) => {
+    if (editorRef.current) {
+      setEditorContent(temp[0]?.body_html)
+    }
+  };
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!visibleMessages || visibleMessages?.length === 0) return;
@@ -560,7 +600,7 @@ export default function ThreadView() {
                       <div className="relative  rounded-2xl overflow-hidden h-full  flex justify-end gap-4 shadow-lg">
 
                         {/* 🔥 LEFT PANEL */}
-                        <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col justify-between rounded-lg">
+                        <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col gap-10 rounded-lg">
 
                           {/* ✨ Title Section */}
                           <div className="flex justify-between">
@@ -590,7 +630,50 @@ export default function ThreadView() {
                             </motion.button>
 
                           </div>
-
+                          <div className="flex  items-center  gap-5">
+                            <motion.button
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="mb-6 bg-purple-500 text-white p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                              onClick={() => setEditorContent("")}
+                            >
+                              Clear
+                            </motion.button>
+                            <ViewButton
+                              Icon={Edit}
+                              onClick={() =>
+                                navigate("/settings/templates", {
+                                  state: { templateId: priceTemp[0].id },
+                                })
+                              }
+                            >
+                              <motion.button
+                                whileHover={{ scale: 1.05, y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="bg-purple-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                                onClick={() => insertTextAtCursor(priceTemp)}
+                              >
+                                Price
+                              </motion.button>
+                            </ViewButton>
+                            <ViewButton
+                              Icon={Edit}
+                              onClick={() =>
+                                navigate("/settings/templates", {
+                                  state: { templateId: finalOfferTemp[0].id },
+                                })
+                              }
+                            >
+                              <motion.button
+                                whileHover={{ scale: 1.05, y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="bg-purple-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                                onClick={() => insertTextAtCursor(finalOfferTemp)}
+                              >
+                                Final Offer
+                              </motion.button>
+                            </ViewButton>
+                          </div>
                           {/* Send Button */}
                           <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -624,7 +707,7 @@ export default function ThreadView() {
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => navigate(`/thread/reply`)}
-                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       <Send className="w-5 h-5" />
                       <span>Reply</span>
