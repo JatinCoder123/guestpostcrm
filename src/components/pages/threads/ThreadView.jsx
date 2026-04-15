@@ -634,7 +634,7 @@ export default function ThreadView() {
                             <motion.button
                               whileHover={{ scale: 1.05, y: -2 }}
                               whileTap={{ scale: 0.98 }}
-                              className="mb-6 bg-purple-500 text-white p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                              className="mb-6 bg-purple-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
                               onClick={() => setEditorContent("")}
                             >
                               Clear
