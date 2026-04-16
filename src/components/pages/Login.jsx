@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { AUTH_URL } from "../../store/constants.js";
+import { logingImg } from "../../assets/assets.js";
 
 export default function Login() {
   const handleLoginWithGoogle = () => {
@@ -78,20 +79,15 @@ export default function Login() {
         transition={{ duration: 0.6 }}
         className="hidden lg:flex flex-1 items-center justify-center p-6"
       >
-        <div className="w-full h-[90vh] rounded-[20px] overflow-hidden shadow-xl relative transparent">
+        <div className="w-full h-[95vh] rounded-xl overflow-hidden shadow-xl relative">
 
-          <video
-            className="absolute w-full h-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-          >
-            <source src={video} type="video/webm" />
-            {/* fallback if webm fails */}
-            Your browser does not support the video tag.
-          </video>
+          <img
+            src={logingImg}
+            alt="Login visual"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+
+          <div className="absolute inset-0 bg-black/10 " />
 
         </div>
       </motion.div>
