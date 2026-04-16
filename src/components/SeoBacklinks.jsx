@@ -5,6 +5,7 @@ import {
   LinkIcon,
   Dock,
   SparkleIcon,
+  ArrowRight,
 } from "lucide-react";
 import {
   FiLink,
@@ -21,6 +22,7 @@ import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import GPCContentPopup from "./GPCContentPopup";
 
 function ValidTick() {
   return (
@@ -507,6 +509,36 @@ function DocumentAnalysisCard({
   ContentVerdictPromptLedger,
 }) {
   const navigateTo = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [analysisData, setAnalysisData] = useState(null);
+  const [openPopup, setOpenPopup] = useState(false);
+  const handleStartNow = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        "https://kartikey.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=zerogpt",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            doc_url: docLink,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      setAnalysisData(data);
+      setOpenPopup(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="overflow-hidden">
       {/* HEADER */}
@@ -532,7 +564,7 @@ function DocumentAnalysisCard({
           <div className="text-sm font-semibold text-gray-500">
             Content Verdict
           </div>
-          <div className="text-sm font-semibold text-gray-500">AI Score</div>
+          <div className="text-sm font-semibold text-gray-500">ZeroGPT</div>
           <div className="text-sm font-semibold text-gray-500">Link Count</div>
 
           <a
@@ -570,8 +602,14 @@ function DocumentAnalysisCard({
             <ValidationBadge valid={ContentValid} />
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            1%
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleStartNow}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-yellow-500 text-white text-sm font-semibold shadow-sm hover:bg-yellow-600 hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
+            >
+              {loading ? "Processing..." : "Start Now"}
+              <ArrowRight size={16} />
+            </button>
           </div>
 
           <div className="flex items-center">
@@ -580,6 +618,12 @@ function DocumentAnalysisCard({
             </span>
           </div>
         </div>
+        {openPopup && analysisData && (
+          <GPCContentPopup
+            data={analysisData}
+            onClose={() => setOpenPopup(false)}
+          />
+        )}
       </div>
     </div>
   );
