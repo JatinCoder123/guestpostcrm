@@ -15,13 +15,11 @@ const reportSlice = createSlice({
   reducers: {
     getGroupReportRequest(state, action) {
       state.loading = action.payload;
-      state.data = [];
       state.error = null;
     },
     getGroupReportSucess(state, action) {
       const { data, count, pageCount, pageIndex } = action.payload;
       state.loading = false;
-      state.data = data;
       if (pageIndex === 1) {
         state.data = data;
       } else {
@@ -34,7 +32,6 @@ const reportSlice = createSlice({
     },
     getGroupReportFailed(state, action) {
       state.loading = false;
-      state.data = [];
       state.error = action.payload;
     },
 
