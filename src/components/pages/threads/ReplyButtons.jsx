@@ -7,7 +7,7 @@ import useModule from '../../../hooks/useModule';
 import { base64ToUtf8, getDomain } from '../../../assets/assets';
 import { useEffect, useState } from 'react';
 import { useThreadContext } from '../../../hooks/useThreadContext';
-import { Brain, Edit, LayoutTemplateIcon, Sparkle, Sparkles, Trash2, Zap } from 'lucide-react';
+import { Brain, CircleDollarSign, Edit, LayoutTemplateIcon, Sparkle, Sparkles, Trash2, Zap } from 'lucide-react';
 import { ViewButton } from '../../ViewButton';
 import Attachment from '../../Attachment';
 import MicInput from "../../MicInput"
@@ -121,9 +121,8 @@ const ReplyButtons = ({
         }
     }, [message, aiResponse, dispatch]);
     useEffect(() => {
-        if (aiLoading) {
-            setContentLoading(true)
-        }
+        setContentLoading(aiLoading)
+
     }, [aiLoading])
     return (
         <div className="flex items-center gap-3 flex-wrap">
@@ -133,9 +132,9 @@ const ReplyButtons = ({
                 onClick={() => {
                     setEditorContent("");
                 }}
-                className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 mb-7"
+                className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 mb-7"
             >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-5 h-5" />
             </motion.button>
             <ViewButton Icon={Sparkles}>
                 <motion.button
@@ -269,10 +268,10 @@ const ReplyButtons = ({
                 <motion.button
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
                     onClick={insertTextAtCursor}
                 >
-                    Price
+                    <CircleDollarSign className="w-5 h-5" />
                 </motion.button>
             </ViewButton>
             <ViewButton Icon={Edit} onClick={() =>
@@ -283,7 +282,7 @@ const ReplyButtons = ({
                 <motion.button
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    className="bg-gradient-to-r from-gray-500 to-gray-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
                     onClick={() => {
                         setTemplateId(null);
                         if (defaultTemplate && editorRef.current) {
@@ -295,10 +294,7 @@ const ReplyButtons = ({
                         refetch();
                     }}
                 >
-                    <LayoutTemplateIcon className="w-4 h-4" />
-                    <span className="text-sm font-medium hidden sm:inline">
-                        All
-                    </span>
+                    <LayoutTemplateIcon className="w-5 h-5" />
                 </motion.button>
             </ViewButton>
             <Attachment data={files} onChange={setFiles} />

@@ -28,7 +28,7 @@ const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
-  const { emails, editorContent, setEditorContent, files, setFiles, to, cc } = useOutletContext() || [];
+  const { emails, editorContent, setEditorContent, handleSendClick, checkingThreadId, contentLoading } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
   const {
@@ -42,88 +42,15 @@ const ThreadReply = () => {
     sendFailedResponse,
   } = useSelector((s) => s.viewEmail);
   const navigate = useNavigate();
-  const { crmEndpoint, user } = useSelector((s) => s.user);
-
-
-  const [checkingThreadId, setCheckingTheadId] = useState(false);
-  const [templateId, setTemplateId] = useState(null);
   const [editorReady, setEditorReady] = useState(false);
   const modalRef = useRef(null);
-
-  const { loading: aiLoading } = useSelector((state) => state.aiReply);
-
-
-
-  // DEFAULT TEMPLATE
-  const { loading: defTemplateLoading, data: defaultTemplate } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=updateOffer&email=${currentEmail}`,
-    name: "DEFAULT TEMPLATE",
-    dependencies: [currentEmail],
-  });
-  const { loading: priceTempLoading, data: priceTemp } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: {
-        name: "PRICE_LIST",
-      },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "Price Template",
-    dependencies: [currentEmail],
-  });
-
-
   useEffect(() => {
     if (sendFailedResponse) {
       setShowFailedModal(true);
     }
   }, [sendFailedResponse]);
 
-  const handleSendClick = async (forceSend = 0) => {
-    try {
-      setCheckingTheadId(true);
-      const { data } = await axios.get(
-        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`,
-      );
-      console.log("MATHED THREAD ID", data);
 
-      if (!data?.success) {
-        toast.error("Failed to verify thread!");
-        return;
-      }
-      console.log("THREAD", threadId);
-      // 🔹 Check thread match
-      if (data.thread_id !== threadId) {
-        toast.error("Thread mismatch! Cannot send email ");
-        return;
-      }
-      console.log("TO AND CC", cc, to);
-      const contentToSend = editorContent;
-      const formData = new FormData();
-      formData.append("threadId", data.thread_id);
-      formData.append("replyBody", contentToSend);
-      formData.append("email", currentEmail);
-      formData.append("current_email", user.email);
-      formData.append("force_send", forceSend);
-      formData.append("cc", cc.join(","));
-      formData.append("to", to.join(","));
-      files.forEach((file) => {
-        formData.append("attachments[]", file.file);
-      });
-
-      dispatch(sendEmail(formData));
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while checking thread!");
-    } finally {
-      setCheckingTheadId(false);
-    }
-  };
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (

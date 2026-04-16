@@ -13,28 +13,24 @@ import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { SmallTinyEditor } from "../../TinyEditor.jsx";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
-import { sendEmail } from "../../../store/Slices/viewEmail.js";
 import axios from "axios";
 import NextPrev from "../../NextPrev.jsx";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { SendingOverlay } from "./SendingOverlay.jsx";
-import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants.js";
-import { ViewButton } from "../../ViewButton.jsx";
 import MailHeaderLeft from "./MailHeaderLeft.jsx";
 import ReplyButtons from "./ReplyButtons.jsx";
 import Inbox from "./Inbox.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
-  const { emails, loadAiReply = true, superfastReply, editorContent, setEditorContent } = useOutletContext() || [];
+  const { emails, loadAiReply = true, superfastReply, editorContent, setEditorContent, handleSendClick, checkingThreadId, contentLoading } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
   const { context: { currentThread: threadId, currentEmail } } = useThreadContext();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { businessEmail, crmEndpoint, user } = useSelector((s) => s.user);
+  const { crmEndpoint } = useSelector((s) => s.user);
   const { loading } = useSelector((s) => s.threadEmail);
   const { message: sendMessage, sending } = useSelector((s) => s.viewEmail);
   const [messageLimit, setMessageLimit] = useState(3);
@@ -43,18 +39,8 @@ export default function ThreadView() {
   const visibleMessages = emails?.slice(-messageLimit);
   const [editorReady, setEditorReady] = useState(false);
   const editorRef = useRef(null);
-  const [checkingThreadId, setCheckingTheadId] = useState(false);
 
   const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
-  const downloadAttachment = (att) => {
-    const link = document.createElement("a");
-    link.href = att.description; // file URL
-    link.download = att.filename || "attachment";
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const {
     loading: aiLoading,
@@ -81,11 +67,10 @@ export default function ThreadView() {
     try {
       setFullMessage(null);
 
-      const res = await fetch(
+      const { data } = await axios.get(
         `${getDomain(crmEndpoint)}/index.php?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}&full=1`,
       );
 
-      const data = await res.json();
 
       if (data?.success) {
         setFullMessage(data.email);
@@ -134,45 +119,6 @@ export default function ThreadView() {
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [emails?.length]);
 
-  const handleSendClick = async () => {
-    try {
-      setCheckingTheadId(true);
-      const { data } = await axios.get(
-        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`,
-      );
-      console.log("MATHED THREAD ID", data);
-
-      if (!data?.success) {
-        toast.error("Failed to verify thread!");
-        return;
-      }
-      console.log("THREAD", threadId);
-      // 🔹 Check thread match
-      if (data.thread_id !== threadId) {
-        toast.error("Thread mismatch! Cannot send email ");
-        return;
-      }
-      const contentToSend = editorContent;
-      const formData = new FormData();
-      formData.append("threadId", data.thread_id);
-      formData.append("replyBody", contentToSend);
-      formData.append("email", currentEmail);
-      formData.append("current_email", user.email);
-      formData.append("force_send", 1);
-      formData.append("cc", "");
-      formData.append("to", "");
-      [].forEach((file) => {
-        formData.append("attachments[]", file.file);
-      });
-
-      dispatch(sendEmail(formData));
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while checking thread!");
-    } finally {
-      setCheckingTheadId(false);
-    }
-  };
   return (
     <>
       <SendingOverlay sending={sending || checkingThreadId} email={currentEmail} />
@@ -242,11 +188,11 @@ export default function ThreadView() {
           <>
             <NavigationBar messageLimit={messageLimit} setMessageLimit={setMessageLimit} emails={emails} scrollRef={scrollRef} />
             <PanelGroup direction="vertical" className="h-full">
-              <Panel defaultSize={70} minSize={20}>
+              <Panel defaultSize={55} minSize={20}>
                 <Inbox scrollRef={scrollRef} visibleMessages={visibleMessages} emails={emails} firstMessageRef={firstMessageRef} lastMessageRef={lastMessageRef} setOpenMessageId={setOpenMessageId} fetchFullMessage={fetchFullMessage} />
               </Panel>
               <PanelResizeHandle className="cursor-row-resize" disabled={!superfastReply} />
-              <Panel defaultSize={!superfastReply ? 1 : 55} minSize={10}>
+              <Panel defaultSize={!superfastReply ? 1 : 45} minSize={10}>
                 <div className="h-full p-2 border-t bg-gradient-to-r from-blue-500 to-indigo-600 shadow-2xl relative rounded-t-3xl">
                   {loadAiReply || superfastReply ? (
                     <>
@@ -279,7 +225,7 @@ export default function ThreadView() {
                             whileTap={{ scale: 0.95 }}
                             onClick={handleSendClick}
                             disabled={checkingThreadId || sending}
-                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
                           >
                             <Send className="w-4 h-4" />
                             Send
@@ -287,8 +233,19 @@ export default function ThreadView() {
                         </div>
 
                         {/* ✨ RIGHT PANEL (EDITOR ONLY) */}
-                        <div className="w-[60%] bg-white p-2 rounded-lg h-full">
+                        <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
 
+                          {/* 🔥 LOADING OVERLAY */}
+                          {contentLoading && (
+                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
+                              <div className="flex flex-col items-center gap-3">
+                                <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm text-gray-600 font-medium">Loading content...</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ✨ EDITOR */}
                           <SmallTinyEditor
                             setEditorContent={setEditorContent}
                             editorContent={editorContent}

@@ -6,6 +6,16 @@ const Inbox = ({ scrollRef, visibleMessages, emails, firstMessageRef, lastMessag
     const { businessEmail } = useSelector((s) => s.user);
     const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
     const attachmentBoxRef = useRef(null);
+    const downloadAttachment = (att) => {
+        const link = document.createElement("a");
+        link.href = att.description; // file URL
+        link.download = att.filename || "attachment";
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (
