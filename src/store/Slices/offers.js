@@ -115,8 +115,7 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
 
     try {
       const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
+        `${getState().user.crmEndpoint
         }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
       );
 

@@ -40,6 +40,7 @@ export function TopNav() {
   const prevCountRef = useRef(errorLogCount);
   const [copied, setCopied] = useState(false);
   const { user, error } = useSelector((state) => state.user);
+  const { timeline } = useSelector((state) => state.ladger);
   const { count } = useSelector((state) => state.hot);
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -216,6 +217,7 @@ export function TopNav() {
           <DropDown
             options={periodOptions}
             handleSelectOption={handleSelectPeriod}
+            timeline={timeline}
           />
         </div>
       </div>

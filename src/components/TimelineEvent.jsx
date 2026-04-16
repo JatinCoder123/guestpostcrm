@@ -264,13 +264,12 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     className={`absolute top-1 left-1 h-[calc(100%-8px)]
         w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${
-          selectedView === "all"
-            ? "translate-x-0"
-            : selectedView === "important"
-              ? "translate-x-full"
-              : "translate-x-[200%]"
-        }`}
+        ${selectedView === "all"
+                        ? "translate-x-0"
+                        : selectedView === "important"
+                          ? "translate-x-full"
+                          : "translate-x-[200%]"
+                      }`}
                   />
 
                   {[
@@ -283,11 +282,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       onClick={() => setSelectedView(tab.key)}
                       className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${
-            selectedView === tab.key
-              ? "text-white"
-              : "text-gray-600 hover:text-purple-600"
-          }`}
+          ${selectedView === tab.key
+                          ? "text-white"
+                          : "text-gray-600 hover:text-purple-600"
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -359,11 +357,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     </div>
                     <div
                       className={`group flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm relative
-                      ${
-                        index === 0
+                      ${index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                      }`}
+                        }`}
                     >
                       {/* 🔥 HOVER ACTION BAR */}
                       <div
@@ -483,7 +480,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                           <span className="text-gray-500 text-sm">
                             {event.user_details == false
                               ? "-by GPC"
-                              : "-by " + event.user_details.name}
+                              : "-by " + event?.user_details?.name}
                           </span>
                         </div>
                       </div>
@@ -578,12 +575,12 @@ const TimelineEvent = ({ handleMessageClick }) => {
                               {/* Content */}
                               <div className="flex-1 px-5 py-3">
                                 <p className="text-white text-xl font-medium mb-1">
-                                  <strong>{step.name?.split(":")[0]}</strong>
-                                  {step.name?.includes(":") && (
+                                  <strong>{step?.name?.split(":")[0]}</strong>
+                                  {step?.name?.includes(":") && (
                                     <span className="font-normal">
                                       {" "}
                                       :{" "}
-                                      {step.name
+                                      {step?.name
                                         .split(":")
                                         .slice(1)
                                         .join(":")

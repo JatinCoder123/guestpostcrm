@@ -196,11 +196,10 @@ export default function EditOrder({ threadId, id, email }) {
                     <label
                       key={type}
                       className={`whitespace-nowrap px-4 py-2 border rounded-lg cursor-pointer transition 
-          ${
-            order.order_type === type
-              ? "border-blue-600 bg-blue-50"
-              : "border-gray-300"
-          }`}
+          ${order.order_type === type
+                          ? "border-blue-600 bg-blue-50"
+                          : "border-gray-300"
+                        }`}
                     >
                       <input
                         type="radio"

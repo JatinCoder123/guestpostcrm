@@ -397,7 +397,6 @@ export const sendEmail = (
           sendedEmail: formData.get("email")
         }),
       );
-
       dispatch(viewEmailSlice.actions.clearAllErrors());
       localStorage.getItem("addActivity") && updateActivity(getState().user.crmEndpoint, formData.get("email"), getState().user.user.name, getState().user.user.email, "Email Sent")
     } catch (error) {

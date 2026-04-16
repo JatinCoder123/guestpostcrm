@@ -7,7 +7,7 @@ const gpcControllerSlice = createSlice({
   initialState: {
     loading: false,
     updating: false,
-    checkboxes: {},
+    checkboxes: [],
     error: null,
     message: null,
   },
@@ -25,26 +25,24 @@ const gpcControllerSlice = createSlice({
       state.error = action.payload;
     },
 
-    updateGpcRequest(state) {
+    updateGpcRequest(state, action) {
       state.updating = true;
       state.error = null;
+      state.checkboxes = state.checkboxes.map(control => action.payload.id == control.id ? { ...control, is_allowed: action.payload.value } : control)
     },
     updateGpcSuccess(state, action) {
       state.updating = false;
-      state.message = action.payload;
     },
     updateGpcFailed(state, action) {
       state.updating = false;
       state.error = action.payload;
+      state.checkboxes = state.checkboxes.map(control => action.payload.id == control.id ? { ...control, is_allowed: action.payload.value == "1" ? "0" : "1" } : control)
     },
 
     clearGpcMessage(state) {
       state.message = null;
     },
-    applyBackendUpdate(state, action) {
-      const { key, value } = action.payload;
-      state.checkboxes[key] = value;
-    }
+
 
   },
 });
@@ -57,13 +55,13 @@ export const fetchGpcController = () => {
       const domain = getState().user.crmEndpoint.split("?")[0];
 
       const { data } = await axios.get(
-        `${domain}?entryPoint=fetch_gpc&current_email=${getState().user.user.email}type=manage_gpc&get_name=1`
+        `${domain}?entryPoint=fetch_gpc&current_email=${getState().user.user.email}&type=manage_gpc`
       );
       showConsole && console.log(`GPC Data`, data?.data?.available_checkbox);
 
       dispatch(
         gpcControllerSlice.actions.getGpcSuccess(
-          data?.data?.available_checkbox || {}
+          data?.data || []
         )
       );
     } catch (error) {
@@ -75,38 +73,19 @@ export const fetchGpcController = () => {
     }
   };
 };
-export const updateGpcController = (key, value) => {
+export const updateGpcController = (id, value) => {
   return async (dispatch, getState) => {
-    dispatch(gpcControllerSlice.actions.updateGpcRequest());
+    dispatch(gpcControllerSlice.actions.updateGpcRequest({ id, value }));
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
 
       const { data } = await axios.get(
-        `${domain}?entryPoint=fetch_gpc&type=manage_gpc&field=${key}&value=${value ? 1 : 0
-        }`
+        `${getState().user.crmEndpoint}&type=manage_gpc&current_email=${getState().user.user.email}&id=${id}&value=${value}`
       );
-
-      if (data?.success) {
-        dispatch(
-          gpcControllerSlice.actions.applyBackendUpdate({
-            key: data.update,
-            value: data.new,
-          })
-        );
-      }
-
-      dispatch(
-        gpcControllerSlice.actions.updateGpcSuccess(
-          "GPC setting updated"
-        )
-      );
+      dispatch(gpcControllerSlice.actions.updateGpcSuccess());
     } catch (error) {
-      dispatch(
-        gpcControllerSlice.actions.updateGpcFailed(
-          "Failed to update GPC setting"
-        )
-      );
+      dispatch(gpcControllerSlice.actions.updateGpcFailed({ id, value, message: "Failed to update GPC setting" }));
     }
   };
 };

@@ -3,10 +3,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 
-const DropDown = ({ options, handleSelectOption }) => {
+const DropDown = ({ options, handleSelectOption, timeline }) => {
   const [open, setOpen] = useState(false);
   const dropRef = useRef();
-  const { timeline } = useSelector((state) => state.ladger);
 
   useEffect(() => {
     function handleClickOutside(e) {
