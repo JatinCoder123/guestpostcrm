@@ -1,4 +1,4 @@
-import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail, Edit, DollarSign } from "lucide-react";
+import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail, Edit, DollarSign, ArrowBigUp, ArrowBigDown } from "lucide-react";
 import { motion, AnimatePresence, useMotionTemplate } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,81 +12,36 @@ import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { SmallTinyEditor } from "../../TinyEditor.jsx";
-import { getAiReply } from "../../../store/Slices/aiReply.js";
-import { sendEmail } from "../../../store/Slices/viewEmail.js";
+import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
 import axios from "axios";
 import NextPrev from "../../NextPrev.jsx";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { SendingOverlay } from "./SendingOverlay.jsx";
-import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants.js";
-import { ViewButton } from "../../ViewButton.jsx";
+import MailHeaderLeft from "./MailHeaderLeft.jsx";
+import ReplyButtons from "./ReplyButtons.jsx";
+import Inbox from "./Inbox.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
-  const { emails, loadAiReply = true, superfastReply } = useOutletContext() || [];
+  const { emails, loadAiReply = true, superfastReply, editorContent, setEditorContent, handleSendClick, checkingThreadId, contentLoading } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
   const { context: { currentThread: threadId, currentEmail } } = useThreadContext();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { businessEmail, crmEndpoint, user } = useSelector((s) => s.user);
+  const { crmEndpoint } = useSelector((s) => s.user);
   const { loading } = useSelector((s) => s.threadEmail);
   const { message: sendMessage, sending } = useSelector((s) => s.viewEmail);
   const [messageLimit, setMessageLimit] = useState(3);
   const [openMessageId, setOpenMessageId] = useState(null);
   const [fullMessage, setFullMessage] = useState(null);
-  const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
-  const attachmentBoxRef = useRef(null);
   const visibleMessages = emails?.slice(-messageLimit);
-  const [editorContent, setEditorContent] = useState("");
   const [editorReady, setEditorReady] = useState(false);
   const editorRef = useRef(null);
-  const [checkingThreadId, setCheckingTheadId] = useState(false);
 
   const [focusedIndex, setFocusedIndex] = useState(visibleMessages?.length - 1);
-  const downloadAttachment = (att) => {
-    const link = document.createElement("a");
-    link.href = att.description; // file URL
-    link.download = att.filename || "attachment";
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-  const { loading: priceTempLoading, data: priceTemp } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: {
-        name: "PRICE_LIST",
-      },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "Price Template",
-    dependencies: [currentEmail],
-  });
-  const { loading: finalOfferTempLoading, data: finalOfferTemp } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: {
-        name: "Final Discounted Offer",
-      },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "Final Discounted Offer Template",
-    dependencies: [currentEmail],
-  });
+
   const {
     loading: aiLoading,
     aiReply: aiResponse,
@@ -94,11 +49,9 @@ export default function ThreadView() {
     message,
   } = useSelector((state) => state.aiReply);
   useEffect(() => {
-    if (!loading && (loadAiReply || superfastReply)) {
-      dispatch(getAiReply(threadId));
-      setEditorContent("")
-    }
-  }, [loading, loadAiReply, superfastReply]);
+    dispatch(getAiReply(threadId));
+    setEditorContent("")
+  }, [threadId]);
   useEffect(() => {
     if (sendMessage) {
       setEditorContent("");
@@ -107,17 +60,17 @@ export default function ThreadView() {
   useEffect(() => {
     if (message && aiResponse) {
       setEditorContent(aiResponse)
+      dispatch(aiReplyAction.clearMessge())
     }
   }, [aiResponse, aiError, message]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
 
-      const res = await fetch(
+      const { data } = await axios.get(
         `${getDomain(crmEndpoint)}/index.php?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}&full=1`,
       );
 
-      const data = await res.json();
 
       if (data?.success) {
         setFullMessage(data.email);
@@ -127,11 +80,6 @@ export default function ThreadView() {
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
-    }
-  };
-  const insertTextAtCursor = (temp) => {
-    if (editorRef.current) {
-      setEditorContent(temp[0]?.body_html)
     }
   };
   useEffect(() => {
@@ -170,58 +118,7 @@ export default function ThreadView() {
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [emails?.length]);
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        attachmentBoxRef.current &&
-        !attachmentBoxRef.current.contains(e.target)
-      ) {
-        setOpenAttachmentsFor(null);
-      }
-    };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-  const handleSendClick = async () => {
-    try {
-      setCheckingTheadId(true);
-      const { data } = await axios.get(
-        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`,
-      );
-      console.log("MATHED THREAD ID", data);
-
-      if (!data?.success) {
-        toast.error("Failed to verify thread!");
-        return;
-      }
-      console.log("THREAD", threadId);
-      // 🔹 Check thread match
-      if (data.thread_id !== threadId) {
-        toast.error("Thread mismatch! Cannot send email ");
-        return;
-      }
-      const contentToSend = editorContent;
-      const formData = new FormData();
-      formData.append("threadId", data.thread_id);
-      formData.append("replyBody", contentToSend);
-      formData.append("email", currentEmail);
-      formData.append("current_email", user.email);
-      formData.append("force_send", 1);
-      formData.append("cc", "");
-      formData.append("to", "");
-      [].forEach((file) => {
-        formData.append("attachments[]", file.file);
-      });
-
-      dispatch(sendEmail(formData));
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while checking thread!");
-    } finally {
-      setCheckingTheadId(false);
-    }
-  };
   return (
     <>
       <SendingOverlay sending={sending || checkingThreadId} email={currentEmail} />
@@ -236,7 +133,7 @@ export default function ThreadView() {
   "
       >
         {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+        <div className="flex justify-between items-center px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
 
           {/* 🔹 LEFT SIDE */}
           <div className="flex items-center gap-3">
@@ -281,319 +178,21 @@ export default function ThreadView() {
               </button>
             </div>
           </div>
+          {superfastReply && <MailHeaderLeft />}
+          {superfastReply && <NextPrev />}
 
-          {/* 🔥 RIGHT SIDE (CLIENT EMAIL) */}
-          <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl backdrop-blur-md shadow-sm">
-
-            <Mail className="w-4 h-4 opacity-80" />
-
-            <span className="text-sm font-medium truncate max-w-[250px]">
-              {currentEmail}
-            </span>
-
-          </div>
-          <NextPrev />
         </div>
         {loading ? (
           <ThreadSkeleton />
         ) : (
           <>
-            <div className="px-6 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-gray-100 flex gap-3 border-b border-gray-200">
-              {/* LOAD MORE / SHOW ALL (conditional) */}
-              {messageLimit < emails?.length && (
-                <>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => setMessageLimit((p) => p + 3)}
-                    className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
-                  >
-                    Load More
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => setMessageLimit(emails.length)}
-                    className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
-                  >
-                    Show All
-                  </motion.button>
-                </>
-              )}
-
-              {/* FIRST / LAST (ALWAYS AVAILABLE) */}
-              {emails?.length > 0 && (
-                <>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => {
-                      // Step 1: show all messages if not already
-                      if (messageLimit < emails.length) {
-                        setMessageLimit(emails.length);
-                      }
-
-                      // Step 2: wait for DOM update, then scroll
-                      setTimeout(() => {
-                        scrollRef.current?.scrollTo({
-                          top: 0,
-                          behavior: "smooth",
-                        });
-                      }, 50);
-                    }}
-                    className="px-5 py-2.5 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
-                  >
-                    First Message
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => {
-                      scrollRef.current?.scrollTo({
-                        top: scrollRef.current.scrollHeight,
-                        behavior: "smooth",
-                      });
-                    }}
-                    className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all"
-                  >
-                    Last Message
-                  </motion.button>
-                </>
-              )}
-            </div>
+            <NavigationBar messageLimit={messageLimit} setMessageLimit={setMessageLimit} emails={emails} scrollRef={scrollRef} />
             <PanelGroup direction="vertical" className="h-full">
-              <Panel defaultSize={70} minSize={20}> <div
-                ref={scrollRef}
-                className="h-full overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 space-y-5"
-              >
-                {visibleMessages?.map((mail, idx) => {
-                  const isUser = mail.from_email.includes(businessEmail);
-                  const isFirst = idx === 0;
-                  const isLast = idx === visibleMessages?.length - 1;
-
-                  // ✅ REAL index calculation
-                  const baseIndex = emails?.length - visibleMessages?.length;
-                  const realIndex = baseIndex + idx + 1;
-                  const formatMessage = (html) => {
-                    if (!html) return "";
-
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, "text/html");
-
-                    // ✅ 1. Fix already existing <a> tags
-                    doc.querySelectorAll("a").forEach((a) => {
-                      const href = a.getAttribute("href");
-                      if (!href) return;
-
-                      // keep original text IF it's meaningful
-                      const text = a.textContent.trim();
-
-                      if (!text || text === href) {
-                        // if ugly or same as URL → shorten it
-                        let short = href.replace(/^https?:\/\//, "");
-                        if (short.length > 50) short = short.slice(0, 50) + "...";
-                        a.textContent = short;
-                      }
-
-                      a.setAttribute("target", "_blank");
-                      a.setAttribute("rel", "noopener noreferrer");
-                    });
-
-                    // ✅ 2. Convert ONLY plain text URLs (not inside <a>)
-                    const walk = (node) => {
-                      if (node.nodeType === 3) {
-                        const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-                        if (urlRegex.test(node.nodeValue)) {
-                          const span = document.createElement("span");
-
-                          span.innerHTML = node.nodeValue.replace(
-                            urlRegex,
-                            (url) => {
-                              let short = url.replace(/^https?:\/\//, "");
-                              if (short.length > 50)
-                                short = short.slice(0, 50) + "...";
-
-                              return `<a href="${url}" target="_blank" rel="noopener noreferrer">${short}</a>`;
-                            },
-                          );
-
-                          node.replaceWith(...span.childNodes);
-                        }
-                      } else if (node.nodeType === 1 && node.tagName !== "A") {
-                        node.childNodes.forEach(walk);
-                      }
-                    };
-
-                    walk(doc.body);
-
-                    return doc.body.innerHTML;
-                  };
-                  return (
-                    <motion.div
-                      key={mail.message_id || idx}
-                      ref={
-                        isFirst ? firstMessageRef : isLast ? lastMessageRef : null
-                      }
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${isUser
-                            ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-                            : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                          }
-  ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
-`}
-                      >
-                        <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
-                          {realIndex}
-                        </div>
-                        {isLast && (
-                          <div
-                            className={`absolute -inset-1 rounded-3xl blur-2xl opacity-50 -z-10
-        ${isUser ? "bg-indigo-500" : "bg-blue-400"}
-      `}
-                          />
-                        )}
-                        <div
-                          className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
-                            ? "bg-white/20 text-white"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
-                            }`}
-                        >
-                          {/* NAME */}
-                          <div className="flex items-center gap-2 font-semibold">
-                            <User className="w-3.5 h-3.5 opacity-70" />
-                            <span>
-                              {isUser ? "You" : mail.from_name || "Sender"}
-                            </span>
-                          </div>
-
-                          {/* DATE & TIME */}
-                          <div className="flex flex-col text-right leading-tight">
-                            <span
-                              className={`${isUser ? "opacity-90" : "text-gray-500"}`}
-                            >
-                              {mail.date_created}
-                            </span>
-                            <span className="text-[10px] opacity-70">
-                              {mail.date_created_ago}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: formatMessage(
-                              mail.body_html ? mail.body_html : mail.body,
-                            ),
-                          }}
-                          className="mail-content text-sm leading-relaxed max-w-full
-    overflow-x-auto break-words [&_*]:max-w-full"
-                        />
-                        {/* ATTACHMENTS BUTTON */}
-                        {mail?.attachment?.length > 0 && (
-                          <button
-                            onClick={() =>
-                              setOpenAttachmentsFor(
-                                openAttachmentsFor === mail.message_id
-                                  ? null
-                                  : mail.message_id,
-                              )
-                            }
-                            className="mt-3 flex items-center gap-2 text-xs font-medium
-      bg-gray-100 hover:bg-gray-200
-      px-3 py-1.5 rounded-lg
-      text-gray-700 border border-gray-300"
-                          >
-                            📎 Attachments ({mail.attachment.length})
-                          </button>
-                        )}
-
-                        {/* ATTACHMENT BOX */}
-                        {openAttachmentsFor === mail.message_id && (
-                          <div
-                            ref={attachmentBoxRef}
-                            className="
-      absolute z-30 bottom-14 left-0
-      w-72 max-h-64
-      bg-white border border-gray-200
-      rounded-xl shadow-xl
-      p-2
-      overflow-y-auto
-    "
-                          >
-                            {mail.attachment?.map((att) => (
-                              <button
-                                key={att.id}
-                                onClick={() => downloadAttachment(att)}
-                                className="
-          w-full flex items-center gap-3
-          px-3 py-2
-          rounded-lg
-          hover:bg-gray-100
-          text-left
-          transition
-          overflow-hidden
-        "
-                              >
-                                <div className="text-xl shrink-0">📄</div>
-
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-800 truncate">
-                                    {att.filename}
-                                  </p>
-                                  <p className="text-xs text-gray-500 truncate">
-                                    {att.file_mime_type}
-                                  </p>
-                                </div>
-
-                                <span className="text-xs text-blue-600 font-semibold shrink-0">
-                                  Download
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* THREE DOT MENU */}
-                        <button
-                          onClick={() => {
-                            setOpenMessageId(mail.message_id);
-                            fetchFullMessage(mail.message_id);
-                          }}
-                          className="
-    absolute bottom-2 left-2
-    z-20
-    bg-white
-    text-black
-    p-1.5
-    rounded-full
-    shadow-md
-    hover:bg-gray-100
-  "
-                          title="View full message"
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <circle cx="12" cy="5" r="2" />
-                            <circle cx="12" cy="12" r="2" />
-                            <circle cx="12" cy="19" r="2" />
-                          </svg>
-                        </button>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div></Panel>
+              <Panel defaultSize={55} minSize={20}>
+                <Inbox scrollRef={scrollRef} visibleMessages={visibleMessages} emails={emails} firstMessageRef={firstMessageRef} lastMessageRef={lastMessageRef} setOpenMessageId={setOpenMessageId} fetchFullMessage={fetchFullMessage} />
+              </Panel>
               <PanelResizeHandle className="cursor-row-resize" disabled={!superfastReply} />
-              <Panel defaultSize={!superfastReply ? 1 : 35} minSize={10}>
+              <Panel defaultSize={!superfastReply ? 1 : 45} minSize={10}>
                 <div className="h-full p-2 border-t bg-gradient-to-r from-blue-500 to-indigo-600 shadow-2xl relative rounded-t-3xl">
                   {loadAiReply || superfastReply ? (
                     <>
@@ -604,20 +203,9 @@ export default function ThreadView() {
 
                           {/* ✨ Title Section */}
                           <div className="flex justify-between">
-                            <div> <h2 className="text-lg font-bold flex items-center gap-2">
+                            <h2 className="text-lg font-bold flex items-center gap-2">
                               ⚡ Super Fast Reply
                             </h2>
-                            </div>
-                            <div className="flex items-center gap-2 text-lg opacity-80">
-                              {["🔥", "🚀", "💬", "🤖"].map((emoji, i) => (
-                                <span
-                                  key={i}
-                                  className="transition transform hover:scale-125 cursor-pointer text-2xl"
-                                >
-                                  {emoji}
-                                </span>
-                              ))}
-                            </div>
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -630,57 +218,14 @@ export default function ThreadView() {
                             </motion.button>
 
                           </div>
-                          <div className="flex  items-center  gap-5">
-                            <motion.button
-                              whileHover={{ scale: 1.05, y: -2 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="mb-6 bg-purple-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-                              onClick={() => setEditorContent("")}
-                            >
-                              Clear
-                            </motion.button>
-                            <ViewButton
-                              Icon={Edit}
-                              onClick={() =>
-                                navigate("/settings/templates", {
-                                  state: { templateId: priceTemp[0].id },
-                                })
-                              }
-                            >
-                              <motion.button
-                                whileHover={{ scale: 1.05, y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="bg-purple-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-                                onClick={() => insertTextAtCursor(priceTemp)}
-                              >
-                                Price
-                              </motion.button>
-                            </ViewButton>
-                            <ViewButton
-                              Icon={Edit}
-                              onClick={() =>
-                                navigate("/settings/templates", {
-                                  state: { templateId: finalOfferTemp[0].id },
-                                })
-                              }
-                            >
-                              <motion.button
-                                whileHover={{ scale: 1.05, y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="bg-purple-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-                                onClick={() => insertTextAtCursor(finalOfferTemp)}
-                              >
-                                Final Offer
-                              </motion.button>
-                            </ViewButton>
-                          </div>
+                          <ReplyButtons editorReady={editorReady} editorRef={editorRef} />
                           {/* Send Button */}
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handleSendClick}
                             disabled={checkingThreadId || sending}
-                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
                           >
                             <Send className="w-4 h-4" />
                             Send
@@ -688,8 +233,19 @@ export default function ThreadView() {
                         </div>
 
                         {/* ✨ RIGHT PANEL (EDITOR ONLY) */}
-                        <div className="w-[60%] bg-white p-2 rounded-lg h-full">
+                        <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
 
+                          {/* 🔥 LOADING OVERLAY */}
+                          {contentLoading && (
+                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
+                              <div className="flex flex-col items-center gap-3">
+                                <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-sm text-gray-600 font-medium">Loading content...</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ✨ EDITOR */}
                           <SmallTinyEditor
                             setEditorContent={setEditorContent}
                             editorContent={editorContent}
@@ -791,3 +347,69 @@ export default function ThreadView() {
 }
 
 
+
+
+function NavigationBar({ messageLimit, setMessageLimit, emails, scrollRef }) {
+  return (
+    <div className="p-3 flex gap-3 border-b  backdrop-blur-xl ">
+      {messageLimit < emails?.length && (
+        <>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            onClick={() => setMessageLimit((p) => p + 3)}
+            className="px-5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            Load More
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            onClick={() => setMessageLimit(emails.length)}
+            className="px-5 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            Show All
+          </motion.button>
+        </>
+      )}
+
+      {/* FIRST / LAST (ALWAYS AVAILABLE) */}
+      {emails?.length > 0 && (
+        <>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            onClick={() => {
+              // Step 1: show all messages if not already
+              if (messageLimit < emails.length) {
+                setMessageLimit(emails.length);
+              }
+
+              // Step 2: wait for DOM update, then scroll
+              setTimeout(() => {
+                scrollRef.current?.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
+                });
+              }, 50);
+            }}
+            className="p-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-full font-medium shadow-sm hover:shadow-md transition-all cursor-pointer"
+          >
+            <ArrowBigUp />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            onClick={() => {
+              scrollRef.current?.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: "smooth",
+              });
+            }}
+            className="p-1 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full font-medium shadow-sm hover:shadow-md transition-all cursor-pointer"
+          >
+            <ArrowBigDown />
+          </motion.button>
+        </>
+      )}
+    </div>
+  )
+}

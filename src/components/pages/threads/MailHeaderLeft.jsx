@@ -1,13 +1,13 @@
 import { Plus, ChevronDown, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
+import { useThreadContext } from "../../../hooks/useThreadContext";
 
 export default function MailHeaderLeft({
-  sender,
-  to = [],
-  setTo,
-  cc = [],
-  setCc,
+
 }) {
+  const { to, cc, setTo, setCc } = useOutletContext()
+  const { context: { currentEmail: sender } } = useThreadContext()
   return (
     <div className="flex items-center gap-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white rounded-t-lg">
       <span className="text-sm opacity-90">Client:</span>
