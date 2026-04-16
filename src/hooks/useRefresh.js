@@ -52,9 +52,9 @@ function useRefresh() {
     const { contactInfo } = useSelector((state) => state.viewEmail);
     const threadId = contactInfo?.thread_id
     const [firstEmail, setFirstEmail] = useState(null);
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(getAllUsers())
-    },[])
+    }, [])
     useEffect(() => {
         dispatch(getAllUsers())
     }, [])
