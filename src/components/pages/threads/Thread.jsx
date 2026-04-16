@@ -10,16 +10,21 @@ import { viewEmailAction } from "../../../store/Slices/viewEmail";
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [showSuccessAnim, setShowSuccessAnim] = useState(false);
-  const { superfastReply } = useContext(PageContext)
-
   const { state } = useLocation();
+
+  const { superfastReply } = useContext(PageContext)
+  const [contentLoading, setContentLoading] = useState(false)
+  const [files, setFiles] = useState([]);
+  const [editorContent, setEditorContent] = useState(
+    state?.initialContent || "",
+  );
+  const [to, setTo] = useState([]);
+  const [cc, setCc] = useState([]);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { message: sendMessage, error: sendError } = useSelector((s) => s.viewEmail);
   const {
     context: { currentEmail, currentThread },
   } = useThreadContext();
-
   const [emails, setEmails] = useState([]);
   useEffect(() => {
     if (currentEmail && currentThread && !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)) {
@@ -48,10 +53,8 @@ const Thread = () => {
   }, []);
   useEffect(() => {
     if (sendMessage && superfastReply) {
-      setShowSuccessAnim(true);
-      setTimeout(() => {
-        setShowSuccessAnim(false);
-      }, 1200); // animation duration
+      setEditorContent("");
+      setFiles([]);
     }
 
     if (sendError) {
@@ -59,7 +62,8 @@ const Thread = () => {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [sendMessage, sendError]);
-  return <Outlet context={{ emails, loadAiReply: state?.loadAiReply, showSuccessAnim, superfastReply }} />;
+  const value = { emails, loadAiReply: state?.loadAiReply, superfastReply, files, setFiles, editorContent, setEditorContent, to, setTo, cc, setCc, contentLoading, setContentLoading }
+  return <Outlet context={value} />;
 };
 
 export default Thread;
