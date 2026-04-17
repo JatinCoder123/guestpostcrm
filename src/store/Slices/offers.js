@@ -2,7 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
-import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
+import {
+  updateActivity,
+  createLedgerEntry,
+  buildLedgerItem,
+} from "../../services/utils";
 import { getLadger } from "./ladger";
 
 const offersSlice = createSlice({
@@ -34,7 +38,8 @@ const offersSlice = createSlice({
         state.offers = offers;
       } else {
         state.offers = [...state.offers, ...offers];
-      } state.summary = summary;
+      }
+      state.summary = summary;
       state.count = count;
       state.error = null;
       state.pageCount = pageCount;
@@ -158,8 +163,17 @@ export const updateOffer = ({ email, offer }) => {
           },
         },
       );
-
+      const remRes = await axios.post(
+        `${getState().user.crmEndpoint}&type=set_reminder`,
+        {
+          websites: [offer].map((deal) => deal.website),
+          email: email,
+          reminder_type: "offer",
+        },
+      );
       showConsole && console.log(`Update Offer`, data);
+      showConsole && console.log(`Reminder Response`, remRes);
+
       const updatedOffers = getState().offers.offers.map((o) => {
         if (o.id === offer.id) {
           return offer;
@@ -174,7 +188,13 @@ export const updateOffer = ({ email, offer }) => {
       );
 
       dispatch(offersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Updated ")
+      updateActivity(
+        getState().user.crmEndpoint,
+        email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Offer Updated ",
+      );
 
       await createLedgerEntry({
         domain,
@@ -193,16 +213,18 @@ export const updateOffer = ({ email, offer }) => {
           }),
         ],
       });
-
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
-      dispatch(
-        offersSlice.actions.updateOfferFailed("Updating Offer Failed"),
-      );
+      dispatch(offersSlice.actions.updateOfferFailed("Updating Offer Failed"));
     }
   };
 };
-export const createOffer = ({ threadId, email, offers = [], isSend = false }) => {
+export const createOffer = ({
+  threadId,
+  email,
+  offers = [],
+  isSend = false,
+}) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
     try {
@@ -234,14 +256,21 @@ export const createOffer = ({ threadId, email, offers = [], isSend = false }) =>
           },
         },
       );
+
       showConsole && console.log(`Create Offer`, data);
       dispatch(
         offersSlice.actions.createOfferSuccess({
-          message: "Offers Created Successfully"
+          message: "Offers Created Successfully",
         }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Offer Created ")
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Offer Created ",
+      );
       // 🔥 Ledger API Call
       await createLedgerEntry({
         domain,
@@ -257,11 +286,16 @@ export const createOffer = ({ threadId, email, offers = [], isSend = false }) =>
             ladgerState: state.ladger,
             user: state.user.user,
             parent_name: "outr_offer",
-          })
+          }),
         ),
       });
-      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Created ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Offer Created ",
+      );
     } catch (error) {
       dispatch(offersSlice.actions.createOfferFailed("Offer Creation Failed"));
     }
@@ -297,7 +331,13 @@ export const deleteOffer = (email, id, offer) => {
         }),
       );
       dispatch(offersSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Offer Deleted")
+      updateActivity(
+        getState().user.crmEndpoint,
+        email,
+        getState().user.user.name,
+        getState().user.user.email,
+        "Offer Deleted",
+      );
       await createLedgerEntry({
         domain: state.user.crmEndpoint.split("?")[0],
         email: email,
@@ -313,7 +353,6 @@ export const deleteOffer = (email, id, offer) => {
           }),
         ],
       });
-
     } catch (error) {
       dispatch(offersSlice.actions.deleteOfferFailed(error.message));
     }

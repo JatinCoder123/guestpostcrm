@@ -1,8 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
-import { updateActivity } from "../../services/utils";
-import { get } from "react-hook-form";
+import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
 
 const forwardedSlice = createSlice({
   name: "forwarded",
@@ -111,6 +110,21 @@ export const forwardEmail = (email, id) => {
       dispatch(forwardedSlice.actions.clearAllErrors());
 
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Email Assign")
+
+      await createLedgerEntry({
+        domain: domain,
+        email: getState().ladger.email,
+        group: "Activity",
+        items: [
+          buildLedgerItem({
+            status: "Forward-To",
+            detail: `email: {${getState().ladger.email}} name: {${email}}`,
+            ladgerState: getState().ladger,
+            user: getState().crmUser.currentUser,
+          }),
+        ],
+        okHandler: () => dispatch(getLadger({email: getState().ladger.email})),
+      });
 
     } catch (error) {
       dispatch(forwardedSlice.actions.forwardEmailFailed(error.message));

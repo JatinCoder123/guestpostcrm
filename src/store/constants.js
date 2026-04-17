@@ -7,14 +7,12 @@ export const CREATE_DEAL_API_KEY = "FldBjAIfoBo2UTcBAezvTOQg9";
 
 export const LOCAL_KEY = "create_deals_draft_v1";
 
-
 // Tiny Editor Keys
 const TINY_EDITOR_KEYS = [
   "xo5syi6i6b03g3rmp629wrngdab3mpg2uh811bdn20rg7n21", // key 1
   "wt64mkersznl4k1rz3wa2m3pnz4m1zevbdd71meoq0q7ypzu", // key 2
   "1pa2rbjsfn1orqidl3et83t98wnt4xuqlu2ohzmhu89njyj2", // key 3
 ];
-
 
 // Function to get rotating key
 function getTinyKey() {

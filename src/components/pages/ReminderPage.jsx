@@ -57,7 +57,6 @@ export function ReminderPage() {
   const { count, reminders, loading, pageIndex, summary, sending, sendReminderId, message, error } = useSelector(
     (state) => state.reminders
   );
-
   const { handleDateClick } =
     useContext(PageContext);
   const dispatch = useDispatch();
@@ -198,9 +197,33 @@ export function ReminderPage() {
     }
   }, [message, error]);
   return (
-    <TableView tableData={reminders} tableName={"Reminders"} columns={columns} slice={"reminders"} statusKey={"status"} statusList={statusList} fetchNextPage={() => dispatch(getOrderRem({ page: pageIndex + 1 }))}   >
-      <TableTitleBar Icon={BellIcon} title={"Reminders"} titleClass={"text-lime-700"} />
-      <Table headerStyle={"  bg-lime-600"} layoutStyle={"grid grid-cols-[200px_200px_200px_300px_200px_1fr]"} />
-    </TableView>
+    <div className="relative">
+      <TableView
+        tableData={reminders}
+        tableName={"Reminders"}
+        columns={columns}
+        slice={"reminders"}
+        statusKey={"status"}
+        statusList={statusList}
+        fetchNextPage={() => dispatch(getOrderRem({ page: pageIndex + 1 }))}
+      >
+        <TableTitleBar Icon={BellIcon} title={"Reminders"} titleClass={"text-lime-700"} />
+
+        <Table
+          headerStyle={"bg-lime-600"}
+          layoutStyle={"grid grid-cols-[200px_200px_200px_300px_200px_1fr]"}
+          rowClassName={(row) =>
+            row.id === sendReminderId ? "bg-lime-200 hover:bg-lime-200" : ""
+          }
+        />
+      </TableView>
+
+      {/* 🔥 FULL OVERLAY LOADER */}
+      {loading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center  backdrop-blur-sm">
+          <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+    </div>
   );
 }

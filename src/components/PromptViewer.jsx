@@ -23,7 +23,7 @@ const TABS = [
   "Email Body",
 ];
 
-const PromptSectionsViewer = ({ prompt }) => {
+const PromptSectionsViewer = ({ prompt, onExplore }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const sections = useMemo(() => {
@@ -65,6 +65,14 @@ const PromptSectionsViewer = ({ prompt }) => {
           >
             Copy
           </button>
+          {onExplore && (
+            <button
+              onClick={() => onExplore(prompt)}
+              className="px-3 py-1 ml-2 text-xs rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Explore
+            </button>
+          )}
         </div>
       </div>
 

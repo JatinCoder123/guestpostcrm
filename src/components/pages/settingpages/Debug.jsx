@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PromptViewer from "../../PromptViewer.jsx";
 import PromptSectionsViewer from "../../PromptViewer.jsx";
 import Header from "./Header.jsx";
+import PromptExplorer from "./PromptExplorer.jsx";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
@@ -85,6 +86,8 @@ const HIDDEN_FIELDS = [
   "date_entered",
   "prompt_id",
   "parent_id",
+  "system_prompt",
+  "user_prompt",
 ];
 
 const TIME_FILTERS = [
@@ -120,6 +123,7 @@ const Debug = () => {
   const [timeline, setTimeline] = useState(1);
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [emailSearch, setEmailSearch] = useState("");
+  const [exploreData, setExploreData] = useState(null);
   const getPromptStats = (text) => {
     if (!text) return { words: 0, lines: 0 };
 
@@ -205,6 +209,27 @@ const Debug = () => {
   const truncate = (text, limit = 80) => {
     if (!text) return "-";
     return text.length > limit ? text.substring(0, limit) + "..." : text;
+  };
+  const splitPrompt = (fullPrompt) => {
+    if (!fullPrompt) return { system: "", user: "" };
+
+    const separator =
+      "----------------------------------------------------------------------";
+
+    if (fullPrompt.includes(separator)) {
+      const parts = fullPrompt
+        .split(separator)
+        .map((p) => p.trim())
+        .filter(Boolean);
+
+      const system = parts[0] || "";
+      // All remaining sections joined back with separator
+      const user = parts.slice(1).join(`\n\n${separator}\n\n`) || "";
+
+      return { system, user };
+    }
+
+    return { system: fullPrompt.trim(), user: "" };
   };
 
   const isLargeField = (key) => {
@@ -582,9 +607,63 @@ const Debug = () => {
                                 {value?.includes(
                                   "----------------------------------------------------------------------",
                                 ) ? (
-                                  <PromptSectionsViewer prompt={value} />
+                                  <PromptSectionsViewer
+                                    prompt={value}
+                                    onExplore={() => {
+                                      const sys =
+                                        selectedRecord?.system_prompt?.trim();
+                                      const usr =
+                                        selectedRecord?.user_prompt?.trim();
+                                      if (sys || usr) {
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          {
+                                            state: {
+                                              system: sys || "",
+                                              user: usr || "",
+                                            },
+                                          },
+                                        );
+                                      } else {
+                                        // Both empty/null → split fullPrompt
+                                        const { system, user } =
+                                          splitPrompt(value);
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          { state: { system, user } },
+                                        );
+                                      }
+                                    }}
+                                  />
                                 ) : (
-                                  <PromptViewer prompt={value} />
+                                  <PromptViewer
+                                    prompt={value}
+                                    onExplore={() => {
+                                      const sys =
+                                        selectedRecord?.system_prompt?.trim();
+                                      const usr =
+                                        selectedRecord?.user_prompt?.trim();
+                                      if (sys || usr) {
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          {
+                                            state: {
+                                              system: sys || "",
+                                              user: usr || "",
+                                            },
+                                          },
+                                        );
+                                      } else {
+                                        // Both empty/null → split fullPrompt
+                                        const { system, user } =
+                                          splitPrompt(value);
+                                        navigateTo(
+                                          "/settings/prompt-explorer",
+                                          { state: { system, user } },
+                                        );
+                                      }
+                                    }}
+                                  />
                                 )}
                               </div>
                             );
@@ -619,6 +698,30 @@ const Debug = () => {
           </div>
         )}
       </div>
+      {/* Prompt Explorer Modal */}
+      {exploreData && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b px-6 py-4">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Prompt Explorer
+              </h2>
+              <button
+                onClick={() => setExploreData(null)}
+                className="text-gray-500 hover:text-black text-xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <PromptExplorer
+                initialSystem={exploreData.system}
+                initialUser={exploreData.user}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

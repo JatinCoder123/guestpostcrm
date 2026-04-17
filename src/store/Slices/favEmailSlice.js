@@ -91,7 +91,6 @@ export const favEmail = () => {
     dispatch(favSlice.actions.favouriteEmailRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const domain = getState().user.crmEndpoint.split("?")[0];
       const response = await axios.get(
         `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
         {}
@@ -118,7 +117,7 @@ export const favEmail = () => {
             status: data.new_value === 1 ? "Mark-Favourite" : "Mark-Unfavourite",
             detail: `email: {${getState().ladger.email}}`,
             ladgerState: getState().ladger,
-            user: getState().user.user,
+            user: getState().crmUser.currentUser,
           }),
         ],
         okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),

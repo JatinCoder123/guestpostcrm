@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import {
   Handshake,
+  Clock,
   Lock,
   Tag,
   Rocket,
@@ -18,6 +19,7 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
+
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
   return (
@@ -42,8 +44,8 @@ const ContactHeader = ({ isMark }) => {
   };
   const { contactInfo, contactLoading, stage, status, customer_type } =
     useSelector((state) => state.viewEmail);
-  const email = contactInfo?.email1
-  const { showNextPrev } = useContext(PageContext)
+  const email = contactInfo?.email1;
+  const { showNextPrev } = useContext(PageContext);
 
   const { deals } = useSelector((state) => state.deals);
 
@@ -109,12 +111,12 @@ const ContactHeader = ({ isMark }) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-        ...emailDeals.map((d) =>
-          Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+            ),
           ),
-        ),
-      )
+        )
       : 0;
   const statusItems = [
     { Icon: Tag, label: "Type", value: contactInfo?.type },
@@ -142,7 +144,13 @@ const ContactHeader = ({ isMark }) => {
     {
       Icon: CircleUser,
       label: "Last Activity By",
-      value: contactInfo?.last_user ?? "GPC User",
+      value:
+        useSelector((state) => state.crmUser.currentUser?.name) ?? "GPC User",
+    },
+    {
+      Icon: Clock,
+      label: "Last Updated At",
+      value: contactInfo?.last_activity_date ?? "-",
     },
   ];
   return (
@@ -285,4 +293,3 @@ function StatusCard({ Icon, label, value }) {
     </div>
   );
 }
-

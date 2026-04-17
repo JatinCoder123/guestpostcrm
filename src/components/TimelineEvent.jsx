@@ -473,9 +473,14 @@ const TimelineEvent = ({ handleMessageClick }) => {
                           </span>
                         </span>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-end gap-2">
                           <span className="text-gray-500 text-sm">
                             {event.date_entered}
+                          </span>
+                          <span className="text-gray-500 text-sm">
+                            {event.user_details == false
+                              ? "-by GPC"
+                              : "-by " + event?.user_details?.name}
                           </span>
                         </div>
                       </div>
@@ -570,12 +575,12 @@ const TimelineEvent = ({ handleMessageClick }) => {
                               {/* Content */}
                               <div className="flex-1 px-5 py-3">
                                 <p className="text-white text-xl font-medium mb-1">
-                                  <strong>{step.name?.split(":")[0]}</strong>
-                                  {step.name?.includes(":") && (
+                                  <strong>{step?.name?.split(":")[0]}</strong>
+                                  {step?.name?.includes(":") && (
                                     <span className="font-normal">
                                       {" "}
                                       :{" "}
-                                      {step.name
+                                      {step?.name
                                         .split(":")
                                         .slice(1)
                                         .join(":")
@@ -641,9 +646,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
               </div>
             )}
           </div>
-          {ladger.length > 0 && (
-            <Pagination slice={"ladger"} fn={(p) => dispatch(getLadger({ loading: false, email, page: p }))} />
-          )}
         </div>
       </div>
       {timelineData?.length > 8 && (

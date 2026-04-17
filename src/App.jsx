@@ -51,6 +51,7 @@ import Thread from "./components/pages/threads/Thread";
 import SelfTest from "./components/pages/settingpages/SelfTest";
 import DynamicRouteHandler from "./components/routing/DynamicRouteHandler";
 import GroupReport from "./components/pages/GroupReport";
+import PromptExplorer from "./components/pages/settingpages/PromptExplorer";
 
 const router = createBrowserRouter([
   {
@@ -258,6 +259,10 @@ const router = createBrowserRouter([
           {
             path: "prompt-testing",
             element: <PromptTestingPage />,
+          },
+          {
+            path: "prompt-explorer",
+            element: <PromptExplorer />,
           },
           {
             path: "debugging",
