@@ -135,7 +135,7 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const updateOffer = ({ email, offer }) => {
+export const updateOffer = ({ email, offers = [] }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
     try {
@@ -148,37 +148,39 @@ export const updateOffer = ({ email, offer }) => {
           return url;
         }
       };
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          parent_bean: {
-            module: "outr_offer",
-            ...offer,
+      offers.forEach(async (offer) => {
+        const { data } = await axios.post(
+          `${domain}?entryPoint=get_post_all&action_type=post_data`,
+          {
+            parent_bean: {
+              module: "outr_offer",
+              ...offer,
+            },
           },
-        },
-        {
-          headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
+          {
+            headers: {
+              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+              "Content-Type": "aplication/json",
+            },
           },
-        },
-      );
+        );
+        showConsole && console.log(`Update Offer`, data);
+
+      })
+
       const remRes = await axios.post(
         `${getState().user.crmEndpoint}&type=set_reminder`,
         {
-          websites: [offer].map((deal) => deal.website),
+          websites: offers.map((deal) => deal.website),
           email: email,
           reminder_type: "offer",
         },
       );
-      showConsole && console.log(`Update Offer`, data);
       showConsole && console.log(`Reminder Response`, remRes);
 
       const updatedOffers = getState().offers.offers.map((o) => {
-        if (o.id === offer.id) {
-          return offer;
-        }
-        return o;
+        const updated = offers.find(uo => uo.id === o.id);
+        return updated ? updated : o;
       });
       dispatch(
         offersSlice.actions.updateOfferSuccess({
@@ -195,24 +197,26 @@ export const updateOffer = ({ email, offer }) => {
         getState().user.user.email,
         "Offer Updated ",
       );
+      offers.forEach(async (offer) => {
+        await createLedgerEntry({
+          domain,
+          email: email,
+          thread_id: offer.thread_id,
+          message_id: offer.thread_id,
+          group: "Offer",
+          okHandler: () => dispatch(getLadger({ email, loading: false })),
+          items: [
+            buildLedgerItem({
+              status: "Our-Offer-Updated",
+              detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
+              ladgerState: state.ladger,
+              user: state.user.user,
+              parent_name: "outr_offer",
+            }),
+          ],
+        })
+      })
 
-      await createLedgerEntry({
-        domain,
-        email: email,
-        thread_id: offer.thread_id,
-        message_id: offer.thread_id,
-        group: "Offer",
-        okHandler: () => dispatch(getLadger({ email, loading: false })),
-        items: [
-          buildLedgerItem({
-            status: "Our-Offer-Updated",
-            detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
-            ladgerState: state.ladger,
-            user: state.user.user,
-            parent_name: "outr_offer",
-          }),
-        ],
-      });
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
       dispatch(offersSlice.actions.updateOfferFailed("Updating Offer Failed"));
