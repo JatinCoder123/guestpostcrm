@@ -195,68 +195,65 @@ export default function ThreadView() {
               <Panel defaultSize={!superfastReply ? 1 : 45} minSize={10}>
                 <div className="h-full p-2 border-t bg-gradient-to-r from-blue-500 to-indigo-600 shadow-2xl relative rounded-t-3xl">
                   {loadAiReply || superfastReply ? (
-                    <>
-                      <div className="relative  rounded-2xl overflow-hidden h-full  flex justify-end gap-4 shadow-lg">
+                    <div className="relative  rounded-2xl overflow-hidden h-full  flex justify-end gap-4 shadow-lg">
 
-                        {/* 🔥 LEFT PANEL */}
-                        <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col gap-10 rounded-lg">
+                      {/* 🔥 LEFT PANEL */}
+                      <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col gap-10 rounded-lg">
 
-                          {/* ✨ Title Section */}
-                          <div className="flex justify-between">
-                            <h2 className="text-lg font-bold flex items-center gap-2">
-                              ⚡ Super Fast Reply
-                            </h2>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              title="Compose"
-
-                              onClick={() => navigate(`/thread/reply`)}
-                              className="bg-white/20 backdrop-blur-md cursor-pointer px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/30 transition"
-                            >
-                              <CornerUpRight className="w-4 h-4" />
-                            </motion.button>
-
-                          </div>
-                          <ReplyButtons editorReady={editorReady} editorRef={editorRef} />
-                          {/* Send Button */}
+                        {/* ✨ Title Section */}
+                        <div className="flex justify-between">
+                          <h2 className="text-lg font-bold flex items-center gap-2">
+                            ⚡ Super Fast Reply
+                          </h2>
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={handleSendClick}
-                            disabled={checkingThreadId || sending}
-                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+                            title="Compose"
+
+                            onClick={() => navigate(`/thread/reply`)}
+                            className="bg-white/20 backdrop-blur-md cursor-pointer px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/30 transition"
                           >
-                            <Send className="w-4 h-4" />
-                            Send
+                            <CornerUpRight className="w-4 h-4" />
                           </motion.button>
-                        </div>
-
-                        {/* ✨ RIGHT PANEL (EDITOR ONLY) */}
-                        <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
-
-                          {/* 🔥 LOADING OVERLAY */}
-                          {contentLoading && (
-                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
-                              <div className="flex flex-col items-center gap-3">
-                                <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                                <p className="text-sm text-gray-600 font-medium">Loading content...</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* ✨ EDITOR */}
-                          <SmallTinyEditor
-                            setEditorContent={setEditorContent}
-                            editorContent={editorContent}
-                            setEditorReady={setEditorReady}
-                            editorRef={editorRef}
-                          />
 
                         </div>
+                        <ReplyButtons editorReady={editorReady} editorRef={editorRef} />
+                        {/* Send Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleSendClick}
+                          disabled={checkingThreadId || sending}
+                          className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+                        >
+                          <Send className="w-4 h-4" />
+                          Send
+                        </motion.button>
                       </div>
 
-                    </>
+                      {/* ✨ RIGHT PANEL (EDITOR ONLY) */}
+                      <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
+
+                        {/* 🔥 LOADING OVERLAY */}
+                        {contentLoading && (
+                          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
+                            <div className="flex flex-col items-center gap-3">
+                              <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                              <p className="text-sm text-gray-600 font-medium">Loading content...</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ✨ EDITOR */}
+                        <SmallTinyEditor
+                          setEditorContent={setEditorContent}
+                          editorContent={editorContent}
+                          setEditorReady={setEditorReady}
+                          editorRef={editorRef}
+                        />
+
+                      </div>
+                    </div>
 
                   ) : (
                     <motion.button
