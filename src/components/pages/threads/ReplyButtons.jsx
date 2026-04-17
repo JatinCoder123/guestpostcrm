@@ -223,7 +223,7 @@ const ReplyButtons = ({
                                         animate={{ x: 0, opacity: 1, scale: 1 }}
                                         exit={{ x: -20, opacity: 0, scale: 0.95 }}
                                         transition={{ duration: 0.2, type: "spring" }}
-                                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2 bg-white p-3 rounded-2xl shadow-2xl border border-gray-200"
+                                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 flex gap-2  p-3 rounded-2xl shadow-2xl border border-gray-200"
                                     >
                                         {children?.map((child, j) => (
                                             <ViewButton
@@ -244,7 +244,7 @@ const ReplyButtons = ({
                                                         setTemplateId(child.email_template_id);
                                                         setOpenParent(null);
                                                     }}
-                                                    className="bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap"
+                                                    className="bg-black px-4 py-3 rounded-xl border border-gray-200 text-sm text-white font-medium shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap"
                                                 >
                                                     {child.button_label}
                                                 </motion.button>
