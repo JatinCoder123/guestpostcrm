@@ -6,6 +6,7 @@ import {
   Dock,
   SparkleIcon,
   ArrowRight,
+  Link,
 } from "lucide-react";
 import {
   FiLink,
@@ -407,6 +408,16 @@ function LinkTableRow({
             <Trash size={14} />
           )}
         </button>
+        {/* which will live the link */}
+        <button
+          onClick={() => {
+            setItem(link);
+            setOpen(true);
+          }}
+          className="px-2 py-1 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition shadow"
+        >
+          <Link size={14} />
+        </button>
       </div>
     </div>
   );
@@ -512,12 +523,17 @@ function DocumentAnalysisCard({
   const [loading, setLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
   const [openPopup, setOpenPopup] = useState(false);
+  const { updateLinkLoading } = useSelector((state) => state.orders);
+  const { crmEndpoint } = useSelector((state) => state.user);
+
+  const domain = crmEndpoint.split("?")[0];
+  const isLoading = loading || updateLinkLoading;
   const handleStartNow = async () => {
     try {
       setLoading(true);
 
       const res = await fetch(
-        "https://kartikey.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=zerogpt",
+        `${domain}/index.php?entryPoint=fetch_gpc&type=zerogpt`,
         {
           method: "POST",
           headers: {
@@ -605,10 +621,25 @@ function DocumentAnalysisCard({
           <div className="flex items-center gap-2">
             <button
               onClick={handleStartNow}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-yellow-500 text-white text-sm font-semibold shadow-sm hover:bg-yellow-600 hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
+              disabled={isLoading}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
+              style={{
+                background: isLoading ? "#9ca3af" : "#eab308",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                opacity: isLoading ? 0.7 : 1,
+              }}
             >
-              {loading ? "Processing..." : "Start Now"}
-              <ArrowRight size={16} />
+              {isLoading ? (
+                <>
+                  <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Start Now
+                  <ArrowRight size={16} />
+                </>
+              )}
             </button>
           </div>
 
@@ -621,6 +652,7 @@ function DocumentAnalysisCard({
         {openPopup && analysisData && (
           <GPCContentPopup
             data={analysisData}
+            website={website}
             onClose={() => setOpenPopup(false)}
           />
         )}

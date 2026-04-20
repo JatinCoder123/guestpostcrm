@@ -14,6 +14,7 @@ const ordersSlice = createSlice({
     loading: false,
     orders: [],
     statusLists: {},
+    paymentTypes: {},
     count: 0,
     stats: [],
     pageCount: 1,
@@ -44,6 +45,7 @@ const ordersSlice = createSlice({
         pageCount,
         pageIndex,
         statusLists,
+        paymentTypes,
         summary,
         stats,
       } = action.payload;
@@ -54,6 +56,7 @@ const ordersSlice = createSlice({
         state.orders = [...state.orders, ...orders];
       }
       state.statusLists = statusLists;
+      state.paymentTypes = paymentTypes;
       state.count = count;
       state.stats = stats;
       state.updateId = null;
@@ -199,6 +202,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
         ordersSlice.actions.getOrdersSucess({
           count: data.data_count ?? 0,
           statusLists: data.order_status_list,
+          paymentTypes: data.invoice_type_list,
           orders: data.data,
           stats: data.stats ? data.stats : [],
           pageCount: data.total_pages,

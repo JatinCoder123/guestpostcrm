@@ -30,9 +30,8 @@ export default function EditOrder({ threadId, id, email }) {
   const [order, setOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { orders, updating, statusLists, message, error } = useSelector(
-    (s) => s.orders,
-  );
+  const { orders, updating, statusLists, paymentTypes, message, error } =
+    useSelector((s) => s.orders);
   const { crmEndpoint } = useSelector((s) => s.user);
   const { handleMove } = useThreadContext();
   const [send, setSend] = useState(false);
@@ -178,6 +177,25 @@ export default function EditOrder({ threadId, id, email }) {
                   ))}
                 </select>
               </div>
+
+              {/* Payment Type */}
+              <div>
+                <label className="block text-sm mb-1 flex items-center gap-1">
+                  <Dot className="w-5 h-5 text-green-500" />
+                  Payment Type
+                </label>
+                <select
+                  value={order.invoice_type}
+                  onChange={(e) => handleChange("invoice_type", e.target.value)}
+                  className="w-full border rounded-lg h-11 px-3 bg-slate-50"
+                >
+                  {Object.entries(paymentTypes).map(([key, val]) => (
+                    <option key={key} value={key}>
+                      {val}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -196,10 +214,11 @@ export default function EditOrder({ threadId, id, email }) {
                     <label
                       key={type}
                       className={`whitespace-nowrap px-4 py-2 border rounded-lg cursor-pointer transition 
-          ${order.order_type === type
-                          ? "border-blue-600 bg-blue-50"
-                          : "border-gray-300"
-                        }`}
+          ${
+            order.order_type === type
+              ? "border-blue-600 bg-blue-50"
+              : "border-gray-300"
+          }`}
                     >
                       <input
                         type="radio"

@@ -95,8 +95,7 @@ export function OrdersPage() {
     useSelector((state) => state.orders);
   const [updateOrderId, setUpdateOrderId] = useState(null);
 
-  const { handleDateClick, enteredEmail } =
-    useContext(PageContext);
+  const { handleDateClick, enteredEmail } = useContext(PageContext);
   const navigateTo = useNavigate();
   const dispatch = useDispatch();
   const columns = [
@@ -106,7 +105,8 @@ export function OrdersPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
+      onClick: (row) =>
+        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -121,7 +121,10 @@ export function OrdersPage() {
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
+        handleDateClick({
+          email: extractEmail(row?.real_name),
+          navigate: "/contacts",
+        }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
