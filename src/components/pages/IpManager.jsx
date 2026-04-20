@@ -8,13 +8,15 @@ import {
     CalendarDays,
     Database,
     Filter,
+    ArrowLeft,
 } from "lucide-react";
 import useModule from "../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../store/constants";
+import { useNavigate } from "react-router-dom";
 
 const IpManager = () => {
     const { crmEndpoint } = useSelector((state) => state.user);
-
+    const navigate = useNavigate()
     const [emailSearch, setEmailSearch] = useState("");
     const [ipSearch, setIpSearch] = useState("");
 
@@ -87,6 +89,13 @@ const IpManager = () => {
     return (
         <div className="min-h-screen bg-slate-50 p-6 md:p-8">
             {/* HEADER */}
+            <button
+                onClick={() => navigate(-1)}
+                className="mb-6 flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 shadow-sm hover:bg-slate-100 transition"
+            >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+            </button>
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-slate-900">IP Manager</h1>
                 <p className="text-slate-500 mt-1">
