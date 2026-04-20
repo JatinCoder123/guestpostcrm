@@ -273,13 +273,12 @@ export default function ThreadOffers({ threadId, email, id }) {
         <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
 
 
-          <div onClick={handleSelectAll} className="col-span-1 cursor-pointer ">
+          <div onClick={handleSelectAll} className="cursor-pointer ">
             <input
               type="checkbox"
               checked={selectedOffers.length === currentOffers.length}
 
             />
-            <span className="ml-2">No</span>
           </div>
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Client Offer</div>
@@ -307,12 +306,11 @@ export default function ThreadOffers({ threadId, email, id }) {
                 {/* No */}
 
                 <div onClick={() => toggleSelect(offer.id)}
-                  className="col-span-1 font-semibold text-gray-500 cursor-pointer">
+                  className="font-semibold text-gray-500 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={selectedOffers.includes(offer.id)}
                   />
-                  <span className="ml-2">{index + 1}</span>
                 </div>
 
                 {/* Website */}
