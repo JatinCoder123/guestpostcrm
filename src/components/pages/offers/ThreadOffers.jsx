@@ -279,7 +279,6 @@ export default function ThreadOffers({ threadId, email, id }) {
               checked={selectedOffers.length === currentOffers.length}
 
             />
-            <span className="ml-2">No</span>
           </div>
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Client Offer</div>
@@ -312,7 +311,6 @@ export default function ThreadOffers({ threadId, email, id }) {
                     type="checkbox"
                     checked={selectedOffers.includes(offer.id)}
                   />
-                  <span className="ml-2">{index + 1}</span>
                 </div>
 
                 {/* Website */}

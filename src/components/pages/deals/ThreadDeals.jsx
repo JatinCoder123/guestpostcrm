@@ -158,7 +158,6 @@ export default function ThreadDeals({ threadId, email, id }) {
 
         {/* HEADER */}
         <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
-          <div className="col-span-1">No</div>
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Deal Amount</div>
           <div className="col-span-2 text-center">Note</div>
@@ -179,10 +178,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                 key={deal.id}
                 className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
               >
-                {/* No */}
-                <div className="col-span-1 font-semibold text-gray-500">
-                  {index + 1}
-                </div>
+
 
                 {/* Website */}
                 <div className="col-span-3">
