@@ -28,6 +28,7 @@ import {
 } from "../store/Slices/Marketplace";
 import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
+import { useNavigate } from "react-router-dom";
 
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
@@ -66,7 +67,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
   } = useSelector((s) => s.fav);
 
   const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
-
+  const navigate = useNavigate()
   const {
     adding,
     deleteMarketPlaceId,
@@ -171,7 +172,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
         />
       ),
       label: "IP",
-      action: () => setShowIP(true),
+      action: () => navigate('/ip'),
     },
     {
       icon: (

@@ -25,12 +25,42 @@ export default function ThreadOffers({ threadId, email, id }) {
   const dispatch = useDispatch();
   const [send, setSend] = useState(false);
   const [currentOffers, setCurrentOffers] = useState([]);
+  const [selectedOffers, setSelectedOffers] = useState([]);
+  const toggleSelect = (id) => {
+    setSelectedOffers((prev) =>
+      prev.includes(id)
+        ? prev.filter((i) => i !== id)
+        : [...prev, id]
+    );
+    if (editingIds.length > 0) {
+      if (!selectedOffers.includes(id)) {
+        const selectedData = currentOffers.find(o => o.id == id);
 
-  // 🔥 INLINE EDIT STATE
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
+        setEditingIds(prev => [...prev, id]);
+        setEditDataMap(prev => ({ ...prev, [id]: { ...selectedData } }));
+      }
+      else {
+        setEditingIds(prev => prev.filter(p => p != id));
+        setEditDataMap(prev => {
+          const { [id]: _, ...rest } = prev
+          return rest
+        });
+      }
+
+    }
+  };
+  const handleSelectAll = () => {
+    if (selectedOffers.length === currentOffers.length) {
+      setSelectedOffers([]);
+      setEditingIds([]);
+      setEditDataMap({});
+    } else {
+      setSelectedOffers(currentOffers.map((o) => o.id));
+    }
+  };
+  const [editingIds, setEditingIds] = useState([]);
+  const [editDataMap, setEditDataMap] = useState({});
   const { websites: websiteLists } = useSelector((state) => state.website);
-
   const { offers, deleteOfferId, deleting, updating, message, error } =
     useSelector((state) => state.offers);
   const { deals } = useSelector((state) => state.deals);
@@ -65,7 +95,7 @@ export default function ThreadOffers({ threadId, email, id }) {
 
     const valid = websiteLists.filter((w) => {
       const usedInOffers = threadOffers.some(
-        (o) => o.website === w && o.id !== editData.id,
+        (o) => o.website === w && !editingIds.includes(o.id),
       );
 
       const usedInDeals = threadDeals.some((d) => d.website_c === w);
@@ -80,17 +110,24 @@ export default function ThreadOffers({ threadId, email, id }) {
     }
     setValidWebsite(valid);
     setCurrentOffers(activeOffers);
-  }, [offers, deals, editData, email, id]);
+  }, [offers, deals, editDataMap, email, id]);
 
   // 🔥 INLINE EDIT HANDLERS
-  const handleEdit = (offer) => {
-    setEditingId(offer.id);
-    setEditData({ ...offer });
+  const handleEdit = (offers) => {
+    const ids = offers.map(o => o.id);
+
+    const dataMap = {};
+    offers.forEach(o => {
+      dataMap[o.id] = { ...o };
+    });
+
+    setEditingIds(ids);
+    setEditDataMap(dataMap);
   };
 
-  const handleSave = (offer, isSend = false) => {
+  const handleSave = (offers, isSend = false) => {
     setSend(isSend); // 🔥 track intent
-    dispatch(updateOffer({ email, offer }));
+    dispatch(updateOffer({ email, offers }));
   };
 
   const handleDelete = (id, offer) => {
@@ -124,14 +161,16 @@ export default function ThreadOffers({ threadId, email, id }) {
   };
   useEffect(() => {
     if (!updating) {
-      setEditingId(null);
+      setEditingIds([]);
+      setSelectedOffers([])
+      setEditDataMap({})
     }
 
     if (message) {
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {
-          handlePreview([editData]);
+          handlePreview(editingIds.map(id => editDataMap[id]));
           setSend(false);
         }
         dispatch(offersAction.clearAllMessages());
@@ -144,19 +183,103 @@ export default function ThreadOffers({ threadId, email, id }) {
       dispatch(offersAction.clearAllErrors());
     }
   }, [updating, message, error]);
-  const isEditValid =
-    editData.website &&
-    Number(editData.client_offer_c) >= 0 &&
-    Number(editData.our_offer_c) > 0;
+  const isMultiEditValid = editingIds.every(id => {
+    const data = editDataMap[id];
+    return (
+      data?.website &&
+      Number(data?.client_offer_c) >= 0 &&
+      Number(data?.our_offer_c) > 0
+    );
+  });
   return (
     <div className="w-full flex gap-6 items-start">
       {/* 🔥 TABLE */}
+
       <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
         <PageHeader title={"OFFERS"} onAdd={handleCreate} />
+        {selectedOffers.length > 0 && (
+          <div className="mb-4 flex items-center justify-end rounded-xl">
+            <div className="flex gap-3">
 
+              {editingIds.length > 0 ? (
+                <>
+                  <IconButton
+                    icon={Save}
+                    label="Save"
+                    onClick={() => handleSave(editingIds.map(id => editDataMap[id]), false)}
+                    loading={updating && !send}
+                    className="bg-blue-100 hover:bg-blue-200"
+                  />
+
+                  <IconButton
+                    icon={Send}
+                    label="Save & Send"
+                    onClick={() => handleSave(editingIds.map(id => editDataMap[id]), true)}
+                    loading={updating && send}
+
+                    className="bg-green-100 hover:bg-green-200"
+                  />
+                  <IconButton
+                    icon={X}
+                    label="Cancel"
+                    onClick={() => setEditingIds([])}
+                    className="bg-red-100 hover:bg-red-200"
+                  />
+                </>
+              ) : (
+                <>
+                  <IconButton
+                    icon={Pencil}
+                    label="Edit"
+                    onClick={() => {
+                      const selectedData = currentOffers.filter(o =>
+                        selectedOffers.includes(o.id)
+                      );
+                      handleEdit(selectedData);
+                    }}
+                    className="bg-blue-100 hover:bg-blue-200"
+                  />
+
+                  <IconButton
+                    icon={Send}
+                    label="Send"
+                    onClick={() => {
+                      const selectedData = currentOffers.filter(o =>
+                        selectedOffers.includes(o.id)
+                      );
+                      handlePreview(selectedData);
+                    }}
+                    className="bg-green-100 hover:bg-green-200"
+                  />
+
+                  <IconButton
+                    icon={Trash2}
+                    label="Delete"
+                    onClick={() => {
+                      selectedOffers.forEach(id => {
+                        const offer = currentOffers.find(o => o.id === id);
+                        handleDelete(id, offer);
+                      });
+                      setSelectedOffers([]);
+                    }}
+                    className="bg-red-100 hover:bg-red-200"
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        )}
         {/* HEADER */}
         <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
-          <div className="col-span-1">No</div>
+
+
+          <div onClick={handleSelectAll} className="col-span-1 cursor-pointer ">
+            <input
+              type="checkbox"
+              checked={selectedOffers.length === currentOffers.length}
+
+            />
+          </div>
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Client Offer</div>
           <div className="col-span-2 text-center">Our Offer</div>
@@ -172,7 +295,8 @@ export default function ThreadOffers({ threadId, email, id }) {
           )}
 
           {currentOffers.map((offer, index) => {
-            const isEditing = editingId === offer.id;
+            const isEditing = editingIds.includes(offer.id);
+            const editData = editDataMap[offer.id] || {};
 
             return (
               <motion.div
@@ -180,8 +304,13 @@ export default function ThreadOffers({ threadId, email, id }) {
                 className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
               >
                 {/* No */}
-                <div className="col-span-1 font-semibold text-gray-500">
-                  {index + 1}
+
+                <div onClick={() => toggleSelect(offer.id)}
+                  className="col-span-1 font-semibold text-gray-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedOffers.includes(offer.id)}
+                  />
                 </div>
 
                 {/* Website */}
@@ -190,10 +319,13 @@ export default function ThreadOffers({ threadId, email, id }) {
                     <select
                       value={editData.website}
                       onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          website: e.target.value,
-                        })
+                        setEditDataMap(prev => ({
+                          ...prev,
+                          [offer.id]: {
+                            ...prev[offer.id],
+                            website: e.target.value,
+                          }
+                        }))
                       }
                       className="w-full border rounded-lg px-2 py-1"
                     >
@@ -224,10 +356,13 @@ export default function ThreadOffers({ threadId, email, id }) {
                       value={editData.our_offer_c}
                       min={1}
                       onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          our_offer_c: e.target.value,
-                        })
+                        setEditDataMap(prev => ({
+                          ...prev,
+                          [offer.id]: {
+                            ...prev[offer.id],
+                            our_offer_c: e.target.value,
+                          }
+                        }))
                       }
                       className="w-20 border rounded px-2 py-1 text-center"
                     />
@@ -240,35 +375,36 @@ export default function ThreadOffers({ threadId, email, id }) {
 
                 {/* Actions */}
                 <div className="col-span-2 flex justify-center gap-2 ml-auto">
-                  {isEditing ? (
+                  {selectedOffers.length == 0 ? (isEditing ? (
                     <div className="flex gap-2">
                       <IconButton
                         icon={Save}
                         label="Save"
-                        loading={editingId == offer.id && updating && !send}
-                        onClick={() => handleSave(editData, false)}
-                        disabled={!isEditValid}
+                        loading={editingIds.includes(offer.id) && updating && !send}
+                        onClick={() => handleSave([editData], false)}
+                        disabled={!isMultiEditValid || selectedOffers.length > 0}
                       />
 
                       <IconButton
                         icon={Send}
                         label="Save & Send"
-                        loading={editingId == offer.id && updating && send}
-                        onClick={() => handleSave(editData, true)}
-                        disabled={!isEditValid}
+                        loading={editingIds.includes(offer.id) && updating && send}
+                        onClick={() => handleSave([editData], true)}
+                        disabled={!isMultiEditValid || selectedOffers.length > 0}
                       />
 
                       <IconButton
                         icon={X}
                         label="Cancel"
-                        onClick={() => setEditingId(null)}
+                        onClick={() => setEditingIds([])}
                         className="bg-red-100 hover:bg-red-200"
+                        disabled={selectedOffers.length > 0}
                       />
                     </div>
                   ) : (
                     <>
                       <button
-                        onClick={() => handleEdit(offer)}
+                        onClick={() => handleEdit([offer])}
                         className="p-2 rounded-lg bg-blue-100 text-blue-600"
                       >
                         <Pencil className="w-4 h-4" />
@@ -286,7 +422,8 @@ export default function ThreadOffers({ threadId, email, id }) {
                         )}
                       </button>
                     </>
-                  )}
+                  )) : "-"}
+
                 </div>
               </motion.div>
             );

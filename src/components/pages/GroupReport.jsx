@@ -21,7 +21,6 @@ export default function GroupReport() {
   const { count, data, loading, pageIndex } = useSelector(
     (state) => state.report,
   );
-  const { handleMove } = useThreadContext();
   const { handleDateClick } = useContext(PageContext);
   const { grp } = useParams();
   const dispatch = useDispatch();

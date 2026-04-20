@@ -7,6 +7,7 @@ import {
   Laptop,
   PencilOff,
   Store,
+  Globe,
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
@@ -34,13 +35,20 @@ export function OtherPage() {
       bg: "bg-green-50",
       link: "/default-report",
     },
-
     {
       title: "Tag Manager",
       subtitle: "Tag manager will be shown here",
       icon: <TagIcon className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "/tag-manager",
+    },
+
+    {
+      title: "IP Manager",
+      subtitle: "IP's manager will be shown here",
+      icon: <Globe className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "/ip-manager",
     },
 
 

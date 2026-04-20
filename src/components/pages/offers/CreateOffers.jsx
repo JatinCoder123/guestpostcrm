@@ -66,7 +66,7 @@ export default function CreateOffers({ threadId, email }) {
     );
 
     const valid = websiteLists.filter((w) => {
-      const usedInOffers = threadOffers.some((o) => o.website === w);
+      const usedInOffers = threadOffers.some((o) => o.website === w && o.status != "expired");
       const usedInDeals = threadDeals.some((d) => d.website_c === w);
 
       return !usedInOffers && !usedInDeals;
@@ -156,7 +156,6 @@ export default function CreateOffers({ threadId, email }) {
 
         {/* HEADER */}
         <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
-          <div className="col-span-1">No</div>
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Client Offer</div>
           <div className="col-span-2 text-center">Our Offer</div>
@@ -172,7 +171,6 @@ export default function CreateOffers({ threadId, email }) {
               animate={{ opacity: 1, y: 0 }}
               className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
             >
-              <div className="col-span-1">{index + 1}</div>
 
               <div className="col-span-3">
                 <select

@@ -162,42 +162,45 @@ export const SmallTinyEditor = ({
             setEditorReady(true);
           }}
           init={{
-            height: "100vh", // ✅ FIXED HEIGHT
+            height: "100vh",
             menubar: false,
             branding: false,
             statusbar: false,
 
-            plugins: `link lists`, // ❌ removed autoresize
+            // ✅ Add emoticons plugin
+            plugins: `link lists emoticons`,
 
+            // ✅ Add emoji button in toolbar
             toolbar: `
-              bold italic underline |
-              bullist numlist |
-              link |
-              undo redo
-            `,
+             emoticons bold italic underline link |
+   
+    bullist numlist |
+    
+    undo redo
+  `,
 
             resize: false,
 
             content_style: `
-              html, body {
-                height: 100%;
-                margin: 0;
-                padding: 0;
-              }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
 
-              body {
-                font-family: -apple-system, BlinkMacSystemFont,
-                  'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                font-size: 14px;
-                line-height: 1.5;
-                color: #18181cff;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont,
+        'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #18181cff;
 
-                padding: 10px;
-                padding-bottom: 80px;
+      padding: 10px;
+      padding-bottom: 80px;
 
-                overflow-y: auto;
-              }
-            `,
+      overflow-y: auto;
+    }
+  `,
           }}
         />
       </motion.div>

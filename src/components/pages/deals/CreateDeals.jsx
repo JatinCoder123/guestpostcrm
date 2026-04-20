@@ -141,7 +141,7 @@ export default function CreateDeals({ threadId, email }) {
   }, [message, error]);
   useEffect(() => {
     const currentOfferWithoutDeal = offers.filter((o) => {
-      const isSameThread = o.thread_id == threadId;
+      const isSameThread = o.thread_id == threadId && o.status !== "expired";
 
       // ✅ check against ALL deals (not only active)
       const alreadyHasDeal = deals.some(
@@ -168,7 +168,6 @@ export default function CreateDeals({ threadId, email }) {
 
         {/* HEADER */}
         <div className="grid grid-cols-8 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
-          <div className="col-span-1">No</div>
           <div className="col-span-3">Website</div>
           <div className="col-span-3 text-center">Deal Amount</div>
           <div className="col-span-1 text-center ml-auto">Action</div>
@@ -181,7 +180,6 @@ export default function CreateDeals({ threadId, email }) {
               key={index}
               className="grid grid-cols-8 items-center px-4 py-3 bg-gray-50 rounded-xl border"
             >
-              <div>{index + 1}</div>
 
               {/* WEBSITE */}
               <div className="col-span-3">
@@ -218,7 +216,7 @@ export default function CreateDeals({ threadId, email }) {
               <div className="text-center ml-auto">
                 <button
                   onClick={() => handleRemoveRow(index)}
-                  className="text-red-500"
+                  className="text-red-500 cursor-pointer"
                 >
                   <Trash2 />
                 </button>

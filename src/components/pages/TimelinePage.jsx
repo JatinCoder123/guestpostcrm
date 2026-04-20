@@ -40,9 +40,7 @@ export function TimelinePage() {
   if (ladger?.length == 0 && !ladgerLoading) {
     return <NoSearchFoundPage />;
   }
-  if (showIP) {
-    return <Ip onClose={() => setShowIP(false)} />;
-  }
+
 
   return (
     <>
@@ -65,7 +63,7 @@ export function TimelinePage() {
               <MailerSummaryHeader />
               <LatestMessage handleMessageClick={handleMessageClick} />
             </div>
-            <ActionButton isMark={isMark} setShowIP={setShowIP} />
+            <ActionButton isMark={isMark} />
           </div>
           <TimelineEvent handleMessageClick={handleMessageClick} />
 

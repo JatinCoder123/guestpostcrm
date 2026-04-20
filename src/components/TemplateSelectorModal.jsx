@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import useModule from "../hooks/useModule";
 import { LoadingChase } from "./Loading";
 import { useSelector } from "react-redux";
+import { createPortal } from "react-dom";
 
 export default function TemplateSelectorModal({
   isOpen,
@@ -165,13 +166,13 @@ export default function TemplateSelectorModal({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] bg-black/70 flex items-center justify-center p-4"
+        className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -343,6 +344,6 @@ export default function TemplateSelectorModal({
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>, document.body
   );
 }
