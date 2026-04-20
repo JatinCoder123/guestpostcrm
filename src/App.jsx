@@ -52,6 +52,8 @@ import SelfTest from "./components/pages/settingpages/SelfTest";
 import DynamicRouteHandler from "./components/routing/DynamicRouteHandler";
 import GroupReport from "./components/pages/GroupReport";
 import PromptExplorer from "./components/pages/settingpages/PromptExplorer";
+import Ip from "./components/Ip";
+import IpManager from "./components/pages/IpManager";
 
 const router = createBrowserRouter([
   {
@@ -166,6 +168,14 @@ const router = createBrowserRouter([
       {
         path: "timeline",
         element: <TimelinePage />,
+      },
+      {
+        path: "ip",
+        element: <Ip />,
+      },
+      {
+        path: "ip-manager",
+        element: <IpManager />,
       },
 
       {
