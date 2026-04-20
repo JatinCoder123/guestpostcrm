@@ -197,25 +197,24 @@ export const updateOffer = ({ email, offers = [] }) => {
         getState().user.user.email,
         "Offer Updated ",
       );
-      offers.forEach(async (offer) => {
-        await createLedgerEntry({
-          domain,
-          email: email,
-          thread_id: offer.thread_id,
-          message_id: offer.thread_id,
-          group: "Offer",
-          okHandler: () => dispatch(getLadger({ email, loading: false })),
-          items: [
-            buildLedgerItem({
-              status: "Our-Offer-Updated",
-              detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
-              ladgerState: state.ladger,
-              user: state.user.user,
-              parent_name: "outr_offer",
-            }),
-          ],
-        })
+
+      await createLedgerEntry({
+        domain,
+        email: email,
+        thread_id: offers[0].thread_id,
+        message_id: offers[0].thread_id,
+        group: "Offer",
+        okHandler: () => dispatch(getLadger({ email, loading: false })),
+        items: offers.map((offer) => buildLedgerItem({
+          status: "Our-Offer-Updated",
+          detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
+          ladgerState: state.ladger,
+          user: state.user.user,
+          parent_name: "outr_offer",
+        }))
+
       })
+
 
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
