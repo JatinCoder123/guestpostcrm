@@ -141,7 +141,7 @@ export default function CreateDeals({ threadId, email }) {
   }, [message, error]);
   useEffect(() => {
     const currentOfferWithoutDeal = offers.filter((o) => {
-      const isSameThread = o.thread_id == threadId;
+      const isSameThread = o.thread_id == threadId && o.status == "expiry";
 
       // ✅ check against ALL deals (not only active)
       const alreadyHasDeal = deals.some(

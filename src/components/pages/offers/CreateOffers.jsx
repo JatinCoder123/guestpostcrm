@@ -66,7 +66,7 @@ export default function CreateOffers({ threadId, email }) {
     );
 
     const valid = websiteLists.filter((w) => {
-      const usedInOffers = threadOffers.some((o) => o.website === w);
+      const usedInOffers = threadOffers.some((o) => o.website === w && o.status != "expired");
       const usedInDeals = threadDeals.some((d) => d.website_c === w);
 
       return !usedInOffers && !usedInDeals;
