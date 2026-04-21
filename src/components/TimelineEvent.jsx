@@ -478,9 +478,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
                             {event.date_entered}
                           </span>
                           <span className="text-gray-500 text-sm">
+                            <i>- by </i>
                             {event.user_details == false
-                              ? "-by GPC"
-                              : "-by " + event?.user_details?.name}
+                              ? "GPC"
+                              : event?.user_details?.name}
                           </span>
                         </div>
                       </div>
