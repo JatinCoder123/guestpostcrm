@@ -54,8 +54,8 @@ export const fetchGpcController = () => {
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
 
-      const { data } = await axios.get(
-        `${domain}?entryPoint=fetch_gpc&current_email=${getState().user.user.email}&type=manage_gpc`
+      const { data } = await axios.post(
+        `${domain}?entryPoint=fetch_gpc&type=manage_gpc`, { current_email: getState().user.user.email }
       );
       showConsole && console.log(`GPC Data`, data?.data?.available_checkbox);
 

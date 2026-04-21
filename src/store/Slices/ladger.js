@@ -41,11 +41,7 @@ const ladgerSlice = createSlice({
       } = action.payload;
 
       state.loading = false;
-      if (pageIndex === 1) {
-        state.ladger = ladger;
-      } else {
-        state.ladger = [...state.ladger, ...ladger];
-      }
+      state.ladger = ladger;
       state.mailersSummary = mailersSummary || null;
       state.pageCount = pageCount || 1;
       state.pageIndex = pageIndex || 1;
@@ -159,7 +155,7 @@ export const getLadger = ({
         ${trimmedEmail ? `&email=${trimmedEmail}` : ""}`
           .replace(/\s+/g, "")
       );
-
+      console.log("LADGER", data)
       const freshData = {
         duplicate: data.duplicate_threads_count,
         ladger: data.data ?? [],
