@@ -4,7 +4,7 @@ import useModule from "../../../hooks/useModule";
 import { ChevronDown, Check } from "lucide-react";
 import { useSelector } from "react-redux";
 
-function CustomDropdown({
+export function CustomDropdown({
   options = [],
   value,
   onChange,
@@ -228,11 +228,10 @@ const PromptTestingPage = () => {
                       }
                       className={`
             px-4 py-2 rounded-full text-sm font-medium transition border
-            ${
-              formData.stage === key
-                ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
-            }
+            ${formData.stage === key
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow"
+                          : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
+                        }
           `}
                     >
                       {label}
