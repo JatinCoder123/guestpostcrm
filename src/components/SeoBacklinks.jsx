@@ -43,27 +43,29 @@ function useLIInsert() {
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const insertLink = async ({ anchor_text, backlink_url, target_url }) => {
+  const insertLink = async ({
+    anchor_text,
+    backlink_url,
+    target_url,
+    domain,
+  }) => {
     setStatus("loading");
     setResult(null);
     setErrorMsg("");
     try {
-      const res = await fetch(
-        "https://www.wp-1click.com/wp-json/my-api/v1/create-post",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": "YOUR_SECRET_EXTRACT_HERE",
-          },
-          body: JSON.stringify({
-            type: "li",
-            anchor_text,
-            backlink_url,
-            target_url,
-          }),
+      const res = await fetch(`${domain}/wp-json/my-api/v1/create-post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": "YOUR_SECRET_EXTRACT_HERE",
         },
-      );
+        body: JSON.stringify({
+          type: "li",
+          anchor_text,
+          backlink_url,
+          target_url,
+        }),
+      });
       const data = await res.json();
       if (data.success) {
         setStatus("success");
@@ -98,6 +100,7 @@ function LIInsertPopup({ link, onClose }) {
       anchor_text: link.anchor_text_c,
       backlink_url: link.backlink_url,
       target_url: link.target_url_c,
+      domain: link.name,
     });
   };
 
