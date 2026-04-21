@@ -68,7 +68,7 @@ export default function ThreadDeals({ threadId, email, id }) {
       const usedInOffers = threadOffers.some((o) => o.website === w);
 
       const usedInDeals = threadDeals.some(
-        (d) => d.website_c === w && editingIds.includes(d.id),
+        (d) => d.website_c === w && !editingIds.includes(d.id),
       );
 
       return !usedInOffers && !usedInDeals;
