@@ -81,8 +81,8 @@ const ActionButton = ({ setShowIP, isMark }) => {
   const isFavActive = contactInfo?.favorite === "1";
   const isExchangeActive = contactInfo?.exchange === "1";
 
-  const handleForward = (email, id) => {
-    dispatch(forwardEmail(email, id));
+  const handleForward = (id) => {
+    dispatch(forwardEmail(contactInfo?.email1, id));
   };
 
   /* side effects */

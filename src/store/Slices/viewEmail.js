@@ -24,6 +24,7 @@ const viewEmailSlice = createSlice({
     message: null,
     sendFailedResponse: null,
     editMessage: null,
+    hashtags: [],
     error: null,
   },
   reducers: {
@@ -51,6 +52,7 @@ const viewEmailSlice = createSlice({
       state.stage = null;
       state.status = null;
       state.contactInfo = null;
+      state.hashtags = [];
       state.accountInfo = null;
       state.dealInfo = null;
       state.error = null;
@@ -60,6 +62,7 @@ const viewEmailSlice = createSlice({
         contactInfo,
         accountInfo,
         dealInfo,
+        hashtags,
         stage,
         status,
         customer_type,
@@ -68,6 +71,7 @@ const viewEmailSlice = createSlice({
       state.stage = stage;
       state.status = status;
       state.customer_type = customer_type;
+      state.hashtags = hashtags;
       state.contactInfo = contactInfo ? { ...contactInfo } : null;
       state.accountInfo = accountInfo ? { ...accountInfo } : null;
       state.dealInfo = dealInfo ? { ...dealInfo } : null;
@@ -170,6 +174,7 @@ export const getViewEmail = ({
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=view_email&email=${trimmedEmail}`
       );
+      console.log("VIEW EMAIL", data)
 
       const freshData = {
         emails: data.emails,
@@ -254,11 +259,13 @@ export const getContact = (email = null, force = false) => {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint}&type=get_contact&email=${trimmedEmail}`
       );
+      console.log("CONTACT", data)
 
       const freshData = {
         stage: data.stage,
         status: data.status,
         contactInfo: data.contact ?? null,
+        hashtags: data?.contact?.hashtag?.data?.hashtags ?? [],
         accountInfo: data.account ?? null,
         customer_type: data.customer_type ?? null,
         dealInfo: data.deal_fetch ?? null,

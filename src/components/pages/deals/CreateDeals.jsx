@@ -67,7 +67,7 @@ export default function CreateDeals({ threadId, email }) {
     );
 
     const valid = websiteLists.filter((w) => {
-      const usedInDeals = emailDeals.some((d) => d.website_c === w);
+      const usedInDeals = emailDeals.some((d) => d.website_c === w && d.status !== "expire");
 
       return !usedInDeals;
     });
