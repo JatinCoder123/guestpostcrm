@@ -1,8 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
-import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
-
+import {
+  updateActivity,
+  createLedgerEntry,
+  buildLedgerItem,
+  applyHashtag,
+} from "../../services/utils";
+import { getLadger } from "./ladger";
 
 const favSlice = createSlice({
   name: "fav",
@@ -67,8 +72,9 @@ export const getFavEmails = ({ page = 1, loading = true }) => {
     loading && dispatch(favSlice.actions.getEmailRequest());
     try {
       const response = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=favorite${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
+        `${
+          getState().user.crmEndpoint
+        }&type=favorite${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`,
       );
       showConsole && console.log(`favorite emails`, response.data);
       const data = response.data;
@@ -78,7 +84,7 @@ export const getFavEmails = ({ page = 1, loading = true }) => {
           emails: data.data,
           pageCount: data.total_pages,
           pageIndex: data.current_page,
-        })
+        }),
       );
       dispatch(favSlice.actions.clearAllErrors());
     } catch (error) {
@@ -93,20 +99,26 @@ export const favEmail = () => {
     try {
       const response = await axios.get(
         `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
-        {}
+        {},
       );
       showConsole && console.log(`Favourite Toggle Response`, response.data);
       const data = response.data;
       if (!data.success) {
         throw new Error("Toggle failed");
       }
-      const message = data.new_value === 1 ? "Email Favorited Successfully" : "Email Unfavorited Successfully";
-      dispatch(
-        favSlice.actions.favouriteEmailSucess(message)
-      );
+      const message =
+        data.new_value === 1
+          ? "Email Favorited Successfully"
+          : "Email Unfavorited Successfully";
+      dispatch(favSlice.actions.favouriteEmailSucess(message));
       dispatch(favSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, data.new_value === 1 ? "Email Favorited " : "Email Unfavorited ")
-
+      updateActivity(
+        getState().user.crmEndpoint,
+        getState().ladger.email,
+        getState().user.user.name,
+        getState().user.user.email,
+        data.new_value === 1 ? "Email Favorited " : "Email Unfavorited ",
+      );
       await createLedgerEntry({
         domain: domain,
         email: getState().ladger.email,
@@ -114,15 +126,16 @@ export const favEmail = () => {
         group: "Activity",
         items: [
           buildLedgerItem({
-            status: data.new_value === 1 ? "Mark-Favourite" : "Mark-Unfavourite",
+            status:
+              data.new_value === 1 ? "Mark-Favourite" : "Mark-Unfavourite",
             detail: `email: {${getState().ladger.email}}`,
             ladgerState: getState().ladger,
             user: getState().crmUser.currentUser,
           }),
         ],
-        okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),
+        okHandler: () =>
+          dispatch(getLadger({ email: getState().ladger.email })),
       });
-
     } catch (error) {
       dispatch(favSlice.actions.favouriteEmailFailed(error.message));
     }

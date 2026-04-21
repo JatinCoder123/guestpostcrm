@@ -26,7 +26,7 @@ import {
   deleteMarketPlace,
   marketplaceActions,
 } from "../store/Slices/Marketplace";
-import { viewEmailAction } from "../store/Slices/viewEmail";
+import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
 import { applyHashtag } from "../services/utils";
@@ -126,7 +126,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
     if (favouriteMessage) {
       toast.success(favouriteMessage);
       dispatch(favAction.clearAllMessages());
-      dispatch(viewEmailAction.updateContactInfo({ key: "favorite" }));
+      dispatch(getContact(contactInfo?.email1, true, false));
       dispatch(getFavEmails({ email: enteredEmail, loading: false }));
     }
 
@@ -138,11 +138,12 @@ const ActionButton = ({ setShowIP, isMark }) => {
     if (markingMessage) {
       toast.success(markingMessage);
       dispatch(marketplaceActions.clearMessage());
+      dispatch(getContact(contactInfo?.email1, true, false));
     }
 
     if (changeMessage) {
       toast.success(changeMessage);
-      dispatch(viewEmailAction.updateContactInfo({ key: "exchange" }));
+      dispatch(getContact(contactInfo?.email1, true, false));
       dispatch(linkExchangeaction.clearAllMessages());
     }
 
@@ -163,6 +164,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
     if (editMessage) {
       toast.success(editMessage);
       dispatch(viewEmailAction.clearAllMessage());
+      dispatch(getContact(contactInfo?.email1, true, false));
     }
   }, [
     dispatch,
@@ -323,7 +325,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
               : "Emails resumed successfully",
           );
 
-          // GET when stopping (newValue "1"), DELETE when resuming (newValue "0")
+          // GET when stopping (newValue "1"), DELETE when resuming (newValue s"0")
           triggerHashtag(
             MEMO.stopfutureemails,
             newValue === "1" ? "GET" : "DELETE",

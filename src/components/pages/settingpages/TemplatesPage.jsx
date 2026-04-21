@@ -15,6 +15,7 @@ import { PageContext } from "../../../context/pageContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
+import axios from "axios";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -43,9 +44,10 @@ export default function TemplatesPage() {
 
   const { loading, data, error, refetch } = useModule({
     url: stageType
-      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}`
+      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`
       : null,
-    method: "GET",
+    method: "POST",
+    body: { stage_type: stageType },
     name: "emailTemplates",
   });
   const {
@@ -81,11 +83,10 @@ export default function TemplatesPage() {
     const fetchStages = async () => {
       setStagesLoading(true);
       try {
-        const response = await fetch(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=1`,
+        const result = await axios.post(
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`, { stages: 1 },
         );
 
-        const result = await response.json();
         console.log(result)
 
         if (result && typeof result === "object") {

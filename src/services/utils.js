@@ -9,9 +9,11 @@ export const ManualSideCall = async (
   okHandler,
 ) => {
   try {
-    const { data } = await axios.get(
-      `${entryPoint}&type=ledger_entry&email=${email}&description=${description}&match_no=${match_no}`,
-    );
+    const { data } = await axios.post(`${entryPoint}&type=ledger_entry`, {
+      email,
+      description,
+      match_no,
+    });
     showConsole && console.log("manual side call", data);
     if (data == "ok") {
       okHandler();
@@ -96,9 +98,6 @@ export const applyHashtag = async ({
       method,
       url: `${domain}&type=hashtag&email=${email}&memo_no=${memo_no}`,
     });
-
-    const msg = data?.data?.message;
-    if (msg) toast.success(msg);
 
     showConsole && console.log("Hashtag Applied", data);
     return data;

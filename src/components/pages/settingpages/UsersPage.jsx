@@ -55,8 +55,9 @@ export function UsersPage() {
     });
 
     await add({
-      url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=add_user&email=${updatedItem.email}&name=${updatedItem.name}`,
+      url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=add_user`,
       method: "POST",
+      body: { email: updatedItem.email, name: updatedItem.name }
     });
   };
 

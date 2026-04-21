@@ -15,6 +15,7 @@ import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
 import { getOffers } from "../../../store/Slices/offers";
 import { extractEmail } from "../../../assets/assets";
+import { FcExpired } from "react-icons/fc";
 
 // 🔥 renamed component also
 export default function CreateDeals({ threadId, email }) {
@@ -23,6 +24,7 @@ export default function CreateDeals({ threadId, email }) {
 
   const { websites: websiteLists } = useSelector((state) => state.website);
   const { crmEndpoint } = useSelector((state) => state.user);
+  const [expired, setExpired] = useState([]);
 
   // 🔥 now using deals everywhere
   const { deals, creating, message, error } = useSelector(
@@ -65,9 +67,10 @@ export default function CreateDeals({ threadId, email }) {
     const emailDeals = deals.filter(
       (d) => extractEmail(d.real_name ?? d.email) == email,
     );
+    setExpired(emailDeals.filter(o => o.status == "expire").map(eo => eo.website_c))
 
     const valid = websiteLists.filter((w) => {
-      const usedInDeals = emailDeals.some((d) => d.website_c === w);
+      const usedInDeals = emailDeals.some((d) => d.website_c === w && d.status !== "expire");
 
       return !usedInDeals;
     });
@@ -141,7 +144,7 @@ export default function CreateDeals({ threadId, email }) {
   }, [message, error]);
   useEffect(() => {
     const currentOfferWithoutDeal = offers.filter((o) => {
-      const isSameThread = o.thread_id == threadId && o.status !== "expired";
+      const isSameThread = (o.thread_id == threadId && o.offer_status !== "expired");
 
       // ✅ check against ALL deals (not only active)
       const alreadyHasDeal = deals.some(
@@ -182,7 +185,7 @@ export default function CreateDeals({ threadId, email }) {
             >
 
               {/* WEBSITE */}
-              <div className="col-span-3">
+              <div className="col-span-3 relative">
                 <select
                   value={row.website_c}
                   onChange={(e) =>
@@ -197,6 +200,16 @@ export default function CreateDeals({ threadId, email }) {
                     </option>
                   ))}
                 </select>
+                {expired.includes(row.website_c) && (
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 group cursor-pointer">
+                    <FcExpired size={20} />
+
+                    {/* Tooltip */}
+                    <div className="absolute right-0 top-8 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-50">
+                      This website deal is expired
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* DEAL AMOUNT */}
