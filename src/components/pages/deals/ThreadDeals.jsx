@@ -25,10 +25,9 @@ export default function ThreadDeals({ threadId, email, id }) {
   const dispatch = useDispatch();
   const [send, setSend] = useState(false);
   const [currentDeals, setCurrentDeals] = useState([]);
-
-  // 🔥 INLINE EDIT STATE
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
+  const [selectedDeals, setSelectedDeals] = useState([]);
+  const [editingIds, setEditingIds] = useState([]);
+  const [editDataMap, setEditDataMap] = useState({});
   const { websites: websiteLists } = useSelector((state) => state.website);
 
   const { deals, deleting, updating, message, error, deleteDealId } =
@@ -69,7 +68,7 @@ export default function ThreadDeals({ threadId, email, id }) {
       const usedInOffers = threadOffers.some((o) => o.website === w);
 
       const usedInDeals = threadDeals.some(
-        (d) => d.website_c === w && d.id !== editData.id,
+        (d) => d.website_c === w && !editingIds.includes(d.id),
       );
 
       return !usedInOffers && !usedInDeals;
@@ -82,21 +81,55 @@ export default function ThreadDeals({ threadId, email, id }) {
     }
     setValidWebsite(valid);
     setCurrentDeals(activeDeals);
-  }, [offers, deals, editData, email, id]);
+  }, [offers, deals, editDataMap, email, id]);
+  const toggleSelect = (id) => {
+    setSelectedDeals((prev) =>
+      prev.includes(id)
+        ? prev.filter((i) => i !== id)
+        : [...prev, id]
+    );
+    if (editingIds.length > 0) {
+      if (!selectedDeals.includes(id)) {
+        const selectedData = currentDeals.find(o => o.id == id);
 
-  // 🔥 INLINE EDIT HANDLERS
-  const handleEdit = (deal) => {
-    setEditingId(deal.id);
-    setEditData({ ...deal });
+        setEditingIds(prev => [...prev, id]);
+        setEditDataMap(prev => ({ ...prev, [id]: { ...selectedData } }));
+      }
+      else {
+        setEditingIds(prev => prev.filter(p => p != id));
+        setEditDataMap(prev => {
+          const { [id]: _, ...rest } = prev
+          return rest
+        });
+      }
+
+    }
   };
 
-  const handleSave = (deal, isSend = false) => {
-    if (!deal.dealamount || Number(deal.dealamount) <= 0) {
-      toast.error("Deal amount must be greater than 0");
-      return;
+  const handleSelectAll = () => {
+    if (selectedDeals.length === currentDeals.length) {
+      setSelectedDeals([]);
+      setEditingIds([]);
+      setEditDataMap({});
+    } else {
+      setSelectedDeals(currentDeals.map((d) => d.id));
     }
+  };
+  // 🔥 INLINE EDIT HANDLERS
+  const handleEdit = (deals) => {
+    const ids = deals.map((d) => d.id);
+
+    const map = {};
+    deals.forEach((d) => {
+      map[d.id] = { ...d };
+    });
+
+    setEditingIds(ids);
+    setEditDataMap(map);
+  };
+  const handleSave = (deals, isSend = false) => {
     setSend(isSend); // 🔥 track intent
-    dispatch(updateDeal({ deal, email }));
+    dispatch(updateDeal({ deals, email }));
   };
 
   const handleDelete = (deal, id) => {
@@ -125,14 +158,16 @@ export default function ThreadDeals({ threadId, email, id }) {
   };
   useEffect(() => {
     if (!updating) {
-      setEditingId(null);
+      setEditingIds([]);
+      setSelectedDeals([]);
+      setEditDataMap({});
     }
 
     if (message) {
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {
-          handlePreview([editData]);
+          handlePreview(editingIds.map(id => editDataMap[id]));
           setSend(false);
         }
       }
@@ -146,18 +181,113 @@ export default function ThreadDeals({ threadId, email, id }) {
       dispatch(dealsAction.clearAllErrors());
     }
   }, [updating, message, error]);
-  const isInvalidDealAmount =
-    editData.dealamount === "" ||
-    editData.dealamount === null ||
-    Number(editData.dealamount) <= 0;
+
+  const isMultiEditValid = editingIds.every(id => {
+    const data = editDataMap[id];
+    return (
+      data.dealamount === "" ||
+      data.dealamount === null ||
+      Number(data.dealamount) <= 0
+    );
+  });
   return (
     <div className="w-full flex gap-6 items-start">
       {/* 🔥 TABLE */}
       <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
         <PageHeader title={"DEALS"} onAdd={handleCreate} />
+        {selectedDeals.length > 0 && (
+          <div className="mb-4 flex justify-end gap-3">
 
+            {editingIds.length > 0 ? (
+              <>
+                <IconButton
+                  icon={Save}
+                  label="Save"
+                  className="bg-blue-100 hover:bg-blue-200"
+                  loading={updating && !send}
+
+                  onClick={() =>
+                    handleSave(editingIds.map(id => editDataMap[id]), false)
+                  }
+                />
+
+                <IconButton
+                  icon={Send}
+                  label="Save & Send"
+                  className="bg-green-100 hover:bg-green-200"
+                  loading={updating && send}
+                  onClick={() =>
+                    handleSave(editingIds.map(id => editDataMap[id]), true)
+                  }
+                />
+
+                <IconButton
+                  icon={X}
+                  label="Cancel"
+                  className="bg-red-100 hover:bg-red-200"
+
+                  onClick={() => {
+                    setEditingIds([]);
+                    setEditDataMap({});
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <IconButton
+                  icon={Pencil}
+                  label="Edit"
+                  onClick={() =>
+                    handleEdit(
+                      currentDeals.filter(d =>
+                        selectedDeals.includes(d.id)
+                      )
+                    )
+                  }
+                  className="bg-blue-100 hover:bg-blue-200"
+
+                />
+                <IconButton
+                  icon={Send}
+                  label="Send"
+                  onClick={() =>
+                    handlePreview(
+                      currentDeals.filter(d =>
+                        selectedDeals.includes(d.id)
+                      )
+                    )
+                  }
+                  className="bg-green-100 hover:bg-green-200"
+
+                />
+                <IconButton
+                  icon={Trash2}
+                  label="Delete"
+                  onClick={() => {
+                    selectedDeals.forEach(id => {
+                      const deal = currentDeals.find(d => d.id === id);
+                      handleDelete(deal, id);
+                    });
+                  }}
+                  className="bg-red-100 hover:bg-red-200"
+
+                />
+
+
+              </>
+            )}
+
+          </div>
+        )}
         {/* HEADER */}
         <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
+          <div className="col-span-1">
+            <input
+              type="checkbox"
+              checked={selectedDeals.length === currentDeals.length}
+              onChange={handleSelectAll}
+            />
+          </div>
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Deal Amount</div>
           <div className="col-span-2 text-center">Note</div>
@@ -171,14 +301,20 @@ export default function ThreadDeals({ threadId, email, id }) {
           )}
 
           {currentDeals.map((deal, index) => {
-            const isEditing = editingId === deal.id;
-
+            const isEditing = editingIds.includes(deal.id);
+            const editData = editDataMap[deal.id] || {};
             return (
               <motion.div
                 key={deal.id}
                 className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
               >
-
+                <div className="col-span-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedDeals.includes(deal.id)}
+                    onChange={() => toggleSelect(deal.id)}
+                  />
+                </div>
 
                 {/* Website */}
                 <div className="col-span-3">
@@ -186,10 +322,13 @@ export default function ThreadDeals({ threadId, email, id }) {
                     <select
                       value={editData.website_c}
                       onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          website_c: e.target.value,
-                        })
+                        setEditDataMap(prev => ({
+                          ...prev,
+                          [deal.id]: {
+                            ...prev[deal.id],
+                            website_c: e.target.value,
+                          }
+                        }))
                       }
                       className="w-full border rounded-lg px-2 py-1"
                     >
@@ -214,10 +353,13 @@ export default function ThreadDeals({ threadId, email, id }) {
                       value={editData.dealamount}
                       min={1}
                       onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          dealamount: e.target.value,
-                        })
+                        setEditDataMap(prev => ({
+                          ...prev,
+                          [deal.id]: {
+                            ...prev[deal.id],
+                            dealamount: e.target.value,
+                          }
+                        }))
                       }
                       className="w-20 border rounded px-2 py-1 text-center"
                     />
@@ -233,10 +375,13 @@ export default function ThreadDeals({ threadId, email, id }) {
                       type="textarea"
                       value={editData.note}
                       onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          note: e.target.value,
-                        })
+                        setEditDataMap(prev => ({
+                          ...prev,
+                          [deal.id]: {
+                            ...prev[deal.id],
+                            note: e.target.value,
+                          }
+                        }))
                       }
                       className="w-20 border rounded px-2 py-1 text-center"
                     />
@@ -247,35 +392,35 @@ export default function ThreadDeals({ threadId, email, id }) {
 
                 {/* Actions */}
                 <div className="col-span-2 flex justify-center gap-2 ml-auto">
-                  {isEditing ? (
+                  {selectedDeals.length == 0 ? (isEditing ? (
                     <div className="flex gap-2">
                       <IconButton
                         icon={Save}
                         label="Save"
-                        disabled={isInvalidDealAmount}
-                        loading={editingId == deal.id && updating && !send}
-                        onClick={() => handleSave(editData, false)}
+                        disabled={isMultiEditValid}
+                        loading={editingIds.includes(deal.id) && updating && !send}
+                        onClick={() => handleSave([editData], false)}
                       />
 
                       <IconButton
                         icon={Send}
                         label="Save & Send"
-                        disabled={isInvalidDealAmount}
-                        loading={editingId == deal.id && updating && send}
-                        onClick={() => handleSave(editData, true)}
+                        disabled={isMultiEditValid}
+                        loading={editingIds.includes(deal.id) && updating && send}
+                        onClick={() => handleSave([editData], true)}
                       />
 
                       <IconButton
                         icon={X}
                         label="Cancel"
-                        onClick={() => setEditingId(null)}
+                        onClick={() => setEditingIds([])}
                         className="bg-red-100 hover:bg-red-200"
                       />
                     </div>
                   ) : (
                     <>
                       <button
-                        onClick={() => handleEdit(deal)}
+                        onClick={() => handleEdit([deal])}
                         className="p-2 rounded-lg bg-blue-100 text-blue-600"
                       >
                         <Pencil className="w-4 h-4" />
@@ -293,7 +438,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                         )}
                       </button>
                     </>
-                  )}
+                  )) : "-"}
                 </div>
               </motion.div>
             );
