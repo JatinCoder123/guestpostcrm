@@ -29,6 +29,16 @@ import {
 import { viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
+import { applyHashtag } from "../services/utils";
+
+/* Memo numbers from CRM */
+const MEMO = {
+  marketplace: 1,
+  favourite: 4,
+  assign: 5,
+  linkexchange: 6,
+  stopfutureemails: 7,
+};
 
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
@@ -85,6 +95,16 @@ const ActionButton = ({ setShowIP, isMark }) => {
     dispatch(forwardEmail(email, id));
   };
 
+  /* Helper to call applyHashtag util */
+  const triggerHashtag = (memo_no, method = "GET") => {
+    applyHashtag({
+      domain: crmEndpoint,
+      email: enteredEmail,
+      memo_no,
+      method,
+    });
+  };
+
   /* side effects */
   useEffect(() => {
     if (forwardError) {
@@ -107,7 +127,6 @@ const ActionButton = ({ setShowIP, isMark }) => {
       toast.success(favouriteMessage);
       dispatch(favAction.clearAllMessages());
       dispatch(viewEmailAction.updateContactInfo({ key: "favorite" }));
-
       dispatch(getFavEmails({ email: enteredEmail, loading: false }));
     }
 
@@ -140,6 +159,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
     if (message) {
       dispatch(threadEmailAction.clearAllMessage());
     }
+
     if (editMessage) {
       toast.success(editMessage);
       dispatch(viewEmailAction.clearAllMessage());
@@ -188,6 +208,8 @@ const ActionButton = ({ setShowIP, isMark }) => {
         dispatch(getTags());
       },
     },
+
+    /* index 2 → MoveToDropdown placeholder */
     {},
 
     {
@@ -202,7 +224,11 @@ const ActionButton = ({ setShowIP, isMark }) => {
         color: "#dc2626",
         fill: "#f74050",
       },
-      action: () => dispatch(favEmail(threadId)),
+      // GET when adding favourite, DELETE when removing
+      action: () => {
+        dispatch(favEmail(threadId));
+        triggerHashtag(MEMO.favourite, isFavActive ? "DELETE" : "GET");
+      },
     },
 
     {
@@ -216,6 +242,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
         />
       ),
       label: "Assign",
+      // hashtag fires inside handleForwardWithHashtag when user picks someone
       action: () => setShowUsers((p) => !p),
     },
 
@@ -231,8 +258,13 @@ const ActionButton = ({ setShowIP, isMark }) => {
         color: "#2563eb",
         fill: "#313cb5",
       },
-      action: () => dispatch(linkExchange(threadId)),
+      // GET when activating link exchange, DELETE when deactivating
+      action: () => {
+        dispatch(linkExchange(threadId));
+        triggerHashtag(MEMO.linkexchange, isExchangeActive ? "DELETE" : "GET");
+      },
     },
+
     {
       icon:
         adding || (deleting && deleteMarketPlaceId == isMark?.id) ? (
@@ -240,20 +272,24 @@ const ActionButton = ({ setShowIP, isMark }) => {
         ) : (
           <MdOutlineHome size={25} color={isMark ? "white" : "#d40d8b"} />
         ),
-
       label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
       active: isMark,
       activeProps: {
         color: "#ea580c",
         fill: "#d40d8b",
       },
-      action: () =>
-        dispatch(
-          isMark
-            ? deleteMarketPlace(isMark.id)
-            : addMarketPlace(email, contactInfo.type == "Brand"),
-        ),
+      // GET when adding to marketplace, DELETE when removing
+      action: () => {
+        if (isMark) {
+          dispatch(deleteMarketPlace(isMark.id));
+          triggerHashtag(MEMO.marketplace, "DELETE");
+        } else {
+          dispatch(addMarketPlace(email, contactInfo.type == "Brand"));
+          triggerHashtag(MEMO.marketplace, "GET");
+        }
+      },
     },
+
     {
       icon: stopLoading ? (
         <LoadingChase />
@@ -263,18 +299,14 @@ const ActionButton = ({ setShowIP, isMark }) => {
           color={contactInfo?.is_stop === "1" ? "red" : "#eab308"}
         />
       ),
-
       label:
         contactInfo?.is_stop === "1" ? "Resume Emails" : "Stop Future Emails",
-
+      // GET when stopping emails, DELETE when resuming
       action: async () => {
         setStopLoading(true);
-
         try {
           const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
-
           const url = `${crmEndpoint}&type=force_stop&id=${contactInfo?.id}&new_value=${newValue}&user=${enteredEmail}`;
-
           const result = await fetch(url);
           const data = await result.json();
           console.log(data);
@@ -290,6 +322,12 @@ const ActionButton = ({ setShowIP, isMark }) => {
               ? "Emails stopped successfully"
               : "Emails resumed successfully",
           );
+
+          // GET when stopping (newValue "1"), DELETE when resuming (newValue "0")
+          triggerHashtag(
+            MEMO.stopfutureemails,
+            newValue === "1" ? "GET" : "DELETE",
+          );
         } catch (err) {
           toast.error("Something went wrong");
         } finally {
@@ -299,18 +337,23 @@ const ActionButton = ({ setShowIP, isMark }) => {
     },
   ];
 
+  /* Assign handler — hashtag always GET since assign is a one-way action */
+  const handleForwardWithHashtag = (email, id) => {
+    dispatch(forwardEmail(email, id));
+    triggerHashtag(MEMO.assign, "GET");
+  };
+
   return (
     <>
       <div
-        className="mt-4  flex items-center justify-center flex-wrap gap-10
+        className="mt-4 flex items-center justify-center flex-wrap gap-10
   p-4 rounded-b-2xl
   bg-gradient-to-r from-cyan-50 via-orange-50 to-cyan-50
   border-t border-gray-300
   shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
       >
-        {" "}
         {actionButtons.map((btn, i) => (
-          <div key={i} className="flex items-center  gap-8 relative">
+          <div key={i} className="flex items-center gap-8 relative">
             {i == 2 ? (
               <>
                 <MoveToDropdown
@@ -325,7 +368,6 @@ const ActionButton = ({ setShowIP, isMark }) => {
               </>
             ) : (
               <>
-                {" "}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -354,7 +396,6 @@ const ActionButton = ({ setShowIP, isMark }) => {
 `}
                 >
                   {btn.icon}
-
                   <span
                     className="absolute -bottom-9 left-1/2 -translate-x-1/2
     bg-black text-white text-xs px-2 py-1 rounded
@@ -364,12 +405,14 @@ const ActionButton = ({ setShowIP, isMark }) => {
                     {btn.label}
                   </span>
                 </button>
+
                 {showUsers && btn.label === "Assign" && (
                   <UserDropdown
-                    forwardHandler={handleForward}
+                    forwardHandler={handleForwardWithHashtag}
                     onClose={() => setShowUsers(false)}
                   />
                 )}
+
                 {showTags && btn.label === "Mark Tag" && (
                   <div className="absolute top-14 right-0 w-60 z-40">
                     <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
