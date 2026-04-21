@@ -26,7 +26,7 @@ import {
   deleteMarketPlace,
   marketplaceActions,
 } from "../store/Slices/Marketplace";
-import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
+import { viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
 
@@ -67,7 +67,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
   } = useSelector((s) => s.fav);
 
   const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const {
     adding,
     deleteMarketPlaceId,
@@ -172,7 +172,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
         />
       ),
       label: "IP",
-      action: () => navigate('/ip'),
+      action: () => navigate("/ip"),
     },
     {
       icon: (
@@ -316,7 +316,9 @@ const ActionButton = ({ setShowIP, isMark }) => {
                 <MoveToDropdown
                   currentThreadId={threadId}
                   onMoveSuccess={() =>
-                    dispatch(getLadger({ email: contactInfo?.email1, loading: false }))
+                    dispatch(
+                      getLadger({ email: contactInfo?.email1, loading: false }),
+                    )
                   }
                 />
                 <Separator />
@@ -332,12 +334,12 @@ const ActionButton = ({ setShowIP, isMark }) => {
                   style={
                     btn.active
                       ? {
-                        backgroundColor: btn.activeProps.fill,
-                        color: btn.activeProps.color,
-                        transform: "translateY(-2px) scale(1.09)",
-                        boxShadow:
-                          "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
-                      }
+                          backgroundColor: btn.activeProps.fill,
+                          color: btn.activeProps.color,
+                          transform: "translateY(-2px) scale(1.09)",
+                          boxShadow:
+                            "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
+                        }
                       : {}
                   }
                   className={`group flex items-center cursor-pointer justify-center w-12 h-12
