@@ -7,6 +7,7 @@ import useModule from "../hooks/useModule";
 import { LoadingChase } from "./Loading";
 import { useSelector } from "react-redux";
 import { createPortal } from "react-dom";
+import axios from "axios";
 
 export default function TemplateSelectorModal({
   isOpen,
@@ -54,11 +55,10 @@ export default function TemplateSelectorModal({
     const fetchStages = async () => {
       setStagesLoading(true);
       try {
-        const res = await fetch(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=2&assigned_user_id=${assignUserId}`,
+        const res = await axios.post(
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`, { assigned_user_id: assignUserId, stages: 2 },
         );
-        const result = await res.json();
-        if (result && typeof result === "object") {
+        if (res && typeof result === "object") {
           setStages(result);
           setStageType(Object.keys(result)[0]);
         }
@@ -78,9 +78,10 @@ export default function TemplateSelectorModal({
     refetch: refetchTemplates,
   } = useModule({
     url: stageType
-      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}&assigned_user_id=${assignUserId}`
+      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`
       : null,
-    method: "GET",
+    method: "POST",
+    body: { stage_type: stageType, assigned_user_id: assignUserId },
     name: "TEMPLATE LIST IN MODAL",
     dependencies: [crmEndpoint, stageType],
     enabled: !!stageType && isOpen,
