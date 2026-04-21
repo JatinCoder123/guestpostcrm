@@ -93,7 +93,8 @@ const viewEmailSlice = createSlice({
     },
     editContactSucess(state, action) {
       state.contactLoading = false;
-      state.editMessage = !action.payload.message ?? "Contact updated successfully";
+      state.editMessage =
+        !action.payload.message ?? "Contact updated successfully";
       state.error = null;
     },
     editContactFailed(state, action) {
@@ -106,7 +107,6 @@ const viewEmailSlice = createSlice({
       state.message = null;
       state.error = null;
       state.sendFailedResponse = null;
-
     },
     sendEmailWrong(state, action) {
       const { response } = action.payload;
@@ -117,7 +117,7 @@ const viewEmailSlice = createSlice({
       const { message, sendedEmail } = action.payload;
       state.sending = false;
       state.message = message;
-      state.sendedEmail = sendedEmail
+      state.sendedEmail = sendedEmail;
       state.error = null;
     },
     sendEmailFailed(state, action) {
@@ -129,28 +129,31 @@ const viewEmailSlice = createSlice({
     },
     compleConv(state, action) {
       state.message = action.payload.message;
-      state.sendedEmail = action.payload.sendedEmail
+      state.sendedEmail = action.payload.sendedEmail;
     },
     clearAllMessage(state) {
       state.message = null;
-      state.sendedEmail = null
-      state.editMessage = null
+      state.sendedEmail = null;
+      state.editMessage = null;
     },
     clearFailedResponse(state) {
-      state.sendFailedResponse = null
+      state.sendFailedResponse = null;
     },
 
     updateContactInfo(state, action) {
       const { key } = action.payload;
       state.contactInfo[key] = state.contactInfo[key] === "1" ? "0" : "1";
     },
+    toggleHastage(state, action) {
+      const { memo_no, name } = action.payload;
+      state.hashtags = state.hashtags.find((tag) => tag.memo_no === memo_no)
+        ? state.hashtags.filter((tag) => tag.memo_no !== memo_no)
+        : [...state.hashtags, { memo_no, type: "static", name }];
+    },
   },
 });
 
-export const getViewEmail = ({
-  email = null,
-  force = false
-}) => {
+export const getViewEmail = ({ email = null, force = false }) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.getViewEmailRequest());
 
@@ -166,15 +169,15 @@ export const getViewEmail = ({
               viewEmail: cachedData.emails,
               threadId: cachedData.threadId,
               count: cachedData.count,
-            })
+            }),
           );
         }
       }
 
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${trimmedEmail}`
+        `${getState().user.crmEndpoint}&type=view_email&email=${trimmedEmail}`,
       );
-      console.log("VIEW EMAIL", data)
+      console.log("VIEW EMAIL", data);
 
       const freshData = {
         emails: data.emails,
@@ -189,11 +192,13 @@ export const getViewEmail = ({
           viewEmail: freshData.emails,
           threadId: freshData.threadId,
           count: freshData.count,
-        })
+        }),
       );
 
       // PREFETCH NEXT / PREV
-      const index = localStorage.getItem("currentIndex") && Number(localStorage.getItem("currentIndex"))
+      const index =
+        localStorage.getItem("currentIndex") &&
+        Number(localStorage.getItem("currentIndex"));
       if (index !== null) {
         const unreplied = getState().unreplied;
 
@@ -203,18 +208,13 @@ export const getViewEmail = ({
             : null;
 
         const prevEmail =
-          index > 0
-            ? unreplied.emails[index - 1]?.email1
-            : null;
+          index > 0 ? unreplied.emails[index - 1]?.email1 : null;
 
         [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
-          if (
-            prefetchEmail &&
-            !getCache("viewMails", prefetchEmail.trim())
-          ) {
+          if (prefetchEmail && !getCache("viewMails", prefetchEmail.trim())) {
             try {
               const { data } = await axios.get(
-                `${getState().user.crmEndpoint}&type=view_email&email=${prefetchEmail.trim()}`
+                `${getState().user.crmEndpoint}&type=view_email&email=${prefetchEmail.trim()}`,
               );
 
               setCache("viewMails", prefetchEmail.trim(), {
@@ -233,15 +233,15 @@ export const getViewEmail = ({
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.getViewEmailFailed(
-          "Fetching View Emails Failed"
-        )
+          "Fetching View Emails Failed",
+        ),
       );
     }
   };
 };
-export const getContact = (email = null, force = false) => {
+export const getContact = (email = null, force = false, loading = true) => {
   return async (dispatch, getState) => {
-    dispatch(viewEmailSlice.actions.getContactRequest());
+    loading && dispatch(viewEmailSlice.actions.getContactRequest());
 
     try {
       const trimmedEmail = email?.trim();
@@ -250,16 +250,14 @@ export const getContact = (email = null, force = false) => {
         const cachedData = getCache("contacts", trimmedEmail);
 
         if (cachedData) {
-          dispatch(
-            viewEmailSlice.actions.getContactSucess(cachedData)
-          );
+          dispatch(viewEmailSlice.actions.getContactSucess(cachedData));
         }
       }
 
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=get_contact&email=${trimmedEmail}`
+        `${getState().user.crmEndpoint}&type=get_contact&email=${trimmedEmail}`,
       );
-      console.log("CONTACT", data)
+      console.log("CONTACT", data);
 
       const freshData = {
         stage: data.stage,
@@ -273,12 +271,12 @@ export const getContact = (email = null, force = false) => {
 
       setCache("contacts", trimmedEmail, freshData);
 
-      dispatch(
-        viewEmailSlice.actions.getContactSucess(freshData)
-      );
+      dispatch(viewEmailSlice.actions.getContactSucess(freshData));
 
       // PREFETCH NEXT / PREV
-      const index = localStorage.getItem("currentIndex") && Number(localStorage.getItem("currentIndex"))
+      const index =
+        localStorage.getItem("currentIndex") &&
+        Number(localStorage.getItem("currentIndex"));
 
       if (index !== null) {
         const unreplied = getState().unreplied;
@@ -289,18 +287,13 @@ export const getContact = (email = null, force = false) => {
             : null;
 
         const prevEmail =
-          index > 0
-            ? unreplied.emails[index - 1]?.email1
-            : null;
+          index > 0 ? unreplied.emails[index - 1]?.email1 : null;
 
         [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
-          if (
-            prefetchEmail &&
-            !getCache("contacts", prefetchEmail.trim())
-          ) {
+          if (prefetchEmail && !getCache("contacts", prefetchEmail.trim())) {
             try {
               const { data } = await axios.get(
-                `${getState().user.crmEndpoint}&type=get_contact&email=${prefetchEmail.trim()}`
+                `${getState().user.crmEndpoint}&type=get_contact&email=${prefetchEmail.trim()}`,
               );
 
               setCache("contacts", prefetchEmail.trim(), {
@@ -321,9 +314,7 @@ export const getContact = (email = null, force = false) => {
       dispatch(viewEmailSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        viewEmailSlice.actions.getContactFailed(
-          "Fetching View Details failed"
-        )
+        viewEmailSlice.actions.getContactFailed("Fetching View Details failed"),
       );
     }
   };
@@ -373,9 +364,7 @@ export const editContact = (contactData, message = "") => {
   };
 };
 
-export const sendEmail = (
-  formData,
-) => {
+export const sendEmail = (formData) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
     try {
@@ -391,21 +380,30 @@ export const sendEmail = (
 
       showConsole && console.log("Reply Data", data);
       if (!data.success && data.response) {
-        dispatch(viewEmailSlice.actions.sendEmailWrong({ response: data.response }))
-        return
+        dispatch(
+          viewEmailSlice.actions.sendEmailWrong({ response: data.response }),
+        );
+        return;
       }
       if (!data.success) {
-        throw Error("Error While Sending Email")
+        throw Error("Error While Sending Email");
       }
 
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: `Reply Successfully Sent To ${formData.get("email")}`,
-          sendedEmail: formData.get("email")
+          sendedEmail: formData.get("email"),
         }),
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      localStorage.getItem("addActivity") && updateActivity(getState().user.crmEndpoint, formData.get("email"), getState().user.user.name, getState().user.user.email, "Email Sent")
+      localStorage.getItem("addActivity") &&
+        updateActivity(
+          getState().user.crmEndpoint,
+          formData.get("email"),
+          getState().user.user.name,
+          getState().user.user.email,
+          "Email Sent",
+        );
     } catch (error) {
       showConsole && console.log(error);
       dispatch(

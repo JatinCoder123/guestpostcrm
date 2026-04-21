@@ -1,35 +1,46 @@
-import axios from "axios"
-import { showConsole } from "../assets/assets"
+import axios from "axios";
+import { showConsole } from "../assets/assets";
 
-export const ManualSideCall = async (entryPoint, email, description, match_no, okHandler) => {
-
+export const ManualSideCall = async (
+  entryPoint,
+  email,
+  description,
+  match_no,
+  okHandler,
+) => {
   try {
-    const { data } = await axios.post(`${entryPoint}&type=ledger_entry`, { email, description, match_no })
-    showConsole && console.log('manual side call', data)
+    const { data } = await axios.post(`${entryPoint}&type=ledger_entry`, {
+      email,
+      description,
+      match_no,
+    });
+    showConsole && console.log("manual side call", data);
     if (data == "ok") {
-      okHandler()
+      okHandler();
     }
   } catch (error) {
-    showConsole && console.log(error)
+    showConsole && console.log(error);
   }
-
-}
-export const updateActivity = async (entryPoint, email, last_user, last_user_email, last_activity) => {
-
+};
+export const updateActivity = async (
+  entryPoint,
+  email,
+  last_user,
+  last_user_email,
+  last_activity,
+) => {
   try {
     const { data } = await axios.post(`${entryPoint}&type=last_activity`, {
       email,
       last_activity,
       last_user,
-      last_user_email
-    })
-    showConsole && console.log('Activity Added', data)
-
+      last_user_email,
+    });
+    showConsole && console.log("Activity Added", data);
   } catch (error) {
-    showConsole && console.log(error)
+    showConsole && console.log(error);
   }
-
-}
+};
 export const createLedgerEntry = async ({
   domain,
   email,
@@ -37,7 +48,7 @@ export const createLedgerEntry = async ({
   message_id,
   group = "General",
   items = [],
-  okHandler
+  okHandler,
 }) => {
   try {
     const payload = {
@@ -49,11 +60,11 @@ export const createLedgerEntry = async ({
     };
     const { data } = await axios.post(
       `${domain}?entryPoint=fetch_gpc&type=make_ledger`,
-      payload
+      payload,
     );
 
     showConsole && console.log("Ledger Created", data);
-    okHandler()
+    okHandler();
   } catch (error) {
     showConsole && console.log("Ledger API Failed", error);
   }
@@ -76,3 +87,21 @@ export const buildLedgerItem = ({
   assigned_user_id: user?.id || "",
 });
 
+export const applyHashtag = async ({
+  domain,
+  email,
+  memo_no,
+  method = "GET",
+}) => {
+  try {
+    const { data } = await axios({
+      method,
+      url: `${domain}&type=hashtag&email=${email}&memo_no=${memo_no}`,
+    });
+
+    showConsole && console.log("Hashtag Applied", data);
+    return data;
+  } catch (error) {
+    showConsole && console.log("Hashtag API Failed", error);
+  }
+};
