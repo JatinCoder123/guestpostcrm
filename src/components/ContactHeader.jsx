@@ -7,12 +7,14 @@ import {
   Rocket,
   Flame,
   Hourglass,
-  User,
   Signature,
   CircleUser,
   ArrowBigDown,
   Eye,
   EyeOff,
+  ChevronLeft,
+  Users,
+  ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SocialButtons from "./SocialButtons";
@@ -21,20 +23,17 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
-import { brandTimelineAction, getBrandTimeline } from "../store/Slices/brandTimeline";
+import {
+  brandTimelineAction,
+  getBrandTimeline,
+} from "../store/Slices/brandTimeline";
 import IconButton from "./ui/Buttons/IconButton";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
   return (
     <span
-      className={`
-      px-2.5 py-1 rounded-full text-md font-semibold
-      bg-gradient-to-r ${color}
-      text-white shadow-sm
-      hover:scale-105 hover:shadow-md
-      transition-all duration-200
-    `}
+      className={`px-2.5 py-1 rounded-full text-md font-semibold bg-gradient-to-r ${color} text-white shadow-sm hover:scale-105 hover:shadow-md transition-all duration-200`}
     >
       #{text}
     </span>
@@ -43,18 +42,38 @@ function HashTag({ text, color }) {
 
 const ContactHeader = () => {
   const navigate = useNavigate();
-  const goToDeal = () => {
-    navigate("/deals");
-  };
-  const { contactInfo, contactLoading, stage, status, customer_type, hashtags } =
-    useSelector((state) => state.viewEmail);
-  const { showBrandTimeline } =
-    useSelector((state) => state.brandTimeline);
-  const email = contactInfo?.email1;
-  const dispatch = useDispatch()
-  const { showNextPrev } = useContext(PageContext);
+  const dispatch = useDispatch();
+
+  const { showNextPrev, handleDateClick } = useContext(PageContext);
+
+  const {
+    contactInfo,
+    contactLoading,
+    stage,
+    status,
+    customer_type,
+    hashtags,
+  } = useSelector((state) => state.viewEmail);
 
   const { deals } = useSelector((state) => state.deals);
+
+  const { showBrandTimeline, contacts = [] } = useSelector(
+    (state) => state.brandTimeline,
+  );
+
+  const email = contactInfo?.email1;
+
+  const [showSidebar, setShowSidebar] = useState(false);
+
+  const goToDeal = () => navigate("/deals");
+
+  const handleBrandTimeline = () => {
+    if (showBrandTimeline) {
+      dispatch(brandTimelineAction.setShowBrandTimeline(false));
+    } else {
+      dispatch(getBrandTimeline({ email }));
+    }
+  };
 
   const CountUpWithBlast = ({ value, email }) => {
     const storageKey = `maxDealAnimated_${email}`;
@@ -103,9 +122,7 @@ const ContactHeader = () => {
 
     return <span ref={amountRef}>{count.toLocaleString()}</span>;
   };
-  const handleBrandTimeline = () => {
-    showBrandTimeline ? dispatch(brandTimelineAction.setShowBrandTimeline(false)) : dispatch(getBrandTimeline({ email }))
-  }
+
   const emailDeals = deals?.filter((d) => {
     const dealEmail = (
       d.email ||
@@ -127,14 +144,12 @@ const ContactHeader = () => {
         ),
       )
       : 0;
+
   const statusItems = [
     { Icon: Tag, label: "Type", value: contactInfo?.type },
     { Icon: Rocket, label: "Stage", value: stage },
     { Icon: Hourglass, label: "Status", value: status },
     { Icon: Lock, label: "Category", value: customer_type },
-    ...(contactInfo?.moved_label
-      ? [{ Icon: Tag, label: "Email Label", value: contactInfo.moved_label }]
-      : []),
     {
       Icon: ArrowBigDown,
       label: "Direction",
@@ -148,7 +163,7 @@ const ContactHeader = () => {
     {
       Icon: Signature,
       label: "Last Activity",
-      value: contactInfo?.last_activity ?? "GPC",
+      value: contactInfo?.last_activity ?? "-",
     },
     {
       Icon: CircleUser,
@@ -162,23 +177,66 @@ const ContactHeader = () => {
       value: contactInfo?.last_activity_date ?? "-",
     },
   ];
+
+  const isBrand = contactInfo?.type?.toLowerCase() === "brand";
+
   return (
-    <div className="flex flex-col gap-4">
-      <div
-        className="
-    flex items-center justify-between w-full
-    py-4 px-4
-    rounded-t-xl
-    bg-gradient-to-r from-sky-600 via-cyan-500 to-cyan-400 
-    text-white
-    shadow-lg
-  "
-      >
-        {/* LEFT SIDE */}
+    <div className="relative flex flex-col gap-4">
+      {/* RIGHT MINI SIDEBAR */}
+      {showBrandTimeline && (
+        <div
+          className={`absolute top-28 right-0 z-50 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"
+            }`}
+        >
+          {/* Toggle */}
+          <div
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="absolute left-0 top-0 h-12 w-10 bg-blue-600 text-white flex items-center justify-center rounded-l-xl cursor-pointer shadow-lg"
+          >
+            {showSidebar ? <ChevronRight size={18} /> : <Users size={18} />}
+          </div>
+
+          {/* Content */}
+          <div
+            className={`ml-10 h-[300px] bg-white border border-gray-200 shadow-2xl rounded-l-2xl overflow-hidden ${showSidebar ? "block" : "hidden"
+              }`}
+          >
+            <div className="p-4 border-b bg-blue-50 font-bold text-gray-700">
+              Brand Contacts ({contacts?.length || 0})
+            </div>
+
+            <div className="overflow-y-auto h-full pb-20">
+              {contacts?.length > 0 ? (
+                contacts.map((item, index) => (
+                  <div
+                    key={index}
+                    className="px-4 py-3 border-b hover:bg-gray-50 transition cursor-pointer"
+                    onClick={() => handleDateClick({ email: item?.email1, navigate: "/", showNextPrev: false })}
+                  >
+                    <p className="font-semibold text-sm text-gray-800">
+                      {item?.name || "No Name"}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {item?.email1}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-sm text-gray-500">
+                  No contacts found
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between w-full py-4 px-4 rounded-t-xl bg-gradient-to-r from-sky-600 via-cyan-500 to-cyan-400 text-white shadow-lg">
+        {/* LEFT */}
         <div className="flex items-center gap-4">
           {!contactLoading && (
             <div className="flex flex-col">
-              {/* Name */}
               <div className="flex items-center gap-2">
                 <Link to={"/contacts/id"} className="text-lg font-extrabold">
                   {contactInfo?.full_name?.trim()
@@ -186,9 +244,16 @@ const ContactHeader = () => {
                     : email}
                 </Link>
 
-                {/* 👁 Show only if Brand */}
-                {contactInfo?.type.toLowerCase() === "brand" && (
-                  <IconButton icon={showBrandTimeline ? EyeOff : Eye} label={showBrandTimeline ? "Hide Brand Timeline" : "Show Brand Timeline"} onClick={handleBrandTimeline} />
+                {isBrand && (
+                  <IconButton
+                    icon={showBrandTimeline ? EyeOff : Eye}
+                    label={
+                      showBrandTimeline
+                        ? "Hide Brand Timeline"
+                        : "Show Brand Timeline"
+                    }
+                    onClick={handleBrandTimeline}
+                  />
                 )}
               </div>
             </div>
@@ -197,7 +262,7 @@ const ContactHeader = () => {
           <SocialButtons />
         </div>
 
-        {/* RIGHT SIDE (UNCHANGED) */}
+        {/* RIGHT */}
         <div className="flex items-center gap-3">
           <div className="flex gap-2 flex-wrap">
             {hashtags?.map((tag) => (
@@ -212,47 +277,29 @@ const ContactHeader = () => {
               />
             ))}
           </div>
-          {emailDeals?.length > 0 && (
-            <div className="flex items-center">
-              <div
-                onClick={goToDeal}
-                className="
-                flex items-center gap-4
-                p-1
-                rounded-4xl
-                bg-cyan-300
-                shadow-sm
-                cursor-pointer
-                hover:shadow-md
-                hover:-translate-y-0.5
-                transition-all
-              "
-              >
-                <div
-                  className="flex items-center  justify-center w-8 h-8 rounded-4xl  bg-blue-500
-"
-                >
-                  <Handshake size={20} className="text-white" />
-                </div>
 
-                <span className="text-lg font-bold text-slate-800">
-                  $<CountUpWithBlast value={maxDeal} />
-                </span>
+          {emailDeals?.length > 0 && (
+            <div
+              onClick={goToDeal}
+              className="flex items-center gap-4 p-1 rounded-4xl bg-cyan-300 shadow-sm cursor-pointer hover:shadow-md transition-all"
+            >
+              <div className="flex items-center justify-center w-8 h-8 rounded-4xl bg-blue-500">
+                <Handshake size={20} className="text-white" />
               </div>
+
+              <span className="text-lg font-bold text-slate-800">
+                $<CountUpWithBlast value={maxDeal} />
+              </span>
             </div>
           )}
-
-          {/* TAGS */}
-
 
           {showNextPrev && <NextPrev />}
         </div>
       </div>
 
-      {/* STATUS GRID */}
-
+      {/* STATUS */}
       {!contactLoading && (
-        <div className=" gap-3 p-2 flex flex-wrap items-center ">
+        <div className="gap-3 p-2 flex flex-wrap items-center">
           {statusItems.map((item, index) => (
             <StatusCard
               key={index}
@@ -271,24 +318,11 @@ export default ContactHeader;
 
 function StatusCard({ Icon, label, value }) {
   return (
-    <div
-      className="
-        flex items-start gap-3
-        rounded-xl p-3
-        bg-gray-50
-        border border-gray-200
-        shadow-sm
-        hover:shadow-md
-        transition-all duration-200
-        min-w-[150px]
-      "
-    >
-      {/* Icon */}
+    <div className="flex items-start gap-3 rounded-xl p-3 bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md transition-all min-w-[150px]">
       <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100">
         <Icon className="text-blue-500" size={18} />
       </div>
 
-      {/* Content */}
       <div className="flex flex-col">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           {label}

@@ -209,7 +209,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
     return (
       <div className="py-[2%] px-[30%] ">
         <h1 className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-2xl text-center text-white">
-          TIMELINE
+          {showBrandTimeline && "BRAND "} TIMELINE
         </h1>
         <p className="text-gray-700 text-sm text-center leading-relaxed mt-2">
           No timeline events found.
@@ -226,7 +226,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
              p-2 rounded-2xl text-center text-white
              cursor-pointer hover:opacity-90 transition-opacity"
         >
-          {showBrandTimeline ? "BRAND" : ""}TIMELINE
+          {showBrandTimeline && "BRAND "}TIMELINE
         </h1>
 
         <div className="flex justify-center mt-6">
