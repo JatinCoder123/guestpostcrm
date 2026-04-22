@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
+import { applyHashtag } from "../../services/utils";
+import { useDispatch, useSelector } from "react-redux";
 import {
   updateActivity,
   createLedgerEntry,
@@ -115,7 +117,8 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint
+        `${
+          getState().user.crmEndpoint
         }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
       );
 
@@ -141,6 +144,16 @@ export const updateOffer = ({ email, offers = [] }) => {
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
       const getDomain = (url) => {
         try {
           return new URL(url).hostname.replace(/^www\./, "");
@@ -165,8 +178,7 @@ export const updateOffer = ({ email, offers = [] }) => {
           },
         );
         showConsole && console.log(`Update Offer`, data);
-
-      })
+      });
 
       const remRes = await axios.post(
         `${getState().user.crmEndpoint}&type=set_reminder`,
@@ -179,7 +191,7 @@ export const updateOffer = ({ email, offers = [] }) => {
       showConsole && console.log(`Reminder Response`, remRes);
 
       const updatedOffers = getState().offers.offers.map((o) => {
-        const updated = offers.find(uo => uo.id === o.id);
+        const updated = offers.find((uo) => uo.id === o.id);
         return updated ? updated : o;
       });
       dispatch(
@@ -188,6 +200,8 @@ export const updateOffer = ({ email, offers = [] }) => {
           message: `Offer Updated Successfully`,
         }),
       );
+      // ✅ Trigger hashtag for Offer Update (memo_no = 12)
+      triggerHashtag(13, "GET");
 
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(
@@ -205,17 +219,16 @@ export const updateOffer = ({ email, offers = [] }) => {
         message_id: offers[0].thread_id,
         group: "Offer",
         okHandler: () => dispatch(getLadger({ email, loading: false })),
-        items: offers.map((offer) => buildLedgerItem({
-          status: "Our-Offer-Updated",
-          detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
-          ladgerState: state.ladger,
-          user: state.user.user,
-          parent_name: "outr_offer",
-        }))
-
-      })
-
-
+        items: offers.map((offer) =>
+          buildLedgerItem({
+            status: "Our-Offer-Updated",
+            detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
+            ladgerState: state.ladger,
+            user: state.user.user,
+            parent_name: "outr_offer",
+          }),
+        ),
+      });
     } catch (error) {
       showConsole && console.log(`Update Offer Error`, error);
       dispatch(offersSlice.actions.updateOfferFailed("Updating Offer Failed"));
@@ -233,6 +246,16 @@ export const createOffer = ({
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
       const getDomain = (url) => {
         try {
           return new URL(url).hostname.replace(/^www\./, "");
@@ -266,6 +289,9 @@ export const createOffer = ({
           message: "Offers Created Successfully",
         }),
       );
+      // ✅ Trigger hashtag for Offer Creation (memo_no = 8)
+      triggerHashtag(8, "GET");
+
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,
@@ -274,6 +300,7 @@ export const createOffer = ({
         getState().user.user.email,
         "Offer Created ",
       );
+
       // 🔥 Ledger API Call
       await createLedgerEntry({
         domain,
@@ -308,6 +335,16 @@ export const deleteOffer = (email, id, offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest({ id }));
     const state = getState();
+    const crmEndpoint = getState().user.crmEndpoint;
+
+    const triggerHashtag = (memo_no, method = "GET") => {
+      applyHashtag({
+        domain: crmEndpoint,
+        email,
+        memo_no,
+        method,
+      });
+    };
     const getDomain = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");
@@ -333,6 +370,8 @@ export const deleteOffer = (email, id, offer) => {
           count: getState().offers.count - 1,
         }),
       );
+      // ✅ Trigger hashtag for Offer Creation (memo_no = 8)
+      triggerHashtag(12, "GET");
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,

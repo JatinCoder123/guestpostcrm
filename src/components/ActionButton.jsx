@@ -319,6 +319,9 @@ const ActionButton = ({ setShowIP, isMark }) => {
             }),
           );
 
+          // ✅ 🔥 ADD THIS LINE HERE
+          dispatch(getContact(contactInfo?.email1, true, false));
+
           toast.success(
             newValue === "1"
               ? "Emails stopped successfully"
