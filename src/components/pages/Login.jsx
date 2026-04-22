@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { AUTH_URL } from "../../store/constants.js";
-import { logingImg } from "../../assets/assets.js";
 
 export default function Login() {
   const handleLoginWithGoogle = () => {
@@ -11,7 +10,7 @@ export default function Login() {
     window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin`;
   };
 
-  const video = "https://app.guestpostcrm.com/images/FINAL.webm";
+  const loginImg = "https://app.guestpostcrm.com/images/loginPage.jpg";
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-[#e8f0ff] via-[#f3fffa] to-[#f8fff5]">
@@ -82,7 +81,7 @@ export default function Login() {
         <div className="w-full h-[95vh] rounded-xl overflow-hidden shadow-xl relative">
 
           <img
-            src={logingImg}
+            src={loginImg}
             alt="Login visual"
             className="absolute inset-0 w-full h-full object-cover"
           />
