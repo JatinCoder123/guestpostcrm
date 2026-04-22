@@ -439,10 +439,10 @@ export default function ThreadOffers({ threadId, email, id }) {
         amountKey={"our_offer_c"}
       >
         <button
-          disabled={currentOffers.length === 0}
+          disabled={currentOffers.length === 0 || editingIds.length > 0}
           onClick={() => handlePreview()}
           className={`flex-1 py-3 rounded-xl font-medium text-white transition
-          ${currentOffers.length === 0
+          ${currentOffers.length === 0 || editingIds.length > 0
               ? "bg-gray-300"
               : "bg-indigo-600 hover:bg-indigo-700"
             }`}
