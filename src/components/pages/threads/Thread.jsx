@@ -30,7 +30,7 @@ const Thread = () => {
     context: { currentEmail, currentThread },
   } = useThreadContext();
   const [emails, setEmails] = useState([]);
-  const handleSendClick = async (forceSend = 0) => {
+  const handleSendClick = async (forceSend = 1) => {
     try {
       setCheckingTheadId(true);
       const { data } = await axios.get(
@@ -55,7 +55,7 @@ const Thread = () => {
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
-      formData.append("force_send", 1);
+      formData.append("force_send", forceSend);
       formData.append("cc", cc.join(","));
       formData.append("to", to.join(","));
       files.forEach((file) => {

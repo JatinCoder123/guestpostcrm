@@ -164,7 +164,7 @@ const ThreadReply = () => {
                     ? { scale: 0.98 }
                     : {}
                 }
-                onClick={() => handleSendClick()}
+                onClick={() => handleSendClick(0)}
                 disabled={checkingThreadId || sending || editorContent == ""}
                 className={`px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 transition-all duration-200
       ${checkingThreadId || sending || editorContent == ""
