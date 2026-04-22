@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Handshake,
   Clock,
@@ -11,6 +11,8 @@ import {
   Signature,
   CircleUser,
   ArrowBigDown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SocialButtons from "./SocialButtons";
@@ -19,6 +21,8 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
+import { brandTimelineAction, getBrandTimeline } from "../store/Slices/brandTimeline";
+import IconButton from "./ui/Buttons/IconButton";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -37,14 +41,17 @@ function HashTag({ text, color }) {
   );
 }
 
-const ContactHeader = ({ isMark }) => {
+const ContactHeader = () => {
   const navigate = useNavigate();
   const goToDeal = () => {
     navigate("/deals");
   };
   const { contactInfo, contactLoading, stage, status, customer_type, hashtags } =
     useSelector((state) => state.viewEmail);
+  const { showBrandTimeline } =
+    useSelector((state) => state.brandTimeline);
   const email = contactInfo?.email1;
+  const dispatch = useDispatch()
   const { showNextPrev } = useContext(PageContext);
 
   const { deals } = useSelector((state) => state.deals);
@@ -96,7 +103,9 @@ const ContactHeader = ({ isMark }) => {
 
     return <span ref={amountRef}>{count.toLocaleString()}</span>;
   };
-
+  const handleBrandTimeline = () => {
+    showBrandTimeline ? dispatch(brandTimelineAction.setShowBrandTimeline(false)) : dispatch(getBrandTimeline({ email }))
+  }
   const emailDeals = deals?.filter((d) => {
     const dealEmail = (
       d.email ||
@@ -176,9 +185,15 @@ const ContactHeader = ({ isMark }) => {
                     ? contactInfo.full_name
                     : email}
                 </Link>
+
+                {/* 👁 Show only if Brand */}
+                {contactInfo?.type.toLowerCase() === "brand" && (
+                  <IconButton icon={showBrandTimeline ? EyeOff : Eye} label={showBrandTimeline ? "Hide Brand Timeline" : "Show Brand Timeline"} onClick={handleBrandTimeline} />
+                )}
               </div>
             </div>
           )}
+
           <SocialButtons />
         </div>
 

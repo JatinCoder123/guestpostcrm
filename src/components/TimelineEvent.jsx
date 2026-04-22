@@ -15,9 +15,13 @@ import { X } from "lucide-react";
 import { getLadger } from "../store/Slices/ladger";
 import Pagination from "./Pagination"
 const TimelineEvent = ({ handleMessageClick }) => {
-  const { ladger, email, pageCount, pageIndex, loading } = useSelector(
+  const { ladger: contactLadger, email, pageCount, pageIndex, loading } = useSelector(
     (state) => state.ladger,
   );
+  const { showBrandTimeline, ladger: brandLadger } = useSelector(
+    (state) => state.brandTimeline,
+  );
+  const ladger = showBrandTimeline ? brandLadger : contactLadger
   const { contactInfo } = useSelector(
     (state) => state.viewEmail,
   );
@@ -222,7 +226,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
              p-2 rounded-2xl text-center text-white
              cursor-pointer hover:opacity-90 transition-opacity"
         >
-          TIMELINE
+          {showBrandTimeline ? "BRAND" : ""}TIMELINE
         </h1>
 
         <div className="flex justify-center mt-6">
