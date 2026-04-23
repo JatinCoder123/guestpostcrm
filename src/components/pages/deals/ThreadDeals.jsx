@@ -454,10 +454,10 @@ export default function ThreadDeals({ threadId, email, id }) {
         amountKey={"dealamount"}
       >
         <button
-          disabled={currentDeals.length === 0}
+          disabled={currentDeals.length === 0 || editingIds.length > 0}
           onClick={() => handlePreview()}
           className={`flex-1 py-3 rounded-xl font-medium text-white transition
-          ${currentDeals.length === 0
+          ${currentDeals.length === 0 || editingIds.length > 0
               ? "bg-gray-300"
               : "bg-indigo-600 hover:bg-indigo-700"
             }`}

@@ -18,7 +18,12 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const { ladger, email, pageCount, pageIndex, loading } = useSelector(
     (state) => state.ladger,
   );
+  const { contactInfo } = useSelector(
+    (state) => state.viewEmail,
+  );
+  const dispatch = useDispatch()
   const [selectedView, setSelectedView] = useState("important");
+
   const [timelineData, setTimelineData] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -646,6 +651,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                 </div>
               </div>
             )}
+            {timelineData?.length > 0 && <Pagination slice={"ladger"} fn={(page) => dispatch(getLadger({ email: contactInfo?.email, loading: false, force: true, page }))} />}
           </div>
         </div>
       </div>

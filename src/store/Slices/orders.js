@@ -194,8 +194,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
     dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
       const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
+        `${getState().user.crmEndpoint
         }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
       );
       showConsole && console.log(`Orders orders`, data);
@@ -283,25 +282,25 @@ export const createOrder2 = ({ email, order, threadId }) => {
       let orders =
         order.order_type == "GUEST POST"
           ? order.seo_backlinks.map((link) => {
-              return {
-                type: "Guest Post",
-                site: link.website,
-                content_doc: link.gp_doc_url_c,
-              };
-            })
+            return {
+              type: "Guest Post",
+              site: link.website,
+              content_doc: link.gp_doc_url_c,
+            };
+          })
           : order.seo_backlinks.map((link) => {
-              return {
-                type: "Link Insertion",
-                site: link.website,
-                post_url: link.website,
-                their_link: [
-                  {
-                    url: link.backlink_url,
-                    anchor_text: link.anchor_text_c,
-                  },
-                ],
-              };
-            });
+            return {
+              type: "Link Insertion",
+              site: link.website,
+              post_url: link.website,
+              their_link: [
+                {
+                  url: link.backlink_url,
+                  anchor_text: link.anchor_text_c,
+                },
+              ],
+            };
+          });
       console.log("ORDERS", orders);
       const res = await axios.post(
         `${domain}?entryPoint=fetch_gpc&type=manual_order`,
