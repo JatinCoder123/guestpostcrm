@@ -31,7 +31,7 @@ const ThreadReply = () => {
     handleSendClick,
     checkingThreadId,
     contentLoading,
-  } = etContext() || [];
+  } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
   const {
