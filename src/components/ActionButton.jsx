@@ -91,9 +91,6 @@ const ActionButton = ({ setShowIP, isMark }) => {
   const isFavActive = contactInfo?.favorite === "1";
   const isExchangeActive = contactInfo?.exchange === "1";
 
-  const handleForward = (email, id) => {
-    dispatch(forwardEmail(email, id));
-  };
 
   /* Helper to call applyHashtag util */
   const triggerHashtag = (memo_no, method = "GET") => {
@@ -343,8 +340,8 @@ const ActionButton = ({ setShowIP, isMark }) => {
   ];
 
   /* Assign handler — hashtag always GET since assign is a one-way action */
-  const handleForwardWithHashtag = (email, id) => {
-    dispatch(forwardEmail(email, id));
+  const handleForwardWithHashtag = (id) => {
+    dispatch(forwardEmail(contactInfo?.email1, id));
     triggerHashtag(MEMO.assign, "GET");
   };
 
@@ -381,12 +378,12 @@ const ActionButton = ({ setShowIP, isMark }) => {
                   style={
                     btn.active
                       ? {
-                          backgroundColor: btn.activeProps.fill,
-                          color: btn.activeProps.color,
-                          transform: "translateY(-2px) scale(1.09)",
-                          boxShadow:
-                            "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
-                        }
+                        backgroundColor: btn.activeProps.fill,
+                        color: btn.activeProps.color,
+                        transform: "translateY(-2px) scale(1.09)",
+                        boxShadow:
+                          "0 8px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.4)",
+                      }
                       : {}
                   }
                   className={`group flex items-center cursor-pointer justify-center w-12 h-12

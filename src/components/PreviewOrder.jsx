@@ -4,7 +4,7 @@ export const createPreviewOrder = ({ templateData, order, userEmail }) => {
   html = html
     .replace("{{ORDER_ID}}", order?.order_id ?? "_")
     .replace("{{NAME}}", userEmail)
-    .replace("{{DATE}}", order?.date_entered_formatted ?? "_")
+    .replace("{{DATE}}", order?.date_modified_formatted ?? "_")
     .replace("{{STATUS}}", order?.order_status ?? "_")
     .replace("{{ORDER_TYPE}}", order?.order_type)
     .replace("{{AMOUNT}}", order?.total_amount_c ?? "_")

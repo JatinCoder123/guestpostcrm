@@ -1,11 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
 import { PageContext } from "../../context/pageContext";
-import { excludeName, extractEmail } from "../../assets/assets";
-import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails.js";
 import {
   Calendar,
   FileText,

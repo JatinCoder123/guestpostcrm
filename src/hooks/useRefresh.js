@@ -54,9 +54,10 @@ function useRefresh() {
     const [firstEmail, setFirstEmail] = useState(null);
     useEffect(() => {
         dispatch(getAllUsers())
-    }, [])
-    useEffect(() => {
-        dispatch(getAllUsers())
+        dispatch(getUnrepliedEmail({}));
+        dispatch(getAllContacts({}))
+        dispatch(getEmailsCount({}))
+
     }, [])
     useEffect(() => {
         dispatch(getAiCredits());
@@ -77,11 +78,8 @@ function useRefresh() {
         dispatch(getDuplicateCount());
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {
-        dispatch(getEmailsCount({}))
-        dispatch(getUnrepliedEmail({}));
         dispatch(getLinkExchange());
         dispatch(getFavEmails({}));
-        dispatch(getAllContacts({}))
         dispatch(getForwardedEmails({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
     const refreshLadger = () => {

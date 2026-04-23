@@ -86,64 +86,45 @@ const DropDown = ({ options, handleSelectOption, timeline }) => {
           display: `${formatDate(startOfMonth)} - ${formatDate(today)}`,
         };
 
-      case "last_month":
-        const lastMonth = new Date(
+      case "last_month": {
+        const startOfLastMonth = new Date(
           today.getFullYear(),
           today.getMonth() - 1,
-          1,
+          1
         );
+
         const endOfLastMonth = new Date(
           today.getFullYear(),
           today.getMonth(),
-          0,
+          0
         );
-        return {
-          start: formatDate(lastMonth),
-          end: formatDate(endOfLastMonth),
-          display: `${formatDate(lastMonth)} - ${formatDate(endOfLastMonth)}`,
-        };
 
-      case "last_3_months":
-        startDate.setMonth(today.getMonth() - 2);
-        startDate.setDate(1);
-        const endOfThreeMonths = new Date(
+        return {
+          start: formatDate(startOfLastMonth),
+          end: formatDate(endOfLastMonth),
+          display: `${formatDate(startOfLastMonth)} - ${formatDate(endOfLastMonth)}`,
+        };
+      }
+
+      case "last_3_months": {
+        const startOfThreeMonths = new Date(
+          today.getFullYear(),
+          today.getMonth() - 2,
+          1
+        );
+
+        const endOfLastMonth = new Date(
           today.getFullYear(),
           today.getMonth(),
-          0,
+          0
         );
-        return {
-          start: formatDate(startDate),
-          end: formatDate(endOfThreeMonths),
-          display: `${formatDate(startDate)} - ${formatDate(endOfThreeMonths)}`,
-        };
 
-      case "this_quarter":
-        const currentQuarter = Math.floor(today.getMonth() / 3);
-        const quarterStartMonth = currentQuarter * 3;
-        const quarterStart = new Date(
-          today.getFullYear(),
-          quarterStartMonth,
-          1,
-        );
-        const quarterEnd = new Date(
-          today.getFullYear(),
-          quarterStartMonth + 3,
-          0,
-        );
         return {
-          start: formatDate(quarterStart),
-          end: formatDate(quarterEnd),
-          display: "This quarter",
+          start: formatDate(startOfThreeMonths),
+          end: formatDate(endOfLastMonth),
+          display: `${formatDate(startOfThreeMonths)} - ${formatDate(endOfLastMonth)}`,
         };
-
-      case "this_year":
-        const yearStart = new Date(today.getFullYear(), 0, 1);
-        const yearEnd = new Date(today.getFullYear(), 11, 31);
-        return {
-          start: formatDate(yearStart),
-          end: formatDate(yearEnd),
-          display: "This year",
-        };
+      }
 
       default:
         return {
