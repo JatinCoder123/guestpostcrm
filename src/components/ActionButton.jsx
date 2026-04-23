@@ -340,7 +340,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
   ];
 
   /* Assign handler — hashtag always GET since assign is a one-way action */
-  const handleForwardWithHashtag = (email, id) => {
+  const handleForwardWithHashtag = (id) => {
     dispatch(forwardEmail(contactInfo?.email1, id));
     triggerHashtag(MEMO.assign, "GET");
   };
