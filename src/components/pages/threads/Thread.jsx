@@ -13,8 +13,8 @@ const Thread = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  const { superfastReply } = useContext(PageContext)
-  const [contentLoading, setContentLoading] = useState(false)
+  const { superfastReply } = useContext(PageContext);
+  const [contentLoading, setContentLoading] = useState(false);
   const [files, setFiles] = useState([]);
   const [editorContent, setEditorContent] = useState(
     state?.initialContent || "",
@@ -25,12 +25,14 @@ const Thread = () => {
   const [cc, setCc] = useState([]);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { crmEndpoint, user } = useSelector((s) => s.user);
-  const { message: sendMessage, error: sendError } = useSelector((s) => s.viewEmail);
+  const { message: sendMessage, error: sendError } = useSelector(
+    (s) => s.viewEmail,
+  );
   const {
     context: { currentEmail, currentThread },
   } = useThreadContext();
   const [emails, setEmails] = useState([]);
-  const handleSendClick = async (forceSend = 0) => {
+  const handleSendClick = async (forceSend = 1) => {
     try {
       setCheckingTheadId(true);
       const { data } = await axios.get(
@@ -55,7 +57,7 @@ const Thread = () => {
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
-      formData.append("force_send", 1);
+      formData.append("force_send", forceSend);
       formData.append("cc", cc.join(","));
       formData.append("to", to.join(","));
       files.forEach((file) => {
@@ -71,16 +73,21 @@ const Thread = () => {
     }
   };
   useEffect(() => {
-    if (currentEmail && currentThread && !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)) {
+    if (
+      currentEmail &&
+      currentThread &&
+      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)
+    ) {
       dispatch(getThreadEmail(currentEmail, currentThread));
-    }
-    else {
-      setEmails(state?.viewEmails)
+    } else {
+      setEmails(state?.viewEmails);
     }
   }, [currentEmail, currentThread]);
   useEffect(() => {
-
-    if (threadEmail?.length > 0 && !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)) {
+    if (
+      threadEmail?.length > 0 &&
+      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)
+    ) {
       setEmails(threadEmail);
     }
   }, [threadEmail]);
@@ -106,7 +113,24 @@ const Thread = () => {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [sendMessage, sendError]);
-  const value = { emails, loadAiReply: state?.loadAiReply, superfastReply, files, setFiles, editorContent, setEditorContent, to, setTo, cc, setCc, contentLoading, setContentLoading, handleSendClick, checkingThreadId, setCheckingTheadId }
+  const value = {
+    emails,
+    loadAiReply: state?.loadAiReply,
+    superfastReply,
+    files,
+    setFiles,
+    editorContent,
+    setEditorContent,
+    to,
+    setTo,
+    cc,
+    setCc,
+    contentLoading,
+    setContentLoading,
+    handleSendClick,
+    checkingThreadId,
+    setCheckingTheadId,
+  };
   return <Outlet context={value} />;
 };
 

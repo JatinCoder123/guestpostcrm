@@ -45,15 +45,20 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim()) {
       toast.error("Name cannot be empty");
       return;
     }
 
-    handleUpdate({ ...item, ...form });
-    toast.success("Updated successfully!");
-    onClose();
+    const success = await handleUpdate({ ...item, ...form });
+
+    if (success) {
+      toast.success("Updated successfully!");
+      onClose();
+    } else {
+      toast.error("Update failed!");
+    }
   };
 
   return (
@@ -103,7 +108,9 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
                 onChange={(val) => updateField("type", val)}
               />
               <div className="flex-1">
-                <label className="text-sm font-medium text-gray-600">Stage</label>
+                <label className="text-sm font-medium text-gray-600">
+                  Stage
+                </label>
 
                 <select
                   value={form.stage || ""}
@@ -128,10 +135,11 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`relative z-10 w-1/2 py-2 text-sm font-medium transition-colors duration-300 cursor-pointer
-                  ${activeTab === tab.key
+                  ${
+                    activeTab === tab.key
                       ? "text-purple-600 bg-white rounded-xl"
                       : "text-gray-600 bg-gray-200 rounded-xl"
-                    }`}
+                  }`}
                 >
                   {tab.label}
                 </button>
@@ -144,8 +152,9 @@ export default function EditModal({ item, onClose, handleUpdate, stages }) {
                 value={form[activeTab]}
                 onChange={(e) => updateField(activeTab, e.target.value)}
                 className="w-full h-120 p-3 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={`Enter ${TABS.find((t) => t.key === activeTab)?.label
-                  }`}
+                placeholder={`Enter ${
+                  TABS.find((t) => t.key === activeTab)?.label
+                }`}
               />
             </div>
 

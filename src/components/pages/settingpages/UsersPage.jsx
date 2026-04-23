@@ -7,13 +7,16 @@ import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditUser from "./EditUser";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   const { businessEmail, crmEndpoint } = useSelector((state) => state.user);
-
+  const { users: crmUsers } = useSelector((state) => state.crmUser);
+  console.log("crmUsers", crmUsers);
   const { loading, data, error, setData, refetch, add, update } = useModule({
     url: `https://crm.outrightsystems.org/index.php?entryPoint=get_gpc_users&email=${businessEmail}`,
     method: "POST",
@@ -25,7 +28,7 @@ export function UsersPage() {
       "Content-Type": "application/json",
     },
   });
-
+  console.log(crmUsers);
   // ✅ CREATE
   const handleCreate = async (updatedItem) => {
     setData((prev) => {
@@ -57,7 +60,7 @@ export function UsersPage() {
     await add({
       url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=add_user`,
       method: "POST",
-      body: { email: updatedItem.email, name: updatedItem.name }
+      body: { email: updatedItem.email, name: updatedItem.name },
     });
   };
 
@@ -99,30 +102,40 @@ export function UsersPage() {
     setDeletingId(item.id);
 
     try {
-      // 🔹 Optimistic UI
-      setData((prev) => {
-        const updated = { ...prev };
-        updated.data = updated.data.filter((u) => u.id !== item.id);
-        return updated;
-      });
-
-      // 🔹 CRM DELETE
-      await fetch(
-        `${crmEndpoint}&type=delete_record&module_name=outr_gpc_users&record_id=${item.id}`,
-        {
-          method: "POST",
-        },
+      // 🔹 Find correct CRM user ID
+      const matchedUser = crmUsers?.find(
+        (u) =>
+          u.name === item.name &&
+          u.description === (item.email || item.description),
       );
+
+      if (!matchedUser) {
+        toast.error("User not found in CRM");
+        return;
+      }
+
+      const recordId = matchedUser.id;
+
+      console.log("Deleting CRM ID:", recordId);
+
+      const { data } = await axios.post(
+        `${crmEndpoint}&type=delete_record&module_name=outr_gpc_users&record_id=${recordId}`,
+      );
+
+      if (data.success) {
+        toast.success("User deleted successfully");
+      } else {
+        toast.error("Failed to delete user");
+      }
+
+      refetch();
     } catch (err) {
       console.error("Delete failed", err);
-
-      // rollback (optional improvement)
       refetch();
     } finally {
       setDeletingId(null);
     }
   };
-
   const users = data?.data;
 
   return (

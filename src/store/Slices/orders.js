@@ -485,16 +485,6 @@ export const updateSeoLink = (orderId, link) => {
     showConsole && console.log("Update Seo Link", link);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const crmEndpoint = getState().user.crmEndpoint;
-
-      const triggerHashtag = (memo_no, method = "GET") => {
-        applyHashtag({
-          domain: crmEndpoint,
-          email,
-          memo_no,
-          method,
-        });
-      };
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
         {
@@ -532,8 +522,7 @@ export const updateSeoLink = (orderId, link) => {
           message: "Order Link Updated Successfully",
         }),
       );
-      // ✅ Trigger hashtag for Order Creation (memo_no = 17)
-      triggerHashtag(18, "GET");
+
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,

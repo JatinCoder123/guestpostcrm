@@ -151,6 +151,14 @@ function LIInsertPopup({ link, onClose }) {
                 {link.target_url_c || "—"}
               </span>
             </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-400 font-medium uppercase tracking-wider">
+                Domain
+              </span>
+              <span className="font-semibold text-slate-700 break-all">
+                {link.name || "—"}
+              </span>
+            </div>
           </div>
 
           {/* States */}
@@ -326,6 +334,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
               options: [
                 { value: "dofollow", label: "DoFollow" },
                 { value: "nofollow", label: "NoFollow" },
+                { value: "authoritative", label: "Authoritative" },
               ],
               value: item.link_type || "",
             },

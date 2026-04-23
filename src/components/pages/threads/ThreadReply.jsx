@@ -1,8 +1,4 @@
-import {
-  Globe,
-  Send,
-  ChevronLeft,
-} from "lucide-react";
+import { Globe, Send, ChevronLeft } from "lucide-react";
 import { TbMessageStar } from "react-icons/tb";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -28,7 +24,14 @@ const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
-  const { emails, editorContent, setEditorContent, handleSendClick, checkingThreadId, contentLoading } = useOutletContext() || [];
+  const {
+    emails,
+    editorContent,
+    setEditorContent,
+    handleSendClick,
+    checkingThreadId,
+    contentLoading,
+  } = etContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
   const {
@@ -49,7 +52,6 @@ const ThreadReply = () => {
       setShowFailedModal(true);
     }
   }, [sendFailedResponse]);
-
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -135,8 +137,7 @@ const ThreadReply = () => {
               </motion.button>
             </div>
           </div>
-          <MailHeaderLeft
-          />
+          <MailHeaderLeft />
         </div>
         <div className="flex flex-col h-full w-full">
           <TinyEditor
@@ -149,34 +150,26 @@ const ThreadReply = () => {
           {/* ✅ SUCCESS OVERLAY */}
 
           <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
-
             <ReplyButtons editorRef={editorRef} editorReady={editorReady} />
             {/* SEND BUTTON */}
             <div className="flex gap-2 items-center justify-center">
               <motion.button
                 whileHover={
-                  !(checkingThreadId || sending)
-                    ? { scale: 1.05, y: -2 }
-                    : {}
+                  !(checkingThreadId || sending) ? { scale: 1.05, y: -2 } : {}
                 }
-                whileTap={
-                  !(checkingThreadId || sending)
-                    ? { scale: 0.98 }
-                    : {}
-                }
-                onClick={() => handleSendClick()}
+                whileTap={!(checkingThreadId || sending) ? { scale: 0.98 } : {}}
+                onClick={() => handleSendClick(0)}
                 disabled={checkingThreadId || sending || editorContent == ""}
                 className={`px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 transition-all duration-200
-      ${checkingThreadId || sending || editorContent == ""
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed shadow-none"
-                    : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl"
-                  }`}
+      ${
+        checkingThreadId || sending || editorContent == ""
+          ? "bg-gray-400 text-gray-200 cursor-not-allowed shadow-none"
+          : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl"
+      }`}
               >
                 <Send className="w-5 h-5" />
                 <span>
-                  {checkingThreadId || sending
-                    ? "Sending..."
-                    : "Send Email"}
+                  {checkingThreadId || sending ? "Sending..." : "Send Email"}
                 </span>
               </motion.button>
             </div>
@@ -291,4 +284,3 @@ const ThreadReply = () => {
 };
 
 export default ThreadReply;
-
