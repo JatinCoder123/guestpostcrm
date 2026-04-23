@@ -28,6 +28,10 @@ import {
   getBrandTimeline,
 } from "../store/Slices/brandTimeline";
 import IconButton from "./ui/Buttons/IconButton";
+import { getLadger } from "../store/Slices/ladger";
+import { getOffers } from "../store/Slices/offers";
+import { getDeals } from "../store/Slices/deals";
+import { getOrders } from "../store/Slices/orders";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -68,6 +72,10 @@ const ContactHeader = () => {
   const goToDeal = () => navigate("/deals");
 
   const handleBrandTimeline = () => {
+    dispatch(getLadger({ email: contactInfo?.email1, brand: !showBrandTimeline }))
+    dispatch(getOffers({ email: contactInfo?.email1, brand: !showBrandTimeline }))
+    dispatch(getDeals({ email: contactInfo?.email1, brand: !showBrandTimeline }))
+    dispatch(getOrders({ email: contactInfo?.email1, brand: !showBrandTimeline }))
     if (showBrandTimeline) {
       dispatch(brandTimelineAction.setShowBrandTimeline(false));
     } else {

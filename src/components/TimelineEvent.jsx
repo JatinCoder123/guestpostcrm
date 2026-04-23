@@ -15,13 +15,12 @@ import { X } from "lucide-react";
 import { getLadger } from "../store/Slices/ladger";
 import Pagination from "./Pagination"
 const TimelineEvent = ({ handleMessageClick }) => {
-  const { ladger: contactLadger, email, pageCount, pageIndex, loading } = useSelector(
+  const { ladger, email, pageCount, pageIndex, loading } = useSelector(
     (state) => state.ladger,
   );
-  const { showBrandTimeline, ladger: brandLadger } = useSelector(
+  const { showBrandTimeline, } = useSelector(
     (state) => state.brandTimeline,
   );
-  const ladger = showBrandTimeline ? brandLadger : contactLadger
   const { contactInfo } = useSelector(
     (state) => state.viewEmail,
   );
@@ -655,7 +654,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                 </div>
               </div>
             )}
-            {timelineData?.length > 0 && <Pagination slice={"ladger"} fn={(page) => dispatch(getLadger({ email: contactInfo?.email, loading: false, force: true, page }))} />}
+            {timelineData?.length > 0 && <Pagination slice={"ladger"} fn={(page) => dispatch(getLadger({ email: contactInfo?.email1, loading: false, force: true, page, brand: showBrandTimeline }))} />}
           </div>
         </div>
       </div>

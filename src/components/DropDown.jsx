@@ -117,34 +117,6 @@ const DropDown = ({ options, handleSelectOption, timeline }) => {
           display: `${formatDate(startDate)} - ${formatDate(endOfThreeMonths)}`,
         };
 
-      case "this_quarter":
-        const currentQuarter = Math.floor(today.getMonth() / 3);
-        const quarterStartMonth = currentQuarter * 3;
-        const quarterStart = new Date(
-          today.getFullYear(),
-          quarterStartMonth,
-          1,
-        );
-        const quarterEnd = new Date(
-          today.getFullYear(),
-          quarterStartMonth + 3,
-          0,
-        );
-        return {
-          start: formatDate(quarterStart),
-          end: formatDate(quarterEnd),
-          display: "This quarter",
-        };
-
-      case "this_year":
-        const yearStart = new Date(today.getFullYear(), 0, 1);
-        const yearEnd = new Date(today.getFullYear(), 11, 31);
-        return {
-          start: formatDate(yearStart),
-          end: formatDate(yearEnd),
-          display: "This year",
-        };
-
       default:
         return {
           start: "",

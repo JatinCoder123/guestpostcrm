@@ -52,9 +52,22 @@ function useRefresh() {
     const { contactInfo } = useSelector((state) => state.viewEmail);
     const threadId = contactInfo?.thread_id
     const [firstEmail, setFirstEmail] = useState(null);
-    useEffect(() => {
-        dispatch(getAllUsers())
-    }, [])
+    const refreshLadger = () => {
+        if (currentEventThreadId.current == threadId) {
+            console.log("REFRESH LADGER")
+            if (enteredEmail) {
+                dispatch(getLadger({ email: enteredEmail }));
+                dispatch(getViewEmail({ email: enteredEmail }));
+                dispatch(getContact(enteredEmail));
+            } else if (firstEmail) {
+                dispatch(getLadger({ email: firstEmail }));
+                dispatch(getViewEmail({ email: firstEmail }));
+                dispatch(getContact(firstEmail));
+            }
+            dispatch(getEmailsCount({}))
+            dispatch(getUnrepliedEmail({ loading: false }));
+        }
+    };
     useEffect(() => {
         dispatch(getAllUsers())
     }, [])
@@ -84,22 +97,7 @@ function useRefresh() {
         dispatch(getAllContacts({}))
         dispatch(getForwardedEmails({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
-    const refreshLadger = () => {
-        if (currentEventThreadId.current == threadId) {
-            console.log("REFRESH LADGER")
-            if (enteredEmail) {
-                dispatch(getLadger({ email: enteredEmail }));
-                dispatch(getViewEmail({ email: enteredEmail }));
-                dispatch(getContact(enteredEmail));
-            } else if (firstEmail) {
-                dispatch(getLadger({ email: firstEmail }));
-                dispatch(getViewEmail({ email: firstEmail }));
-                dispatch(getContact(firstEmail));
-            }
-            dispatch(getEmailsCount({}))
-            dispatch(getUnrepliedEmail({ loading: false }));
-        }
-    };
+
     useEffect(() => {
         if (emails?.length > 0) {
             setFirstEmail(

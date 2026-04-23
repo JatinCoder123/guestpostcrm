@@ -5,10 +5,6 @@ const brandTimelineSlice = createSlice({
     initialState: {
         loading: false,
         account: {},
-        ladger: [],
-        offers: [],
-        deals: [],
-        orders: [],
         contacts: [],
         error: null,
         message: null,
@@ -18,25 +14,17 @@ const brandTimelineSlice = createSlice({
         getBTRequest(state) {
             state.loading = true;
             state.showBrandTimeline = true;
-            state.ladger = [];
             state.contacts = [];
             state.account = {};
-            state.offers = [];
-            state.deals = [];
-            state.orders = [];
             state.error = null;
             state.email = null;
         },
 
         getBTSuccess(state, action) {
-            const { ladger, contacts, account, offers, deals, orders } = action.payload;
+            const { contacts, account } = action.payload;
             state.loading = false;
-            state.ladger = ladger;
             state.contacts = contacts;
             state.account = account;
-            state.offers = offers;
-            state.deals = deals;
-            state.orders = orders;
             state.error = null;
         },
 
@@ -65,15 +53,12 @@ export const getBrandTimeline = ({ email = null, loading = true, }) => {
             const freshData = {
                 account: data.account,
                 contacts: data.contacts,
-                ladger: data.timeline,
-                offers: data.offer,
-                deals: data.deal,
-                orders: data.order
             };
 
             dispatch(brandTimelineSlice.actions.getBTSuccess(freshData));
             dispatch(brandTimelineSlice.actions.clearAllErrors());
         } catch (error) {
+            console.log(error)
             dispatch(
                 brandTimelineSlice.actions.getBTFailed(
                     error.response?.data?.message
