@@ -85,7 +85,7 @@ export const getUnrepliedEmail = ({ page = 1, loading = true, type = null }) => 
     try {
       const { data } = await axios.get(
         `${getState().user.crmEndpoint
-        }&type=${type ?? getState().unreplied.emailType}${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}`
+        }&type=${type ?? getState().unreplied.emailType}&filter=all&page=${page}`
       );
 
 
