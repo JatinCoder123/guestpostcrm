@@ -18,6 +18,9 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const { ladger, email, pageCount, pageIndex, loading } = useSelector(
     (state) => state.ladger,
   );
+  const { contactInfo } = useSelector(
+    (state) => state.viewEmail,
+  );
   const [selectedView, setSelectedView] = useState("important");
   const [timelineData, setTimelineData] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -26,7 +29,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [showVisualization, setShowVisualization] = useState(false);
   const topRef = useRef(null);
   const bottomRef = useRef(null);
-
+  const dispatch = useDispatch(1)
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -523,6 +526,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       </div>
                     </div>
                   </div>
+
                 </>
               );
             })}
@@ -645,6 +649,8 @@ const TimelineEvent = ({ handleMessageClick }) => {
                 </div>
               </div>
             )}
+            {timelineData?.length > 0 && <Pagination slice={"ladger"} fn={(page) => dispatch(getLadger({ email: contactInfo?.email1, loading: false, force: true, page }))} />}
+
           </div>
         </div>
       </div>
