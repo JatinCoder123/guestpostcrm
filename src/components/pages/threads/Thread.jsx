@@ -38,14 +38,8 @@ const Thread = () => {
       );
       console.log("MATHED THREAD ID", data);
 
-      if (!data?.success) {
+      if (!(data?.success || data.thread_id)) {
         toast.error("Failed to verify thread!");
-        return;
-      }
-      console.log("THREAD", currentThread);
-      // 🔹 Check thread match
-      if (data.thread_id !== currentThread) {
-        toast.error("Thread mismatch! Cannot send email ");
         return;
       }
       console.log("TO AND CC", cc, to);

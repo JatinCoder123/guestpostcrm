@@ -267,6 +267,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     console.log("EMAIL", email);
     console.log("ORDER", order);
+    console.log("THREAD", threadId);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       let orders =
@@ -363,10 +364,12 @@ export const createOrder3 = (email, orders = [], send) => {
   };
 };
 
-export const updateOrder = ({ order, email }) => {
+export const updateOrder = ({ order }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
-    showConsole && console.log("Update Order", order);
+    const email = extractEmail(order.real_name ?? order.email)
+    showConsole && console.log("Order To Be Update", order);
+    showConsole && console.log("Update Order Email", email);
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
