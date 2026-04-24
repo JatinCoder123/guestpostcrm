@@ -25,7 +25,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function EditOrder({ threadId, id, email }) {
   const [order, setOrder] = useState({});
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { orders, updating, statusLists, paymentTypes, message, error } =
