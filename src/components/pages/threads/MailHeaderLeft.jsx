@@ -6,7 +6,7 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 export default function MailHeaderLeft({
 
 }) {
-  const { to, cc, setTo, setCc } = useOutletContext()
+  const { cc, setCc } = useOutletContext()
   const { context: { currentEmail: sender } } = useThreadContext()
   return (
     <div className="flex items-center gap-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white rounded-t-lg">
@@ -14,7 +14,6 @@ export default function MailHeaderLeft({
       <div className="bg-white text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
         {sender}
       </div>
-      <RecipientRow label="To:" values={to} setValues={setTo} name="to" />
       <RecipientRow label="CC:" values={cc} setValues={setCc} name="cc" />
     </div>
   );

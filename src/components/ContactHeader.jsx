@@ -37,7 +37,7 @@ function HashTag({ text, color }) {
   );
 }
 
-const ContactHeader = ({ isMark }) => {
+const ContactHeader = () => {
   const navigate = useNavigate();
   const goToDeal = () => {
     navigate("/deals");
@@ -117,12 +117,12 @@ const ContactHeader = ({ isMark }) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-          ...emailDeals.map((d) =>
-            Number(
-              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
-            ),
+        ...emailDeals.map((d) =>
+          Number(
+            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
           ),
-        )
+        ),
+      )
       : 0;
   const statusItems = [
     { Icon: Tag, label: "Type", value: contactInfo?.type },
