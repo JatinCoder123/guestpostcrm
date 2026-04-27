@@ -130,7 +130,11 @@ export default function ViewReports() {
     try {
       const res = await fetch(buildUrl(fd, ft, td, tt, extraParams));
       const json = await res.json();
-      setApiResponse(json?.success ? json : null);
+      if (json?.success) {
+        setApiResponse(json);
+      } else {
+        setApiResponse(null);
+      }
     } catch {
       setApiResponse(null);
     } finally {
@@ -153,6 +157,13 @@ export default function ViewReports() {
 
   // ── Filter Handlers ───────────────────────────────────────────────
   const handleApplyFilter = () => {
+    const from = new Date(`${fromDate}T${fromTime}`);
+    const to = new Date(`${toDate}T${toTime}`);
+
+    if (to < from) {
+      alert("❌ 'To Date' cannot be earlier than 'From Date'");
+      return;
+    }
     setFilterActive(true);
     fetchSummary(fromDate, fromTime, toDate, toTime);
     fetchTable(fromDate, fromTime, toDate, toTime);
@@ -380,7 +391,15 @@ export default function ViewReports() {
     setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleGroupClick = (description) => {
-    navigate(`/view-reports/${encodeURIComponent(description)}`);
+    navigate(`/view-reports/${encodeURIComponent(description)}`, {
+      state: {
+        from: fromDate,
+        from_time: fromTime,
+        to: toDate,
+        to_time: toTime,
+        filterActive, // pass this too so GroupReport knows if filter was intentional
+      },
+    });
   };
 
   // ── Cards Data ────────────────────────────────────────────────────
@@ -637,7 +656,20 @@ export default function ViewReports() {
                         <tr
                           key={i}
                           className="border-b hover:bg-gray-50 cursor-pointer"
-                          onClick={() => navigate(`${row.action}`)}
+                          onClick={() =>
+                            navigate(
+                              `/view-reports/${encodeURIComponent(row.action)}`,
+                              {
+                                state: {
+                                  from: fromDate,
+                                  from_time: fromTime,
+                                  to: toDate,
+                                  to_time: toTime,
+                                  filterActive,
+                                },
+                              },
+                            )
+                          }
                         >
                           <td className="px-5 py-2.5">{row.action}</td>
                           <td className="px-5 py-2.5 text-right font-medium">

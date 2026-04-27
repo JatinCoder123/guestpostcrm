@@ -12,7 +12,7 @@ import {
   ActivityIcon,
 } from "lucide-react";
 import { getGroupReport } from "../../store/Slices/reportSlice";
-import { data, useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom"; // ✅ add useLocation
 
 export default function GroupReport() {
   const { count, data, loading, pageIndex } = useSelector(
@@ -20,10 +20,19 @@ export default function GroupReport() {
   );
   const { handleDateClick } = useContext(PageContext);
   const { grp } = useParams();
+  const location = useLocation(); // ✅ read navigation state
   const dispatch = useDispatch();
+
+  const filterState = location.state ?? null;
+  const from = filterState?.filterActive ? filterState.from : null;
+  const from_time = filterState?.filterActive ? filterState.from_time : null;
+  const to = filterState?.filterActive ? filterState.to : null;
+  const to_time = filterState?.filterActive ? filterState.to_time : null;
+
   useEffect(() => {
-    dispatch(getGroupReport({ grp }));
-  }, []);
+    dispatch(getGroupReport({ grp, from, from_time, to, to_time }));
+  }, [grp]);
+
   const columns = [
     {
       label: "Created At",
@@ -39,7 +48,6 @@ export default function GroupReport() {
         </span>
       ),
     },
-
     {
       label: "Contact",
       accessor: "sender_email",
@@ -48,7 +56,6 @@ export default function GroupReport() {
       classes: "truncate ",
       onClick: (row, index) =>
         handleDateClick({ email: row.sender_email, navigate: "/contacts" }),
-
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
           <span className="font-medium text-gray-800">{row.sender_email}</span>
@@ -73,12 +80,9 @@ export default function GroupReport() {
       headerClasses: "",
       icon: BarChart4,
       classes: "truncate max-w-[300px]",
-
       render: (row) => (
         <div className="flex items-center">
-          <span
-            className={`px-3 py-1.5 rounded-full text-sm border flex items-center `}
-          >
+          <span className="px-3 py-1.5 rounded-full text-sm border flex items-center">
             {row.description}
           </span>
         </div>
@@ -90,12 +94,9 @@ export default function GroupReport() {
       headerClasses: "",
       icon: User,
       classes: "truncate max-w-[300px]",
-
       render: (row) => (
         <div className="flex items-center">
-          <span
-            className={`px-3 py-1.5 rounded-full text-sm border flex items-center `}
-          >
+          <span className="px-3 py-1.5 rounded-full text-sm border flex items-center">
             {row.user_details == false ? "GPC" : row.user_details.name}
           </span>
         </div>
@@ -111,7 +112,16 @@ export default function GroupReport() {
         columns={columns}
         slice={"report"}
         fetchNextPage={() =>
-          dispatch(getGroupReport({ grp, page: pageIndex + 1 }))
+          dispatch(
+            getGroupReport({
+              grp,
+              page: pageIndex + 1,
+              from,
+              from_time,
+              to,
+              to_time,
+            }), // ✅ pass filters on pagination too
+          )
         }
       >
         <TableTitleBar
@@ -120,21 +130,16 @@ export default function GroupReport() {
           titleClass={"text-teal-700"}
         />
 
-        {/* 🔥 TABLE WRAPPER */}
         <div className="relative">
           <Table
             headerStyle={"bg-teal-600"}
             layoutStyle={"grid grid-cols-[200px_1fr_1fr_200px_1fr]"}
           />
 
-          {/* 🔥 LOADING OVERLAY */}
           {loading && (
             <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] flex items-center justify-center z-50">
               <div className="flex flex-col items-center gap-3">
-                {/* Spinner */}
                 <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-
-                {/* Dynamic Text */}
                 <p className="text-gray-700 font-medium">Report Loading...</p>
               </div>
             </div>
