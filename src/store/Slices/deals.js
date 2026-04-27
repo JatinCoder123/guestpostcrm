@@ -315,9 +315,10 @@ export const updateDeal = ({ deals = [], email }) => {
     }
   };
 };
-export const deleteDeal = (deal, email, id) => {
+export const deleteDeal = (deal, id) => {
   0;
   return async (dispatch, getState) => {
+    const email = extractEmail(deal?.real_name ?? deal?.email)
     const getDomain1 = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");

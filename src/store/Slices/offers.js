@@ -150,9 +150,10 @@ export const getOffers = ({ email = null, page = 1, loading = true, brand = fals
   };
 };
 
-export const updateOffer = ({ email, offers = [] }) => {
+export const updateOffer = ({ offers = [] }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
+    const email = extractEmail(offers[0]?.real_name ?? offers[0]?.email_c)
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
@@ -241,7 +242,6 @@ export const createOffer = ({
   threadId,
   email,
   offers = [],
-  isSend = false,
 }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
@@ -319,9 +319,10 @@ export const createOffer = ({
     }
   };
 };
-export const deleteOffer = (email, id, offer) => {
+export const deleteOffer = (id, offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest({ id }));
+    const email = extractEmail(offer?.real_name ?? offer.email_c)
     const state = getState();
     const getDomain = (url) => {
       try {
