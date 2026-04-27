@@ -17,8 +17,6 @@ import {
   updateOrder,
 } from "../../../store/Slices/orders";
 import { toast } from "react-toastify";
-import { ManualSideCall } from "../../../services/utils";
-import { getLadger } from "../../../store/Slices/ladger";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import useModule from "../../../hooks/useModule";
 import { useThreadContext } from "../../../hooks/useThreadContext";
@@ -30,9 +28,8 @@ export default function EditOrder({ threadId, id, email }) {
   const [order, setOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { orders, updating, statusLists, message, error } = useSelector(
-    (s) => s.orders,
-  );
+  const { orders, updating, statusLists, paymentTypes, message, error } =
+    useSelector((s) => s.orders);
   const { crmEndpoint } = useSelector((s) => s.user);
   const { handleMove } = useThreadContext();
   const [send, setSend] = useState(false);
@@ -172,6 +169,25 @@ export default function EditOrder({ threadId, id, email }) {
                   className="w-full border rounded-lg h-11 px-3 bg-slate-50"
                 >
                   {Object.entries(statusLists).map(([key, val]) => (
+                    <option key={key} value={key}>
+                      {val}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Payment Type */}
+              <div>
+                <label className="block text-sm mb-1 flex items-center gap-1">
+                  <Dot className="w-5 h-5 text-green-500" />
+                  Payment Type
+                </label>
+                <select
+                  value={order.invoice_type}
+                  onChange={(e) => handleChange("invoice_type", e.target.value)}
+                  className="w-full border rounded-lg h-11 px-3 bg-slate-50"
+                >
+                  {Object.entries(paymentTypes).map(([key, val]) => (
                     <option key={key} value={key}>
                       {val}
                     </option>

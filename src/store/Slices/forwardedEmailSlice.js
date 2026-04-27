@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
+import { getLadger } from "./ladger";
 
 const forwardedSlice = createSlice({
   name: "forwarded",
@@ -123,7 +124,7 @@ export const forwardEmail = (email, id) => {
             user: getState().crmUser.currentUser,
           }),
         ],
-        okHandler: () => dispatch(getLadger({email: getState().ladger.email})),
+        okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),
       });
 
     } catch (error) {

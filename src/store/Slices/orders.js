@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
+import { applyHashtag } from "../../services/utils";
 import {
   updateActivity,
   createLedgerEntry,
@@ -14,6 +15,7 @@ const ordersSlice = createSlice({
     loading: false,
     orders: [],
     statusLists: {},
+    paymentTypes: {},
     count: 0,
     stats: [],
     pageCount: 1,
@@ -44,6 +46,7 @@ const ordersSlice = createSlice({
         pageCount,
         pageIndex,
         statusLists,
+        paymentTypes,
         summary,
         stats,
       } = action.payload;
@@ -54,6 +57,7 @@ const ordersSlice = createSlice({
         state.orders = [...state.orders, ...orders];
       }
       state.statusLists = statusLists;
+      state.paymentTypes = paymentTypes;
       state.count = count;
       state.stats = stats;
       state.updateId = null;
@@ -190,8 +194,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
     dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
       const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
+        `${getState().user.crmEndpoint
         }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
       );
       showConsole && console.log(`Orders orders`, data);
@@ -199,6 +202,7 @@ export const getOrders = ({ email = null, page = 1, loading = true }) => {
         ordersSlice.actions.getOrdersSucess({
           count: data.data_count ?? 0,
           statusLists: data.order_status_list,
+          paymentTypes: data.invoice_type_list,
           orders: data.data,
           stats: data.stats ? data.stats : [],
           pageCount: data.total_pages,
@@ -217,6 +221,16 @@ export const createOrder = () => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
+    const crmEndpoint = getState().user.crmEndpoint;
+
+    const triggerHashtag = (memo_no, method = "GET") => {
+      applyHashtag({
+        domain: crmEndpoint,
+        email,
+        memo_no,
+        method,
+      });
+    };
     try {
       let response;
       response = await axios.get(
@@ -232,6 +246,9 @@ export const createOrder = () => {
       dispatch(
         ordersSlice.actions.createOrderSuccess("Order Created Successfully"),
       );
+      // ✅ Trigger hashtag for Order Creation (memo_no = 13)
+      triggerHashtag(17, "GET");
+
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,
@@ -252,28 +269,38 @@ export const createOrder2 = ({ email, order, threadId }) => {
     console.log("ORDER", order);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
       let orders =
         order.order_type == "GUEST POST"
           ? order.seo_backlinks.map((link) => {
-              return {
-                type: "Guest Post",
-                site: link.website,
-                content_doc: link.gp_doc_url_c,
-              };
-            })
+            return {
+              type: "Guest Post",
+              site: link.website,
+              content_doc: link.gp_doc_url_c,
+            };
+          })
           : order.seo_backlinks.map((link) => {
-              return {
-                type: "Link Insertion",
-                site: link.website,
-                post_url: link.website,
-                their_link: [
-                  {
-                    url: link.backlink_url,
-                    anchor_text: link.anchor_text_c,
-                  },
-                ],
-              };
-            });
+            return {
+              type: "Link Insertion",
+              site: link.website,
+              post_url: link.website,
+              their_link: [
+                {
+                  url: link.backlink_url,
+                  anchor_text: link.anchor_text_c,
+                },
+              ],
+            };
+          });
       console.log("ORDERS", orders);
       const res = await axios.post(
         `${domain}?entryPoint=fetch_gpc&type=manual_order`,
@@ -295,6 +322,8 @@ export const createOrder2 = ({ email, order, threadId }) => {
           message: "Order Created Successfully",
         }),
       );
+      // ✅ Trigger hashtag for Order Creation (memo_no = 17)
+      triggerHashtag(17, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,
@@ -316,6 +345,16 @@ export const createOrder3 = (email, orders = [], send) => {
     console.log("ORDER", orders);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
       let res;
       {
         orders.map(async (order) => {
@@ -331,6 +370,8 @@ export const createOrder3 = (email, orders = [], send) => {
           message: "Order Created Successfully",
         }),
       );
+      // ✅ Trigger hashtag for Order Creation (memo_no = 17)
+      triggerHashtag(17, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,
@@ -353,6 +394,16 @@ export const updateOrder = ({ order, email }) => {
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
       const noteRes = await axios.post(
         `${getState().user.crmEndpoint}&type=take_notes`,
         {
@@ -383,6 +434,8 @@ export const updateOrder = ({ order, email }) => {
         }),
       );
 
+      // ✅ Trigger hashtag for Order Creation (memo_no = 17)
+      triggerHashtag(18, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
 
       updateActivity(
@@ -468,6 +521,7 @@ export const updateSeoLink = (orderId, link) => {
           message: "Order Link Updated Successfully",
         }),
       );
+
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,
@@ -488,6 +542,16 @@ export const deleteLink = (orderId, linkId) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.deleteLinkRequest());
     try {
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_seo_backlinks&record_id=${linkId}`,
       );
@@ -509,6 +573,8 @@ export const deleteLink = (orderId, linkId) => {
           orders: updatedOrders,
         }),
       );
+      // ✅ Trigger hashtag for Order Creation (memo_no = 17)
+      triggerHashtag(19, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,
@@ -527,6 +593,16 @@ export const createLink = (orderId, link) => {
     dispatch(ordersSlice.actions.createLinkRequest());
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
       const { data } = await axios.post(
         `${domain}?entryPoint=get_post_all&action_type=post_data`,
 
@@ -560,6 +636,8 @@ export const createLink = (orderId, link) => {
           orders: updatedOrders,
         }),
       );
+      // ✅ Trigger hashtag for Order Creation (memo_no = 17)
+      triggerHashtag(18, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,

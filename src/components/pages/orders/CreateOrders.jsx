@@ -15,7 +15,6 @@ import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { createPreviewOrder } from "../../PreviewOrder";
-import { ManualSideCall } from "../../../services/utils";
 
 const ORDER_TYPES = ["GUEST POST", "LINK INSERTION"];
 
@@ -201,11 +200,10 @@ const CreateOrders = ({ email, threadId }) => {
           <button
             key={type}
             onClick={() => handleChange("order_type", type)}
-            className={`px-3 py-2 rounded-lg  transition ${
-              order.order_type === type
+            className={`px-3 py-2 rounded-lg  transition ${order.order_type === type
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 hover:bg-gray-300"
-            }`}
+              }`}
           >
             {type}
           </button>

@@ -50,7 +50,7 @@ export const getGroupReport = ({ grp, page = 1, loading = true }) => {
 
     try {
       const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=report&group=${grp}&filter=${getState().ladger.timeline}&page=${page}&page_size=50`,
+        `${getState().user.crmEndpoint}&type=report&group=${grp}&page=${page}&page_size=50`,
       );
       showConsole && console.log(`GROUP REPORT`, data);
       dispatch(

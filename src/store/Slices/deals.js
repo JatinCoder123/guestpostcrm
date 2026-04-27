@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, getDomain, showConsole } from "../../assets/assets";
+import { applyHashtag } from "../../services/utils";
 import {
   updateActivity,
   buildLedgerItem,
@@ -116,7 +117,8 @@ export const getDeals = ({ email = null, page = 1, loading = true }) => {
 
     try {
       let { data } = await axios.get(
-        `${getState().user.crmEndpoint
+        `${
+          getState().user.crmEndpoint
         }&type=get_deals${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
       );
 
@@ -140,6 +142,16 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
+    const crmEndpoint = getState().user.crmEndpoint;
+
+    const triggerHashtag = (memo_no, method = "GET") => {
+      applyHashtag({
+        domain: crmEndpoint,
+        email,
+        memo_no,
+        method,
+      });
+    };
     const state = getState();
     const getDomain = (url) => {
       try {
@@ -178,6 +190,9 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
           message: "Deals Created Successfully",
         }),
       );
+      // ✅ Trigger hashtag for Deal Creation (memo_no = 10)
+      triggerHashtag(14, "GET");
+
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(
         state.user.crmEndpoint,
@@ -213,7 +228,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     }
   };
 };
-export const updateDeal = ({ deal, email }) => {
+export const updateDeal = ({ deals = [], email }) => {
   return async (dispatch, getState) => {
     const state = getState();
     const getDomain1 = (url) => {
@@ -226,46 +241,53 @@ export const updateDeal = ({ deal, email }) => {
     dispatch(dealsSlice.actions.updateDealRequest());
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const noteRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=take_notes`,
-        {
+      const crmEndpoint = getState().user.crmEndpoint;
+
+      const triggerHashtag = (memo_no, method = "GET") => {
+        applyHashtag({
+          domain: crmEndpoint,
+          email,
+          memo_no,
+          method,
+        });
+      };
+      deals.forEach(async (deal) => {
+        await axios.post(`${getState().user.crmEndpoint}&type=take_notes`, {
           record_id: deal.id,
           notes: deal.note,
           type1: "deals",
-        },
-      );
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          parent_bean: {
-            module: "outr_deal_fetch",
-            ...deal,
+        });
+      });
+      deals.forEach(async (deal) => {
+        const { data } = await axios.post(
+          `${domain}?entryPoint=get_post_all&action_type=post_data`,
+          {
+            parent_bean: {
+              module: "outr_deal_fetch",
+              ...deal,
+            },
           },
-        },
-        {
-          headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "application/json",
+          {
+            headers: {
+              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+              "Content-Type": "application/json",
+            },
           },
-        },
-      );
+        );
+        showConsole && console.log(`UPdate Deal`, data);
+      });
       const remRes = await axios.post(
         `${getState().user.crmEndpoint}&type=set_reminder`,
         {
-          websites: [deal.website_c],
+          websites: deals.map((deal) => deal.website_c),
           email: email,
           reminder_type: "deal",
         },
       );
-      showConsole && console.log(`Update Deal`, data);
       showConsole && console.log(`Reminder Response`, remRes);
       const updatedDeals = getState().deals.deals.map((d) => {
-        if (d.id === deal.id) {
-          return {
-            ...deal,
-          };
-        }
-        return d;
+        const updated = deals.find((ud) => ud.id === d.id);
+        return updated ? updated : d;
       });
       dispatch(
         dealsSlice.actions.updateDealSucess({
@@ -273,20 +295,21 @@ export const updateDeal = ({ deal, email }) => {
           deals: updatedDeals,
         }),
       );
+      // ✅ Trigger hashtag for Deal Update (memo_no = 13)
+      triggerHashtag(15, "GET");
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,
-        extractEmail(deal.real_name),
+        email,
         getState().user.user.name,
         getState().user.user.email,
         "Deal Updated",
       );
-      console.log(`Deal`, deal);
       const res = await createLedgerEntry({
         domain,
         email,
         group: "Deal",
-        items: [
+        items: deals.map((deal) =>
           buildLedgerItem({
             status: "Deal-Updated",
             detail: `website: {${getDomain1(deal.website_c)}} amount: {${deal.dealamount}}`,
@@ -294,7 +317,7 @@ export const updateDeal = ({ deal, email }) => {
             user: state.crmUser.currentUser,
             parent_name: "outr_deal",
           }),
-        ],
+        ),
         okHandler: () => dispatch(getLadger({ email, loading: false })),
       });
       console.log(`Ledger Entry`, res);
@@ -314,6 +337,16 @@ export const deleteDeal = (deal, email, id) => {
       }
     };
     const state = getState();
+    const crmEndpoint = getState().user.crmEndpoint;
+
+    const triggerHashtag = (memo_no, method = "GET") => {
+      applyHashtag({
+        domain: crmEndpoint,
+        email,
+        memo_no,
+        method,
+      });
+    };
     dispatch(dealsSlice.actions.deleteDealRequest({ id }));
     try {
       const { data } = await axios.post(
@@ -332,6 +365,8 @@ export const deleteDeal = (deal, email, id) => {
           count: getState().deals.count - 1,
         }),
       );
+      // ✅ Trigger hashtag for Deal Deletion (memo_no = 16)
+      triggerHashtag(16, "GET");
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(
         getState().user.crmEndpoint,

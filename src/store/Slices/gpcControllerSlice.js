@@ -54,8 +54,8 @@ export const fetchGpcController = () => {
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
 
-      const { data } = await axios.get(
-        `${domain}?entryPoint=fetch_gpc&current_email=${getState().user.user.email}&type=manage_gpc`
+      const { data } = await axios.post(
+        `${domain}?entryPoint=fetch_gpc&type=manage_gpc`, { current_email: getState().user.user.email }
       );
       showConsole && console.log(`GPC Data`, data?.data?.available_checkbox);
 
@@ -78,11 +78,7 @@ export const updateGpcController = (id, value) => {
     dispatch(gpcControllerSlice.actions.updateGpcRequest({ id, value }));
 
     try {
-      const domain = getState().user.crmEndpoint.split("?")[0];
-
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=manage_gpc&current_email=${getState().user.user.email}&id=${id}&value=${value}`
-      );
+      await axios.post(`${getState().user.crmEndpoint}&type=manage_gpc`, { current_email: getState().user.user.email, id, value });
       dispatch(gpcControllerSlice.actions.updateGpcSuccess());
     } catch (error) {
       dispatch(gpcControllerSlice.actions.updateGpcFailed({ id, value, message: "Failed to update GPC setting" }));

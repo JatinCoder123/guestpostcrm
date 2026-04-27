@@ -42,8 +42,14 @@ const ContactHeader = ({ isMark }) => {
   const goToDeal = () => {
     navigate("/deals");
   };
-  const { contactInfo, contactLoading, stage, status, customer_type } =
-    useSelector((state) => state.viewEmail);
+  const {
+    contactInfo,
+    contactLoading,
+    stage,
+    status,
+    customer_type,
+    hashtags,
+  } = useSelector((state) => state.viewEmail);
   const email = contactInfo?.email1;
   const { showNextPrev } = useContext(PageContext);
 
@@ -144,8 +150,7 @@ const ContactHeader = ({ isMark }) => {
     {
       Icon: CircleUser,
       label: "Last Activity By",
-      value:
-        useSelector((state) => state.crmUser.currentUser?.name) ?? "GPC User",
+      value: contactInfo?.last_user ?? "-",
     },
     {
       Icon: Clock,
@@ -184,6 +189,19 @@ const ContactHeader = ({ isMark }) => {
 
         {/* RIGHT SIDE (UNCHANGED) */}
         <div className="flex items-center gap-3">
+          <div className="flex gap-2 flex-wrap">
+            {hashtags?.map((tag) => (
+              <HashTag
+                key={tag.id}
+                text={tag.name}
+                color={
+                  tag.type === "dynamic"
+                    ? "from-emerald-500 to-teal-500"
+                    : "from-amber-500 to-orange-500"
+                }
+              />
+            ))}
+          </div>
           {emailDeals?.length > 0 && (
             <div className="flex items-center">
               <div
@@ -215,29 +233,6 @@ const ContactHeader = ({ isMark }) => {
           )}
 
           {/* TAGS */}
-          <div className="flex gap-2 flex-wrap">
-            {contactInfo?.favorite === "1" && (
-              <HashTag text="favorite" color="from-pink-500 to-rose-500" />
-            )}
-
-            {contactInfo?.exchange === "1" && (
-              <HashTag
-                text="linkexchange"
-                color="from-blue-500 to-indigo-500"
-              />
-            )}
-
-            {contactInfo?.is_stop === "1" && (
-              <HashTag text="stop" color="from-red-500 to-rose-500" />
-            )}
-
-            {isMark && (
-              <HashTag
-                text="marketplace"
-                color="from-violet-500 to-purple-500"
-              />
-            )}
-          </div>
 
           {showNextPrev && <NextPrev />}
         </div>

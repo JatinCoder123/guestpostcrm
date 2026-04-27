@@ -141,6 +141,11 @@ export const OrderView = ({ data, email, setSend }) => {
               title="View Invoice"
             />
             <Field
+              label="Payment Type"
+              value={data.invoice_type}
+              title="Payment Type"
+            />
+            <Field
               label="Total Links"
               value={data.seo_backlinks_count}
               title="Total Links"

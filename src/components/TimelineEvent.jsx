@@ -21,7 +21,9 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const { contactInfo } = useSelector(
     (state) => state.viewEmail,
   );
+  const dispatch = useDispatch()
   const [selectedView, setSelectedView] = useState("important");
+
   const [timelineData, setTimelineData] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,7 +31,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [showVisualization, setShowVisualization] = useState(false);
   const topRef = useRef(null);
   const bottomRef = useRef(null);
-  const dispatch = useDispatch(1)
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -481,9 +482,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
                             {event.date_entered}
                           </span>
                           <span className="text-gray-500 text-sm">
+                            <i>- by </i>
                             {event.user_details == false
-                              ? "-by GPC"
-                              : "-by " + event?.user_details?.name}
+                              ? "GPC"
+                              : event?.user_details?.name}
                           </span>
                         </div>
                       </div>

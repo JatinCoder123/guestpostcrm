@@ -18,6 +18,9 @@ import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import DropDown from "../DropDown";
+import useModule from "../../hooks/useModule";
+import { CREATE_DEAL_API_KEY } from "../../store/constants";
+import { CustomDropdown } from "./settingpages/PromptTestingPage";
 
 /* 🔹 Custom Tooltip Component */
 const Tooltip = ({ content, children }) => {
@@ -36,9 +39,22 @@ const Tooltip = ({ content, children }) => {
 export function RecentEntry() {
   const dispatch = useDispatch();
   const { events, loading } = useSelector((state) => state.events);
-
+  const { crmEndpoint } = useSelector((state) => state.user);
+  const { loading: grpLoading, data: grpData } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+    method: "POST",
+    body: {
+      module: "outr_ledger_manager",
+    },
+    headers: {
+      "x-api-key": CREATE_DEAL_API_KEY,
+      "Content-Type": "application/json",
+    },
+    name: `Activity Group`,
+  });
   // ✅ Updated states
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedGrp, setSelectedGrp] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [timeFilter, setTimeFilter] = useState(null);
 
@@ -86,6 +102,12 @@ export function RecentEntry() {
             options={periodOptions}
             handleSelectOption={handleSelectPeriod}
             timeline={timeFilter}
+          />
+          <CustomDropdown
+            className="w-[240px]"
+            onChange={(value) => { setSelectedGrp(value), setSearchTerm(value) }}
+            value={selectedGrp}
+            options={grpData?.map(grp => ({ value: grp.name, label: grp.description }))}
           />
         </div>
 

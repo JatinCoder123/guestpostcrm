@@ -7,7 +7,6 @@ import { createDeal, dealsAction } from "../store/Slices/deals.js";
 import { createOrder3, orderAction } from "../store/Slices/orders.js";
 import { toast } from "react-toastify";
 import PageLoader from "./PageLoader.jsx";
-import { ManualSideCall } from "../services/utils.js";
 
 const TYPE_LABELS = {
     deals: "Deals",

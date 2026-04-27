@@ -9,6 +9,8 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 import { Trash2 } from "lucide-react";
 import { Save, Send } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
+import { FcExpired } from "react-icons/fc";
+
 import {
   createOffer,
   getOffers,
@@ -29,6 +31,7 @@ export default function CreateOffers({ threadId, email }) {
     (state) => state.offers,
   );
   const [send, setSend] = useState(false);
+  const [expired, setExpired] = useState([]);
   const { handleMove } = useThreadContext();
   const { data: templateData } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
@@ -60,13 +63,14 @@ export default function CreateOffers({ threadId, email }) {
     const threadOffers = offers.filter(
       (d) => extractEmail(d.real_name ?? d.email) == email,
     );
+    setExpired(threadOffers.filter(o => o.offer_status == "expired").map(eo => eo.website))
 
     const threadDeals = deals.filter(
       (d) => extractEmail(d.real_name ?? d.email) == email,
     );
 
     const valid = websiteLists.filter((w) => {
-      const usedInOffers = threadOffers.some((o) => o.website === w);
+      const usedInOffers = threadOffers.some((o) => o.website === w && o.offer_status != "expired");
       const usedInDeals = threadDeals.some((d) => d.website_c === w);
 
       return !usedInOffers && !usedInDeals;
@@ -156,7 +160,6 @@ export default function CreateOffers({ threadId, email }) {
 
         {/* HEADER */}
         <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
-          <div className="col-span-1">No</div>
           <div className="col-span-3">Website</div>
           <div className="col-span-2 text-center">Client Offer</div>
           <div className="col-span-2 text-center">Our Offer</div>
@@ -172,23 +175,34 @@ export default function CreateOffers({ threadId, email }) {
               animate={{ opacity: 1, y: 0 }}
               className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
             >
-              <div className="col-span-1">{index + 1}</div>
 
-              <div className="col-span-3">
+              <div className="col-span-3 relative">
                 <select
                   value={row.website}
                   onChange={(e) =>
                     handleChangeRow(index, "website", e.target.value)
                   }
-                  className="w-full border rounded-lg px-2 py-1"
+                  className="w-full border rounded-lg px-2 py-1 pr-10"
                 >
                   <option value="">Select</option>
+
                   {getAvailableWebsites(index).map((site, i) => (
                     <option key={i} value={site}>
                       {site}
                     </option>
                   ))}
                 </select>
+
+                {expired.includes(row.website) && (
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 group cursor-pointer">
+                    <FcExpired size={20} />
+
+                    {/* Tooltip */}
+                    <div className="absolute right-0 top-8 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-50">
+                      This website offer is expired
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="col-span-2 text-center">

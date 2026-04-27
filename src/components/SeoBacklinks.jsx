@@ -5,6 +5,8 @@ import {
   LinkIcon,
   Dock,
   SparkleIcon,
+  ArrowRight,
+  Link,
 } from "lucide-react";
 import {
   FiLink,
@@ -21,6 +23,7 @@ import { deleteLink, orderAction, updateSeoLink } from "../store/Slices/orders";
 import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import GPCContentPopup from "./GPCContentPopup";
 
 function ValidTick() {
   return (
@@ -32,6 +35,197 @@ function ValidTick() {
         Valid
       </span>
     </span>
+  );
+}
+
+function useLIInsert() {
+  const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  const [result, setResult] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const insertLink = async ({
+    anchor_text,
+    backlink_url,
+    target_url,
+    domain,
+  }) => {
+    setStatus("loading");
+    setResult(null);
+    setErrorMsg("");
+    try {
+      const res = await fetch(`${domain}/wp-json/my-api/v1/create-post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": "YOUR_SECRET_EXTRACT_HERE",
+        },
+        body: JSON.stringify({
+          type: "li",
+          anchor_text,
+          backlink_url,
+          target_url,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus("success");
+        setResult(data);
+      } else {
+        setStatus("error");
+        setErrorMsg(
+          data.code === "target_url_not_found"
+            ? "Please enter an appropriate target URL."
+            : data.message || "Something went wrong.",
+        );
+      }
+    } catch {
+      setStatus("error");
+      setErrorMsg("Network error. Please try again.");
+    }
+  };
+
+  const reset = () => {
+    setStatus(null);
+    setResult(null);
+    setErrorMsg("");
+  };
+  return { status, result, errorMsg, insertLink, reset };
+}
+
+function LIInsertPopup({ link, onClose }) {
+  const { status, result, errorMsg, insertLink, reset } = useLIInsert();
+
+  const handleInsert = () => {
+    insertLink({
+      anchor_text: link.anchor_text_c,
+      backlink_url: link.backlink_url,
+      target_url: link.target_url_c,
+      domain: link.name,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-500 to-purple-600">
+          <div className="flex items-center gap-2">
+            <Link size={16} className="text-white" />
+            <h2 className="text-white font-semibold text-sm">
+              Insert Backlink
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/80 hover:text-white transition text-lg leading-none"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 space-y-4">
+          {/* Payload preview */}
+          <div className="space-y-2 text-xs">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-400 font-medium uppercase tracking-wider">
+                Anchor Text
+              </span>
+              <span className="font-semibold text-slate-700">
+                {link.anchor_text_c || "—"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-400 font-medium uppercase tracking-wider">
+                Backlink URL
+              </span>
+              <span className="font-semibold text-indigo-600 break-all">
+                {link.backlink_url || "—"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-400 font-medium uppercase tracking-wider">
+                Target URL
+              </span>
+              <span className="font-semibold text-slate-700 break-all">
+                {link.target_url_c || "—"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-400 font-medium uppercase tracking-wider">
+                Domain
+              </span>
+              <span className="font-semibold text-slate-700 break-all">
+                {link.name || "—"}
+              </span>
+            </div>
+          </div>
+
+          {/* States */}
+          {status === "loading" && (
+            <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium py-2">
+              <span className="w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+              Inserting backlink...
+            </div>
+          )}
+
+          {status === "error" && (
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-red-600 text-sm font-medium">
+              <span>⚠️</span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {status === "success" && result && (
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-700 font-semibold text-sm">
+                <span>✅</span> Backlink inserted successfully!
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-slate-400 uppercase tracking-wider font-medium">
+                  Post URL
+                </span>
+                <a
+                  href={result.post_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-emerald-700 font-semibold hover:underline break-all"
+                >
+                  {result.post_url}
+                  <span className="text-xs">↗</span>
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 pb-5 flex gap-2 justify-end">
+          {status !== "success" && (
+            <button
+              onClick={handleInsert}
+              disabled={status === "loading"}
+              className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow"
+            >
+              {status === "loading"
+                ? "Inserting..."
+                : status === "error"
+                  ? "Retry"
+                  : "Insert Link"}
+            </button>
+          )}
+          <button
+            onClick={() => {
+              reset();
+              onClose();
+            }}
+            className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition"
+          >
+            {status === "success" ? "Done" : "Cancel"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -140,6 +334,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
               options: [
                 { value: "dofollow", label: "DoFollow" },
                 { value: "nofollow", label: "NoFollow" },
+                { value: "authoritative", label: "Authoritative" },
               ],
               value: item.link_type || "",
             },
@@ -246,6 +441,7 @@ function LinkTableRow({
   handleDelete,
 }) {
   const spam = getSpamLabel(link.spam_score_c);
+  const [liPopupOpen, setLiPopupOpen] = useState(false);
   const navigateTo = useNavigate();
   return (
     <div
@@ -405,6 +601,24 @@ function LinkTableRow({
             <Trash size={14} />
           )}
         </button>
+        {/* which will live the link */}
+        {link.type_c === "LI" && (
+          <>
+            <button
+              onClick={() => setLiPopupOpen(true)}
+              className="px-2 py-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition shadow"
+              title="Insert Backlink"
+            >
+              <Link size={14} />
+            </button>
+            {liPopupOpen && (
+              <LIInsertPopup
+                link={link}
+                onClose={() => setLiPopupOpen(false)}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -507,6 +721,41 @@ function DocumentAnalysisCard({
   ContentVerdictPromptLedger,
 }) {
   const navigateTo = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [analysisData, setAnalysisData] = useState(null);
+  const [openPopup, setOpenPopup] = useState(false);
+  const { updateLinkLoading } = useSelector((state) => state.orders);
+  const { crmEndpoint } = useSelector((state) => state.user);
+
+  const domain = crmEndpoint.split("?")[0];
+  const isLoading = loading || updateLinkLoading;
+  const handleStartNow = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `${domain}/index.php?entryPoint=fetch_gpc&type=zerogpt`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            doc_url: docLink,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      setAnalysisData(data);
+      setOpenPopup(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="overflow-hidden">
       {/* HEADER */}
@@ -532,7 +781,7 @@ function DocumentAnalysisCard({
           <div className="text-sm font-semibold text-gray-500">
             Content Verdict
           </div>
-          <div className="text-sm font-semibold text-gray-500">AI Score</div>
+          <div className="text-sm font-semibold text-gray-500">ZeroGPT</div>
           <div className="text-sm font-semibold text-gray-500">Link Count</div>
 
           <a
@@ -570,8 +819,29 @@ function DocumentAnalysisCard({
             <ValidationBadge valid={ContentValid} />
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            1%
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleStartNow}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
+              style={{
+                background: isLoading ? "#9ca3af" : "#eab308",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                opacity: isLoading ? 0.7 : 1,
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Start Now
+                  <ArrowRight size={16} />
+                </>
+              )}
+            </button>
           </div>
 
           <div className="flex items-center">
@@ -580,6 +850,13 @@ function DocumentAnalysisCard({
             </span>
           </div>
         </div>
+        {openPopup && analysisData && (
+          <GPCContentPopup
+            data={analysisData}
+            website={website}
+            onClose={() => setOpenPopup(false)}
+          />
+        )}
       </div>
     </div>
   );

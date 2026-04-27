@@ -33,7 +33,7 @@ const PageHeader = ({
             {showAdd && (
                 <button
                     onClick={onAdd}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition"
+                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition cursor-pointer"
                 >
                     <Plus className="w-4 h-4" />
                 </button>

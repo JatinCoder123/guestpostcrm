@@ -8,6 +8,7 @@ import Loading from "../../Loading";
 import ErrorBox from "./ErrorBox";
 import EditModal from "./EditModal";
 import { useLocation, useNavigate } from "react-router-dom";
+import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 
 export function MachineLearningPage() {
   const { crmEndpoint } = useSelector((state) => state.user);
@@ -23,6 +24,59 @@ export function MachineLearningPage() {
   const [error, setError] = useState(null);
 
   const [editItem, setEditItem] = useState(null);
+
+  const handleUpdate = async (updatedItem) => {
+    try {
+      setLoading(true);
+
+      const payload = {
+        parent_bean: {
+          module: "outr_machine_learning",
+          id: updatedItem.id,
+          name: updatedItem.name,
+          motive: updatedItem.motive,
+          type: updatedItem.type,
+          stage: updatedItem.stage,
+          description: updatedItem.description,
+          role_prompt: updatedItem.role_prompt,
+          output_format: updatedItem.output_format,
+          overwrite_prompt: updatedItem.overwrite_prompt,
+        },
+      };
+
+      const res = await fetch(
+        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": CREATE_DEAL_API_KEY,
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      const data = await res.json();
+
+      console.log("UPDATE RESPONSE:", data);
+
+      if (data.parent_updated) {
+        setRows((prev) =>
+          prev.map((row) =>
+            row.id === updatedItem.id ? { ...row, ...updatedItem } : row,
+          ),
+        );
+        return true; // ✅ SUCCESS
+      }
+
+      return false; // ❌ FAILED
+    } catch (error) {
+      console.error(error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ✅ Fetch all stages
   const fetchStages = async () => {
@@ -182,6 +236,7 @@ export function MachineLearningPage() {
           if (promptId) navigate(-1);
         }}
         stages={stages}
+        handleUpdate={handleUpdate}
       />
     </div>
   );

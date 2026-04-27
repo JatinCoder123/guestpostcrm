@@ -15,6 +15,7 @@ import { PageContext } from "../../../context/pageContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
+import axios from "axios";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -40,12 +41,12 @@ export default function TemplatesPage() {
   const { showConsole } = useContext(PageContext);
   const { state } = useLocation();
 
-
   const { loading, data, error, refetch } = useModule({
     url: stageType
-      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}`
+      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`
       : null,
-    method: "GET",
+    method: "POST",
+    body: { stage_type: stageType },
     name: "emailTemplates",
   });
   const {
@@ -81,18 +82,18 @@ export default function TemplatesPage() {
     const fetchStages = async () => {
       setStagesLoading(true);
       try {
-        const response = await fetch(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=1`,
+        const { data } = await axios.post(
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`,
+          { stages: 1 },
         );
 
-        const result = await response.json();
-        console.log(result)
+        console.log(data);
 
-        if (result && typeof result === "object") {
-          setStages(result);
+        if (data && typeof data === "object") {
+          setStages(data);
 
           // Auto-select first stage
-          const firstKey = Object.keys(result)[0];
+          const firstKey = Object.keys(data)[0];
           setStageType(firstKey);
         }
       } catch (err) {
@@ -476,7 +477,6 @@ export default function TemplatesPage() {
                   "bold italic underline | quicklink h2 h3 blockquote",
                 quickbars_insert_toolbar: "image media table",
 
-
                 /* ================= IMAGES ================= */
                 image_advtab: true,
                 image_caption: true,
@@ -569,10 +569,11 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${isCreating
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700"
-                  }`}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${
+                  isCreating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
               >
                 {isCreating ? (
                   <>
@@ -620,11 +621,12 @@ export default function TemplatesPage() {
                     value={selectedStage}
                     onChange={(e) => setSelectedStage(e.target.value)}
                     className="px-2 py-1 border rounded text-black"
-                  >{Object.keys(stages || {}).map((key) => (
-                    <option key={key} value={key}>
-                      {stages[key]}
-                    </option>
-                  ))}
+                  >
+                    {Object.keys(stages || {}).map((key) => (
+                      <option key={key} value={key}>
+                        {stages[key]}
+                      </option>
+                    ))}
                   </select>
 
                   <button
@@ -647,10 +649,11 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 active:scale-95"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 active:scale-95"
+                  }`}
                 >
                   {isSaving ? (
                     <>
@@ -726,7 +729,6 @@ export default function TemplatesPage() {
                 quickbars_selection_toolbar:
                   "bold italic underline | quicklink h2 h3 blockquote",
                 quickbars_insert_toolbar: "image media table",
-
 
                 /* ================= IMAGES ================= */
                 image_advtab: true,
@@ -828,10 +830,11 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
-                ? "bg-indigo-600 text-white shadow-lg"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                stageType === key
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
             >
               {label}
             </button>

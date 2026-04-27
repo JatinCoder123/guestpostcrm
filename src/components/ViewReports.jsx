@@ -91,32 +91,31 @@ export default function ViewReports() {
   const buildUrl = (fd, ft, td, tt, extraParams = {}) => {
     const base = new URLSearchParams({
       type: "report",
-      filter: timeline,
       from: fd,
       from_time: `${ft}:00`,
       to: td,
       to_time: `${tt}:59`,
       ...extraParams,
     }).toString();
+
     return `${crmEndpoint}&${base}`;
   };
 
   const buildPlainUrl = (extraParams = {}) => {
     const base = new URLSearchParams({
       type: "report",
-      filter: timeline,
       ...extraParams,
     }).toString();
+
     return `${crmEndpoint}&${base}`;
   };
-
   // ── fetchers ──────────────────────────────────────────────────────
   const fetchSummary = async (fd = null, ft = null, td = null, tt = null) => {
     try {
       let url =
         fd && ft && td && tt
           ? buildUrl(fd, ft, td, tt)
-          : `${crmEndpoint}&type=report&filter=${timeline}`;
+          : `${crmEndpoint}&type=report`;
 
       const res = await fetch(url);
       const json = await res.json();
@@ -167,21 +166,24 @@ export default function ViewReports() {
     setToTime("23:59");
     setFilterActive(false);
 
-    fetchSummary();
-    fetchTablePlain();
+    fetchSummary(today, "00:01", today, "23:59");
+    fetchTable(today, "00:01", today, "23:59");
+    setFilterActive(true);
   };
 
   useEffect(() => {
-    if (timeline) {
+    handleApplyFilter();
+  }, []);
+
+  useEffect(() => {
+    if (filterActive) {
+      fetchSummary(fromDate, fromTime, toDate, toTime);
+      fetchTable(fromDate, fromTime, toDate, toTime);
+    } else {
       fetchSummary();
-      if (filterActive) {
-        fetchSummary(fromDate, fromTime, toDate, toTime);
-        fetchTable(fromDate, fromTime, toDate, toTime);
-      } else {
-        fetchTablePlain();
-      }
+      fetchTablePlain();
     }
-  }, [timeline]);
+  }, [filterActive]);
 
   // ── Export Functions ──────────────────────────────────────────────
 

@@ -48,11 +48,10 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
                   key={index}
                   onClick={() => setSelectedUser(user)}
                   className={`p-2 rounded-lg cursor-pointer border transition-all
-              ${
-                selectedUser?.name === user.name
-                  ? "bg-blue-100 border-blue-400"
-                  : "hover:bg-gray-100 border-transparent"
-              }`}
+              ${selectedUser?.name === user.name
+                      ? "bg-blue-100 border-blue-400"
+                      : "hover:bg-gray-100 border-transparent"
+                    }`}
                 >
                   <p className="font-medium text-gray-700">{user.name}</p>
                 </div>
@@ -64,15 +63,14 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
             onClick={() => {
               onClose();
               selectedUser &&
-                forwardHandler(selectedUser.description, selectedUser.id);
+                forwardHandler(selectedUser.id);
             }}
             disabled={!selectedUser}
             className={`w-full mt-3 py-2 rounded-lg text-sm text-white transition-all
-          ${
-            selectedUser
-              ? "bg-blue-600 hover:bg-blue-700 active:scale-95 cursor-pointer"
-              : "bg-gray-400 cursor-not-allowed"
-          }
+          ${selectedUser
+                ? "bg-blue-600 hover:bg-blue-700 active:scale-95 cursor-pointer"
+                : "bg-gray-400 cursor-not-allowed"
+              }
         `}
           >
             Forward Email

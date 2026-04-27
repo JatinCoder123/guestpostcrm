@@ -7,6 +7,7 @@ import useModule from "../hooks/useModule";
 import { LoadingChase } from "./Loading";
 import { useSelector } from "react-redux";
 import { createPortal } from "react-dom";
+import axios from "axios";
 
 export default function TemplateSelectorModal({
   isOpen,
@@ -54,13 +55,13 @@ export default function TemplateSelectorModal({
     const fetchStages = async () => {
       setStagesLoading(true);
       try {
-        const res = await fetch(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stages=2&assigned_user_id=${assignUserId}`,
+        const { data } = await axios.post(
+          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`,
+          { assigned_user_id: assignUserId, stages: 2 },
         );
-        const result = await res.json();
-        if (result && typeof result === "object") {
-          setStages(result);
-          setStageType(Object.keys(result)[0]);
+        if (data && typeof data === "object") {
+          setStages(data);
+          setStageType(Object.keys(data)[0]);
         }
       } catch (err) {
         console.error("Failed to fetch stages", err);
@@ -78,9 +79,10 @@ export default function TemplateSelectorModal({
     refetch: refetchTemplates,
   } = useModule({
     url: stageType
-      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates&stage_type=${stageType}&assigned_user_id=${assignUserId}`
+      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`
       : null,
-    method: "GET",
+    method: "POST",
+    body: { stage_type: stageType, assigned_user_id: assignUserId },
     name: "TEMPLATE LIST IN MODAL",
     dependencies: [crmEndpoint, stageType],
     enabled: !!stageType && isOpen,
@@ -208,10 +210,11 @@ export default function TemplateSelectorModal({
                   <button
                     key={key}
                     onClick={() => setStageType(key)}
-                    className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${stageType === key
-                      ? "bg-indigo-600 text-white shadow"
-                      : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-                      }`}
+                    className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${
+                      stageType === key
+                        ? "bg-indigo-600 text-white shadow"
+                        : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+                    }`}
                   >
                     {label}
                   </button>
@@ -294,10 +297,11 @@ export default function TemplateSelectorModal({
                       >
                         <Heart
                           size={20}
-                          className={`transition ${tpl.is_favourite || favourites[tpl.id]
-                            ? "fill-red-500 text-red-500"
-                            : "text-gray-500"
-                            }`}
+                          className={`transition ${
+                            tpl.is_favourite || favourites[tpl.id]
+                              ? "fill-red-500 text-red-500"
+                              : "text-gray-500"
+                          }`}
                         />
                       </button>
 
@@ -344,6 +348,7 @@ export default function TemplateSelectorModal({
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>, document.body
+    </AnimatePresence>,
+    document.body,
   );
 }

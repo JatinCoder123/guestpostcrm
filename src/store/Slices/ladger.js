@@ -10,8 +10,6 @@ const ladgerSlice = createSlice({
     email: localStorage.getItem("email") || null,
     ladger: [],
     noSearchResultData: null,
-    ip: null,
-    ipMails: null,
     mailersSummary: null,
     pageCount: 1,
     pageIndex: 1,
@@ -63,25 +61,7 @@ const ladgerSlice = createSlice({
       localStorage.setItem("timeline", action.payload);
     },
 
-    getIpWithEmailRequest(state) {
-      state.loading = true;
-      state.ip = null;
-      state.ipMails = null;
-      state.error = null;
-    },
 
-    getIpWithEmailSuccess(state, action) {
-      const { ip, ipWithMails } = action.payload;
-      state.loading = false;
-      state.ip = ip;
-      state.ipMails = ipWithMails;
-      state.error = null;
-    },
-
-    getIpWithEmailFailed(state, action) {
-      state.loading = false;
-      state.error = action.payload || "Something went wrong";
-    },
 
     getNoSearchResultDataRequest(state) {
       state.noSearchFoundLoading = true;
@@ -176,7 +156,6 @@ export const getLadger = ({
           .replace(/\s+/g, "")
       );
       console.log("LADGER", data)
-
       const freshData = {
         duplicate: data.duplicate_threads_count,
         ladger: data.data ?? [],
@@ -259,41 +238,7 @@ export const getLadger = ({
   };
 };
 
-export const getIpWithEmail = () => {
-  return async (dispatch, getState) => {
-    dispatch(ladgerSlice.actions.getIpWithEmailRequest());
 
-    const crmDomain = getState().user.crmEndpoint.split("?")[0];
-
-    try {
-      const response = await axios.get(
-        `${crmDomain}?entryPoint=tracker&email=${getState().ladger.email}`,
-      );
-
-      const ip = response.data?.records?.[0]?.ip;
-      if (!ip) throw new Error("IP not found");
-
-      const { data } = await axios.get(
-        `${crmDomain}index.php?entryPoint=tracker&ip=${ip}`,
-      );
-
-      dispatch(
-        ladgerSlice.actions.getIpWithEmailSuccess({
-          ip,
-          ipWithMails: data,
-        }),
-      );
-
-      dispatch(ladgerSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        ladgerSlice.actions.getIpWithEmailFailed(
-          error.response?.data?.message || error.message,
-        ),
-      );
-    }
-  };
-};
 
 export const getNoSearchResultData = (search) => {
   return async (dispatch, getState) => {
