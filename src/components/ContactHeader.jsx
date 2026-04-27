@@ -42,8 +42,14 @@ const ContactHeader = ({ isMark }) => {
   const goToDeal = () => {
     navigate("/deals");
   };
-  const { contactInfo, contactLoading, stage, status, customer_type, hashtags } =
-    useSelector((state) => state.viewEmail);
+  const {
+    contactInfo,
+    contactLoading,
+    stage,
+    status,
+    customer_type,
+    hashtags,
+  } = useSelector((state) => state.viewEmail);
   const email = contactInfo?.email1;
   const { showNextPrev } = useContext(PageContext);
 
@@ -111,12 +117,12 @@ const ContactHeader = ({ isMark }) => {
   const maxDeal =
     emailDeals?.length > 0
       ? Math.max(
-        ...emailDeals.map((d) =>
-          Number(
-            String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+          ...emailDeals.map((d) =>
+            Number(
+              String(d.dealamount || d.amount || "0").replace(/[^0-9.]/g, ""),
+            ),
           ),
-        ),
-      )
+        )
       : 0;
   const statusItems = [
     { Icon: Tag, label: "Type", value: contactInfo?.type },
@@ -144,8 +150,7 @@ const ContactHeader = ({ isMark }) => {
     {
       Icon: CircleUser,
       label: "Last Activity By",
-      value:
-        useSelector((state) => state.crmUser.currentUser?.name) ?? "GPC User",
+      value: contactInfo?.last_user ?? "-",
     },
     {
       Icon: Clock,
@@ -228,7 +233,6 @@ const ContactHeader = ({ isMark }) => {
           )}
 
           {/* TAGS */}
-
 
           {showNextPrev && <NextPrev />}
         </div>
