@@ -188,47 +188,50 @@ export default function ThreadView() {
           <>
             <NavigationBar messageLimit={messageLimit} setMessageLimit={setMessageLimit} emails={emails} scrollRef={scrollRef} />
             <PanelGroup direction="vertical" className="h-full">
-              <Panel defaultSize={55} minSize={20}>
+              <Panel defaultSize={45} minSize={20}>
                 <Inbox scrollRef={scrollRef} visibleMessages={visibleMessages} emails={emails} firstMessageRef={firstMessageRef} lastMessageRef={lastMessageRef} setOpenMessageId={setOpenMessageId} fetchFullMessage={fetchFullMessage} />
               </Panel>
               <PanelResizeHandle className="cursor-row-resize" disabled={!superfastReply} />
-              <Panel defaultSize={!superfastReply ? 1 : 45} minSize={10}>
+              <Panel defaultSize={!superfastReply ? 1 : 55} minSize={10}>
                 <div className="h-full p-2 border-t bg-gradient-to-r from-blue-500 to-indigo-600 shadow-2xl relative rounded-t-3xl">
                   {loadAiReply || superfastReply ? (
                     <div className="relative  rounded-2xl overflow-hidden h-full  flex justify-end gap-4 shadow-lg">
 
                       {/* 🔥 LEFT PANEL */}
-                      <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col gap-10 rounded-lg">
+                      <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col justify-between gap-4 rounded-lg">
 
                         {/* ✨ Title Section */}
                         <div className="flex justify-between">
                           <h2 className="text-lg font-bold flex items-center gap-2">
                             ⚡ Super Fast Reply
                           </h2>
-                          <motion.button
+                          <div className="flex gap-3"> <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            title="Compose"
-
-                            onClick={() => navigate(`/thread/reply`)}
-                            className="bg-white/20 backdrop-blur-md cursor-pointer px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/30 transition"
+                            onClick={handleSendClick}
+                            disabled={checkingThreadId || sending}
+                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
                           >
-                            <CornerUpRight className="w-4 h-4" />
+                            <Send className="w-4 h-4" />
+                            Send
                           </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              title="Compose"
+
+                              onClick={() => navigate(`/thread/reply`)}
+                              className="bg-white/20 backdrop-blur-md cursor-pointer px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/30 transition"
+                            >
+                              <CornerUpRight className="w-4 h-4" />
+                            </motion.button></div>
+
+
 
                         </div>
                         <ReplyButtons editorReady={editorReady} editorRef={editorRef} />
                         {/* Send Button */}
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={handleSendClick}
-                          disabled={checkingThreadId || sending}
-                          className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
-                        >
-                          <Send className="w-4 h-4" />
-                          Send
-                        </motion.button>
+
                       </div>
 
                       {/* ✨ RIGHT PANEL (EDITOR ONLY) */}

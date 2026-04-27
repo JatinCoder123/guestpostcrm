@@ -31,7 +31,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [showVisualization, setShowVisualization] = useState(false);
   const topRef = useRef(null);
   const bottomRef = useRef(null);
-
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -529,6 +528,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       </div>
                     </div>
                   </div>
+
                 </>
               );
             })}
@@ -651,7 +651,8 @@ const TimelineEvent = ({ handleMessageClick }) => {
                 </div>
               </div>
             )}
-            {timelineData?.length > 0 && <Pagination slice={"ladger"} fn={(page) => dispatch(getLadger({ email: contactInfo?.email, loading: false, force: true, page }))} />}
+            {timelineData?.length > 0 && <Pagination slice={"ladger"} fn={(page) => dispatch(getLadger({ email: contactInfo?.email1, loading: false, force: true, page }))} />}
+
           </div>
         </div>
       </div>

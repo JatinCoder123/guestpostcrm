@@ -205,6 +205,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                   label="Save"
                   className="bg-blue-100 hover:bg-blue-200"
                   loading={updating && !send}
+                  disabled={isMultiEditValid}
 
                   onClick={() =>
                     handleSave(editingIds.map(id => editDataMap[id]), false)
@@ -216,6 +217,8 @@ export default function ThreadDeals({ threadId, email, id }) {
                   label="Save & Send"
                   className="bg-green-100 hover:bg-green-200"
                   loading={updating && send}
+                  disabled={isMultiEditValid}
+
                   onClick={() =>
                     handleSave(editingIds.map(id => editDataMap[id]), true)
                   }
