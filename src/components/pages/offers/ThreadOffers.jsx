@@ -149,12 +149,14 @@ export default function ThreadOffers({ threadId, email, id }) {
       "website",
       "our_offer_c",
     );
+    const email = extractEmail(offersData[0]?.real_name ?? offersData[0]?.email_c)
 
     html = html
       .replace("{{USER_EMAIL}}", email)
       .replace("{{TABLE}}", tableHtml);
+    const itemThreadId = showBrandTimeline ? contacts.find(contact => contact.email1 == email)?.thread_id : threadId
 
-    handleMove({ email, threadId, reply: html });
+    handleMove({ email, threadId: itemThreadId, reply: html });
   };
   useEffect(() => {
     if (!updating) {

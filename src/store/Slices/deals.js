@@ -227,9 +227,11 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     }
   };
 };
-export const updateDeal = ({ deals = [], email }) => {
+export const updateDeal = ({ deals = [] }) => {
   return async (dispatch, getState) => {
     const state = getState();
+    const email = extractEmail(deals[0]?.real_name ?? deals[0]?.email)
+
     const getDomain1 = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");

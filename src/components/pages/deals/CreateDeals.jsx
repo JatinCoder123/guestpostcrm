@@ -23,6 +23,7 @@ export default function CreateDeals({ threadId, email }) {
   const dispatch = useDispatch();
 
   const { websites: websiteLists } = useSelector((state) => state.website);
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   const { crmEndpoint } = useSelector((state) => state.user);
   const [expired, setExpired] = useState([]);
 
@@ -122,8 +123,8 @@ export default function CreateDeals({ threadId, email }) {
   useEffect(() => {
     if (message) {
       toast.success(message);
-      dispatch(getDeals({ email }));
-      dispatch(getOffers({ email }));
+      dispatch(getDeals({ email, brand: showBrandTimeline }));
+      dispatch(getOffers({ email, brand: showBrandTimeline }));
       if (message?.includes("Created")) {
         if (send) {
           setSend(false);

@@ -125,7 +125,7 @@ export default function ThreadDeals({ threadId, email, id }) {
   };
   const handleSave = (deals, isSend = false) => {
     setSend(isSend); // 🔥 track intent
-    dispatch(updateDeal({ deals, email }));
+    dispatch(updateDeal({ deals }));
   };
 
   const handleDelete = (deal, id) => {
@@ -145,12 +145,13 @@ export default function ThreadDeals({ threadId, email, id }) {
     let html = templateData?.[0]?.body_html || "";
 
     const tableHtml = buildTable(dealsData, "Deals", "website_c", "dealamount");
+    const email = extractEmail(dealsData[0]?.real_name ?? dealsData[0]?.email)
 
     html = html
       .replace("{{USER_EMAIL}}", email)
       .replace("{{TABLE}}", tableHtml);
-
-    handleMove({ email, threadId, reply: html });
+    const itemThreadId = showBrandTimeline ? contacts.find(contact => contact.email1 == email)?.thread_id : threadId
+    handleMove({ email, threadId: itemThreadId, reply: html });
   };
   useEffect(() => {
     if (!updating) {
