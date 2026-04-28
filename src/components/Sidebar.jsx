@@ -60,17 +60,17 @@ export function Sidebar() {
   const { contactLoading } = useSelector(
     (s) => s.viewEmail,
   );
-  const { count: dealCount, loading: dealsLoading } = useSelector(
+  const { loading: dealsLoading, summary: { active_deals } } = useSelector(
     (s) => s.deals,
   );
-  const { count: offersCount, loading: offersLoading } = useSelector(
+  const { loading: offersLoading, summary: { active_offers } } = useSelector(
     (s) => s.offers,
   );
 
   const { count: invoiceCount, loading: invoicesLoading } = useSelector(
     (s) => s.invoices,
   );
-  const { count: orderCount, loading: ordersLoading } = useSelector(
+  const { loading: ordersLoading, summary: { new_orders } } = useSelector(
     (s) => s.orders,
   );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
@@ -148,7 +148,7 @@ export function Sidebar() {
       label: "Offers",
       icon: Gift,
       loading: offersLoading,
-      count: offersCount,
+      count: active_offers,
       color: "text-green-600",
       hover: "hover:bg-green-50",
       countBg: "bg-green-500 text-white",
@@ -158,7 +158,7 @@ export function Sidebar() {
       label: "Deals",
       icon: Handshake,
       loading: dealsLoading,
-      count: dealCount,
+      count: active_deals,
       color: "text-blue-600",
       hover: "hover:bg-blue-50",
       countBg: "bg-blue-500 text-white",
@@ -168,7 +168,7 @@ export function Sidebar() {
       label: "Orders",
       icon: ShoppingCart,
       loading: ordersLoading,
-      count: orderCount,
+      count: new_orders,
       color: "text-cyan-600",
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",
