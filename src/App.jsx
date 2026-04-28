@@ -54,6 +54,7 @@ import GroupReport from "./components/pages/GroupReport";
 import PromptExplorer from "./components/pages/settingpages/PromptExplorer";
 import Ip from "./components/Ip";
 import IpManager from "./components/pages/IpManager";
+import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
 
 const router = createBrowserRouter([
   {
@@ -281,6 +282,10 @@ const router = createBrowserRouter([
           {
             path: "self-test",
             element: <SelfTest />,
+          },
+          {
+            path: "data-modelling",
+            element: <DataModellingPage />,
           },
         ],
       },
