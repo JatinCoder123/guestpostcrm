@@ -45,6 +45,7 @@ function HashTag({ text, color }) {
 }
 
 const ContactHeader = () => {
+  const sidebarRef = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch()
   const goToDeal = () => {
@@ -184,7 +185,22 @@ const ContactHeader = () => {
       value: contactInfo?.last_activity_date ?? "-",
     },
   ];
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target)
+      ) {
+        setShowSidebar(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const isBrand = contactInfo?.type?.toLowerCase() === "brand";
 
   return (
@@ -192,8 +208,8 @@ const ContactHeader = () => {
       {/* RIGHT MINI SIDEBAR */}
       {showBrandTimeline && (
         <div
-          className={`absolute top-28 right-0 z-50 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"
-            }`}
+          ref={sidebarRef}
+          className={`absolute top-28 right-0 z-50 h-[75vh] transition-all duration-300 ${showSidebar ? "w-72" : "w-10"}`}
         >
           {/* Toggle */}
           <div
