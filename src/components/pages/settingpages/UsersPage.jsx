@@ -6,93 +6,79 @@ import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditUser from "./EditUser";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getAllUsers } from "../../../store/Slices/crmUser";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   const { businessEmail, crmEndpoint } = useSelector((state) => state.user);
-  const { users: crmUsers } = useSelector((state) => state.crmUser);
-  console.log("crmUsers", crmUsers);
-  const { loading, data, error, setData, refetch, add, update } = useModule({
-    url: `https://crm.outrightsystems.org/index.php?entryPoint=get_gpc_users&email=${businessEmail}`,
-    method: "POST",
-    body: {
-      module: "outr_gpc_users",
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
+  const { users: crmUsers, loading } = useSelector((state) => state.crmUser);
+  const dispatch = useDispatch();
+  const { error, refetch, add, update } = useModule({
+    url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=get_users`,
+    method: "GET",
   });
-  console.log(crmUsers);
+
+  const users = (crmUsers || []).map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.description,
+  }));
+
   // ✅ CREATE
   const handleCreate = async (updatedItem) => {
-    setData((prev) => {
-      const updated = { ...prev };
-      updated.data = [{ id: Math.random(), ...updatedItem }, ...updated.data];
-      return updated;
-    });
-
-    await add({
-      url: `https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,
-      method: "POST",
-      body: {
-        parent_bean: {
-          id: data.parent_bean_id,
-          module: data.parent_bean_module,
+    try {
+      await add({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,
+        method: "POST",
+        body: {
+          parent_bean: {
+            module: "outr_gpc_users",
+            description: updatedItem.email,
+            name: updatedItem.name,
+          },
         },
-        child_bean: {
-          module: "outr_gpc_users",
-          description: updatedItem.email,
-          name: updatedItem.name,
+        headers: {
+          "x-api-key": `${CREATE_DEAL_API_KEY}`,
+          "Content-Type": "application/json",
         },
-      },
-      headers: {
-        "x-api-key": `${CREATE_DEAL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    await add({
-      url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=add_user`,
-      method: "POST",
-      body: { email: updatedItem.email, name: updatedItem.name },
-    });
+      });
+      dispatch(getAllUsers());
+    } catch (err) {
+      toast.error("Create failed");
+    }
   };
 
   // ✅ UPDATE
-  const handleUpdate = (updatedItem) => {
-    setData((prev) => {
-      const updated = { ...prev };
-      updated.data = updated.data.map((obj) =>
-        obj.id === updatedItem.id ? updatedItem : obj,
-      );
-      return updated;
-    });
-
-    update({
-      url: `https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,
-      method: "POST",
-      body: {
-        parent_bean: {
-          module: "outr_gpc_users",
-          id: updatedItem.id,
-          description: updatedItem.email,
-          name: updatedItem.name,
+  const handleUpdate = async (updatedItem) => {
+    try {
+      await update({
+        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data&email=${businessEmail}`,
+        method: "POST",
+        body: {
+          parent_bean: {
+            module: "outr_gpc_users",
+            id: updatedItem.id,
+            description: updatedItem.email,
+            name: updatedItem.name,
+          },
         },
-      },
-      headers: {
-        "x-api-key": `${CREATE_DEAL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-    });
+        headers: {
+          "x-api-key": `${CREATE_DEAL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
+      dispatch(getAllUsers());
+    } catch (err) {
+      toast.error("Update failed");
+    }
   };
 
-  // ✅ DELETE USER (NEW)
+  // ✅ DELETE
   const handleDelete = async (item) => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete ${item.name}?`,
@@ -102,24 +88,8 @@ export function UsersPage() {
     setDeletingId(item.id);
 
     try {
-      // 🔹 Find correct CRM user ID
-      const matchedUser = crmUsers?.find(
-        (u) =>
-          u.name === item.name &&
-          u.description === (item.email || item.description),
-      );
-
-      if (!matchedUser) {
-        toast.error("User not found in CRM");
-        return;
-      }
-
-      const recordId = matchedUser.id;
-
-      console.log("Deleting CRM ID:", recordId);
-
       const { data } = await axios.post(
-        `${crmEndpoint}&type=delete_record&module_name=outr_gpc_users&record_id=${recordId}`,
+        `${crmEndpoint}&type=delete_record&module_name=outr_gpc_users&record_id=${item.id}`,
       );
 
       if (data.success) {
@@ -128,15 +98,14 @@ export function UsersPage() {
         toast.error("Failed to delete user");
       }
 
-      refetch();
+      dispatch(getAllUsers());
     } catch (err) {
       console.error("Delete failed", err);
-      refetch();
+      toast.error("Delete failed");
     } finally {
       setDeletingId(null);
     }
   };
-  const users = data?.data;
 
   return (
     <div className="p-8">
@@ -157,13 +126,13 @@ export function UsersPage() {
 
       {error && <ErrorBox message={error.message} onRetry={refetch} />}
 
-      {!loading && !error && users?.length === 0 && (
+      {!loading && !error && users.length === 0 && (
         <div className="mt-6 text-center p-10 bg-gray-50 border border-gray-200 rounded-xl">
           <p className="text-gray-600 text-lg">No users found.</p>
         </div>
       )}
 
-      {users?.length > 0 && (
+      {users.length > 0 && (
         <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.map((item) => (
             <div
