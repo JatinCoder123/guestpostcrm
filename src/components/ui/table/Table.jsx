@@ -26,6 +26,7 @@ const TableView = ({
     statusList = [],
     statusKey = "status",
     statusCount = null,
+    searchType = "date_entered",
     defaultStatus,
     fetchNextPage,
     children,
@@ -33,7 +34,7 @@ const TableView = ({
 
     const { pageIndex, pageCount, count, loading } = useSelector(state => state[slice])
 
-    const [search, setSearch] = useState("")
+    const [search, setSearch] = useState({ value: "", type: searchType })
     const [showStatus, setShowStatus] = useState(true)
 
     const [filters, setFilters] = useState(() => {
@@ -55,14 +56,24 @@ const TableView = ({
 
     const processedData = useMemo(() => {
         let data = [...tableData]
-
-        if (search) {
-            data = data.filter(row =>
-                Object.values(row)
-                    .join(" ")
-                    .toLowerCase()
-                    .includes(search.toLowerCase())
-            )
+        if (search?.value) {
+            if (search.type) {
+                // 🔍 Column-specific search
+                data = data.filter(row =>
+                    String(row[search.type] || "")
+                        .toLowerCase()
+                        .includes(search.value.toLowerCase())
+                );
+            } else {
+                // 🌍 Global search
+                data = data.filter(row =>
+                    Object.values(row)
+                        .filter(Boolean)
+                        .join(" ")
+                        .toLowerCase()
+                        .includes(search.value.toLowerCase())
+                );
+            }
         }
 
         Object.entries(filters).forEach(([key, value]) => {

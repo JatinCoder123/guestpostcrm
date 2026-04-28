@@ -106,23 +106,36 @@ const dealsSlice = createSlice({
     UpdateDeals(state, action) {
       state.deals = action.payload;
     },
+    setDeals(state, action) {
+      const deal = action.payload;
+      state.count = deal?.data_count ?? 0
+      state.deals = deal?.data ?? []
+      state.summary = deal?.summary ?? []
+    }
   },
 });
 
-export const getDeals = ({ email = null, page = 1, loading = true }) => {
+export const getDeals = ({ email = null, page = 1, loading = true, brand = false }) => {
   return async (dispatch, getState) => {
     if (loading) {
       dispatch(dealsSlice.actions.getDealsRequest());
     }
 
     try {
-      let { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
-        }&type=get_deals${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
-      );
-
-      showConsole && console.log(`Deals`, data);
+      let res;
+      if (brand) {
+        res = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=brandTimeline${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}&case=deal`,
+        );
+      } else {
+        res = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=get_deals${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+        );
+      }
+      const data = brand ? res.data.data.deal : res.data
+      showConsole && console.log(`${brand ? "Brand" : ""} Deals`, data);
       dispatch(
         dealsSlice.actions.getDealsSucess({
           count: data.data_count ?? 0,
@@ -228,9 +241,11 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     }
   };
 };
-export const updateDeal = ({ deals = [], email }) => {
+export const updateDeal = ({ deals = [] }) => {
   return async (dispatch, getState) => {
     const state = getState();
+    const email = extractEmail(deals[0]?.real_name ?? deals[0]?.email)
+
     const getDomain1 = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");
@@ -326,9 +341,10 @@ export const updateDeal = ({ deals = [], email }) => {
     }
   };
 };
-export const deleteDeal = (deal, email, id) => {
+export const deleteDeal = (deal, id) => {
   0;
   return async (dispatch, getState) => {
+    const email = extractEmail(deal?.real_name ?? deal?.email)
     const getDomain1 = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");

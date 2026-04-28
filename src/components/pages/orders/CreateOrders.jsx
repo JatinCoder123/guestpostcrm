@@ -22,6 +22,7 @@ const CreateOrders = ({ email, threadId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { creating, message, error } = useSelector((state) => state.orders);
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   const { crmEndpoint } = useSelector((state) => state.user);
   const [send, setSend] = useState(false);
   const { handleMove } = useThreadContext();
@@ -171,7 +172,7 @@ const CreateOrders = ({ email, threadId }) => {
   useEffect(() => {
     if (message) {
       toast.success(message);
-      dispatch(getOrders({ email }));
+      dispatch(getOrders({ email, brand: showBrandTimeline }));
       if (message?.includes("Created")) {
         if (send) {
           setSend(false);
@@ -201,8 +202,8 @@ const CreateOrders = ({ email, threadId }) => {
             key={type}
             onClick={() => handleChange("order_type", type)}
             className={`px-3 py-2 rounded-lg  transition ${order.order_type === type
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 hover:bg-gray-300"
               }`}
           >
             {type}

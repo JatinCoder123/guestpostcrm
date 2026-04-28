@@ -10,15 +10,7 @@ export default logo;
 export const logingImg = loginImg;
 export const images = { duplicateImg };
 import DOMPurify from "dompurify";
-export const websiteLists = [
-  "https://www.wp-1click.com/",
-  "https://www.outrightcrm.com/",
-  "https://store.outrightcrm.com/",
-  "https://www.extractmails.com/",
-  "https://www.outrightsystems.org/",
-  "https://www.mailsextract.com/",
-  "https://www.guestpostcrm.com/",
-];
+
 export const getDomain = (url) => {
   if (!url) return "";
   if (url.includes("/index.php")) {

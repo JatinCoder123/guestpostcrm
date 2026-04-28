@@ -4,6 +4,7 @@ import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
 import { getCache, setCache } from "../../services/cache";
+import { brandTimelineAction } from "./brandTimeline";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -242,6 +243,7 @@ export const getViewEmail = ({ email = null, force = false }) => {
 export const getContact = (email = null, force = false, loading = true) => {
   return async (dispatch, getState) => {
     loading && dispatch(viewEmailSlice.actions.getContactRequest());
+    dispatch(brandTimelineAction.setShowBrandTimeline(false))
 
     try {
       const trimmedEmail = email?.trim();
@@ -272,8 +274,6 @@ export const getContact = (email = null, force = false, loading = true) => {
       setCache("contacts", trimmedEmail, freshData);
 
       dispatch(viewEmailSlice.actions.getContactSucess(freshData));
-
-      // PREFETCH NEXT / PREV
       const index =
         localStorage.getItem("currentIndex") &&
         Number(localStorage.getItem("currentIndex"));

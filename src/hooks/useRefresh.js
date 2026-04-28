@@ -46,12 +46,23 @@ function useRefresh() {
 
     } = useContext(PageContext);
     const dispatch = useDispatch();
-
     const { emails } = useSelector((state) => state.unreplied);
+    const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
     const { timeline } = useSelector((state) => state.ladger);
-    const { contactInfo } = useSelector((state) => state.viewEmail);
-    const threadId = contactInfo?.thread_id
     const [firstEmail, setFirstEmail] = useState(null);
+    const refreshLadger = () => {
+        if (enteredEmail) {
+            dispatch(getLadger({ email: enteredEmail, brand: showBrandTimeline }));
+            dispatch(getViewEmail({ email: enteredEmail }));
+            dispatch(getContact(enteredEmail));
+        } else if (firstEmail) {
+            dispatch(getLadger({ email: firstEmail, brand: showBrandTimeline }));
+            dispatch(getViewEmail({ email: firstEmail }));
+            dispatch(getContact(firstEmail));
+        }
+        dispatch(getEmailsCount({}))
+        dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
+    };
     useEffect(() => {
         dispatch(getAllUsers())
         dispatch(getUnrepliedEmail({}));
@@ -65,10 +76,10 @@ function useRefresh() {
         dispatch(getOrderRem(null, 1));
         dispatch(getMarketplace())
         dispatch(getBacklinks({}));
-        dispatch(getOrders({ email: enteredEmail }));
-        dispatch(getDeals({ email: enteredEmail }));
+        dispatch(getOrders({ email: enteredEmail, brand: showBrandTimeline }));
+        dispatch(getDeals({ email: enteredEmail, brand: showBrandTimeline }));
         dispatch(getInvoices({ email: enteredEmail }));
-        dispatch(getOffers({ email: enteredEmail }));
+        dispatch(getOffers({ email: enteredEmail, brand: showBrandTimeline }));
         dispatch(getDetection(enteredEmail));
         dispatch(fetchGpcController());
         dispatch(getdefaulterEmails(enteredEmail));
@@ -82,22 +93,7 @@ function useRefresh() {
         dispatch(getFavEmails({}));
         dispatch(getForwardedEmails({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
-    const refreshLadger = () => {
-        if (currentEventThreadId.current == threadId) {
-            console.log("REFRESH LADGER")
-            if (enteredEmail) {
-                dispatch(getLadger({ email: enteredEmail }));
-                dispatch(getViewEmail({ email: enteredEmail }));
-                dispatch(getContact(enteredEmail));
-            } else if (firstEmail) {
-                dispatch(getLadger({ email: firstEmail }));
-                dispatch(getViewEmail({ email: firstEmail }));
-                dispatch(getContact(firstEmail));
-            }
-            dispatch(getEmailsCount({}))
-            dispatch(getUnrepliedEmail({ loading: false }));
-        }
-    };
+
     useEffect(() => {
         if (emails?.length > 0) {
             setFirstEmail(
@@ -117,7 +113,7 @@ function useRefresh() {
 
         const emailToUse = enteredEmail
 
-        dispatch(getLadger({ email: emailToUse }));
+        dispatch(getLadger({ email: emailToUse, brand: showBrandTimeline }));
         dispatch(getViewEmail({ email: emailToUse }));
         dispatch(getContact(emailToUse));
     }, [enteredEmail]);
@@ -125,7 +121,7 @@ function useRefresh() {
         if (!firstEmail) return;
         const emailToUse = firstEmail;
         if (!enteredEmail) {
-            dispatch(getLadger({ email: emailToUse }));
+            dispatch(getLadger({ email: emailToUse, brand: showBrandTimeline }));
             dispatch(getViewEmail({ email: emailToUse }));
             dispatch(getContact(emailToUse));
         }

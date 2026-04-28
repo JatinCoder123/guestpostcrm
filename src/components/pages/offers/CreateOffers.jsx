@@ -25,6 +25,7 @@ export default function CreateOffers({ threadId, email }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { websites: websiteLists } = useSelector((state) => state.website);
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   const { crmEndpoint } = useSelector((state) => state.user);
   const { deals } = useSelector((state) => state.deals);
   const { offers, creating, message, error } = useSelector(
@@ -132,7 +133,7 @@ export default function CreateOffers({ threadId, email }) {
   useEffect(() => {
     if (message) {
       toast.success(message);
-      dispatch(getOffers({ email }));
+      dispatch(getOffers({ email, brand: showBrandTimeline }));
       // 🔥 only move if send was true
       if (message?.includes("Created")) {
         if (send) {

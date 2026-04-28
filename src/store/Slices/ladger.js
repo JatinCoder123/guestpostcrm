@@ -101,6 +101,7 @@ const ladgerSlice = createSlice({
     updateIndex(state, action) {
       state.pageIndex = action.payload;
     },
+
   },
 });
 
@@ -109,6 +110,7 @@ export const getLadger = ({
   loading = true,
   page = 1,
   force = false,
+  brand = false
 }) => {
   return async (dispatch, getState) => {
     const trimmedEmail = email?.trim() || "";
@@ -125,7 +127,7 @@ export const getLadger = ({
 
     try {
       // Serve cache instantly
-      if (!force) {
+      if (!(force || brand)) {
         const cachedData = getCache("ledgers", cacheKey);
 
         if (cachedData) {
@@ -143,19 +145,36 @@ export const getLadger = ({
       }
 
       // Fetch fresh current ledger
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}
+      let res;
+      if (brand) {
+        res = await axios.get(
+          `${getState().user.crmEndpoint}
+        &type=brandTimeline
+        ${timeline !== null && timeline !== "null"
+              ? `&filter=${timeline}`
+              : ""
+            }
+        &page=${page}
+        &page_size=50
+        ${trimmedEmail ? `&email=${trimmedEmail}` : ""}&case=timeline`
+            .replace(/\s+/g, "")
+        );
+      } else {
+        res = await axios.get(
+          `${getState().user.crmEndpoint}
         &type=ledger
         ${timeline !== null && timeline !== "null"
-            ? `&filter=${timeline}`
-            : ""
-          }
+              ? `&filter=${timeline}`
+              : ""
+            }
         &page=${page}
         &page_size=50
         ${trimmedEmail ? `&email=${trimmedEmail}` : ""}`
-          .replace(/\s+/g, "")
-      );
-      console.log("LADGER", data)
+            .replace(/\s+/g, "")
+        );
+      }
+      const data = brand ? res.data.data.timeline : res.data
+      console.log(`${brand && "BRAND"} LADGER`, data)
       const freshData = {
         duplicate: data.duplicate_threads_count,
         ladger: data.data ?? [],
@@ -164,7 +183,7 @@ export const getLadger = ({
         pageIndex: data.current_page,
       };
 
-      setCache("ledgers", cacheKey, freshData);
+      !brand && setCache("ledgers", cacheKey, freshData);
 
       dispatch(
         ladgerSlice.actions.getLadgerSuccess({
