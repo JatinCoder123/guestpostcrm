@@ -56,6 +56,11 @@ const TABS = [
     module: "outr_self_test",
     disabled: false,
   },
+  {
+    key: "data_modelling",
+    label: "Data Modelling",
+    disabled: false,
+  },
 ];
 
 const IMPORTANT_COLUMNS = {
@@ -345,54 +350,6 @@ const Debug = () => {
       {" "}
       <Header text={"QA PlayGround"} />
       <div className="p-6 space-y-6">
-        {/* Tabs (Replaced with Dropdown) */}
-        <div className="flex items-center justify-between border-b pb-3">
-          {/* ACTIVE TAB NAME */}
-          <div className="text-lg font-semibold text-blue-600">
-            {activeTab.label}
-          </div>
-
-          {/* DROPDOWN */}
-          <div>
-            <select
-              value={activeTab.key}
-              onChange={(e) => {
-                const selected = TABS.find((t) => t.key === e.target.value);
-
-                if (!selected) return;
-
-                // 🔥 Navigation logic
-                if (selected.key === "prompt_testing") {
-                  navigateTo("/settings/prompt-testing");
-                  return;
-                }
-
-                if (selected.key === "ml") {
-                  navigateTo("/settings/machine-learning");
-                  return;
-                }
-
-                if (selected.key === "self_test") {
-                  navigateTo("/settings/self-test");
-                  return;
-                }
-
-                // बाकी tabs same rahenge
-                if (selected?.disabled) return;
-
-                setActiveTab(selected);
-              }}
-              className="border px-4 py-2 rounded-md text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
-            >
-              {TABS.map((tab) => (
-                <option key={tab.key} value={tab.key} disabled={tab.disabled}>
-                  {tab.label} {tab.disabled ? " (Coming Soon)" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
         {/* Filters */}
         <div className="flex justify-center gap-6 flex-wrap">
           {/* Email Search */}
@@ -418,6 +375,57 @@ const Debug = () => {
               )}
             </div>
           </div> */}
+          {/* Tabs (Replaced with Dropdown) */}
+          <div className="flex items-center justify-between flex items-center gap-3 bg-blue-50 border border-2 border-blue-600 rounded-xl px-4 py-2 shadow-sm ">
+            {/* ACTIVE TAB NAME */}
+            {/* <div className="text-lg font-semibold text-blue-600">
+              {activeTab.label}
+            </div> */}
+
+            {/* DROPDOWN */}
+            <div>
+              <select
+                value={activeTab.key}
+                onChange={(e) => {
+                  const selected = TABS.find((t) => t.key === e.target.value);
+
+                  if (!selected) return;
+
+                  // 🔥 Navigation logic
+                  if (selected.key === "prompt_testing") {
+                    navigateTo("/settings/prompt-testing");
+                    return;
+                  }
+
+                  if (selected.key === "ml") {
+                    navigateTo("/settings/machine-learning");
+                    return;
+                  }
+
+                  if (selected.key === "self_test") {
+                    navigateTo("/settings/self-test");
+                    return;
+                  }
+                  if (selected.key === "data_modelling") {
+                    navigateTo("/settings/data-modelling");
+                    return;
+                  }
+
+                  // बाकी tabs same rahenge
+                  if (selected?.disabled) return;
+
+                  setActiveTab(selected);
+                }}
+                className="border px-4 py-2 rounded-md text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
+              >
+                {TABS.map((tab) => (
+                  <option key={tab.key} value={tab.key} disabled={tab.disabled}>
+                    {tab.label} {tab.disabled ? " (Coming Soon)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           {/* Timeline */}
           <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">

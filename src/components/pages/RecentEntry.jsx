@@ -105,9 +105,14 @@ export function RecentEntry() {
           />
           <CustomDropdown
             className="w-[240px]"
-            onChange={(value) => { setSelectedGrp(value), setSearchTerm(value) }}
+            onChange={(value) => {
+              (setSelectedGrp(value), setSearchTerm(value));
+            }}
             value={selectedGrp}
-            options={grpData?.map(grp => ({ value: grp.name, label: grp.description }))}
+            options={grpData?.map((grp) => ({
+              value: grp.name,
+              label: grp.description,
+            }))}
           />
         </div>
 
@@ -124,31 +129,23 @@ export function RecentEntry() {
             <div className="flex items-center gap-2">
               <Activity size={22} /> RECENT ACTIVITY
             </div>
-            <div className="flex items-center gap-2 justify-center">
-              USER
-            </div>
+            <div className="flex items-center gap-2 justify-center">USER</div>
           </div>
         </div>
 
         {/* BODY */}
         <div className="px-8 py-4">
-          {loading && (
-            <p className="text-center py-4 text-lg">Loading...</p>
-          )}
+          {loading && <p className="text-center py-4 text-lg">Loading...</p>}
 
           {!loading && events.length === 0 && (
-            <p className="text-center text-lg py-4">
-              No events found
-            </p>
+            <p className="text-center text-lg py-4">No events found</p>
           )}
 
           {events?.map((event, index) => {
             const contactName = excludeName(event.real_name) ?? "—";
             const emailValue =
               excludeEmail(
-                event.real_name === "User"
-                  ? event?.name
-                  : event.real_name
+                event.real_name === "User" ? event?.name : event.real_name,
               ) ?? "—";
 
             return (
@@ -166,9 +163,7 @@ export function RecentEntry() {
                     })
                   }
                 >
-                  <span className="truncate">
-                    {event.date_entered ?? "—"}
-                  </span>
+                  <span className="truncate">{event.date_entered ?? "—"}</span>
 
                   <div className="flex items-center justify-center">
                     {event?.prompt_details && (

@@ -5,6 +5,7 @@ import {
   Clock9Icon,
   Cpu,
   CreditCard,
+  Database,
   FileCog,
   Gamepad2,
   GamepadIcon,
@@ -110,6 +111,13 @@ export function SettingsPage() {
       icon: <BugOff className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "self-test",
+    },
+    {
+      title: "Data Modelling",
+      subtitle: "Manage Data",
+      icon: <Database className="w-8 h-8 text-green-600" />,
+      bg: "bg-green-50",
+      link: "data-modelling",
     },
   ];
 
