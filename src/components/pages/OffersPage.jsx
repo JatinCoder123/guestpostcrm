@@ -177,7 +177,7 @@ export function OffersPage() {
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
               onClick={() =>
-                dispatch(deleteOffer(extractEmail(row.real_name), row.id, row))
+                dispatch(deleteOffer(row.id, row))
               }
             >
               <Trash className="w-5 h-5 text-red-600" />

@@ -39,7 +39,7 @@ const EmojiInput = () => {
                 `${crmEndpoint}&type=re_check_thread&email=${contactInfo?.email1}`
             );
 
-            if (!data?.success) {
+            if (!(data?.success || data.thread_id)) {
                 toast.error("Failed to verify thread!");
                 return;
             }

@@ -35,6 +35,7 @@ import syncReducer from "./Slices/syncSlice.js";
 import contactReducer from "./Slices/contacts.js"
 import reportReducer from "./Slices/reportSlice.js"
 import crmUserReducer from "./Slices/crmUser.js"
+import brandTimelineReducer from "./Slices/brandTimeline.js"
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -73,6 +74,7 @@ export const store = configureStore({
     sync: syncReducer,
     contacts: contactReducer,
     report: reportReducer,
-    crmUser: crmUserReducer
+    crmUser: crmUserReducer,
+    brandTimeline: brandTimelineReducer
   },
 });

@@ -82,22 +82,7 @@ function useRefresh() {
         dispatch(getFavEmails({}));
         dispatch(getForwardedEmails({}));
     }, [timeline, dispatch]); // ✅ Added dependencies
-    const refreshLadger = () => {
-        if (currentEventThreadId.current == threadId) {
-            console.log("REFRESH LADGER")
-            if (enteredEmail) {
-                dispatch(getLadger({ email: enteredEmail }));
-                dispatch(getViewEmail({ email: enteredEmail }));
-                dispatch(getContact(enteredEmail));
-            } else if (firstEmail) {
-                dispatch(getLadger({ email: firstEmail }));
-                dispatch(getViewEmail({ email: firstEmail }));
-                dispatch(getContact(firstEmail));
-            }
-            dispatch(getEmailsCount({}))
-            dispatch(getUnrepliedEmail({ loading: false }));
-        }
-    };
+
     useEffect(() => {
         if (emails?.length > 0) {
             setFirstEmail(

@@ -1,4 +1,4 @@
-import { Plus, CheckCircle, XCircle, PackageCheck } from "lucide-react";
+import { Plus, CheckCircle, XCircle, PackageCheck, Mail } from "lucide-react";
 import SeoBacklinkList from "./SeoBacklinks";
 import { useContext, useEffect, useState } from "react";
 import UpdatePopup from "./UpdatePopup";
@@ -7,7 +7,8 @@ import { createLink, orderAction, updateOrder } from "../store/Slices/orders";
 import { useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
 import { SocketContext } from "../context/SocketContext";
-export const OrderView = ({ data, email, setSend }) => {
+import { extractEmail } from "../assets/assets";
+export const OrderView = ({ data, setSend }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
   const { creatingLinkMessage, statusLists, updating } = useSelector(
@@ -50,7 +51,7 @@ export const OrderView = ({ data, email, setSend }) => {
       setSend(updatedOrder);
     }
 
-    dispatch(updateOrder({ order: updatedOrder, email }));
+    dispatch(updateOrder({ order: updatedOrder }));
   };
 
   useEffect(() => {
@@ -241,6 +242,7 @@ function ProcessingLoader() {
 }
 function OrderHeader({ data, updateStatus, onCompleteHandler }) {
   const [showModel, setShowModel] = useState(null);
+  const { showBrandTimeline } = useSelector(state => state.brandTimeline)
   return (
     <>
       {showModel && (
@@ -258,6 +260,16 @@ function OrderHeader({ data, updateStatus, onCompleteHandler }) {
           <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
             <div className="relative z-10 flex flex-col items-center justify-center gap-3">
               {/* Order Label */}
+              {showBrandTimeline && <div className=" flex items-center gap-4 ">
+                <span className="text-md font-bold text-slate-700  ">
+                  <Mail />
+                </span>
+
+                <h2 className="text-lg  font-semibold">
+                  {extractEmail(data.real_name ?? data.email)}
+                </h2>
+              </div>}
+
               <div className=" flex items-center gap-4">
                 <span className="text-sm font-bold text-slate-700 uppercase ">
                   # Order ID

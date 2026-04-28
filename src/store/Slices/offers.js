@@ -106,23 +106,36 @@ const offersSlice = createSlice({
     clearAllErrors(state) {
       state.error = null;
     },
+    setOffers(state, action) {
+      const offer = action.payload;
+      state.count = offer?.data_count ?? 0
+      state.offers = offer?.data ?? []
+      state.summary = offer?.summary ?? []
+    }
   },
 });
 
-export const getOffers = ({ email = null, page = 1, loading = true }) => {
+export const getOffers = ({ email = null, page = 1, loading = true, brand = false }) => {
   return async (dispatch, getState) => {
     if (loading) {
       dispatch(offersSlice.actions.getOffersRequest());
     }
 
     try {
-      const { data } = await axios.get(
-        `${
-          getState().user.crmEndpoint
-        }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
-      );
-
-      showConsole && console.log(`offers`, data);
+      let res;
+      if (brand) {
+        res = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=brandTimeline${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}&case=offer`,
+        );
+      } else {
+        res = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=get_offers${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+        );
+      }
+      const data = brand ? res.data.data.offer : res.data
+      showConsole && console.log(`${brand ? "BRAND" : ""} offers`, data);
       dispatch(
         offersSlice.actions.getOffersSucess({
           count: data.data_count ?? 0,
@@ -138,9 +151,11 @@ export const getOffers = ({ email = null, page = 1, loading = true }) => {
     }
   };
 };
-export const updateOffer = ({ email, offers = [] }) => {
+
+export const updateOffer = ({ offers = [] }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.updateOfferRequest());
+    const email = extractEmail(offers[0]?.real_name ?? offers[0]?.email_c)
     try {
       const state = getState();
       const domain = getState().user.crmEndpoint.split("?")[0];
@@ -239,7 +254,6 @@ export const createOffer = ({
   threadId,
   email,
   offers = [],
-  isSend = false,
 }) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.createOfferRequest());
@@ -331,9 +345,10 @@ export const createOffer = ({
     }
   };
 };
-export const deleteOffer = (email, id, offer) => {
+export const deleteOffer = (id, offer) => {
   return async (dispatch, getState) => {
     dispatch(offersSlice.actions.deleteOfferRequest({ id }));
+    const email = extractEmail(offer?.real_name ?? offer.email_c)
     const state = getState();
     const crmEndpoint = getState().user.crmEndpoint;
 

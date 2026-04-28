@@ -39,7 +39,7 @@ const Thread = () => {
       );
       console.log("MATHED THREAD ID", data);
 
-      if (!data?.success) {
+      if (!(data?.success || data.thread_id)) {
         toast.error("Failed to verify thread!");
         return;
       }
