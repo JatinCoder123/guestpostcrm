@@ -96,7 +96,7 @@ const ActionButton = () => {
   const triggerHashtag = (memo_no, method = "GET") => {
     applyHashtag({
       domain: crmEndpoint,
-      email: enteredEmail,
+      email: contactInfo?.email1,
       memo_no,
       method,
     });
