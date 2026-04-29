@@ -29,6 +29,7 @@ export default function ThreadDeals({ threadId, email, id }) {
   const [editingIds, setEditingIds] = useState([]);
   const [editDataMap, setEditDataMap] = useState({});
   const { websites: websiteLists } = useSelector((state) => state.website);
+  const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
 
   const { deals, deleting, updating, message, error, deleteDealId } =
     useSelector((state) => state.deals);
@@ -36,7 +37,7 @@ export default function ThreadDeals({ threadId, email, id }) {
   const { crmEndpoint } = useSelector((state) => state.user);
   const { handleMove } = useThreadContext();
 
-  const [validWebsite, setValidWebsite] = useState([]);
+  const [validWebsite, setValidWebsite] = useState({});
 
   // 🔥 TEMPLATE FETCH
   const { data: templateData } = useModule({
@@ -54,34 +55,29 @@ export default function ThreadDeals({ threadId, email, id }) {
   });
 
   useEffect(() => {
-    const threadOffers = offers.filter(
-      (d) =>
-        extractEmail(d.real_name ?? d.email) == email &&
-        d.offer_status == "active",
+    const currentOffers = showBrandTimeline ? offers : offers.filter(
+      (d) => extractEmail(d.real_name ?? d.email_c) == email,
     );
 
-    const threadDeals = deals.filter(
+    const currentDeals = showBrandTimeline ? deals : deals.filter(
       (d) => extractEmail(d.real_name ?? d.email) == email,
     );
 
-    const valid = websiteLists.filter((w) => {
-      const usedInOffers = threadOffers.some((o) => o.website === w);
-
-      const usedInDeals = threadDeals.some(
-        (d) => d.website_c === w && !editingIds.includes(d.id),
-      );
-
-      return !usedInOffers && !usedInDeals;
-    });
-    let activeDeals = [];
-    if (id) {
-      activeDeals = threadDeals.filter((o) => o.id == id);
-    } else {
-      activeDeals = threadDeals.filter((o) => o.status == "active");
-    }
+    const valid = {}
+    const currentContacts = showBrandTimeline ? contacts : [{ email1: email }]
+    currentContacts.forEach(contact => {
+      let threadOffers = showBrandTimeline ? currentOffers.filter(offer => extractEmail(offer?.real_name ?? offer.email_c) == contact?.email1) : currentOffers
+      let threadDeals = showBrandTimeline ? currentDeals.filter(deal => extractEmail(deal?.real_name ?? deal.email) == contact?.email1) : currentDeals
+      return valid[contact?.email1] = websiteLists.filter((w) => {
+        const usedInOffers = threadOffers.some((o) => o.website === w);
+        const usedInDeals = threadDeals.some((d) => d.website_c === w && !editingIds.includes(d.id));
+        return !usedInOffers && !usedInDeals;
+      });
+    })
+    let activeDeals = id ? currentDeals.filter((o) => o.id == id) : currentDeals.filter((o) => o.status == "active");
     setValidWebsite(valid);
     setCurrentDeals(activeDeals);
-  }, [offers, deals, editDataMap, email, id]);
+  }, [offers, deals, editingIds, email, id]);
   const toggleSelect = (id) => {
     setSelectedDeals((prev) =>
       prev.includes(id)
@@ -129,18 +125,18 @@ export default function ThreadDeals({ threadId, email, id }) {
   };
   const handleSave = (deals, isSend = false) => {
     setSend(isSend); // 🔥 track intent
-    dispatch(updateDeal({ deals, email }));
+    dispatch(updateDeal({ deals }));
   };
 
   const handleDelete = (deal, id) => {
-    dispatch(deleteDeal(deal, email, id));
+    dispatch(deleteDeal(deal, id));
   };
 
-  const handleCreate = () => {
+  const handleCreate = (itemEmail, itemThreadId) => {
     navigate(`/deals/create`, {
       state: {
-        email,
-        threadId,
+        email: itemEmail,
+        threadId: itemThreadId,
       },
     });
   };
@@ -149,12 +145,13 @@ export default function ThreadDeals({ threadId, email, id }) {
     let html = templateData?.[0]?.body_html || "";
 
     const tableHtml = buildTable(dealsData, "Deals", "website_c", "dealamount");
+    const email = extractEmail(dealsData[0]?.real_name ?? dealsData[0]?.email)
 
     html = html
       .replace("{{USER_EMAIL}}", email)
       .replace("{{TABLE}}", tableHtml);
-
-    handleMove({ email, threadId, reply: html });
+    const itemThreadId = showBrandTimeline ? contacts.find(contact => contact.email1 == email)?.thread_id : threadId
+    handleMove({ email, threadId: itemThreadId, reply: html });
   };
   useEffect(() => {
     if (!updating) {
@@ -194,7 +191,7 @@ export default function ThreadDeals({ threadId, email, id }) {
     <div className="w-full flex gap-6 items-start">
       {/* 🔥 TABLE */}
       <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
-        <PageHeader title={"DEALS"} onAdd={handleCreate} />
+        <PageHeader title={"DEALS"} onAdd={() => handleCreate(email, threadId)} />
         {selectedDeals.length > 0 && (
           <div className="mb-4 flex justify-end gap-3">
 
@@ -283,15 +280,16 @@ export default function ThreadDeals({ threadId, email, id }) {
           </div>
         )}
         {/* HEADER */}
-        <div className="grid grid-cols-10 px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b">
-          <div className="col-span-1">
+        <div className={`grid ${showBrandTimeline ? "grid-cols-11" : "grid-cols-10"} px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b`}>
+          {!showBrandTimeline && <div onClick={handleSelectAll} className="col-span-1 cursor-pointer ">
             <input
               type="checkbox"
               checked={selectedDeals.length === currentDeals.length}
-              onChange={handleSelectAll}
+
             />
-          </div>
+          </div>}
           <div className="col-span-3">Website</div>
+          {showBrandTimeline && <div className="col-span-2">Email</div>}
           <div className="col-span-2 text-center">Deal Amount</div>
           <div className="col-span-2 text-center">Note</div>
           <div className="col-span-2 text-center ml-auto">Actions</div>
@@ -303,21 +301,23 @@ export default function ThreadDeals({ threadId, email, id }) {
             <div className="text-center text-gray-400 py-6">No Deal found</div>
           )}
 
-          {currentDeals.map((deal, index) => {
+          {currentDeals.map((deal) => {
             const isEditing = editingIds.includes(deal.id);
             const editData = editDataMap[deal.id] || {};
+            const itemEmail = showBrandTimeline ? extractEmail(deal.real_name ?? deal.email) : email
+            const itemThreadId = showBrandTimeline ? contacts.find(contact => contact.email1 == itemEmail)?.thread_id : threadId
             return (
               <motion.div
                 key={deal.id}
-                className="grid grid-cols-10 items-center px-4 py-3 bg-gray-50 rounded-xl border"
+                className={`grid ${showBrandTimeline ? "grid-cols-11" : "grid-cols-10"} items-center px-4 py-3 bg-gray-50 rounded-xl border`}
               >
-                <div className="col-span-1">
+                {!showBrandTimeline && <div onClick={() => toggleSelect(deal.id)}
+                  className="col-span-1 font-semibold text-gray-500 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={selectedDeals.includes(deal.id)}
-                    onChange={() => toggleSelect(deal.id)}
                   />
-                </div>
+                </div>}
 
                 {/* Website */}
                 <div className="col-span-3">
@@ -335,7 +335,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                       }
                       className="w-full border rounded-lg px-2 py-1"
                     >
-                      {validWebsite.map((site, i) => (
+                      {validWebsite[itemEmail].map((site, i) => (
                         <option key={i} value={site}>
                           {site}
                         </option>
@@ -347,7 +347,10 @@ export default function ThreadDeals({ threadId, email, id }) {
                     </span>
                   )}
                 </div>
+                {showBrandTimeline && <div className="col-span-2 ">
+                  <span>{itemEmail}</span>
 
+                </div>}
                 {/* Client Offer */}
                 <div className="col-span-2 text-center">
                   {isEditing ? (
@@ -422,24 +425,27 @@ export default function ThreadDeals({ threadId, email, id }) {
                     </div>
                   ) : (
                     <>
-                      <button
-                        onClick={() => handleEdit([deal])}
-                        className="p-2 rounded-lg bg-blue-100 text-blue-600"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
+                      {showBrandTimeline && <IconButton
+                        icon={Plus}
+                        label="Create"
+                        onClick={() => handleCreate(itemEmail, itemThreadId)}
+                        className="bg-green-100 hover:bg-green-200 text-green-600"
 
-                      <button
+                      />}
+                      <IconButton
+                        onClick={() => handleEdit([deal])}
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-600"
+                        icon={Pencil}
+                        label={"Edit"}
+                      />
+                      <IconButton
+                        icon={Trash2}
+                        label={"Delete"}
                         onClick={() => handleDelete(deal, deal.id)}
                         className="p-2.5 rounded-lg bg-red-100 text-red-600"
                         disabled={deleting && deleteDealId === deal.id}
-                      >
-                        {deleting && deleteDealId === deal.id ? (
-                          <LoadingChase size="18" color="red" />
-                        ) : (
-                          <Trash2 size={18} />
-                        )}
-                      </button>
+                        loading={deleting && deleteDealId === deal.id}
+                      />
                     </>
                   )) : "-"}
                 </div>
@@ -450,7 +456,7 @@ export default function ThreadDeals({ threadId, email, id }) {
       </div>
 
       {/* 🔥 SUMMARY */}
-      <SummaryCard
+      {!showBrandTimeline && <SummaryCard
         data={currentDeals}
         type={"deals"}
         websiteKey={"website_c"}
@@ -467,7 +473,8 @@ export default function ThreadDeals({ threadId, email, id }) {
         >
           Preview
         </button>
-      </SummaryCard>
+      </SummaryCard>}
+
     </div>
   );
 }

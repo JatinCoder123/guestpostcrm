@@ -43,7 +43,7 @@ const MEMO = {
 /* Separator */
 const Separator = () => <div className="h-6 w-[1px] bg-gray-600 mx-2" />;
 
-const ActionButton = ({ setShowIP, isMark }) => {
+const ActionButton = () => {
   const dispatch = useDispatch();
 
   const [showUsers, setShowUsers] = useState(false);
@@ -86,7 +86,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
     error: markingError,
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
-
+  const isMark = marketPlaces.find((e) => e.name === contactInfo?.email1) ?? null
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite === "1";
   const isExchangeActive = contactInfo?.exchange === "1";
@@ -96,7 +96,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
   const triggerHashtag = (memo_no, method = "GET") => {
     applyHashtag({
       domain: crmEndpoint,
-      email: enteredEmail,
+      email: contactInfo?.email1,
       memo_no,
       method,
     });
@@ -280,7 +280,7 @@ const ActionButton = ({ setShowIP, isMark }) => {
       // GET when adding to marketplace, DELETE when removing
       action: () => {
         if (isMark) {
-          dispatch(deleteMarketPlace(isMark.id));
+          dispatch(deleteMarketPlace(isMark?.id));
           triggerHashtag(MEMO.marketplace, "DELETE");
         } else {
           dispatch(addMarketPlace(email, contactInfo.type == "Brand"));

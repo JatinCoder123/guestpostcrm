@@ -186,18 +186,32 @@ const ordersSlice = createSlice({
     setUpdateOrder(state, action) {
       state.orders = action.payload;
     },
+    setOrders(state, action) {
+      const { data } = action.payload;
+      state.count = data?.length ?? 0
+      state.orders = data ?? []
+    }
   },
 });
 
-export const getOrders = ({ email = null, page = 1, loading = true }) => {
+export const getOrders = ({ email = null, page = 1, loading = true, brand = false }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
-      );
-      showConsole && console.log(`Orders orders`, data);
+      let res;
+      if (brand) {
+        res = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=brandTimeline${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}&case=order`,
+        );
+      } else {
+        res = await axios.get(
+          `${getState().user.crmEndpoint
+          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+        );
+      }
+      const data = brand ? res.data.data.order : res.data
+      showConsole && console.log(`${brand ? "brand" : ""} Orders `, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({
           count: data.data_count ?? 0,
@@ -267,6 +281,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     console.log("EMAIL", email);
     console.log("ORDER", order);
+    console.log("THREAD", threadId);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       const crmEndpoint = getState().user.crmEndpoint;
@@ -387,10 +402,12 @@ export const createOrder3 = (email, orders = [], send) => {
   };
 };
 
-export const updateOrder = ({ order, email }) => {
+export const updateOrder = ({ order }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
-    showConsole && console.log("Update Order", order);
+    const email = extractEmail(order.real_name ?? order.email)
+    showConsole && console.log("Order To Be Update", order);
+    showConsole && console.log("Update Order Email", email);
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];

@@ -15,10 +15,10 @@ export default function Loading({ text }) {
   );
 }
 
-export function LoadingSpin({ color = "white", size = "14" }) {
+export function LoadingSpin({ color = "white", size = "14", stroke = "1" }) {
   return (
     <>
-      <Tailspin size={size} stroke="1" speed="0.9" color={color} />
+      <Tailspin size={size} stroke={stroke} speed="0.9" color={color} />
     </>
   );
 }
@@ -29,10 +29,5 @@ export function LoadingAll({ type = "ping", size = "40", color = "green" }) {
   if (type == "ping") return <Ping size={size} speed="2" color={color} />;
   else if (type == "hourglass")
     return <Hourglass size="40" bgOpacity="0.1" speed="1.75" color="black" />;
-
-  // Default values shown
 }
 
-// Default values shown
-
-// Default values shown

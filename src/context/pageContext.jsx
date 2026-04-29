@@ -20,6 +20,7 @@ export const PageContextProvider = (props) => {
   const [enteredEmail, setEnteredEmail] = useState(
     localStorage.getItem("searchTerm") || null,
   );
+
   const [superfastReply, setSuperfastReply] = useState(() => {
     const stored = localStorage.getItem("superfastreply");
 

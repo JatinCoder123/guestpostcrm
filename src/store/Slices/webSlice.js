@@ -1,7 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { showConsole, websiteLists } from "../../assets/assets";
+import { showConsole } from "../../assets/assets";
+export const websiteLists = [
 
+    "https://www.outrightcrm.com/",
+    "https://www.outrightsystems.org/",
+    "https://techsauryacom1.odoo.com/",
+    "https://www.guestpostcrm.com/",
+    "https://store.outrightcrm.com/",
+    "https://www.extractmails.com/",
+    "https://www.wp-1click.com/"
+];
 const websiteSlice = createSlice({
     name: "website",
     initialState: {

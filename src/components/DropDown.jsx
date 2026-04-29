@@ -90,13 +90,13 @@ const DropDown = ({ options, handleSelectOption, timeline }) => {
         const startOfLastMonth = new Date(
           today.getFullYear(),
           today.getMonth() - 1,
-          1
+          1,
         );
 
         const endOfLastMonth = new Date(
           today.getFullYear(),
           today.getMonth(),
-          0
+          0,
         );
 
         return {
@@ -110,13 +110,13 @@ const DropDown = ({ options, handleSelectOption, timeline }) => {
         const startOfThreeMonths = new Date(
           today.getFullYear(),
           today.getMonth() - 2,
-          1
+          1,
         );
 
         const endOfLastMonth = new Date(
           today.getFullYear(),
           today.getMonth(),
-          0
+          0,
         );
 
         return {
@@ -168,10 +168,11 @@ const DropDown = ({ options, handleSelectOption, timeline }) => {
           <span className="text-sm font-medium text-gray-900 truncate">
             {selectedOption?.title || "Select"}
           </span>
-          {selectedOption?.title !== "All" && <span className="text-xs text-gray-600 truncate">
-            {selectedDateRange.display}
-          </span>}
-
+          {selectedOption?.title !== "All" && (
+            <span className="text-xs text-gray-600 truncate">
+              {selectedDateRange.display}
+            </span>
+          )}
         </div>
 
         {/* Arrow Rotation Animation */}
@@ -226,8 +227,9 @@ const DropDown = ({ options, handleSelectOption, timeline }) => {
                     <div className="flex flex-col">
                       <div className="flex justify-between items-start">
                         <span
-                          className={`text-sm font-medium ${isSelected ? "text-blue-600" : "text-gray-900"
-                            }`}
+                          className={`text-sm font-medium ${
+                            isSelected ? "text-blue-600" : "text-gray-900"
+                          }`}
                         >
                           {option.title}
                         </span>

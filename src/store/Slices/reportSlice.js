@@ -44,14 +44,29 @@ const reportSlice = createSlice({
   },
 });
 
-export const getGroupReport = ({ grp, page = 1, loading = true }) => {
+export const getGroupReport = ({
+  grp,
+  page = 1,
+  loading = true,
+  from = null,
+  from_time = null,
+  to = null,
+  to_time = null,
+}) => {
   return async (dispatch, getState) => {
     dispatch(reportSlice.actions.getGroupReportRequest(loading));
 
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=report&group=${grp}&page=${page}&page_size=50`,
-      );
+      let url = `${getState().user.crmEndpoint}&type=report&group=${grp}&page=${page}&page_size=50`;
+      console.log("Filter params received:", { from, from_time, to, to_time });
+
+      // Add date/time filters if provided
+      if (from && from_time && to && to_time) {
+        url += `&from=${from}&from_time=${from_time}:00&to=${to}&to_time=${to_time}:59`;
+      }
+      console.log("Final URL:", url);
+
+      const { data } = await axios.get(url);
       showConsole && console.log(`GROUP REPORT`, data);
       dispatch(
         reportSlice.actions.getGroupReportSucess({

@@ -22,7 +22,6 @@ import useModule from "../../../hooks/useModule";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { createPreviewOrder } from "../../PreviewOrder";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../../assets/assets";
 
 export default function EditOrder({ threadId, id, email }) {
   const [order, setOrder] = useState({});
@@ -30,6 +29,8 @@ export default function EditOrder({ threadId, id, email }) {
   const navigate = useNavigate();
   const { orders, updating, statusLists, paymentTypes, message, error } =
     useSelector((s) => s.orders);
+  const { showBrandTimeline } =
+    useSelector((s) => s.brandTimeline);
   const { crmEndpoint } = useSelector((s) => s.user);
   const { handleMove } = useThreadContext();
   const [send, setSend] = useState(false);
@@ -69,11 +70,11 @@ export default function EditOrder({ threadId, id, email }) {
   };
   const handleUpdate = (isSend = false) => {
     setSend(isSend);
-    dispatch(updateOrder({ email, order }));
+    dispatch(updateOrder({ order }));
   };
   useEffect(() => {
     const order = orders.find(
-      (o) => extractEmail(o.real_name ?? o.email) == email && o.id == id,
+      (o) => o.id == id,
     );
     if (!order) {
       navigate("/");
@@ -87,11 +88,11 @@ export default function EditOrder({ threadId, id, email }) {
       order: { ...order },
       userEmail: email,
     });
-    handleMove({ email, threadId, reply: html });
+    handleMove({ email: email, threadId, reply: html });
   };
   useEffect(() => {
     if (message) {
-      dispatch(getOrders({ email }));
+      dispatch(getOrders({ email, brand: showBrandTimeline }));
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {

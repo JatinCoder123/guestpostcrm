@@ -3,12 +3,13 @@ import { excludeEmail } from "../assets/assets";
 import { Titletooltip } from "./TitleTooltip";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
-import { LoadingChase } from "./Loading";
+import { LoadingChase, LoadingSpin } from "./Loading";
 import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
 import { useRef } from "react";
 import {
+  Crown,
   Eye,
   FileIcon,
   FileText,
@@ -46,6 +47,7 @@ const MailerSummaryHeader = () => {
     (state) => state.offers,
   );
   const { deals, loading: dealsLoading } = useSelector((state) => state.deals);
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
 
   const [emailData, setEmailData] = useState({
     orders: [],
@@ -57,20 +59,7 @@ const MailerSummaryHeader = () => {
     dispatch(getSync(type));
   };
   /* ---------------- ORDERS ---------------- */
-  useEffect(() => {
-    if (!mailersSummary) return;
 
-    const order = orders
-      ?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
-      .filter(
-        (d) =>
-          d.order_status !== "wrong" &&
-          d.order_status !== "rejected_nontechnical" &&
-          d.order_status !== "completed",
-      );
-
-    setEmailData((prev) => ({ ...prev, orders: order }));
-  }, [email, orders, mailersSummary]);
   useEffect(() => {
     if (message) {
       toast.success(message);
@@ -84,25 +73,28 @@ const MailerSummaryHeader = () => {
 
   /* ---------------- DEALS ---------------- */
   useEffect(() => {
-    if (!mailersSummary) return;
+    const actualOrders = showBrandTimeline ? orders : orders?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
+    const filtered = actualOrders.filter(
+      (d) =>
+        !["wrong", "rejected_nontechnical", "completed"].includes(
+          d.order_status
+        )
+    );
 
-    const deal = deals
-      ?.filter((d) => excludeEmail(d.real_name ?? d.email) === email)
-      .filter((d) => d.status === "active");
-
+    setEmailData((prev) => ({ ...prev, orders: filtered }));
+  }, [email, orders, showBrandTimeline]);
+  useEffect(() => {
+    const actualDeals = showBrandTimeline ? deals : deals?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
+    const deal = actualDeals?.filter((d) => d.status === "active");
     setEmailData((prev) => ({ ...prev, deals: deal }));
-  }, [email, deals, mailersSummary]);
+  }, [email, deals, showBrandTimeline]);
 
   /* ---------------- OFFERS ---------------- */
   useEffect(() => {
-    if (!mailersSummary) return;
-
-    const offer = offers
-      ?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
-      .filter((d) => d.offer_status === "active");
-
+    const actualOffers = showBrandTimeline ? offers : offers?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
+    const offer = actualOffers?.filter((d) => d.offer_status === "active");
     setEmailData((prev) => ({ ...prev, offers: offer }));
-  }, [email, offers, mailersSummary]);
+  }, [email, offers, showBrandTimeline]);
   /* ---------------- UI ---------------- */
   return (
     <>
@@ -116,56 +108,7 @@ const MailerSummaryHeader = () => {
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
         {/* TOP INFO */}
-        {mailersSummary ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div>
-              <div className="text-xs text-gray-500 uppercase font-semibold">
-                Created At
-              </div>
-              <div className="font-semibold text-gray-900 mt-1">
-                {mailersSummary?.date_entered_formatted || ""}
-              </div>
-              <div className="text-xs text-gray-500">
-                {mailersSummary?.date_entered || ""}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs text-gray-500 uppercase font-semibold">
-                Subject
-              </div>
-              <Titletooltip content={mailersSummary?.subject || "No Subject"}>
-                <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
-                  {mailersSummary?.subject || ""}
-                </div>
-              </Titletooltip>
-            </div>
-
-            <div>
-              <div className="text-xs text-gray-500 uppercase font-semibold">
-                Motive
-              </div>
-              <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
-                <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
-                  {mailersSummary?.correct_motive || ""}
-                </div>
-              </Titletooltip>
-            </div>
-          </div>
-        ) : (
-          <div className=" p-6 bg-gray-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4 mb-2">
-            <p className="text-gray-800 font-semibold">
-              No mail summary available for this email.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
-            >
-              <RefreshCcwIcon className="w-4 h-4" />
-              Refresh
-            </button>
-          </div>
-        )}
+        <MailerSummary mailersSummary={mailersSummary} />
 
         {/* STATS CARDS */}
         <div className="rounded-3xl shadow-sm p-3">
@@ -173,7 +116,6 @@ const MailerSummaryHeader = () => {
             <SummaryCard
               type="offers"
               title="NO OFFERS"
-              subtitle="Click + to add"
               Icon={Gift}
               bg={"bg-green-500"}
               color="green"
@@ -185,20 +127,17 @@ const MailerSummaryHeader = () => {
             <SummaryCard
               type="orders"
               title="NO ORDERS"
-              subtitle="Click + to add"
               Icon={ShoppingCart}
               bg={"bg-cyan-500"}
               color="cyan"
               data={emailData.orders}
               handleSync={() => handleSync("orders")}
               loading={ordersLoading}
-              setData={setEmailData}
             />
 
             <SummaryCard
               type="deals"
               title="NO DEALS"
-              subtitle="Click + to add"
               Icon={Handshake}
               bg={"bg-blue-500"}
               color="blue"
@@ -210,7 +149,6 @@ const MailerSummaryHeader = () => {
             <SummaryCard
               type="invoice"
               title="NO INVOICE"
-              subtitle="Click + to add"
               Icon={FileText}
               bg={"bg-orange-500"}
               color="orange"
@@ -227,21 +165,78 @@ const MailerSummaryHeader = () => {
 
 export default MailerSummaryHeader;
 
+
+
+function MailerSummary({ mailersSummary }) {
+  return (
+    <>
+      {mailersSummary ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">
+              Created At
+            </div>
+            <div className="font-semibold text-gray-900 mt-1">
+              {mailersSummary?.date_entered_formatted || ""}
+            </div>
+            <div className="text-xs text-gray-500">
+              {mailersSummary?.date_entered || ""}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">
+              Subject
+            </div>
+            <Titletooltip content={mailersSummary?.subject || "No Subject"}>
+              <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+                {mailersSummary?.subject || ""}
+              </div>
+            </Titletooltip>
+          </div>
+
+          <div>
+            <div className="text-xs text-gray-500 uppercase font-semibold">
+              Motive
+            </div>
+            <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
+              <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
+                {mailersSummary?.correct_motive || ""}
+              </div>
+            </Titletooltip>
+          </div>
+        </div>
+      ) : (
+        <div className=" p-6 bg-gray-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4 mb-2">
+          <p className="text-gray-800 font-semibold">
+            No mail summary available for this email.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
+          >
+            <RefreshCcwIcon className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
+      )}
+    </>
+  )
+}
 /* ===================== SUMMARY CARD ===================== */
 function SummaryCard({
   type,
   title,
-  subtitle,
   Icon,
   handleSync,
   bg,
   color,
   data,
-  setData,
   loading,
 }) {
   const { setSidebarCollapsed } = useContext(PageContext);
   const { syncType, loading: syncing } = useSelector((state) => state.sync);
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
 
   const { threadId, contactInfo } = useSelector((state) => state.viewEmail);
   const { creating, message, error } = useSelector((state) => state.orders);
@@ -257,7 +252,6 @@ function SummaryCard({
     if (message) {
       toast.success(message);
       dispatch(getOrders({ loading: false }));
-      setData?.((prev) => ({ ...prev, orders: [1] }));
       dispatch(orderAction.clearAllMessages());
     }
 
@@ -265,7 +259,7 @@ function SummaryCard({
       toast.error(error);
       dispatch(orderAction.clearAllErrors());
     }
-  }, [dispatch, creating, message, error, type, setData]);
+  }, [dispatch, creating, message, error]);
 
   useEffect(() => {
     if (type !== "orders") return;
@@ -293,11 +287,11 @@ function SummaryCard({
 
     data?.length > 0
       ? navigateTo(`/${type}/view`, {
-          state: { email, threadId },
-        })
+        state: { email, threadId },
+      })
       : navigateTo(`/${type}/create`, {
-          state: { email, threadId },
-        });
+        state: { email, threadId },
+      });
   };
 
   const colorMap = {
@@ -309,20 +303,19 @@ function SummaryCard({
 
   return (
     <div
-      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${
-        highlight
-          ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
-          : "transition-all duration-300"
-      }`}
+      className={`flex items-center justify-between rounded-2xl border-t-2 border-blue-100 p-3 ${colorMap[color]} ${highlight
+        ? "ring-2 ring-cyan-400/70 shadow-lg shadow-cyan-400/40 scale-[1.02] transition-all duration-500 ease-out"
+        : "transition-all duration-300"
+        }`}
     >
       {(creating && type === "orders") ||
-      loading ||
-      (syncType == type && syncing) ? (
-        <LoadingChase />
+        loading ||
+        (syncType == type && syncing) ? (
+        <LoadingSpin color={color} size={23} stroke="3" />
       ) : (
         <>
           <div className="flex items-center gap-3">
-            {type == "orders" ? (
+            {type == "orders" && data.length == 0 ? (
               <button
                 className="cursor-pointer"
                 onClick={() =>
@@ -343,9 +336,10 @@ function SummaryCard({
               </button>
             ) : (
               <div
-                className={`w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}
+                className={` relative w-10 h-10 rounded-xl ${bg} shadow flex items-center justify-center text-white text-xl`}
               >
                 <Icon />
+                {showBrandTimeline && <Crown className="absolute -top-4 left-2 text-yellow-600 w-5 h-5" />}
               </div>
             )}
 

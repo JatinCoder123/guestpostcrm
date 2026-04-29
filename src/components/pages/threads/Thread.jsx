@@ -21,7 +21,6 @@ const Thread = () => {
   );
   const [checkingThreadId, setCheckingTheadId] = useState(false);
 
-  const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { crmEndpoint, user } = useSelector((s) => s.user);
@@ -40,17 +39,13 @@ const Thread = () => {
       );
       console.log("MATHED THREAD ID", data);
 
-      if (!data?.success) {
+      if (!(data?.success || data.thread_id)) {
         toast.error("Failed to verify thread!");
         return;
       }
       console.log("THREAD", currentThread);
-      // 🔹 Check thread match
-      if (data.thread_id !== currentThread) {
-        toast.error("Thread mismatch! Cannot send email ");
-        return;
-      }
-      console.log("TO AND CC", cc, to);
+
+      console.log("CC", cc,);
       const contentToSend = editorContent;
       const formData = new FormData();
       formData.append("threadId", data.thread_id);
@@ -59,7 +54,6 @@ const Thread = () => {
       formData.append("current_email", user.email);
       formData.append("force_send", forceSend);
       formData.append("cc", cc.join(","));
-      formData.append("to", to.join(","));
       files.forEach((file) => {
         formData.append("attachments[]", file.file);
       });
@@ -121,8 +115,6 @@ const Thread = () => {
     setFiles,
     editorContent,
     setEditorContent,
-    to,
-    setTo,
     cc,
     setCc,
     contentLoading,
