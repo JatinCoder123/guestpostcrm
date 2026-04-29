@@ -74,20 +74,7 @@ export default function GroupReport() {
         </span>
       ),
     },
-    {
-      label: "Stage",
-      accessor: "description",
-      headerClasses: "",
-      icon: BarChart4,
-      classes: "truncate max-w-[300px]",
-      render: (row) => (
-        <div className="flex items-center">
-          <span className="px-3 py-1.5 rounded-full text-sm border flex items-center">
-            {row.description}
-          </span>
-        </div>
-      ),
-    },
+
     {
       label: "User",
       accessor: "user_details",
@@ -133,7 +120,7 @@ export default function GroupReport() {
         <div className="relative">
           <Table
             headerStyle={"bg-teal-600"}
-            layoutStyle={"grid grid-cols-[200px_1fr_1fr_200px_1fr]"}
+            layoutStyle={"grid grid-cols-[1fr_1fr_1fr_1fr]"}
           />
 
           {loading && (
