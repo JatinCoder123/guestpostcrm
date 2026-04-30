@@ -8,6 +8,7 @@ import {
   createLedgerEntry,
   buildLedgerItem,
 } from "../../services/utils";
+import { getLadger } from "./ladger";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -412,7 +413,6 @@ export const updateOrder = ({ order }) => {
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       const crmEndpoint = getState().user.crmEndpoint;
-
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
           domain: crmEndpoint,

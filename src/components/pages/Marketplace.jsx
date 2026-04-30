@@ -29,7 +29,7 @@ import { LoadingChase } from "../Loading";
 export function Marketplace() {
   const dispatch = useDispatch();
   const { handleDateClick } = useContext(PageContext)
-  const { items, error, loading, deleting, message, deleteMarketPlaceId } =
+  const { items, error, loading, message, deleteMarketPlaceId } =
     useSelector((state) => state.marketplace);
   useEffect(() => {
     if (error) {
@@ -123,7 +123,7 @@ export function Marketplace() {
                 <td className="px-6 py-4">
                   <div className="flex gap-2 item-center justify-center">
                     {/* Update Button */}
-                    {deleting && deleteMarketPlaceId === row.id ? (
+                    {loading && deleteMarketPlaceId === row.id ? (
                       <LoadingChase size="20" color="red" />
                     ) : (
                       <button

@@ -1,7 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { showConsole } from "../../assets/assets";
-import {createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
+import { createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
+import { getLadger } from "./ladger";
+import { getContact, viewEmailAction } from "./viewEmail";
 
 const marketplaceSlice = createSlice({
   name: "marketplace",
@@ -11,9 +13,7 @@ const marketplaceSlice = createSlice({
     count: 0,
     error: null,
     deleteMarketPlaceId: null,
-    adding: false,
     message: null,
-    deleting: false
   },
   reducers: {
     getMarketplaceRequest(state) {
@@ -28,19 +28,16 @@ const marketplaceSlice = createSlice({
       state.error = null;
     },
     getMarketplaceFailed(state, action) {
-      state.adding = false;
+      state.loading = false;
       state.error = action.payload;
     },
     addMarketplaceRequest(state) {
-      state.adding = true;
+      state.loading = true;
       state.error = null;
       state.message = null;
     },
     addMarketplaceSuccess(state, action) {
-      const { count, items } = action.payload;
-      state.adding = false;
-      state.items = items;
-      state.count = count;
+      state.loading = false;
       state.message = "Add To MarketPlace";
       state.error = null;
     },
@@ -51,22 +48,19 @@ const marketplaceSlice = createSlice({
 
     },
     deleteMarketplaceRequest(state, action) {
-      state.deleting = true;
+      state.loading = true;
       state.error = null;
       state.message = null;
       state.deleteMarketPlaceId = action.payload
     },
     deleteMarketplaceSuccess(state, action) {
-      const { count, items } = action.payload;
-      state.deleting = false;
-      state.items = items;
-      state.count = count;
+      state.loading = false;
       state.deleteMarketPlaceId = null;
       state.message = "Remove From MarketPlace";
       state.error = null;
     },
     deleteMarketplaceFailed(state, action) {
-      state.deleting = false;
+      state.loading = false;
       state.error = action.payload;
       state.deleteMarketPlaceId = null
       state.message = null
@@ -125,27 +119,20 @@ export const addMarketPlace = (email, brand = false) => {
       },
       );
       showConsole && console.log("MARKETPLACE:", data);
-      const newItem = {
-        id: data.id,
-        date_entered: '0 min ago',
-        name: email,
-        description: domain
-      }
-      dispatch(
-        marketplaceSlice.actions.addMarketplaceSuccess({
-          items: [newItem, ...getState().marketplace.items],
-          count: getState().marketplace.count + 1,
-        })
-      );
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Add To MarketPlace")
+      dispatch(marketplaceSlice.actions.addMarketplaceSuccess());
+      dispatch(getMarketplace())
+      dispatch(viewEmailAction.updateContactInfo({ key: "bulk" }))
+      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Add To MarketPlace")
       await createLedgerEntry({
         domain: getState().user.crmEndpoint.split("?")[0],
-        email: getState().ladger.email,
+        email: email,
         group: "Activity",
+        okHandler: () => dispatch(getLadger({ email, brand: getState().brandTimeline.showBrandTimeline })),
+
         items: [
           buildLedgerItem({
             status: "Marketplace-Added",
-            detail: `email: {${getState().ladger.email}}`,
+            detail: `email: {${email}}`,
             ladgerState: getState().ladger,
             user: getState().crmUser.currentUser,
           }),
@@ -161,7 +148,7 @@ export const addMarketPlace = (email, brand = false) => {
     }
   };
 };
-export const deleteMarketPlace = (id) => {
+export const deleteMarketPlace = (id, action = false) => {
   return async (dispatch, getState) => {
     dispatch(marketplaceSlice.actions.deleteMarketplaceRequest(id));
     try {
@@ -171,18 +158,22 @@ export const deleteMarketPlace = (id) => {
       if (!data.success) {
         throw new Error(data.message);
       }
-      const updatedMarketPlace = getState().marketplace.items.filter((item) => item.id !== id);
+      dispatch(marketplaceSlice.actions.deleteMarketplaceSuccess());
+      dispatch(getMarketplace())
+      if (action) {
+        dispatch(viewEmailAction.updateContactInfo({ key: "bulk" }))
 
-      dispatch(
-        marketplaceSlice.actions.deleteMarketplaceSuccess({
-          items: updatedMarketPlace,
-          count: getState().marketplace.count - 1,
-        })
-      );
+      }
+      else {
+        dispatch(getContact(getState().viewEmail?.contactInfo?.email1, true, false))
+
+      }
+
       updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Remove From MarketPlace")
       await createLedgerEntry({
         domain: getState().user.crmEndpoint.split("?")[0],
         email: getState().ladger.email,
+        okHandler: () => dispatch(getLadger({ email: getState().viewEmail?.contactInfo?.email1, brand: getState().brandTimeline.showBrandTimeline })),
         group: "Activity",
         items: [
           buildLedgerItem({

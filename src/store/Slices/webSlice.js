@@ -45,9 +45,13 @@ const websiteSlice = createSlice({
 export const getAllWebsites = () => {
     return async (dispatch, getState) => {
         dispatch(websiteSlice.actions.getAllWebsitesRequest());
-        const domain = getState().user.crmEndpoint.split("?")[0];
         try {
-            const { data } = await axios.get(`${domain}?entryPoint=fetch_gpc&type=get_website`);
+            const { data } = await axios.get(`${getState().user.crmEndpoint}&type=get_website`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
+                },
+            });
             showConsole && console.log(`website data`, data);
             dispatch(websiteSlice.actions.getAllWebsitesSuccess({ websites: data.data ?? websiteLists }));
             dispatch(websiteSlice.actions.clearAllErrors());
