@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { extractEmail, showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const unrepliedSlice = createSlice({
   name: "unreplied",
@@ -83,12 +83,7 @@ export const getUnrepliedEmail = ({ page = 1, loading = true, type = null }) => 
     dispatch(unrepliedSlice.actions.getEmailRequest({ type, loading }));
 
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=${type ?? getState().unreplied.emailType}&filter=all&page=${page}`
-      );
-
-
+      const data = await fetchGpc({ params: { type: type ?? getState().unreplied.emailType, filter: "all", page } });
       showConsole && console.log(`Unreplied emails`, data);
       dispatch(
         unrepliedSlice.actions.getEmailSucess({
@@ -112,12 +107,8 @@ export const getEmailsCount = ({ loading = true }) => {
   return async (dispatch, getState) => {
     dispatch(unrepliedSlice.actions.getEmailsCountRequest({ loading }));
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=email_stats${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}`
-      );
-
-
+      const timeline = getState().ladger.timeline;
+      const data = await fetchGpc({ params: { type: "email_stats", ...(timeline && timeline !== "null" ? { filter: timeline } : {}) } });
       showConsole && console.log(`EMAILS COUNT`, data);
       dispatch(
         unrepliedSlice.actions.getEmailsCountSucess({ emailsCount: data?.data, totalCount: data?.total_contacts })

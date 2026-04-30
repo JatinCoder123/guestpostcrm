@@ -6,7 +6,7 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
-import axios from "axios";
+import { fetchGpc } from "../../../services/api";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -34,9 +34,7 @@ const Thread = () => {
   const handleSendClick = async (forceSend = 1) => {
     try {
       setCheckingTheadId(true);
-      const { data } = await axios.get(
-        `${crmEndpoint}&type=re_check_thread&email=${currentEmail}`,
-      );
+      const data = await fetchGpc({ params: { type: 're_check_thread', email: currentEmail } });
       console.log("MATHED THREAD ID", data);
 
       if (!(data?.success || data.thread_id)) {

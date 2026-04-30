@@ -21,7 +21,6 @@ import {
   ShoppingCart,
   TextIcon,
 } from "lucide-react";
-import axios from "axios";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
 

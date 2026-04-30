@@ -1,4 +1,3 @@
-import axios from "axios";
 import { showConsole } from "../assets/assets";
 import { fetchGpc } from "./api";
 

@@ -4,23 +4,20 @@ export function setCrmEndpoint(endpoint) {
     CRMENDPOINT = endpoint
     return;
 }
-/**
- * Create Axios instance (you can change baseURL anytime)
- */
+
 const apiClient = axios.create({
     baseURL: "", // optional: set your base URL here
     timeout: 15000,
 });
 
-/**
- * Generic API function (super flexible)
- */
+
 export const apiRequest = async ({
     endpoint,
     method = "GET",
     body = null,
     headers = {},
     params = {},
+    withCredentials = false,
 }) => {
     try {
         const response = await apiClient({
@@ -32,6 +29,7 @@ export const apiRequest = async ({
                 ...headers,
             },
             params,
+            withCredentials
         });
 
         return response.data;
@@ -53,25 +51,17 @@ export const fetchGpc = async ({
     params = {},
     headers = {},
 }) => {
-    try {
-        const response = await apiClient({
-            url: CRMENDPOINT,
-            method,
-            data: body,
-            params,
-            headers: {
-                "Content-Type": "application/json",
-                "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X", // 🔥 replace with env variable
-                ...headers,
-            },
-        });
+    const response = await apiClient({
+        url: CRMENDPOINT,
+        method,
+        data: body,
+        params,
+        headers: {
+            "Content-Type": "application/json",
+            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X", // 🔥 replace with env variable
+            ...headers,
+        },
+    });
 
-        return response.data;
-    } catch (error) {
-        console.error("GPC API Error:", error?.response || error.message);
-
-        throw error?.response?.data || {
-            message: "GPC request failed",
-        };
-    }
+    return response.data;
 };

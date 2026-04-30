@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { apiRequest } from "../../services/api";
 
 const contactSlice = createSlice({
     name: "contacts",
@@ -45,11 +45,13 @@ export const getAllContacts = ({ page = 1 }) => {
         dispatch(contactSlice.actions.getAllContactsRequest());
         const domain = getState().user.crmEndpoint.split("?")[0];
         try {
-            const { data } = await axios.post(`${domain}?entryPoint=get_post_all&action_type=get_data&page=${page}&page_size=50`, { module: "Contacts" }, {
+            const data = await apiRequest({
+                endpoint: `${domain}?entryPoint=get_post_all`, params: { action_type: 'get_data', page, page_size: 50 }, body: { module: "Contacts" },
                 headers: {
                     "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
                     "Content-Type": "aplication/json",
                 },
+                method: "POST"
             },
             );
             showConsole && console.log(`CONTACTS ALL `, data);

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { showConsole } from "../../assets/assets";
+import { getDomain, showConsole } from "../../assets/assets";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const backlinksSlice = createSlice({
   name: "backlinks",
@@ -116,11 +116,11 @@ export const getBacklinks = ({ page = 1, loading = true }) => {
     dispatch(backlinksSlice.actions.getBacklinksRequest());
 
     try {
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=get_seo_backlinks&page=${page}&page_size=50`,
-        {
+      const data = await fetchGpc({
+        params: { type: "get_seo_backlinks", page, page_size: 50 }, method: "POST", body: {
           module: "outr_seo_backlinks",
         }
+      }
       );
 
       showConsole && console.log("Backlinks Data:", data);
@@ -206,15 +206,13 @@ export const updateBacklink = (formData) => {
         },
       };
 
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}/index.php?entryPoint=get_post_all&action_type=post_data`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": CREATE_DEAL_API_KEY,
-          },
-        }
+      const data = await apiRequest({
+        endpoint: `${getState().user.crmEndpoint.split('?')[0]}?entryPoint=get_post_all`, params: { action_type: "post_data" }, body: payload, headers: {
+          "Content-Type": "application/json",
+          "x-api-key": CREATE_DEAL_API_KEY,
+        },
+        method: "POST"
+      }
       );
 
       showConsole && console.log("Update Response:", data);

@@ -15,7 +15,8 @@ import { PageContext } from "../../../context/pageContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
-import axios from "axios";
+import { fetchGpc } from "../../../services/api";
+import { bouncy } from "ldrs";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -82,11 +83,7 @@ export default function TemplatesPage() {
     const fetchStages = async () => {
       setStagesLoading(true);
       try {
-        const { data } = await axios.post(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`,
-          { stages: 1 },
-        );
-
+        const data = await fetchGpc({ method: "POST", params: { type: 'templates' }, body: { stages: 1 } });
         console.log(data);
 
         if (data && typeof data === "object") {
@@ -569,11 +566,10 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${
-                  isCreating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700"
-                }`}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${isCreating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+                  }`}
               >
                 {isCreating ? (
                   <>
@@ -649,11 +645,10 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                 >
                   {isSaving ? (
                     <>
@@ -830,11 +825,10 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                stageType === key
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
             >
               {label}
             </button>

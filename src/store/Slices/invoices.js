@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const invoicesSlice = createSlice({
   name: "invoices",
@@ -85,19 +85,9 @@ export const getInvoices = ({ email = null, page = 1, loading = true }) => {
   return async (dispatch, getState) => {
     if (loading) dispatch(invoicesSlice.actions.getInvoicesRequest());
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_invoices${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email ?? getState().ladger.email}&page=${page}&page_size=50`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_invoices${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
-        );
-      }
-      const data = response.data;
+      const timeline = getState().ladger.timeline
+      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), ...(email ? { email } : {}), page, page_size: "50" }
+      const data = await fetchGpc({ params: { type: "get_invoices", ...params } });
       showConsole && console.log(`invoices`, data);
       dispatch(
         invoicesSlice.actions.getInvoicesSucess({
@@ -165,10 +155,7 @@ export const createInvoice = (formData) => {
       // ✅ USE PROXY URL
       const apiUrl = `/api/index.php?entryPoint=get_invoice&${params.toString()}`;
 
-      const response = await axios.get(apiUrl);
-
-      const data = response.data;
-
+      const data = await apiRequest({ endpoint: apiUrl });
       if (typeof data === "string" && data.includes("window.open")) {
         const urlMatch = data.match(/window\.open\('([^']+)'/);
         if (urlMatch && urlMatch[1]) {
@@ -202,20 +189,20 @@ export const updateInvoice = (invoice) => {
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-        {
+      const data = await apiRequest({
+        endpoint: `${domain}?entryPoint=get_post_all`, params: { action_type: 'post_data' }, body: {
           parent_bean: {
             module: "outr_paypal_invoice_links",
             ...invoice,
           },
         },
-        {
-          headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
-          },
-        }
+        headers: {
+          "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+          "Content-Type": "aplication/json",
+        },
+        method: "POST"
+      }
+
       );
       showConsole && console.log(`Update Invoice`, data);
       const updatedInvoices = getState().invoices.invoices.map((i) => {

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const reportSlice = createSlice({
   name: "report",
@@ -57,16 +57,7 @@ export const getGroupReport = ({
     dispatch(reportSlice.actions.getGroupReportRequest(loading));
 
     try {
-      let url = `${getState().user.crmEndpoint}&type=report&group=${grp}&page=${page}&page_size=50`;
-      console.log("Filter params received:", { from, from_time, to, to_time });
-
-      // Add date/time filters if provided
-      if (from && from_time && to && to_time) {
-        url += `&from=${from}&from_time=${from_time}:00&to=${to}&to_time=${to_time}:59`;
-      }
-      console.log("Final URL:", url);
-
-      const { data } = await axios.get(url);
+      const data = await fetchGpc({ params: { type: "report", group: grp, page, page_size: '50', ...((from && from_time && to && to_time) ? { from, from_time, to, to_time } : {}) } });
       showConsole && console.log(`GROUP REPORT`, data);
       dispatch(
         reportSlice.actions.getGroupReportSucess({

@@ -7,9 +7,9 @@ import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditUser from "./EditUser";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { getAllUsers } from "../../../store/Slices/crmUser";
+import { fetchGpc } from "../../../services/api";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);
@@ -88,8 +88,7 @@ export function UsersPage() {
     setDeletingId(item.id);
 
     try {
-      const { data } = await axios.post(
-        `${crmEndpoint}&type=delete_record&module_name=outr_gpc_users&record_id=${item.id}`,
+      const data = await fetchGpc({ params: { type: 'delete_record', module_name: 'outr_gpc_users', record_id: item.id } }
       );
 
       if (data.success) {

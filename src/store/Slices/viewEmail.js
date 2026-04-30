@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { getDomain, showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
@@ -175,12 +174,8 @@ export const getViewEmail = ({ email = null, force = false }) => {
           );
         }
       }
-
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${trimmedEmail}`,
-      );
+      const data = await fetchGpc({ method: "GET", params: { type: "view_email", email: trimmedEmail } });
       console.log("VIEW EMAIL", data);
-
       const freshData = {
         emails: data.emails,
         threadId: data.thread_id,
@@ -215,9 +210,8 @@ export const getViewEmail = ({ email = null, force = false }) => {
         [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
           if (prefetchEmail && !getCache("viewMails", prefetchEmail.trim())) {
             try {
-              const { data } = await axios.get(
-                `${getState().user.crmEndpoint}&type=view_email&email=${prefetchEmail.trim()}`,
-              );
+              const data = await fetchGpc({ method: "GET", params: { type: "view_email", email: prefetchEmail.trim() } });
+
 
               setCache("viewMails", prefetchEmail.trim(), {
                 emails: data.emails,
@@ -257,9 +251,8 @@ export const getContact = (email = null, force = false, loading = true) => {
         }
       }
 
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=get_contact&email=${trimmedEmail}`,
-      );
+      const data = await fetchGpc({ method: "GET", params: { type: "get_contact", email: trimmedEmail } });
+
       console.log("CONTACT", data);
 
       const freshData = {
@@ -293,10 +286,7 @@ export const getContact = (email = null, force = false, loading = true) => {
         [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
           if (prefetchEmail && !getCache("contacts", prefetchEmail.trim())) {
             try {
-              const { data } = await axios.get(
-                `${getState().user.crmEndpoint}&type=get_contact&email=${prefetchEmail.trim()}`,
-              );
-
+              const data = await fetchGpc({ method: "GET", params: { type: "get_contact", email: prefetchEmail.trim() } });
               setCache("contacts", prefetchEmail.trim(), {
                 stage: data.stage,
                 status: data.status,

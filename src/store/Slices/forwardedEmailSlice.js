@@ -1,8 +1,8 @@
-import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, current } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
 import { getLadger } from "./ladger";
+import { fetchGpc } from "../../services/api";
 
 const forwardedSlice = createSlice({
   name: "forwarded",
@@ -63,12 +63,7 @@ export const getForwardedEmails = ({ loading = true }) => {
     }
 
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=forwarded&current_email=${getState().user.user.email} `
-      );
-
-
+      const data = await fetchGpc({ params: { type: 'forwarded', current_email: getState().user.user.email } });
       showConsole && console.log(`forwarded emails`, data);
       dispatch(
         forwardedSlice.actions.getEmailSucess({
@@ -95,14 +90,16 @@ export const forwardEmail = (email, id) => {
 
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const response = await axios.post(
-        `${domain}?entryPoint=fetch_gpc&type=assigned_task`, {
-        "client_email": email,
-        "current_email": getState().user.user.email,
-        "assigned_to": id,
+      const data = await fetchGpc({
+        params: { type: 'assigned_task' }, body: {
+          "client_email": email,
+          "current_email": getState().user.user.email,
+          "assigned_to": id,
+        },
+        method: "POST"
       }
       );
-      showConsole && console.log("Assiging  ", response.data);
+      showConsole && console.log("Assiging  ", data);
       dispatch(
         forwardedSlice.actions.forwardEmailSucess(
           "Email Forwarded Successfully"

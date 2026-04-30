@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import ladgerReducer from "./Slices/ladger.js";
 import unrepliedReducer from "./Slices/unrepliedEmails.js";
 import favReducer from "./Slices/favEmailSlice.js";
-import bulkReducer from "./Slices/markBulkSlice.js";
 import forwarededReducer from "./Slices/forwardedEmailSlice.js";
 import markTagReducer from "./Slices/markTagSlice.js";
 import dealsReducer from "./Slices/deals.js";
@@ -54,7 +53,6 @@ export const store = configureStore({
     aiReply: aiReplyReducer,
     reminders: orderRemReducer,
     user: userReducer,
-    bulk: bulkReducer,
     markTag: markTagReducer,
     avatar: avatarReducer,
     defaulter: defaulterReducer,

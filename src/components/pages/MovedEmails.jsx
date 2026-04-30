@@ -1,34 +1,24 @@
 import {
   Calendar,
   User2,
-  Gift,
-  Pen,
   Globe,
   BadgeDollarSign,
   ChartNoAxesColumn,
   Clapperboard,
-  Trash,
-  ShieldCheckIcon,
-  HandCoins,
-  ShieldAlert,
   ArrowBigRightDashIcon,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
 import { getLadger, ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { getmovedEmails } from "../../store/Slices/movedEmails.js";
-import { LoadingChase } from "../Loading.jsx";
 import { toast } from "react-toastify";
-import axios from "axios";
+import { fetchGpc } from "../../services/api.js";
 export function MovedPage() {
   const { count, emails, pageIndex } = useSelector((state) => state.moved);
-  const { crmEndpoint } = useSelector((state) => state.user);
-
   const [restoringId, setRestoringId] = useState(null);
   const { handleDateClick } = useContext(PageContext);
   const { handleMove } = useThreadContext();
@@ -37,11 +27,10 @@ export function MovedPage() {
   const handleRestore = async (emailItem) => {
     try {
       setRestoringId(emailItem.thread_id);
-      const res = await axios.get(
-        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}&subject=${emailItem.subject}`,
+      const data = await fetchGpc({ params: { type: "restore_email", email: emailItem.email, label_id: emailItem.label_name, thread_id: emailItem.thread_id, subject: emailItem.subject } }
       );
-      console.log("res", res);
-      if (res?.data) {
+      console.log("res", data);
+      if (data) {
         toast.success("Email restored successfully ✅");
 
         // 🔥 Refresh list

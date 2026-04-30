@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, getDomain, showConsole } from "../../assets/assets";
 import { applyHashtag } from "../../services/utils";
@@ -9,6 +8,7 @@ import {
   createLedgerEntry,
 } from "../../services/utils";
 import { getLadger } from "./ladger";
+import { fetchGpc } from "../../services/api";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -123,18 +123,11 @@ export const getDeals = ({ email = null, page = 1, loading = true, brand = false
 
     try {
       let res;
-      if (brand) {
-        res = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=brandTimeline${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}&case=deal`,
-        );
-      } else {
-        res = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_deals${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
-        );
-      }
-      const data = brand ? res.data.data.deal : res.data
+      const timeline = getState().ladger.timeline
+      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email, page, page_size: "50" }
+      brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "deal", ...params } })
+        : res = await fetchGpc({ params: { type: "get_deals", ...params } });
+      const data = brand ? res.data.deal : res
       showConsole && console.log(`${brand ? "Brand" : ""} Deals`, data);
       dispatch(
         dealsSlice.actions.getDealsSucess({
@@ -365,9 +358,7 @@ export const deleteDeal = (deal, id) => {
     };
     dispatch(dealsSlice.actions.deleteDealRequest({ id }));
     try {
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`,
-      );
+      const data = await fetchGpc({ params: { type: 'delete_record', module_name: 'outr_deal_fetch', record_id: id }, method: "POST" })
       showConsole && console.log(`Delete Deal`, data);
       if (!data.success) {
         throw new Error(data.message);

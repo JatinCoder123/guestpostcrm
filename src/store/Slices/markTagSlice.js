@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
+import { apiRequest } from "../../services/api";
 
 const initialState = {
   loading: false,
@@ -41,8 +41,7 @@ export const getTags = () => async (dispatch, getState) => {
   try {
     dispatch(getTagsRequest());
 
-    const { data } = await axios.get(
-      `${getState().user.crmEndpoint.split("?")[0]}?entryPoint=add_tag&get_tag=1`
+    const data = await apiRequest({ endpoint: `${getState().user.crmEndpoint.split("?")[0]}?entryPoint=add_tag`, params: { get_tag: 1 } }
     );
 
     // API gives: { success, fields: [...] }
@@ -59,12 +58,10 @@ export const applyTag = (selectedTag) => {
 
       const domain = getState().user.crmEndpoint.split("?")[0];
 
-      const response = await axios.get(
-        `${domain}?entryPoint=contactAction&email=${getState().ladger.email
-        }&field=${selectedTag}`
-      );
-
-      const data = response.data;
+      const data = await apiRequest({
+        endpoint: `${domain}?entryPoint=contactAction`, params: { email: getState().viewEmail.contactInfo?.email1, field: selectedTag }
+      }
+      )
 
       if (!data.success) {
         throw new Error("Tag apply failed");

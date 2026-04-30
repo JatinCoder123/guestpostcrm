@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { fetchGpc } from "../../services/api";
 const brandTimelineSlice = createSlice({
     name: "brandTimeline",
     initialState: {
@@ -48,7 +48,7 @@ export const getBrandTimeline = ({ email = null, loading = true, }) => {
             dispatch(brandTimelineSlice.actions.getBTRequest());
         }
         try {
-            const { data: { data } } = await axios.get(`${getState().user.crmEndpoint}&type=brandTimeline&email=${email}`);
+            const { data } = await fetchGpc({ params: { type: 'brandTimeline', email } });
             console.log("BRAND TIMELINE", data)
             const freshData = {
                 account: data.account,
