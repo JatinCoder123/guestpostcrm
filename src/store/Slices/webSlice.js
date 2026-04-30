@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 export const websiteLists = [
 
     "https://www.outrightcrm.com/",
@@ -43,22 +43,15 @@ const websiteSlice = createSlice({
 });
 
 export const getAllWebsites = () => {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         dispatch(websiteSlice.actions.getAllWebsitesRequest());
         try {
-            const { data } = await axios.get(`${getState().user.crmEndpoint}&type=get_website`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
-                },
-            });
+            const data = await fetchGpc({ method: "GET", params: { type: "get_website" } })
             showConsole && console.log(`website data`, data);
             dispatch(websiteSlice.actions.getAllWebsitesSuccess({ websites: data.data ?? websiteLists }));
             dispatch(websiteSlice.actions.clearAllErrors());
         } catch (error) {
-            dispatch(
-                websiteSlice.actions.getAllWebsitesFailed("Fetching All Website Record Failed")
-            );
+            dispatch(websiteSlice.actions.getAllWebsitesFailed("Fetching All Website Record Failed"));
         }
     };
 };

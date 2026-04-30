@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { AUTH_URL } from "../constants";
 import { showConsole } from "../../assets/assets";
+import { setCrmEndpoint } from "../../services/api";
 
 const userSlice = createSlice({
   name: "user",
@@ -92,7 +93,7 @@ export const getUser = () => {
           id: data.id,
         })
       );
-
+      setCrmEndpoint(data.crmEndpoint)
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       showConsole && console.log(error);
