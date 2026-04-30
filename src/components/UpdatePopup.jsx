@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 
 export default function UpdatePopup({
   open,
@@ -12,19 +13,39 @@ export default function UpdatePopup({
   onClose,
 }) {
   const [formData, setFormData] = useState({});
+
   useEffect(() => {
     const initial = {};
     fields.forEach((f) => {
       initial[f.name] = f.value ?? "";
     });
     setFormData(initial);
-  }, []);
+  }, []); // ✅ fix: add dependency
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * ✅ Validation Function
+   */
+  const validateForm = () => {
+    for (let field of fields) {
+      if (field.required) {
+        const value = formData[field.name];
+
+        if (!value || value.toString().trim() === "") {
+          toast.error(`${field.label || field.name} is required`);
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = () => {
+    if (!validateForm()) return;
+
     onUpdate(formData);
   };
 
@@ -61,15 +82,19 @@ export default function UpdatePopup({
                 <div key={field.name}>
                   <label className="block text-xs text-gray-600 mb-1">
                     {field.label}
+                    {field.required && (
+                      <span className="text-red-500 ml-1">*</span>
+                    )}
                   </label>
 
-                  {/* TEXTAREA */}
                   {field.type === "textarea" ? (
                     <textarea
                       disabled={field.disabled || loading}
                       value={formData[field.name]}
                       placeholder={field.placeholder}
-                      onChange={(e) => handleChange(field.name, e.target.value)}
+                      onChange={(e) =>
+                        handleChange(field.name, e.target.value)
+                      }
                       className="w-full rounded-xl border px-3 py-2"
                       rows={4}
                     />
@@ -77,7 +102,9 @@ export default function UpdatePopup({
                     <select
                       disabled={field.disabled || loading}
                       value={formData[field.name]}
-                      onChange={(e) => handleChange(field.name, e.target.value)}
+                      onChange={(e) =>
+                        handleChange(field.name, e.target.value)
+                      }
                       className="w-full rounded-xl border px-3 py-2"
                     >
                       {field.options?.map((opt) => (
@@ -92,7 +119,9 @@ export default function UpdatePopup({
                       disabled={field.disabled || loading}
                       value={formData[field.name]}
                       placeholder={field.placeholder}
-                      onChange={(e) => handleChange(field.name, e.target.value)}
+                      onChange={(e) =>
+                        handleChange(field.name, e.target.value)
+                      }
                       className="w-full rounded-xl border px-3 py-2"
                     />
                   )}
@@ -113,7 +142,7 @@ export default function UpdatePopup({
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className={`px-4 py-2  rounded-lg text-white ${loading
+                className={`px-4 py-2 rounded-lg text-white ${loading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-green-600 hover:bg-green-700 cursor-pointer"
                   }`}
