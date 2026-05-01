@@ -1,7 +1,16 @@
 import { useState, useCallback } from "react";
+import { updateSeoLink } from "../store/Slices/orders";
+import { useDispatch } from "react-redux";
 
-export default function GPCContentPopup({ data, onClose, website }) {
-  const sections = data?.data?.humanizer_response?.sections || DEMO_SECTIONS;
+export default function GPCContentPopup({
+  data,
+  onClose,
+  website,
+  orderId,
+  linkId,
+  link,
+}) {
+  const sections = data?.data?.humanizer_response?.sections || [];
   const aiScore = data?.data?.ai_score ?? 34;
   const humanizedScore = data?.data?.human_score.toFixed(2) ?? 66;
 
@@ -13,6 +22,7 @@ export default function GPCContentPopup({ data, onClose, website }) {
   const [humanizingAll, setHumanizingAll] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [copied, setCopied] = useState(false);
+  const dispatch = useDispatch();
   // Dynamic publishing domain based on passed website
   const publishDomain = website
     ? website.replace(/^https?:\/\//, "").replace(/\/$/, "")
@@ -112,6 +122,10 @@ export default function GPCContentPopup({ data, onClose, website }) {
       if (result.success) {
         setPublishedUrl(result.url);
         setIsDirty(false);
+
+        dispatch(
+          updateSeoLink(orderId, { ...link, assigned_user_link: result.url }),
+        );
       } else setPublishError("Publishing failed. Please try again.");
     } catch (err) {
       setPublishError("Network error: " + err.message);

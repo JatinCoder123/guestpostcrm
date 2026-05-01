@@ -177,7 +177,8 @@ export const OrderView = ({ data, setSend }) => {
             {data.seo_backlinks.length > 0 ? (
               <SeoBacklinkList
                 seo_backlink={data.seo_backlinks}
-                orderId={data.id}
+                id={data.id}
+                orderId={data.order_id}
               />
             ) : (
               <div className="flex items-center justify-center h-24">
@@ -242,7 +243,7 @@ function ProcessingLoader() {
 }
 function OrderHeader({ data, updateStatus, onCompleteHandler }) {
   const [showModel, setShowModel] = useState(null);
-  const { showBrandTimeline } = useSelector(state => state.brandTimeline)
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   return (
     <>
       {showModel && (
@@ -260,15 +261,17 @@ function OrderHeader({ data, updateStatus, onCompleteHandler }) {
           <div className="relative rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1">
             <div className="relative z-10 flex flex-col items-center justify-center gap-3">
               {/* Order Label */}
-              {showBrandTimeline && <div className=" flex items-center gap-4 ">
-                <span className="text-md font-bold text-slate-700  ">
-                  <Mail />
-                </span>
+              {showBrandTimeline && (
+                <div className=" flex items-center gap-4 ">
+                  <span className="text-md font-bold text-slate-700  ">
+                    <Mail />
+                  </span>
 
-                <h2 className="text-lg  font-semibold">
-                  {extractEmail(data.real_name ?? data.email)}
-                </h2>
-              </div>}
+                  <h2 className="text-lg  font-semibold">
+                    {extractEmail(data.real_name ?? data.email)}
+                  </h2>
+                </div>
+              )}
 
               <div className=" flex items-center gap-4">
                 <span className="text-sm font-bold text-slate-700 uppercase ">

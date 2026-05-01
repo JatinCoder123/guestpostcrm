@@ -188,29 +188,48 @@ const ordersSlice = createSlice({
     },
     setOrders(state, action) {
       const { data } = action.payload;
-      state.count = data?.length ?? 0
-      state.orders = data ?? []
-    }
+      state.count = data?.length ?? 0;
+      state.orders = data ?? [];
+    },
   },
 });
 
-export const getOrders = ({ email = null, page = 1, loading = true, brand = false }) => {
+export const getOrders = ({
+  email = null,
+  page = 1,
+  loading = true,
+  brand = false,
+}) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
       let res;
       if (brand) {
         res = await axios.get(
-          `${getState().user.crmEndpoint
+          `${
+            getState().user.crmEndpoint
           }&type=brandTimeline${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}&case=order`,
+          {
+            headers: {
+              "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
+              "Content-Type": "application/json",
+            },
+          },
         );
       } else {
         res = await axios.get(
-          `${getState().user.crmEndpoint
+          `${
+            getState().user.crmEndpoint
           }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
+          {
+            headers: {
+              "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
+              "Content-Type": "application/json",
+            },
+          },
         );
       }
-      const data = brand ? res.data.data.order : res.data
+      const data = brand ? res.data.data.order : res.data;
       showConsole && console.log(`${brand ? "brand" : ""} Orders `, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({
@@ -249,6 +268,12 @@ export const createOrder = () => {
       let response;
       response = await axios.get(
         `${domain}?entryPoint=manual_order&email=${getState().ladger.email}&assigned_user_id=${getState().crmUser.currentUser.id}`,
+        {
+          headers: {
+            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
+            "Content-Type": "application/json",
+          },
+        },
       );
       const data = response.data;
       showConsole && console.log(`Orders created`, data);
@@ -297,25 +322,25 @@ export const createOrder2 = ({ email, order, threadId }) => {
       let orders =
         order.order_type == "GUEST POST"
           ? order.seo_backlinks.map((link) => {
-            return {
-              type: "Guest Post",
-              site: link.website,
-              content_doc: link.gp_doc_url_c,
-            };
-          })
+              return {
+                type: "Guest Post",
+                site: link.website,
+                content_doc: link.gp_doc_url_c,
+              };
+            })
           : order.seo_backlinks.map((link) => {
-            return {
-              type: "Link Insertion",
-              site: link.website,
-              post_url: link.website,
-              their_link: [
-                {
-                  url: link.backlink_url,
-                  anchor_text: link.anchor_text_c,
-                },
-              ],
-            };
-          });
+              return {
+                type: "Link Insertion",
+                site: link.website,
+                post_url: link.website,
+                their_link: [
+                  {
+                    url: link.backlink_url,
+                    anchor_text: link.anchor_text_c,
+                  },
+                ],
+              };
+            });
       console.log("ORDERS", orders);
       const res = await axios.post(
         `${domain}?entryPoint=fetch_gpc&type=manual_order`,
@@ -375,6 +400,12 @@ export const createOrder3 = (email, orders = [], send) => {
         orders.map(async (order) => {
           res = await axios.get(
             `${domain}?entryPoint=manual_order&email=${email}&message_id=${order.message_id}&website=${order.website}&amount=${order.amount}`,
+            {
+              headers: {
+                "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
+                "Content-Type": "application/json",
+              },
+            },
           );
           showConsole && console.log(`Create Order Manully`, res.data);
         });
@@ -405,7 +436,7 @@ export const createOrder3 = (email, orders = [], send) => {
 export const updateOrder = ({ order }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
-    const email = extractEmail(order.real_name ?? order.email)
+    const email = extractEmail(order.real_name ?? order.email);
     showConsole && console.log("Order To Be Update", order);
     showConsole && console.log("Update Order Email", email);
 
@@ -426,6 +457,12 @@ export const updateOrder = ({ order }) => {
         {
           record_id: order.id,
           notes: order.note,
+        },
+        {
+          headers: {
+            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
+            "Content-Type": "application/json",
+          },
         },
       );
       console.log("NOTE RES", noteRes);
@@ -571,6 +608,12 @@ export const deleteLink = (orderId, linkId) => {
       };
       const { data } = await axios.post(
         `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_seo_backlinks&record_id=${linkId}`,
+        {
+          headers: {
+            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
+            "Content-Type": "application/json",
+          },
+        },
       );
       showConsole && console.log(`Delete Order Link`, data);
       if (!data.success) {
