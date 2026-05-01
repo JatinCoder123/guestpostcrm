@@ -10,6 +10,7 @@ const contactSlice = createSlice({
         count: 0,
         contacts: [],
         error: null,
+        summary: {},
         pageIndex: 1,
         pageCount: 1,
         adding: false,
@@ -22,11 +23,16 @@ const contactSlice = createSlice({
             state.error = null;
         },
         getAllContactsSucess(state, action) {
-            const { count, pageCount, pageIndex, contacts } = action.payload;
+            const { count, pageCount, pageIndex, contacts, summary } = action.payload;
             state.loading = false;
             state.count = count;
-            state.contacts = contacts;
+            if (pageIndex === 1) {
+                state.contacts = contacts;
+            } else {
+                state.contacts = [...state.contacts, ...contacts];
+            }
             state.pageCount = pageCount;
+            state.summary = summary;
             state.pageIndex = pageIndex;
             state.error = null;
         },
@@ -63,20 +69,14 @@ export const getAllContacts = ({ page = 1 }) => {
         dispatch(contactSlice.actions.getAllContactsRequest());
         const domain = getState().user.crmEndpoint.split("?")[0];
         try {
-            const data = await apiRequest({
-                endpoint: `${domain}?entryPoint=get_post_all`, params: { action_type: 'get_data', page, page_size: 50 }, body: { module: "Contacts" },
-                headers: {
-                    "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-                    "Content-Type": "aplication/json",
-                },
-                method: "POST"
-            },
-            );
+            const data = await fetchGpc({ params: { type: 'contacts', page, page_size: 20 } })
             showConsole && console.log(`CONTACTS ALL `, data);
             dispatch(contactSlice.actions.getAllContactsSucess({
-                count: data?.length ?? 0,
-                contacts: data ?? [],
-
+                count: data.data_count ?? 0,
+                contacts: data.data ?? [],
+                pageCount: data.total_pages ?? 1,
+                pageIndex: data.current_page,
+                summary: data.summary
             }));
             dispatch(contactSlice.actions.clearAllErrors());
         } catch (error) {

@@ -60,7 +60,7 @@ const ContactHeader = () => {
     hashtags,
   } = useSelector((state) => state.viewEmail);
   const email = contactInfo?.email1;
-  const { showNextPrev } = useContext(PageContext);
+  const { showNextPrev, handleDateClick } = useContext(PageContext);
 
   const { deals } = useSelector((state) => state.deals);
 
