@@ -119,8 +119,8 @@ const TableView = ({
         count,
         data: processedData
     }
-
     return (
+
         <TableContext.Provider value={value}>
 
             {/* 🔥 Layout animation wrapper */}

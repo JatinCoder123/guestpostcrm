@@ -1,9 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
-import { excludeEmail } from "../assets/assets";
+import { extractEmail } from "../assets/assets";
 import { Titletooltip } from "./TitleTooltip";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
-import { LoadingChase, LoadingSpin } from "./Loading";
+import { LoadingSpin } from "./Loading";
 import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
@@ -11,7 +11,6 @@ import { useRef } from "react";
 import {
   Crown,
   Eye,
-  FileIcon,
   FileText,
   Gift,
   Handshake,
@@ -19,7 +18,6 @@ import {
   RefreshCcw,
   RefreshCcwIcon,
   ShoppingCart,
-  TextIcon,
 } from "lucide-react";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
@@ -72,7 +70,7 @@ const MailerSummaryHeader = () => {
 
   /* ---------------- DEALS ---------------- */
   useEffect(() => {
-    const actualOrders = showBrandTimeline ? orders : orders?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
+    const actualOrders = showBrandTimeline ? orders : orders?.filter((o) => extractEmail(o.real_name ?? o.email) === email)
     const filtered = actualOrders.filter(
       (d) =>
         !["wrong", "rejected_nontechnical", "completed"].includes(
@@ -83,14 +81,14 @@ const MailerSummaryHeader = () => {
     setEmailData((prev) => ({ ...prev, orders: filtered }));
   }, [email, orders, showBrandTimeline]);
   useEffect(() => {
-    const actualDeals = showBrandTimeline ? deals : deals?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
+    const actualDeals = showBrandTimeline ? deals : deals?.filter((o) => extractEmail(o.real_name ?? o.email) === email)
     const deal = actualDeals?.filter((d) => d.status === "active");
     setEmailData((prev) => ({ ...prev, deals: deal }));
   }, [email, deals, showBrandTimeline]);
 
   /* ---------------- OFFERS ---------------- */
   useEffect(() => {
-    const actualOffers = showBrandTimeline ? offers : offers?.filter((o) => excludeEmail(o.real_name ?? o.email) === email)
+    const actualOffers = showBrandTimeline ? offers : offers?.filter((o) => extractEmail(o.real_name ?? o.email_c) === email)
     const offer = actualOffers?.filter((d) => d.offer_status === "active");
     setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, showBrandTimeline]);

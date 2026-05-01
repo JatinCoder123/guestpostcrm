@@ -9,16 +9,18 @@ function StatusRow({ statusCount }) {
     const activeStatus = filters[statusKey]
 
 
-    const toggleStatus = (value) => {
+    const toggleStatus = (value, field) => {
+        const key = field || statusKey;
+
         setFilters(prev => {
-            if (prev[statusKey] === value) {
-                const updated = { ...prev }
-                delete updated[statusKey]
-                return updated
+            if (prev[key] === value) {
+                const updated = { ...prev };
+                delete updated[key];
+                return updated;
             }
-            return { ...prev, [statusKey]: value }
-        })
-    }
+            return { ...prev, [key]: value };
+        });
+    };
 
     return (
         <div className="w-full">
@@ -53,7 +55,7 @@ function StatusRow({ statusCount }) {
                                         if (status?.handleStatusClick) {
                                             status.handleStatusClick();
                                         } else {
-                                            toggleStatus(status.value);
+                                            toggleStatus(status.value, status?.field);
                                         }
                                     }} />
                             )
