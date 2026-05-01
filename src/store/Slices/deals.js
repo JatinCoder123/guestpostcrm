@@ -8,7 +8,7 @@ import {
   createLedgerEntry,
 } from "../../services/utils";
 import { getLadger } from "./ladger";
-import { fetchGpc } from "../../services/api";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -168,28 +168,29 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     };
 
     try {
-      const res = await axios.post(`${domain}?entryPoint=get_deal_details`, {
-        records: deals.map((deal) => ({
-          amount: deal.dealamount,
-          email: email,
-          website: deal.website_c,
-          thread_id: threadId,
-        })),
-        child_bean: {
-          module: "Contacts",
-          id: state.viewEmail.contactInfo.id,
-          email: email,
-        },
+      const data = await apiRequest({
+        endpoint: `${domain}?entryPoint=get_deal_details`, body: {
+          records: deals.map((deal) => ({
+            amount: deal.dealamount,
+            email: email,
+            website: deal.website_c,
+            thread_id: threadId,
+          })),
+          child_bean: {
+            module: "Contacts",
+            id: state.viewEmail.contactInfo.id,
+            email: email,
+          },
+        }, method: "POST"
       });
-      const remRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=set_reminder`,
-        {
+      const remRes = await fetchGpc({
+        params: { type: 'set_reminder' }, body: {
           websites: deals.map((deal) => deal.website_c),
           email: email,
           reminder_type: "deal",
-        },
-      );
-      showConsole && console.log(`Create Deal`, res.data);
+        }, method: "POST"
+      })
+      showConsole && console.log(`Create Deal`, data);
       showConsole && console.log(`Reminder Response`, remRes);
       dispatch(
         dealsSlice.actions.createDealSucess({
@@ -212,7 +213,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
         domain,
         email,
         thread_id: threadId,
-        message_id: res.data.id,
+        message_id: data.id,
         group: "Deal",
         items: deals.map((deal) =>
           buildLedgerItem({
@@ -260,37 +261,39 @@ export const updateDeal = ({ deals = [] }) => {
         });
       };
       deals.forEach(async (deal) => {
-        await axios.post(`${getState().user.crmEndpoint}&type=take_notes`, {
-          record_id: deal.id,
-          notes: deal.note,
-          type1: "deals",
-        });
+        await fetchGpc({
+          params: { type: 'take_notes' }, body: {
+            record_id: deal.id,
+            notes: deal.note,
+            type1: "deals",
+          }, method: "POST"
+        })
       });
+
       deals.forEach(async (deal) => {
-        const { data } = await axios.post(
-          `${domain}?entryPoint=get_post_all&action_type=post_data`,
-          {
+        const data = await apiRequest({
+          endpoint: `${domain}?entryPoint=get_post_all`, method: "POST", params: { action_type: "post_data" }, body: {
             parent_bean: {
               module: "outr_deal_fetch",
               ...deal,
             },
+          }, headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
           },
-          {
-            headers: {
-              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          },
+        }
+
         );
         showConsole && console.log(`UPdate Deal`, data);
       });
-      const remRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=set_reminder`,
-        {
+      const remRes = await fetchGpc({
+        params: { type: 'set_reminder' }, body: {
           websites: deals.map((deal) => deal.website_c),
           email: email,
           reminder_type: "deal",
-        },
+        }, method: "POST"
+      }
+
       );
       showConsole && console.log(`Reminder Response`, remRes);
       const updatedDeals = getState().deals.deals.map((d) => {

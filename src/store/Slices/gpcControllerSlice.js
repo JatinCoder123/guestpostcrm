@@ -54,6 +54,7 @@ export const fetchGpcController = () => {
     try {
 
       const data = await fetchGpc({ method: "POST", params: { type: 'manage_gpc' }, body: { current_email: getState().user.user.email } });
+
       showConsole && console.log(`GPC Data`, data?.data?.available_checkbox);
       dispatch(gpcControllerSlice.actions.getGpcSuccess(data?.data || []));
     } catch (error) {

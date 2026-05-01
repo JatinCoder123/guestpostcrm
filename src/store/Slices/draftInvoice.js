@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { getDomain, showConsole } from "../../assets/assets";
+import { apiRequest } from "../../services/api";
 
 const DraftInvoiceSlice = createSlice({
   name: "DraftInvoice",
@@ -37,22 +37,21 @@ export const getDraftInvoice = () => {
     dispatch(DraftInvoiceSlice.actions.getDraftInvoiceRequest());
 
     try {
-      const { data } = await axios.post(
-        `${getDomain(getState().user.crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
-
-
+      const { data } = await apiRequest({
+        endpoint: `${getState().user.crmEndpoint.split('?')[0]}?entryPoint=get_post_all`,
+        method: "POST",
+        body:
         {
           "module": "outr_self_test",
 
         },
+        params: { action_type: 'get_data' },
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": CREATE_DEAL_API_KEY,
+        },
+      }
 
-
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": CREATE_DEAL_API_KEY,
-          },
-        }
       );
 
       showConsole && console.log(" draftInvoice  data:", data);

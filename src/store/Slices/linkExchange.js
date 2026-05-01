@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
-import { apiRequest } from "../../services/api";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const exchangeSlice = createSlice({
   name: "linkExchange",
@@ -73,7 +73,7 @@ export const getLinkExchange = () => {
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.getEmailRequest());
     try {
-
+      const timeline = getState().ladger.timeline
       const data = await fetchGpc({ params: { type: "exchange", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), page: 1, page_size: 50 } });
       showConsole && console.log(`Exchange links data`, data);
       dispatch(

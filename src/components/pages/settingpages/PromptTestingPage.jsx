@@ -3,6 +3,7 @@ import Header from "./Header";
 import useModule from "../../../hooks/useModule";
 import { ChevronDown, Check } from "lucide-react";
 import { useSelector } from "react-redux";
+import { fetchGpc } from "../../../services/api";
 
 export function CustomDropdown({
   options = [],
@@ -109,10 +110,7 @@ const PromptTestingPage = () => {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const res = await fetch(
-          `${baseUrl}?entryPoint=fetch_gpc&type=machine_learning&stages=1`,
-        );
-        const data = await res.json();
+        const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: 1 } });
         setStages(data);
       } catch (err) {
         console.error("Failed to fetch stages:", err);
@@ -131,10 +129,7 @@ const PromptTestingPage = () => {
     const fetchStagePrompts = async () => {
       try {
         setStagePromptsLoading(true);
-        const res = await fetch(
-          `${baseUrl}?entryPoint=fetch_gpc&type=machine_learning&stage_type=${formData.stage}`,
-        );
-        const data = await res.json();
+        const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: formData.stage } });
         const rows = Array.isArray(data) ? data : [];
         // Extract only items that have a `name` field
         const filtered = rows

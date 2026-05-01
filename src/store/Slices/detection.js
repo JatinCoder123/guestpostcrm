@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const detectionSlice = createSlice({
   name: "detection",
@@ -41,19 +41,8 @@ export const getDetection = (email) => {
     dispatch(detectionSlice.actions.getDetectionRequest());
 
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=spam_detection${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=spam_detection${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
-        );
-      }
-      const data = response.data;
+      const timeline = getState().ladger.timeline
+      const data = await fetchGpc({ params: { type: "spam_detection", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), ...(email ? { email } : {}), page: 1, page_size: 50 } });
       showConsole && console.log(`detection`, data);
       dispatch(
         detectionSlice.actions.getDetectionSucess({

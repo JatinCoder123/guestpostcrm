@@ -15,7 +15,7 @@ import { PageContext } from "../../../context/pageContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
-import { fetchGpc } from "../../../services/api";
+import { apiRequest, fetchGpc } from "../../../services/api";
 import { bouncy } from "ldrs";
 
 export default function TemplatesPage() {
@@ -140,28 +140,21 @@ export default function TemplatesPage() {
         },
       };
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const data = await apiRequest({
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'post_data' }
+      }
       );
 
-      const responseText = await response.text();
-      let result;
 
-      try {
-        result = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        result = {};
-      }
 
-      if (response.ok && (result.parent_updated === true || result.parent_id)) {
+      if (data.parent_updated === true || data.parent_id) {
         setOriginalContent(editorContent);
         setIsChanged(false);
         alert("✅ Template saved successfully!");
@@ -171,7 +164,7 @@ export default function TemplatesPage() {
         }, 1000);
       } else {
         alert(
-          `❌ Save failed: ${result.error || result.message || "Unknown error"}`,
+          `❌ Save failed: ${data.error || data.message || "Unknown error"}`,
         );
       }
     } catch (err) {
@@ -196,19 +189,18 @@ export default function TemplatesPage() {
         },
       };
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const result = await apiRequest({
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'post_data' }
+      }
       );
 
-      const result = await response.json();
 
       if (result.parent_updated) {
         alert("✅ Stage updated successfully");
@@ -258,33 +250,23 @@ export default function TemplatesPage() {
 
       console.log("Creating new template:", requestBody);
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const data = await apiRequest({
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'post_data' }
+      }
       );
 
-      const responseText = await response.text();
-      let result;
 
-      try {
-        result = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        result = {};
-      }
 
-      showConsole && console.log("Create response:", result);
+      showConsole && console.log("Create response:", data);
 
-      if (
-        response.ok &&
-        (result.parent_updated === true || result.parent_id || result.id)
-      ) {
+      if (data.parent_updated === true || data.parent_id || data.id) {
         alert("✅ New template created successfully!");
 
         setNewTemplateName("");
@@ -297,7 +279,7 @@ export default function TemplatesPage() {
         }, 1000);
       } else {
         alert(
-          `❌ Failed to create template: ${result.error || result.message || "Unknown error"}`,
+          `❌ Failed to create template: ${data.error || data.message || "Unknown error"}`,
         );
       }
     } catch (err) {

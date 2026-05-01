@@ -30,6 +30,7 @@ import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
 import { applyHashtag } from "../services/utils";
+import { fetchGpc } from "../services/api";
 
 /* Memo numbers from CRM */
 const MEMO = {
@@ -318,11 +319,8 @@ const ActionButton = () => {
         setStopLoading(true);
         try {
           const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
-          const url = `${crmEndpoint}&type=force_stop&id=${contactInfo?.id}&new_value=${newValue}&user=${enteredEmail}`;
-          const result = await fetch(url);
-          const data = await result.json();
+          const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: enteredEmail } });
           console.log(data);
-
           dispatch(
             viewEmailAction.updateContactInfo({
               key: "is_stop",

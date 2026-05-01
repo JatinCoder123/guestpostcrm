@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const eventSlice = createSlice({
     name: "events",
@@ -71,12 +71,8 @@ export const getEvents = ({ timeFilter = null, search = null }) => {
         dispatch(eventSlice.actions.getEventsRequest());
 
         try {
-            const url =
-                `${getState().user.crmEndpoint}&type=recent_activities${(timeFilter !== null) ? `&filter=${timeFilter}` : ""
-                }${(search !== null) ? `&search=${search}` : ""}&page=1&page_size=50`;
-            const { data } = await axios.get(url);
+            const data = await fetchGpc({ params: { type: "recent_activities", ...(timeFilter ? { filter: timeline } : {}), ...(search ? { search } : {}), page: 1, page_size: 50 } });
             showConsole && console.log(`events`, data);
-
             dispatch(
                 eventSlice.actions.getEventsSucess({
                     count: 0,
@@ -101,10 +97,8 @@ export const addEvent = (event) => {
         try {
             showConsole && console.log(event);
             const domain = getState().user.crmEndpoint.split("?")[0];
-            const { data } = await axios.post(
-                `${domain}?entryPoint=get_post_all&action_type=post_data`,
-
-                {
+            const data = await apiRequest({
+                endpoint: `${domain}?entryPoint=get_post_all`, method: "POST", params: { action_type: "post_data" }, body: {
                     parent_bean: {
                         module: "outr_recent_activity",
                         name: event.email,
@@ -112,13 +106,12 @@ export const addEvent = (event) => {
                         recent_activity: event.recent_activity,
                         assigned_user_id: getState().user.id,
                     },
+                }, headers: {
+                    "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+                    "Content-Type": "aplication/json",
                 },
-                {
-                    headers: {
-                        "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-                        "Content-Type": "aplication/json",
-                    },
-                }
+            }
+
             );
             showConsole && console.log(`Add Event`, data);
             dispatch(eventSlice.actions.updateCount(1));

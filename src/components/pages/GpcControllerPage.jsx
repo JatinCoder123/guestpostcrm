@@ -6,6 +6,7 @@ import {
   updateGpcController,
 } from "../../store/Slices/gpcControllerSlice";
 import useModule from "../../hooks/useModule";
+import { fetchGpc } from "../../services/api";
 
 export default function GpcControllerPage() {
   const dispatch = useDispatch();
@@ -13,17 +14,23 @@ export default function GpcControllerPage() {
   const { checkboxes, loading, updating } = useSelector(
     (state) => state.gpcController,
   );
-  const { crmEndpoint } = useSelector(
-    (state) => state.user,
-  );
-  const { data: stages, loading: stagesLoading } = useModule({ url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=machine_learning&stages=1`, enabled: true, name: "STAGES" })
+  const [stages, setStages] = useState({})
   const [activeStage, setActiveStage] = useState("others");
   const handleToggle = (id, value) => {
     const currentValue = value === "1" ? "0" : "1";
     dispatch(updateGpcController(id, currentValue));
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchGpc({
+        params: { type: 'machine_learning', stages: 1 }
+      });
+      setStages(data);
+    };
 
+    fetchData();
+  }, []);
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       <Header text={"Gpc Controller"} />

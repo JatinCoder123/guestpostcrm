@@ -345,7 +345,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                   )}
 
                   <div
-                    key={event.id}
+                    key={`${event.id}-${event.name}-${event.date}`}
                     className="relative flex items-start gap-4"
                   >
                     <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">

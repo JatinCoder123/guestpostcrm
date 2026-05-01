@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const defaulterSlice = createSlice({
   name: "defaulter",
@@ -41,21 +41,11 @@ export const getdefaulterEmails = (email) => {
     dispatch(defaulterSlice.actions.getEmailRequest());
 
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_defaulters${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=1&page_size=50`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_defaulters${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
-        );
-      }
+      const timeline = getState().ladger.timeline
 
-      showConsole && console.log(`defaulter emails`, response.data);
-      const data = response.data;
+      const data = await fetchGpc({ params: { type: "get_defaulters", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), ...(email ? { email } : {}), page: 1, page_size: 50 } });
+
+      showConsole && console.log(`defaulter emails`, data);
       dispatch(
         defaulterSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
