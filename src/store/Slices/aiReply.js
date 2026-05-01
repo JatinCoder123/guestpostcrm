@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const aiReplySlice = createSlice({
   name: "aiReply",
@@ -46,13 +46,14 @@ export const getAiReply = (threadId = null, isNew = null, message = null) => {
       if (!threadId) {
         throw new Error("Please provide the thread Id");
       }
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=ai_reply`, {
-        thread_id: threadId,
-        new: isNew,
-        prompt_body: message
+      const data = await fetchGpc({
+        params: { type: 'ai_reply' }, method: "POST", body: {
+          thread_id: threadId,
+          new: isNew,
+          prompt_body: message
 
-      },
+        }
+      }
       );
       showConsole && console.log(`aiReply`, data);
       dispatch(

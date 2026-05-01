@@ -1,9 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { getContact, viewEmailAction } from "./viewEmail";
+import { fetchGpc } from "../../services/api";
 
 const marketplaceSlice = createSlice({
   name: "marketplace",
@@ -80,11 +80,9 @@ export const getMarketplace = () => {
     dispatch(marketplaceSlice.actions.getMarketplaceRequest());
 
     try {
-      const response = await axios.get(
-        `${getState().user.crmEndpoint}&type=get_marketplace`
+      const data = await fetchGpc({ params: { type: "get_marketplace" } }
       );
 
-      const data = response.data;
       showConsole && console.log("MARKETPLACE:", data);
 
       dispatch(
@@ -112,12 +110,7 @@ export const addMarketPlace = (email, brand = false) => {
       domain = email.split('@')[1];
     }
     try {
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=setMarketPlace`, {
-        email: email,
-        domain: domain,
-      },
-      );
+      const data = await fetchGpc({ method: "POST", params: { type: 'setMarketPlace' }, body: { email, domain } });
       showConsole && console.log("MARKETPLACE:", data);
       dispatch(marketplaceSlice.actions.addMarketplaceSuccess());
       dispatch(getMarketplace())
@@ -152,7 +145,7 @@ export const deleteMarketPlace = (id, action = false) => {
   return async (dispatch, getState) => {
     dispatch(marketplaceSlice.actions.deleteMarketplaceRequest(id));
     try {
-      const { data } = await axios.post(`${getState().user.crmEndpoint}&type=delete_record&module_name=outr_marketplace&record_id=${id}`
+      const data = await fetchGpc({ params: { type: 'delete_record', module_name: "outr_marketplace", record_id: id } }
       );
       showConsole && console.log(`Delete MarketPlace`, data);
       if (!data.success) {

@@ -21,6 +21,7 @@ import { BsRobot } from "react-icons/bs";
 import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 import EmojiInput from "./EmojiPicker";
+import { fetchGpc } from "../services/api";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -88,9 +89,7 @@ const LatestMessage = ({ handleMessageClick }) => {
     try {
       setFrLoading(true);
       showConsole && console.log("First rply send button clicked");
-      await fetch(
-        `${crmEndpoint}&type=send_reminder&reminder_id=${reminderId}`,
-      );
+      await fetchGpc({ params: { type: 'send_reminder', reminder_id: reminderId } });
       dispatch(
         viewEmailAction.compleConv({
           message: `First reply sent successfully to ${contactInfo?.email1}`,
@@ -110,11 +109,7 @@ const LatestMessage = ({ handleMessageClick }) => {
 
     const fetchFRButtonStatus = async () => {
       try {
-        const res = await fetch(
-          `${crmEndpoint}&type=fr_button&email=${email1}`,
-        );
-        const data = await res.json();
-
+        const data = await fetchGpc({ params: { type: 'fr_button', email: email1 } });
         if (data?.reminder_id && data.reminder_id !== false) {
           setReminderId(data.reminder_id);
           setShowFirstReplyBtn(true);
@@ -169,11 +164,10 @@ const LatestMessage = ({ handleMessageClick }) => {
             {email1 && viewEmail?.length > 0 && (
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
-      ${
-        viewEmail[viewEmail.length - 1].from_email === email1
-          ? "bg-green-100 text-green-700"
-          : "bg-blue-100 text-blue-700"
-      }
+      ${viewEmail[viewEmail.length - 1].from_email === email1
+                    ? "bg-green-100 text-green-700"
+                    : "bg-blue-100 text-blue-700"
+                  }
     `}
               >
                 <Mail className="w-4 h-4" />
@@ -205,10 +199,10 @@ const LatestMessage = ({ handleMessageClick }) => {
               __html:
                 viewEmail?.length > 0
                   ? getSafeHTML(
-                      viewEmail[viewEmail.length - 1]?.body_html ||
-                        viewEmail[viewEmail.length - 1]?.body ||
-                        "",
-                    )
+                    viewEmail[viewEmail.length - 1]?.body_html ||
+                    viewEmail[viewEmail.length - 1]?.body ||
+                    "",
+                  )
                   : "No Message Found!",
             }}
           />
@@ -302,11 +296,10 @@ const LatestMessage = ({ handleMessageClick }) => {
             )}
             {showFirstReplyBtn && (
               <div
-                className={` transition-opacity duration-200 ${
-                  showFirstReplyBtn
-                    ? "opacity-100"
-                    : "opacity-0 pointer-events-none"
-                }`}
+                className={` transition-opacity duration-200 ${showFirstReplyBtn
+                  ? "opacity-100"
+                  : "opacity-0 pointer-events-none"
+                  }`}
               >
                 <div className="relative group flex items-center justify-center">
                   <button

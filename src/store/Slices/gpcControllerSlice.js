@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const gpcControllerSlice = createSlice({
   name: "gpcController",
@@ -52,18 +52,11 @@ export const fetchGpcController = () => {
     dispatch(gpcControllerSlice.actions.getGpcRequest());
 
     try {
-      const domain = getState().user.crmEndpoint.split("?")[0];
 
-      const { data } = await axios.post(
-        `${domain}?entryPoint=fetch_gpc&type=manage_gpc`, { current_email: getState().user.user.email }
-      );
+      const data = await fetchGpc({ method: "POST", params: { type: 'manage_gpc' }, body: { current_email: getState().user.user.email } });
+
       showConsole && console.log(`GPC Data`, data?.data?.available_checkbox);
-
-      dispatch(
-        gpcControllerSlice.actions.getGpcSuccess(
-          data?.data || []
-        )
-      );
+      dispatch(gpcControllerSlice.actions.getGpcSuccess(data?.data || []));
     } catch (error) {
       dispatch(
         gpcControllerSlice.actions.getGpcFailed(
@@ -78,7 +71,7 @@ export const updateGpcController = (id, value) => {
     dispatch(gpcControllerSlice.actions.updateGpcRequest({ id, value }));
 
     try {
-      await axios.post(`${getState().user.crmEndpoint}&type=manage_gpc`, { current_email: getState().user.user.email, id, value });
+      const data = await fetchGpc({ method: "POST", params: { type: 'manage_gpc' }, body: { current_email: getState().user.user.email, id, value } });
       dispatch(gpcControllerSlice.actions.updateGpcSuccess());
     } catch (error) {
       dispatch(gpcControllerSlice.actions.updateGpcFailed({ id, value, message: "Failed to update GPC setting" }));

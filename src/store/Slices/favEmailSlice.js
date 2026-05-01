@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import {
   updateActivity,
@@ -8,6 +7,7 @@ import {
   applyHashtag,
 } from "../../services/utils";
 import { getLadger } from "./ladger";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const favSlice = createSlice({
   name: "fav",
@@ -71,13 +71,9 @@ export const getFavEmails = ({ page = 1, loading = true }) => {
   return async (dispatch, getState) => {
     loading && dispatch(favSlice.actions.getEmailRequest());
     try {
-      const response = await axios.get(
-        `${
-          getState().user.crmEndpoint
-        }&type=favorite${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`,
-      );
-      showConsole && console.log(`favorite emails`, response.data);
-      const data = response.data;
+      const timeline = getState().ladger.timeline
+      const data = await fetchGpc({ params: { type: "favorite", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), page, page_size: 50 } });
+      showConsole && console.log(`favorite emails`, data);
       dispatch(
         favSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
@@ -97,12 +93,8 @@ export const favEmail = () => {
     dispatch(favSlice.actions.favouriteEmailRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const response = await axios.get(
-        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=favorite`,
-        {},
-      );
-      showConsole && console.log(`Favourite Toggle Response`, response.data);
-      const data = response.data;
+      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { field: 'favorite', email: getState().viewEmail.contactInfo?.email1 } });
+      showConsole && console.log(`Favourite Toggle data`, data);
       if (!data.success) {
         throw new Error("Toggle failed");
       }

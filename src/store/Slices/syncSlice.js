@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const syncSlice = createSlice({
     name: "sync",
@@ -47,8 +47,7 @@ export const getSync = (type, max = 3) => {
         dispatch(syncSlice.actions.getSyncRequest(type));
         const email = getState().viewEmail.contactInfo.email1
         try {
-            const { data } = await axios.post(
-                `${getState().user.crmEndpoint}&type=sync_opr&email=${email}&fetch_type=${type}&max=${max}`,);
+            const data = await fetchGpc({ method: "POST", params: { type: "sync_opr", email, fetch_type: type, max } });
             showConsole && console.log(`syncData`, data);
             dispatch(
                 syncSlice.actions.getSyncSucess({

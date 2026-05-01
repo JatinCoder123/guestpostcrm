@@ -24,6 +24,7 @@ import { LoadingChase } from "./Loading";
 import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import GPCContentPopup from "./GPCContentPopup";
+import { apiRequest, fetchGpc } from "../services/api";
 
 function ValidTick() {
   return (
@@ -53,8 +54,8 @@ function useLIInsert() {
     setResult(null);
     setErrorMsg("");
     try {
-      const res = await fetch(`${domain}/wp-json/my-api/v1/create-post`, {
-        method: "POST",
+      const data = await apiRequest({
+        endpoint: `${domain}/wp-json/my-api/v1/create-post`, method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-API-Key": "YOUR_SECRET_EXTRACT_HERE",
@@ -66,7 +67,6 @@ function useLIInsert() {
           target_url,
         }),
       });
-      const data = await res.json();
       if (data.success) {
         setStatus("success");
         setResult(data);
@@ -310,17 +310,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
             },
             item.type_c === "LI"
               ? {
-                  label: "Our Link",
-                  name: "target_url_c",
-                  type: "text",
-                  value: item.target_url_c || "",
-                }
+                label: "Our Link",
+                name: "target_url_c",
+                type: "text",
+                value: item.target_url_c || "",
+              }
               : {
-                  label: "Doc Link",
-                  name: "gp_doc_url_c",
-                  type: "text",
-                  value: item.gp_doc_url_c || "",
-                },
+                label: "Doc Link",
+                name: "gp_doc_url_c",
+                type: "text",
+                value: item.gp_doc_url_c || "",
+              },
             {
               label: "Website",
               name: "name",
@@ -733,20 +733,18 @@ function DocumentAnalysisCard({
     try {
       setLoading(true);
 
-      const res = await fetch(
-        `${domain}/index.php?entryPoint=fetch_gpc&type=zerogpt`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            doc_url: docLink,
-          }),
+      const data = await fetchGpc({
+        params: { type: 'zerogpt' }, method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          doc_url: docLink,
+        }),
+      }
+
       );
 
-      const data = await res.json();
 
       setAnalysisData(data);
       setOpenPopup(true);

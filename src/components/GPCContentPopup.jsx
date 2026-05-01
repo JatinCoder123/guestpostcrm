@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { apiRequest } from "../services/api";
 
 export default function GPCContentPopup({ data, onClose, website }) {
   const sections = data?.data?.humanizer_response?.sections || DEMO_SECTIONS;
@@ -97,18 +98,16 @@ export default function GPCContentPopup({ data, onClose, website }) {
     setPublishError(null);
     try {
       const { title, content } = buildFinalContent();
-      const response = await fetch(
-        `https://${publishDomain}/wp-json/my-api/v1/create-post`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Api-Key": "YOUR_SECRET_EXTRACT_HERE",
-          },
-          body: JSON.stringify({ title, content, status: "publish" }),
+      const result = await apiRequest({
+        endpoint: `https://${publishDomain}/wp-json/my-api/v1/create-post`, method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": "YOUR_SECRET_EXTRACT_HERE",
         },
+        body: JSON.stringify({ title, content, status: "publish" }),
+      }
+
       );
-      const result = await response.json();
       if (result.success) {
         setPublishedUrl(result.url);
         setIsDirty(false);
@@ -139,10 +138,9 @@ export default function GPCContentPopup({ data, onClose, website }) {
       onClick={() => undoKey(keyName)}
       title="Undo"
       className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 text-xs
-        ${
-          canUndo(keyName)
-            ? "bg-amber-100 text-amber-600 hover:bg-amber-200 cursor-pointer shadow-sm"
-            : "opacity-0 pointer-events-none"
+        ${canUndo(keyName)
+          ? "bg-amber-100 text-amber-600 hover:bg-amber-200 cursor-pointer shadow-sm"
+          : "opacity-0 pointer-events-none"
         }`}
     >
       ↩

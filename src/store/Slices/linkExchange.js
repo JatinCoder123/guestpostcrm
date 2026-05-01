@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const exchangeSlice = createSlice({
   name: "linkExchange",
@@ -73,14 +73,9 @@ export const getLinkExchange = () => {
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.getEmailRequest());
     try {
-
-      const response = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=exchange${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=1&page_size=50`
-      );
-
-      showConsole && console.log(`Exchange links data`, response.data);
-      const data = response.data;
+      const timeline = getState().ladger.timeline
+      const data = await fetchGpc({ params: { type: "exchange", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), page: 1, page_size: 50 } });
+      showConsole && console.log(`Exchange links data`, data);
       dispatch(
         exchangeSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,
@@ -101,12 +96,9 @@ export const linkExchange = () => {  // Assuming 'id' is the email/contact ident
     dispatch(exchangeSlice.actions.exchangingRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const response = await axios.get(
-        `${domain}?entryPoint=contactAction&email=${getState().ladger.email}&field=exchange`,
-        {}
+      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { email: getState().viewEmail.contactInfo?.email1, field: 'exchange' } }
       );
-      showConsole && console.log(`Exchange Toggle Response`, response.data);
-      const data = response.data;
+      showConsole && console.log(`Exchange Toggle Response`, data);
       if (!data.success) {
         throw new Error("Toggle failed");
       }

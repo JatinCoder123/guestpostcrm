@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { apiRequest } from "../services/api";
 
 const GROUP_COLORS = {
   Reminder: "bg-teal-500",
@@ -117,9 +118,8 @@ export default function ViewReports() {
           ? buildUrl(fd, ft, td, tt)
           : `${crmEndpoint}&type=report`;
 
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json?.success) setBaseSummary(json);
+      const data = await apiRequest({ endpoint: url });
+      if (data?.success) setBaseSummary(data);
     } catch (err) {
       console.error("Failed to fetch summary:", err);
     }
@@ -128,10 +128,9 @@ export default function ViewReports() {
   const fetchTable = async (fd, ft, td, tt, extraParams = {}) => {
     setLoading(true);
     try {
-      const res = await fetch(buildUrl(fd, ft, td, tt, extraParams));
-      const json = await res.json();
-      if (json?.success) {
-        setApiResponse(json);
+      const data = await apiRequest({ endpoint: buildUrl(fd, ft, td, tt, extraParams) });
+      if (data?.success) {
+        setApiResponse(data);
       } else {
         setApiResponse(null);
       }
@@ -145,9 +144,8 @@ export default function ViewReports() {
   const fetchTablePlain = async (extraParams = {}) => {
     setLoading(true);
     try {
-      const res = await fetch(buildPlainUrl(extraParams));
-      const json = await res.json();
-      setApiResponse(json?.success ? json : null);
+      const data = await apiRequest({ endpoint: buildPlainUrl(extraParams) });
+      setApiResponse(data?.success ? data : null);
     } catch {
       setApiResponse(null);
     } finally {
@@ -454,8 +452,8 @@ export default function ViewReports() {
       onClick: () =>
         filterActive
           ? fetchTable(fromDate, fromTime, toDate, toTime, {
-              user_id: u.user_id,
-            })
+            user_id: u.user_id,
+          })
           : fetchTablePlain({ user_id: u.user_id }),
     })),
     {

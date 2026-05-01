@@ -155,7 +155,7 @@ export function DealsPage() {
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
               onClick={() =>
-                dispatch(deleteDeal(extractEmail(row.real_name), row.id))
+                dispatch(deleteDeal(extractEmail(row.real_name ?? row.email), row.id))
               }
             >
               <Trash className="w-5 h-5 text-red-600" />

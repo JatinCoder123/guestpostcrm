@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useSelector } from "react-redux";
 import Header from "./Header";
+import { fetchGpc } from "../../../services/api";
 
 const PromptExplorer = () => {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [userPrompt, setUserPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
-  const { crmEndpoint } = useSelector((state) => state.user);
   const { state } = useLocation();
-  const navigateTo = useNavigate();
 
   const isValid = systemPrompt.trim() && userPrompt.trim();
 
@@ -25,15 +22,16 @@ const PromptExplorer = () => {
       setLoading(true);
       setResponse("");
 
-      const res = await axios.post(
-        `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=prompt_explorer`,
-        {
+      const data = await fetchGpc({
+        method: "POST", params: { type: 'prompt_explorer' }, body: {
           system_prompt: sys,
           user_prompt: usr,
         },
+      }
+
       );
 
-      setResponse(res?.data || "No response received");
+      setResponse(data || "No response received");
     } catch (err) {
       console.error(err);
       setResponse("❌ Error fetching response");

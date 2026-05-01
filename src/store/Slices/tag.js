@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const tagSlice = createSlice({
   name: "tag",
@@ -66,11 +66,8 @@ export const getTags = (tag = "", page = 1, pageSize = 50) => {
     dispatch(tagSlice.actions.getTagsRequest());
 
     try {
-      const response = await axios.get(
-        `${getState().user.crmEndpoint}&entryPoint=add_tag&tag=${tag}&page=${page}&page_size=${pageSize}`
-      );
+      const data = await fetchGpc({ params: { entryPoint: "add_tag", tag, page, page_size: pageSize } });
 
-      const data = response.data;
       showConsole && console.log(`Tag data:`, data);
 
       dispatch(
@@ -100,13 +97,8 @@ export const createTag = (tagName) => {
     try {
       const encodedTagName = encodeURIComponent(tagName);
 
-      const response = await axios.post(
-        `${getState().user.crmEndpoint}&entryPoint=add_tag&field_name=${encodedTagName}`
-      );
-
-      const data = response.data;
+      const data = await fetchGpc({ params: { entryPoint: "add_tags", field_name: encodedTagName }, method: "POST" });
       showConsole && console.log(`Create tag response:`, data);
-
       if (data.success || data.output?.includes('created successfully')) {
         dispatch(tagSlice.actions.createTagSuccess());
         showConsole && console.log(`Tag "${tagName}" created successfully!`);

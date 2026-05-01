@@ -3,9 +3,9 @@ import EmojiPicker from "emoji-picker-react";
 import { Plus, SendHorizonal } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendEmail } from "../store/Slices/viewEmail";
-import axios from "axios";
 import { gsap } from "gsap";
 import { toast } from "react-toastify";
+import { fetchGpc } from "../services/api";
 
 const EmojiInput = () => {
     const [selectedEmoji, setSelectedEmoji] = useState("");
@@ -35,10 +35,7 @@ const EmojiInput = () => {
         try {
             setCheckingTheadId(true);
 
-            const { data } = await axios.get(
-                `${crmEndpoint}&type=re_check_thread&email=${contactInfo?.email1}`
-            );
-
+            const data = await fetchGpc({ params: { type: "re_check_thread", email: contactInfo?.email1 } });
             if (!(data?.success || data.thread_id)) {
                 toast.error("Failed to verify thread!");
                 return;

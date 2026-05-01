@@ -7,7 +7,7 @@ import useModule from "../hooks/useModule";
 import { LoadingChase } from "./Loading";
 import { useSelector } from "react-redux";
 import { createPortal } from "react-dom";
-import axios from "axios";
+import { apiRequest, fetchGpc } from "../services/api";
 
 export default function TemplateSelectorModal({
   isOpen,
@@ -29,15 +29,9 @@ export default function TemplateSelectorModal({
 
   useEffect(() => {
     if (!user?.email) return;
-
     const fetchUser = async () => {
       try {
-        const res = await fetch(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=get_user&email=${user.email}`,
-        );
-
-        const result = await res.json();
-
+        const result = await fetchGpc({ params: { type: 'get_user', email: user.email } });
         if (result?.id) {
           setAssignUserId(result.id);
         }
@@ -55,9 +49,9 @@ export default function TemplateSelectorModal({
     const fetchStages = async () => {
       setStagesLoading(true);
       try {
-        const { data } = await axios.post(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`,
-          { assigned_user_id: assignUserId, stages: 2 },
+        const data = await fetchGpc({
+          params: { type: "templates" }, body: { assigned_user_id: assignUserId, stages: 2 }, method: "POST",
+        }
         );
         if (data && typeof data === "object") {
           setStages(data);
@@ -125,17 +119,12 @@ export default function TemplateSelectorModal({
       // If already favourited from backend OR local state
       if (tpl.is_favourite) {
         // Backend favourite → clicking again should CREATE again
-        await fetch(
-          `${baseUrl}?entryPoint=get_buttons&create_btn=1&template_id=${tpl.id}&assigned_user_id=${assignUserId || 1}`,
+        await apiRequest({ endpoint: `${baseUrl}?entryPoint=get_buttons`, params: { create_btn: 1, template_id: tpl.id, assigned_user_id: assignUserId || 1 } }
         );
       } else if (favourites[tpl.id]) {
         // Local favourite → delete
         const btnId = favourites[tpl.id];
-
-        await fetch(
-          `${baseUrl}?entryPoint=get_buttons&delete_btn=1&btn_id=${btnId}`,
-        );
-
+        await apiRequest({ endpoint: `${baseUrl}?entryPoint=get_buttons`, params: { delete_btn: 1, btn_id: btnId } });
         setFavourites((prev) => {
           const updated = { ...prev };
           delete updated[tpl.id];
@@ -143,12 +132,11 @@ export default function TemplateSelectorModal({
         });
       } else {
         // Create favourite
-        const res = await fetch(
-          `${baseUrl}?entryPoint=get_buttons&create_btn=1&template_id=${tpl.id}&assigned_user_id=${assignUserId || 1}`,
-        );
-
-        const result = await res.json();
-
+        const result = await apiRequest({
+          endpoint: `${baseUrl}?entryPoint=get_buttons`, params: {
+            create_btn: 1, template_id: tpl.id,
+          }
+        })
         setFavourites((prev) => ({
           ...prev,
           [tpl.id]: result?.btn_id || tpl.id,
@@ -156,11 +144,7 @@ export default function TemplateSelectorModal({
       }
 
       refetchTemplates();
-
-      // reload buttons list if backend relies on it
-      await fetch(
-        `${baseUrl}?entryPoint=get_buttons&assigned_user_id=${assignUserId || 1}`,
-      );
+      await apiRequest({ endpoint: `${baseUrl}?entryPoint=get_buttons`, params: { assigned_user_id: assignUserId || 1 } });
     } catch (err) {
       console.error("Favourite error:", err);
     }
@@ -210,11 +194,10 @@ export default function TemplateSelectorModal({
                   <button
                     key={key}
                     onClick={() => setStageType(key)}
-                    className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${
-                      stageType === key
-                        ? "bg-indigo-600 text-white shadow"
-                        : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
-                    }`}
+                    className={`px-6 py-2.5 rounded-2xl font-medium transition-all ${stageType === key
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-white border border-gray-300 hover:bg-gray-100 text-gray-700"
+                      }`}
                   >
                     {label}
                   </button>
@@ -297,11 +280,10 @@ export default function TemplateSelectorModal({
                       >
                         <Heart
                           size={20}
-                          className={`transition ${
-                            tpl.is_favourite || favourites[tpl.id]
-                              ? "fill-red-500 text-red-500"
-                              : "text-gray-500"
-                          }`}
+                          className={`transition ${tpl.is_favourite || favourites[tpl.id]
+                            ? "fill-red-500 text-red-500"
+                            : "text-gray-500"
+                            }`}
                         />
                       </button>
 

@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, getDomain, showConsole } from "../../assets/assets";
 import { applyHashtag } from "../../services/utils";
@@ -9,6 +8,7 @@ import {
   createLedgerEntry,
 } from "../../services/utils";
 import { getLadger } from "./ladger";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -123,18 +123,11 @@ export const getDeals = ({ email = null, page = 1, loading = true, brand = false
 
     try {
       let res;
-      if (brand) {
-        res = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=brandTimeline${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}&case=deal`,
-        );
-      } else {
-        res = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=get_deals${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
-        );
-      }
-      const data = brand ? res.data.data.deal : res.data
+      const timeline = getState().ladger.timeline
+      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email, page, page_size: "50" }
+      brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "deal", ...params } })
+        : res = await fetchGpc({ params: { type: "get_deals", ...params } });
+      const data = brand ? res.data.deal : res
       showConsole && console.log(`${brand ? "Brand" : ""} Deals`, data);
       dispatch(
         dealsSlice.actions.getDealsSucess({
@@ -175,28 +168,29 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
     };
 
     try {
-      const res = await axios.post(`${domain}?entryPoint=get_deal_details`, {
-        records: deals.map((deal) => ({
-          amount: deal.dealamount,
-          email: email,
-          website: deal.website_c,
-          thread_id: threadId,
-        })),
-        child_bean: {
-          module: "Contacts",
-          id: state.viewEmail.contactInfo.id,
-          email: email,
-        },
+      const data = await apiRequest({
+        endpoint: `${domain}?entryPoint=get_deal_details`, body: {
+          records: deals.map((deal) => ({
+            amount: deal.dealamount,
+            email: email,
+            website: deal.website_c,
+            thread_id: threadId,
+          })),
+          child_bean: {
+            module: "Contacts",
+            id: state.viewEmail.contactInfo.id,
+            email: email,
+          },
+        }, method: "POST"
       });
-      const remRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=set_reminder`,
-        {
+      const remRes = await fetchGpc({
+        params: { type: 'set_reminder' }, body: {
           websites: deals.map((deal) => deal.website_c),
           email: email,
           reminder_type: "deal",
-        },
-      );
-      showConsole && console.log(`Create Deal`, res.data);
+        }, method: "POST"
+      })
+      showConsole && console.log(`Create Deal`, data);
       showConsole && console.log(`Reminder Response`, remRes);
       dispatch(
         dealsSlice.actions.createDealSucess({
@@ -219,7 +213,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
         domain,
         email,
         thread_id: threadId,
-        message_id: res.data.id,
+        message_id: data.id,
         group: "Deal",
         items: deals.map((deal) =>
           buildLedgerItem({
@@ -267,37 +261,39 @@ export const updateDeal = ({ deals = [] }) => {
         });
       };
       deals.forEach(async (deal) => {
-        await axios.post(`${getState().user.crmEndpoint}&type=take_notes`, {
-          record_id: deal.id,
-          notes: deal.note,
-          type1: "deals",
-        });
+        await fetchGpc({
+          params: { type: 'take_notes' }, body: {
+            record_id: deal.id,
+            notes: deal.note,
+            type1: "deals",
+          }, method: "POST"
+        })
       });
+
       deals.forEach(async (deal) => {
-        const { data } = await axios.post(
-          `${domain}?entryPoint=get_post_all&action_type=post_data`,
-          {
+        const data = await apiRequest({
+          endpoint: `${domain}?entryPoint=get_post_all`, method: "POST", params: { action_type: "post_data" }, body: {
             parent_bean: {
               module: "outr_deal_fetch",
               ...deal,
             },
+          }, headers: {
+            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+            "Content-Type": "application/json",
           },
-          {
-            headers: {
-              "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          },
+        }
+
         );
         showConsole && console.log(`UPdate Deal`, data);
       });
-      const remRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=set_reminder`,
-        {
+      const remRes = await fetchGpc({
+        params: { type: 'set_reminder' }, body: {
           websites: deals.map((deal) => deal.website_c),
           email: email,
           reminder_type: "deal",
-        },
+        }, method: "POST"
+      }
+
       );
       showConsole && console.log(`Reminder Response`, remRes);
       const updatedDeals = getState().deals.deals.map((d) => {
@@ -365,9 +361,7 @@ export const deleteDeal = (deal, id) => {
     };
     dispatch(dealsSlice.actions.deleteDealRequest({ id }));
     try {
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_deal_fetch&record_id=${id}`,
-      );
+      const data = await fetchGpc({ params: { type: 'delete_record', module_name: 'outr_deal_fetch', record_id: id }, method: "POST" })
       showConsole && console.log(`Delete Deal`, data);
       if (!data.success) {
         throw new Error(data.message);

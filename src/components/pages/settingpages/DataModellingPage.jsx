@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import { apiRequest, fetchGpc } from "../../../services/api";
 
 const DEFAULT_POST_PAYLOAD = {
   parent_bean: {
@@ -40,7 +40,7 @@ const DataModellingPage = () => {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const res = await axios.get(`${crmEndpoint}&type=all_modules`);
+        const res = await fetchGpc({ params: { type: 'all_modules' } });
         setModules(res.data.data);
         if (res.data.data.length > 0) {
           const first = res.data.data[0].module_name;
@@ -86,16 +86,17 @@ const DataModellingPage = () => {
   const handleGetRequest = async () => {
     setGetLoading(true);
     try {
-      const res = await axios({
+      const data = await apiRequest({
         method: "POST",
-        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'get_data' },
         headers: {
           "x-api-key": CREATE_DEAL_API_KEY,
           "Content-Type": "application/json",
         },
-        data: getPayload,
+        body: getPayload,
       });
-      setGetResponse(JSON.stringify(res.data, null, 2));
+      setGetResponse(JSON.stringify(data, null, 2));
     } catch (err) {
       setGetResponse(err.message);
     } finally {
@@ -108,18 +109,19 @@ const DataModellingPage = () => {
     try {
       const isUpdate =
         postPayload?.parent_bean?.id || postPayload?.child_bean?.id;
-      const res = await axios({
+      const data = await apiRequest({
         method: "POST",
-        url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
+        params: { action_type: 'get_data' },
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
         headers: {
           "x-api-key": CREATE_DEAL_API_KEY,
           "Content-Type": "application/json",
         },
-        data: postPayload,
+        body: postPayload,
       });
       setPostResponse(
         JSON.stringify(
-          { type: isUpdate ? "UPDATE ✅" : "CREATE 🆕", data: res.data },
+          { type: isUpdate ? "UPDATE ✅" : "CREATE 🆕", data },
           null,
           2,
         ),
@@ -182,11 +184,10 @@ const DataModellingPage = () => {
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === key
-                ? "bg-gray-100 text-gray-800 shadow-sm"
-                : "text-gray-400 hover:text-gray-600"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === key
+              ? "bg-gray-100 text-gray-800 shadow-sm"
+              : "text-gray-400 hover:text-gray-600"
+              }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
             {label}
@@ -215,7 +216,7 @@ const DataModellingPage = () => {
                 onChange={(e) => {
                   try {
                     setGetPayload(JSON.parse(e.target.value));
-                  } catch {}
+                  } catch { }
                 }}
                 spellCheck={false}
               />
@@ -294,11 +295,10 @@ const DataModellingPage = () => {
 
               <textarea
                 rows={14}
-                className={`w-full bg-gray-50 border rounded-xl text-sm font-mono text-gray-700 px-4 py-3 outline-none focus:ring-2 resize-y leading-relaxed ${
-                  postPayloadError
-                    ? "border-red-300 focus:ring-red-100"
-                    : "border-gray-200 focus:ring-indigo-100 focus:border-indigo-300"
-                }`}
+                className={`w-full bg-gray-50 border rounded-xl text-sm font-mono text-gray-700 px-4 py-3 outline-none focus:ring-2 resize-y leading-relaxed ${postPayloadError
+                  ? "border-red-300 focus:ring-red-100"
+                  : "border-gray-200 focus:ring-indigo-100 focus:border-indigo-300"
+                  }`}
                 value={postPayloadText}
                 onChange={handlePostPayloadChange}
                 spellCheck={false}

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
+import { emojiByUnified } from "emoji-picker-react";
 
 
 const duplicateEmailSlice = createSlice({
@@ -63,8 +64,7 @@ export const getDuplicateEmails = () => {
         dispatch(duplicateEmailSlice.actions.getDuplicateEmailsRequest());
 
         try {
-            const url = `${getState().user.crmEndpoint}&type=get_dupliacte_threads&email=${getState().ladger.email}`;
-            const { data } = await axios.get(url);
+            const data = await fetchGpc({ params: { type: 'get_dupliacte_threads', email: getState().viewEmail.contactInfo?.email1 } });
             showConsole && console.log(data)
             dispatch(
                 duplicateEmailSlice.actions.getDuplicateEmailsSuccess({
@@ -97,13 +97,9 @@ export const getDuplicateCount = () => {
             const domain = state.user.crmEndpoint.split("?")[0];
             let url;
 
-            if (state.ladger.email) {
-                url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate&email=${state.ladger.email}`;
-            } else {
-                url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate`;
-            }
+            const email = state.viewEmail.contactInfo.email1
 
-            const { data } = await axios.get(url);
+            const { data } = await fetchGpc({ params: { type: 'get_duplicate', ...(email ? { email } : {}) } });
 
             dispatch(
                 duplicateEmailSlice.actions.updateDuplicateCount(data?.data_count ?? 0)
@@ -118,22 +114,13 @@ export const getDuplicateCount = () => {
 export const checkForDuplicates = () => {
     return async (dispatch, getState) => {
         try {
-            const state = getState();
-            const domain = state.user.crmEndpoint.split("?")[0];
 
-            let url;
-            if (state.ladger.email) {
-                url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate&email=${state.ladger.email}`;
-            } else {
-                url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate`;
-            }
+            const timeline = getState().ladger.timeline
+            const email = getState().ladger.email
 
-            const { data } = await axios.get(url);
+            const data = await fetchGpc({ params: { type: "get_duplicate", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), ...(email ? { email } : {}), page: 1, page_size: 50 } });
             const newCount = data?.data_count ?? 0;
-
-
-
-            if (!state.duplicateEmails.shouldIgnoreUpdates) {
+            if (!getState().duplicateEmails.shouldIgnoreUpdates) {
                 dispatch(duplicateEmailSlice.actions.updateDuplicateCount(newCount));
             }
         } catch (error) {
@@ -166,16 +153,10 @@ export const fetchDuplicateCount = createAsyncThunk(
             return state.duplicateEmails.count;
         }
 
-        const domain = state.user.crmEndpoint.split("?")[0];
-        let url;
+        const timeline = getState().ladger.timeline
+        const email = getState().ladger.email
 
-        if (state.ladger.email) {
-            url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate&email=${state.ladger.email}`;
-        } else {
-            url = `${domain}?entryPoint=fetch_gpc&type=get_duplicate`;
-        }
-
-        const { data } = await axios.get(url);
+        const data = await fetchGpc({ params: { type: "get_duplicate", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), ...(email ? { email } : {}), page: 1, page_size: 50 } });
         return data?.data_count ?? 0;
     }
 );
