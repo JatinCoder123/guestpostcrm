@@ -12,6 +12,8 @@ const contactSlice = createSlice({
         error: null,
         pageIndex: 1,
         pageCount: 1,
+        adding: false,
+        message: null
 
     },
     reducers: {
@@ -33,8 +35,24 @@ const contactSlice = createSlice({
             state.error = action.payload;
             state.contacts = [];
         },
+        addContactRequest(state) {
+            state.adding = true;
+            state.error = null;
+        },
+        addContactSucess(state, action) {
+            state.adding = false;
+            state.error = null;
+            state.message = action.payload
+        },
+        addContactFailed(state, action) {
+            state.adding = false;
+            state.error = action.payload;
+        },
         clearAllErrors(state) {
             state.error = null;
+        },
+        clearAllMessage(state) {
+            state.message = null;
         },
 
     },
@@ -66,7 +84,49 @@ export const getAllContacts = ({ page = 1 }) => {
         }
     };
 };
+export const addContact = (contactData) => {
+    return async (dispatch, getState) => {
+        dispatch(contactSlice.actions.addContactRequest());
 
+        showConsole && console.log("contactData", contactData);
+
+        const domain = getState().user.crmEndpoint.split("?")[0];
+
+        try {
+            // Base payload (always send parent_bean)
+            const payload = {
+                parent_bean: {
+                    module: "Contacts",
+                    ...contactData,
+                },
+            };
+
+
+
+            const { data } = await axios.post(
+                `${domain}?entryPoint=get_post_all&action_type=post_data`,
+                payload,
+                {
+                    headers: {
+                        "X-Api-Key": CREATE_DEAL_API_KEY,
+                        "Content-Type": "application/json", // typo fixed
+                    },
+                },
+            );
+
+            showConsole && console.log("added contact", data);
+            dispatch(getAllContacts({}));
+            dispatch(contactSlice.actions.addContactSucess("Contact Created Successfully."));
+            dispatch(contactSlice.actions.clearAllErrors());
+
+        } catch (error) {
+            console.log(error)
+            dispatch(
+                contactSlice.actions.addContactFailed("Update Contact failed"),
+            );
+        }
+    };
+};
 
 export const contactAction = contactSlice.actions;
 export default contactSlice.reducer;
