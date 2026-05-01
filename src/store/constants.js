@@ -13,7 +13,6 @@ const TINY_EDITOR_KEYS = [
   "yafcvj676aralwgcexthy7sckzm80mima0kw290ow95jar14", // key 2
 ];
 
-
 // Function to get rotating key
 function getTinyKey() {
   const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
