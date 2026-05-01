@@ -1,15 +1,12 @@
 import {
   Calendar,
   User2,
-  Gift,
-  Pen,
   Globe,
   BadgeDollarSign,
   ChartNoAxesColumn,
   Clapperboard,
   Trash,
   ShieldCheckIcon,
-  HandCoins,
   ShieldAlert,
   Handshake,
   Eye,
@@ -20,8 +17,6 @@ import { deleteDeal, getDeals } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
-import { ladgerAction } from "../../store/Slices/ladger";
-import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";

@@ -61,9 +61,6 @@ export const getThreadEmail = (email, threadId) => {
     );
 
     try {
-      // ===============================
-      // SHOW CACHE IMMEDIATELY (if exists)
-      // ===============================
       const cachedData = getCache("threadMails", trimThreadId);
 
       if (
