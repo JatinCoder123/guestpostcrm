@@ -1,32 +1,18 @@
 import {
   Calendar,
   User2,
-  Gift,
-  Pen,
   Globe,
   BadgeDollarSign,
-  ChartNoAxesColumn,
   Clapperboard,
-  Trash,
-  ShieldCheckIcon,
-  HandCoins,
-  ShieldAlert,
-  Handshake,
-  Bell,
   BellIcon,
   Send,
-  ClipboardCheck,
   StopCircle,
   Ban,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect } from "react";
-import { deleteDeal, getDeals } from "../../store/Slices/deals.js"
 import { PageContext } from "../../context/pageContext.jsx";
-import { useNavigate } from "react-router-dom";
 import { excludeName, extractEmail } from "../../assets/assets.js";
-import { ladgerAction } from "../../store/Slices/ladger.js";
-import { useThreadContext } from "../../hooks/useThreadContext.js";
 import TableView, { Table } from "../ui/table/Table.jsx";
 import TableTitleBar from "../ui/table/TableTitleBar.jsx";
 import { LoadingChase } from "../Loading.jsx"

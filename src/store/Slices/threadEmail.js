@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { getCache, setCache } from "../../services/cache";
+import { fetchGpc } from "../../services/api";
 
 const initialState = {
   loading: false,
@@ -61,9 +61,6 @@ export const getThreadEmail = (email, threadId) => {
     );
 
     try {
-      // ===============================
-      // SHOW CACHE IMMEDIATELY (if exists)
-      // ===============================
       const cachedData = getCache("threadMails", trimThreadId);
 
       if (
@@ -78,13 +75,8 @@ export const getThreadEmail = (email, threadId) => {
         );
       }
 
-      // ===============================
-      // FETCH FRESH DATA
-      // ===============================
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_thread&thread_id=${threadId}&email=${email}&page=1&page_size=50`
-      );
 
+      const data = await fetchGpc({ params: { type: "view_thread", thread_id: threadId, email } });
       const freshData = {
         threadEmail: data.emails || [],
         count: data.total_emails ?? 0,
@@ -144,10 +136,7 @@ export const getThreadEmail = (email, threadId) => {
 
           if (!getCache("threadMails", trimId)) {
             try {
-              const { data } = await axios.get(
-                `${getState().user.crmEndpoint}&type=view_thread&thread_id=${item.thread}&email=${item.email}&page=1&page_size=50`
-              );
-
+              const data = await fetchGpc({ params: { type: "view_thread", thread_id: item.thread, email: item.email } });
               setCache("threadMails", trimId, {
                 threadEmail: data.emails || [],
                 count: data.total_emails ?? 0,

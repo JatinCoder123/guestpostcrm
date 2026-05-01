@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
 
 const movedSlice = createSlice({
@@ -45,21 +44,8 @@ export const getmovedEmails = (email, page = 1) => {
     dispatch(movedSlice.actions.getEmailRequest());
 
     try {
-      let response;
-      if (email) {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=moved_email&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&email=${email}&page=${page}&page_size=50`
-        );
-      } else {
-        response = await axios.get(
-          `${getState().user.crmEndpoint
-          }&type=moved_email&${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50`
-        );
-      }
-
-      showConsole && console.log(`moved emails`, response.data);
-      const data = response.data;
+      const data = await fetchGpc({ params: { type: "moved_email", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), ...(email ? { email } : {}), page, page_size: "50" } });
+      showConsole && console.log(`moved emails`, data);
       dispatch(
         movedSlice.actions.getEmailSucess({
           count: data.data_count ?? 0,

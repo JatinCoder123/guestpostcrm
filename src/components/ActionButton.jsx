@@ -30,6 +30,7 @@ import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
 import { applyHashtag } from "../services/utils";
+import { fetchGpc } from "../services/api";
 
 /* Memo numbers from CRM */
 const MEMO = {
@@ -79,14 +80,14 @@ const ActionButton = () => {
   const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
   const navigate = useNavigate();
   const {
-    adding,
+    loading,
     deleteMarketPlaceId,
-    deleting,
     items: marketPlaces,
     error: markingError,
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
-  const isMark = marketPlaces.find((e) => e.name === contactInfo?.email1) ?? null
+  const markInfo = marketPlaces.find((e) => e.name === contactInfo?.email1) ?? null
+  const isMark = contactInfo?.bulk == "1"
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite === "1";
   const isExchangeActive = contactInfo?.exchange === "1";
@@ -275,14 +276,14 @@ const ActionButton = () => {
 
     {
       icon:
-        adding || (deleting && deleteMarketPlaceId == isMark?.id) ? (
+        loading ? (
           <LoadingChase />
         ) : (
           <MdOutlineHome size={25} color={isMark ? "white" : "#d40d8b"} />
         ),
       label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
       active: isMark,
-      disabled: adding || (deleting && deleteMarketPlaceId == isMark?.id),
+      disabled: loading,
 
       activeProps: {
         color: "#ea580c",
@@ -290,8 +291,8 @@ const ActionButton = () => {
       },
       // GET when adding to marketplace, DELETE when removing
       action: () => {
-        if (isMark) {
-          dispatch(deleteMarketPlace(isMark?.id));
+        if (markInfo) {
+          dispatch(deleteMarketPlace(markInfo?.id, true));
           triggerHashtag(MEMO.marketplace, "DELETE");
         } else {
           dispatch(addMarketPlace(email, contactInfo.type == "Brand"));
@@ -318,11 +319,8 @@ const ActionButton = () => {
         setStopLoading(true);
         try {
           const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
-          const url = `${crmEndpoint}&type=force_stop&id=${contactInfo?.id}&new_value=${newValue}&user=${enteredEmail}`;
-          const result = await fetch(url);
-          const data = await result.json();
+          const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: enteredEmail } });
           console.log(data);
-
           dispatch(
             viewEmailAction.updateContactInfo({
               key: "is_stop",
@@ -406,7 +404,7 @@ const ActionButton = () => {
   shadow-md
   hover:shadow-xl hover:-translate-y-1
   active:scale-95
-  transition-all duration-200 ${btn.disabled ? "pointer-none" : ""}
+  transition-all duration-200
   ${btn.active ? "ring-2 ring-black/30" : ""}
   ${contactLoading && btn.label.includes("Emails") ? "opacity-60 pointer-events-none" : ""}
 `}

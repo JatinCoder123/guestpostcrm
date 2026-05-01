@@ -1,5 +1,5 @@
 import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../../store/constants";
 import { Edit3, Trash2 } from "lucide-react";
 import { useState } from "react";
 import Loading from "../../Loading";
@@ -7,9 +7,9 @@ import Header from "./Header";
 import ErrorBox from "./ErrorBox";
 import EditUser from "./EditUser";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { getAllUsers } from "../../../store/Slices/crmUser";
+import { fetchGpc } from "../../../services/api";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);
@@ -21,6 +21,10 @@ export function UsersPage() {
   const { error, refetch, add, update } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=get_users`,
     method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+    },
   });
 
   const users = (crmUsers || []).map((u) => ({
@@ -88,8 +92,7 @@ export function UsersPage() {
     setDeletingId(item.id);
 
     try {
-      const { data } = await axios.post(
-        `${crmEndpoint}&type=delete_record&module_name=outr_gpc_users&record_id=${item.id}`,
+      const data = await fetchGpc({ params: { type: 'delete_record', module_name: 'outr_gpc_users', record_id: item.id } }
       );
 
       if (data.success) {

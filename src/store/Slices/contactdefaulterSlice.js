@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { showConsole } from "../../assets/assets";
+import { apiRequest } from "../../services/api";
 
 const contactdefaulterSlice = createSlice({
   name: "contactdefaulter",
@@ -38,24 +38,18 @@ export const getContactDefaulters = () => {
     const { crmEndpoint } = getState().user;
 
     try {
-      const { data } = await axios.post(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-
-
-        {
+      const data = await apiRequest({
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`, params: { action_type: 'get_data' }, body: {
           "module": "Contacts",
           "where": {
             "stage": "defaulter"
           },
+        }, headers: {
+          "Content-Type": "application/json",
+          "x-api-key": CREATE_DEAL_API_KEY,
         },
-
-
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": CREATE_DEAL_API_KEY,
-          },
-        }
+        method: "POST"
+      }
       );
 
       showConsole && console.log(" defaulter Contact data:", data);

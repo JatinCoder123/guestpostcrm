@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const hotSlice = createSlice({
   name: "hot",
@@ -47,7 +47,7 @@ export const getAllHot = () => {
     dispatch(hotSlice.actions.getAllHotsRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const { data } = await axios.get(`${domain}?entryPoint=fetch_gpc&type=get_alerts&filter=${getState().ladger.timeline}&page=1&page_size=50&label=hot`);
+      const data = await fetchGpc({ params: { type: 'get_alerts', filter: getState().ladger.timeline, page: 1, page_size: 50, label: 'hot' } });
       showConsole && console.log(`hot data`, data);
       dispatch(hotSlice.actions.getAllhotsucess({ count: 0, hots: data.data ?? [] }));
       dispatch(hotSlice.actions.clearAllErrors());

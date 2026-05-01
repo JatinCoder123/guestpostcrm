@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 import { X, MessageSquare } from "lucide-react";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useThreadContext } from "../hooks/useThreadContext";
 import { useSelector } from "react-redux";
+import { fetchGpc } from "../services/api";
 
 const MessageModal = ({
   showMessageModal,
@@ -43,13 +43,7 @@ const MessageModal = ({
       setIsMessageLoading(true);
 
       try {
-        const baseUrl = crmEndpoint.split("?")[0];
-
-        const { data } = await axios.get(
-          `${baseUrl}?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}`,
-        );
-        console.log("Fetched message data:", data);
-        console.log("Fetched message Id:", messageId);
+        const data = await fetchGpc({ params: { type: 'view_msg', message_id: messageId } });
         const htmlBody =
           data.email?.body_html ||
           data.email?.body ||

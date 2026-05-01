@@ -1,8 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-import axios from "axios";
 import { AUTH_URL } from "../constants";
 import { showConsole } from "../../assets/assets";
+import { apiRequest, setCrmEndpoint } from "../../services/api";
 
 const userSlice = createSlice({
   name: "user",
@@ -78,9 +77,7 @@ export const getUser = () => {
     dispatch(userSlice.actions.loadUserRequest());
 
     try {
-      const { data } = await axios.get(
-        `${AUTH_URL}?controller=auth&action=me`,
-        { withCredentials: true }
+      const data = await apiRequest({ endpoint: `${AUTH_URL}?controller=auth`, params: { action: 'me' }, withCredentials: true }
       );
       showConsole && console.log("user", data);
       dispatch(
@@ -92,7 +89,7 @@ export const getUser = () => {
           id: data.id,
         })
       );
-
+      setCrmEndpoint(data.crmEndpoint)
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       showConsole && console.log(error);
@@ -141,12 +138,7 @@ export const logout = () => {
     localStorage.setItem('displayIntro', "true")
 
     try {
-      const { data } = await axios.get(
-        `${AUTH_URL}?controller=auth&action=logout`,
-        {
-          withCredentials: true,
-        }
-      );
+      const data = await apiRequest({ endpoint: `${AUTH_URL}?controller=auth`, params: { action: "logout" }, withCredentials: true });
 
       dispatch(userSlice.actions.logoutSuccess(data.message));
       dispatch(userSlice.actions.clearAllErrors());

@@ -13,13 +13,13 @@ import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { SmallTinyEditor } from "../../TinyEditor.jsx";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
-import axios from "axios";
 import NextPrev from "../../NextPrev.jsx";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { SendingOverlay } from "./SendingOverlay.jsx";
 import MailHeaderLeft from "./MailHeaderLeft.jsx";
 import ReplyButtons from "./ReplyButtons.jsx";
 import Inbox from "./Inbox.jsx";
+import { fetchGpc } from "../../../services/api.js";
 
 export default function ThreadView() {
   const scrollRef = useRef();
@@ -66,12 +66,7 @@ export default function ThreadView() {
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
-
-      const { data } = await axios.get(
-        `${getDomain(crmEndpoint)}/index.php?entryPoint=fetch_gpc&type=view_msg&message_id=${messageId}&full=1`,
-      );
-
-
+      const data = await fetchGpc({ params: { type: 'view_msg', message_id: messageId, full: 1 } });
       if (data?.success) {
         setFullMessage(data.email);
       } else {

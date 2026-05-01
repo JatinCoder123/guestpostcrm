@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { apiRequest } from "../services/api";
 import { updateSeoLink } from "../store/Slices/orders";
 import { useDispatch } from "react-redux";
 
@@ -13,7 +14,6 @@ export default function GPCContentPopup({
   const sections = data?.data?.humanizer_response?.sections || [];
   const aiScore = data?.data?.ai_score ?? 34;
   const humanizedScore = data?.data?.human_score.toFixed(2) ?? 66;
-
   const [selected, setSelected] = useState({});
   const [prevSelected, setPrevSelected] = useState({});
   const [publishing, setPublishing] = useState(false);
@@ -107,18 +107,15 @@ export default function GPCContentPopup({
     setPublishError(null);
     try {
       const { title, content } = buildFinalContent();
-      const response = await fetch(
-        `https://${publishDomain}/wp-json/my-api/v1/create-post`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Api-Key": "YOUR_SECRET_EXTRACT_HERE",
-          },
-          body: JSON.stringify({ title, content, status: "publish" }),
+      const result = await apiRequest({
+        endpoint: `https://${publishDomain}/wp-json/my-api/v1/create-post`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": "YOUR_SECRET_EXTRACT_HERE",
         },
-      );
-      const result = await response.json();
+        body: JSON.stringify({ title, content, status: "publish" }),
+      });
       if (result.success) {
         setPublishedUrl(result.url);
         setIsDirty(false);

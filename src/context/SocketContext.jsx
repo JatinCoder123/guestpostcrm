@@ -8,10 +8,10 @@ import {
 } from "react";
 import { io } from "socket.io-client";
 import { showConsole } from "../assets/assets.js";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { eventActions } from "../store/Slices/eventSlice.js";
 import { unrepliedAction } from "../store/Slices/unrepliedEmails.js";
+import { apiRequest } from "../services/api.js";
 
 const socket = io("https://socket.guestpostcrm.com");
 export const SocketContext = createContext();
@@ -46,8 +46,8 @@ export const SocketContextProvider = ({ children }) => {
   });
   const getMoveOptions = async () => {
     try {
-      const response = await axios.get(`${crm}/index.php?entryPoint=move`);
-      return response.data;
+      const data = await apiRequest({ endpoint: `${crm}/index.php?entryPoint=move` });
+      return data;
     } catch (error) {
       console.error("Error fetching move options:", error);
       throw error;
@@ -56,10 +56,9 @@ export const SocketContextProvider = ({ children }) => {
 
   const moveData = async (threadId, labelId) => {
     try {
-      const response = await axios.post(
-        `${crm}/index.php?entryPoint=move&threadid=${threadId}&lblid=${labelId}`,
+      const data = await apiRequest({ endpoint: `${crm}/index.php?entryPoint=move`, params: { threadid: threadId, lblid: labelId } }
       );
-      return response.data;
+      return data;
     } catch (error) {
       console.error("Error moving data:", error);
       throw error;

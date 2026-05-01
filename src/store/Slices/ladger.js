@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
 import { getCache, setCache } from "../../services/cache";
+import { fetchGpc } from "../../services/api";
 
 const ladgerSlice = createSlice({
   name: "ladger",
@@ -146,34 +146,11 @@ export const getLadger = ({
 
       // Fetch fresh current ledger
       let res;
-      if (brand) {
-        res = await axios.get(
-          `${getState().user.crmEndpoint}
-        &type=brandTimeline
-        ${timeline !== null && timeline !== "null"
-              ? `&filter=${timeline}`
-              : ""
-            }
-        &page=${page}
-        &page_size=50
-        ${trimmedEmail ? `&email=${trimmedEmail}` : ""}&case=timeline`
-            .replace(/\s+/g, "")
-        );
-      } else {
-        res = await axios.get(
-          `${getState().user.crmEndpoint}
-        &type=ledger
-        ${timeline !== null && timeline !== "null"
-              ? `&filter=${timeline}`
-              : ""
-            }
-        &page=${page}
-        &page_size=50
-        ${trimmedEmail ? `&email=${trimmedEmail}` : ""}`
-            .replace(/\s+/g, "")
-        );
-      }
-      const data = brand ? res.data.data.timeline : res.data
+      const timeline = getState().ladger.timeline
+      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: trimmedEmail, page, page_size: "50" }
+      brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "timeline", ...params } })
+        : res = await fetchGpc({ params: { type: "ledger", ...params } });
+      const data = brand ? res.data.timeline : res
       console.log(`${brand && "BRAND"} LADGER`, data)
       const freshData = {
         duplicate: data.duplicate_threads_count,
@@ -219,19 +196,8 @@ export const getLadger = ({
 
           if (!getCache("ledgers", prefetchCacheKey)) {
             try {
-              const { data } = await axios.get(
-                `${getState().user.crmEndpoint}
-                &type=ledger
-                ${timeline !== null && timeline !== "null"
-                    ? `&filter=${timeline}`
-                    : ""
-                  }
-                &page=1
-                &page_size=50
-                &email=${prefetchEmail.trim()}`
-                  .replace(/\s+/g, "")
-              );
-
+              const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: prefetchEmail.trim(), page: 1, page_size: "50" }
+              const data = await fetchGpc({ params: { type: "ledger", ...params } });
               setCache("ledgers", prefetchCacheKey, {
                 duplicate: data.duplicate_threads_count,
                 ladger: data.data ?? [],
@@ -264,9 +230,7 @@ export const getNoSearchResultData = (search) => {
     dispatch(ladgerSlice.actions.getNoSearchResultDataRequest());
 
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=live_search&query=${search}`,
-      );
+      const data = await fetchGpc({ params: { type: 'live_search', query: search } });
 
       showConsole && console.log("NoSearchResultData", data);
 
@@ -291,11 +255,10 @@ export const manualEmailScan = (messageId, email, threadId) => {
     dispatch(ladgerSlice.actions.manualScanRequest());
     try {
 
-      const response = await axios.get(
-        `${getState().user.crmEndpoint}&type=manual_scanning&message_id=${messageId}&email=${email}&thread_id=${threadId}`,
+      const data = await fetchGpc({ params: { type: 'manual_scanning', message_id: messageId, email, thread_id: threadId } }
       );
-      showConsole && console.log("ManualScan", response.data);
-      dispatch(ladgerSlice.actions.manualScanSuccess(response.data));
+      showConsole && console.log("ManualScan", data);
+      dispatch(ladgerSlice.actions.manualScanSuccess(data));
 
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {

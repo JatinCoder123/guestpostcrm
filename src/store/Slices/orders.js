@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
 import { applyHashtag } from "../../services/utils";
@@ -8,6 +7,8 @@ import {
   createLedgerEntry,
   buildLedgerItem,
 } from "../../services/utils";
+import { getLadger } from "./ladger";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -204,32 +205,19 @@ export const getOrders = ({
     dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
       let res;
-      if (brand) {
-        res = await axios.get(
-          `${
-            getState().user.crmEndpoint
-          }&type=brandTimeline${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}&case=order`,
-          {
-            headers: {
-              "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
-              "Content-Type": "application/json",
-            },
-          },
-        );
-      } else {
-        res = await axios.get(
-          `${
-            getState().user.crmEndpoint
-          }&type=get_orders${getState().ladger.timeline !== null && getState().ladger.timeline !== "null" ? `&filter=${getState().ladger.timeline}` : ""}&page=${page}&page_size=50${email ? `&email=${email}` : ""}`,
-          {
-            headers: {
-              "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
-              "Content-Type": "application/json",
-            },
-          },
-        );
-      }
-      const data = brand ? res.data.data.order : res.data;
+      const timeline = getState().ladger.timeline;
+      const params = {
+        ...(timeline && timeline !== "null" ? { filter: timeline } : {}),
+        email,
+        page,
+        page_size: "50",
+      };
+      brand
+        ? (res = await fetchGpc({
+            params: { type: "brandTimeline", case: "order", ...params },
+          }))
+        : (res = await fetchGpc({ params: { type: "get_orders", ...params } }));
+      const data = brand ? res.data.order : res;
       showConsole && console.log(`${brand ? "brand" : ""} Orders `, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({
@@ -265,17 +253,11 @@ export const createOrder = () => {
       });
     };
     try {
-      let response;
-      response = await axios.get(
-        `${domain}?entryPoint=manual_order&email=${getState().ladger.email}&assigned_user_id=${getState().crmUser.currentUser.id}`,
-        {
-          headers: {
-            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      const data = response.data;
+      data = await apiRequest({
+        endpoint: `${domain}?entryPoint=manual_order`,
+        email: getState().viewEmail.contactInfo.email1,
+        assigned_user_id: getState().crmUser.currentUser.id,
+      });
       showConsole && console.log(`Orders created`, data);
       if (!data.order.response) {
         dispatch(ordersSlice.actions.createOrderFailed(data.order));
@@ -342,19 +324,19 @@ export const createOrder2 = ({ email, order, threadId }) => {
               };
             });
       console.log("ORDERS", orders);
-      const res = await axios.post(
-        `${domain}?entryPoint=fetch_gpc&type=manual_order`,
-
-        {
+      const data = await fetchGpc({
+        method: "POST",
+        params: { type: "manual_order" },
+        body: {
           email: email,
           thread_id: threadId,
           assigned_user_id: getState().crmUser.currentUser.id,
 
           orders,
         },
-      );
-      showConsole && console.log(`Create Order Manully`, res.data);
-      if (!res.data.success) {
+      });
+      showConsole && console.log(`Create Order Manully`, data);
+      if (!data.success) {
         throw new Error("Failed To Create Order");
       }
       dispatch(
@@ -395,19 +377,18 @@ export const createOrder3 = (email, orders = [], send) => {
           method,
         });
       };
-      let res;
       {
         orders.map(async (order) => {
-          res = await axios.get(
-            `${domain}?entryPoint=manual_order&email=${email}&message_id=${order.message_id}&website=${order.website}&amount=${order.amount}`,
-            {
-              headers: {
-                "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
-                "Content-Type": "application/json",
-              },
+          data = await apiRequest({
+            endpoint: `${domain}?entryPoint=manual_order`,
+            params: {
+              email,
+              message_id: order.message_id,
+              website: order.website,
+              amount: order.amount,
             },
-          );
-          showConsole && console.log(`Create Order Manully`, res.data);
+          });
+          showConsole && console.log(`Create Order Manully`, data);
         });
       }
 
@@ -443,7 +424,6 @@ export const updateOrder = ({ order }) => {
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
       const crmEndpoint = getState().user.crmEndpoint;
-
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
           domain: crmEndpoint,
@@ -452,35 +432,30 @@ export const updateOrder = ({ order }) => {
           method,
         });
       };
-      const noteRes = await axios.post(
-        `${getState().user.crmEndpoint}&type=take_notes`,
-        {
+      const noteRes = await fetchGpc({
+        method: "POST",
+        params: { type: "take_notes" },
+        body: {
           record_id: order.id,
           notes: order.note,
         },
-        {
-          headers: {
-            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      });
       console.log("NOTE RES", noteRes);
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-        {
+      const data = await apiRequest({
+        endpoint: `${domain}?entryPoint=get_post_all`,
+        method: "POST",
+        params: { action_type: "post_data" },
+        body: {
           parent_bean: {
             module: "outr_order_gp_li",
             ...order,
           },
         },
-        {
-          headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
-          },
+        headers: {
+          "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+          "Content-Type": "aplication/json",
         },
-      );
+      });
       showConsole && console.log(`Update Order`, data);
       dispatch(
         ordersSlice.actions.updateOrderSuccess({
@@ -538,25 +513,17 @@ export const updateSeoLink = (orderId, link) => {
     showConsole && console.log("Update Seo Link", link);
     try {
       const domain = getState().user.crmEndpoint.split("?")[0];
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          parent_bean: {
-            module: "outr_order_gp_li",
-            id: orderId,
-          },
-          child_bean: {
-            module: "outr_seo_backlinks",
-            ...link,
-          },
+      const payload = {
+        parent_bean: {
+          module: "outr_order_gp_li",
+          id: orderId,
         },
-        {
-          headers: {
-            "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-            "Content-Type": "aplication/json",
-          },
+        child_bean: {
+          module: "outr_seo_backlinks",
+          ...link,
         },
-      );
+      };
+
       showConsole && console.log(`Update Order Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.id === orderId) {
@@ -606,15 +573,14 @@ export const deleteLink = (orderId, linkId) => {
           method,
         });
       };
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=delete_record&module_name=outr_seo_backlinks&record_id=${linkId}`,
-        {
-          headers: {
-            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X",
-            "Content-Type": "application/json",
-          },
+      const { data } = await fetchGpc({
+        method: "POST",
+        params: {
+          type: "delete_record",
+          module_name: "outr_seo_backlinks",
+          record_id: linkId,
         },
-      );
+      });
       showConsole && console.log(`Delete Order Link`, data);
       if (!data.success) {
         throw new Error(data.message);
@@ -663,20 +629,26 @@ export const createLink = (orderId, link) => {
           method,
         });
       };
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
-
-        {
-          parent_bean: {
-            module: "outr_order_gp_li",
-            id: orderId,
-          },
-          child_bean: {
-            module: "outr_seo_backlinks",
-            ...link,
-          },
+      const payload = {
+        parent_bean: {
+          module: "outr_order_gp_li",
+          id: orderId,
         },
-      );
+        child_bean: {
+          module: "outr_seo_backlinks",
+          ...link,
+        },
+      };
+      const data = await apiRequest({
+        endpoint: `${domain}?entryPoint=get_post_all`,
+        method: "POST",
+        params: { action_type: "post_data" },
+        body: payload,
+        headers: {
+          "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
+          "Content-Type": "aplication/json",
+        },
+      });
       showConsole && console.log(`Create Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.id === orderId) {

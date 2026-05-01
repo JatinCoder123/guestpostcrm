@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { apiRequest } from "../services/api";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -964,8 +965,8 @@ export default function ViewReports() {
   const fetchSummary = async (fd, ft, td, tt) => {
     try {
       const url = fd ? buildUrl(fd, ft, td, tt) : `${crmEndpoint}&type=report`;
-      const json = await (await fetch(url)).json();
-      if (json?.success) setBaseSummary(json);
+      const data = await apiRequest({ endpoint: url });
+      if (data?.success) setBaseSummary(data);
     } catch (err) {
       console.error("Summary fetch failed:", err);
     }
@@ -974,8 +975,10 @@ export default function ViewReports() {
   const fetchTable = async (fd, ft, td, tt, extra = {}) => {
     setLoading(true);
     try {
-      const json = await (await fetch(buildUrl(fd, ft, td, tt, extra))).json();
-      setApiResponse(json?.success ? json : null);
+      const data = await apiRequest({
+        endpoint: buildUrl(fd, ft, td, tt, extra),
+      });
+      setApiResponse(data?.success ? data : null);
     } catch {
       setApiResponse(null);
     } finally {
@@ -986,8 +989,8 @@ export default function ViewReports() {
   const fetchTablePlain = async (extra = {}) => {
     setLoading(true);
     try {
-      const json = await (await fetch(buildPlainUrl(extra))).json();
-      setApiResponse(json?.success ? json : null);
+      const data = await apiRequest({ endpoint: buildPlainUrl(extra) });
+      setApiResponse(data?.success ? data : null);
     } catch {
       setApiResponse(null);
     } finally {
@@ -1353,7 +1356,7 @@ export default function ViewReports() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3">
           {bottomCards.map((c) => (
             <MetricCard key={c.label} {...c} />
           ))}

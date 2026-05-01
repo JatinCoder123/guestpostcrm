@@ -9,6 +9,7 @@ import ErrorBox from "./ErrorBox";
 import EditModal from "./EditModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import { apiRequest, fetchGpc } from "../../../services/api";
 
 export function MachineLearningPage() {
   const { crmEndpoint } = useSelector((state) => state.user);
@@ -44,19 +45,18 @@ export function MachineLearningPage() {
         },
       };
 
-      const res = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": CREATE_DEAL_API_KEY,
-          },
-          body: JSON.stringify(payload),
+      const data = await apiRequest({
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'post_data' },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": CREATE_DEAL_API_KEY,
         },
+        body: JSON.stringify(payload),
+      }
       );
 
-      const data = await res.json();
 
       console.log("UPDATE RESPONSE:", data);
 
@@ -83,10 +83,7 @@ export function MachineLearningPage() {
     try {
       setLoading(true);
 
-      const res = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=machine_learning&stages=1`,
-      );
-      const data = await res.json();
+      const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: 1 } });
 
       setStages(data);
 
@@ -109,12 +106,7 @@ export function MachineLearningPage() {
   const fetchStageData = async (stageKey) => {
     try {
       setLoading(true);
-
-      const res = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=machine_learning&stage_type=${stageKey}`,
-      );
-      const data = await res.json();
-
+      const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: stageKey } });
       setRows(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err);
@@ -156,10 +148,9 @@ export function MachineLearningPage() {
             key={key}
             onClick={() => setActiveStage(key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition
-              ${
-                activeStage === key
-                  ? "bg-blue-600 text-white shadow"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              ${activeStage === key
+                ? "bg-blue-600 text-white shadow"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
               }`}
           >
             {label}

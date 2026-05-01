@@ -12,8 +12,6 @@ import useModule from "../../../hooks/useModule";
 import { createPreviewOrder } from "../../PreviewOrder";
 import { getOrders, orderAction } from "../../../store/Slices/orders";
 import { toast } from "react-toastify";
-import { getLadger } from "../../../store/Slices/ladger";
-import { ManualSideCall } from "../../../services/utils";
 
 export default function ThreadOrders({ threadId, email, id }) {
   const navigate = useNavigate();
@@ -94,13 +92,6 @@ export default function ThreadOrders({ threadId, email, id }) {
       dispatch(getOrders({ email, brand: showBrandTimeline }));
       toast.success(message);
       if (message?.includes("Updated")) {
-        ManualSideCall(
-          crmEndpoint,
-          email,
-          "Our Order Updated Successfully",
-          1,
-          () => dispatch(getLadger({ email, loading: false, brand: showBrandTimeline })),
-        );
         if (send) {
           setSend(undefined);
           dispatch(orderAction.clearAllMessages());

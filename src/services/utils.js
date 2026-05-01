@@ -1,27 +1,7 @@
-import axios from "axios";
 import { showConsole } from "../assets/assets";
+import { fetchGpc } from "./api";
 
-export const ManualSideCall = async (
-  entryPoint,
-  email,
-  description,
-  match_no,
-  okHandler,
-) => {
-  try {
-    const { data } = await axios.post(`${entryPoint}&type=ledger_entry`, {
-      email,
-      description,
-      match_no,
-    });
-    showConsole && console.log("manual side call", data);
-    if (data == "ok") {
-      okHandler();
-    }
-  } catch (error) {
-    showConsole && console.log(error);
-  }
-};
+
 export const updateActivity = async (
   entryPoint,
   email,
@@ -30,11 +10,13 @@ export const updateActivity = async (
   last_activity,
 ) => {
   try {
-    const { data } = await axios.post(`${entryPoint}&type=last_activity`, {
-      email,
-      last_activity,
-      last_user,
-      last_user_email,
+    const data = await fetchGpc({
+      method: "POST", params: { type: "last_activity" }, body: {
+        email,
+        last_activity,
+        last_user,
+        last_user_email,
+      }
     });
     showConsole && console.log("Activity Added", data);
   } catch (error) {
@@ -58,10 +40,7 @@ export const createLedgerEntry = async ({
       group,
       item: items,
     };
-    const { data } = await axios.post(
-      `${domain}?entryPoint=fetch_gpc&type=make_ledger`,
-      payload,
-    );
+    const data = await fetchGpc({ method: "POST", body: payload, params: { type: "make_ledger" } });
 
     showConsole && console.log("Ledger Created", data);
     okHandler();
@@ -94,9 +73,9 @@ export const applyHashtag = async ({
   method = "GET",
 }) => {
   try {
-    const { data } = await axios({
+    const { data } = await fetchGpc({
       method,
-      url: `${domain}&type=hashtag&email=${email}&memo_no=${memo_no}`,
+      params: { type: "hashtag", email, memo_no: memo_no },
     });
 
     showConsole && console.log("Hashtag Applied", data);

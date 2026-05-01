@@ -89,7 +89,7 @@ function useRefresh() {
         dispatch(fetchGpcController());
         dispatch(getdefaulterEmails(enteredEmail));
         dispatch(getmovedEmails(enteredEmail));
-        dispatch(getAllAvatar());
+        // dispatch(getAllAvatar());
         dispatch(getQuickActionBtn());
         dispatch(getDuplicateCount());
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies

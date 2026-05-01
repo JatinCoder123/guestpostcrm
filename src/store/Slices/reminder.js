@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const orderRemSlice = createSlice({
   name: "reminders",
@@ -70,11 +70,7 @@ export const sendReminder = (reminderId) => {
     dispatch(orderRemSlice.actions.sendReminderRequest(reminderId));
 
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=send_reminder&reminder_id=${reminderId}`
-      );
-
+      const data = await fetchGpc({ params: { type: "send_reminder", reminder_id: reminderId } });
       showConsole && console.log(`Send Reminders`, data);
       if (data?.success) {
         dispatch(
@@ -98,10 +94,8 @@ export const getOrderRem = (email, page) => {
     dispatch(orderRemSlice.actions.getOrderRemRequest());
 
     try {
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint
-        }&type=all_reminders${(getState().ladger.timeline !== null) && (getState().ladger.timeline !== "null") ? `&filter=${getState().ladger.timeline}` : ""}${email ? `&email=${email}` : ""}&page=${page}&page_size=50`
-      );
+      const timeline = getState().ladger.timeline
+      const data = await fetchGpc({ params: { type: "all_reminders", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email, page } });
       showConsole && console.log(`Reminders`, data);
       dispatch(
         orderRemSlice.actions.getOrderRemSucess({

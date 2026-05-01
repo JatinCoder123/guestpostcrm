@@ -1,6 +1,6 @@
 import { createSlice, current } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const crmUserSlice = createSlice({
   name: "crmUser",
@@ -40,10 +40,10 @@ const crmUserSlice = createSlice({
 export const getAllUsers = () => {
   return async (dispatch, getState) => {
     dispatch(crmUserSlice.actions.getAllUsersRequest());
-    const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const { data } = await axios.get(
-        `${domain}?entryPoint=fetch_gpc&type=get_users`,
+      const data = await fetchGpc({
+        params: { type: 'get_users' }
+      }
       );
       showConsole && console.log(`users data`, data);
       const currentUser = data.find(

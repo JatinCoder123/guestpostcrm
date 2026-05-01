@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { showConsole } from "../../assets/assets";
+import { getDomain, showConsole } from "../../assets/assets";
 import { updateActivity } from "../../services/utils";
 import { getCache, setCache } from "../../services/cache";
 import { brandTimelineAction } from "./brandTimeline";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -174,12 +174,8 @@ export const getViewEmail = ({ email = null, force = false }) => {
           );
         }
       }
-
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=view_email&email=${trimmedEmail}`,
-      );
+      const data = await fetchGpc({ method: "GET", params: { type: "view_email", email: trimmedEmail } });
       console.log("VIEW EMAIL", data);
-
       const freshData = {
         emails: data.emails,
         threadId: data.thread_id,
@@ -214,9 +210,8 @@ export const getViewEmail = ({ email = null, force = false }) => {
         [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
           if (prefetchEmail && !getCache("viewMails", prefetchEmail.trim())) {
             try {
-              const { data } = await axios.get(
-                `${getState().user.crmEndpoint}&type=view_email&email=${prefetchEmail.trim()}`,
-              );
+              const data = await fetchGpc({ method: "GET", params: { type: "view_email", email: prefetchEmail.trim() } });
+
 
               setCache("viewMails", prefetchEmail.trim(), {
                 emails: data.emails,
@@ -256,9 +251,8 @@ export const getContact = (email = null, force = false, loading = true) => {
         }
       }
 
-      const { data } = await axios.get(
-        `${getState().user.crmEndpoint}&type=get_contact&email=${trimmedEmail}`,
-      );
+      const data = await fetchGpc({ method: "GET", params: { type: "get_contact", email: trimmedEmail } });
+
       console.log("CONTACT", data);
 
       const freshData = {
@@ -292,10 +286,7 @@ export const getContact = (email = null, force = false, loading = true) => {
         [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
           if (prefetchEmail && !getCache("contacts", prefetchEmail.trim())) {
             try {
-              const { data } = await axios.get(
-                `${getState().user.crmEndpoint}&type=get_contact&email=${prefetchEmail.trim()}`,
-              );
-
+              const data = await fetchGpc({ method: "GET", params: { type: "get_contact", email: prefetchEmail.trim() } });
               setCache("contacts", prefetchEmail.trim(), {
                 stage: data.stage,
                 status: data.status,
@@ -324,9 +315,6 @@ export const editContact = (contactData, message = "") => {
     dispatch(viewEmailSlice.actions.editContactRequest());
 
     showConsole && console.log("contactData", contactData);
-
-    const domain = getState().user.crmEndpoint.split("?")[0];
-
     try {
       // Base payload (always send parent_bean)
       const payload = {
@@ -341,8 +329,8 @@ export const editContact = (contactData, message = "") => {
         ...contactData.account,
       };
 
-      const { data } = await axios.post(
-        `${domain}?entryPoint=get_post_all&action_type=post_data`,
+      const { data } = await apiRequest({ method: "POST", body: payload, endpoint: getDomain(getState().user.crmEndpoint) }
+        `&action_type=post_data`,
         payload,
         {
           headers: {
@@ -368,16 +356,7 @@ export const sendEmail = (formData) => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.sendEmailRequest());
     try {
-      const { data } = await axios.post(
-        `${getState().user.crmEndpoint}&type=thread_reply`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
+      const data = await fetchGpc({ method: "POST", body: formData, headers: { "Content-Type": "multipart/form-data" }, params: { type: "thread_reply" } })
       showConsole && console.log("Reply Data", data);
       if (!data.success && data.response) {
         dispatch(

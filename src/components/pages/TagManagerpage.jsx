@@ -9,9 +9,18 @@ import {
   Plus,
   X,
   CheckCircle,
+  Type,
+  TypeIcon,
+  User2,
+  ActivityIcon,
+  Edit,
+  CircleCheckIcon,
+  Clipboard,
+  Clapperboard,
+  Calendar1,
+  Tag,
 } from "lucide-react";
 
-import SearchComponent from "./SearchComponent";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Pagination from "../Pagination";
@@ -19,34 +28,36 @@ import { getTags, tagActions } from "../../store/Slices/tag";
 import CreateTag from "./CreateTag";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export function TagManagerpage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { tags, count, creating } = useSelector((state) => state.tag);
-
+  const { tags, count, creating, createSuccess, error } = useSelector(
+    (state) => state.tag,
+  );
 
   const [selectedTag, setSelectedTag] = useState("hot"); // For dropdown selection
   const [deletingId, setDeletingId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [createdTagName, setCreatedTagName] = useState("");
 
   // Fetch tags on component mount or when selectedTag changes
   useEffect(() => {
-    dispatch(getTags(selectedTag));
+    dispatch(getTags());
   }, [dispatch, selectedTag]);
 
   useEffect(() => {
-    if (showSuccessToast) {
-      const timer = setTimeout(() => {
-        setShowSuccessToast(false);
-        setCreatedTagName("");
-      }, 3000);
-
-      return () => clearTimeout(timer);
+    if (createSuccess) {
+      toast.success("Created tag successfully");
+      dispatch(tagActions.resetCreateStatus());
+      dispatch(getTags());
     }
-  }, [showSuccessToast]);
+    if (error) {
+      toast.error("Create Tag failed");
+      dispatch(tagActions.resetCreateStatus());
+    }
+  }, [createSuccess, error]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -60,18 +71,14 @@ export function TagManagerpage() {
     }
   };
 
-
-
-  const handleConfirmDelete = (id, firstName) => { };
+  const handleConfirmDelete = (id, firstName) => {};
 
   const handleCreateTagSuccess = (tagName) => {
     setCreatedTagName(tagName);
 
-    setShowSuccessToast(true);
-
     setShowCreateForm(false);
 
-    dispatch(getTags(selectedTag));
+    dispatch(getTags());
 
     dispatch(tagActions.resetCreateStatus());
   };
@@ -83,27 +90,12 @@ export function TagManagerpage() {
     }
   };
 
-
   return (
     <>
       {/* Main Container with blur effect */}
       <div
         className={`${showCreateForm ? "filter blur-sm pointer-events-none" : ""} transition-all duration-300`}
       >
-
-
-        {/* Success Toast Notification */}
-        {showSuccessToast && createdTagName && (
-          <div className="fixed top-4 right-4 z-50 animate-slide-in">
-            <div className="flex items-center gap-2 px-4 py-3 bg-green-100 text-green-800 rounded-lg shadow-lg border border-green-200">
-              <CheckCircle className="w-5 h-5" />
-              <span>
-                Tag "<strong>{createdTagName}</strong>" created successfully!
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* Tag Manager Section */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {/* Header with Create Button */}
@@ -153,18 +145,38 @@ export function TagManagerpage() {
                       <span>CREATED AT</span>
                     </div>
                   </th>
+
                   <th className="px-6 py-4 text-left">
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      <span>NAME</span>
+                      <TagIcon className="w-4 h-4" />
+                      <span>TAG</span>
+                    </div>
+                  </th>
+
+                  <th className="px-6 py-4 text-left">
+                    <div className="flex items-center gap-2">
+                      <TagIcon className="w-4 h-4" />
+                      <span>MEMO NO</span>
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left">
                     <div className="flex items-center gap-2">
-                      <MoreVertical className="w-4 h-4" />
+                      <ActivityIcon className="w-4 h-4" />
+                      <span>TYPE</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      <span>DATE MODIFIED</span>
+                    </div>
+                  </th>
+                  {/* <th className="px-6 py-4 text-left">
+                    <div className="flex items-center gap-2">
+                      <Clapperboard className="w-4 h-4" />
                       <span>ACTION</span>
                     </div>
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody>
@@ -177,15 +189,34 @@ export function TagManagerpage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-gray-600">
                           <Calendar className="w-4 h-4 text-gray-400" />
-                          <span>{formatDate(tagItem.date_modified)}</span>
+                          <span>{tagItem.date_entered}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-gray-900">
-                          <span>{tagItem.first_name || "Unknown"}</span>
+                          <TagIcon className="w-4 h-4 text-gray-400" />
+                          <span>{tagItem.name || "Unknown"}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <ActivityIcon className="w-4 h-4 text-gray-400" />
+                          <span>{tagItem.memo_c || "Unknown"}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <ActivityIcon className="w-4 h-4 text-gray-400" />
+                          <span>{tagItem.type || "Unknown"}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar1 className="w-4 h-4 text-gray-400" />
+                          <span>{tagItem.date_modified || "Unknown"}</span>
+                        </div>
+                      </td>
+                      {/* <td className="px-6 py-4">
                         <button
                           onClick={() => handleConfirmDelete()}
                           disabled={
@@ -197,7 +228,7 @@ export function TagManagerpage() {
                         >
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
               </tbody>

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import { showConsole } from "../../assets/assets";
+import { fetchGpc } from "../../services/api";
 
 const quickActionBtnSlice = createSlice({
     name: "quickActionBtn",
@@ -34,21 +34,10 @@ const quickActionBtnSlice = createSlice({
 export const getQuickActionBtn = () => {
     return async (dispatch, getState) => {
         dispatch(quickActionBtnSlice.actions.getQuickActionBtnRequest());
-
         try {
-            const response = await axios.get(
-                `${getState().user.crmEndpoint}&type=quick_actions`
-            );
-
-            const data = response.data;
+            const data = await fetchGpc({ params: { type: "quick_actions" } });
             showConsole && console.log("QUICK ACTION:", data);
-
-            dispatch(
-                quickActionBtnSlice.actions.getQuickActionBtnSuccess({
-                    buttons: data.data ?? [],
-                })
-            );
-
+            dispatch(quickActionBtnSlice.actions.getQuickActionBtnSuccess({ buttons: data.data ?? [], }));
             dispatch(quickActionBtnSlice.actions.clearErrors());
         } catch (error) {
             dispatch(

@@ -1,6 +1,7 @@
 import useModule from "../../../hooks/useModule";
 import {
   CREATE_DEAL_API_KEY,
+  FETCH_GPC_X_API_KEY,
   TINY_EDITOR_API_KEY,
 } from "../../../store/constants";
 import { motion } from "framer-motion";
@@ -15,7 +16,8 @@ import { PageContext } from "../../../context/pageContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
-import axios from "axios";
+import { apiRequest, fetchGpc } from "../../../services/api";
+import { bouncy } from "ldrs";
 
 export default function TemplatesPage() {
   const [viewItem, setViewItem] = useState(null);
@@ -47,6 +49,10 @@ export default function TemplatesPage() {
       : null,
     method: "POST",
     body: { stage_type: stageType },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+    },
     name: "emailTemplates",
   });
   const {
@@ -82,11 +88,7 @@ export default function TemplatesPage() {
     const fetchStages = async () => {
       setStagesLoading(true);
       try {
-        const { data } = await axios.post(
-          `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`,
-          { stages: 1 },
-        );
-
+        const data = await fetchGpc({ method: "POST", params: { type: 'templates' }, body: { stages: 1 } });
         console.log(data);
 
         if (data && typeof data === "object") {
@@ -143,28 +145,21 @@ export default function TemplatesPage() {
         },
       };
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const data = await apiRequest({
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'post_data' }
+      }
       );
 
-      const responseText = await response.text();
-      let result;
 
-      try {
-        result = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        result = {};
-      }
 
-      if (response.ok && (result.parent_updated === true || result.parent_id)) {
+      if (data.parent_updated === true || data.parent_id) {
         setOriginalContent(editorContent);
         setIsChanged(false);
         alert("✅ Template saved successfully!");
@@ -174,7 +169,7 @@ export default function TemplatesPage() {
         }, 1000);
       } else {
         alert(
-          `❌ Save failed: ${result.error || result.message || "Unknown error"}`,
+          `❌ Save failed: ${data.error || data.message || "Unknown error"}`,
         );
       }
     } catch (err) {
@@ -199,19 +194,18 @@ export default function TemplatesPage() {
         },
       };
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const result = await apiRequest({
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'post_data' }
+      }
       );
 
-      const result = await response.json();
 
       if (result.parent_updated) {
         alert("✅ Stage updated successfully");
@@ -261,33 +255,23 @@ export default function TemplatesPage() {
 
       console.log("Creating new template:", requestBody);
 
-      const response = await fetch(
-        `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=post_data`,
-        {
-          method: "POST",
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+      const data = await apiRequest({
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(requestBody),
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: 'post_data' }
+      }
       );
 
-      const responseText = await response.text();
-      let result;
 
-      try {
-        result = responseText ? JSON.parse(responseText) : {};
-      } catch (e) {
-        result = {};
-      }
 
-      showConsole && console.log("Create response:", result);
+      showConsole && console.log("Create response:", data);
 
-      if (
-        response.ok &&
-        (result.parent_updated === true || result.parent_id || result.id)
-      ) {
+      if (data.parent_updated === true || data.parent_id || data.id) {
         alert("✅ New template created successfully!");
 
         setNewTemplateName("");
@@ -300,7 +284,7 @@ export default function TemplatesPage() {
         }, 1000);
       } else {
         alert(
-          `❌ Failed to create template: ${result.error || result.message || "Unknown error"}`,
+          `❌ Failed to create template: ${data.error || data.message || "Unknown error"}`,
         );
       }
     } catch (err) {
@@ -569,11 +553,10 @@ export default function TemplatesPage() {
               <button
                 onClick={handleCreateNewTemplate}
                 disabled={isCreating}
-                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${
-                  isCreating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700"
-                }`}
+                className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition ${isCreating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+                  }`}
               >
                 {isCreating ? (
                   <>
@@ -649,11 +632,10 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isSaving
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                 >
                   {isSaving ? (
                     <>
@@ -830,11 +812,10 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                stageType === key
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
             >
               {label}
             </button>

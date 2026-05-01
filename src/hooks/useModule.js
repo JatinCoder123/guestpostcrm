@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
-import { base64ToUtf8, showConsole } from "../assets/assets";
+import { showConsole } from "../assets/assets";
+import { apiRequest } from "../services/api";
 
 const useModule = ({
   url,
@@ -21,14 +21,13 @@ const useModule = ({
     setError(null);
 
     try {
-      const response = await axios({
-        url,
+      const data = await apiRequest({
+        endpoint: url,
         method,
-        data: body,
+        body,
         headers,
       });
-      showConsole && console.log(name, response);
-      let data = response.data;
+      showConsole && console.log(name, data);
       setData(data);
     } catch (err) {
       setError(err);
@@ -41,13 +40,13 @@ const useModule = ({
     setError(null);
 
     try {
-      const response = await axios({
-        url,
+      const data = await apiRequest({
+        endpoint: url,
         method,
-        data: body,
+        body,
         headers,
       });
-      showConsole && console.log(response.data);
+      showConsole && console.log(data);
     } catch (err) {
       console.log(err)
       setError(err);
@@ -60,13 +59,13 @@ const useModule = ({
     setError(null);
 
     try {
-      const response = await axios({
-        url,
+      const data = await apiRequest({
+        endpoint: url,
         method,
-        data: body,
+        body,
         headers,
       });
-      showConsole && console.log(`${Object.entries(body)} : `, response.data);
+      showConsole && console.log(`${Object.entries(body)} : `, data);
     } catch (err) {
       setError(err);
     } finally {
