@@ -1,22 +1,16 @@
 import {
   Bot,
   Bug,
-  BugOff,
-  Clock9Icon,
   Cpu,
   CreditCard,
   Database,
   FileCog,
-  Gamepad2,
   GamepadIcon,
   Globe,
   Joystick,
   Phone,
-  Settings2Icon,
-  Sparkle,
   Users,
 } from "lucide-react";
-import { FaInternetExplorer } from "react-icons/fa";
 import { Link, Outlet } from "react-router-dom";
 
 export function SettingsPage() {
@@ -57,13 +51,6 @@ export function SettingsPage() {
       link: "users",
     },
     {
-      title: "General Management",
-      subtitle: "General settings",
-      icon: <Settings2Icon className="w-8 h-8 text-cyan-600" />,
-      bg: "bg-cyan-50",
-      link: "users",
-    },
-    {
       title: "Button Management",
       subtitle: "Button management",
       icon: <GamepadIcon className="w-8 h-8 text-pink-600" />,
@@ -85,32 +72,11 @@ export function SettingsPage() {
       link: "controller",
     },
     {
-      title: "Prompt Testing",
-      subtitle: "Test and optimize prompts",
-      icon: <Sparkle className="w-8 h-8 text-cyan-600" />,
-      bg: "bg-cyan-50",
-      link: "prompt-testing",
-    },
-    {
-      title: "Prompt Explorer",
-      subtitle: "Explore prompts",
-      icon: <Bot className="w-8 h-8 text-cyan-600" />,
-      bg: "bg-cyan-50",
-      link: "prompt-explorer",
-    },
-    {
       title: "QA PlayGround",
       subtitle: "See Error Logs ",
       icon: <Bug className="w-8 h-8 text-red-600" />,
       bg: "bg-red-50",
       link: "debugging",
-    },
-    {
-      title: "Self Test",
-      subtitle: "Test GPC ",
-      icon: <BugOff className="w-8 h-8 text-green-600" />,
-      bg: "bg-green-50",
-      link: "self-test",
     },
     {
       title: "Data Modelling",
