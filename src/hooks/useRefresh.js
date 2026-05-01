@@ -27,7 +27,6 @@ import { getDetection } from "../store/Slices/detection";
 import {
     getContact,
     getViewEmail,
-    viewEmailAction,
 } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
@@ -49,19 +48,25 @@ function useRefresh() {
     const { emails } = useSelector((state) => state.unreplied);
     const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
     const { timeline } = useSelector((state) => state.ladger);
+    const { contactInfo } = useSelector(state => state.viewEmail)
+    const threadId = contactInfo?.thread_id
     const [firstEmail, setFirstEmail] = useState(null);
     const refreshLadger = () => {
-        if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail, brand: showBrandTimeline }));
-            dispatch(getViewEmail({ email: enteredEmail }));
-            dispatch(getContact(enteredEmail));
-        } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail, brand: showBrandTimeline }));
-            dispatch(getViewEmail({ email: firstEmail }));
-            dispatch(getContact(firstEmail));
+        if (currentEventThreadId == threadId) {
+            if (enteredEmail) {
+                dispatch(getLadger({ email: enteredEmail, brand: showBrandTimeline }));
+                dispatch(getViewEmail({ email: enteredEmail }));
+                dispatch(getContact(enteredEmail));
+            } else if (firstEmail) {
+                dispatch(getLadger({ email: firstEmail, brand: showBrandTimeline }));
+                dispatch(getViewEmail({ email: firstEmail }));
+                dispatch(getContact(firstEmail));
+            }
+
         }
         dispatch(getEmailsCount({}))
         dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
+
     };
     useEffect(() => {
         dispatch(getAllUsers())

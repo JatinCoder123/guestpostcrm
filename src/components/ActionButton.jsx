@@ -96,7 +96,7 @@ const ActionButton = () => {
   const triggerHashtag = (memo_no, method = "GET") => {
     applyHashtag({
       domain: crmEndpoint,
-      email: enteredEmail,
+      email: contactInfo?.email1,
       memo_no,
       method,
     });
@@ -191,6 +191,7 @@ const ActionButton = () => {
         />
       ),
       label: "IP",
+      disabled: false,
       action: () => navigate("/ip"),
     },
     {
@@ -202,6 +203,8 @@ const ActionButton = () => {
         />
       ),
       label: "Mark Tag",
+      disabled: false,
+
       action: () => {
         setShowTags((p) => !p);
         dispatch(getTags());
@@ -218,6 +221,8 @@ const ActionButton = () => {
         <Heart size={25} color={isFavActive ? "white" : "#dc2626"} />
       ),
       label: "Favourite",
+      disabled: favourite,
+
       active: isFavActive,
       activeProps: {
         color: "#dc2626",
@@ -240,6 +245,8 @@ const ActionButton = () => {
           alt="forward"
         />
       ),
+      disabled: forward,
+
       label: "Assign",
       // hashtag fires inside handleForwardWithHashtag when user picks someone
       action: () => setShowUsers((p) => !p),
@@ -252,6 +259,8 @@ const ActionButton = () => {
         <Link size={25} color={isExchangeActive ? "white" : "#2563eb"} />
       ),
       label: "Link Exchange",
+      disabled: exchanging,
+
       active: isExchangeActive,
       activeProps: {
         color: "#2563eb",
@@ -273,6 +282,8 @@ const ActionButton = () => {
         ),
       label: isMark ? "Remove From MarketPlace" : "Add To MarketPlace",
       active: isMark,
+      disabled: adding || (deleting && deleteMarketPlaceId == isMark?.id),
+
       activeProps: {
         color: "#ea580c",
         fill: "#d40d8b",
@@ -298,6 +309,8 @@ const ActionButton = () => {
           color={contactInfo?.is_stop === "1" ? "red" : "#eab308"}
         />
       ),
+      disabled: stopLoading,
+
       label:
         contactInfo?.is_stop === "1" ? "Resume Emails" : "Stop Future Emails",
       // GET when stopping emails, DELETE when resuming
@@ -371,6 +384,7 @@ const ActionButton = () => {
             ) : (
               <>
                 <button
+                  disabled={btn.disabled}
                   onClick={(e) => {
                     e.stopPropagation();
                     btn.action();
@@ -392,7 +406,7 @@ const ActionButton = () => {
   shadow-md
   hover:shadow-xl hover:-translate-y-1
   active:scale-95
-  transition-all duration-200
+  transition-all duration-200 ${btn.disabled ? "pointer-none" : ""}
   ${btn.active ? "ring-2 ring-black/30" : ""}
   ${contactLoading && btn.label.includes("Emails") ? "opacity-60 pointer-events-none" : ""}
 `}
