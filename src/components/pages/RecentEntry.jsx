@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useContext } from "react";
 import { getEvents } from "../../store/Slices/eventSlice";
 import {
-  excludeEmail,
   excludeName,
   extractEmail,
   periodOptions,
@@ -144,7 +143,7 @@ export function RecentEntry() {
           {events?.map((event, index) => {
             const contactName = excludeName(event.real_name) ?? "—";
             const emailValue =
-              excludeEmail(
+              extractEmail(
                 event.real_name === "User" ? event?.name : event.real_name,
               ) ?? "—";
 

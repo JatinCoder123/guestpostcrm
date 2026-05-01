@@ -81,13 +81,12 @@ const ActionButton = () => {
   const navigate = useNavigate();
   const {
     loading,
-    deleteMarketPlaceId,
     items: marketPlaces,
     error: markingError,
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
   const markInfo = marketPlaces.find((e) => e.name === contactInfo?.email1) ?? null
-  const isMark = contactInfo?.bulk == "1"
+  const isMark = Number(contactInfo?.bulk) == 1
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite === "1";
   const isExchangeActive = contactInfo?.exchange === "1";

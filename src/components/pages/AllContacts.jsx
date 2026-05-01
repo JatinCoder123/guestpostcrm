@@ -1,32 +1,105 @@
-import { useContext, useEffect, useState } from "react";
 import {
     Calendar,
     User2,
-    Contact2Icon,
+    Globe,
+    BadgeDollarSign,
     ChartNoAxesColumn,
-    TrendingUp,
-    ChartSpline,
+    Clapperboard,
+    Trash,
+    Handshake,
+    Eye,
+    ContactRound,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { useContext, useEffect, useState } from "react";
+import { deleteDeal, getDeals } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
-import { addContact, contactAction } from "../../store/Slices/contacts";
-import UpdatePopup from "../UpdatePopup";
-import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { extractEmail } from "../../assets/assets";
+import TableView, { Table } from "../ui/table/Table";
+import TableTitleBar from "../ui/table/TableTitleBar";
+import { LoadingChase } from "../Loading.jsx";
+import UpdatePopup from "../UpdatePopup";
 
+import {
+    ShieldCheckIcon,
+    ShieldAlert,
+    UserCheck,
+    UserX,
+    BadgeCheck,
+    FileText,
+    ShoppingCart,
+    AlertTriangle
+} from "lucide-react";
+import { addContact, contactAction, getAllContacts } from "../../store/Slices/contacts.js";
+import { toast } from "react-toastify";
 
+const STATUS_CONFIG = [
+    {
+        value: "new",
+        label: "New",
+        icon: ShieldCheckIcon,
+        color: "#3B82F6", // blue
+        showAmount: true,
+    },
+    {
+        value: "unverified",
+        label: "Unverified",
+        icon: UserX,
+        color: "#F59E0B", // amber
+        showAmount: true,
+    },
+    {
+        value: "verified",
+        label: "Verified",
+        icon: UserCheck,
+        color: "#10B981", // green
+        showAmount: true,
+    },
+    {
+        value: "deal",
+        label: "Deal",
+        icon: FileText,
+        color: "#6366F1", // indigo
+        showAmount: true,
+    },
+    {
+        value: "offer",
+        label: "Offer",
+        icon: BadgeCheck,
+        color: "#8B5CF6", // violet
+        showAmount: true,
+    },
+    {
+        value: "order",
+        label: "Order",
+        icon: ShoppingCart,
+        color: "#22C55E", // green
+        showAmount: true,
+    },
+    {
+        value: "defaulter",
+        label: "Defaulter",
+        icon: AlertTriangle,
+        color: "#EF4444", // red
+        showAmount: true,
+    }
+];
 export default function AllContacts() {
-    const { contacts, loading, adding, message, error } = useSelector((state) => state.contacts);
-    const { handleDateClick } = useContext(PageContext);
+    const { count, contacts, loading, pageIndex, summary, adding, message, error } =
+        useSelector((state) => state.contacts);
     const [open, setOpen] = useState(false)
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
+
+    const { handleDateClick } =
+        useContext(PageContext);
+    const navigateTo = useNavigate();
+    const dispatch = useDispatch();
     useEffect(() => {
         if (message) {
             toast.success(message)
             setOpen(false)
             dispatch(contactAction.clearAllMessage())
-            navigate("/")
+            navigateTo("/")
 
 
         }
@@ -36,6 +109,91 @@ export default function AllContacts() {
             dispatch(contactAction.clearAllErrors)
         }
     }, [message, error])
+    const columns = [
+        {
+            label: "Created At",
+            accessor: "date_entered",
+            headerClasses: "",
+            icon: Calendar,
+
+            onClick: (row) => handleDateClick({ email: row?.email_address ?? `${row?.first_name} ${row?.last_name} `, navigate: "/" }),
+            classes: "truncate max-w-[200px]",
+            render: (row) => (
+                <span className="font-medium text-gray-700 cursor-pointer">
+                    {row.date_entered}
+                </span>
+            ),
+        },
+        {
+            label: "Name",
+            accessor: "first_name",
+            headerClasses: "",
+            icon: User2,
+            classes: "truncate max-w-[200px]",
+            onClick: (row) =>
+                handleDateClick({ email: row?.email_address, navigate: "/contacts" }),
+
+            render: (row) => (
+                <span className="font-medium text-gray-700 cursor-pointer">
+                    {row?.first_name || ""} {row?.last_name || ""}                </span>
+            ),
+        },
+        {
+            label: "Type",
+            accessor: "type",
+            headerClasses: "",
+            icon: Globe,
+            classes: "truncate ",
+            render: (row) => (
+                <span className="font-medium text-blue-700 ">   {row?.type}</span>
+            ),
+        },
+        {
+            label: "Stage",
+            accessor: "stage",
+            headerClasses: "",
+            icon: BadgeDollarSign,
+            classes: "truncate max-w-[300px]",
+
+            render: (row) => (
+                <span className="font-medium text-green-700 ">{row?.stage}</span>
+            ),
+        },
+
+        {
+            label: "Status",
+            accessor: "status",
+            headerClasses: "",
+            icon: ChartNoAxesColumn,
+            classes: "truncate max-w-[300px]",
+
+            render: (row) => (
+                <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+                    {row?.status}
+                </span>
+            ),
+        },
+        {
+            label: "Customer Type",
+            accessor: "customer_type",
+            headerClasses: "",
+            icon: Calendar,
+            classes: "truncate max-w-[300px]",
+
+            render: (row) => (
+                <span className="font-medium text-green-700 "> {row?.customer_type || ""}</span>
+            ),
+        },
+
+    ];
+    const statusList = STATUS_CONFIG.map((config) => {
+        return {
+            ...config,
+            count: Number(summary?.[`${config.value}`]?.count || 0),
+            field: summary?.[`${config.value}`]?.field
+        };
+    });
+    const statusCount = Object.values(summary).reduce((acc, curr) => acc + curr?.count, 0)
     return (
         <>
             {open && <UpdatePopup
@@ -68,152 +226,41 @@ export default function AllContacts() {
                 onUpdate={(contact) => dispatch(addContact(contact))}
                 buttonLabel="Create"
             />}
-
-            <div className="p-4">
-                {/* Header */}
-                <div className="flex items-center  justify-between gap-2 mb-4">
-                    <div className="flex items-center  justify-between gap-2 ">
-                        <Contact2Icon className="text-fuchsia-600" />
-                        <h2 className="text-lg font-semibold text-fuchsia-700">
-                            Contacts
-                        </h2>
-                    </div>
-
-                    <div>
+            <TableView
+                tableData={contacts}
+                tableName={"Contacts"}
+                columns={columns}
+                slice={"contacts"}
+                statusKey={"stage"}
+                statusList={statusList}
+                statusCount={statusCount}
+                fetchNextPage={() => dispatch(
+                    getAllContacts({ page: pageIndex + 1 }))}
+            >{
+                    <div className="absolute -top-1 right-10">
                         <button
                             className="cursor-pointer"
                             onClick={() => setOpen(true)}
                         >
                             <img
-                                width="36"
-                                height="36"
+                                width="30"
+                                height="30"
                                 src="https://img.icons8.com/arcade/64/plus.png"
                                 alt="plus"
                             />
                         </button>
                     </div>
-                </div>
-
-                {/* Table */}
-                <div className="overflow-x-auto border rounded-xl shadow-sm">
-                    <table className="w-full border-collapse">
-                        {/* THEAD */}
-                        <thead className="bg-fuchsia-600 text-white text-sm">
-                            <tr>
-                                <th className="px-4 py-3 text-left">
-                                    <div className="flex items-center gap-2">
-                                        <Calendar size={16} /> Created At
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 text-left">
-                                    <div className="flex items-center gap-2">
-                                        <User2 size={16} /> Name
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 text-left">
-                                    <div className="flex items-center gap-2">
-                                        <ChartNoAxesColumn size={16} /> Type
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 text-left">
-                                    <div className="flex items-center gap-2">
-                                        <ChartSpline size={16} /> Stage
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 text-left">
-                                    <div className="flex items-center gap-2">
-                                        <TrendingUp size={16} /> Status
-                                    </div>
-                                </th>
-                                <th className="px-4 py-3 text-left">
-                                    <div className="flex items-center gap-2">
-                                        <ChartNoAxesColumn size={16} /> Category
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-
-                        {/* TBODY */}
-                        <tbody className="text-sm">
-                            {loading && (
-                                <tr>
-                                    <td colSpan="6" className="text-center py-4 text-gray-500">
-                                        Loading more...
-                                    </td>
-                                </tr>
-                            )}
-                            {/* Show existing data ALWAYS if available */}
-                            {contacts?.length > 0 &&
-                                contacts.map((row, index) => (
-                                    <tr
-                                        key={index}
-                                        className="border-t hover:bg-gray-50 transition cursor-pointer"
-                                    >
-                                        {/* Created At */}
-                                        <td
-                                            onClick={() =>
-                                                handleDateClick({ email: row?.email_address, navigate: "/" })
-                                            }
-                                            className="px-4 py-3 text-gray-700"
-                                        >
-                                            {row.date_entered}
-                                        </td>
-
-                                        {/* Name */}
-                                        <td
-                                            onClick={() =>
-                                                handleDateClick({ email: row?.email_address, navigate: "/contacts" })
-                                            }
-                                            className="px-4 py-3 text-gray-700 font-medium"
-                                        >
-                                            {row?.first_name || ""} {row?.last_name || ""}
-                                        </td>
-
-                                        {/* Type */}
-                                        <td className="px-4 py-3">
-                                            <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                                                {row?.type}
-                                            </span>
-                                        </td>
-
-                                        {/* Stage */}
-                                        <td className="px-4 py-3">
-                                            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                                                {row?.stage}
-                                            </span>
-                                        </td>
-
-                                        {/* Status */}
-                                        <td className="px-4 py-3">
-                                            <span className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-medium">
-                                                {row?.status}
-                                            </span>
-                                        </td>
-
-                                        {/* Customer Type */}
-                                        <td className="px-4 py-3">
-                                            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                                                {row?.customer_type || ""}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-
-                            {/* Show loader row WITHOUT hiding data */}
-
-
-                            {/* Show empty state ONLY when no data AND not loading */}
-                            {!loading && contacts?.length === 0 && (
-                                <tr>
-                                    <td colSpan="6" className="text-center py-6 text-gray-500">
-                                        No Contacts Found
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                }
+                <TableTitleBar
+                    Icon={ContactRound}
+                    title={"Contacts"}
+                    titleClass={"text-fuchsia-600"}
+                />
+                <Table
+                    headerStyle={"  bg-fuchsia-600"}
+                    layoutStyle={"grid grid-cols-[1fr_1fr_1fr_200px_200px_1fr]"}
+                />
+            </TableView>
         </>
 
     );
