@@ -87,32 +87,10 @@ export const getAllContacts = ({ page = 1 }) => {
 export const addContact = (contactData) => {
     return async (dispatch, getState) => {
         dispatch(contactSlice.actions.addContactRequest());
-
         showConsole && console.log("contactData", contactData);
-
-        const domain = getState().user.crmEndpoint.split("?")[0];
-
         try {
-            // Base payload (always send parent_bean)
-            const payload = {
-                parent_bean: {
-                    module: "Contacts",
-                    ...contactData,
-                },
-            };
 
-
-
-            const { data } = await axios.post(
-                `${domain}?entryPoint=get_post_all&action_type=post_data`,
-                payload,
-                {
-                    headers: {
-                        "X-Api-Key": CREATE_DEAL_API_KEY,
-                        "Content-Type": "application/json", // typo fixed
-                    },
-                },
-            );
+            const { data } = await axios.post(`${getState().user.crmEndpoint}&type=create_contact`, contactData,);
 
             showConsole && console.log("added contact", data);
             dispatch(getAllContacts({}));
