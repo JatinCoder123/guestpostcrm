@@ -119,7 +119,7 @@ const RootLayout = () => {
             }`}
         >
           <div className="p-3">
-            {isLowCredit && <LowCreditWarning score={currentScore} />}
+            {/* {isLowCredit && <LowCreditWarning score={currentScore} />} */}
             <div className="p-3">
               <WelcomeHeader />
               <Outlet />

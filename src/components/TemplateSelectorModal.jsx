@@ -8,6 +8,7 @@ import { LoadingChase } from "./Loading";
 import { useSelector } from "react-redux";
 import { createPortal } from "react-dom";
 import { apiRequest, fetchGpc } from "../services/api";
+import { FETCH_GPC_X_API_KEY } from "../store/constants";
 
 export default function TemplateSelectorModal({
   isOpen,
@@ -77,6 +78,10 @@ export default function TemplateSelectorModal({
       : null,
     method: "POST",
     body: { stage_type: stageType, assigned_user_id: assignUserId },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+    },
     name: "TEMPLATE LIST IN MODAL",
     dependencies: [crmEndpoint, stageType],
     enabled: !!stageType && isOpen,

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { apiRequest } from "../../services/api";
+import { apiRequest, fetchGpc } from "../../services/api";
 
 const contactSlice = createSlice({
     name: "contacts",
@@ -89,33 +89,9 @@ export const getAllContacts = ({ page = 1 }) => {
 export const addContact = (contactData) => {
     return async (dispatch, getState) => {
         dispatch(contactSlice.actions.addContactRequest());
-
         showConsole && console.log("contactData", contactData);
-
-        const domain = getState().user.crmEndpoint.split("?")[0];
-
         try {
-            // Base payload (always send parent_bean)
-            const payload = {
-                parent_bean: {
-                    module: "Contacts",
-                    ...contactData,
-                },
-            };
-
-
-
-            const { data } = await axios.post(
-                `${domain}?entryPoint=get_post_all&action_type=post_data`,
-                payload,
-                {
-                    headers: {
-                        "X-Api-Key": CREATE_DEAL_API_KEY,
-                        "Content-Type": "application/json", // typo fixed
-                    },
-                },
-            );
-
+            const data = await fetchGpc({ params: { type: 'create_contact' }, method: "POST", body: contactData });
             showConsole && console.log("added contact", data);
             dispatch(getAllContacts({}));
             dispatch(contactSlice.actions.addContactSucess("Contact Created Successfully."));

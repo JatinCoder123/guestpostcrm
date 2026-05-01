@@ -93,11 +93,7 @@ export const getDuplicateCount = () => {
 
                 return;
             }
-
-            const domain = state.user.crmEndpoint.split("?")[0];
-            let url;
-
-            const email = state.viewEmail.contactInfo.email1
+            const email = state.viewEmail.contactInfo?.email1
 
             const { data } = await fetchGpc({ params: { type: 'get_duplicate', ...(email ? { email } : {}) } });
 

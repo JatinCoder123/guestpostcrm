@@ -1,4 +1,5 @@
 import axios from "axios";
+import { FETCH_GPC_X_API_KEY } from "../store/constants";
 let CRMENDPOINT = ""
 export function setCrmEndpoint(endpoint) {
     CRMENDPOINT = endpoint
@@ -58,7 +59,7 @@ export const fetchGpc = async ({
         params,
         headers: {
             "Content-Type": "application/json",
-            "X-Api-Key": "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X", // 🔥 replace with env variable
+            "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
             ...headers,
         },
     });

@@ -1,6 +1,7 @@
 import useModule from "../../../hooks/useModule";
 import {
   CREATE_DEAL_API_KEY,
+  FETCH_GPC_X_API_KEY,
   TINY_EDITOR_API_KEY,
 } from "../../../store/constants";
 import { motion } from "framer-motion";
@@ -48,6 +49,10 @@ export default function TemplatesPage() {
       : null,
     method: "POST",
     body: { stage_type: stageType },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+    },
     name: "emailTemplates",
   });
   const {

@@ -45,21 +45,15 @@ export default function AllContacts() {
                 title="Create Contact"
                 fields={[
                     {
-                        label: "First Name",
-                        name: "first_name",
+                        label: "Name",
+                        name: "name",
                         type: "text",
                         value: "",
                         required: true,
                     },
                     {
-                        label: "Last Name",
-                        name: "last_name",
-                        type: "text",
-                        value: "",
-                    },
-                    {
                         label: "Email",
-                        name: "email1",
+                        name: "email",
                         type: "text",
                         value: "",
                         required: true
