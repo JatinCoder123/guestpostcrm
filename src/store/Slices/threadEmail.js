@@ -79,7 +79,7 @@ export const getThreadEmail = (email, threadId) => {
       }
 
 
-      const data = await fetchGpc({ params: { type: "view_thead", thread_id: threadId, email } });
+      const data = await fetchGpc({ params: { type: "view_thread", thread_id: threadId, email } });
       const freshData = {
         threadEmail: data.emails || [],
         count: data.total_emails ?? 0,
@@ -139,7 +139,7 @@ export const getThreadEmail = (email, threadId) => {
 
           if (!getCache("threadMails", trimId)) {
             try {
-              const data = await fetchGpc({ params: { type: "view_thead", thread_id: item.thread, email: item.email } });
+              const data = await fetchGpc({ params: { type: "view_thread", thread_id: item.thread, email: item.email } });
               setCache("threadMails", trimId, {
                 threadEmail: data.emails || [],
                 count: data.total_emails ?? 0,
