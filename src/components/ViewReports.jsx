@@ -25,6 +25,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { apiRequest } from "../services/api";
+import { FETCH_GPC_X_API_KEY } from "../store/constants";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -965,7 +966,13 @@ export default function ViewReports() {
   const fetchSummary = async (fd, ft, td, tt) => {
     try {
       const url = fd ? buildUrl(fd, ft, td, tt) : `${crmEndpoint}&type=report`;
-      const data = await apiRequest({ endpoint: url });
+      const data = await apiRequest({
+        endpoint: url,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+        },
+      });
       if (data?.success) setBaseSummary(data);
     } catch (err) {
       console.error("Summary fetch failed:", err);
@@ -977,6 +984,10 @@ export default function ViewReports() {
     try {
       const data = await apiRequest({
         endpoint: buildUrl(fd, ft, td, tt, extra),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+        },
       });
       setApiResponse(data?.success ? data : null);
     } catch {
@@ -989,7 +1000,13 @@ export default function ViewReports() {
   const fetchTablePlain = async (extra = {}) => {
     setLoading(true);
     try {
-      const data = await apiRequest({ endpoint: buildPlainUrl(extra) });
+      const data = await apiRequest({
+        endpoint: buildPlainUrl(extra),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+        },
+      });
       setApiResponse(data?.success ? data : null);
     } catch {
       setApiResponse(null);
