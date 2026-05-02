@@ -15,7 +15,7 @@ export function MachineLearningPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const promptId = location.state?.prompt?.prompt_id;
-  const promptStatus = location.state?.prompt?.prompt_type;
+  const promptStatus = location.state?.prompt?.prompt_stage;
 
   const [stages, setStages] = useState({});
   const [activeStage, setActiveStage] = useState("");

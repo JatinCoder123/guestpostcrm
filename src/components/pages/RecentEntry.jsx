@@ -166,7 +166,7 @@ export function RecentEntry() {
                   <span className="truncate">{event.date_entered ?? "—"}</span>
 
                   <div className="flex items-center justify-center">
-                    {event?.prompt_details && (
+                    {event?.prompt_details.length > 0 && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
