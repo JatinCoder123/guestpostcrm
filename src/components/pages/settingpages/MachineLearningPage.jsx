@@ -14,8 +14,8 @@ export function MachineLearningPage() {
   const { crmEndpoint } = useSelector((state) => state.user);
   const location = useLocation();
   const navigate = useNavigate();
-  const promptId = location.state?.promptId;
-  const promptStatus = location.state?.promptStatus;
+  const promptId = location.state?.prompt?.prompt_id;
+  const promptStatus = location.state?.prompt?.prompt_type;
 
   const [stages, setStages] = useState({});
   const [activeStage, setActiveStage] = useState("");

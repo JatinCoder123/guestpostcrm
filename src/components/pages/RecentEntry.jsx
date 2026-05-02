@@ -171,7 +171,7 @@ export function RecentEntry() {
                         onClick={(e) => {
                           e.stopPropagation();
 
-                          navigateTo("/settings/debugging", {
+                          navigateTo("/settings/machine-learning", {
                             state: { prompt: event.prompt_details[0] },
                           });
                         }}

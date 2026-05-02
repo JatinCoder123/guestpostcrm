@@ -414,7 +414,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                         {event.prompt_details && (
                           <button
                             onClick={() =>
-                              navigateTo("settings/debugging", {
+                              navigateTo("settings/machine-learning", {
                                 state: { prompt: event.prompt_details[0] },
                               })
                             }
