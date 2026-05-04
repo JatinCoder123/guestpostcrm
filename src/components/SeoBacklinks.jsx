@@ -464,10 +464,10 @@ function LinkTableRow({
       {/* Anchor Verdict */}
       <div className="flex items-center gap-2">
         {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
-        {link.link_verdict_prompt_ledger && (
+        {link.link_verdict_prompt_ledger.length > 0 && (
           <button
             onClick={() =>
-              navigateTo("/settings/debugging", {
+              navigateTo("/settings/machine-learning", {
                 state: { prompt: link.link_verdict_prompt_ledger[0] },
               })
             }
@@ -502,7 +502,7 @@ function LinkTableRow({
         {link.link_verdict_prompt_ledger && (
           <button
             onClick={() =>
-              navigateTo("/settings/debugging", {
+              navigateTo("/settings/machine-learning", {
                 state: { prompt: link.link_verdict_prompt_ledger[0] },
               })
             }
@@ -559,10 +559,10 @@ function LinkTableRow({
           }
         })()}
         {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
-        {link.link_verdict_prompt_ledger && (
+        {link.link_verdict_prompt_ledger.length > 0 && (
           <button
             onClick={() =>
-              navigateTo("/settings/debugging", {
+              navigateTo("/settings/machine-learning", {
                 state: { prompt: link.link_verdict_prompt_ledger[0] },
               })
             }
@@ -805,7 +805,7 @@ function DocumentAnalysisCard({
             {ContentVerdictPromptLedger && (
               <button
                 onClick={() =>
-                  navigateTo("/settings/debugging", {
+                  navigateTo("/settings/machine-learning", {
                     state: { prompt: ContentVerdictPromptLedger },
                   })
                 }

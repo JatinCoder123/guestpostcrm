@@ -237,11 +237,9 @@ export function OrdersPage() {
               <button
                 onClick={() => {
                   dispatch(
-                    updateOrder(
-                      { ...row, order_status: "completed" },
-                      false,
-                      row.order_id,
-                    ),
+                    updateOrder({
+                      order: { ...row, order_status: "completed" },
+                    }),
                   );
                   setUpdateOrderId(row.order_id);
                 }}
