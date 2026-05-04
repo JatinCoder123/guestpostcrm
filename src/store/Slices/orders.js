@@ -241,9 +241,10 @@ export const getOrders = ({
 export const createOrder = () => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
+    console.log("Hii");
     const domain = getState().user.crmEndpoint.split("?")[0];
     const crmEndpoint = getState().user.crmEndpoint;
-
+    const email = getState().viewEmail.contactInfo.email1;
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
         domain: crmEndpoint,
@@ -253,17 +254,18 @@ export const createOrder = () => {
       });
     };
     try {
-      data = await apiRequest({
+      const data = await apiRequest({
         endpoint: `${domain}?entryPoint=manual_order`,
-        email: getState().viewEmail.contactInfo.email1,
-        assigned_user_id: getState().crmUser.currentUser.id,
+        params: {
+          email,
+          assigned_user_id: getState().crmUser.currentUser.id,
+        },
       });
-      showConsole && console.log(`Orders created`, data);
-      if (!data.order.response) {
+      showConsole && console.log(`Orders created `, data);
+      if (!data.order.success) {
         dispatch(ordersSlice.actions.createOrderFailed(data.order));
         return;
       }
-      showConsole && console.log(`Orders created`, data);
       dispatch(
         ordersSlice.actions.createOrderSuccess("Order Created Successfully"),
       );
@@ -272,11 +274,11 @@ export const createOrder = () => {
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
-        getState().ladger.email,
+        crmEndpoint,
+        email,
         getState().user.user.name,
         getState().user.user.email,
-        "Order Fetched ",
+        "Order Created",
       );
     } catch (error) {
       dispatch(ordersSlice.actions.createOrderFailed("Creating Order Failed"));
