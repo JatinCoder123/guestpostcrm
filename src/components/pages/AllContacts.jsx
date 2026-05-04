@@ -4,26 +4,18 @@ import {
     Globe,
     BadgeDollarSign,
     ChartNoAxesColumn,
-    Clapperboard,
-    Trash,
-    Handshake,
-    Eye,
     ContactRound,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
-import { deleteDeal, getDeals } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../assets/assets";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { LoadingChase } from "../Loading.jsx";
 import UpdatePopup from "../UpdatePopup";
 
 import {
     ShieldCheckIcon,
-    ShieldAlert,
     UserCheck,
     UserX,
     BadgeCheck,

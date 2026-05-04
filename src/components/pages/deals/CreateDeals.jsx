@@ -25,7 +25,6 @@ export default function CreateDeals({ threadId, email }) {
   const { websites: websiteLists } = useSelector((state) => state.website);
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   const { crmEndpoint } = useSelector((state) => state.user);
-  const [expired, setExpired] = useState([]);
 
   // 🔥 now using deals everywhere
   const { deals, creating, message, error } = useSelector(
@@ -68,7 +67,6 @@ export default function CreateDeals({ threadId, email }) {
     const emailDeals = deals.filter(
       (d) => extractEmail(d.real_name ?? d.email) == email,
     );
-    setExpired(emailDeals.filter(o => o.status == "expire").map(eo => eo.website_c))
 
     const valid = websiteLists.filter((w) => {
       const usedInDeals = emailDeals.some((d) => d.website_c === w && d.status !== "expire");
@@ -201,16 +199,6 @@ export default function CreateDeals({ threadId, email }) {
                     </option>
                   ))}
                 </select>
-                {expired.includes(row.website_c) && (
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2 group cursor-pointer">
-                    <FcExpired size={20} />
-
-                    {/* Tooltip */}
-                    <div className="absolute right-0 top-8 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-50">
-                      This website deal is expired
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* DEAL AMOUNT */}

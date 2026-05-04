@@ -54,7 +54,7 @@ export function Sidebar() {
   }, []);
 
   // Redux counts
-  const { count: unrepliedCount, countLoading, emailsCount } = useSelector(
+  const { countLoading, emailsCount } = useSelector(
     (s) => s.unreplied,
   );
   const { contactLoading } = useSelector(

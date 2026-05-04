@@ -29,8 +29,8 @@ const STATUS_CONFIG = [
     showAmount: true,
   },
   {
-    value: "expired",
-    label: "Expired",
+    value: "expiry",
+    label: "Expiry",
     icon: ShieldAlert,
     color: "#EF4444", // red (red-500)
   },

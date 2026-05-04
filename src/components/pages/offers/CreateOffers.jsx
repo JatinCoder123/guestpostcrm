@@ -32,7 +32,6 @@ export default function CreateOffers({ threadId, email }) {
     (state) => state.offers,
   );
   const [send, setSend] = useState(false);
-  const [expired, setExpired] = useState([]);
   const { handleMove } = useThreadContext();
   const { data: templateData } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
@@ -64,7 +63,6 @@ export default function CreateOffers({ threadId, email }) {
     const threadOffers = offers.filter(
       (d) => extractEmail(d.real_name ?? d.email) == email,
     );
-    setExpired(threadOffers.filter(o => o.offer_status == "expired").map(eo => eo.website))
 
     const threadDeals = deals.filter(
       (d) => extractEmail(d.real_name ?? d.email) == email,
@@ -193,17 +191,6 @@ export default function CreateOffers({ threadId, email }) {
                     </option>
                   ))}
                 </select>
-
-                {expired.includes(row.website) && (
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2 group cursor-pointer">
-                    <FcExpired size={20} />
-
-                    {/* Tooltip */}
-                    <div className="absolute right-0 top-8 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-50">
-                      This website offer is expired
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="col-span-2 text-center">
