@@ -1,11 +1,7 @@
 import {
   Calendar,
   User2,
-  Gift,
   Pen,
-  Globe,
-  BadgeDollarSign,
-  ChartNoAxesColumn,
   Clapperboard,
   Package,
   CheckCircle,
@@ -32,11 +28,9 @@ import {
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
-import { ladgerAction } from "../../store/Slices/ladger";
-import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { LoadingAll, LoadingChase } from "../Loading.jsx";
+import { LoadingAll } from "../Loading.jsx";
 const STATUS_CONFIG = [
   {
     value: "new",
@@ -137,7 +131,7 @@ export function OrdersPage() {
       accessor: "website",
       headerClasses: "",
       icon: DollarSign,
-      classes: "truncate ",
+      classes: "truncate  max-w-[100px]",
       render: (row) => (
         <span className="font-medium text-blue-700 ">
           ${row.total_amount_c || "0.00"}{" "}
@@ -149,7 +143,7 @@ export function OrdersPage() {
       accessor: "order_status",
       headerClasses: "",
       icon: BarChart,
-      classes: "truncate max-w-[300px]",
+      classes: "truncate max-w-[200px]",
 
       render: (row) => (
         <span
@@ -164,7 +158,7 @@ export function OrdersPage() {
       accessor: "order_type",
       headerClasses: "",
       icon: BarChart3,
-      classes: "truncate max-w-[300px]",
+      classes: "truncate max-w-[200px]",
 
       render: (row) => (
         <span className="font-medium text-gray-700 ">{row?.order_type}</span>
@@ -175,7 +169,7 @@ export function OrdersPage() {
       accessor: "date_modified",
       headerClasses: "",
       icon: Calendar,
-      classes: "truncate max-w-[300px]",
+      classes: "truncate max-w-[200px]",
 
       render: (row) => (
         <span className="px-3 py-1  rounded-full ">{row?.date_modified}</span>
@@ -186,7 +180,7 @@ export function OrdersPage() {
       accessor: "order_id",
       headerClasses: "",
       icon: IdCardIcon,
-      classes: "truncate max-w-[300px]",
+      classes: "truncate max-w-[200px]",
 
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
@@ -199,7 +193,7 @@ export function OrdersPage() {
       accessor: "action",
       headerClasses: "ml-auto",
       icon: Clapperboard,
-      classes: "truncate max-w-[300px] ml-auto",
+      classes: "truncate max-w-[200px] ml-auto",
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
           <button
@@ -300,7 +294,7 @@ export function OrdersPage() {
       <Table
         headerStyle={"  bg-cyan-600"}
         layoutStyle={
-          "grid grid-cols-[200px_200px_200px_200px_200px_200px_200px_1fr]"
+          "grid grid-cols-[200px_200px_100px_200px_200px_200px_200px_1fr]"
         }
       />
     </TableView>
