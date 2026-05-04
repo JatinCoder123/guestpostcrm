@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { CREATE_DEAL_API_KEY } from "../constants";
+import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
 import { applyHashtag } from "../../services/utils";
 import {
@@ -214,8 +214,8 @@ export const getOrders = ({
       };
       brand
         ? (res = await fetchGpc({
-            params: { type: "brandTimeline", case: "order", ...params },
-          }))
+          params: { type: "brandTimeline", case: "order", ...params },
+        }))
         : (res = await fetchGpc({ params: { type: "get_orders", ...params } }));
       const data = brand ? res.data.order : res;
       showConsole && console.log(`${brand ? "brand" : ""} Orders `, data);
@@ -241,10 +241,9 @@ export const getOrders = ({
 export const createOrder = () => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
-    console.log("Hii");
     const domain = getState().user.crmEndpoint.split("?")[0];
     const crmEndpoint = getState().user.crmEndpoint;
-    const email = getState().viewEmail.contactInfo.email1;
+    const email = getState().viewEmail.contactInfo?.email1;
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
         domain: crmEndpoint,
@@ -258,8 +257,11 @@ export const createOrder = () => {
         endpoint: `${domain}?entryPoint=manual_order`,
         params: {
           email,
-          assigned_user_id: getState().crmUser.currentUser.id,
+          assigned_user_id: getState().crmUser.currentUser?.id,
         },
+        headers: {
+          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+        }
       });
       showConsole && console.log(`Orders created `, data);
       if (!data.order.success) {
@@ -306,25 +308,25 @@ export const createOrder2 = ({ email, order, threadId }) => {
       let orders =
         order.order_type == "GUEST POST"
           ? order.seo_backlinks.map((link) => {
-              return {
-                type: "Guest Post",
-                site: link.website,
-                content_doc: link.gp_doc_url_c,
-              };
-            })
+            return {
+              type: "Guest Post",
+              site: link.website,
+              content_doc: link.gp_doc_url_c,
+            };
+          })
           : order.seo_backlinks.map((link) => {
-              return {
-                type: "Link Insertion",
-                site: link.website,
-                post_url: link.website,
-                their_link: [
-                  {
-                    url: link.backlink_url,
-                    anchor_text: link.anchor_text_c,
-                  },
-                ],
-              };
-            });
+            return {
+              type: "Link Insertion",
+              site: link.website,
+              post_url: link.website,
+              their_link: [
+                {
+                  url: link.backlink_url,
+                  anchor_text: link.anchor_text_c,
+                },
+              ],
+            };
+          });
       console.log("ORDERS", orders);
       const data = await fetchGpc({
         method: "POST",
@@ -332,7 +334,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
         body: {
           email: email,
           thread_id: threadId,
-          assigned_user_id: getState().crmUser.currentUser.id,
+          assigned_user_id: getState().crmUser.currentUser?.id,
 
           orders,
         },
@@ -389,6 +391,9 @@ export const createOrder3 = (email, orders = [], send) => {
               website: order.website,
               amount: order.amount,
             },
+            headers: {
+              "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+            }
           });
           showConsole && console.log(`Create Order Manully`, data);
         });
