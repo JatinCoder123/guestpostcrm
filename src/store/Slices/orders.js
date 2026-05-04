@@ -189,22 +189,35 @@ const ordersSlice = createSlice({
     },
     setOrders(state, action) {
       const { data } = action.payload;
-      state.count = data?.length ?? 0
-      state.orders = data ?? []
-    }
+      state.count = data?.length ?? 0;
+      state.orders = data ?? [];
+    },
   },
 });
 
-export const getOrders = ({ email = null, page = 1, loading = true, brand = false }) => {
+export const getOrders = ({
+  email = null,
+  page = 1,
+  loading = true,
+  brand = false,
+}) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.getOrdersRequest(loading));
     try {
       let res;
-      const timeline = getState().ladger.timeline
-      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email, page, page_size: "50" }
-      brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "order", ...params } })
-        : res = await fetchGpc({ params: { type: "get_orders", ...params } });
-      const data = brand ? res.data.order : res
+      const timeline = getState().ladger.timeline;
+      const params = {
+        ...(timeline && timeline !== "null" ? { filter: timeline } : {}),
+        email,
+        page,
+        page_size: "50",
+      };
+      brand
+        ? (res = await fetchGpc({
+            params: { type: "brandTimeline", case: "order", ...params },
+          }))
+        : (res = await fetchGpc({ params: { type: "get_orders", ...params } }));
+      const data = brand ? res.data.order : res;
       showConsole && console.log(`${brand ? "brand" : ""} Orders `, data);
       dispatch(
         ordersSlice.actions.getOrdersSucess({
@@ -241,9 +254,10 @@ export const createOrder = () => {
     };
     try {
       data = await apiRequest({
-        endpoint: `${domain}?entryPoint=manual_order`, email: getState().viewEmail.contactInfo.email1, assigned_user_id: getState().crmUser.currentUser.id
-      }
-      );
+        endpoint: `${domain}?entryPoint=manual_order`,
+        email: getState().viewEmail.contactInfo.email1,
+        assigned_user_id: getState().crmUser.currentUser.id,
+      });
       showConsole && console.log(`Orders created`, data);
       if (!data.order.response) {
         dispatch(ordersSlice.actions.createOrderFailed(data.order));
@@ -290,38 +304,37 @@ export const createOrder2 = ({ email, order, threadId }) => {
       let orders =
         order.order_type == "GUEST POST"
           ? order.seo_backlinks.map((link) => {
-            return {
-              type: "Guest Post",
-              site: link.website,
-              content_doc: link.gp_doc_url_c,
-            };
-          })
+              return {
+                type: "Guest Post",
+                site: link.website,
+                content_doc: link.gp_doc_url_c,
+              };
+            })
           : order.seo_backlinks.map((link) => {
-            return {
-              type: "Link Insertion",
-              site: link.website,
-              post_url: link.website,
-              their_link: [
-                {
-                  url: link.backlink_url,
-                  anchor_text: link.anchor_text_c,
-                },
-              ],
-            };
-          });
+              return {
+                type: "Link Insertion",
+                site: link.website,
+                post_url: link.website,
+                their_link: [
+                  {
+                    url: link.backlink_url,
+                    anchor_text: link.anchor_text_c,
+                  },
+                ],
+              };
+            });
       console.log("ORDERS", orders);
       const data = await fetchGpc({
-        method: "POST", params: { type: "manual_order" }, body: {
+        method: "POST",
+        params: { type: "manual_order" },
+        body: {
           email: email,
           thread_id: threadId,
           assigned_user_id: getState().crmUser.currentUser.id,
 
           orders,
         },
-      }
-
-
-      );
+      });
       showConsole && console.log(`Create Order Manully`, data);
       if (!data.success) {
         throw new Error("Failed To Create Order");
@@ -366,7 +379,15 @@ export const createOrder3 = (email, orders = [], send) => {
       };
       {
         orders.map(async (order) => {
-          data = await apiRequest({ endpoint: `${domain}?entryPoint=manual_order`, params: { email, message_id: order.message_id, website: order.website, amount: order.amount } });
+          data = await apiRequest({
+            endpoint: `${domain}?entryPoint=manual_order`,
+            params: {
+              email,
+              message_id: order.message_id,
+              website: order.website,
+              amount: order.amount,
+            },
+          });
           showConsole && console.log(`Create Order Manully`, data);
         });
       }
@@ -396,7 +417,7 @@ export const createOrder3 = (email, orders = [], send) => {
 export const updateOrder = ({ order }) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateOrderRequest());
-    const email = extractEmail(order.real_name ?? order.email)
+    const email = extractEmail(order.real_name ?? order.email);
     showConsole && console.log("Order To Be Update", order);
     showConsole && console.log("Update Order Email", email);
 
@@ -412,20 +433,25 @@ export const updateOrder = ({ order }) => {
         });
       };
       const noteRes = await fetchGpc({
-        method: "POST", params: { type: "take_notes" }, body: {
+        method: "POST",
+        params: { type: "take_notes" },
+        body: {
           record_id: order.id,
           notes: order.note,
         },
-      }
-      );
+      });
       console.log("NOTE RES", noteRes);
       const data = await apiRequest({
-        endpoint: `${domain}?entryPoint=get_post_all`, method: "POST", params: { action_type: "post_data" }, body: {
+        endpoint: `${domain}?entryPoint=get_post_all`,
+        method: "POST",
+        params: { action_type: "post_data" },
+        body: {
           parent_bean: {
             module: "outr_order_gp_li",
             ...order,
           },
-        }, headers: {
+        },
+        headers: {
           "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
           "Content-Type": "aplication/json",
         },
@@ -496,8 +522,7 @@ export const updateSeoLink = (orderId, link) => {
           module: "outr_seo_backlinks",
           ...link,
         },
-      }
-
+      };
 
       showConsole && console.log(`Update Order Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
@@ -548,8 +573,14 @@ export const deleteLink = (orderId, linkId) => {
           method,
         });
       };
-      const { data } = await fetchGpc({ method: "POST", params: { type: "delete_record", module_name: "outr_seo_backlinks", record_id: linkId } }
-      );
+      const { data } = await fetchGpc({
+        method: "POST",
+        params: {
+          type: "delete_record",
+          module_name: "outr_seo_backlinks",
+          record_id: linkId,
+        },
+      });
       showConsole && console.log(`Delete Order Link`, data);
       if (!data.success) {
         throw new Error(data.message);
@@ -607,9 +638,13 @@ export const createLink = (orderId, link) => {
           module: "outr_seo_backlinks",
           ...link,
         },
-      }
+      };
       const data = await apiRequest({
-        endpoint: `${domain}?entryPoint=get_post_all`, method: "POST", params: { action_type: "post_data" }, body: payload, headers: {
+        endpoint: `${domain}?entryPoint=get_post_all`,
+        method: "POST",
+        params: { action_type: "post_data" },
+        body: payload,
+        headers: {
           "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
           "Content-Type": "aplication/json",
         },

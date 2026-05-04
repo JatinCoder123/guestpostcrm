@@ -1,11 +1,19 @@
 import { useState, useCallback } from "react";
 import { apiRequest } from "../services/api";
+import { updateSeoLink } from "../store/Slices/orders";
+import { useDispatch } from "react-redux";
 
-export default function GPCContentPopup({ data, onClose, website }) {
-  const sections = data?.data?.humanizer_response?.sections || DEMO_SECTIONS;
+export default function GPCContentPopup({
+  data,
+  onClose,
+  website,
+  orderId,
+  linkId,
+  link,
+}) {
+  const sections = data?.data?.humanizer_response?.sections || [];
   const aiScore = data?.data?.ai_score ?? 34;
   const humanizedScore = data?.data?.human_score.toFixed(2) ?? 66;
-
   const [selected, setSelected] = useState({});
   const [prevSelected, setPrevSelected] = useState({});
   const [publishing, setPublishing] = useState(false);
@@ -14,6 +22,7 @@ export default function GPCContentPopup({ data, onClose, website }) {
   const [humanizingAll, setHumanizingAll] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [copied, setCopied] = useState(false);
+  const dispatch = useDispatch();
   // Dynamic publishing domain based on passed website
   const publishDomain = website
     ? website.replace(/^https?:\/\//, "").replace(/\/$/, "")
@@ -99,18 +108,21 @@ export default function GPCContentPopup({ data, onClose, website }) {
     try {
       const { title, content } = buildFinalContent();
       const result = await apiRequest({
-        endpoint: `https://${publishDomain}/wp-json/my-api/v1/create-post`, method: "POST",
+        endpoint: `https://${publishDomain}/wp-json/my-api/v1/create-post`,
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Api-Key": "YOUR_SECRET_EXTRACT_HERE",
         },
         body: JSON.stringify({ title, content, status: "publish" }),
-      }
-
-      );
+      });
       if (result.success) {
         setPublishedUrl(result.url);
         setIsDirty(false);
+
+        dispatch(
+          updateSeoLink(orderId, { ...link, assigned_user_link: result.url }),
+        );
       } else setPublishError("Publishing failed. Please try again.");
     } catch (err) {
       setPublishError("Network error: " + err.message);
@@ -138,9 +150,10 @@ export default function GPCContentPopup({ data, onClose, website }) {
       onClick={() => undoKey(keyName)}
       title="Undo"
       className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 text-xs
-        ${canUndo(keyName)
-          ? "bg-amber-100 text-amber-600 hover:bg-amber-200 cursor-pointer shadow-sm"
-          : "opacity-0 pointer-events-none"
+        ${
+          canUndo(keyName)
+            ? "bg-amber-100 text-amber-600 hover:bg-amber-200 cursor-pointer shadow-sm"
+            : "opacity-0 pointer-events-none"
         }`}
     >
       ↩

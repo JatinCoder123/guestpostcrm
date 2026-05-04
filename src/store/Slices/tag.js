@@ -61,12 +61,14 @@ const tagSlice = createSlice({
 });
 
 // Get tags function
-export const getTags = (tag = "", page = 1, pageSize = 50) => {
+export const getTags = (page = 1, pageSize = 50) => {
   return async (dispatch, getState) => {
     dispatch(tagSlice.actions.getTagsRequest());
 
     try {
-      const data = await fetchGpc({ params: { entryPoint: "add_tag", tag, page, page_size: pageSize } });
+      const data = await fetchGpc({
+        params: { type: "tag_manager" },
+      });
 
       showConsole && console.log(`Tag data:`, data);
 
@@ -76,46 +78,39 @@ export const getTags = (tag = "", page = 1, pageSize = 50) => {
           tags: data.data || [],
           pageCount: data.total_pages || 1,
           pageIndex: data.current_page || 1,
-        })
+        }),
       );
       dispatch(tagSlice.actions.clearAllErrors());
     } catch (error) {
-      console.error("Error fetching tags:", error);
-      dispatch(
-        tagSlice.actions.getTagsFailed("Fetching tags failed")
-      );
+      console.log("Error fetching tags:", error);
+      dispatch(tagSlice.actions.getTagsFailed("Fetching tags failed"));
     }
   };
 };
 
 // Create tag function
 // Create tag function - make sure it returns a Promise properly
-export const createTag = (tagName) => {
+export const createTag = (tagName, tagType) => {
   return async (dispatch, getState) => {
     dispatch(tagSlice.actions.createTagRequest());
 
     try {
-      const encodedTagName = encodeURIComponent(tagName);
-
-      const data = await fetchGpc({ params: { entryPoint: "add_tags", field_name: encodedTagName }, method: "POST" });
+      const data = await fetchGpc({
+        params: { type: "tag_manager" },
+        body: { tag_name: tagName, tag_type: tagType },
+        method: "POST",
+      });
       showConsole && console.log(`Create tag response:`, data);
-      if (data.success || data.output?.includes('created successfully')) {
-        dispatch(tagSlice.actions.createTagSuccess());
-        showConsole && console.log(`Tag "${tagName}" created successfully!`);
-        return Promise.resolve({ success: true, tagName });
-      } else {
-        const errorMsg = data.message || data.output || "Failed to create tag";
-        dispatch(tagSlice.actions.createTagFailed(errorMsg));
-        return Promise.reject(new Error(errorMsg));
-      }
-
+      dispatch(tagSlice.actions.createTagSuccess());
     } catch (error) {
-      console.error("Error creating tag:", error);
-      const errorMessage = error.response?.data?.message ||
+      console.log("Error creating tag:", error);
+      const errorMessage =
+        error.response?.data?.message ||
         error.response?.data?.output ||
         error.message ||
         "Failed to create tag";
       dispatch(tagSlice.actions.createTagFailed(errorMessage));
+
       return Promise.reject(new Error(errorMessage));
     }
   };

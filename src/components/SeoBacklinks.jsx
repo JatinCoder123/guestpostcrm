@@ -229,7 +229,7 @@ function LIInsertPopup({ link, onClose }) {
   );
 }
 
-export default function SeoBacklinkList({ seo_backlink, orderId }) {
+export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
   const gpLinks = seo_backlink.filter((l) => l.type_c === "GP");
   const liLinks = seo_backlink.filter((l) => l.type_c === "LI");
   const { updateLinkLoading, deleting, updateLinkMessage } = useSelector(
@@ -241,7 +241,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   const dispatch = useDispatch();
 
   const handleUpdate = (data) => {
-    dispatch(updateSeoLink(orderId, { ...item, ...data }));
+    dispatch(updateSeoLink(id, { ...item, ...data }));
   };
 
   useEffect(() => {
@@ -252,7 +252,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
   }, [updateLinkMessage]);
 
   const handleDelete = (linkId) => {
-    dispatch(deleteLink(orderId, linkId));
+    dispatch(deleteLink(id, linkId));
   };
 
   // Group GP links by their doc URL
@@ -358,12 +358,13 @@ export default function SeoBacklinkList({ seo_backlink, orderId }) {
                 </span>
                 <GPLinksTable
                   gpLinks={links}
+                  orderId={orderId}
+                  linkId={linkId}
                   groupIndex={groupIndex}
                   setItem={setItem}
                   setOpen={setOpen}
                   deleting={deleting}
                   setLinkId={setLinkId}
-                  linkId={linkId}
                   handleDelete={handleDelete}
                 />
               </div>
@@ -635,6 +636,7 @@ function GPLinksTable({
   deleting,
   setLinkId,
   linkId,
+  orderId,
   handleDelete,
 }) {
   const rep = gpLinks[0];
@@ -643,11 +645,14 @@ function GPLinksTable({
       <DocumentAnalysisCard
         website={rep.name}
         docLink={rep.gp_doc_url_c}
+        orderId={orderId}
         docNiche={rep.niche}
         ContentValid={rep.is_content_valid}
         DocName={rep.document_name}
         DomainValid={rep.is_domain_valid}
         linkCount={gpLinks.length}
+        linkId={rep.id}
+        link={rep}
         ContentVerdictPromptLedger={rep.guestpost_prompt_ledger[0]}
       />
       <LinkTableHeader />
@@ -719,6 +724,9 @@ function DocumentAnalysisCard({
   DomainValid,
   linkCount,
   ContentVerdictPromptLedger,
+  orderId,
+  linkId,
+  link,
 }) {
   const navigateTo = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -852,6 +860,9 @@ function DocumentAnalysisCard({
           <GPCContentPopup
             data={analysisData}
             website={website}
+            orderId={orderId}
+            link={link}
+            linkId={linkId}
             onClose={() => setOpenPopup(false)}
           />
         )}

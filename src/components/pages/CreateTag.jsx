@@ -8,26 +8,25 @@ const CreateTag = ({ onSubmit, onCancel }) => {
   const { creating, error: reduxError } = useSelector((state) => state.tag);
 
   const [tagName, setTagName] = useState("");
+  const [tagType, setTagType] = useState("");
   const [localError, setLocalError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!tagName.trim()) {
-      setLocalError("Please enter a tag name");
+    if (!tagName.trim() || !tagType) {
+      setLocalError("Please enter a tag name and tag type");
       return;
     }
 
     setLocalError("");
 
     try {
-      dispatch(createTag(tagName));
-
+      dispatch(createTag(tagName, tagType));
 
       if (onSubmit) {
-        onSubmit(tagName);
+        onSubmit(tagName, tagType);
       }
-
     } catch (err) {
       setLocalError(err.message || "Failed to create tag");
     }
@@ -62,6 +61,28 @@ const CreateTag = ({ onSubmit, onCancel }) => {
           autoFocus
           disabled={creating}
         />
+      </div>
+
+      {/* Tag Type */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tag Type *
+        </label>
+
+        <select
+          value={tagType}
+          onChange={(e) => {
+            setTagType(e.target.value);
+            setLocalError("");
+          }}
+          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+          required
+          disabled={creating}
+        >
+          <option value="">Select tag type</option>
+          <option value="static">Static</option>
+          <option value="dynamic">Dynamic</option>
+        </select>
       </div>
 
       {/* Form Actions */}
