@@ -1,4 +1,13 @@
-function DateRangeFilter({
+import { useEffect, useRef, useState } from "react";
+import {
+  PRESETS,
+  resolvePreset,
+  fmtDisplay,
+  dtFromStrings,
+  dtToStrings,
+  fmtDtDisplay,
+} from "../services/dateRangeUtils"
+export function DateRangeFilter({
   fromDate,
   fromTime,
   toDate,
@@ -141,8 +150,8 @@ function DateRangeFilter({
                     key={p.id}
                     onClick={() => applyPreset(p.id)}
                     className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${activePreset === p.id
-                        ? "bg-blue-700 text-white"
-                        : "text-gray-600 hover:bg-white hover:text-gray-900"
+                      ? "bg-blue-700 text-white"
+                      : "text-gray-600 hover:bg-white hover:text-gray-900"
                       }`}
                   >
                     {p.label}
@@ -197,8 +206,8 @@ function DateRangeFilter({
                               setOpenPicker(openPicker === key ? null : key);
                             }}
                             className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${openPicker === key
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
                               }`}
                           >
                             {fmtDtDisplay(dtFromStrings(date, time))}
