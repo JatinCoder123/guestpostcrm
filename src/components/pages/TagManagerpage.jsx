@@ -90,8 +90,10 @@ export function TagManagerpage() {
       label: "Action",
       accessor: "action",
       icon: Clapperboard,
+      classes: "ml-auto",
+      headerClasses: "ml-auto",
       render: (row) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2 ">
           {/* ✅ EDIT */}
           <button
             onClick={() => handleEdit(row)}
