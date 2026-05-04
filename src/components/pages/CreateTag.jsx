@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createTag } from "../../store/Slices/tag";
+import { fetchGpc } from "../../services/api";
 
-const CreateTag = ({ onSubmit, onCancel }) => {
+const CreateTag = ({ onSubmit, onCancel, initialData, isEditing }) => {
   const dispatch = useDispatch();
   const { creating, error: reduxError } = useSelector((state) => state.tag);
 
   const [tagName, setTagName] = useState("");
   const [tagType, setTagType] = useState("");
   const [localError, setLocalError] = useState("");
+
+  // ✅ Prefill data when editing
+  useEffect(() => {
+    if (initialData) {
+      setTagName(initialData.name || "");
+      setTagType(initialData.type || "");
+    }
+  }, [initialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,18 +31,36 @@ const CreateTag = ({ onSubmit, onCancel }) => {
     setLocalError("");
 
     try {
-      dispatch(createTag(tagName, tagType));
+      if (isEditing) {
+        const res = await fetchGpc({
+          method: "PUT",
+          params: { type: "tag_manager" },
+          body: {
+            id: initialData.id,
+            tag_name: tagName,
+            type: tagType,
+          },
+        });
 
+        if (!res.success) {
+          throw new Error(res.message || "Update failed");
+        }
+      } else {
+        dispatch(createTag(tagName, tagType));
+      }
+
+      // ✅ callback after success
       if (onSubmit) {
         onSubmit(tagName, tagType);
       }
     } catch (err) {
-      setLocalError(err.message || "Failed to create tag");
+      setLocalError(err.message || "Failed to process tag");
     }
   };
 
   const handleCancel = () => {
     setTagName("");
+    setTagType("");
     setLocalError("");
     onCancel();
   };
@@ -55,8 +82,7 @@ const CreateTag = ({ onSubmit, onCancel }) => {
             setLocalError("");
           }}
           placeholder="Enter tag name"
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent
-          }`}
+          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
           required
           autoFocus
           disabled={creating}
@@ -85,6 +111,13 @@ const CreateTag = ({ onSubmit, onCancel }) => {
         </select>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="text-red-500 text-sm bg-red-50 p-2 rounded">
+          {error}
+        </div>
+      )}
+
       {/* Form Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t">
         <button
@@ -95,6 +128,7 @@ const CreateTag = ({ onSubmit, onCancel }) => {
         >
           Cancel
         </button>
+
         <button
           type="submit"
           disabled={creating || !tagName.trim()}
@@ -103,12 +137,12 @@ const CreateTag = ({ onSubmit, onCancel }) => {
           {creating ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Creating...</span>
+              <span>{isEditing ? "Updating..." : "Creating..."}</span>
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              <span>Create Tag</span>
+              <span>{isEditing ? "Update Tag" : "Create Tag"}</span>
             </>
           )}
         </button>

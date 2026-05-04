@@ -126,7 +126,7 @@ export const OrderView = ({ data, setSend }) => {
         <div className="relative flex flex-col gap-3  rounded-3xl  p-2 ">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <Field label="Date" value={data.date_entered_formatted} />
-            <Field label="Type" value={data.order_type} />
+            <Field label="Type" value={data.order_type_value} />
             <Field label="Amount" value={`$${data.total_amount_c}`} />
             <Field label="Status">
               <div className="relative inline-flex">
