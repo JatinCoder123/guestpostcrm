@@ -7,6 +7,8 @@ import StatusRow from './StatusRow'
 import { useSelector } from 'react-redux'
 import { Eye, EyeOff } from 'lucide-react'
 import TableFooter from './TableFooter'
+import { DateRangeFilter } from '../../DateRangeFilter'
+import { todayStr } from '../../../services/dateRangeUtils'
 
 const TableContext = createContext()
 
@@ -31,6 +33,11 @@ const TableView = ({
     fetchNextPage,
     children,
 }) => {
+    const [fromDate, setFromDate] = useState(todayStr());
+    const [fromTime, setFromTime] = useState("00:01");
+    const [toDate, setToDate] = useState(todayStr());
+    const [toTime, setToTime] = useState("23:59");
+    const [filterActive, setFilterActive] = useState(false);
 
     const { pageIndex, pageCount, count, loading } = useSelector(state => state[slice])
 
@@ -147,7 +154,16 @@ const TableView = ({
                 >
                     {statusList.length > 0 && count >= 0 && <StatusRow statusCount={statusCount} />}
                 </motion.div>
-
+                <DateRangeFilter fromDate={fromDate}
+                    fromTime={fromTime}
+                    toDate={toDate}
+                    toTime={toTime}
+                    setFromDate={setFromDate}
+                    setFromTime={setFromTime}
+                    setToDate={setToDate}
+                    setToTime={setToTime}
+                    filterActive={filterActive}
+                />
                 {/* 🔥 Table smoothly moves up/down */}
                 <motion.div
                     layout

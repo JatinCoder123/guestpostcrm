@@ -39,7 +39,7 @@ export const MONTH_SHORT = [
     "Dec",
 ];
 export const DAY_HDRS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-const pad = (n) => String(n).padStart(2, "0");
+export const pad = (n) => String(n).padStart(2, "0");
 
 export const fmt = (d) =>
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
