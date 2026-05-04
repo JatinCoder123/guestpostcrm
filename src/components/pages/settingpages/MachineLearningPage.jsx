@@ -84,6 +84,7 @@ export function MachineLearningPage() {
       setLoading(true);
 
       const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: 1 } });
+      console.log("STAGES", data)
 
       setStages(data);
 

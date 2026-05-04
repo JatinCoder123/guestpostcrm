@@ -65,8 +65,8 @@ export function SettingsPage() {
       link: "users",
     },
     {
-      title: "GPC Controller",
-      subtitle: "Manage entire GPC",
+      title: "Control Automations",
+      subtitle: "Contorl entire GPC",
       icon: <Joystick className="w-8 h-8 text-pink-600" />,
       bg: "bg-pink-50",
       link: "controller",
