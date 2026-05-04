@@ -294,7 +294,7 @@ export function OrdersPage() {
       <Table
         headerStyle={"  bg-cyan-600"}
         layoutStyle={
-          "grid grid-cols-[200px_200px_100px_200px_200px_200px_200px_1fr]"
+          "grid grid-cols-8"
         }
       />
     </TableView>
