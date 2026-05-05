@@ -25,6 +25,7 @@ import { Fa500Px, FaAccusoft, FaAddressBook, FaGoogle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import GPCContentPopup from "./GPCContentPopup";
 import { apiRequest, fetchGpc } from "../services/api";
+import { toast } from "react-toastify";
 
 function ValidTick() {
   return (
