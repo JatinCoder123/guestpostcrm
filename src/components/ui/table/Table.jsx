@@ -6,7 +6,8 @@ import FilterRow from './FilterRow'
 import StatusRow from './StatusRow'
 import { useSelector } from 'react-redux'
 import { Eye, EyeOff } from 'lucide-react'
-import TableFooter from './TableFooter'
+import { DateRangeFilter } from '../../DateRangeFilter'
+import { todayStr } from '../../../services/dateRangeUtils'
 
 const TableContext = createContext()
 
@@ -31,6 +32,11 @@ const TableView = ({
     fetchNextPage,
     children,
 }) => {
+    const [fromDate, setFromDate] = useState(todayStr());
+    const [fromTime, setFromTime] = useState("00:01");
+    const [toDate, setToDate] = useState(todayStr());
+    const [toTime, setToTime] = useState("23:59");
+    const [filterActive, setFilterActive] = useState(false);
 
     const { pageIndex, pageCount, count, loading } = useSelector(state => state[slice])
 
@@ -94,7 +100,14 @@ const TableView = ({
         return data
 
     }, [tableData, search, filters, sort])
-
+    const handleResetFilter = () => {
+        const today = todayStr();
+        setFromDate(today);
+        setFromTime("00:01");
+        setToDate(today);
+        setToTime("23:59");
+        setFilterActive(false);
+    };
     const value = {
         tableName,
         columns,
@@ -127,10 +140,6 @@ const TableView = ({
             <motion.div layout className='flex flex-col gap-2'>
 
                 <FilterRow />
-
-
-
-                {/* 🔥 Animated StatusRow (controlled by showStatus) */}
                 <motion.div
                     layout
                     initial={false}
@@ -147,8 +156,19 @@ const TableView = ({
                 >
                     {statusList.length > 0 && count >= 0 && <StatusRow statusCount={statusCount} />}
                 </motion.div>
-
-                {/* 🔥 Table smoothly moves up/down */}
+                <DateRangeFilter
+                    fromDate={fromDate}
+                    fromTime={fromTime}
+                    toDate={toDate}
+                    toTime={toTime}
+                    setFromDate={setFromDate}
+                    setFromTime={setFromTime}
+                    setToDate={setToDate}
+                    setToTime={setToTime}
+                    filterActive={filterActive}
+                    onApply={() => setFilterActive(true)}
+                    onReset={handleResetFilter}
+                />
                 <motion.div
                     layout
                     transition={{
