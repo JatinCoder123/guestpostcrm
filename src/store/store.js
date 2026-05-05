@@ -31,10 +31,11 @@ import tagReducer from "./Slices/tag.js";
 import gpcControllerReducer from "./Slices/gpcControllerSlice";
 import websiteReducer from "./Slices/webSlice";
 import syncReducer from "./Slices/syncSlice.js";
-import contactReducer from "./Slices/contacts.js"
-import reportReducer from "./Slices/reportSlice.js"
-import crmUserReducer from "./Slices/crmUser.js"
-import brandTimelineReducer from "./Slices/brandTimeline.js"
+import contactReducer from "./Slices/contacts.js";
+import reportReducer from "./Slices/reportSlice.js";
+import crmUserReducer from "./Slices/crmUser.js";
+import brandTimelineReducer from "./Slices/brandTimeline.js";
+import webManagerReducer from "./Slices/webManager.js";
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -73,6 +74,7 @@ export const store = configureStore({
     contacts: contactReducer,
     report: reportReducer,
     crmUser: crmUserReducer,
-    brandTimeline: brandTimelineReducer
+    brandTimeline: brandTimelineReducer,
+    webManager: webManagerReducer,
   },
 });
