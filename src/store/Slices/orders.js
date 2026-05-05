@@ -518,6 +518,7 @@ export const updateSeoLink = (orderId, link) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateLinkRequest());
     showConsole && console.log("Update Seo Link", link);
+    link = { ...link, link_amount_c: `$${link.link_amount_c}` };
     console.log("order id", orderId);
     try {
       const data = await apiRequest({

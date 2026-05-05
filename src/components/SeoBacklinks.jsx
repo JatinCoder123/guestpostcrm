@@ -107,7 +107,7 @@ function LIInsertPopup({ link, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-500 to-purple-600">
           <div className="flex items-center gap-2">
@@ -403,13 +403,13 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
    7 columns: # | Anchor Text | Backlink URL | Spam Score | Amount & Type | Domain | Action
 ───────────────────────────────────────────── */
 const COL_STYLES = [
-  "w-8 shrink-0", // #
-  "flex-1 w-48", // Anchor Text  (with verdict icon inline)
-  "flex-1 min-w-0", // Backlink URL (with verdict icon inline)
-  "flex-1 w-32", // Spam Score
-  "flex-1 w-32", // Amount & Type
-  "flex-1 w-40", // Domain       (with verdict icon inline)
-  "w-28 shrink-0", // Action
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
 ];
 
 function LinkTableHeader() {
