@@ -2,12 +2,10 @@
 
 export const PRESETS = [
     { label: "Today", id: "equals" },
-    { sep: true },
+    { label: "Yesterday", id: "yesterday" },
     { label: "Last 7 Days", id: "last7" },
     { label: "Last 30 Days", id: "last30" },
-    { sep: true },
     { label: "Last Month", id: "lastMonth" },
-    { sep: true },
     { label: "Is Between", id: "between" },
 ];
 export const MONTHS = [
@@ -81,18 +79,28 @@ export function resolvePreset(id) {
             from = to = todayStr();
             ft = "00:01";
             break;
+
+        case "yesterday":
+            const yesterday = new Date(y, m, d - 1);
+            from = fmt(yesterday);
+            to = fmt(yesterday);
+            break;
+
         case "last7":
             from = fmt(new Date(y, m, d - 7));
             to = todayStr();
             break;
+
         case "last30":
             from = fmt(new Date(y, m, d - 30));
             to = todayStr();
             break;
+
         case "lastMonth":
             from = fmt(new Date(y, m - 1, 1));
             to = fmt(new Date(y, m, 0));
             break;
+
         default:
             from = todayStr();
             to = fmt(new Date(y, m, d + 7));

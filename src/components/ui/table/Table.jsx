@@ -6,7 +6,6 @@ import FilterRow from './FilterRow'
 import StatusRow from './StatusRow'
 import { useSelector } from 'react-redux'
 import { Eye, EyeOff } from 'lucide-react'
-import TableFooter from './TableFooter'
 import { DateRangeFilter } from '../../DateRangeFilter'
 import { todayStr } from '../../../services/dateRangeUtils'
 
@@ -101,7 +100,14 @@ const TableView = ({
         return data
 
     }, [tableData, search, filters, sort])
-
+    const handleResetFilter = () => {
+        const today = todayStr();
+        setFromDate(today);
+        setFromTime("00:01");
+        setToDate(today);
+        setToTime("23:59");
+        setFilterActive(false);
+    };
     const value = {
         tableName,
         columns,
@@ -134,10 +140,6 @@ const TableView = ({
             <motion.div layout className='flex flex-col gap-2'>
 
                 <FilterRow />
-
-
-
-                {/* 🔥 Animated StatusRow (controlled by showStatus) */}
                 <motion.div
                     layout
                     initial={false}
@@ -154,7 +156,8 @@ const TableView = ({
                 >
                     {statusList.length > 0 && count >= 0 && <StatusRow statusCount={statusCount} />}
                 </motion.div>
-                <DateRangeFilter fromDate={fromDate}
+                <DateRangeFilter
+                    fromDate={fromDate}
                     fromTime={fromTime}
                     toDate={toDate}
                     toTime={toTime}
@@ -163,8 +166,9 @@ const TableView = ({
                     setToDate={setToDate}
                     setToTime={setToTime}
                     filterActive={filterActive}
+                    onApply={() => setFilterActive(true)}
+                    onReset={handleResetFilter}
                 />
-                {/* 🔥 Table smoothly moves up/down */}
                 <motion.div
                     layout
                     transition={{
