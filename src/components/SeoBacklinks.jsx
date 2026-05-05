@@ -56,7 +56,8 @@ function useLIInsert() {
     setErrorMsg("");
     try {
       const data = await apiRequest({
-        endpoint: `${domain}/wp-json/my-api/v1/create-post`, method: "POST",
+        endpoint: `${domain}/wp-json/my-api/v1/create-post`,
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-API-Key": "YOUR_SECRET_EXTRACT_HERE",
@@ -311,17 +312,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
             },
             item.type_c === "LI"
               ? {
-                label: "Our Link",
-                name: "target_url_c",
-                type: "text",
-                value: item.target_url_c || "",
-              }
+                  label: "Our Link",
+                  name: "target_url_c",
+                  type: "text",
+                  value: item.target_url_c || "",
+                }
               : {
-                label: "Doc Link",
-                name: "gp_doc_url_c",
-                type: "text",
-                value: item.gp_doc_url_c || "",
-              },
+                  label: "Doc Link",
+                  name: "gp_doc_url_c",
+                  type: "text",
+                  value: item.gp_doc_url_c || "",
+                },
             {
               label: "Website",
               name: "name",
@@ -743,17 +744,10 @@ function DocumentAnalysisCard({
       setLoading(true);
 
       const data = await fetchGpc({
-        params: { type: 'zerogpt' }, method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          doc_url: docLink,
-        }),
-      }
-
-      );
-
+        params: { type: "zerogpt" },
+        method: "POST",
+        body: { doc_url: docLink },
+      });
 
       setAnalysisData(data);
       setOpenPopup(true);

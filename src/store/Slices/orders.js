@@ -214,8 +214,8 @@ export const getOrders = ({
       };
       brand
         ? (res = await fetchGpc({
-          params: { type: "brandTimeline", case: "order", ...params },
-        }))
+            params: { type: "brandTimeline", case: "order", ...params },
+          }))
         : (res = await fetchGpc({ params: { type: "get_orders", ...params } }));
       const data = brand ? res.data.order : res;
       showConsole && console.log(`${brand ? "brand" : ""} Orders `, data);
@@ -261,7 +261,7 @@ export const createOrder = () => {
         },
         headers: {
           "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
-        }
+        },
       });
       showConsole && console.log(`Orders created `, data);
       if (!data.order.success) {
@@ -308,25 +308,25 @@ export const createOrder2 = ({ email, order, threadId }) => {
       let orders =
         order.order_type == "GUEST POST"
           ? order.seo_backlinks.map((link) => {
-            return {
-              type: "Guest Post",
-              site: link.website,
-              content_doc: link.gp_doc_url_c,
-            };
-          })
+              return {
+                type: "Guest Post",
+                site: link.website,
+                content_doc: link.gp_doc_url_c,
+              };
+            })
           : order.seo_backlinks.map((link) => {
-            return {
-              type: "Link Insertion",
-              site: link.website,
-              post_url: link.website,
-              their_link: [
-                {
-                  url: link.backlink_url,
-                  anchor_text: link.anchor_text_c,
-                },
-              ],
-            };
-          });
+              return {
+                type: "Link Insertion",
+                site: link.website,
+                post_url: link.website,
+                their_link: [
+                  {
+                    url: link.backlink_url,
+                    anchor_text: link.anchor_text_c,
+                  },
+                ],
+              };
+            });
       console.log("ORDERS", orders);
       const data = await fetchGpc({
         method: "POST",
@@ -393,7 +393,7 @@ export const createOrder3 = (email, orders = [], send) => {
             },
             headers: {
               "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
-            }
+            },
           });
           showConsole && console.log(`Create Order Manully`, data);
         });
