@@ -7,24 +7,22 @@ import {
   Search,
   Cross,
   Workflow,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { getLadger } from "../store/Slices/ladger";
-import Pagination from "./Pagination"
+import Pagination from "./Pagination";
 const TimelineEvent = ({ handleMessageClick }) => {
   const { ladger, email, pageCount, pageIndex, loading } = useSelector(
     (state) => state.ladger,
   );
-  const { showBrandTimeline, } = useSelector(
-    (state) => state.brandTimeline,
-  );
-  const { contactInfo } = useSelector(
-    (state) => state.viewEmail,
-  );
-  const dispatch = useDispatch()
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
+  const { contactInfo } = useSelector((state) => state.viewEmail);
+  const dispatch = useDispatch();
   const [selectedView, setSelectedView] = useState("important");
 
   const [timelineData, setTimelineData] = useState([]);
@@ -32,8 +30,46 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeVisualization, setActiveVisualization] = useState(null);
   const [showVisualization, setShowVisualization] = useState(false);
+  const [showScrollButtons, setShowScrollButtons] = useState(false);
   const topRef = useRef(null);
+  const headerRef = useRef(null);
   const bottomRef = useRef(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    // Walk up to the nearest scrollable ancestor (app scrolls inside <main>, not window)
+    let scrollParent = header.parentElement;
+    while (
+      scrollParent &&
+      !/(auto|scroll|overlay)/.test(getComputedStyle(scrollParent).overflowY)
+    ) {
+      scrollParent = scrollParent.parentElement;
+    }
+
+    const update = () => {
+      const view = scrollParent?.getBoundingClientRect() ?? {
+        top: 0,
+        bottom: window.innerHeight,
+      };
+      const headerBottom = header.getBoundingClientRect().bottom;
+      const bottomTop =
+        bottomRef.current?.getBoundingClientRect().top ?? Infinity;
+      setShowScrollButtons(
+        headerBottom < view.top && bottomTop > view.bottom - 40,
+      );
+    };
+
+    const target = scrollParent ?? window;
+    update();
+    target.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      target.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [timelineData]);
   const scrollToBottom = () => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -219,6 +255,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
     <div className="relative">
       <div ref={topRef} className="py-[2%] px-[30%]">
         <h1
+          ref={headerRef}
           onClick={scrollToTop}
           className="font-mono text-2xl bg-gradient-to-r from-purple-600 to-blue-600 
              p-2 rounded-2xl text-center text-white
@@ -267,16 +304,21 @@ const TimelineEvent = ({ handleMessageClick }) => {
                   {/* Sliding pill */}
                   <motion.div
                     layout
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                    }}
                     className={`absolute top-1 left-1 h-[calc(100%-8px)]
         w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${selectedView === "all"
-                        ? "translate-x-0"
-                        : selectedView === "important"
-                          ? "translate-x-full"
-                          : "translate-x-[200%]"
-                      }`}
+        ${
+          selectedView === "all"
+            ? "translate-x-0"
+            : selectedView === "important"
+              ? "translate-x-full"
+              : "translate-x-[200%]"
+        }`}
                   />
 
                   {[
@@ -289,10 +331,11 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       onClick={() => setSelectedView(tab.key)}
                       className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${selectedView === tab.key
-                          ? "text-white"
-                          : "text-gray-600 hover:text-purple-600"
-                        }`}
+          ${
+            selectedView === tab.key
+              ? "text-white"
+              : "text-gray-600 hover:text-purple-600"
+          }`}
                     >
                       {tab.label}
                     </button>
@@ -330,9 +373,9 @@ const TimelineEvent = ({ handleMessageClick }) => {
               const hasMessageId = event.message_id_c;
 
               return (
-                <>
+                <div key={`${event.id}-${event.name}-${event.date}`}>
                   {showSeparator && (
-                    <div className="relative flex gap-0 my-0">
+                    <div className="relative flex gap-0 pb-3">
                       <div className="relative z-10 w-16 flex-shrink-0">
                         <div className="w-12 h-12 flex items-center justify-center">
                           <img
@@ -344,10 +387,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     </div>
                   )}
 
-                  <div
-                    key={`${event.id}-${event.name}-${event.date}`}
-                    className="relative flex items-start gap-4"
-                  >
+                  <div className="relative flex items-start gap-4">
                     <div className="relative z-10 w-16 flex-shrink-0 flex items-center justify-center mt-3">
                       <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center text-white shadow-lg">
                         <img
@@ -364,10 +404,11 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     </div>
                     <div
                       className={`group flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm relative
-                      ${index === 0
+                      ${
+                        index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                        }`}
+                      }`}
                     >
                       {/* 🔥 HOVER ACTION BAR */}
                       <div
@@ -531,8 +572,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       </div>
                     </div>
                   </div>
-
-                </>
+                </div>
               );
             })}
             {activeVisualization && (
@@ -654,31 +694,56 @@ const TimelineEvent = ({ handleMessageClick }) => {
                 </div>
               </div>
             )}
-            {timelineData?.length > 0 && <Pagination slice={"ladger"} fn={(page) => dispatch(getLadger({ email: contactInfo?.email1, loading: false, force: true, page }))} />}
-
+            {timelineData?.length > 0 && (
+              <Pagination
+                slice={"ladger"}
+                fn={(page) =>
+                  dispatch(
+                    getLadger({
+                      email: contactInfo?.email1,
+                      loading: false,
+                      force: true,
+                      page,
+                    }),
+                  )
+                }
+              />
+            )}
+            <div ref={bottomRef} />
           </div>
         </div>
       </div>
+
       {timelineData?.length > 8 && (
-        <div className="absolute right-4 bottom-6 flex flex-col gap-3 z-50">
+        <div
+          className={`fixed right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50
+            transition-all duration-300 ease-out
+            ${
+              showScrollButtons
+                ? "opacity-100 translate-x-0 pointer-events-auto"
+                : "opacity-0 translate-x-4 pointer-events-none"
+            }`}
+        >
           {/* Go to Top */}
           <button
             onClick={scrollToTop}
-            className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
+            title="Go to top"
+            className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 
                  text-white shadow-xl flex items-center justify-center 
                  hover:scale-110 transition-all duration-300"
           >
-            ↑
+            <ArrowUp size={16} strokeWidth={2.5} />
           </button>
 
           {/* Go to Bottom */}
           <button
             onClick={scrollToBottom}
-            className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
+            title="Go to bottom"
+            className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 
                  text-white shadow-xl flex items-center justify-center 
                  hover:scale-110 transition-all duration-300"
           >
-            ↓
+            <ArrowDown size={16} strokeWidth={2.5} />
           </button>
         </div>
       )}
