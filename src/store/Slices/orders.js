@@ -518,11 +518,13 @@ export const updateSeoLink = (orderId, link) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateLinkRequest());
     showConsole && console.log("Update Seo Link", link);
-    console.log("order id", orderId)
+    link = { ...link, link_amount_c: `$${link.link_amount_c}` };
+    console.log("order id", orderId);
     try {
-
       const data = await apiRequest({
-        endpoint: ` ${getState().user.crmEndpoint.split('?')[0]}?entryPoint=get_post_all`, params: { action_type: 'post_data' }, body: {
+        endpoint: ` ${getState().user.crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: "post_data" },
+        body: {
           parent_bean: {
             module: "outr_seo_backlinks",
             ...link,
@@ -533,10 +535,7 @@ export const updateSeoLink = (orderId, link) => {
           "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
           "Content-Type": "aplication/json",
         },
-      }
-
-
-      )
+      });
       showConsole && console.log(`Update Order Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.order_id === orderId) {
@@ -572,6 +571,7 @@ export const updateSeoLink = (orderId, link) => {
     }
   };
 };
+
 export const deleteLink = (orderId, linkId) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.deleteLinkRequest());
