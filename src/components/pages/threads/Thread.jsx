@@ -52,7 +52,7 @@ const Thread = () => {
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
-      formData.append("force_send", forceSend);
+      formData.append("force_send", 1);
       formData.append("cc", cc.join(","));
       files.forEach((file) => {
         formData.append("attachments[]", file.file);

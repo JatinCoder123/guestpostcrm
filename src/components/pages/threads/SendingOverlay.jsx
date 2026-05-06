@@ -9,7 +9,7 @@ export const SendingOverlay = ({ sending, email }) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/60 backdrop-blur-md"
+                    className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm"
                 >
                     <motion.div
                         initial={{ y: 0 }}
@@ -40,7 +40,7 @@ export const SendingOverlay = ({ sending, email }) => {
                     </motion.p>
 
                     {/* Progress bar */}
-                    <LoadingSpin color="blue" size="25" />
+                    <LoadingSpin color="blue" size="35" />
                 </motion.div>
             )}
         </AnimatePresence>
