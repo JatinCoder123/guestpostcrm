@@ -2,26 +2,25 @@ import { showConsole } from "../assets/assets";
 import { fetchGpc } from "./api";
 
 let CURRENT_USER = {
-  name: 'GPC',
-  description: 'GPC'
-}
+  name: "GPC",
+  description: "GPC",
+};
 export const setCurrentUser = (currentUser) => {
-  CURRENT_USER = currentUser
+  CURRENT_USER = currentUser;
   return;
-}
-export const updateActivity = async (
-  email,
-  last_activity,
-) => {
+};
+export const updateActivity = async (email, last_activity) => {
   try {
-    console.log(CURRENT_USER)
+    console.log(CURRENT_USER);
     const data = await fetchGpc({
-      method: "POST", params: { type: "last_activity" }, body: {
+      method: "POST",
+      params: { type: "last_activity" },
+      body: {
         email,
         last_activity,
         last_user: CURRENT_USER.name,
         last_user_email: CURRENT_USER.description,
-      }
+      },
     });
     showConsole && console.log("Activity Added", data);
   } catch (error) {
@@ -45,7 +44,11 @@ export const createLedgerEntry = async ({
       group,
       item: items,
     };
-    const data = await fetchGpc({ method: "POST", body: payload, params: { type: "make_ledger" } });
+    const data = await fetchGpc({
+      method: "POST",
+      body: payload,
+      params: { type: "make_ledger" },
+    });
 
     showConsole && console.log("Ledger Created", data);
     okHandler();
@@ -88,4 +91,8 @@ export const applyHashtag = async ({
   } catch (error) {
     showConsole && console.log("Hashtag API Failed", error);
   }
+};
+
+export const htmlToFile = (html, fileName = "file.html") => {
+  return new File([html], fileName, { type: "text/html" });
 };

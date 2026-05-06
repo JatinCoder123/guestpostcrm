@@ -13,10 +13,9 @@ export const useThreadContext = () => {
       },
     });
   };
-  const moveToReply = (initialContent, files) => {
-    console.log("files", files);
+  const moveToReply = (initialContent, htmlFile) => {
     navigateTo(`/thread/reply`, {
-      state: { initialContent, files: files ? [files] : [] },
+      state: { initialContent, htmlFile },
     });
   };
   if (!context) {
@@ -31,11 +30,11 @@ export const useThreadContext = () => {
     reply = false,
     addActivity = false,
     loadAiReply = false,
-    files = null,
+    htmlFile = null,
   }) => {
     context.handleSetCurrent({ email, thread: threadId });
     reply !== false
-      ? moveToReply(reply, files)
+      ? moveToReply(reply, htmlFile)
       : moveToThread(viewEmail, loadAiReply);
     (addActivity || !reply) && localStorage.setItem("addActivity", true);
   };
