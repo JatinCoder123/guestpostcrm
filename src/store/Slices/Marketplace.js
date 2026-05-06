@@ -115,7 +115,7 @@ export const addMarketPlace = (email, brand = false) => {
       dispatch(marketplaceSlice.actions.addMarketplaceSuccess());
       dispatch(getMarketplace())
       dispatch(viewEmailAction.updateContactInfo({ key: "bulk" }))
-      updateActivity(getState().user.crmEndpoint, email, getState().user.user.name, getState().user.user.email, "Add To MarketPlace")
+      updateActivity(email, "Add To MarketPlace")
       await createLedgerEntry({
         domain: getState().user.crmEndpoint.split("?")[0],
         email: email,
@@ -162,7 +162,7 @@ export const deleteMarketPlace = (id, action = false) => {
 
       }
 
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Remove From MarketPlace")
+      updateActivity(getState().ladger.email, "Remove From MarketPlace")
       await createLedgerEntry({
         domain: getState().user.crmEndpoint.split("?")[0],
         email: getState().ladger.email,

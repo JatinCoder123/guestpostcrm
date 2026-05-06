@@ -1,21 +1,26 @@
 import { showConsole } from "../assets/assets";
 import { fetchGpc } from "./api";
 
-
+let CURRENT_USER = {
+  name: 'GPC',
+  description: 'GPC'
+}
+export const setCurrentUser = (currentUser) => {
+  CURRENT_USER = currentUser
+  return;
+}
 export const updateActivity = async (
-  entryPoint,
   email,
-  last_user,
-  last_user_email,
   last_activity,
 ) => {
   try {
+    console.log(CURRENT_USER)
     const data = await fetchGpc({
       method: "POST", params: { type: "last_activity" }, body: {
         email,
         last_activity,
-        last_user,
-        last_user_email,
+        last_user: CURRENT_USER.name,
+        last_user_email: CURRENT_USER.description,
       }
     });
     showConsole && console.log("Activity Added", data);

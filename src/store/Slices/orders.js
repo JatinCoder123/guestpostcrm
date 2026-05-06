@@ -276,10 +276,8 @@ export const createOrder = () => {
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
+
         "Order Created",
       );
     } catch (error) {
@@ -352,10 +350,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
       triggerHashtag(17, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
-        getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
+        email,
         "Manual Order Created ",
       );
     } catch (error) {
@@ -408,10 +403,7 @@ export const createOrder3 = (email, orders = [], send) => {
       triggerHashtag(17, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Fetched ",
       );
     } catch (error) {
@@ -475,10 +467,7 @@ export const updateOrder = ({ order }) => {
       dispatch(ordersSlice.actions.clearAllErrors());
 
       updateActivity(
-        getState().user.crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Updated ",
       );
 
@@ -557,10 +546,7 @@ export const updateSeoLink = (orderId, link) => {
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         " Order Link Updated ",
       );
     } catch (error) {
@@ -616,10 +602,7 @@ export const deleteLink = (orderId, linkId) => {
       triggerHashtag(19, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Link Deleted ",
       );
     } catch (error) {
@@ -685,10 +668,7 @@ export const createLink = (orderId, link) => {
       triggerHashtag(18, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Link Created ",
       );
     } catch (error) {
