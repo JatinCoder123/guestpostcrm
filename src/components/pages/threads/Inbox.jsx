@@ -17,11 +17,10 @@ const Inbox = ({
   const attachmentBoxRef = useRef(null);
   const downloadAttachment = async (att) => {
     try {
-      // dynamic import so you don't even need top-level import
       const axios = (await import("axios")).default;
 
       const response = await axios.get(att.description, {
-        responseType: "blob", // 🔥 required for file download
+        responseType: "blob",
         headers: {
           "X-Api-Key": FETCH_GPC_X_API_KEY,
         },
@@ -43,7 +42,7 @@ const Inbox = ({
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Download failed:", error);
+      toast.error("Something went wrong while downloading the file");
     }
   };
 
