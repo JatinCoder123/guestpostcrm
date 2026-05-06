@@ -107,7 +107,7 @@ export const forwardEmail = (email, id) => {
       );
       dispatch(forwardedSlice.actions.clearAllErrors());
 
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, "Email Assign")
+      updateActivity(getState().ladger.email, "Email Assign")
 
       await createLedgerEntry({
         domain: domain,

@@ -88,8 +88,8 @@ const ActionButton = () => {
   const markInfo = marketPlaces.find((e) => e.name === contactInfo?.email1) ?? null
   const isMark = Number(contactInfo?.bulk) == 1
   /* highlight states from contactInfo */
-  const isFavActive = contactInfo?.favorite === "1";
-  const isExchangeActive = contactInfo?.exchange === "1";
+  const isFavActive = contactInfo?.favorite == "1";
+  const isExchangeActive = contactInfo?.exchange == "1";
 
 
   /* Helper to call applyHashtag util */
@@ -230,7 +230,7 @@ const ActionButton = () => {
       },
       // GET when adding favourite, DELETE when removing
       action: () => {
-        dispatch(favEmail(threadId));
+        dispatch(favEmail({ threadId, email }));
         triggerHashtag(MEMO.favourite, isFavActive ? "DELETE" : "GET");
       },
     },
@@ -268,7 +268,7 @@ const ActionButton = () => {
       },
       // GET when activating link exchange, DELETE when deactivating
       action: () => {
-        dispatch(linkExchange(threadId));
+        dispatch(linkExchange({ threadId, email }));
         triggerHashtag(MEMO.linkexchange, isExchangeActive ? "DELETE" : "GET");
       },
     },

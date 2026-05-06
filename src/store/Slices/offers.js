@@ -209,10 +209,8 @@ export const updateOffer = ({ offers = [] }) => {
 
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
+
         "Offer Updated ",
       );
 
@@ -295,10 +293,8 @@ export const createOffer = ({
 
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
+
         "Offer Created ",
       );
 
@@ -321,10 +317,8 @@ export const createOffer = ({
         ),
       });
       updateActivity(
-        getState().user.crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
+
         "Offer Created ",
       );
     } catch (error) {
@@ -375,10 +369,7 @@ export const deleteOffer = (id, offer) => {
       triggerHashtag(12, "GET");
       dispatch(offersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Offer Deleted",
       );
       await createLedgerEntry({

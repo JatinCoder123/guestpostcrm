@@ -88,12 +88,12 @@ export const getFavEmails = ({ page = 1, loading = true }) => {
     }
   };
 };
-export const favEmail = () => {
+export const favEmail = ({ threadId, email }) => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.favouriteEmailRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { field: 'favorite', email: getState().viewEmail.contactInfo?.email1 } });
+      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { field: 'favorite', email } });
       showConsole && console.log(`Favourite Toggle data`, data);
       if (!data.success) {
         throw new Error("Toggle failed");
@@ -105,28 +105,24 @@ export const favEmail = () => {
       dispatch(favSlice.actions.favouriteEmailSucess(message));
       dispatch(favSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
-        getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
+        email,
         data.new_value === 1 ? "Email Favorited " : "Email Unfavorited ",
       );
       await createLedgerEntry({
         domain: domain,
-        email: getState().ladger.email,
-        thread_id: getState().ladger.threadId,
+        email,
+        thread_id: threadId,
         group: "Activity",
         items: [
           buildLedgerItem({
             status:
               data.new_value === 1 ? "Mark-Favourite" : "Mark-Unfavourite",
-            detail: `email: {${getState().ladger.email}}`,
+            detail: `email: {${email}}`,
             ladgerState: getState().ladger,
             user: getState().crmUser.currentUser,
           }),
         ],
-        okHandler: () =>
-          dispatch(getLadger({ email: getState().ladger.email })),
+        okHandler: () => dispatch(getLadger({ email }))
       });
     } catch (error) {
       dispatch(favSlice.actions.favouriteEmailFailed(error.message));
