@@ -14,6 +14,7 @@ import MicInput from "../../MicInput"
 import { LoadingChase } from '../../Loading';
 import { CREATE_DEAL_API_KEY } from '../../../store/constants';
 import { aiReplyAction, getAiReply } from '../../../store/Slices/aiReply';
+import FirstReplyBtn from '../../FirstReplyBtn';
 
 const ReplyButtons = ({
     editorRef,
@@ -297,6 +298,8 @@ const ReplyButtons = ({
                     <LayoutTemplateIcon className="w-5 h-5" />
                 </motion.button>
             </ViewButton>
+            <FirstReplyBtn email={currentEmail} />
+
             <Attachment data={files} onChange={setFiles} />
             <MicInput editorRef={editorRef} />
         </div>
