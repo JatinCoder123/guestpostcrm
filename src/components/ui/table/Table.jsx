@@ -168,7 +168,7 @@ const TableView = ({
                 >
                     {statusList.length > 0 && count >= 0 && <StatusRow statusCount={statusCount} />}
                 </motion.div>
-                <DateRangeFilter
+                {/* <DateRangeFilter
                     fromDate={fromDate}
                     fromTime={fromTime}
                     toDate={toDate}
@@ -180,7 +180,7 @@ const TableView = ({
                     filterActive={filterActive}
                     onApply={() => setFilterActive(true)}
                     onReset={handleResetFilter}
-                />
+                /> */}
                 <motion.div
                     layout
                     transition={{
