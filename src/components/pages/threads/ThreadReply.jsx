@@ -13,6 +13,7 @@ import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
 import { SendingOverlay } from "./SendingOverlay";
 import ReplyButtons from "./ReplyButtons";
+import CopyButton from "../../CopyButton";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
@@ -108,25 +109,17 @@ const ThreadReply = () => {
               </div>
 
               {/* COPY LINK */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation(); // ⛔ prevent opening gmail
-                  const link = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;
-                  navigator.clipboard.writeText(link);
-                  toast.success("Email thread link copied!");
-                }}
-                title="Copy Gmail link"
-                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
-              >
-                <Globe className="w-6 h-6" />
-              </button>
+              <CopyButton
+                text={`https://mail.google.com/mail/u/0/#inbox/${threadId}`}
+                title="Copy Gmail Link!"
+              />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowMessageModal(true)}
                 className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
               >
-                <TbMessageStar className="w-6 h-6 text-yellow-400" />
+                <TbMessageStar className="w-5 h-5 text-yellow-400" />
               </motion.button>
             </div>
           </div>
@@ -154,11 +147,10 @@ const ThreadReply = () => {
                 onClick={() => handleSendClick(0)}
                 disabled={checkingThreadId || sending || editorContent == ""}
                 className={`px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 transition-all duration-200
-      ${
-        checkingThreadId || sending || editorContent == ""
-          ? "bg-gray-400 text-gray-200 cursor-not-allowed shadow-none"
-          : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl"
-      }`}
+      ${checkingThreadId || sending || editorContent == ""
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed shadow-none"
+                    : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl"
+                  }`}
               >
                 <Send className="w-5 h-5" />
                 <span>

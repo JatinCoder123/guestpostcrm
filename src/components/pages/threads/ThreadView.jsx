@@ -1,4 +1,4 @@
-import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail, Edit, DollarSign, ArrowBigUp, ArrowBigDown } from "lucide-react";
+import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail, Edit, DollarSign, ArrowBigUp, ArrowBigDown, Copy } from "lucide-react";
 import { motion, AnimatePresence, useMotionTemplate } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,6 +20,7 @@ import MailHeaderLeft from "./MailHeaderLeft.jsx";
 import ReplyButtons from "./ReplyButtons.jsx";
 import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
+import CopyButton from "../../CopyButton.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
@@ -135,16 +136,17 @@ export default function ThreadView() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(-1)}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+              onClick={() => navigate('/')}
+              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 group">
+
               {/* OPEN GMAIL */}
               <div
-                className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition"
+                className="flex items-center gap-3 cursor-pointer transition"
                 onClick={() =>
                   window.open(
                     `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
@@ -152,25 +154,19 @@ export default function ThreadView() {
                   )
                 }
               >
-                <Send className="w-5 h-5" />
-                <h2 className="text-xl font-bold tracking-tight">
-                  Email Thread
+
+                <h2 className="text-md font-semibold tracking-tight truncate max-w-[300px]
+      transition-all duration-300 
+      hover:text-blue-200 hover:underline"
+                >
+                  {emails[emails.length - 1]?.subject}
                 </h2>
               </div>
 
-              {/* COPY LINK */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const link = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;
-                  navigator.clipboard.writeText(link);
-                  toast.success("Email thread link copied!");
-                }}
-                title="Copy Gmail link"
-                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition shadow-sm"
-              >
-                <Globe className="w-4 h-4" />
-              </button>
+              {/* COPY BUTTON */}
+              <CopyButton
+                text={`https://mail.google.com/mail/u/0/#inbox/${threadId}`}
+              />
             </div>
           </div>
           {superfastReply && <MailHeaderLeft />}
