@@ -10,8 +10,6 @@ const TableFooter = () => {
     } = useTableContext();
 
     const start = count === 0 ? 0 : data.length;
-    const end = count;
-
     return (
         <motion.div
             layout
