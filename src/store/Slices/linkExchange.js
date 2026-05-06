@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { viewEmailAction } from "./viewEmail";
+import { getLadger } from "./ladger";
 
 const exchangeSlice = createSlice({
   name: "linkExchange",
@@ -102,10 +104,11 @@ export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the 
       if (!data.success) {
         throw new Error("Toggle failed");
       }
-      const message = data.new_value === 1 ? "Email link exchage Successfully" : "Email unlink Successfully";
+      const message = data.new_value === 1 ? "Email link  Successfully" : "Email unlink Successfully";
       dispatch(
         exchangeSlice.actions.exchangingSucess(message)
       );
+      dispatch(viewEmailAction.updateContactInfo({ key: "exchange" }))
 
       dispatch(exchangeSlice.actions.clearAllErrors());
       updateActivity(email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
@@ -121,6 +124,7 @@ export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the 
             user: getState().crmUser.currentUser,
           }),
         ],
+        okHandler: getLadger({ email, loading: false, force: true })
       });
 
     } catch (error) {

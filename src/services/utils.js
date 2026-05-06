@@ -14,7 +14,6 @@ export const updateActivity = async (
   last_activity,
 ) => {
   try {
-    console.log(CURRENT_USER)
     const data = await fetchGpc({
       method: "POST", params: { type: "last_activity" }, body: {
         email,

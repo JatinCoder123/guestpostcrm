@@ -8,6 +8,7 @@ import {
 } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { viewEmailAction } from "./viewEmail";
 
 const favSlice = createSlice({
   name: "fav",
@@ -103,6 +104,8 @@ export const favEmail = ({ threadId, email }) => {
           ? "Email Favorited Successfully"
           : "Email Unfavorited Successfully";
       dispatch(favSlice.actions.favouriteEmailSucess(message));
+      dispatch(viewEmailAction.updateContactInfo({ key: "favorite" }))
+
       dispatch(favSlice.actions.clearAllErrors());
       updateActivity(
         email,

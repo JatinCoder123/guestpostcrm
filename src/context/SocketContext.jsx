@@ -88,9 +88,8 @@ export const SocketContextProvider = ({ children }) => {
     };
 
     const newMailHandler = (data) => {
-      showConsole && console.log("OUR CRM:", crmRef.current);
       showConsole && console.log("Mail site:", data.site_url);
-      showConsole && console.log("new mail", data);
+      showConsole && crmRef.current == data.site_url && console.log("new mail", data);
       currentEventThreadId.current = data?.thread_id;
       console.log("currentEventThreadId", currentEventThreadId.current);
 
