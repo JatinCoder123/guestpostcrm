@@ -91,12 +91,12 @@ export const getLinkExchange = () => {
   };
 };
 
-export const linkExchange = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
+export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.exchangingRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { email: getState().viewEmail.contactInfo?.email1, field: 'exchange' } }
+      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { email, field: 'exchange' } }
       );
       showConsole && console.log(`Exchange Toggle Response`, data);
       if (!data.success) {
@@ -108,15 +108,15 @@ export const linkExchange = () => {  // Assuming 'id' is the email/contact ident
       );
 
       dispatch(exchangeSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
+      updateActivity(email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
       await createLedgerEntry({
         domain: domain,
-        email: getState().ladger.email,
+        email: email,
         group: "Activity",
         items: [
           buildLedgerItem({
             status: data.new_value === 1 ? "Mark-Link-Exchange" : "Unmark-Link-Exchange",
-            detail: `email: {${getState().ladger.email}}`,
+            detail: `email: {${email}}`,
             ladgerState: getState().ladger,
             user: getState().crmUser.currentUser,
           }),

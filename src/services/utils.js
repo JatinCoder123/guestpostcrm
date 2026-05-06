@@ -10,10 +10,7 @@ export const setCurrentUser = (currentUser) => {
   return;
 }
 export const updateActivity = async (
-  entryPoint,
   email,
-  last_user,
-  last_user_email,
   last_activity,
 ) => {
   try {

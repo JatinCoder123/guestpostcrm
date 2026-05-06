@@ -159,7 +159,7 @@ export default function ThreadView() {
       transition-all duration-300 
       hover:text-blue-200 hover:underline"
                 >
-                  {emails[emails.length - 1]?.subject}
+                  {emails?.[emails?.length - 1]?.subject}
                 </h2>
               </div>
 
