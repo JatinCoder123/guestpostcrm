@@ -29,7 +29,6 @@ const TABS = [
 
   { key: "logger", label: "Logger", module: "outr_global_logger" },
 
-  // 👇 DUMMY / NOT WORKING YET
   {
     key: "prompt_testing",
     label: "Prompt Testing",
@@ -59,6 +58,11 @@ const TABS = [
   {
     key: "data_modelling",
     label: "Data Modelling",
+    disabled: false,
+  },
+  {
+    key: "prompt_explorer",
+    label: "Prompt Explorer",
     disabled: false,
   },
 ];
@@ -408,6 +412,10 @@ const Debug = () => {
                   }
                   if (selected.key === "data_modelling") {
                     navigateTo("/settings/data-modelling");
+                    return;
+                  }
+                  if (selected.key === "prompt_explorer") {
+                    navigateTo("/settings/prompt-explorer");
                     return;
                   }
 

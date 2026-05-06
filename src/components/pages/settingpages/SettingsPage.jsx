@@ -11,6 +11,7 @@ import {
   Phone,
   Users,
 } from "lucide-react";
+import { BsExplicit } from "react-icons/bs";
 import { Link, Outlet } from "react-router-dom";
 
 export function SettingsPage() {
