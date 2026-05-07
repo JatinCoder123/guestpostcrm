@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
+import { htmlToFile } from "../../../services/utils";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -117,31 +118,12 @@ const Thread = () => {
   };
   useEffect(() => {
     const processFiles = async () => {
-      if (!state?.files || state.files.length === 0) return;
+      if (!state?.htmlFile) return;
 
       try {
-        const converted = await Promise.all(
-          state.files.map(async (item) => {
-            // CASE 1: already a file object (skip)
-            if (item?.file instanceof File) return item;
-
-            // CASE 2: URL string
-            if (typeof item === "string") {
-              const file = await urlToFile(item);
-              return { file };
-            }
-
-            // CASE 3: object with url
-            if (item?.url) {
-              const file = await urlToFile(item.url);
-              return { file };
-            }
-
-            return null;
-          }),
-        );
-
-        setFiles(converted.filter(Boolean));
+        const file = htmlToFile(state?.htmlFile);
+        setFiles([file]);
+        console.log("files", file);
       } catch (err) {
         console.error("File conversion error:", err);
         toast.error("Failed to load attachments");

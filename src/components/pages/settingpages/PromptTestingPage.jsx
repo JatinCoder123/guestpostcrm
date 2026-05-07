@@ -111,7 +111,9 @@ const PromptTestingPage = () => {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: 1 } });
+        const data = await fetchGpc({
+          params: { type: "machine_learning", stage_type: 1 },
+        });
         setStages(data);
       } catch (err) {
         console.error("Failed to fetch stages:", err);
@@ -130,7 +132,9 @@ const PromptTestingPage = () => {
     const fetchStagePrompts = async () => {
       try {
         setStagePromptsLoading(true);
-        const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: formData.stage } });
+        const data = await fetchGpc({
+          params: { type: "machine_learning", stage_type: formData.stage },
+        });
         const rows = Array.isArray(data) ? data : [];
         // Extract only items that have a `name` field
         const filtered = rows
@@ -163,8 +167,8 @@ const PromptTestingPage = () => {
     method: "POST",
     name: "PROMPT TEST RESULT",
     body: {
-      body: "hii i am kamal",
-      prompt: "Determine Offer",
+      body: formData.body,
+      prompt: formData.prompt,
     },
     headers: {
       "Content-Type": "application/json",
@@ -233,10 +237,11 @@ const PromptTestingPage = () => {
                       }
                       className={`
             px-4 py-2 rounded-full text-sm font-medium transition border
-            ${formData.stage === key
-                          ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                          : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
-                        }
+            ${
+              formData.stage === key
+                ? "bg-indigo-600 text-white border-indigo-600 shadow"
+                : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
+            }
           `}
                     >
                       {label}

@@ -87,11 +87,12 @@ export default function ThreadOrders({ threadId, email, id }) {
       order,
       userEmail: itemEmail,
     });
-    // console.log("ORDER PDF", order.invoice_pdf);
+    console.log("ORDER PDF", order.invoice_pdf);
     handleMove({
       email: itemEmail,
       threadId: itemThreadId,
       reply: html,
+      htmlFile: order.invoice_pdf,
     });
   };
   useEffect(() => {
