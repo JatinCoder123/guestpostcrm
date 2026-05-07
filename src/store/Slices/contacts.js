@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { CREATE_DEAL_API_KEY } from "../constants";
-import { apiRequest, fetchGpc } from "../../services/api";
+import { fetchGpc } from "../../services/api";
 
 const contactSlice = createSlice({
     name: "contacts",

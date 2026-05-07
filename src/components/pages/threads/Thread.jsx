@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
+import { htmlToFile } from "../../../services/utils";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -34,7 +35,9 @@ const Thread = () => {
   const handleSendClick = async (forceSend = 1) => {
     try {
       setCheckingTheadId(true);
-      const data = await fetchGpc({ params: { type: 're_check_thread', email: currentEmail } });
+      const data = await fetchGpc({
+        params: { type: "re_check_thread", email: currentEmail },
+      });
       console.log("MATHED THREAD ID", data);
 
       if (!(data?.success || data.thread_id)) {
@@ -43,7 +46,7 @@ const Thread = () => {
       }
       console.log("THREAD", currentThread);
 
-      console.log("CC", cc,);
+      console.log("CC", cc);
       const contentToSend = editorContent;
       const formData = new FormData();
       formData.append("threadId", data.thread_id);
@@ -105,6 +108,30 @@ const Thread = () => {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [sendMessage, sendError]);
+  const urlToFile = async (url) => {
+    console.log("url", url);
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    const fileName = url.split("/").pop() || "file";
+    return new File([blob], fileName, { type: blob.type });
+  };
+  useEffect(() => {
+    const processFiles = async () => {
+      if (!state?.htmlFile) return;
+
+      try {
+        const file = htmlToFile(state?.htmlFile);
+        setFiles([file]);
+        console.log("files", file);
+      } catch (err) {
+        console.error("File conversion error:", err);
+        toast.error("Failed to load attachments");
+      }
+    };
+
+    processFiles();
+  }, [state]);
   const value = {
     emails,
     loadAiReply: state?.loadAiReply,

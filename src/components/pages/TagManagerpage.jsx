@@ -1,285 +1,183 @@
 import {
   Calendar,
-  User,
-  FileText,
-  Shield,
-  TagIcon,
-  Trash2,
-  MoreVertical,
+  Clapperboard,
+  Trash,
+  Tag,
+  MemoryStick,
+  Edit,
+  BadgeDollarSign,
   Plus,
   X,
-  CheckCircle,
-  Type,
-  TypeIcon,
-  User2,
-  ActivityIcon,
-  Edit,
-  CircleCheckIcon,
-  Clipboard,
-  Clapperboard,
-  Calendar1,
-  Tag,
 } from "lucide-react";
 
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import Pagination from "../Pagination";
-import { getTags, tagActions } from "../../store/Slices/tag";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+
+import TableView, { Table } from "../ui/table/Table";
+import TableTitleBar from "../ui/table/TableTitleBar";
+import { LoadingChase } from "../Loading.jsx";
+
+import { getTags, deleteTag } from "../../store/Slices/tag.js";
+
 import CreateTag from "./CreateTag";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
 export function TagManagerpage() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { tags, count, creating, createSuccess, error } = useSelector(
+
+  const { tags, pageIndex, deleting, deleteTagId, creating } = useSelector(
     (state) => state.tag,
   );
 
-  const [selectedTag, setSelectedTag] = useState("hot"); // For dropdown selection
-  const [deletingId, setDeletingId] = useState(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [createdTagName, setCreatedTagName] = useState("");
-
-  // Fetch tags on component mount or when selectedTag changes
-  useEffect(() => {
-    dispatch(getTags());
-  }, [dispatch, selectedTag]);
+  // ✅ Popup states
+  const [showPopup, setShowPopup] = useState(false);
+  const [editingTag, setEditingTag] = useState(null);
 
   useEffect(() => {
-    if (createSuccess) {
-      toast.success("Created tag successfully");
-      dispatch(tagActions.resetCreateStatus());
-      dispatch(getTags());
-    }
-    if (error) {
-      toast.error("Create Tag failed");
-      dispatch(tagActions.resetCreateStatus());
-    }
-  }, [createSuccess, error]);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-
-    try {
-      const date = new Date(dateString);
-      return date.toISOString().split("T")[0];
-    } catch (error) {
-      const datePart = dateString.split(" ")[0];
-      return datePart || dateString;
-    }
-  };
-
-  const handleConfirmDelete = (id, firstName) => {};
-
-  const handleCreateTagSuccess = (tagName) => {
-    setCreatedTagName(tagName);
-
-    setShowCreateForm(false);
-
     dispatch(getTags());
+  }, [dispatch]);
 
-    dispatch(tagActions.resetCreateStatus());
+  // ✅ OPEN CREATE
+  const handleCreate = () => {
+    setEditingTag(null);
+    setShowPopup(true);
   };
 
-  const handleClosePopup = () => {
-    if (!creating) {
-      dispatch(tagActions.resetCreateStatus());
-      setShowCreateForm(false);
-    }
+  // ✅ OPEN EDIT
+  const handleEdit = (row) => {
+    setEditingTag(row);
+    setShowPopup(true);
   };
+
+  // ✅ AFTER SUCCESS
+  const handleSuccess = () => {
+    setShowPopup(false);
+    setEditingTag(null);
+    dispatch(getTags());
+  };
+
+  const columns = [
+    {
+      label: "Created At",
+      accessor: "date_entered",
+      icon: Calendar,
+      render: (row) => <span>{row.date_entered}</span>,
+    },
+    {
+      label: "Tag Name",
+      accessor: "name",
+      icon: Tag,
+      render: (row) => <span>{row.name}</span>,
+    },
+    {
+      label: "Memo No.",
+      accessor: "memo_c",
+      icon: MemoryStick,
+      render: (row) => <span>{row?.memo_c}</span>,
+    },
+    {
+      label: "Type",
+      accessor: "type",
+      icon: BadgeDollarSign,
+      render: (row) => <span>{row?.type}</span>,
+    },
+    {
+      label: "Modified At",
+      accessor: "date_modified",
+      icon: Calendar,
+      render: (row) => <span>{row?.date_modified}</span>,
+    },
+    {
+      label: "Action",
+      accessor: "action",
+      icon: Clapperboard,
+      classes: "ml-auto",
+      headerClasses: "ml-auto",
+      render: (row) => (
+        <div className="flex gap-2 ">
+          {/* ✅ EDIT */}
+          <button
+            onClick={() => handleEdit(row)}
+            className="p-2 bg-blue-100 rounded"
+          >
+            <Edit className="w-4 h-4 text-blue-600" />
+          </button>
+
+          {/* ✅ DELETE */}
+          {deleting && deleteTagId === row.id ? (
+            <LoadingChase size="20" color="red" />
+          ) : (
+            <button
+              onClick={() => dispatch(deleteTag(row.id))}
+              className="p-2 bg-red-100 rounded"
+            >
+              <Trash className="w-4 h-4 text-red-600" />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
-      {/* Main Container with blur effect */}
-      <div
-        className={`${showCreateForm ? "filter blur-sm pointer-events-none" : ""} transition-all duration-300`}
+      {/* ✅ TABLE */}
+      <TableView
+        tableData={tags}
+        tableName={"Tag Manager"}
+        columns={columns}
+        slice={"tag"}
+        fetchNextPage={() => dispatch(getTags({ page: pageIndex + 1 }))}
       >
-        {/* Tag Manager Section */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          {/* Header with Create Button */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              {/* Back Button */}
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 rounded-full bg-green-100 hover:bg-green-200 ring-2 ring-green-300 transition shadow-sm "
-              >
-                <ArrowLeft className="w-5 h-5 text-green-700" />
-              </button>
-              <TagIcon className="w-6 h-6 text-green-600" />
-              <h2 className="text-xl text-gray-900">Tag Manager</h2>
-              <a
-                href="https://www.guestpostcrm.com/blog/guestpostcrm-moves-certain-spam-emails-back-to-inbox/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  width="30"
-                  height="30"
-                  src="https://img.icons8.com/offices/30/info.png"
-                  alt="info"
-                />
-              </a>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create Tag</span>
-              </button>
-            </div>
+        <TableTitleBar
+          Icon={Tag}
+          title={"Tag Manager"}
+          titleClass={"text-orange-500"}
+        />
+
+        {
+          <div className="absolute -top-1 right-0">
+            <button className="cursor-pointer" onClick={handleCreate}>
+              <img
+                width="30"
+                height="30"
+                src="https://img.icons8.com/arcade/64/plus.png"
+                alt="plus"
+              />
+            </button>
           </div>
+        }
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white">
-                  <th className="px-6 py-4 text-left">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>CREATED AT</span>
-                    </div>
-                  </th>
+        <Table headerStyle={"bg-orange-500"} layoutStyle={"grid grid-cols-6"} />
+      </TableView>
 
-                  <th className="px-6 py-4 text-left">
-                    <div className="flex items-center gap-2">
-                      <TagIcon className="w-4 h-4" />
-                      <span>TAG</span>
-                    </div>
-                  </th>
-
-                  <th className="px-6 py-4 text-left">
-                    <div className="flex items-center gap-2">
-                      <TagIcon className="w-4 h-4" />
-                      <span>MEMO NO</span>
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left">
-                    <div className="flex items-center gap-2">
-                      <ActivityIcon className="w-4 h-4" />
-                      <span>TYPE</span>
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 text-left">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>DATE MODIFIED</span>
-                    </div>
-                  </th>
-                  {/* <th className="px-6 py-4 text-left">
-                    <div className="flex items-center gap-2">
-                      <Clapperboard className="w-4 h-4" />
-                      <span>ACTION</span>
-                    </div>
-                  </th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {tags?.length > 0 &&
-                  tags.map((tagItem) => (
-                    <tr
-                      key={tagItem.thread_id || tagItem.id}
-                      className="border-b border-gray-100 hover:bg-orange-50 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span>{tagItem.date_entered}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-gray-900">
-                          <TagIcon className="w-4 h-4 text-gray-400" />
-                          <span>{tagItem.name || "Unknown"}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <ActivityIcon className="w-4 h-4 text-gray-400" />
-                          <span>{tagItem.memo_c || "Unknown"}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <ActivityIcon className="w-4 h-4 text-gray-400" />
-                          <span>{tagItem.type || "Unknown"}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Calendar1 className="w-4 h-4 text-gray-400" />
-                          <span>{tagItem.date_modified || "Unknown"}</span>
-                        </div>
-                      </td>
-                      {/* <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleConfirmDelete()}
-                          disabled={
-                            deletingId === (tagItem.thread_id || tagItem.id)
-                          }
-                          className={`
-                          flex items-center gap-2 px-4 py-2 rounded-lg transition-all bg-red-200 hover:bg-red-300 cursor-pointer
-                        `}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
-                      </td> */}
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-
-          {tags?.length > 0 && <Pagination slice={"tag"} fn={getTags} />}
-
-          {(!tags || tags.length === 0) && (
-            <div className="p-12 text-center">
-              <Shield className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">
-                No tags found. Select a tag from dropdown to view data.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Create Tag Form Popup */}
-      {showCreateForm && (
+      {/* ✅ POPUP */}
+      {showPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
+          {/* BACKDROP */}
           <div
             className="absolute inset-0 bg-black/50"
-            onClick={handleClosePopup}
-          ></div>
+            onClick={() => setShowPopup(false)}
+          />
 
-          {/* Popup Card */}
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b">
-              <div className="flex items-center gap-3">
-                <TagIcon className="w-6 h-6 text-green-600" />
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Create New Tag
-                </h2>
-              </div>
-              <button
-                onClick={handleClosePopup}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={creating}
-              >
-                <X className="w-5 h-5 text-gray-500" />
+          {/* MODAL */}
+          <div className="relative bg-white rounded-xl w-full max-w-md shadow-lg">
+            {/* HEADER */}
+            <div className="flex justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">
+                {editingTag ? "Edit Tag" : "Create Tag"}
+              </h2>
+
+              <button onClick={() => setShowPopup(false)}>
+                <X />
               </button>
             </div>
 
-            {/* Form */}
+            {/* FORM */}
             <CreateTag
-              onSubmit={handleCreateTagSuccess}
-              onCancel={handleClosePopup}
+              onSubmit={handleSuccess}
+              onCancel={() => setShowPopup(false)}
+              initialData={editingTag}
+              isEditing={!!editingTag}
             />
           </div>
         </div>

@@ -260,8 +260,9 @@ export const createOrder = () => {
           assigned_user_id: getState().crmUser.currentUser?.id,
         },
         headers: {
-          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
-        }
+          "X-Api-Key": FETCH_GPC_X_API_KEY,
+          "Content-Type": "application/json",
+        },
       });
       showConsole && console.log(`Orders created `, data);
       if (!data.order.success) {
@@ -276,10 +277,8 @@ export const createOrder = () => {
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
+
         "Order Created",
       );
     } catch (error) {
@@ -352,10 +351,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
       triggerHashtag(17, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
-        getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
+        email,
         "Manual Order Created ",
       );
     } catch (error) {
@@ -392,8 +388,10 @@ export const createOrder3 = (email, orders = [], send) => {
               amount: order.amount,
             },
             headers: {
-              "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
-            }
+              "X-Api-Key": FETCH_GPC_X_API_KEY,
+              "Content-Type": "application/json",
+
+            },
           });
           showConsole && console.log(`Create Order Manully`, data);
         });
@@ -408,10 +406,7 @@ export const createOrder3 = (email, orders = [], send) => {
       triggerHashtag(17, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Fetched ",
       );
     } catch (error) {
@@ -475,10 +470,7 @@ export const updateOrder = ({ order }) => {
       dispatch(ordersSlice.actions.clearAllErrors());
 
       updateActivity(
-        getState().user.crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Updated ",
       );
 
@@ -518,11 +510,13 @@ export const updateSeoLink = (orderId, link) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateLinkRequest());
     showConsole && console.log("Update Seo Link", link);
-    console.log("order id", orderId)
+    link = { ...link, link_amount_c: `$${link.link_amount_c}` };
+    console.log("order id", orderId);
     try {
-
       const data = await apiRequest({
-        endpoint: ` ${getState().user.crmEndpoint.split('?')[0]}?entryPoint=get_post_all`, params: { action_type: 'post_data' }, body: {
+        endpoint: ` ${getState().user.crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+        params: { action_type: "post_data" },
+        body: {
           parent_bean: {
             module: "outr_seo_backlinks",
             ...link,
@@ -533,10 +527,7 @@ export const updateSeoLink = (orderId, link) => {
           "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
           "Content-Type": "aplication/json",
         },
-      }
-
-
-      )
+      });
       showConsole && console.log(`Update Order Link`, data);
       const updatedOrders = getState().orders.orders.map((o) => {
         if (o.order_id === orderId) {
@@ -558,10 +549,7 @@ export const updateSeoLink = (orderId, link) => {
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         " Order Link Updated ",
       );
     } catch (error) {
@@ -572,6 +560,7 @@ export const updateSeoLink = (orderId, link) => {
     }
   };
 };
+
 export const deleteLink = (orderId, linkId) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.deleteLinkRequest());
@@ -616,10 +605,7 @@ export const deleteLink = (orderId, linkId) => {
       triggerHashtag(19, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Link Deleted ",
       );
     } catch (error) {
@@ -685,10 +671,7 @@ export const createLink = (orderId, link) => {
       triggerHashtag(18, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         getState().ladger.email,
-        getState().user.user.name,
-        getState().user.user.email,
         "Order Link Created ",
       );
     } catch (error) {

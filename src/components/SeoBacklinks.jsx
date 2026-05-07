@@ -41,7 +41,7 @@ function ValidTick() {
 }
 
 function useLIInsert() {
-  const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState(null);
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -122,7 +122,7 @@ function LIInsertPopup({ link, orderId, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-500 to-purple-600">
           <div className="flex items-center gap-2">
@@ -141,7 +141,6 @@ function LIInsertPopup({ link, orderId, onClose }) {
 
         {/* Body */}
         <div className="p-5 space-y-4">
-          {/* Payload preview */}
           <div className="space-y-2 text-xs">
             <div className="flex flex-col gap-0.5">
               <span className="text-slate-400 font-medium uppercase tracking-wider">
@@ -177,7 +176,6 @@ function LIInsertPopup({ link, orderId, onClose }) {
             </div>
           </div>
 
-          {/* States */}
           {status === "loading" && (
             <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium py-2">
               <span className="w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
@@ -271,7 +269,6 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
     dispatch(deleteLink(id, linkId));
   };
 
-  // Group GP links by their doc URL
   const gpLinkGroups = gpLinks.reduce((acc, link) => {
     const key = link.gp_doc_url_c || "__no_doc__";
     if (!acc[key]) acc[key] = [];
@@ -279,7 +276,6 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
     return acc;
   }, {});
 
-  // Group LI links by their target URL
   const liLinkGroups = liLinks.reduce((acc, link) => {
     const key = link.target_url_c || "__no_target__";
     if (!acc[key]) acc[key] = [];
@@ -419,20 +415,36 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
 }
 
 /* ─────────────────────────────────────────────
-   Shared table header & row used by both GP + LI
+   Column definitions — single source of truth
+   7 columns: # | Anchor Text | Backlink URL | Spam Score | Amount & Type | Domain | Action
 ───────────────────────────────────────────── */
+const COL_STYLES = [
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+  "flex-1 min-w-0",
+];
+
 function LinkTableHeader() {
+  const labels = [
+    "#",
+    "Anchor Text",
+    "Backlink URL",
+    "Spam Score",
+    "Amount & Type",
+    "Domain",
+    "Action",
+  ];
   return (
-    <div className="grid grid-cols-9 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
-      <div>#</div>
-      <div>Anchor Text</div>
-      <div>Anchor Verdict</div>
-      <div>Backlink URL</div>
-      <div>Backlink Verdict</div>
-      <div>Spam Score</div>
-      <div>Amount &amp; Type</div>
-      <div>Domain</div>
-      <div>Action</div>
+    <div className="flex items-center gap-3 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
+      {labels.map((label, i) => (
+        <div key={label} className={COL_STYLES[i]}>
+          {label}
+        </div>
+      ))}
     </div>
   );
 }
@@ -674,101 +686,86 @@ function LinkTableRow({
   const liPostedUrl = link?.post_id || link?.assigned_user_link || "";
   return (
     <div
-      className={`grid grid-cols-9 px-4 py-3 border-t border-slate-100 text-sm items-center ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
+      className={`flex items-center gap-3 px-4 py-3 border-t border-slate-100 text-sm ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
     >
-      {/* Index */}
-      <div>
+      {/* Col 0 — # */}
+      <div className={COL_STYLES[0]}>
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold shadow-sm">
           {rowIndex + 1}
         </span>
       </div>
 
-      {/* Anchor Text */}
-      <div className="flex gap-1 items-center">
-        <span className="truncate max-w-[130px] font-medium text-slate-800">
+      {/* Col 1 — Anchor Text + verdict icon */}
+      <div className={`${COL_STYLES[1]} flex items-center gap-1`}>
+        <span
+          className={`truncate font-medium text-slate-800 ${
+            !Number(link.is_anchor_text_valid) ? "line-through" : ""
+          }`}
+        >
           {link.anchor_text_c || "-"}
         </span>
-      </div>
-
-      {/* Anchor Verdict */}
-      <div className="flex items-center gap-2">
-        {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
-        {link.link_verdict_prompt_ledger.length > 0 && (
+        {link.link_verdict_prompt_ledger?.length > 0 && (
           <button
             onClick={() =>
               navigateTo("/settings/machine-learning", {
                 state: { prompt: link.link_verdict_prompt_ledger[0] },
               })
             }
-            className="text-yellow-600 hover:scale-110"
+            className="text-yellow-600 hover:scale-110 shrink-0"
           >
-            <SparkleIcon size={18} />
+            <SparkleIcon size={14} />
           </button>
         )}
-        <ValidationBadge valid={link.is_anchor_text_valid} />
       </div>
 
-      {/* Backlink URL */}
-      <div>
+      {/* Col 2 — Backlink URL + verdict icon */}
+      <div className={`${COL_STYLES[2]} flex items-center gap-1 min-w-0`}>
         <a
           href={link.backlink_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition"
+          className="group inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition min-w-0"
         >
-          <span className="truncate max-w-[80px]">
+          <span
+            className={`truncate font-medium text-slate-800 ${
+              !Number(link.is_link_valid) ? "line-through" : ""
+            }`}
+          >
             {link.backlink_url || "-"}
           </span>
-          <span className="opacity-0 group-hover:opacity-100 transition">
+          <span className="opacity-0 group-hover:opacity-100 transition shrink-0">
             ↗
           </span>
         </a>
-      </div>
-
-      {/* Backlink Verdict */}
-      <div className="flex items-center gap-2">
-        {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
-        {link.link_verdict_prompt_ledger && (
+        {link.link_verdict_prompt_ledger?.length > 0 && (
           <button
             onClick={() =>
               navigateTo("/settings/machine-learning", {
                 state: { prompt: link.link_verdict_prompt_ledger[0] },
               })
             }
-            className="text-yellow-600 hover:scale-110"
+            className="text-yellow-600 hover:scale-110 shrink-0"
           >
-            <SparkleIcon size={18} />
+            <SparkleIcon size={14} />
           </button>
         )}
-        <ValidationBadge valid={link.is_link_valid} />
       </div>
 
-      {/* Spam Score */}
-      <div className={`font-medium ${spam.color}`}>
-        <div className="flex items-center gap-1 flex-wrap">
+      {/* Col 3 — Spam Score */}
+      <div className={`${COL_STYLES[3]} font-medium ${spam.color}`}>
+        <div
+          className={`truncate max-w-[130px] font-medium text-slate-800 ${
+            link.spam_score_c > 7 ? "line-through" : ""
+          }`}
+        >
           <span className="text-xs font-bold text-slate-500">MOZ</span>
           <span className="text-yellow-400 text-xs">★</span>
           <span>{link.spam_score_c}%</span>
-          {link.spam_score_c < 7 ? (
-            <img
-              width="22"
-              height="22"
-              src="https://img.icons8.com/3d-fluency/94/ok.png"
-              alt="ok"
-            />
-          ) : (
-            <img
-              width="22"
-              height="22"
-              src="https://img.icons8.com/3d-fluency/94/cancel.png"
-              alt="cross"
-            />
-          )}
         </div>
       </div>
 
-      {/* Amount & Type */}
-      <div className="flex flex-col gap-0.5">
+      {/* Col 4 — Amount & Type */}
+      <div className={`${COL_STYLES[4]} flex flex-col gap-0.5`}>
         <span className="font-semibold text-indigo-600">
           {link.link_amount_c}
         </span>
@@ -779,34 +776,37 @@ function LinkTableRow({
         </span>
       </div>
 
-      <div className="flex flex-row gap-0.5 mr-12">
-        {(() => {
-          try {
-            return new URL(link.backlink_url).hostname.replace(/^www\./, "");
-          } catch {
-            return link.backlink_url;
-          }
-        })()}
-        {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
-        {link.link_verdict_prompt_ledger.length > 0 && (
+      {/* Col 5 — Domain + verdict icon */}
+      <div className={`${COL_STYLES[5]} flex items-center gap-1 min-w-0`}>
+        <span
+          className={`truncate font-medium text-slate-800 ${
+            !Number(link.is_domain_valid) ? "line-through" : ""
+          }`}
+        >
+          {(() => {
+            try {
+              return new URL(link.backlink_url).hostname.replace(/^www\./, "");
+            } catch {
+              return link.backlink_url;
+            }
+          })()}
+        </span>
+        {link.link_verdict_prompt_ledger?.length > 0 && (
           <button
             onClick={() =>
               navigateTo("/settings/machine-learning", {
                 state: { prompt: link.link_verdict_prompt_ledger[0] },
               })
             }
-            className="text-yellow-600 hover:scale-110"
+            className="text-yellow-600 hover:scale-110 shrink-0"
           >
-            <SparkleIcon size={18} />
+            <SparkleIcon size={14} />
           </button>
         )}
-        <span className="truncate max-w-[30px]">
-          <ValidationBadge valid={link.is_domain_valid} />
-        </span>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-2 ml-10">
+      {/* Col 6 — Actions */}
+      <div className={`${COL_STYLES[6]} flex gap-2`}>
         <button
           onClick={() => {
             setItem(link);
@@ -830,7 +830,6 @@ function LinkTableRow({
             <Trash size={14} />
           )}
         </button>
-        {/* which will live the link */}
         {link.type_c === "LI" && (
           <>
             {liPostedUrl ? (
@@ -913,7 +912,7 @@ function GPLinksTable({
 }
 
 /* ─────────────────────────────────────────────
-   LILinksTable  –  mirrors GPLinksTable structure
+   LILinksTable
 ───────────────────────────────────────────── */
 function LILinksTable({
   liLinks,
@@ -954,7 +953,7 @@ function LILinksTable({
 }
 
 /* ─────────────────────────────────────────────
-   DocumentAnalysisCard  –  GP header (with link count)
+   DocumentAnalysisCard  –  GP header
 ───────────────────────────────────────────── */
 function DocumentAnalysisCard({
   docLink,
@@ -988,12 +987,7 @@ function DocumentAnalysisCard({
       const data = await fetchGpc({
         params: { type: "zerogpt" },
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          doc_url: docLink,
-        }),
+        body: { doc_url: docLink },
       });
 
       setAnalysisData(data);
@@ -1059,7 +1053,11 @@ function DocumentAnalysisCard({
             rel="noopener noreferrer"
             className="group flex items-center gap-2 rounded-lg bg-indigo-50 px-1 py-1 text-sm hover:bg-indigo-100 transition w-full"
           >
-            <span className="font-semibold text-indigo-700 truncate">
+            <span
+              className={`truncate max-w-[130px] font-medium text-slate-800 ${
+                Number(link.is_content_valid) ? "" : "line-through"
+              }`}
+            >
               {DocName || "Untitled Document"}
             </span>
             <span className="opacity-0 group-hover:opacity-100 transition text-indigo-500 ml-1">
@@ -1072,7 +1070,6 @@ function DocumentAnalysisCard({
           </span>
 
           <div className="flex items-center gap-2">
-            {/* ✨ PROMPT (NO DEBUG REDIRECT NOW) */}
             {ContentVerdictPromptLedger && (
               <button
                 onClick={() =>
@@ -1139,7 +1136,7 @@ function DocumentAnalysisCard({
 }
 
 /* ─────────────────────────────────────────────
-   LIAnalysisCard  –  LI header (mirrors GP card style)
+   LIAnalysisCard  –  LI header
 ───────────────────────────────────────────── */
 function LIAnalysisCard({ targetUrl, website, linkCount }) {
   return (
@@ -1167,7 +1164,6 @@ function LIAnalysisCard({ targetUrl, website, linkCount }) {
             Monthly Traffic
           </div>
 
-          {/* Target URL value */}
           <a
             href={targetUrl}
             target="_blank"

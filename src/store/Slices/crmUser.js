@@ -1,6 +1,7 @@
 import { createSlice, current } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { fetchGpc } from "../../services/api";
+import { setCurrentUser } from "../../services/utils";
 
 const crmUserSlice = createSlice({
   name: "crmUser",
@@ -49,6 +50,8 @@ export const getAllUsers = () => {
       const currentUser = data.find(
         (user) => user.description === getState().user.user.email,
       );
+      console.log(currentUser)
+      setCurrentUser(currentUser)
       dispatch(
         crmUserSlice.actions.getAllUsersSucess({
           count: data.length ?? 0,

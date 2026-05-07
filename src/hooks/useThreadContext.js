@@ -3,27 +3,40 @@ import { ThreadContext } from "../context/ThreadContext";
 import { useNavigate } from "react-router-dom";
 
 export const useThreadContext = () => {
-    const navigateTo = useNavigate()
-    const context = useContext(ThreadContext);
-    const moveToThread = (viewEmails, loadAiReply) => {
-        navigateTo(`/thread/view`, {
-            state: {
-                viewEmails: loadAiReply ? undefined : viewEmails,
-                loadAiReply
-            }
-        })
-    }
-    const moveToReply = (initialContent) => {
-        navigateTo(`/thread/reply`, { state: { initialContent } })
-    }
-    if (!context) {
-        throw new Error("useThreadContext must be used inside ThreadContextProvider");
-    }
-    const handleMove = ({ email, threadId, viewEmail = null, reply = false, addActivity = false, loadAiReply = false }) => {
-        context.handleSetCurrent({ email, thread: threadId })
-        reply !== false ? moveToReply(reply) : moveToThread(viewEmail, loadAiReply);
-        (addActivity || !reply) && localStorage.setItem("addActivity", true)
-
-    }
-    return { context, handleMove };
+  const navigateTo = useNavigate();
+  const context = useContext(ThreadContext);
+  const moveToThread = (viewEmails, loadAiReply) => {
+    navigateTo(`/thread/view`, {
+      state: {
+        viewEmails: loadAiReply ? undefined : viewEmails,
+        loadAiReply,
+      },
+    });
+  };
+  const moveToReply = (initialContent, htmlFile) => {
+    navigateTo(`/thread/reply`, {
+      state: { initialContent, htmlFile },
+    });
+  };
+  if (!context) {
+    throw new Error(
+      "useThreadContext must be used inside ThreadContextProvider",
+    );
+  }
+  const handleMove = ({
+    email,
+    threadId,
+    viewEmail = null,
+    reply = false,
+    addActivity = false,
+    loadAiReply = false,
+    htmlFile = null,
+  }) => {
+    context.handleSetCurrent({ email, thread: threadId });
+    reply !== false
+      ? moveToReply(reply, htmlFile)
+      : moveToThread(viewEmail, loadAiReply);
+    (addActivity || !reply) && localStorage.setItem("addActivity", true);
+  };
+  return { context, handleMove };
 };

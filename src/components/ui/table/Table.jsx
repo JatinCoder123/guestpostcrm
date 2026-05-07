@@ -6,7 +6,8 @@ import FilterRow from './FilterRow'
 import StatusRow from './StatusRow'
 import { useSelector } from 'react-redux'
 import { Eye, EyeOff } from 'lucide-react'
-import TableFooter from './TableFooter'
+import { DateRangeFilter } from '../../DateRangeFilter'
+import { todayStr } from '../../../services/dateRangeUtils'
 
 const TableContext = createContext()
 
@@ -31,6 +32,11 @@ const TableView = ({
     fetchNextPage,
     children,
 }) => {
+    const [fromDate, setFromDate] = useState(todayStr());
+    const [fromTime, setFromTime] = useState("00:01");
+    const [toDate, setToDate] = useState(todayStr());
+    const [toTime, setToTime] = useState("23:59");
+    const [filterActive, setFilterActive] = useState(false);
 
     const { pageIndex, pageCount, count, loading } = useSelector(state => state[slice])
 
@@ -53,19 +59,18 @@ const TableView = ({
     useEffect(() => {
         setVisibleColumns(columns);
     }, [columns]);
-
     const processedData = useMemo(() => {
-        let data = [...tableData]
+        let data = [...tableData];
+
+        // 🔍 Search filter
         if (search?.value) {
             if (search.type) {
-                // 🔍 Column-specific search
                 data = data.filter(row =>
                     String(row[search.type] || "")
                         .toLowerCase()
                         .includes(search.value.toLowerCase())
                 );
             } else {
-                // 🌍 Global search
                 data = data.filter(row =>
                     Object.values(row)
                         .filter(Boolean)
@@ -76,25 +81,45 @@ const TableView = ({
             }
         }
 
+        // 🎯 Status / other filters
         Object.entries(filters).forEach(([key, value]) => {
-            data = data.filter(row => row[key] === value)
-        })
+            data = data.filter(row => row[key] === value);
+        });
 
-        if (sort.column) {
-            data.sort((a, b) => {
-                const valA = a[sort.column]
-                const valB = b[sort.column]
+        // ✅ 🕒 DATE RANGE FILTER (MAIN PART)
+        if (filterActive) {
+            const from = new Date(`${fromDate} ${fromTime}`);
+            const to = new Date(`${toDate} ${toTime}`);
 
-                if (valA > valB) return sort.direction === "asc" ? 1 : -1
-                if (valA < valB) return sort.direction === "asc" ? -1 : 1
-                return 0
-            })
+            data = data.filter(row => {
+                const rowDate = new Date(row.real_date_entered);
+                return rowDate >= from && rowDate <= to;
+            });
         }
 
-        return data
+        // 🔃 Sorting
+        if (sort.column) {
+            data.sort((a, b) => {
+                const valA = a[sort.column];
+                const valB = b[sort.column];
 
-    }, [tableData, search, filters, sort])
+                if (valA > valB) return sort.direction === "asc" ? 1 : -1;
+                if (valA < valB) return sort.direction === "asc" ? -1 : 1;
+                return 0;
+            });
+        }
 
+        return data;
+
+    }, [tableData, search, filters, sort, filterActive, fromDate, fromTime, toDate, toTime]);
+    const handleResetFilter = () => {
+        const today = todayStr();
+        setFromDate(today);
+        setFromTime("00:01");
+        setToDate(today);
+        setToTime("23:59");
+        setFilterActive(false);
+    };
     const value = {
         tableName,
         columns,
@@ -127,10 +152,6 @@ const TableView = ({
             <motion.div layout className='flex flex-col gap-2'>
 
                 <FilterRow />
-
-
-
-                {/* 🔥 Animated StatusRow (controlled by showStatus) */}
                 <motion.div
                     layout
                     initial={false}
@@ -147,8 +168,19 @@ const TableView = ({
                 >
                     {statusList.length > 0 && count >= 0 && <StatusRow statusCount={statusCount} />}
                 </motion.div>
-
-                {/* 🔥 Table smoothly moves up/down */}
+                <DateRangeFilter
+                    fromDate={fromDate}
+                    fromTime={fromTime}
+                    toDate={toDate}
+                    toTime={toTime}
+                    setFromDate={setFromDate}
+                    setFromTime={setFromTime}
+                    setToDate={setToDate}
+                    setToTime={setToTime}
+                    filterActive={filterActive}
+                    onApply={() => setFilterActive(true)}
+                    onReset={handleResetFilter}
+                />
                 <motion.div
                     layout
                     transition={{

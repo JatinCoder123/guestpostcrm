@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { viewEmailAction } from "./viewEmail";
+import { getLadger } from "./ladger";
 
 const exchangeSlice = createSlice({
   name: "linkExchange",
@@ -91,36 +93,38 @@ export const getLinkExchange = () => {
   };
 };
 
-export const linkExchange = () => {  // Assuming 'id' is the email/contact identifier for the endpoint
+export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.exchangingRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { email: getState().viewEmail.contactInfo?.email1, field: 'exchange' } }
+      const data = await apiRequest({ endpoint: `${domain}?entryPoint=contactAction`, params: { email, field: 'exchange' } }
       );
       showConsole && console.log(`Exchange Toggle Response`, data);
       if (!data.success) {
         throw new Error("Toggle failed");
       }
-      const message = data.new_value === 1 ? "Email link exchage Successfully" : "Email unlink Successfully";
+      const message = data.new_value === 1 ? "Email link  Successfully" : "Email unlink Successfully";
       dispatch(
         exchangeSlice.actions.exchangingSucess(message)
       );
+      dispatch(viewEmailAction.updateContactInfo({ key: "exchange" }))
 
       dispatch(exchangeSlice.actions.clearAllErrors());
-      updateActivity(getState().user.crmEndpoint, getState().ladger.email, getState().user.user.name, getState().user.user.email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
+      updateActivity(email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
       await createLedgerEntry({
         domain: domain,
-        email: getState().ladger.email,
+        email: email,
         group: "Activity",
         items: [
           buildLedgerItem({
             status: data.new_value === 1 ? "Mark-Link-Exchange" : "Unmark-Link-Exchange",
-            detail: `email: {${getState().ladger.email}}`,
+            detail: `email: {${email}}`,
             ladgerState: getState().ladger,
             user: getState().crmUser.currentUser,
           }),
         ],
+        okHandler: getLadger({ email, loading: false, force: true })
       });
 
     } catch (error) {

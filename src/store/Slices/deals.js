@@ -202,10 +202,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
 
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(
-        state.user.crmEndpoint,
         email,
-        state.user.user.name,
-        state.user.user.email,
         "Deal Created",
       );
 
@@ -310,10 +307,8 @@ export const updateDeal = ({ deals = [] }) => {
       triggerHashtag(15, "GET");
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
+
         "Deal Updated",
       );
       const res = await createLedgerEntry({
@@ -379,10 +374,8 @@ export const deleteDeal = (deal, id) => {
       triggerHashtag(16, "GET");
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(
-        getState().user.crmEndpoint,
         email,
-        getState().user.user.name,
-        getState().user.user.email,
+
         "Deal Deleted",
       );
 

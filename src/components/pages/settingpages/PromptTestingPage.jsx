@@ -4,6 +4,7 @@ import useModule from "../../../hooks/useModule";
 import { ChevronDown, Check } from "lucide-react";
 import { useSelector } from "react-redux";
 import { fetchGpc } from "../../../services/api";
+import { FETCH_GPC_X_API_KEY } from "../../../store/constants";
 
 export function CustomDropdown({
   options = [],
@@ -110,7 +111,9 @@ const PromptTestingPage = () => {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: 1 } });
+        const data = await fetchGpc({
+          params: { type: "machine_learning", stage_type: 1 },
+        });
         setStages(data);
       } catch (err) {
         console.error("Failed to fetch stages:", err);
@@ -129,7 +132,9 @@ const PromptTestingPage = () => {
     const fetchStagePrompts = async () => {
       try {
         setStagePromptsLoading(true);
-        const data = await fetchGpc({ params: { type: 'machine_learning', stage_type: formData.stage } });
+        const data = await fetchGpc({
+          params: { type: "machine_learning", stage_type: formData.stage },
+        });
         const rows = Array.isArray(data) ? data : [];
         // Extract only items that have a `name` field
         const filtered = rows
@@ -162,8 +167,14 @@ const PromptTestingPage = () => {
     method: "POST",
     name: "PROMPT TEST RESULT",
     body: {
-      body: "hii i am kamal",
-      prompt: "Determine Offer",
+      body: formData.body,
+      prompt: formData.prompt,
+      thread_size: formData.thread_size,
+      email: formData.email,
+    },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": FETCH_GPC_X_API_KEY,
     },
     enabled: false,
   });

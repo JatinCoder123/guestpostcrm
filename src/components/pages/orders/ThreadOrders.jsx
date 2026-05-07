@@ -19,7 +19,9 @@ export default function ThreadOrders({ threadId, email, id }) {
   const [currentOrders, setCurrentOrders] = useState([]);
   const [send, setSend] = useState();
   const { orders, message, error } = useSelector((state) => state.orders);
-  const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
+  const { showBrandTimeline, contacts } = useSelector(
+    (state) => state.brandTimeline,
+  );
   const { crmEndpoint } = useSelector((state) => state.user);
   const { handleMove } = useThreadContext();
   useEffect(() => {
@@ -27,9 +29,9 @@ export default function ThreadOrders({ threadId, email, id }) {
     if (id) {
       activeOrders = orders.filter((o) => o.id == id);
     } else {
-      const threadOrders = showBrandTimeline ? orders : orders.filter(
-        (d) => extractEmail(d.real_name ?? d.email) == email,
-      );
+      const threadOrders = showBrandTimeline
+        ? orders
+        : orders.filter((d) => extractEmail(d.real_name ?? d.email) == email);
       activeOrders = threadOrders.filter(
         (d) =>
           d.order_status !== "wrong" &&
@@ -85,7 +87,13 @@ export default function ThreadOrders({ threadId, email, id }) {
       order,
       userEmail: itemEmail,
     });
-    handleMove({ email: itemEmail, threadId: itemThreadId, reply: html });
+    console.log("ORDER PDF", order.invoice_pdf);
+    handleMove({
+      email: itemEmail,
+      threadId: itemThreadId,
+      reply: html,
+      htmlFile: order.invoice_pdf,
+    });
   };
   useEffect(() => {
     if (message) {
@@ -110,49 +118,70 @@ export default function ThreadOrders({ threadId, email, id }) {
     <div className="w-full flex gap-6 items-start">
       {/* 🔥 TABLE */}
       <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
-        <PageHeader title={"ORDERS"} onAdd={() => handleCreate(email, threadId)} />
+        <PageHeader
+          title={"ORDERS"}
+          onAdd={() => handleCreate(email, threadId)}
+        />
 
         {currentOrders.map((item) => {
-          const itemEmail = showBrandTimeline ? extractEmail(item.real_name ?? item.email) : email
-          const itemThreadId = showBrandTimeline ? contacts.find(contact => contact.email1 == email)?.thread_id : threadId
-          return <div
-            key={item.id}
-            className="relative rounded-xl border overflow-hidden transition-all 
+          const itemEmail = showBrandTimeline
+            ? extractEmail(item.real_name ?? item.email)
+            : email;
+          const itemThreadId = showBrandTimeline
+            ? contacts.find((contact) => contact.email1 == email)?.thread_id
+            : threadId;
+          return (
+            <div
+              key={item.id}
+              className="relative rounded-xl border overflow-hidden transition-all 
                         border-l-4 border-l-indigo-500 bg-indigo-50/30 mb-10"
-          >
-            <div className="absolute top-2 right-4 flex gap-2 z-30">
-              {showBrandTimeline && <button
-                onClick={() =>
-                  navigate(`/orders/create`, {
-                    state: { email: itemEmail, threadId: itemThreadId },
-                  })
-                }
-                className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
-                title="Edit this item"
-              >
-                <Plus size={18} />
-              </button>}
-              <button
-                onClick={() =>
-                  navigate(`/orders/edit`, {
-                    state: { email: itemEmail, threadId: itemThreadId, id: item.id },
-                  })
-                }
-                className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
-                title="Edit this item"
-              >
-                <Pencil size={18} />
-              </button>
+            >
+              <div className="absolute top-2 right-4 flex gap-2 z-30">
+                {showBrandTimeline && (
+                  <button
+                    onClick={() =>
+                      navigate(`/orders/create`, {
+                        state: { email: itemEmail, threadId: itemThreadId },
+                      })
+                    }
+                    className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
+                    title="Edit this item"
+                  >
+                    <Plus size={18} />
+                  </button>
+                )}
+                <button
+                  onClick={() =>
+                    navigate(`/orders/edit`, {
+                      state: {
+                        email: itemEmail,
+                        threadId: itemThreadId,
+                        id: item.id,
+                      },
+                    })
+                  }
+                  className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
+                  title="Edit this item"
+                >
+                  <Pencil size={18} />
+                </button>
 
-              <button onClick={() => { handlePreview(item, itemEmail, itemThreadId) }}
-                className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
-                title="View preview"
-              >
-                <Send size={18} />
-              </button>
+                <button
+                  onClick={() => {
+                    handlePreview(item, itemEmail, itemThreadId);
+                  }}
+                  className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
+                  title="View preview"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
+              <OrderView
+                setSend={(item) => setSend({ item, itemEmail, itemThreadId })}
+                data={item}
+              />
             </div>
-            <OrderView setSend={(item) => setSend({ item, itemEmail, itemThreadId })} data={item} />
-          </div>
+          );
         })}
       </div>
     </div>
