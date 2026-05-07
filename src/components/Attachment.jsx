@@ -27,13 +27,13 @@ export default function Attachment({ data = [], onChange }) {
 
   return (
     <>
-      <AttachmentViewer isOpen={filePreview} files={data} onClose={() => setFilePreview(false)} />
+      <AttachmentViewer isOpen={filePreview} files={data} onClose={() => setFilePreview(false)} setFiles={onChange} />
       <div className="relative inline-flex group">
         {/* Hidden input */}
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          // accept="image/*"
           multiple
           hidden
           onChange={handleFileChange}
@@ -87,7 +87,8 @@ export default function Attachment({ data = [], onChange }) {
         >
           Add attachment
         </span>
-        <IconButton icon={Eye} onClick={() => setFilePreview(p => !p)} />
+        {data.length > 0 && <IconButton icon={Eye} onClick={() => setFilePreview(p => !p)} />
+        }
       </div>
     </>
 

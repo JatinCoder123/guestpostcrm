@@ -1,94 +1,141 @@
-import React from "react";
-import { X } from "lucide-react"; // optional (or use simple ❌)
+import React, { useState, useEffect } from "react";
+import { X, ChevronLeft, ChevronRight, Trash2, Cross } from "lucide-react";
 
-const getFileType = (url) => {
-    console.log(url)
-    const ext = url.split(".").pop().toLowerCase();
-
-    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
-    if (["mp4", "webm", "ogg"].includes(ext)) return "video";
-    if (ext === "pdf") return "pdf";
+const getFileType = (type = "", name = "") => {
+    if (type.startsWith("image")) return "image";
+    if (type.startsWith("video")) return "video";
+    if (type === "application/pdf") return "pdf";
     return "other";
 };
 
-const AttachmentViewer = ({ files = [], isOpen, onClose }) => {
-    if (!isOpen) return null;
+const getFileUrl = (item) => {
+    console.log(item)
+    if (item.url) return item.url;
+    if (item.file) return URL.createObjectURL(item.file);
+    return URL.createObjectURL(item)
+};
+
+const AttachmentViewer = ({ files = [], setFiles, isOpen, onClose }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (isOpen) setCurrentIndex(0);
+    }, [isOpen]);
+
+    if (!isOpen || files.length === 0) return null;
+
+    const currentFile = files[currentIndex];
+    const url = getFileUrl(currentFile);
+    const type = getFileType(currentFile.type, currentFile.name);
+
+    const next = () => {
+        setCurrentIndex((prev) => (prev + 1) % files.length);
+    };
+
+    const prev = () => {
+        setCurrentIndex((prev) =>
+            prev === 0 ? files.length - 1 : prev - 1
+        );
+    };
+
+    // 🔥 REMOVE FILE
+    const removeFile = () => {
+        setFiles((prev) => {
+            const updated = prev.filter((_, i) => i !== currentIndex);
+
+            // adjust index after delete
+            if (currentIndex >= updated.length && updated.length > 0) {
+                setCurrentIndex(updated.length - 1);
+            }
+
+            // if no files left → close viewer
+            if (updated.length === 0) {
+                onClose();
+            }
+
+            return updated;
+        });
+    };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
 
-            {/* Modal Box */}
-            <div className="bg-white w-[90%] md:w-[70%] max-h-[80vh] rounded-2xl shadow-xl relative overflow-hidden">
+            {/* Close Viewer */}
+            <button
+                onClick={onClose}
+                className="absolute top-5 left-5 z-50 bg-white/90 p-2 rounded-full"
+            >
+                <ChevronLeft size={22} />
+            </button>
 
-                {/* Close Button */}
+            {/* Delete Current File */}
+
+
+            {/* Left Arrow */}
+            {files.length > 1 && (
                 <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 z-10 bg-white rounded-full p-2 shadow hover:bg-gray-100"
+                    onClick={prev}
+                    className="absolute left-5 z-50 bg-white/80 p-2 rounded-full"
                 >
-                    {/* You can replace with ❌ if no lucide */}
-                    <X size={20} />
+                    <ChevronLeft size={28} />
                 </button>
+            )}
 
-                {/* Content */}
-                <div className="p-4 overflow-y-auto max-h-[80vh]">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {files.map((file, index) => {
-                            console.log(file)
-                            const type = getFileType(file);
+            {/* Right Arrow */}
+            {files.length > 1 && (
+                <button
+                    onClick={next}
+                    className="absolute right-5 z-50 bg-white/80 p-2 rounded-full"
+                >
+                    <ChevronRight size={28} />
+                </button>
+            )}
 
-                            return (
-                                <div
-                                    key={index}
-                                    className="border rounded-xl overflow-hidden"
-                                >
-                                    {type === "image" && (
-                                        <img
-                                            src={file.url}
-                                            alt="attachment"
-                                            className="w-full h-48 object-cover"
-                                        />
-                                    )}
+            {/* Preview */}
+            <div className="relative max-w-[90%] max-h-[85%] flex items-center justify-center">
+                <button
+                    onClick={removeFile}
+                    className="absolute -top-3 -right-1 z-50 bg-gray-400 text-white p-1 rounded-xl"
+                >
+                    <X size={15} />
+                </button>
+                {type === "image" && (
+                    <img
+                        src={url}
+                        alt={currentFile.name}
+                        className="max-h-[80vh] rounded-xl shadow-xl"
+                    />
+                )}
 
-                                    {type === "video" && (
-                                        <video controls className="w-full h-48">
-                                            <source src={file} />
-                                        </video>
-                                    )}
+                {type === "video" && (
+                    <video
+                        src={url}
+                        controls
+                        className="max-h-[80vh] rounded-xl shadow-xl"
+                    />
+                )}
 
-                                    {type === "pdf" && (
-                                        <iframe
-                                            src={file}
-                                            title="pdf"
-                                            className="w-full h-48"
-                                        />
-                                    )}
+                {type === "pdf" && (
+                    <iframe
+                        src={url}
+                        title="pdf"
+                        className="w-[80vw] h-[80vh] rounded-xl"
+                    />
+                )}
 
-                                    {type === "other" && (
-                                        <div className="flex flex-col items-center justify-center h-48">
-                                            <span className="text-4xl">📄</span>
-                                            <p className="text-sm mt-2">Unsupported File</p>
-                                        </div>
-                                    )}
-
-                                    {/* Footer */}
-                                    <div className="p-2 flex justify-between text-sm">
-                                        <a
-                                            href={file}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-500"
-                                        >
-                                            Open
-                                        </a>
-                                        <a href={file} download className="text-gray-500">
-                                            Download
-                                        </a>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                {type === "other" && (
+                    <div className="bg-white p-6 rounded-xl text-center">
+                        <p className="text-lg font-semibold">{currentFile.name}</p>
+                        <a href={url} download className="text-blue-500 mt-2 block">
+                            Download File
+                        </a>
                     </div>
-                </div>
+                )}
+            </div>
+
+            {/* Counter */}
+            <div className="absolute bottom-5 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+                {currentIndex + 1} / {files.length}
             </div>
         </div>
     );

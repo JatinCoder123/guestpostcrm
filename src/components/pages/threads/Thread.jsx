@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
-import { htmlToFile } from "../../../services/utils";
+import { generatePDF } from "../../../services/utils";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -16,6 +16,7 @@ const Thread = () => {
 
   const { superfastReply } = useContext(PageContext);
   const [contentLoading, setContentLoading] = useState(false);
+  const [htmlfile, setHtmlfile] = useState(state?.htmlFile)
   const [files, setFiles] = useState([]);
   const [editorContent, setEditorContent] = useState(
     state?.initialContent || "",
@@ -110,12 +111,11 @@ const Thread = () => {
   }, [sendMessage, sendError]);
   useEffect(() => {
     const processFiles = async () => {
-      if (!state?.htmlFile) return;
+      if (!htmlfile) return;
 
       try {
-        const file = htmlToFile(state?.htmlFile);
+        const file = await generatePDF(htmlfile);
         setFiles([file]);
-        console.log("files", file);
       } catch (err) {
         console.error("File conversion error:", err);
         toast.error("Failed to load attachments");
@@ -123,7 +123,7 @@ const Thread = () => {
     };
 
     processFiles();
-  }, [state]);
+  }, [htmlfile]);
   const value = {
     emails,
     loadAiReply: state?.loadAiReply,
@@ -134,6 +134,8 @@ const Thread = () => {
     setEditorContent,
     cc,
     setCc,
+    htmlfile,
+    setHtmlfile,
     contentLoading,
     setContentLoading,
     handleSendClick,
