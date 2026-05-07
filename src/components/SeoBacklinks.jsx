@@ -683,7 +683,14 @@ function LinkTableRow({
   const spam = getSpamLabel(link.spam_score_c);
   const [liPopupOpen, setLiPopupOpen] = useState(false);
   const navigateTo = useNavigate();
-  const liPostedUrl = link?.post_id || link?.assigned_user_link || "";
+  const isLI = link?.type_c === "LI";
+  const liPostedUrl = isLI
+    ? link?.post_id || link?.assigned_user_link || ""
+    : "";
+  const liStatus = usePostStatus(liPostedUrl, isLI ? link?.name : "");
+  // Same self-healing rule as the GP card: if the WP post is gone,
+  // surface the Insert-Backlink button again so the user can re-insert.
+  const liTreatAsPosted = !!liPostedUrl && liStatus.exists !== false;
   return (
     <div
       className={`flex items-center gap-3 px-4 py-3 border-t border-slate-100 text-sm ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
@@ -830,15 +837,11 @@ function LinkTableRow({
             <Trash size={14} />
           )}
         </button>
-        {link.type_c === "LI" && (
+        {isLI && (
           <>
-            {liPostedUrl ? (
+            {liTreatAsPosted ? (
               <div className="min-w-0 max-w-[140px]">
-                <PostStatusChip
-                  url={liPostedUrl}
-                  website={link?.name}
-                  size="sm"
-                />
+                <PostStatusBadge state={liStatus} url={liPostedUrl} size="sm" />
               </div>
             ) : (
               <button
@@ -979,7 +982,11 @@ function DocumentAnalysisCard({
   const isLoading = loading || updateLinkLoading;
   const postedUrl = link?.post_id || link?.assigned_user_link || "";
   const postStatus = usePostStatus(postedUrl, website);
-  const postStatusTheme = postedUrl ? getStatusTheme(postStatus) : null;
+  // When the WordPress lookup definitively says the post is gone
+  // (exists === false), revert to the ZeroGPT Start-Now flow so the
+  // user can republish. We deliberately stay "posted" during loading,
+  // network errors, and other statuses (draft, trash, etc.).
+  const treatAsPosted = !!postedUrl && postStatus.exists !== false;
   const handleStartNow = async () => {
     try {
       setLoading(true);
@@ -1023,27 +1030,8 @@ function DocumentAnalysisCard({
           <div className="text-sm font-semibold text-gray-500">
             Content Verdict
           </div>
-          <div
-            className={`text-sm font-semibold ${
-              postStatusTheme ? postStatusTheme.text : "text-gray-500"
-            }`}
-          >
-            {postStatusTheme ? (
-              <span className="inline-flex items-center gap-1">
-                {postStatus.loading ? (
-                  <span
-                    className={`w-3 h-3 rounded-full border-2 ${postStatusTheme.spinnerBorder} border-t-transparent animate-spin`}
-                  />
-                ) : (
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${postStatusTheme.dot}`}
-                  />
-                )}
-                {postStatusTheme.label}
-              </span>
-            ) : (
-              "ZeroGPT"
-            )}
+          <div className="text-sm font-semibold text-gray-500">
+            {treatAsPosted ? "Blog Status" : "ZeroGPT"}
           </div>
           <div className="text-sm font-semibold text-gray-500">Link Count</div>
 
@@ -1086,7 +1074,7 @@ function DocumentAnalysisCard({
           </div>
 
           <div className="flex items-center gap-2 min-w-0">
-            {postedUrl ? (
+            {treatAsPosted ? (
               <PostStatusBadge state={postStatus} url={postedUrl} />
             ) : (
               <button
