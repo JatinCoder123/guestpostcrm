@@ -94,8 +94,9 @@ function useLIInsert() {
   return { status, result, errorMsg, insertLink, reset };
 }
 
-function LIInsertPopup({ link, onClose }) {
+function LIInsertPopup({ link, orderId, onClose }) {
   const { status, result, errorMsg, insertLink, reset } = useLIInsert();
+  const dispatch = useDispatch();
 
   const handleInsert = () => {
     insertLink({
@@ -105,6 +106,19 @@ function LIInsertPopup({ link, onClose }) {
       domain: link.name,
     });
   };
+
+  useEffect(() => {
+    if (status === "success" && result?.post_url) {
+      dispatch(
+        updateSeoLink(orderId, {
+          ...link,
+          assigned_user_link: result.post_url,
+          post_id: result.post_url,
+        }),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, result?.post_url]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -392,6 +406,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
                     setLinkId={setLinkId}
                     linkId={linkId}
                     handleDelete={handleDelete}
+                    orderId={orderId}
                   />
                 </div>
               ),
@@ -433,6 +448,215 @@ const formatLinkType = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
 
+/* ─────────────────────────────────────────────
+   Post-status lookup against the WordPress
+   plugin (custom-api-poster). Each card calls
+   GET /wp-json/my-api/v1/post-status?url=...
+   on mount so we know whether the post is
+   still Live, Trashed, Draft, or Not Found.
+───────────────────────────────────────────── */
+const POST_STATUS_API_KEY = "YOUR_SECRET_EXTRACT_HERE";
+
+function usePostStatus(url, website) {
+  const [state, setState] = useState({
+    loading: false,
+    status: null,
+    exists: null,
+    permalink: null,
+    title: null,
+    error: false,
+  });
+
+  useEffect(() => {
+    if (!url || !website) {
+      setState({
+        loading: false,
+        status: null,
+        exists: null,
+        permalink: null,
+        title: null,
+        error: false,
+      });
+      return;
+    }
+
+    let cancelled = false;
+    setState({
+      loading: true,
+      status: null,
+      exists: null,
+      permalink: null,
+      title: null,
+      error: false,
+    });
+
+    const domain = website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    apiRequest({
+      endpoint: `https://${domain}/wp-json/my-api/v1/post-status`,
+      method: "GET",
+      params: { url },
+      headers: { "X-Api-Key": POST_STATUS_API_KEY },
+    })
+      .then((data) => {
+        if (cancelled) return;
+        setState({
+          loading: false,
+          status: data?.status ?? null,
+          exists: !!data?.exists,
+          permalink: data?.permalink ?? null,
+          title: data?.title ?? null,
+          error: false,
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState({
+          loading: false,
+          status: null,
+          exists: null,
+          permalink: null,
+          title: null,
+          error: true,
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url, website]);
+
+  return state;
+}
+
+const STATUS_THEME = {
+  publish: {
+    label: "Live",
+    bg: "bg-emerald-50",
+    hover: "hover:bg-emerald-100",
+    text: "text-emerald-700",
+    sub: "text-emerald-600/70",
+    dot: "bg-emerald-500",
+    spinnerBorder: "border-emerald-500",
+  },
+  draft: {
+    label: "Draft",
+    bg: "bg-amber-50",
+    hover: "hover:bg-amber-100",
+    text: "text-amber-700",
+    sub: "text-amber-600/70",
+    dot: "bg-amber-500",
+    spinnerBorder: "border-amber-500",
+  },
+  pending: {
+    label: "Pending",
+    bg: "bg-amber-50",
+    hover: "hover:bg-amber-100",
+    text: "text-amber-700",
+    sub: "text-amber-600/70",
+    dot: "bg-amber-500",
+    spinnerBorder: "border-amber-500",
+  },
+  future: {
+    label: "Scheduled",
+    bg: "bg-blue-50",
+    hover: "hover:bg-blue-100",
+    text: "text-blue-700",
+    sub: "text-blue-600/70",
+    dot: "bg-blue-500",
+    spinnerBorder: "border-blue-500",
+  },
+  private: {
+    label: "Private",
+    bg: "bg-slate-100",
+    hover: "hover:bg-slate-200",
+    text: "text-slate-700",
+    sub: "text-slate-500",
+    dot: "bg-slate-500",
+    spinnerBorder: "border-slate-500",
+  },
+  trash: {
+    label: "Trashed",
+    bg: "bg-rose-50",
+    hover: "hover:bg-rose-100",
+    text: "text-rose-700",
+    sub: "text-rose-600/70",
+    dot: "bg-rose-500",
+    spinnerBorder: "border-rose-500",
+  },
+  notfound: {
+    label: "Not Found",
+    bg: "bg-rose-50",
+    hover: "hover:bg-rose-100",
+    text: "text-rose-700",
+    sub: "text-rose-600/70",
+    dot: "bg-rose-500",
+    spinnerBorder: "border-rose-500",
+  },
+  unknown: {
+    label: "Unknown",
+    bg: "bg-slate-100",
+    hover: "hover:bg-slate-200",
+    text: "text-slate-700",
+    sub: "text-slate-500",
+    dot: "bg-slate-400",
+    spinnerBorder: "border-slate-400",
+  },
+  loading: {
+    label: "Checking…",
+    bg: "bg-slate-100",
+    hover: "hover:bg-slate-200",
+    text: "text-slate-600",
+    sub: "text-slate-400",
+    dot: "bg-slate-400",
+    spinnerBorder: "border-slate-400",
+  },
+};
+
+function getStatusTheme(s) {
+  if (s.loading) return STATUS_THEME.loading;
+  if (s.error) return STATUS_THEME.unknown;
+  if (s.exists === false) return STATUS_THEME.notfound;
+  return STATUS_THEME[s.status] || STATUS_THEME.unknown;
+}
+
+function PostStatusBadge({ state, url, size = "md" }) {
+  const theme = getStatusTheme(state);
+  const href = state.permalink || url;
+  const label = theme.label;
+  const sub = state.title || url;
+
+  const sizing =
+    size === "sm" ? "px-2 py-1 text-xs gap-1" : "px-2 py-1 text-sm gap-2";
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={state.title ? `${label} — ${state.title}` : label}
+      className={`group flex items-center rounded-lg ${theme.bg} ${theme.hover} transition w-full min-w-0 ${sizing}`}
+    >
+      {state.loading ? (
+        <span
+          className={`w-3 h-3 rounded-full border-2 ${theme.spinnerBorder} border-t-transparent animate-spin shrink-0`}
+        />
+      ) : (
+        <span className={`w-1.5 h-1.5 rounded-full ${theme.dot} shrink-0`} />
+      )}
+      <span className={`font-semibold ${theme.text} shrink-0`}>{label}</span>
+      <span className={`${theme.sub} truncate min-w-0`}>{sub}</span>
+      <span className="opacity-0 group-hover:opacity-100 transition text-slate-400 ml-auto shrink-0">
+        ↗
+      </span>
+    </a>
+  );
+}
+
+function PostStatusChip({ url, website, size = "md" }) {
+  const state = usePostStatus(url, website);
+  return <PostStatusBadge state={state} url={url} size={size} />;
+}
+
 function LinkTableRow({
   link,
   rowIndex,
@@ -442,10 +666,12 @@ function LinkTableRow({
   linkId,
   deleting,
   handleDelete,
+  orderId,
 }) {
   const spam = getSpamLabel(link.spam_score_c);
   const [liPopupOpen, setLiPopupOpen] = useState(false);
   const navigateTo = useNavigate();
+  const liPostedUrl = link?.post_id || link?.assigned_user_link || "";
   return (
     <div
       className={`grid grid-cols-9 px-4 py-3 border-t border-slate-100 text-sm items-center ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
@@ -607,16 +833,27 @@ function LinkTableRow({
         {/* which will live the link */}
         {link.type_c === "LI" && (
           <>
-            <button
-              onClick={() => setLiPopupOpen(true)}
-              className="px-2 py-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition shadow"
-              title="Insert Backlink"
-            >
-              <Link size={14} />
-            </button>
+            {liPostedUrl ? (
+              <div className="min-w-0 max-w-[140px]">
+                <PostStatusChip
+                  url={liPostedUrl}
+                  website={link?.name}
+                  size="sm"
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => setLiPopupOpen(true)}
+                className="px-2 py-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition shadow"
+                title="Insert Backlink"
+              >
+                <Link size={14} />
+              </button>
+            )}
             {liPopupOpen && (
               <LIInsertPopup
                 link={link}
+                orderId={orderId}
                 onClose={() => setLiPopupOpen(false)}
               />
             )}
@@ -687,6 +924,7 @@ function LILinksTable({
   setLinkId,
   linkId,
   handleDelete,
+  orderId,
 }) {
   const rep = liLinks[0];
   return (
@@ -708,6 +946,7 @@ function LILinksTable({
           linkId={linkId}
           deleting={deleting}
           handleDelete={handleDelete}
+          orderId={orderId}
         />
       ))}
     </div>
@@ -739,6 +978,9 @@ function DocumentAnalysisCard({
 
   const domain = crmEndpoint.split("?")[0];
   const isLoading = loading || updateLinkLoading;
+  const postedUrl = link?.post_id || link?.assigned_user_link || "";
+  const postStatus = usePostStatus(postedUrl, website);
+  const postStatusTheme = postedUrl ? getStatusTheme(postStatus) : null;
   const handleStartNow = async () => {
     try {
       setLoading(true);
@@ -787,7 +1029,28 @@ function DocumentAnalysisCard({
           <div className="text-sm font-semibold text-gray-500">
             Content Verdict
           </div>
-          <div className="text-sm font-semibold text-gray-500">ZeroGPT</div>
+          <div
+            className={`text-sm font-semibold ${
+              postStatusTheme ? postStatusTheme.text : "text-gray-500"
+            }`}
+          >
+            {postStatusTheme ? (
+              <span className="inline-flex items-center gap-1">
+                {postStatus.loading ? (
+                  <span
+                    className={`w-3 h-3 rounded-full border-2 ${postStatusTheme.spinnerBorder} border-t-transparent animate-spin`}
+                  />
+                ) : (
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${postStatusTheme.dot}`}
+                  />
+                )}
+                {postStatusTheme.label}
+              </span>
+            ) : (
+              "ZeroGPT"
+            )}
+          </div>
           <div className="text-sm font-semibold text-gray-500">Link Count</div>
 
           <a
@@ -825,29 +1088,33 @@ function DocumentAnalysisCard({
             <ValidationBadge valid={ContentValid} />
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleStartNow}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
-              style={{
-                background: isLoading ? "#9ca3af" : "#eab308",
-                cursor: isLoading ? "not-allowed" : "pointer",
-                opacity: isLoading ? 0.7 : 1,
-              }}
-            >
-              {isLoading ? (
-                <>
-                  <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Start Now
-                  <ArrowRight size={16} />
-                </>
-              )}
-            </button>
+          <div className="flex items-center gap-2 min-w-0">
+            {postedUrl ? (
+              <PostStatusBadge state={postStatus} url={postedUrl} />
+            ) : (
+              <button
+                onClick={handleStartNow}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
+                style={{
+                  background: isLoading ? "#9ca3af" : "#eab308",
+                  cursor: isLoading ? "not-allowed" : "pointer",
+                  opacity: isLoading ? 0.7 : 1,
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Start Now
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           <div className="flex items-center">

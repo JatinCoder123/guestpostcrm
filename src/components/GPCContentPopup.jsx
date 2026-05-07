@@ -121,7 +121,11 @@ export default function GPCContentPopup({
         setIsDirty(false);
 
         dispatch(
-          updateSeoLink(orderId, { ...link, assigned_user_link: result.url }),
+          updateSeoLink(orderId, {
+            ...link,
+            assigned_user_link: result.url,
+            post_id: result.url,
+          }),
         );
       } else setPublishError("Publishing failed. Please try again.");
     } catch (err) {
