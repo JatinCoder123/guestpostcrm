@@ -14,6 +14,7 @@ import MessageModal from "../../MessageModal";
 import { SendingOverlay } from "./SendingOverlay";
 import ReplyButtons from "./ReplyButtons";
 import CopyButton from "../../CopyButton";
+import AttachmentViewer from "./AttachmentViewer";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
@@ -25,6 +26,7 @@ const ThreadReply = () => {
     handleSendClick,
     checkingThreadId,
     contentLoading,
+    files
   } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];

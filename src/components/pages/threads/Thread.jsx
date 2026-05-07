@@ -108,14 +108,6 @@ const Thread = () => {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [sendMessage, sendError]);
-  const urlToFile = async (url) => {
-    console.log("url", url);
-    const response = await fetch(url);
-    const blob = await response.blob();
-
-    const fileName = url.split("/").pop() || "file";
-    return new File([blob], fileName, { type: blob.type });
-  };
   useEffect(() => {
     const processFiles = async () => {
       if (!state?.htmlFile) return;
