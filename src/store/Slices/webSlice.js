@@ -46,7 +46,7 @@ export const getAllWebsites = () => {
     return async (dispatch) => {
         dispatch(websiteSlice.actions.getAllWebsitesRequest());
         try {
-            const data = await fetchGpc({ method: "GET", params: { type: "get_website" } })
+            const data = await fetchGpc({ method: "GET", params: { type: "get_websites" } })
             showConsole && console.log(`website data`, data);
             dispatch(websiteSlice.actions.getAllWebsitesSuccess({ websites: data.data ?? websiteLists }));
             dispatch(websiteSlice.actions.clearAllErrors());
