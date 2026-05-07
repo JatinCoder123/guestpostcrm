@@ -329,16 +329,12 @@ export const editContact = (contactData, message = "") => {
         ...contactData.account,
       };
 
-      const { data } = await apiRequest({ method: "POST", body: payload, endpoint: getDomain(getState().user.crmEndpoint) }
-        `&action_type=post_data`,
-        payload,
-        {
-          headers: {
-            "X-Api-Key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json", // typo fixed
-          },
+      const data = await apiRequest({
+        method: "POST", body: payload, endpoint: getDomain(getState().user.crmEndpoint), params: { action_type: 'post_data' }, headers: {
+          "X-Api-Key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json", // typo fixed
         },
-      );
+      });
 
       showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess({ message }));

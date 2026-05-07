@@ -59,19 +59,18 @@ const TableView = ({
     useEffect(() => {
         setVisibleColumns(columns);
     }, [columns]);
-
     const processedData = useMemo(() => {
-        let data = [...tableData]
+        let data = [...tableData];
+
+        // 🔍 Search filter
         if (search?.value) {
             if (search.type) {
-                // 🔍 Column-specific search
                 data = data.filter(row =>
                     String(row[search.type] || "")
                         .toLowerCase()
                         .includes(search.value.toLowerCase())
                 );
             } else {
-                // 🌍 Global search
                 data = data.filter(row =>
                     Object.values(row)
                         .filter(Boolean)
@@ -82,24 +81,37 @@ const TableView = ({
             }
         }
 
+        // 🎯 Status / other filters
         Object.entries(filters).forEach(([key, value]) => {
-            data = data.filter(row => row[key] === value)
-        })
+            data = data.filter(row => row[key] === value);
+        });
 
-        if (sort.column) {
-            data.sort((a, b) => {
-                const valA = a[sort.column]
-                const valB = b[sort.column]
+        // ✅ 🕒 DATE RANGE FILTER (MAIN PART)
+        if (filterActive) {
+            const from = new Date(`${fromDate} ${fromTime}`);
+            const to = new Date(`${toDate} ${toTime}`);
 
-                if (valA > valB) return sort.direction === "asc" ? 1 : -1
-                if (valA < valB) return sort.direction === "asc" ? -1 : 1
-                return 0
-            })
+            data = data.filter(row => {
+                const rowDate = new Date(row.real_date_entered);
+                return rowDate >= from && rowDate <= to;
+            });
         }
 
-        return data
+        // 🔃 Sorting
+        if (sort.column) {
+            data.sort((a, b) => {
+                const valA = a[sort.column];
+                const valB = b[sort.column];
 
-    }, [tableData, search, filters, sort])
+                if (valA > valB) return sort.direction === "asc" ? 1 : -1;
+                if (valA < valB) return sort.direction === "asc" ? -1 : 1;
+                return 0;
+            });
+        }
+
+        return data;
+
+    }, [tableData, search, filters, sort, filterActive, fromDate, fromTime, toDate, toTime]);
     const handleResetFilter = () => {
         const today = todayStr();
         setFromDate(today);

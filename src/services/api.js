@@ -24,10 +24,7 @@ export const apiRequest = async ({
       url: endpoint,
       method,
       data: body,
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
+      headers,
       params,
       withCredentials,
     });
