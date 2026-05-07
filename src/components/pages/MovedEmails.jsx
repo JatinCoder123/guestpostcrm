@@ -1,157 +1,166 @@
 import {
   Calendar,
   User2,
-  Gift,
-  Pen,
   Globe,
   BadgeDollarSign,
   ChartNoAxesColumn,
   Clapperboard,
-  Trash,
-  ShieldCheckIcon,
-  HandCoins,
-  ShieldAlert,
   ArrowBigRightDashIcon,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
-import { getLadger, ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
+
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getmovedEmails } from "../../store/Slices/movedEmails.js";
-import { LoadingChase } from "../Loading.jsx";
-import { toast } from "react-toastify";
-import axios from "axios";
-export function MovedPage() {
-  const { count, emails, pageIndex } = useSelector((state) => state.moved);
-  const { crmEndpoint } = useSelector((state) => state.user);
 
-  const [restoringId, setRestoringId] = useState(null);
-  const { handleDateClick } = useContext(PageContext);
-  const { handleMove } = useThreadContext();
+import { getmovedEmails } from "../../store/Slices/movedEmails";
+
+import { toast } from "react-toastify";
+import { fetchGpc } from "../../services/api";
+
+export function MovedPage() {
   const dispatch = useDispatch();
 
+  const { emails, pageIndex, loading } = useSelector((state) => state.moved);
+
+  const [restoringId, setRestoringId] = useState(null);
+
+  const { handleDateClick } = useContext(PageContext);
+
+  const { handleMove } = useThreadContext();
+
+  // INITIAL API CALL
+  useEffect(() => {
+    dispatch(getmovedEmails());
+  }, [dispatch]);
+
+  // RESTORE EMAIL
   const handleRestore = async (emailItem) => {
     try {
       setRestoringId(emailItem.thread_id);
-      const res = await axios.get(
-        `${crmEndpoint}&type=restore_email&email=${emailItem.email}&label_id=${emailItem.label_name}&thread_id=${emailItem.thread_id}&subject=${emailItem.subject}`,
-      );
-      console.log("res", res);
-      if (res?.data) {
+
+      const res = await fetchGpc({
+        params: {
+          type: "restore_email",
+          email: emailItem.email,
+          label_id: emailItem.label_name,
+          thread_id: emailItem.thread_id,
+          subject: emailItem.subject,
+        },
+      });
+
+      console.log("RESTORE RESPONSE => ", res);
+
+      if (res?.success || res?.data || res) {
         toast.success("Email restored successfully ✅");
 
-        // 🔥 Refresh list
+        // refresh moved emails
         dispatch(getmovedEmails());
-        dispatch(getLadger({ email: emailItem.email, loading: false }));
       }
-    } catch (err) {
+    } catch (error) {
+      console.log("RESTORE ERROR => ", error);
+
       toast.error("Failed to restore email ❌");
     } finally {
       setRestoringId(null);
     }
   };
+
   const columns = [
     {
       label: "Created At",
       accessor: "date_entered",
-      headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: row?.email, navigate: "/" }),
-      classes: "truncate max-w-[200px]",
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
-        </span>
-      ),
-    },
-    {
-      label: "SENDER",
-      accessor: "email",
-      headerClasses: "",
-      icon: User2,
-      classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleDateClick({ email: row?.email, navigate: "/contacts" }),
+        handleDateClick({
+          email: row?.email,
+          navigate: "/",
+        }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row?.email}
+          {row?.date_entered}
         </span>
       ),
     },
+
+    {
+      label: "Sender",
+      accessor: "email",
+      icon: User2,
+
+      render: (row) => (
+        <span className="font-medium text-gray-700">{row?.email}</span>
+      ),
+    },
+
     {
       label: "Subject",
-      accessor: "website",
-      headerClasses: "",
+      accessor: "subject",
       icon: Globe,
-      classes: "truncate ",
+
       onClick: (row) =>
         handleMove({
           email: row?.email,
-          threadId: row.thread_id,
+          threadId: row?.thread_id,
         }),
+
       render: (row) => (
-        <span className="font-medium text-purple-700 cursor-pointer ">
+        <span className="font-medium text-purple-700 cursor-pointer">
           {row?.subject}
         </span>
       ),
     },
+
     {
       label: "Label",
       accessor: "label_name",
-      headerClasses: "",
       icon: BadgeDollarSign,
-      classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-green-700 ">{row?.label_name}</span>
+        <span className="font-medium text-green-700">{row?.label_name}</span>
       ),
     },
+
     {
       label: "Reason",
       accessor: "reason",
-      headerClasses: "",
       icon: ChartNoAxesColumn,
-      classes: "truncate max-w-[300px]",
+
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-          {row?.reason}
+          {row?.reason || "Moved"}
         </span>
       ),
     },
+
     {
       label: "Action",
       accessor: "action",
-      headerClasses: "ml-auto",
       icon: Clapperboard,
-      classes: "truncate max-w-[300px] ml-auto",
+
       render: (row) => (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRestore(row);
-            }}
-            disabled={restoringId === row.thread_id}
-            className="px-3 py-1 rounded-lg bg-green-500 text-white text-sm
-                    hover:bg-green-600 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
-          >
-            {restoringId === row.thread_id ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Restoring...
-              </>
-            ) : (
-              "Restore"
-            )}
-          </button>
-        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRestore(row);
+          }}
+          disabled={restoringId === row.thread_id}
+          className="px-3 py-1 rounded-lg bg-green-500 text-white text-sm hover:bg-green-600 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+        >
+          {restoringId === row.thread_id ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              Restoring...
+            </>
+          ) : (
+            "Restore"
+          )}
+        </button>
       ),
     },
   ];
@@ -162,15 +171,17 @@ export function MovedPage() {
       tableName={"Moved Emails"}
       columns={columns}
       slice={"moved"}
-      fetchNextPage={() => dispatch(getmovedEmails(null, pageIndex + 1))}
+      loading={loading}
+      fetchNextPage={() => dispatch(getmovedEmails("", pageIndex + 1))}
     >
       <TableTitleBar
         Icon={ArrowBigRightDashIcon}
         title={"Moved Emails"}
         titleClass={"text-blue-700"}
       />
+
       <Table
-        headerStyle={"  bg-blue-600"}
+        headerStyle={"bg-blue-600"}
         layoutStyle={"grid grid-cols-[200px_1fr_1fr_200px_200px_1fr]"}
       />
     </TableView>
