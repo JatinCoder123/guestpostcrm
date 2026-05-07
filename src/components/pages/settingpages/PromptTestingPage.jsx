@@ -169,6 +169,8 @@ const PromptTestingPage = () => {
     body: {
       body: formData.body,
       prompt: formData.prompt,
+      thread_size: formData.thread_size,
+      email: formData.email,
     },
     headers: {
       "Content-Type": "application/json",
