@@ -182,7 +182,7 @@ export function MovedPage() {
 
       <Table
         headerStyle={"bg-blue-600"}
-        layoutStyle={"grid grid-cols-[200px_1fr_1fr_200px_200px_1fr]"}
+        layoutStyle={"grid grid-cols-[1fr_1fr_1fr_200px_1fr_1fr]"}
       />
     </TableView>
   );
