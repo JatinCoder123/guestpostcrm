@@ -115,9 +115,9 @@ export default function ThreadOrders({ threadId, email, id }) {
     }
   }, [message, error]);
   return (
-    <div className="w-full flex gap-6 items-start">
+    <div className="w-full min-w-0 flex gap-6 items-start">
       {/* 🔥 TABLE */}
-      <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
+      <div className="flex-1 min-w-0 relative border rounded-2xl p-6 bg-white shadow-sm overflow-hidden">
         <PageHeader
           title={"ORDERS"}
           onAdd={() => handleCreate(email, threadId)}

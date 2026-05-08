@@ -28,10 +28,9 @@ const RootLayout = () => {
     setEnteredEmail,
     currentIndex,
     handleDateClick,
-    superfastReply
+    superfastReply,
   } = useContext(PageContext);
-  const { currentAvatar, setCrm } =
-    useContext(SocketContext);
+  const { currentAvatar, setCrm } = useContext(SocketContext);
   useRefresh();
   const dispatch = useDispatch();
   const location = useLocation().pathname.split("/")[2];
@@ -69,7 +68,6 @@ const RootLayout = () => {
 
     dispatch(unrepliedAction.removeUnreplied(sendedEmail));
 
-
     if (isLast) {
       localStorage.removeItem("email");
       setEnteredEmail("");
@@ -85,15 +83,24 @@ const RootLayout = () => {
       navigate("/unreplied-emails");
       return;
     }
-    console.log("SUPER FAST REPLY", superfastReply)
+    console.log("SUPER FAST REPLY", superfastReply);
     if (superfastReply) {
-      handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), nextPrev: true })
-      handleMove({ email: extractEmail(nextEmailObj?.from || ""), threadId: nextEmailObj?.thread_id, loadAiReply: true })
-      return
+      handleDateClick({
+        email: extractEmail(nextEmailObj?.from || ""),
+        nextPrev: true,
+      });
+      handleMove({
+        email: extractEmail(nextEmailObj?.from || ""),
+        threadId: nextEmailObj?.thread_id,
+        loadAiReply: true,
+      });
+      return;
     }
-    handleDateClick({ email: extractEmail(nextEmailObj?.from || ""), navigate: "/", nextPrev: true })
-
-
+    handleDateClick({
+      email: extractEmail(nextEmailObj?.from || ""),
+      navigate: "/",
+      nextPrev: true,
+    });
   }, [message, superfastReply]);
 
   // Set active page based on URL
@@ -102,9 +109,7 @@ const RootLayout = () => {
   }, [location, setActivePage]);
   const isLowCredit = Number(currentScore) <= 0;
   if (displayIntro) {
-    return <DisplayIntro key="intro" />
-
-
+    return <DisplayIntro key="intro" />;
   }
   return (
     <div className="min-h-screen bg-[#F8FAFC] ">
@@ -115,8 +120,9 @@ const RootLayout = () => {
         </div>
         <main
           ref={mainRef}
-          className={`flex-1 overflow-y-auto hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-            }`}
+          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${
+            collapsed ? "ml-4" : "ml-0"
+          }`}
         >
           <div className="p-3">
             {/* {isLowCredit && <LowCreditWarning score={currentScore} />} */}
@@ -137,8 +143,7 @@ const RootLayout = () => {
         </main>
       </div>
     </div>
-  )
-}
-
+  );
+};
 
 export default RootLayout;

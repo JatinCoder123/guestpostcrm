@@ -12,9 +12,8 @@ import { toast } from "react-toastify";
 export const OrderView = ({ data, setSend }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, statusLists, updating, updateLinkMessage } = useSelector(
-    (state) => state.orders,
-  );
+  const { creatingLinkMessage, statusLists, updating, updateLinkMessage } =
+    useSelector((state) => state.orders);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showConsent, setShowConsent] = useState(false);
   const { invoiceOrderId } = useContext(SocketContext);
@@ -118,14 +117,14 @@ export const OrderView = ({ data, setSend }) => {
       {/* PROCESSING PAYPAL */}
       {processingPayment && <ProcessingLoader />}
       {updating && <PageLoader />}
-      <div className="w-full relative p-6 ">
+      <div className="w-full min-w-0 relative p-6 overflow-hidden">
         <OrderHeader
           data={data}
           updateStatus={(status, isSend) => updateStatus(status, isSend)}
           onCompleteHandler={onCompleteHandler}
         />
-        <div className="relative flex flex-col gap-3  rounded-3xl  p-2 ">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+        <div className="relative flex flex-col gap-3 min-w-0 rounded-3xl  p-2 ">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm min-w-0">
             <Field label="Date" value={data.date_entered_formatted} />
             <Field label="Type" value={data.order_type_value} />
             <Field label="Amount" value={`$${data.total_amount_c}`} />
