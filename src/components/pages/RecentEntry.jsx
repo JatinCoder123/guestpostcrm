@@ -225,20 +225,6 @@ export function RecentEntry() {
 
       {/* FILTERS */}
       <div className="p-4 border-b flex flex-wrap gap-4 items-center bg-gray-50">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-2 border rounded-lg"
-        />
-
-        <DropDown
-          options={periodOptions}
-          handleSelectOption={handleSelectPeriod}
-          timeline={timeFilter}
-        />
-
         <CustomDropdown
           className="w-[240px]"
           onChange={(value) => {
