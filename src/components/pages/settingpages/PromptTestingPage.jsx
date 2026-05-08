@@ -6,6 +6,10 @@ import { useSelector } from "react-redux";
 import { fetchGpc } from "../../../services/api";
 import { FETCH_GPC_X_API_KEY } from "../../../store/constants";
 
+// ======================================================
+// CUSTOM DROPDOWN
+// ======================================================
+
 export function CustomDropdown({
   options = [],
   value,
@@ -101,6 +105,150 @@ export function CustomDropdown({
   );
 }
 
+// ======================================================
+// DYNAMIC RESPONSE RENDERER
+// ======================================================
+
+const RenderValue = ({ label, value, copied, copyToClipboard }) => {
+  if (value === null || value === undefined) return null;
+
+  const isHtml =
+    typeof value === "string" &&
+    (value.includes("<div") ||
+      value.includes("<p") ||
+      value.includes("<br") ||
+      value.includes("<ul") ||
+      value.includes("<ol") ||
+      value.includes("<li") ||
+      value.includes("<strong") ||
+      value.includes("<table"));
+
+  const renderContent = () => {
+    // ==========================================
+    // STRING
+    // ==========================================
+    if (typeof value === "string") {
+      if (isHtml) {
+        return (
+          <div
+            className="
+              prose prose-sm max-w-none
+              prose-p:leading-relaxed
+              prose-li:my-1
+              prose-table:w-full
+            "
+            dangerouslySetInnerHTML={{
+              __html: value,
+            }}
+          />
+        );
+      }
+
+      return (
+        <div className="whitespace-pre-wrap text-slate-700 leading-relaxed">
+          {value}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // ARRAY
+    // ==========================================
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return <div className="text-slate-400 text-sm">Empty array</div>;
+      }
+
+      return (
+        <div className="space-y-3">
+          {value.map((item, index) => (
+            <div
+              key={index}
+              className="
+                bg-slate-50 rounded-xl p-4
+                border border-slate-200
+              "
+            >
+              {typeof item === "object" ? (
+                <pre className="text-sm overflow-auto whitespace-pre-wrap">
+                  {JSON.stringify(item, null, 2)}
+                </pre>
+              ) : (
+                <div className="text-slate-700">{String(item)}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // OBJECT
+    // ==========================================
+    if (typeof value === "object") {
+      return (
+        <pre
+          className="
+            text-sm overflow-auto whitespace-pre-wrap
+            bg-slate-50 rounded-xl p-4
+            border border-slate-200
+          "
+        >
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      );
+    }
+
+    // ==========================================
+    // FALLBACK
+    // ==========================================
+    return <div className="text-slate-700">{String(value)}</div>;
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="flex items-center justify-between bg-slate-50 px-5 py-4 border-b">
+        <h4 className="font-semibold text-slate-800 capitalize">
+          {label.replaceAll("_", " ")}
+        </h4>
+
+        <button
+          onClick={() =>
+            copyToClipboard(
+              typeof value === "string"
+                ? value
+                : JSON.stringify(value, null, 2),
+              label,
+            )
+          }
+          className="
+            flex items-center gap-2 text-sm font-medium
+            text-slate-600 hover:text-indigo-600 transition
+          "
+        >
+          {copied === label ? (
+            <>
+              <CheckCheck className="w-4 h-4" />
+              Copied
+            </>
+          ) : (
+            <>
+              <Copy className="w-4 h-4" />
+              Copy
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="p-5">{renderContent()}</div>
+    </div>
+  );
+};
+
+// ======================================================
+// MAIN PAGE
+// ======================================================
+
 const PromptTestingPage = () => {
   const [formData, setFormData] = useState({
     stage: "",
@@ -122,9 +270,10 @@ const PromptTestingPage = () => {
 
   const baseUrl = crmEndpoint.split("?")[0];
 
-  // =========================
+  // ======================================================
   // FETCH STAGES
-  // =========================
+  // ======================================================
+
   useEffect(() => {
     const fetchStages = async () => {
       try {
@@ -144,9 +293,10 @@ const PromptTestingPage = () => {
     fetchStages();
   }, [baseUrl]);
 
-  // =========================
+  // ======================================================
   // FETCH PROMPTS
-  // =========================
+  // ======================================================
+
   useEffect(() => {
     if (!formData.stage) {
       setStagePrompts([]);
@@ -176,6 +326,7 @@ const PromptTestingPage = () => {
         setStagePrompts(filtered);
       } catch (err) {
         console.error("Failed to fetch stage prompts:", err);
+
         setStagePrompts([]);
       } finally {
         setStagePromptsLoading(false);
@@ -190,9 +341,10 @@ const PromptTestingPage = () => {
     }));
   }, [formData.stage, baseUrl]);
 
-  // =========================
+  // ======================================================
   // API
-  // =========================
+  // ======================================================
+
   const {
     loading: responseLoading,
     data: response,
@@ -215,9 +367,10 @@ const PromptTestingPage = () => {
     enabled: false,
   });
 
-  // =========================
+  // ======================================================
   // HELPERS
-  // =========================
+  // ======================================================
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -245,9 +398,10 @@ const PromptTestingPage = () => {
 
   const isEmailEntered = formData.email.trim() !== "";
 
-  // =========================
+  // ======================================================
   // AUTO SCROLL
-  // =========================
+  // ======================================================
+
   useEffect(() => {
     if (response && responseRef.current && !responseLoading) {
       responseRef.current.scrollIntoView({
@@ -257,19 +411,18 @@ const PromptTestingPage = () => {
     }
   }, [response, responseLoading]);
 
-  // =========================
+  // ======================================================
   // PARSE RESPONSE
-  // =========================
+  // ======================================================
+
   const parsedResponse = useMemo(() => {
     if (!response) return null;
 
     try {
-      // if API already returns object
       if (typeof response === "object") {
         return response;
       }
 
-      // if stringified json
       if (typeof response === "string") {
         return JSON.parse(response);
       }
@@ -277,25 +430,33 @@ const PromptTestingPage = () => {
       return null;
     } catch (err) {
       console.error("JSON parse error:", err);
-      return null;
+
+      return {
+        raw_response: response,
+      };
     }
   }, [response]);
 
-  // =========================
-  // EXTRACT DATA
-  // =========================
+  // ======================================================
+  // NORMALIZED RESPONSE
+  // ======================================================
+
+  const normalizedResponse = useMemo(() => {
+    if (!parsedResponse) return {};
+
+    return parsedResponse?.response || parsedResponse?.data || parsedResponse;
+  }, [parsedResponse]);
+
+  // ======================================================
+  // PROMPT TEXT
+  // ======================================================
+
   const promptText = parsedResponse?.prompt || "";
 
-  const responseData = parsedResponse?.response || parsedResponse?.data || {};
-
-  const summary =
-    responseData?.summary || parsedResponse?.summary || "No summary available";
-
-  const reply = responseData?.reply || parsedResponse?.reply || "";
-
-  // =========================
+  // ======================================================
   // COPY FUNCTION
-  // =========================
+  // ======================================================
+
   const copyToClipboard = async (text, type) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -315,9 +476,10 @@ const PromptTestingPage = () => {
       <Header text="Prompt Testing" />
 
       <div className="mx-auto px-6 py-10 space-y-10">
-        {/* ========================= */}
+        {/* ====================================================== */}
         {/* FORM */}
-        {/* ========================= */}
+        {/* ====================================================== */}
+
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Test Prompt Output
@@ -325,6 +487,7 @@ const PromptTestingPage = () => {
 
           <div className="space-y-6">
             {/* STAGE */}
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Stage
@@ -361,6 +524,7 @@ const PromptTestingPage = () => {
             </div>
 
             {/* PROMPT */}
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Prompt
@@ -388,7 +552,8 @@ const PromptTestingPage = () => {
               />
             </div>
 
-            {/* THREAD */}
+            {/* THREAD SIZE */}
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Thread Size
@@ -415,6 +580,7 @@ const PromptTestingPage = () => {
             </div>
 
             {/* BODY */}
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Email Body
@@ -427,8 +593,8 @@ const PromptTestingPage = () => {
                 disabled={isEmailEntered}
                 placeholder={
                   isEmailEntered
-                    ? "Email body disabled when an email address is provided"
-                    : "Paste or type the email content here..."
+                    ? "Email body disabled when email address is provided"
+                    : "Paste or type email content here..."
                 }
                 rows={6}
                 className={`
@@ -444,9 +610,11 @@ const PromptTestingPage = () => {
             </div>
 
             {/* EMAIL */}
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email Address <span className="text-slate-400">(optional)</span>
+                Email Address
+                <span className="text-slate-400"> (optional)</span>
               </label>
 
               <input
@@ -463,6 +631,7 @@ const PromptTestingPage = () => {
             </div>
 
             {/* ACTIONS */}
+
             <div className="flex justify-end gap-3 pt-4">
               <button
                 type="button"
@@ -479,8 +648,10 @@ const PromptTestingPage = () => {
                 type="button"
                 onClick={handleSubmit}
                 className="
-                  px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600
-                  text-white font-semibold shadow-lg hover:opacity-90 transition
+                  px-8 py-2.5 rounded-xl
+                  bg-gradient-to-r from-blue-600 to-indigo-600
+                  text-white font-semibold shadow-lg
+                  hover:opacity-90 transition
                 "
               >
                 {responseLoading ? "Testing..." : "Test Prompt"}
@@ -488,9 +659,11 @@ const PromptTestingPage = () => {
             </div>
           </div>
         </div>
-        {/* ========================= */}
+
+        {/* ====================================================== */}
         {/* RESPONSE */}
-        {/* ========================= */}
+        {/* ====================================================== */}
+
         {parsedResponse && !responseError && (
           <div
             ref={responseRef}
@@ -503,109 +676,66 @@ const PromptTestingPage = () => {
               Prompt Test Result
             </h3>
 
-            {/* SUMMARY */}
-            <div className="rounded-2xl border border-slate-200 overflow-hidden">
-              <div className="flex items-center justify-between bg-slate-50 px-5 py-4 border-b">
-                <h4 className="font-semibold text-slate-800">Summary</h4>
+            {/* DYNAMIC RESPONSE */}
 
-                <button
-                  onClick={() => copyToClipboard(summary, "summary")}
-                  className="
-                    flex items-center gap-2 text-sm font-medium
-                    text-slate-600 hover:text-indigo-600 transition
-                  "
-                >
-                  {copied === "summary" ? (
-                    <>
-                      <CheckCheck className="w-4 h-4" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div className="p-5 text-slate-700 leading-relaxed">
-                {summary}
-              </div>
-            </div>
-
-            {/* REPLY */}
-            <div className="rounded-2xl border border-slate-200 overflow-hidden">
-              <div className="flex items-center justify-between bg-slate-50 px-5 py-4 border-b">
-                <h4 className="font-semibold text-slate-800">Reply</h4>
-
-                <button
-                  onClick={() => copyToClipboard(reply, "reply")}
-                  className="
-                    flex items-center gap-2 text-sm font-medium
-                    text-slate-600 hover:text-indigo-600 transition
-                  "
-                >
-                  {copied === "reply" ? (
-                    <>
-                      <CheckCheck className="w-4 h-4" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div
-                className="
-                  p-6 prose prose-sm max-w-none
-                  prose-p:leading-relaxed
-                  prose-li:my-1
-                  prose-hr:my-5
-                "
-                dangerouslySetInnerHTML={{
-                  __html: reply,
-                }}
-              />
+            <div className="space-y-6">
+              {Object.entries(normalizedResponse || {}).map(([key, value]) => (
+                <RenderValue
+                  key={key}
+                  label={key}
+                  value={value}
+                  copied={copied}
+                  copyToClipboard={copyToClipboard}
+                />
+              ))}
             </div>
 
             {/* PROMPT */}
-            <div className="rounded-2xl border border-slate-200 overflow-hidden">
-              <div className="flex items-center justify-between bg-slate-50 px-5 py-4 border-b">
-                <h4 className="font-semibold text-slate-800">Prompt</h4>
 
-                <button
-                  onClick={() => copyToClipboard(promptText, "prompt")}
+            {promptText && (
+              <div className="rounded-2xl border border-slate-200 overflow-hidden">
+                <div className="flex items-center justify-between bg-slate-50 px-5 py-4 border-b">
+                  <h4 className="font-semibold text-slate-800">Prompt</h4>
+
+                  <button
+                    onClick={() => copyToClipboard(promptText, "prompt")}
+                    className="
+                      flex items-center gap-2 text-sm font-medium
+                      text-slate-600 hover:text-indigo-600 transition
+                    "
+                  >
+                    {copied === "prompt" ? (
+                      <>
+                        <CheckCheck className="w-4 h-4" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div
                   className="
-                    flex items-center gap-2 text-sm font-medium
-                    text-slate-600 hover:text-indigo-600 transition
+                    bg-slate-100 p-5 text-sm
+                    whitespace-pre-wrap leading-relaxed
+                    text-slate-700 max-h-[500px] overflow-auto
                   "
                 >
-                  {copied === "prompt" ? (
-                    <>
-                      <CheckCheck className="w-4 h-4" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      Copy
-                    </>
-                  )}
-                </button>
+                  {promptText}
+                </div>
               </div>
-
-              <div className="bg-slate-100 p-5 text-sm whitespace-pre-wrap leading-relaxed text-slate-700 max-h-[500px] overflow-auto">
-                {promptText}
-              </div>
-            </div>
+            )}
           </div>
         )}
-        ~{/* ERROR */}
+
+        {/* ====================================================== */}
+        {/* ERROR */}
+        {/* ====================================================== */}
+
         {responseError && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
             Something went wrong while testing the prompt.
