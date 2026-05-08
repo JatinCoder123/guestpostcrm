@@ -1,5 +1,5 @@
 import { showConsole } from "../assets/assets";
-import { fetchGpc } from "./api";
+import { apiRequest, fetchGpc } from "./api";
 
 let CURRENT_USER = {
   name: "GPC",
@@ -92,6 +92,34 @@ export const applyHashtag = async ({
   }
 };
 
-export const htmlToFile = (html, fileName = "file.html") => {
-  return new File([html], fileName, { type: "text/html" });
+
+export const generatePDF = async (html, id = "invoice") => {
+  try {
+    const response = await fetch("https://socket.guestpostcrm.com/generate-pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ html }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to generate PDF");
+    }
+
+    // ✅ get blob directly
+    const blob = await response.blob();
+
+    // ✅ convert blob → file
+    const file = new File([blob], `${id}.pdf`, {
+      type: "application/pdf",
+    });
+    console.log("Converted File:", file);
+
+    return file;
+  } catch (error) {
+    console.error("PDF generation error:", error);
+    throw error;
+  }
 };
+

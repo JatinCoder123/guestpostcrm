@@ -14,6 +14,7 @@ import MessageModal from "../../MessageModal";
 import { SendingOverlay } from "./SendingOverlay";
 import ReplyButtons from "./ReplyButtons";
 import CopyButton from "../../CopyButton";
+import AttachmentViewer from "./AttachmentViewer";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
@@ -25,6 +26,7 @@ const ThreadReply = () => {
     handleSendClick,
     checkingThreadId,
     contentLoading,
+    files
   } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
@@ -41,6 +43,7 @@ const ThreadReply = () => {
   const navigate = useNavigate();
   const [editorReady, setEditorReady] = useState(false);
   const modalRef = useRef(null);
+
   useEffect(() => {
     if (sendFailedResponse) {
       setShowFailedModal(true);
@@ -137,6 +140,7 @@ const ThreadReply = () => {
 
           <div className="p-6 border-t bg-gradient-to-r from-white to-gray-50 flex items-center justify-between gap-4 shadow-2xl">
             <ReplyButtons editorRef={editorRef} editorReady={editorReady} />
+
             {/* SEND BUTTON */}
             <div className="flex gap-2 items-center justify-center">
               <motion.button

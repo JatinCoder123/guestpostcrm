@@ -7,15 +7,16 @@ import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
-import { htmlToFile } from "../../../services/utils";
+import { generatePDF } from "../../../services/utils";
 
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { state } = useLocation();
-
+  const [pdfLoading, setPdfLoading] = useState(false);
   const { superfastReply } = useContext(PageContext);
   const [contentLoading, setContentLoading] = useState(false);
+  const [htmlfile, setHtmlfile] = useState(state?.htmlFile)
   const [files, setFiles] = useState([]);
   const [editorContent, setEditorContent] = useState(
     state?.initialContent || "",
@@ -108,30 +109,28 @@ const Thread = () => {
       dispatch(viewEmailAction.clearAllErrors());
     }
   }, [sendMessage, sendError]);
-  const urlToFile = async (url) => {
-    console.log("url", url);
-    const response = await fetch(url);
-    const blob = await response.blob();
-
-    const fileName = url.split("/").pop() || "file";
-    return new File([blob], fileName, { type: blob.type });
-  };
   useEffect(() => {
     const processFiles = async () => {
-      if (!state?.htmlFile) return;
+      if (!htmlfile) return;
 
       try {
-        const file = htmlToFile(state?.htmlFile);
+        setPdfLoading(true); // 🔥 start loading
+
+        const file = await generatePDF(htmlfile);
+
+        // 👇 IMPORTANT: match your structure (file.file used later)
         setFiles([file]);
-        console.log("files", file);
+
       } catch (err) {
         console.error("File conversion error:", err);
         toast.error("Failed to load attachments");
+      } finally {
+        setPdfLoading(false); // 🔥 stop loading
       }
     };
 
     processFiles();
-  }, [state]);
+  }, [htmlfile]);
   const value = {
     emails,
     loadAiReply: state?.loadAiReply,
@@ -142,8 +141,11 @@ const Thread = () => {
     setEditorContent,
     cc,
     setCc,
+    htmlfile,
+    setHtmlfile,
     contentLoading,
     setContentLoading,
+    pdfLoading, // ✅ added
     handleSendClick,
     checkingThreadId,
     setCheckingTheadId,
