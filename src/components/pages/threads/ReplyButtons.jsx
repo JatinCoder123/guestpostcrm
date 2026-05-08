@@ -21,7 +21,7 @@ const ReplyButtons = ({
     editorRef,
     editorReady
 }) => {
-    const { setEditorContent, setFiles, files, editorContent, setContentLoading, htmlfile, setHtmlfile } = useOutletContext()
+    const { setEditorContent, setFiles, files, editorContent, setContentLoading, htmlfile, setHtmlfile, pdfLoading } = useOutletContext()
     const { context: { currentEmail, currentThread: threadId } } = useThreadContext()
     const [showTemplatePopup, setShowTemplatePopup] = useState(false);
     const [aiReplyContent, setAiReplyContent] = useState("");
@@ -30,14 +30,7 @@ const ReplyButtons = ({
     const [templateId, setTemplateId] = useState(null);
     const navigate = useNavigate()
     const [showHtmlEditor, setShowHtmlEditor] = useState(false);
-    const [tempHtml, setTempHtml] = useState(`<div style="font-family: Arial, Helvetica, sans-serif; background: #ffffff; border: 1px solid #e8e8e8; padding: 28px;">
-<p style="margin: 0 0 14px 0; font-size: 15px; color: #333;">Hello,</p>
-<p style="margin: 0 0 16px 0; font-size: 15px; color: #444; line-height: 1.6;">I hope you're doing well.</p>
-<p style="margin: 0 0 18px 0; font-size: 15px; color: #444; line-height: 1.6;">When convenient, could you please share the <strong>allocated budget</strong> for this project? Having visibility into the budget will help us tailor our approach and recommend the most suitable solution for your goals.</p>
-<div style="background: #f6f8fb; border-left: 4px solid #4f7cff; padding: 14px 16px; margin: 18px 0;"><span style="font-size: 14px; color: #555;"> This allows us to align scope, strategy, and deliverables effectively. </span></div>
-<p style="margin: 18px 0 0 0; font-size: 15px; color: #444;">Thank you in advance. I look forward to your response.</p>
-<p style="margin-top: 22px; font-size: 15px; color: #333;">&nbsp;</p>
-</div>` || "");
+    const [tempHtml, setTempHtml] = useState(htmlfile || "");
     const [editorReadyLocal, setEditorReadyLocal] = useState(false);
     const editorRefLocal = useRef(null);
     const {
@@ -368,7 +361,13 @@ const ReplyButtons = ({
                 </ViewButton>
                 <FirstReplyBtn email={currentEmail} />
 
-                <Attachment data={files} onChange={setFiles} />
+                {pdfLoading ? (
+                    <div className="px-4 py-2 bg-gray-100 rounded-lg text-sm">
+                        Preparing attachment...
+                    </div>
+                ) : (
+                    <Attachment data={files} onChange={setFiles} />
+                )}
                 {htmlfile && (
                     <motion.button
                         whileHover={{ scale: 1.05 }}

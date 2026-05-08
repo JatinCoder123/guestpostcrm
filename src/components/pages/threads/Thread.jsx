@@ -13,7 +13,7 @@ const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { state } = useLocation();
-
+  const [pdfLoading, setPdfLoading] = useState(false);
   const { superfastReply } = useContext(PageContext);
   const [contentLoading, setContentLoading] = useState(false);
   const [htmlfile, setHtmlfile] = useState(state?.htmlFile)
@@ -114,11 +114,18 @@ const Thread = () => {
       if (!htmlfile) return;
 
       try {
+        setPdfLoading(true); // 🔥 start loading
+
         const file = await generatePDF(htmlfile);
+
+        // 👇 IMPORTANT: match your structure (file.file used later)
         setFiles([file]);
+
       } catch (err) {
         console.error("File conversion error:", err);
         toast.error("Failed to load attachments");
+      } finally {
+        setPdfLoading(false); // 🔥 stop loading
       }
     };
 
@@ -138,6 +145,7 @@ const Thread = () => {
     setHtmlfile,
     contentLoading,
     setContentLoading,
+    pdfLoading, // ✅ added
     handleSendClick,
     checkingThreadId,
     setCheckingTheadId,
