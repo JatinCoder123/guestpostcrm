@@ -108,14 +108,19 @@ const dealsSlice = createSlice({
     },
     setDeals(state, action) {
       const deal = action.payload;
-      state.count = deal?.data_count ?? 0
-      state.deals = deal?.data ?? []
-      state.summary = deal?.summary ?? []
-    }
+      state.count = deal?.data_count ?? 0;
+      state.deals = deal?.data ?? [];
+      state.summary = deal?.summary ?? [];
+    },
   },
 });
 
-export const getDeals = ({ email = null, page = 1, loading = true, brand = false }) => {
+export const getDeals = ({
+  email = null,
+  page = 1,
+  loading = true,
+  brand = false,
+}) => {
   return async (dispatch, getState) => {
     if (loading) {
       dispatch(dealsSlice.actions.getDealsRequest());
@@ -123,11 +128,19 @@ export const getDeals = ({ email = null, page = 1, loading = true, brand = false
 
     try {
       let res;
-      const timeline = getState().ladger.timeline
-      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email, page, page_size: "50" }
-      brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "deal", ...params } })
-        : res = await fetchGpc({ params: { type: "get_deals", ...params } });
-      const data = brand ? res.data.deal : res
+      const timeline = getState().ladger.timeline;
+      const params = {
+        ...(timeline && timeline !== "null" ? { filter: timeline } : {}),
+        email,
+        page,
+        page_size: "50",
+      };
+      brand
+        ? (res = await fetchGpc({
+            params: { type: "brandTimeline", case: "deal", ...params },
+          }))
+        : (res = await fetchGpc({ params: { type: "get_deals", ...params } }));
+      const data = brand ? res.data.deal : res;
       showConsole && console.log(`${brand ? "Brand" : ""} Deals`, data);
       dispatch(
         dealsSlice.actions.getDealsSucess({
@@ -169,7 +182,8 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
 
     try {
       const data = await apiRequest({
-        endpoint: `${domain}?entryPoint=get_deal_details`, body: {
+        endpoint: `${domain}?entryPoint=get_deal_details`,
+        body: {
           records: deals.map((deal) => ({
             amount: deal.dealamount,
             email: email,
@@ -181,15 +195,18 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
             id: state.viewEmail.contactInfo.id,
             email: email,
           },
-        }, method: "POST"
+        },
+        method: "POST",
       });
       const remRes = await fetchGpc({
-        params: { type: 'set_reminder' }, body: {
+        params: { type: "set_reminder" },
+        body: {
           websites: deals.map((deal) => deal.website_c),
           email: email,
           reminder_type: "deal",
-        }, method: "POST"
-      })
+        },
+        method: "POST",
+      });
       showConsole && console.log(`Create Deal`, data);
       showConsole && console.log(`Reminder Response`, remRes);
       dispatch(
@@ -201,10 +218,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
       triggerHashtag(14, "GET");
 
       dispatch(dealsSlice.actions.clearAllErrors());
-      updateActivity(
-        email,
-        "Deal Created",
-      );
+      updateActivity(email, "Deal Created");
 
       createLedgerEntry({
         domain,
@@ -235,7 +249,7 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
 export const updateDeal = ({ deals = [] }) => {
   return async (dispatch, getState) => {
     const state = getState();
-    const email = extractEmail(deals[0]?.real_name ?? deals[0]?.email)
+    const email = extractEmail(deals[0]?.real_name ?? deals[0]?.email);
 
     const getDomain1 = (url) => {
       try {
@@ -259,39 +273,43 @@ export const updateDeal = ({ deals = [] }) => {
       };
       deals.forEach(async (deal) => {
         await fetchGpc({
-          params: { type: 'take_notes' }, body: {
+          params: { type: "take_notes" },
+          body: {
             record_id: deal.id,
             notes: deal.note,
             type1: "deals",
-          }, method: "POST"
-        })
+          },
+          method: "POST",
+        });
       });
 
       deals.forEach(async (deal) => {
         const data = await apiRequest({
-          endpoint: `${domain}?entryPoint=get_post_all`, method: "POST", params: { action_type: "post_data" }, body: {
+          endpoint: `${domain}?entryPoint=get_post_all`,
+          method: "POST",
+          params: { action_type: "post_data" },
+          body: {
             parent_bean: {
               module: "outr_deal_fetch",
               ...deal,
             },
-          }, headers: {
+          },
+          headers: {
             "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
             "Content-Type": "application/json",
           },
-        }
-
-        );
+        });
         showConsole && console.log(`UPdate Deal`, data);
       });
       const remRes = await fetchGpc({
-        params: { type: 'set_reminder' }, body: {
+        params: { type: "set_reminder" },
+        body: {
           websites: deals.map((deal) => deal.website_c),
           email: email,
           reminder_type: "deal",
-        }, method: "POST"
-      }
-
-      );
+        },
+        method: "POST",
+      });
       showConsole && console.log(`Reminder Response`, remRes);
       const updatedDeals = getState().deals.deals.map((d) => {
         const updated = deals.find((ud) => ud.id === d.id);
@@ -335,7 +353,7 @@ export const updateDeal = ({ deals = [] }) => {
 export const deleteDeal = (deal, id) => {
   0;
   return async (dispatch, getState) => {
-    const email = extractEmail(deal?.real_name ?? deal?.email)
+    const email = extractEmail(deal?.real_name ?? deal?.email);
     const getDomain1 = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");
@@ -356,7 +374,14 @@ export const deleteDeal = (deal, id) => {
     };
     dispatch(dealsSlice.actions.deleteDealRequest({ id }));
     try {
-      const data = await fetchGpc({ params: { type: 'delete_record', module_name: 'outr_deal_fetch', record_id: id }, method: "POST" })
+      const data = await fetchGpc({
+        params: {
+          type: "delete_record",
+          module_name: "outr_deal_fetch",
+          record_id: id,
+        },
+        method: "POST",
+      });
       showConsole && console.log(`Delete Deal`, data);
       if (!data.success) {
         throw new Error(data.message);
