@@ -226,7 +226,7 @@ export function OrdersPage() {
           >
             <Eye className="w-5 h-5 text-blue-600" />
           </button>
-          {row.order_type == "MARKETPLACE" &&
+          {row.order_type?.toLowerCase() == "marketplace" &&
             row.order_status !== "completed" && (
               <button
                 onClick={() => {
