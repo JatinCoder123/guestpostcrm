@@ -92,16 +92,17 @@ export function CustomDropdown({
 
 const PromptTestingPage = () => {
   const [formData, setFormData] = useState({
-    stage: "",
+    stage: "new",
     body: "",
     prompt: "",
     email: "",
-    thread_size: "",
+    thread_size: "1",
   });
 
   const [stages, setStages] = useState({});
   const [stagePrompts, setStagePrompts] = useState([]);
   const [stagePromptsLoading, setStagePromptsLoading] = useState(false);
+  const [promptCache, setPromptCache] = useState({});
 
   const responseRef = useRef(null);
   const { crmEndpoint } = useSelector((state) => state.user);
@@ -122,28 +123,45 @@ const PromptTestingPage = () => {
     fetchStages();
   }, [baseUrl]);
 
-  // ✅ Fetch prompts for selected stage, extract `name` field
   useEffect(() => {
     if (!formData.stage) {
       setStagePrompts([]);
       return;
     }
 
+    // ✅ Use cache first
+    if (promptCache[formData.stage]) {
+      setStagePrompts(promptCache[formData.stage]);
+      return;
+    }
+
     const fetchStagePrompts = async () => {
       try {
         setStagePromptsLoading(true);
+
         const data = await fetchGpc({
-          params: { type: "machine_learning", stage_type: formData.stage },
+          params: {
+            type: "machine_learning",
+            stage_type: formData.stage,
+          },
         });
+
         const rows = Array.isArray(data) ? data : [];
-        // Extract only items that have a `name` field
+
         const filtered = rows
           .filter((item) => item?.name)
           .map((item) => ({
             value: item.name,
             label: item.name.replaceAll("_", " "),
           }));
+
         setStagePrompts(filtered);
+
+        // ✅ Store in cache
+        setPromptCache((prev) => ({
+          ...prev,
+          [formData.stage]: filtered,
+        }));
       } catch (err) {
         console.error("Failed to fetch stage prompts:", err);
         setStagePrompts([]);
@@ -153,9 +171,12 @@ const PromptTestingPage = () => {
     };
 
     fetchStagePrompts();
-    // Reset prompt selection when stage changes
-    setFormData((prev) => ({ ...prev, prompt: "" }));
-  }, [formData.stage, baseUrl]);
+
+    setFormData((prev) => ({
+      ...prev,
+      prompt: "",
+    }));
+  }, [formData.stage]);
 
   const {
     loading: responseLoading,
@@ -209,6 +230,16 @@ const PromptTestingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {responseLoading && (
+        <div className="absolute inset-0 bg-white/20  z-20 rounded-3xl flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium text-slate-700">
+              Testing Prompt...
+            </span>
+          </div>
+        </div>
+      )}
       <Header text="Prompt Testing" />
 
       <div className="mx-auto px-6 py-10 space-y-10">
@@ -289,7 +320,21 @@ const PromptTestingPage = () => {
                 ]}
               />
             </div>
-
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Email Address <span className="text-slate-400">(optional)</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="example@email.com"
+                className="w-full rounded-xl border border-slate-300 px-4 py-3
+                           focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
             {/* Email Body — disabled if email is entered */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -312,37 +357,24 @@ const PromptTestingPage = () => {
               />
             </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email Address <span className="text-slate-400">(optional)</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="example@email.com"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3
-                           focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-center gap-4 pt-6">
               <button
                 type="button"
                 onClick={handleReset}
                 className="px-6 py-2.5 rounded-xl border border-slate-300
-                           text-slate-700 font-semibold hover:bg-slate-100 transition"
+               text-slate-700 font-semibold hover:bg-slate-100 transition"
               >
                 Reset
               </button>
+
               <button
                 type="button"
                 onClick={handleSubmit}
+                disabled={responseLoading}
                 className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600
-                           text-white font-semibold shadow-lg hover:opacity-90 transition"
+               text-white font-semibold shadow-lg hover:opacity-90 transition
+               disabled:opacity-50"
               >
                 {responseLoading ? "Testing..." : "Test Prompt"}
               </button>
@@ -351,7 +383,7 @@ const PromptTestingPage = () => {
         </div>
 
         {/* Response Box */}
-        {response && !responseError && (
+        {response && !responseLoading && !responseError && (
           <div
             ref={responseRef}
             className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8 space-y-6"
@@ -446,16 +478,6 @@ const PromptTestingPage = () => {
                   </div>
                 </div>
               )}
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-slate-600 mb-2">
-                Prompt
-              </h4>
-
-              <div className="bg-slate-100 rounded-xl p-4 text-sm whitespace-pre-wrap leading-relaxed">
-                {response?.prompt}
-              </div>
             </div>
           </div>
         )}
