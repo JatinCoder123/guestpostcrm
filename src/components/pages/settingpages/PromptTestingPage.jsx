@@ -176,8 +176,6 @@ const PromptTestingPage = () => {
     },
     enabled: false,
   });
-  console.log("test", responseError);
-  console.log("test k", response);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -361,20 +359,102 @@ const PromptTestingPage = () => {
             <h3 className="text-xl font-bold text-slate-900">
               Prompt Test Result
             </h3>
+
             <div>
               <h4 className="text-sm font-semibold text-slate-600 mb-2">
                 Response
               </h4>
-              <span className="inline-flex items-center px-5 py-2 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700">
-                {response.response?.toUpperCase()}
-              </span>
+
+              {response && !responseError && (
+                <div
+                  ref={responseRef}
+                  className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8 space-y-6"
+                >
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Prompt Test Result
+                  </h3>
+
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-600 mb-2">
+                      Response
+                    </h4>
+
+                    {typeof response?.response === "object" &&
+                    response?.response !== null ? (
+                      <div className="bg-slate-100 rounded-xl p-4 text-sm space-y-4">
+                        {Object.entries(response.response).map(
+                          ([key, value]) => {
+                            const stringValue =
+                              typeof value === "string" ? value.trim() : "";
+
+                            // Detect HTML
+                            const isHTML =
+                              typeof value === "string" &&
+                              /<\/?[a-z][\s\S]*>/i.test(stringValue);
+
+                            return (
+                              <div
+                                key={key}
+                                className="border-b border-slate-200 pb-4 last:border-b-0"
+                              >
+                                <div className="font-semibold text-slate-700 mb-2">
+                                  {key}:
+                                </div>
+
+                                {isHTML ? (
+                                  <div className="bg-white border rounded-xl overflow-hidden">
+                                    {/* HTML Preview */}
+                                    <div
+                                      className="p-4 prose max-w-none"
+                                      dangerouslySetInnerHTML={{
+                                        __html: value,
+                                      }}
+                                    />
+
+                                    {/* Raw HTML */}
+                                    <pre className="bg-slate-900 text-slate-100 text-xs p-4 overflow-auto border-t">
+                                      {value}
+                                    </pre>
+                                  </div>
+                                ) : (
+                                  <div className="text-slate-600 whitespace-pre-wrap break-words">
+                                    {typeof value === "object"
+                                      ? JSON.stringify(value, null, 2)
+                                      : String(value)}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center px-5 py-2 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700">
+                        {String(response?.response).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-600 mb-2">
+                      Prompt
+                    </h4>
+
+                    <div className="bg-slate-100 rounded-xl p-4 text-sm whitespace-pre-wrap leading-relaxed">
+                      {response?.prompt}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+
             <div>
               <h4 className="text-sm font-semibold text-slate-600 mb-2">
                 Prompt
               </h4>
+
               <div className="bg-slate-100 rounded-xl p-4 text-sm whitespace-pre-wrap leading-relaxed">
-                {response.prompt}
+                {response?.prompt}
               </div>
             </div>
           </div>
