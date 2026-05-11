@@ -4,17 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { viewEmailAction } from "../../../store/Slices/viewEmail";
-import { toast } from "react-toastify";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
 import { useThreadContext } from "../../../hooks/useThreadContext";
-import MailHeaderLeft from "./MailHeaderLeft";
 import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
 import { SendingOverlay } from "./SendingOverlay";
 import ReplyButtons from "./ReplyButtons";
-import CopyButton from "../../CopyButton";
-import AttachmentViewer from "./AttachmentViewer";
+import RightThreadHeader from "./RightThreadHeader";
 const ThreadReply = () => {
   const editorRef = useRef(null);
   const [showBriefReason, setShowBriefReason] = useState(false);
@@ -84,7 +81,7 @@ const ThreadReply = () => {
         className="fixed inset-0 z-[999] bg-white w-screen h-screen flex flex-col overflow-hidden"
       >
         {/* HEADER */}
-        <div className="flex gap-3 justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+        <div className="flex gap-3 justify-between items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
           <div className="flex items-center gap-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -111,11 +108,7 @@ const ThreadReply = () => {
                 </h2>
               </div>
 
-              {/* COPY LINK */}
-              <CopyButton
-                text={`https://mail.google.com/mail/u/0/#inbox/${threadId}`}
-                title="Copy Gmail Link!"
-              />
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -126,7 +119,8 @@ const ThreadReply = () => {
               </motion.button>
             </div>
           </div>
-          <MailHeaderLeft />
+          <RightThreadHeader />
+
         </div>
         <div className="flex flex-col h-full w-full">
           <TinyEditor

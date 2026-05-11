@@ -57,51 +57,16 @@ const RootLayout = () => {
     setShowAvatar(true);
   }, [currentAvatar]);
   useEffect(() => {
-    if (!message) return;
-    const isLast = emails.length === currentIndex + 1;
-    const nextEmailObj = emails[currentIndex + 1];
+    if (message) {
 
-    // ✅ prevent duplicate execution ASAP
-    dispatch(viewEmailAction.clearAllMessage());
+      dispatch(viewEmailAction.clearAllMessage());
 
-    toast.success(message);
+      toast.success(message);
 
-    dispatch(unrepliedAction.removeUnreplied(sendedEmail));
-
-    if (isLast) {
-      localStorage.removeItem("email");
-      setEnteredEmail("");
-
-      navigate("/unreplied-emails");
-      return;
+      dispatch(unrepliedAction.removeUnreplied(sendedEmail));
     }
 
-    if (!nextEmailObj) {
-      localStorage.removeItem("email");
-      setEnteredEmail("");
-
-      navigate("/unreplied-emails");
-      return;
-    }
-    console.log("SUPER FAST REPLY", superfastReply);
-    if (superfastReply) {
-      handleDateClick({
-        email: extractEmail(nextEmailObj?.from || ""),
-        nextPrev: true,
-      });
-      handleMove({
-        email: extractEmail(nextEmailObj?.from || ""),
-        threadId: nextEmailObj?.thread_id,
-        loadAiReply: true,
-      });
-      return;
-    }
-    handleDateClick({
-      email: extractEmail(nextEmailObj?.from || ""),
-      navigate: "/",
-      nextPrev: true,
-    });
-  }, [message, superfastReply]);
+  }, [message]);
 
   // Set active page based on URL
   useEffect(() => {
@@ -120,9 +85,8 @@ const RootLayout = () => {
         </div>
         <main
           ref={mainRef}
-          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${
-            collapsed ? "ml-4" : "ml-0"
-          }`}
+          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+            }`}
         >
           <div className="p-3">
             {/* {isLowCredit && <LowCreditWarning score={currentScore} />} */}
