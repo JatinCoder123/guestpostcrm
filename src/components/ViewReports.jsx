@@ -21,6 +21,10 @@ import {
   FileText,
   BarChart3,
   RefreshCw,
+  ArrowUpRight,
+  Bell,
+  MailCheck,
+  MailX,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -83,6 +87,16 @@ const DEFAULT_COLOR = {
   badge: "#f3f4f6",
 };
 
+const GROUP_ICONS = {
+  Reminder: Bell,
+  "Email-Accepted": MailCheck,
+  "Email-Rejected": MailX,
+  Deal: Handshake,
+  Order: ShoppingCart,
+  Offer: Tag,
+};
+const DEFAULT_GROUP_ICON = Activity;
+
 const PRESETS = [
   { label: "Today", id: "equals" },
   { sep: true },
@@ -138,6 +152,44 @@ function groupByDescription(data = []) {
     (map[row.description] = map[row.description] || []).push(row);
     return map;
   }, {});
+}
+
+function normalizeReportKey(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function sumActionTotal(
+  data = [],
+  actionAliases = [],
+  descriptionAliases = [],
+) {
+  const actions = actionAliases.map(normalizeReportKey);
+  const descriptions = descriptionAliases.map(normalizeReportKey);
+
+  return data.reduce((sum, row) => {
+    const actionMatch = actions.includes(normalizeReportKey(row.action));
+    const descriptionMatch =
+      !descriptions.length ||
+      descriptions.includes(normalizeReportKey(row.description));
+
+    return actionMatch && descriptionMatch
+      ? sum + (parseInt(row.total) || 0)
+      : sum;
+  }, 0);
+}
+
+function sumDescriptionTotal(data = [], descriptionAliases = []) {
+  const descriptions = descriptionAliases.map(normalizeReportKey);
+
+  return data.reduce(
+    (sum, row) =>
+      descriptions.includes(normalizeReportKey(row.description))
+        ? sum + (parseInt(row.total) || 0)
+        : sum,
+    0,
+  );
 }
 
 function fmtDisplay(dateStr, timeStr) {
@@ -854,6 +906,14 @@ const CARD_META = {
   Deals: { icon: Handshake, accent: "#dc2626", bg: "#fef2f2" },
   Orders: { icon: ShoppingCart, accent: "#0891b2", bg: "#ecfeff" },
   "First Reply Sent": { icon: Activity, accent: "#0284c7", bg: "#e0f2fe" },
+  "No Reply Sender": { icon: Mail, accent: "#2563eb", bg: "#eff6ff" },
+  "Rejected-Duplicate": { icon: FileText, accent: "#a855f7", bg: "#faf5ff" },
+  "Rejected - NonRelvant": {
+    icon: User,
+    accent: "#c05621",
+    bg: "#fff7ed",
+  },
+  "Reminders-Sent": { icon: RefreshCw, accent: "#14b8a6", bg: "#f0fdfa" },
   "GPC Activity": { icon: BarChart3, accent: "#7c3aed", bg: "#f5f3ff" },
   "Total Activity": { icon: Activity, accent: "#1d4ed8", bg: "#eff6ff" },
 };
@@ -871,32 +931,41 @@ function MetricCard({ label, value, onClick }) {
     <button
       onClick={onClick}
       disabled={!isClickable}
-      className={`group relative bg-white border border-gray-100 rounded-2xl p-4 text-left w-full transition-all duration-200
-        ${isClickable ? "hover:shadow-lg hover:border-gray-200 cursor-pointer" : "cursor-default"}`}
+      style={{
+        backgroundColor: meta.bg,
+        borderColor: `${meta.accent}26`,
+      }}
+      className={`group relative border rounded-2xl p-4 text-left w-full overflow-hidden transition-all duration-200
+        ${isClickable ? "hover:shadow-md hover:-translate-y-0.5 cursor-pointer" : "cursor-default"}`}
     >
+      {/* Top accent stripe revealed on hover */}
+      <div
+        className="absolute inset-x-0 top-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{ backgroundColor: meta.accent }}
+      />
+
       <div className="flex items-start justify-between mb-3">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: meta.bg }}
-        >
-          <Icon size={20} style={{ color: meta.accent }} />
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white shadow-sm ring-1 ring-inset ring-black/5">
+          <Icon size={18} style={{ color: meta.accent }} />
         </div>
         {isClickable && (
-          <span className="text-[11px] text-gray-300 group-hover:text-blue-400 transition-colors font-bold mt-0.5">
-            ↗
+          <span
+            className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/70 transition-all group-hover:bg-white group-hover:shadow-sm"
+            style={{ color: meta.accent }}
+          >
+            <ArrowUpRight size={13} strokeWidth={2.5} />
           </span>
         )}
       </div>
-      <p className="text-[10px]  text-black-400 mb-1">{label}</p>
-      <p className="text-2xl font-black text-black-900 tabular-nums tracking-tight">
+      <p
+        className="text-[10px] font-bold uppercase tracking-wider mb-1.5 leading-tight"
+        style={{ color: meta.accent, opacity: 0.85 }}
+      >
+        {label}
+      </p>
+      <p className="text-2xl font-black text-gray-900 tabular-nums tracking-tight leading-none">
         {value}
       </p>
-      {isClickable && (
-        <div
-          className="absolute inset-x-0 bottom-0 h-[3px] rounded-b-2xl scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"
-          style={{ backgroundColor: meta.accent }}
-        />
-      )}
     </button>
   );
 }
@@ -955,6 +1024,43 @@ export default function ViewReports() {
   const outboundTotal = (baseSummary?.data || [])
     .filter((r) => r.action === "Email-Reply-Sent")
     .reduce((s, r) => s + (parseInt(r.total) || 0), 0);
+  const noReplySenderTotal = sumActionTotal(
+    rows,
+    ["No-Reply-Sender", "No Reply Sender"],
+    ["Email-Rejected"],
+  );
+  const duplicateSenderTotal = sumActionTotal(
+    rows,
+    [
+      "Duplicate-Sender",
+      "Duplicate Sender",
+      "Rejected-Duplicate",
+      "Rejected Duplicate",
+    ],
+    ["Email-Rejected"],
+  );
+  const nonRelevantSenderTotal = sumActionTotal(
+    rows,
+    [
+      "Non-Relevant-Sender",
+      "Non Relevant Sender",
+      "NonRelvant-Sender",
+      "Rejected-NonRelvant",
+      "Rejected NonRelvant",
+      "Rejected-NonRelevant",
+      "Rejected NonRelevant",
+    ],
+    ["Email-Rejected"],
+  );
+  const reminderSentActionTotal = sumActionTotal(rows, [
+    "Reminders-Sent",
+    "Reminder-Sent",
+    "Reminders Sent",
+    "Reminder Sent",
+  ]);
+  const reminderEntriesTotal =
+    reminderSentActionTotal ||
+    sumDescriptionTotal(rows, ["Reminder", "Reminders"]);
 
   // ── URL builders ─────────────────────────────────────────────────────────────
   const buildUrl = (fd, ft, td, tt, extra = {}) =>
@@ -1204,8 +1310,8 @@ export default function ViewReports() {
     setOpenExport(false);
   };
 
-  // ── Cards ─────────────────────────────────────────────────────────────────────
-  const topCards = [
+  // ── Card sections ────────────────────────────────────────────────────────────
+  const pipelineCards = [
     { label: "New", value: baseSummary?.new ?? 0 },
     {
       label: "Inbound",
@@ -1234,7 +1340,7 @@ export default function ViewReports() {
     },
   ];
 
-  const bottomCards = [
+  const outcomeCards = [
     {
       label: "First Reply Sent",
       value:
@@ -1242,6 +1348,29 @@ export default function ViewReports() {
           ?.total ?? 0,
       onClick: () => handleGroupClick("First-Reply-Sent"),
     },
+    {
+      label: "No Reply Sender",
+      value: noReplySenderTotal,
+      onClick: () => handleGroupClick("No-Reply-Sender"),
+    },
+    {
+      label: "Rejected-Duplicate",
+      value: duplicateSenderTotal,
+      onClick: () => handleGroupClick("Duplicate-Sender"),
+    },
+    {
+      label: "Rejected - NonRelvant",
+      value: nonRelevantSenderTotal,
+      onClick: () => handleGroupClick("Non-Relevant-Sender"),
+    },
+    {
+      label: "Reminders-Sent",
+      value: reminderEntriesTotal,
+      onClick: () => handleGroupClick("Reminders-Sent"),
+    },
+  ];
+
+  const activityCards = [
     {
       label: "GPC Activity",
       value: gpcActivity,
@@ -1270,23 +1399,31 @@ export default function ViewReports() {
     },
   ];
 
+  const overviewCards = [...pipelineCards, ...outcomeCards, ...activityCards];
+
+  const periodLabel = filterActive
+    ? `${fmtDisplay(fromDate, fromTime)}  →  ${fmtDisplay(toDate, toTime)}`
+    : "All time";
+  const groupCount = Object.keys(grouped).length;
+
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen bg-slate-50"
+      className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50"
       style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-40">
-        <div className="max-w-screen-xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-white/85 backdrop-blur-md border-b border-gray-200/70 sticky top-0 z-40">
+        <div className="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
             <button
               onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-all"
+              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all flex-shrink-0"
+              title="Back"
             >
               <ArrowLeft size={16} />
             </button>
-            <div>
+            <div className="min-w-0">
               <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none">
                 GPC Report
               </h1>
@@ -1296,60 +1433,78 @@ export default function ViewReports() {
             </div>
           </div>
 
-          <div className="relative" ref={exportRef}>
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              onClick={() => setOpenExport((v) => !v)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-blue-700 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-all shadow-sm"
+              onClick={() =>
+                filterActive
+                  ? handleApplyFilter()
+                  : (fetchSummary(), fetchTablePlain())
+              }
+              className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
+              title="Refresh"
+              disabled={loading}
             >
-              <Download size={15} />
-              Export
-              <ChevronDown
-                size={13}
-                className={`transition-transform duration-200 ${openExport ? "rotate-180" : ""}`}
-              />
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
             </button>
-            {openExport && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
-                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 pb-1.5">
-                  Choose Format
-                </p>
-                {[
-                  {
-                    label: "Export as PDF",
-                    icon: FileText,
-                    cls: "text-red-500",
-                    bg: "bg-red-50",
-                    fn: exportToPDF,
-                  },
-                  {
-                    label: "Export as Excel",
-                    icon: FileSpreadsheet,
-                    cls: "text-green-600",
-                    bg: "bg-green-50",
-                    fn: exportToExcel,
-                  },
-                ].map(({ label, icon: Ic, cls, bg, fn }) => (
-                  <button
-                    key={label}
-                    onClick={fn}
-                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm font-semibold text-gray-700 transition-all"
-                  >
-                    <div
-                      className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}
+
+            <div className="relative" ref={exportRef}>
+              <button
+                onClick={() => setOpenExport((v) => !v)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white text-sm font-bold rounded-xl hover:from-blue-800 hover:to-indigo-800 transition-all shadow-sm"
+              >
+                <Download size={15} />
+                <span className="hidden sm:inline">Export</span>
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-200 ${openExport ? "rotate-180" : ""}`}
+                />
+              </button>
+              {openExport && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 pb-1.5">
+                    Choose Format
+                  </p>
+                  {[
+                    {
+                      label: "Export as PDF",
+                      icon: FileText,
+                      cls: "text-red-500",
+                      bg: "bg-red-50",
+                      fn: exportToPDF,
+                    },
+                    {
+                      label: "Export as Excel",
+                      icon: FileSpreadsheet,
+                      cls: "text-green-600",
+                      bg: "bg-green-50",
+                      fn: exportToExcel,
+                    },
+                  ].map(({ label, icon, cls, bg, fn }) => (
+                    <button
+                      key={label}
+                      onClick={fn}
+                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm font-semibold text-gray-700 transition-all"
                     >
-                      <Ic size={13} className={cls} />
-                    </div>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            )}
+                      <div
+                        className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}
+                      >
+                        {React.createElement(icon, {
+                          size: 13,
+                          className: cls,
+                        })}
+                      </div>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main */}
-      <div className="w-full mx-auto px-6 py-6 space-y-5">
+      <div className="max-w-screen-2xl mx-auto px-6 py-6 space-y-6">
         <DateRangeFilter
           fromDate={fromDate}
           fromTime={fromTime}
@@ -1364,169 +1519,254 @@ export default function ViewReports() {
           onReset={handleResetFilter}
         />
 
-        <div>
-          <p className="text-[10px] font-black text-gray-400 mb-3">Overview</p>
+        {/* Overview — single grid of all metrics */}
+        <section className="space-y-3">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-black text-gray-900 tracking-tight">
+                Overview
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5 font-medium">
+                Key metrics across pipeline, outcomes and team activity
+              </p>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white border border-gray-200 rounded-md px-2 py-1">
+              {overviewCards.length}{" "}
+              {overviewCards.length === 1 ? "metric" : "metrics"}
+            </span>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3">
-            {topCards.map((c) => (
+            {overviewCards.map((c) => (
               <MetricCard key={c.label} {...c} />
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3">
-          {bottomCards.map((c) => (
-            <MetricCard key={c.label} {...c} />
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex-1 border-t border-gray-200" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-            Detailed Breakdown
-          </p>
-          <div className="flex-1 border-t border-gray-200" />
-        </div>
-
-        {loading ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-14 flex flex-col items-center gap-3">
-            <div className="w-9 h-9 border-[3px] border-blue-700 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-gray-400 font-semibold">
-              Loading report data…
-            </p>
+        {/* Detailed Breakdown header */}
+        <div className="pt-2">
+          <div className="flex items-end justify-between gap-3 mb-3">
+            <div>
+              <h2 className="text-sm font-black text-gray-900 tracking-tight">
+                Detailed Breakdown
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5 font-medium">
+                Action-level activity grouped by category
+              </p>
+            </div>
+            {!loading && rows.length > 0 && (
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white border border-gray-200 rounded-md px-2 py-1">
+                {groupCount} {groupCount === 1 ? "category" : "categories"}
+              </span>
+            )}
           </div>
-        ) : rows.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-14 flex flex-col items-center gap-2">
-            <BarChart3 size={36} className="text-gray-200" />
-            <p className="text-sm font-bold text-gray-400">
-              No data available for this period
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {Object.entries(grouped).map(([description, groupRows]) => {
-              const subtotal = groupRows.reduce(
-                (s, r) => s + (parseInt(r.total) || 0),
-                0,
-              );
-              const isOpen = openGroups[description];
-              const color = GROUP_COLORS[description] ?? DEFAULT_COLOR;
 
-              return (
-                <div
-                  key={description}
-                  className="rounded-2xl overflow-hidden shadow-sm"
-                >
-                  {/* Colored gradient header */}
+          {loading ? (
+            <div className="bg-white rounded-2xl border border-gray-200 p-14 flex flex-col items-center gap-3">
+              <div className="w-9 h-9 border-[3px] border-blue-700 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-gray-400 font-semibold">
+                Loading report data…
+              </p>
+            </div>
+          ) : rows.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-14 flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                <BarChart3 size={22} className="text-gray-300" />
+              </div>
+              <p className="text-sm font-bold text-gray-500">
+                No data available for this period
+              </p>
+              <p className="text-xs text-gray-400 font-medium">
+                Try adjusting the date range above
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {Object.entries(grouped).map(([description, groupRows]) => {
+                const subtotal = groupRows.reduce(
+                  (s, r) => s + (parseInt(r.total) || 0),
+                  0,
+                );
+                const isOpen = openGroups[description];
+                const color = GROUP_COLORS[description] ?? DEFAULT_COLOR;
+                const GroupIcon =
+                  GROUP_ICONS[description] ?? DEFAULT_GROUP_ICON;
+
+                return (
                   <div
-                    className={`bg-gradient-to-r ${color.header} flex items-center justify-between px-5 py-3.5 cursor-pointer select-none`}
-                    onClick={() => toggleGroup(description)}
+                    key={description}
+                    className="rounded-2xl overflow-hidden border transition-shadow hover:shadow-md"
+                    style={{
+                      backgroundColor: color.light,
+                      borderColor: color.badge,
+                    }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-white" />
+                    {/* Header */}
+                    <div
+                      className="flex items-center justify-between px-5 py-3.5 cursor-pointer select-none border-l-4 transition-colors hover:bg-white/40"
+                      style={{ borderLeftColor: color.dot }}
+                      onClick={() => toggleGroup(description)}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-white shadow-sm ring-1 ring-inset ring-black/5">
+                          <GroupIcon
+                            size={16}
+                            style={{ color: color.dot }}
+                            strokeWidth={2.25}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p
+                            className="font-bold text-sm truncate"
+                            style={{ color: color.text }}
+                          >
+                            {description}
+                          </p>
+                          <p
+                            className="text-[11px] mt-0.5 font-medium opacity-80"
+                            style={{ color: color.text }}
+                          >
+                            {groupRows.length}{" "}
+                            {groupRows.length === 1 ? "action" : "actions"}
+                          </p>
+                        </div>
                       </div>
-                      <span className="font-bold text-white text-sm tracking-wide">
-                        {description}
-                      </span>
+                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                        <div className="rounded-lg px-3 py-1.5 flex items-center gap-2 bg-white shadow-sm">
+                          <span
+                            className="text-[10px] font-bold uppercase tracking-wider"
+                            style={{ color: color.text }}
+                          >
+                            Subtotal
+                          </span>
+                          <span
+                            className="text-sm font-black tabular-nums"
+                            style={{ color: color.text }}
+                          >
+                            {subtotal}
+                          </span>
+                        </div>
+                        <div className="w-7 h-7 rounded-lg bg-white/70 flex items-center justify-center shadow-sm">
+                          {isOpen ? (
+                            <ChevronUp
+                              size={14}
+                              style={{ color: color.text }}
+                            />
+                          ) : (
+                            <ChevronDown
+                              size={14}
+                              style={{ color: color.text }}
+                            />
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="bg-white/20 rounded-lg px-3 py-1 flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">
-                          Subtotal
-                        </span>
-                        <span className="text-sm font-black text-white tabular-nums">
-                          {subtotal}
-                        </span>
+
+                    {/* Rows */}
+                    {isOpen && (
+                      <div
+                        className="border-t"
+                        style={{ borderColor: color.badge }}
+                      >
+                        {groupRows.map((row, i) => (
+                          <div
+                            key={i}
+                            className="px-5 py-3 last:border-0 cursor-pointer transition-colors group hover:bg-white/50"
+                            style={{
+                              borderBottom:
+                                i === groupRows.length - 1
+                                  ? "none"
+                                  : `1px solid ${color.badge}`,
+                            }}
+                            onClick={() =>
+                              navigate(
+                                `/view-reports/${encodeURIComponent(row.action)}`,
+                                {
+                                  state: {
+                                    from: fromDate,
+                                    from_time: fromTime,
+                                    to: toDate,
+                                    to_time: toTime,
+                                    filterActive,
+                                  },
+                                },
+                              )
+                            }
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div
+                                  className="w-1.5 h-5 rounded-full flex-shrink-0 shadow-sm"
+                                  style={{
+                                    backgroundImage: `linear-gradient(180deg, ${color.dot}, ${color.text})`,
+                                  }}
+                                />
+                                <span
+                                  className="text-sm font-semibold truncate"
+                                  style={{ color: color.text }}
+                                >
+                                  {row.action}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2.5 flex-shrink-0">
+                                <span
+                                  className="text-xs font-black px-2.5 py-1 rounded-lg tabular-nums bg-white shadow-sm"
+                                  style={{ color: color.text }}
+                                >
+                                  {row.total}
+                                </span>
+                                <ArrowUpRight
+                                  size={13}
+                                  className="opacity-40 group-hover:opacity-100 transition-opacity"
+                                  style={{ color: color.text }}
+                                  strokeWidth={2.5}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                        {isOpen ? (
-                          <ChevronUp size={14} className="text-white" />
-                        ) : (
-                          <ChevronDown size={14} className="text-white" />
-                        )}
-                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Grand Total */}
+              <div className="relative overflow-hidden bg-gradient-to-r from-gray-900 via-slate-900 to-gray-900 rounded-2xl px-6 py-5 shadow-md">
+                <div
+                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-20 blur-3xl"
+                  style={{
+                    background:
+                      "radial-gradient(circle, #6366f1 0%, transparent 70%)",
+                  }}
+                />
+                <div className="relative flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                      <BarChart3 size={20} className="text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">
+                        All Activities
+                      </p>
+                      <p className="font-bold text-base text-white tracking-wide">
+                        Grand Total
+                      </p>
                     </div>
                   </div>
-
-                  {/* Row list with colored accent */}
-                  {isOpen && (
-                    <div
-                      className="bg-white border-x border-b border-gray-100 rounded-b-2xl overflow-hidden"
-                      style={{ borderTop: `3px solid ${color.dot}` }}
-                    >
-                      {groupRows.map((row, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between px-5 py-3 border-b border-gray-50 last:border-0 cursor-pointer transition-colors"
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              color.light)
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor = "")
-                          }
-                          onClick={() =>
-                            navigate(
-                              `/view-reports/${encodeURIComponent(row.action)}`,
-                              {
-                                state: {
-                                  from: fromDate,
-                                  from_time: fromTime,
-                                  to: toDate,
-                                  to_time: toTime,
-                                  filterActive,
-                                },
-                              },
-                            )
-                          }
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: color.dot }}
-                            />
-                            <span className="text-sm font-semibold text-gray-700">
-                              {row.action}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="text-xs font-black px-2.5 py-1 rounded-lg tabular-nums"
-                              style={{
-                                backgroundColor: color.badge,
-                                color: color.text,
-                              }}
-                            >
-                              {row.total}
-                            </span>
-                            <ChevronDown
-                              size={11}
-                              className="text-gray-300 -rotate-90"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-3xl font-black tabular-nums text-white leading-none">
+                      {grandTotal}
+                    </p>
+                    <p className="text-[10px] font-medium text-gray-400 mt-1.5">
+                      across {groupCount}{" "}
+                      {groupCount === 1 ? "category" : "categories"}
+                    </p>
+                  </div>
                 </div>
-              );
-            })}
-
-            <div className="flex items-center justify-between bg-gray-900 text-white px-5 py-4 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                  <BarChart3 size={16} className="text-white" />
-                </div>
-                <span className="font-bold text-sm tracking-wide">
-                  Grand Total
-                </span>
               </div>
-              <span className="text-2xl font-black tabular-nums">
-                {grandTotal}
-              </span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

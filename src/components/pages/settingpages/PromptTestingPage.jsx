@@ -85,10 +85,9 @@ export function CustomDropdown({
                   className={`
                     w-full flex items-center justify-between
                     px-4 py-2 text-sm transition
-                    ${
-                      isSelected
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-gray-700 hover:bg-gray-100"
+                    ${isSelected
+                      ? "bg-indigo-50 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -251,18 +250,17 @@ const RenderValue = ({ label, value, copied, copyToClipboard }) => {
 
 const PromptTestingPage = () => {
   const [formData, setFormData] = useState({
-    stage: "",
+    stage: "new",
     body: "",
     prompt: "",
     email: "",
-    thread_size: "",
+    thread_size: "1",
   });
 
   const [stages, setStages] = useState({});
   const [stagePrompts, setStagePrompts] = useState([]);
   const [stagePromptsLoading, setStagePromptsLoading] = useState(false);
-
-  const [copied, setCopied] = useState("");
+  const [promptCache, setPromptCache] = useState({});
 
   const responseRef = useRef(null);
 
@@ -293,13 +291,15 @@ const PromptTestingPage = () => {
     fetchStages();
   }, [baseUrl]);
 
-  // ======================================================
-  // FETCH PROMPTS
-  // ======================================================
-
   useEffect(() => {
     if (!formData.stage) {
       setStagePrompts([]);
+      return;
+    }
+
+    // ✅ Use cache first
+    if (promptCache[formData.stage]) {
+      setStagePrompts(promptCache[formData.stage]);
       return;
     }
 
@@ -324,6 +324,12 @@ const PromptTestingPage = () => {
           }));
 
         setStagePrompts(filtered);
+
+        // ✅ Store in cache
+        setPromptCache((prev) => ({
+          ...prev,
+          [formData.stage]: filtered,
+        }));
       } catch (err) {
         console.error("Failed to fetch stage prompts:", err);
 
@@ -339,11 +345,7 @@ const PromptTestingPage = () => {
       ...prev,
       prompt: "",
     }));
-  }, [formData.stage, baseUrl]);
-
-  // ======================================================
-  // API
-  // ======================================================
+  }, [formData.stage]);
 
   const {
     loading: responseLoading,
@@ -366,10 +368,6 @@ const PromptTestingPage = () => {
     },
     enabled: false,
   });
-
-  // ======================================================
-  // HELPERS
-  // ======================================================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -473,6 +471,16 @@ const PromptTestingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {responseLoading && (
+        <div className="absolute inset-0 bg-white/20  z-20 rounded-3xl flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium text-slate-700">
+              Testing Prompt...
+            </span>
+          </div>
+        </div>
+      )}
       <Header text="Prompt Testing" />
 
       <div className="mx-auto px-6 py-10 space-y-10">
@@ -510,10 +518,9 @@ const PromptTestingPage = () => {
                       }
                       className={`
                         px-4 py-2 rounded-full text-sm font-medium transition border
-                        ${
-                          formData.stage === key
-                            ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                            : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
+                        ${formData.stage === key
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow"
+                          : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
                         }
                       `}
                     >
@@ -578,9 +585,22 @@ const PromptTestingPage = () => {
                 ]}
               />
             </div>
-
-            {/* BODY */}
-
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Email Address <span className="text-slate-400">(optional)</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="example@email.com"
+                className="w-full rounded-xl border border-slate-300 px-4 py-3
+                           focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            {/* Email Body — disabled if email is entered */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Email Body
@@ -600,46 +620,21 @@ const PromptTestingPage = () => {
                 className={`
                   w-full rounded-xl border border-slate-300 px-4 py-3
                   focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none
-                  ${
-                    isEmailEntered
-                      ? "opacity-50 cursor-not-allowed bg-slate-50"
-                      : ""
+                  ${isEmailEntered
+                    ? "opacity-50 cursor-not-allowed bg-slate-50"
+                    : ""
                   }
                 `}
               />
             </div>
 
-            {/* EMAIL */}
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email Address
-                <span className="text-slate-400"> (optional)</span>
-              </label>
-
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="example@email.com"
-                className="
-                  w-full rounded-xl border border-slate-300 px-4 py-3
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500
-                "
-              />
-            </div>
-
-            {/* ACTIONS */}
-
-            <div className="flex justify-end gap-3 pt-4">
+            {/* Actions */}
+            <div className="flex justify-center gap-4 pt-6">
               <button
                 type="button"
                 onClick={handleReset}
-                className="
-                  px-6 py-2.5 rounded-xl border border-slate-300
-                  text-slate-700 font-semibold hover:bg-slate-100 transition
-                "
+                className="px-6 py-2.5 rounded-xl border border-slate-300
+               text-slate-700 font-semibold hover:bg-slate-100 transition"
               >
                 Reset
               </button>
@@ -647,12 +642,10 @@ const PromptTestingPage = () => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="
-                  px-8 py-2.5 rounded-xl
-                  bg-gradient-to-r from-blue-600 to-indigo-600
-                  text-white font-semibold shadow-lg
-                  hover:opacity-90 transition
-                "
+                disabled={responseLoading}
+                className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600
+               text-white font-semibold shadow-lg hover:opacity-90 transition
+               disabled:opacity-50"
               >
                 {responseLoading ? "Testing..." : "Test Prompt"}
               </button>
@@ -660,11 +653,8 @@ const PromptTestingPage = () => {
           </div>
         </div>
 
-        {/* ====================================================== */}
-        {/* RESPONSE */}
-        {/* ====================================================== */}
-
-        {parsedResponse && !responseError && (
+        {/* Response Box */}
+        {response && !responseLoading && !responseError && (
           <div
             ref={responseRef}
             className="
@@ -676,69 +666,93 @@ const PromptTestingPage = () => {
               Prompt Test Result
             </h3>
 
-            {/* DYNAMIC RESPONSE */}
+            <div>
+              <h4 className="text-sm font-semibold text-slate-600 mb-2">
+                Response
+              </h4>
 
-            <div className="space-y-6">
-              {Object.entries(normalizedResponse || {}).map(([key, value]) => (
-                <RenderValue
-                  key={key}
-                  label={key}
-                  value={value}
-                  copied={copied}
-                  copyToClipboard={copyToClipboard}
-                />
-              ))}
-            </div>
-
-            {/* PROMPT */}
-
-            {promptText && (
-              <div className="rounded-2xl border border-slate-200 overflow-hidden">
-                <div className="flex items-center justify-between bg-slate-50 px-5 py-4 border-b">
-                  <h4 className="font-semibold text-slate-800">Prompt</h4>
-
-                  <button
-                    onClick={() => copyToClipboard(promptText, "prompt")}
-                    className="
-                      flex items-center gap-2 text-sm font-medium
-                      text-slate-600 hover:text-indigo-600 transition
-                    "
-                  >
-                    {copied === "prompt" ? (
-                      <>
-                        <CheckCheck className="w-4 h-4" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </div>
-
+              {response && !responseError && (
                 <div
-                  className="
-                    bg-slate-100 p-5 text-sm
-                    whitespace-pre-wrap leading-relaxed
-                    text-slate-700 max-h-[500px] overflow-auto
-                  "
+                  ref={responseRef}
+                  className="bg-white border border-slate-200 rounded-3xl shadow-xl p-8 space-y-6"
                 >
-                  {promptText}
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Prompt Test Result
+                  </h3>
+
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-600 mb-2">
+                      Response
+                    </h4>
+
+                    {typeof response?.response === "object" &&
+                      response?.response !== null ? (
+                      <div className="bg-slate-100 rounded-xl p-4 text-sm space-y-4">
+                        {Object.entries(response.response).map(
+                          ([key, value]) => {
+                            const stringValue =
+                              typeof value === "string" ? value.trim() : "";
+
+                            // Detect HTML
+                            const isHTML =
+                              typeof value === "string" &&
+                              /<\/?[a-z][\s\S]*>/i.test(stringValue);
+
+                            return (
+                              <div
+                                key={key}
+                                className="border-b border-slate-200 pb-4 last:border-b-0"
+                              >
+                                <div className="font-semibold text-slate-700 mb-2">
+                                  {key}:
+                                </div>
+
+                                {isHTML ? (
+                                  <div className="bg-white border rounded-xl overflow-hidden">
+                                    {/* HTML Preview */}
+                                    <div
+                                      className="p-4 prose max-w-none"
+                                      dangerouslySetInnerHTML={{
+                                        __html: value,
+                                      }}
+                                    />
+
+                                    {/* Raw HTML */}
+                                    <pre className="bg-slate-900 text-slate-100 text-xs p-4 overflow-auto border-t">
+                                      {value}
+                                    </pre>
+                                  </div>
+                                ) : (
+                                  <div className="text-slate-600 whitespace-pre-wrap break-words">
+                                    {typeof value === "object"
+                                      ? JSON.stringify(value, null, 2)
+                                      : String(value)}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center px-5 py-2 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700">
+                        {String(response?.response).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-600 mb-2">
+                      Prompt
+                    </h4>
+
+                    <div className="bg-slate-100 rounded-xl p-4 text-sm whitespace-pre-wrap leading-relaxed">
+                      {response?.prompt}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ====================================================== */}
-        {/* ERROR */}
-        {/* ====================================================== */}
-
-        {responseError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-5">
-            Something went wrong while testing the prompt.
+              )}
+            </div>
           </div>
         )}
       </div>
