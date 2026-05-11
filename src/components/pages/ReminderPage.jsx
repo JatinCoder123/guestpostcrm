@@ -43,7 +43,7 @@ export function ReminderPage() {
   const { count, reminders, loading, pageIndex, summary, sending, sendReminderId, message, error } = useSelector(
     (state) => state.reminders
   );
-  const { handleDateClick } =
+  const { handleDateClick, enteredEmail } =
     useContext(PageContext);
   const dispatch = useDispatch();
 
@@ -174,7 +174,7 @@ export function ReminderPage() {
     if (message) {
       toast.success(message)
       dispatch(orderRemAction.clearAllMessage())
-      dispatch(getOrderRem());
+      dispatch(getOrderRem({ email: enteredEmail }));
 
     }
     if (error) {
@@ -191,7 +191,7 @@ export function ReminderPage() {
         slice={"reminders"}
         statusKey={"status"}
         statusList={statusList}
-        fetchNextPage={() => dispatch(getOrderRem({ page: pageIndex + 1 }))}
+        fetchNextPage={() => dispatch(getOrderRem({ email: enteredEmail, page: pageIndex + 1 }))}
       >
         <TableTitleBar Icon={BellIcon} title={"Reminders"} titleClass={"text-lime-700"} />
 

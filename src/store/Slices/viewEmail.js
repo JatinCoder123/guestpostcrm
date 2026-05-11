@@ -330,7 +330,7 @@ export const editContact = (contactData, message = "") => {
       };
 
       const data = await apiRequest({
-        method: "POST", body: payload, endpoint: getDomain(getState().user.crmEndpoint), params: { action_type: 'post_data' }, headers: {
+        method: "POST", body: payload, endpoint: getState().user.crmEndpoint.split('?')[0], params: { entryPoint: 'get_post_all', action_type: 'post_data' }, headers: {
           "X-Api-Key": CREATE_DEAL_API_KEY,
           "Content-Type": "application/json", // typo fixed
         },

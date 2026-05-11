@@ -78,7 +78,7 @@ function useRefresh() {
     useEffect(() => {
         dispatch(getAiCredits());
         dispatch(getAllWebsites());
-        dispatch(getOrderRem(null, 1));
+        dispatch(getOrderRem({ email: enteredEmail }));
         dispatch(getMarketplace())
         dispatch(getBacklinks({}));
         dispatch(getOrders({ email: enteredEmail, brand: showBrandTimeline }));
