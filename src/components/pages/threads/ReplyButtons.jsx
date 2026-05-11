@@ -522,7 +522,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
               </>
             ) : (
               <>
-                <PenLine className="w-6 h-6" /> Edit
+                <PenLine className="w-4 h-4" />
               </>
             )}
           </motion.button>
