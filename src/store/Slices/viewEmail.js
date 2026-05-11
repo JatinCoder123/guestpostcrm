@@ -103,7 +103,7 @@ const viewEmailSlice = createSlice({
       state.editMessage = null;
       state.error = action.payload;
     },
-    sendEmailRequest(state) {
+    sendEmailRequest(state, action) {
       state.sending = true;
       state.message = null;
       state.error = null;
@@ -118,7 +118,7 @@ const viewEmailSlice = createSlice({
       const { message, sendedEmail } = action.payload;
       state.sending = false;
       state.message = message;
-      state.sendedEmail = sendedEmail;
+      // state.sendedEmail = sendedEmail;
       state.error = null;
     },
     sendEmailFailed(state, action) {
@@ -330,7 +330,7 @@ export const editContact = (contactData, message = "") => {
       };
 
       const data = await apiRequest({
-        method: "POST", body: payload, endpoint: getDomain(getState().user.crmEndpoint), params: { action_type: 'post_data' }, headers: {
+        method: "POST", body: payload, endpoint: getState().user.crmEndpoint.split('?')[0], params: { entryPoint: 'get_post_all', action_type: 'post_data' }, headers: {
           "X-Api-Key": CREATE_DEAL_API_KEY,
           "Content-Type": "application/json", // typo fixed
         },
@@ -367,7 +367,7 @@ export const sendEmail = (formData) => {
       dispatch(
         viewEmailSlice.actions.sendEmailSucess({
           message: `Reply Successfully Sent To ${formData.get("email")}`,
-          sendedEmail: formData.get("email"),
+          // sendedEmail: formData.get("email"),
         }),
       );
       dispatch(viewEmailSlice.actions.clearAllErrors());

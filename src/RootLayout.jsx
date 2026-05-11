@@ -9,26 +9,19 @@ import DisplayIntro from "./components/DisplayIntro";
 import WelcomeHeader from "./components/WelcomeHeader";
 import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
-import Avatar from "./components/Avatar";
-import { extractEmail, getDomain } from "./assets/assets";
+import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import { unrepliedAction } from "./store/Slices/unrepliedEmails";
-import { useThreadContext } from "./hooks/useThreadContext";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
-  const { message, sendedEmail } = useSelector((state) => state.viewEmail);
+  const { message } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, currentScore } = useSelector((state) => state.user);
-  const { handleMove } = useThreadContext();
   const {
     displayIntro,
     setActivePage,
     collapsed,
-    setEnteredEmail,
-    currentIndex,
-    handleDateClick,
-    superfastReply,
   } = useContext(PageContext);
   const { currentAvatar, setCrm } = useContext(SocketContext);
   useRefresh();
@@ -36,8 +29,6 @@ const RootLayout = () => {
   const location = useLocation().pathname.split("/")[2];
   const pathname = useLocation().pathname;
   const mainRef = useRef(null);
-  const { emails } = useSelector((state) => state.unreplied);
-  const navigate = useNavigate();
   useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTo({
@@ -57,51 +48,11 @@ const RootLayout = () => {
     setShowAvatar(true);
   }, [currentAvatar]);
   useEffect(() => {
-    if (!message) return;
-    const isLast = emails.length === currentIndex + 1;
-    const nextEmailObj = emails[currentIndex + 1];
-
-    // ✅ prevent duplicate execution ASAP
-    dispatch(viewEmailAction.clearAllMessage());
-
-    toast.success(message);
-
-    dispatch(unrepliedAction.removeUnreplied(sendedEmail));
-
-    if (isLast) {
-      localStorage.removeItem("email");
-      setEnteredEmail("");
-
-      navigate("/unreplied-emails");
-      return;
+    if (message) {
+      dispatch(viewEmailAction.clearAllMessage());
+      toast.success(message);
     }
-
-    if (!nextEmailObj) {
-      localStorage.removeItem("email");
-      setEnteredEmail("");
-
-      navigate("/unreplied-emails");
-      return;
-    }
-    console.log("SUPER FAST REPLY", superfastReply);
-    if (superfastReply) {
-      handleDateClick({
-        email: extractEmail(nextEmailObj?.from || ""),
-        nextPrev: true,
-      });
-      handleMove({
-        email: extractEmail(nextEmailObj?.from || ""),
-        threadId: nextEmailObj?.thread_id,
-        loadAiReply: true,
-      });
-      return;
-    }
-    handleDateClick({
-      email: extractEmail(nextEmailObj?.from || ""),
-      navigate: "/",
-      nextPrev: true,
-    });
-  }, [message, superfastReply]);
+  }, [message]);
 
   // Set active page based on URL
   useEffect(() => {
@@ -120,12 +71,11 @@ const RootLayout = () => {
         </div>
         <main
           ref={mainRef}
-          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${
-            collapsed ? "ml-4" : "ml-0"
-          }`}
+          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
+            }`}
         >
           <div className="p-3">
-            {/* {isLowCredit && <LowCreditWarning score={currentScore} />} */}
+            {isLowCredit && <LowCreditWarning score={currentScore} />}
             <div className="p-3">
               <WelcomeHeader />
               <Outlet />

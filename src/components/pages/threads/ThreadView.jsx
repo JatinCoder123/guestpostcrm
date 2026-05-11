@@ -16,11 +16,11 @@ import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
 import NextPrev from "../../NextPrev.jsx";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { SendingOverlay } from "./SendingOverlay.jsx";
-import MailHeaderLeft from "./MailHeaderLeft.jsx";
 import ReplyButtons from "./ReplyButtons.jsx";
 import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import CopyButton from "../../CopyButton.jsx";
+import RightThreadHeader from "./RightThreadHeader.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
@@ -53,11 +53,6 @@ export default function ThreadView() {
     dispatch(getAiReply(threadId));
     setEditorContent("")
   }, [threadId]);
-  useEffect(() => {
-    if (sendMessage) {
-      setEditorContent("");
-    }
-  }, [sendMessage]);
   useEffect(() => {
     if (message && aiResponse) {
       setEditorContent(aiResponse)
@@ -123,13 +118,13 @@ export default function ThreadView() {
         className="
                 fixed inset-0 z-[999]
                 bg-white
-                w-screen h-screen
+                w-full h-screen
                 flex flex-col
                 overflow-hidden
   "
       >
         {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+        <div className="flex justify-between items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
 
           {/* 🔹 LEFT SIDE */}
           <div className="flex items-center gap-3">
@@ -155,7 +150,7 @@ export default function ThreadView() {
                 }
               >
 
-                <h2 className="text-md font-semibold tracking-tight truncate max-w-[300px]
+                <h2 className="text-md font-semibold tracking-tight truncate max-w-[400px]
       transition-all duration-300 
       hover:text-blue-200 hover:underline"
                 >
@@ -163,14 +158,11 @@ export default function ThreadView() {
                 </h2>
               </div>
 
-              {/* COPY BUTTON */}
-              <CopyButton
-                text={`https://mail.google.com/mail/u/0/#inbox/${threadId}`}
-              />
+
             </div>
           </div>
-          {superfastReply && <MailHeaderLeft />}
-          {superfastReply && <NextPrev />}
+          <RightThreadHeader />
+
 
         </div>
         {loading ? (

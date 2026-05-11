@@ -89,13 +89,13 @@ export const sendReminder = (reminderId) => {
     }
   };
 };
-export const getOrderRem = (email, page) => {
+export const getOrderRem = ({ email = null, page = 1 }) => {
   return async (dispatch, getState) => {
     dispatch(orderRemSlice.actions.getOrderRemRequest());
 
     try {
       const timeline = getState().ladger.timeline
-      const data = await fetchGpc({ params: { type: "all_reminders", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email, page } });
+      const data = await fetchGpc({ params: { type: "all_reminders", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: email, page } });
       showConsole && console.log(`Reminders`, data);
       dispatch(
         orderRemSlice.actions.getOrderRemSucess({

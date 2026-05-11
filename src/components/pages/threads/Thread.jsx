@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { getThreadEmail } from "../../../store/Slices/threadEmail";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { toast } from "react-toastify";
@@ -8,27 +8,31 @@ import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { generatePDF } from "../../../services/utils";
+import { extractEmail } from "../../../assets/assets";
+import { unrepliedAction } from "../../../store/Slices/unrepliedEmails";
 
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { state } = useLocation();
   const [pdfLoading, setPdfLoading] = useState(false);
-  const { superfastReply } = useContext(PageContext);
+  const { handleMove } = useThreadContext();
+
+  const { superfastReply, setEnteredEmail,
+    currentIndex,
+    handleDateClick, } = useContext(PageContext);
   const [contentLoading, setContentLoading] = useState(false);
   const [htmlfile, setHtmlfile] = useState(state?.htmlFile)
   const [files, setFiles] = useState([]);
-  const [editorContent, setEditorContent] = useState(
-    state?.initialContent || "",
-  );
+  const [editorContent, setEditorContent] = useState(state?.initialContent || "");
+  const { emails: inboxEmails } = useSelector((state) => state.unreplied);
   const [checkingThreadId, setCheckingTheadId] = useState(false);
-
-  const [cc, setCc] = useState([]);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { crmEndpoint, user } = useSelector((s) => s.user);
-  const { message: sendMessage, error: sendError } = useSelector(
+  const { error: sendError, sendedEmail } = useSelector(
     (s) => s.viewEmail,
   );
+
   const {
     context: { currentEmail, currentThread },
   } = useThreadContext();
@@ -47,26 +51,64 @@ const Thread = () => {
       }
       console.log("THREAD", currentThread);
 
-      console.log("CC", cc);
       const contentToSend = editorContent;
       const formData = new FormData();
       formData.append("threadId", data.thread_id);
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
-      formData.append("force_send", 1);
-      formData.append("cc", cc.join(","));
+      // formData.append("force_send", 1);
       files.forEach((file) => {
         formData.append("attachments[]", file.file);
       });
 
       dispatch(sendEmail(formData));
+      moveToNext(currentEmail)
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong while checking thread!");
     } finally {
       setCheckingTheadId(false);
     }
+  };
+  const moveToNext = (sendemail) => {
+    const isLast = inboxEmails.length === currentIndex + 1;
+    const nextEmailObj = inboxEmails[currentIndex + 1];
+    if (isLast) {
+      localStorage.removeItem("email");
+      setEnteredEmail("");
+      navigate("/unreplied-emails");
+      return;
+    }
+
+    if (!nextEmailObj) {
+      localStorage.removeItem("email");
+      setEnteredEmail("");
+
+      navigate("/unreplied-emails");
+      return;
+    }
+    console.log("SUPER FAST REPLY", superfastReply);
+    dispatch(unrepliedAction.removeUnreplied(sendemail));
+    if (superfastReply) {
+      handleDateClick({
+        email: extractEmail(nextEmailObj?.from || ""),
+        nextPrev: true,
+      });
+      handleMove({
+        email: extractEmail(nextEmailObj?.from || ""),
+        threadId: nextEmailObj?.thread_id,
+        loadAiReply: true,
+      });
+      return;
+    }
+    handleDateClick({
+      email: extractEmail(nextEmailObj?.from || ""),
+      navigate: "/",
+      nextPrev: true,
+    });
+
+
   };
   useEffect(() => {
     if (
@@ -99,16 +141,11 @@ const Thread = () => {
     }
   }, []);
   useEffect(() => {
-    if (sendMessage && superfastReply) {
-      setEditorContent("");
-      setFiles([]);
-    }
-
     if (sendError) {
       toast.error(sendError);
       dispatch(viewEmailAction.clearAllErrors());
     }
-  }, [sendMessage, sendError]);
+  }, [sendError]);
   useEffect(() => {
     const processFiles = async () => {
       if (!htmlfile) return;
@@ -139,8 +176,6 @@ const Thread = () => {
     setFiles,
     editorContent,
     setEditorContent,
-    cc,
-    setCc,
     htmlfile,
     setHtmlfile,
     contentLoading,
