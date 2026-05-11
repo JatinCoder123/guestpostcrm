@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Timer } from "lucide-react";
 import SummaryCard from "../../SummaryCard";
 import PageHeader from "../../PageHeader";
 import useModule from "../../../hooks/useModule";
@@ -280,7 +280,7 @@ export default function ThreadDeals({ threadId, email, id }) {
           </div>
         )}
         {/* HEADER */}
-        <div className={`grid ${showBrandTimeline ? "grid-cols-11" : "grid-cols-10"} px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b`}>
+        <div className={`grid ${showBrandTimeline ? "grid-cols-13" : "grid-cols-12"} px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b`}>
           {!showBrandTimeline && <div onClick={handleSelectAll} className="col-span-1 cursor-pointer ">
             <input
               type="checkbox"
@@ -288,6 +288,7 @@ export default function ThreadDeals({ threadId, email, id }) {
 
             />
           </div>}
+          <div className="col-span-2">Created At</div>
           <div className="col-span-3">Website</div>
           {showBrandTimeline && <div className="col-span-2">Email</div>}
           <div className="col-span-2 text-center">Deal Amount</div>
@@ -309,7 +310,7 @@ export default function ThreadDeals({ threadId, email, id }) {
             return (
               <motion.div
                 key={deal.id}
-                className={`grid ${showBrandTimeline ? "grid-cols-11" : "grid-cols-10"} items-center px-4 py-3 bg-gray-50 rounded-xl border`}
+                className={`grid ${showBrandTimeline ? "grid-cols-13" : "grid-cols-12"} items-center px-4 py-3 bg-gray-50 rounded-xl border`}
               >
                 {!showBrandTimeline && <div onClick={() => toggleSelect(deal.id)}
                   className="col-span-1 font-semibold text-gray-500 cursor-pointer">
@@ -318,7 +319,10 @@ export default function ThreadDeals({ threadId, email, id }) {
                     checked={selectedDeals.includes(deal.id)}
                   />
                 </div>}
-
+                <div className="col-span-2 flex gap-1 items-center">
+                  <Timer size={16} />
+                  <span>{deal.date_entered || "-"}</span>
+                </div>
                 {/* Website */}
                 <div className="col-span-3">
                   {isEditing ? (

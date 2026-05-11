@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Timer, Trash2 } from "lucide-react";
 import SummaryCard from "../../SummaryCard";
 import PageHeader from "../../PageHeader";
 import useModule from "../../../hooks/useModule";
@@ -270,7 +270,7 @@ export default function ThreadOffers({ threadId, email, id }) {
           </div>
         )}
         {/* HEADER */}
-        <div className={`grid ${showBrandTimeline ? "grid-cols-11" : "grid-cols-10"} px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b"`}>
+        <div className={`grid ${showBrandTimeline ? "grid-cols-13" : "grid-cols-12"} px-4 py-2 text-xs font-semibold text-gray-500 uppercase border-b"`}>
           {!showBrandTimeline && <div onClick={handleSelectAll} className="col-span-1 cursor-pointer ">
             <input
               type="checkbox"
@@ -280,6 +280,7 @@ export default function ThreadOffers({ threadId, email, id }) {
           </div>}
 
 
+          <div className="col-span-2">Created At </div>
           <div className="col-span-3">Website</div>
           {showBrandTimeline && <div className="col-span-2">Email</div>}
           <div className="col-span-2 text-center">Client Offer</div>
@@ -303,7 +304,7 @@ export default function ThreadOffers({ threadId, email, id }) {
             return (
               <motion.div
                 key={offer.id}
-                className={`grid ${showBrandTimeline ? "grid-cols-11" : "grid-cols-10"} items-center px-4 py-3 bg-gray-50 rounded-xl border`}
+                className={`grid ${showBrandTimeline ? "grid-cols-13" : "grid-cols-12"} items-center px-4 py-3 bg-gray-50 rounded-xl border`}
               >
                 {/* No */}
                 {!showBrandTimeline && <div onClick={() => toggleSelect(offer.id)}
@@ -313,7 +314,10 @@ export default function ThreadOffers({ threadId, email, id }) {
                     checked={selectedOffers.includes(offer.id)}
                   />
                 </div>}
-
+                <div className="col-span-2 flex gap-1 items-center">
+                  <Timer size={16} />
+                  <span>{offer.date_entered || "-"}</span>
+                </div>
 
                 {/* Website */}
                 <div className="col-span-3">
