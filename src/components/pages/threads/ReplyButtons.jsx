@@ -476,7 +476,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
         </div>
 
         {/* ═══ SECTION B — utility footer ═══ */}
-        <div className="flex items-center justify-between px-1 py-1 border-t border-gray-100">
+        <div className="flex  items-center justify-between gap-3 px-1 py-1 border-t border-gray-100">
           {/* Left: utility icons */}
           <div className="flex items-center gap-2">
             {/* Clear editor */}
@@ -509,11 +509,10 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             whileTap={{ scale: 0.94 }}
             onClick={() => setEditMode((v) => !v)}
             className={`flex items-center gap-1 text-[10.5px] font-semibold px-2 py-1 rounded-lg
-                        border transition-all duration-150 ${
-                          editMode
-                            ? "bg-amber-400 border-amber-400 text-white shadow-md"
-                            : "bg-white border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-500"
-                        }`}
+                        border transition-all duration-150 ${editMode
+                ? "bg-amber-400 border-amber-400 text-white shadow-md"
+                : "bg-white border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-500"
+              }`}
             title="Toggle edit mode"
           >
             {editMode ? (

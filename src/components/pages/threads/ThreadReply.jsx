@@ -152,7 +152,7 @@ const ThreadReply = () => {
               >
                 <Send className="w-5 h-5" />
                 <span>
-                  {checkingThreadId || sending ? "Sending..." : "Send Email"}
+                  {checkingThreadId || sending ? "Sending..." : "Send "}
                 </span>
               </motion.button>
             </div>

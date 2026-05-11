@@ -9,6 +9,7 @@ import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { generatePDF } from "../../../services/utils";
 import { extractEmail } from "../../../assets/assets";
+import { unrepliedAction } from "../../../store/Slices/unrepliedEmails";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -28,7 +29,7 @@ const Thread = () => {
   const [checkingThreadId, setCheckingTheadId] = useState(false);
   const { threadEmail } = useSelector((s) => s.threadEmail);
   const { crmEndpoint, user } = useSelector((s) => s.user);
-  const { error: sendError } = useSelector(
+  const { error: sendError, sendedEmail } = useSelector(
     (s) => s.viewEmail,
   );
 
@@ -56,13 +57,13 @@ const Thread = () => {
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
-      formData.append("force_send", 1);
+      // formData.append("force_send", 1);
       files.forEach((file) => {
         formData.append("attachments[]", file.file);
       });
 
       dispatch(sendEmail(formData));
-      moveToNext()
+      moveToNext(currentEmail)
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong while checking thread!");
@@ -70,7 +71,7 @@ const Thread = () => {
       setCheckingTheadId(false);
     }
   };
-  const moveToNext = () => {
+  const moveToNext = (sendemail) => {
     const isLast = inboxEmails.length === currentIndex + 1;
     const nextEmailObj = inboxEmails[currentIndex + 1];
     if (isLast) {
@@ -88,6 +89,7 @@ const Thread = () => {
       return;
     }
     console.log("SUPER FAST REPLY", superfastReply);
+    dispatch(unrepliedAction.removeUnreplied(sendemail));
     if (superfastReply) {
       handleDateClick({
         email: extractEmail(nextEmailObj?.from || ""),
@@ -105,6 +107,8 @@ const Thread = () => {
       navigate: "/",
       nextPrev: true,
     });
+
+
   };
   useEffect(() => {
     if (
