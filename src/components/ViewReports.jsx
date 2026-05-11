@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronUp,
+  Clock,
   Download,
   TrendingUp,
   Mail,
@@ -100,12 +101,25 @@ const DEFAULT_GROUP_ICON = Activity;
 const PRESETS = [
   { label: "Today", id: "equals" },
   { sep: true },
+  { label: "Yesterday", id: "yesterday" },
+  { sep: true },
   { label: "Last 7 Days", id: "last7" },
   { label: "Last 30 Days", id: "last30" },
   { sep: true },
   { label: "Last Month", id: "lastMonth" },
   { sep: true },
   { label: "Is Between", id: "between" },
+];
+
+// ── Duration options — secondary filter, only shown when Today is active ─────
+// null means "no duration filter — show full day"
+const DURATION_OPTIONS = [
+  { label: "Last 1 min", value: 1 },
+  { label: "Last 2 mins", value: 2 },
+  { label: "Last 5 mins", value: 5 },
+  { label: "Last 1 Hour", value: 60 },
+  { label: "Last 2 Hours", value: 120 },
+  { label: "Last 5 Hours", value: 300 },
 ];
 
 const MONTHS = [
@@ -146,6 +160,22 @@ const pad = (n) => String(n).padStart(2, "0");
 const fmt = (d) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const todayStr = () => fmt(new Date());
+
+/**
+ * Compute from_time as (now - durationMinutes), clamped to 00:00.
+ * Returns "HH:MM" string.
+ */
+function computeFromTime(durationMinutes) {
+  const now = new Date();
+  const past = new Date(now.getTime() - durationMinutes * 60 * 1000);
+  // If past rolled into yesterday (edge case near midnight), clamp to 00:00
+  const sameDay =
+    past.getFullYear() === now.getFullYear() &&
+    past.getMonth() === now.getMonth() &&
+    past.getDate() === now.getDate();
+  if (!sameDay) return "00:00";
+  return `${pad(past.getHours())}:${pad(past.getMinutes())}`;
+}
 
 function groupByDescription(data = []) {
   return data.reduce((map, row) => {
@@ -223,7 +253,12 @@ function resolvePreset(id) {
   switch (id) {
     case "equals":
       from = to = todayStr();
-      ft = "00:01";
+      ft = "00:01"; // will be overridden by computeFromTime when duration is set
+      break;
+    case "yesterday":
+      from = to = fmt(new Date(y, m, day - 1));
+      ft = "00:00";
+      tt = "23:59";
       break;
     case "last7":
       from = fmt(new Date(y, m, day - 7));
@@ -646,6 +681,9 @@ function DateRangeFilter({
   const [openPicker, setOpenPicker] = useState(null);
   const dropRef = useRef(null);
 
+  // duration: null = show all of today; number = last N mins (optional extra filter)
+  const [duration, setDuration] = useState(null);
+
   useEffect(() => {
     const handler = (e) => {
       if (dropRef.current && !dropRef.current.contains(e.target)) {
@@ -659,12 +697,23 @@ function DateRangeFilter({
 
   function applyPreset(id) {
     const { from, ft, to, tt } = resolvePreset(id);
+    // Switching away from Today clears any duration filter
+    if (id !== "equals") setDuration(null);
     setFromDate(from);
-    setFromTime(ft);
+    setFromTime(ft); // always reset to full-day from_time; duration applies on Apply
     setToDate(to);
     setToTime(tt);
     setActivePreset(id);
     setOpenPicker(null);
+  }
+
+  // Toggle: clicking active option deselects it (reverts to full day)
+  function handleDurationChange(val) {
+    const next = duration === val ? null : val;
+    setDuration(next);
+    if (activePreset === "equals") {
+      setFromTime(next === null ? "00:01" : computeFromTime(next));
+    }
   }
 
   const activePresetLabel = PRESETS.find((p) => p.id === activePreset)?.label;
@@ -708,8 +757,15 @@ function DateRangeFilter({
         >
           <div className="flex flex-col min-w-0">
             {activePresetLabel && (
-              <span className="text-[9px] font-black  text-blue-600 leading-none mb-0.5">
+              <span className="text-[9px] font-black text-blue-600 leading-none mb-0.5 flex items-center gap-1">
                 {activePresetLabel}
+                {/* Badge only when a minute-level duration is active */}
+                {activePreset === "equals" && duration !== null && (
+                  <span className="inline-flex items-center gap-0.5 bg-blue-100 text-blue-700 rounded px-1.5 py-0.5 text-[8px] font-black">
+                    <Clock size={8} />
+                    {DURATION_OPTIONS.find((d) => d.value === duration)?.label}
+                  </span>
+                )}
               </span>
             )}
             <span
@@ -802,6 +858,77 @@ function DateRangeFilter({
                   )}
                 </div>
               </div>
+
+              {/* Duration filter — optional, only visible when Today is selected */}
+              {activePreset === "equals" && (
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5 flex items-center gap-1.5">
+                    <Clock size={9} />
+                    Filter by last N minutes
+                    <span className="normal-case font-medium text-gray-300 ml-1">
+                      (optional)
+                    </span>
+                  </p>
+                  {/* "All Day" default chip */}
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (duration !== null) handleDurationChange(duration); // deselect = set null
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                        duration === null
+                          ? "bg-blue-700 border-blue-700 text-white shadow-sm"
+                          : "bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-700"
+                      }`}
+                    >
+                      All Day
+                    </button>
+                    {DURATION_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDurationChange(opt.value);
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                          duration === opt.value
+                            ? "bg-blue-700 border-blue-700 text-white shadow-sm"
+                            : "bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                        }`}
+                      >
+                        <Clock
+                          size={11}
+                          className={
+                            duration === opt.value
+                              ? "text-white"
+                              : "text-gray-400"
+                          }
+                        />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Preview line */}
+                  <p className="mt-2 text-[11px] text-gray-400 font-medium">
+                    {duration === null ? (
+                      "Showing all activity for today (00:01 → 23:59)"
+                    ) : (
+                      <>
+                        Showing last{" "}
+                        <span className="font-black text-blue-700">
+                          {duration} min
+                        </span>{" "}
+                        — from{" "}
+                        <span className="font-black tabular-nums text-blue-700">
+                          {computeFromTime(duration)}
+                        </span>{" "}
+                        to now
+                      </>
+                    )}
+                  </p>
+                </div>
+              )}
 
               {/* Between pickers — completely inline, grow the dropdown naturally */}
               {activePreset === "between" && (
@@ -1076,7 +1203,7 @@ export default function ViewReports() {
         endpoint: url,
         headers: {
           "Content-Type": "application/json",
-          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+          "X-Api-Key": FETCH_GPC_X_API_KEY,
         },
       });
       if (data?.success) setBaseSummary(data);
@@ -1092,7 +1219,7 @@ export default function ViewReports() {
         endpoint: buildUrl(fd, ft, td, tt, extra),
         headers: {
           "Content-Type": "application/json",
-          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+          "X-Api-Key": FETCH_GPC_X_API_KEY,
         },
       });
       setApiResponse(data?.success ? data : null);
@@ -1110,7 +1237,7 @@ export default function ViewReports() {
         endpoint: buildPlainUrl(extra),
         headers: {
           "Content-Type": "application/json",
-          "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+          "X-Api-Key": FETCH_GPC_X_API_KEY,
         },
       });
       setApiResponse(data?.success ? data : null);
