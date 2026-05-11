@@ -263,7 +263,12 @@ const PromptTestingPage = () => {
   const [promptCache, setPromptCache] = useState({});
 
   const responseRef = useRef(null);
-
+  const requestBody = useMemo(() => ({
+    body: formData.body,
+    prompt: formData.prompt,
+    thread_size: formData.thread_size,
+    email: formData.email,
+  }), [formData]);
   const { crmEndpoint } = useSelector((state) => state.user);
 
   const baseUrl = crmEndpoint.split("?")[0];
@@ -356,12 +361,7 @@ const PromptTestingPage = () => {
     url: `${crmEndpoint}&type=prompt_testing`,
     method: "POST",
     name: "PROMPT TEST RESULT",
-    body: {
-      body: formData.body,
-      prompt: formData.prompt,
-      thread_size: formData.thread_size,
-      email: formData.email,
-    },
+    body: requestBody,
     headers: {
       "Content-Type": "application/json",
       "X-Api-Key": FETCH_GPC_X_API_KEY,
@@ -717,10 +717,6 @@ const PromptTestingPage = () => {
                                       }}
                                     />
 
-                                    {/* Raw HTML */}
-                                    <pre className="bg-slate-900 text-slate-100 text-xs p-4 overflow-auto border-t">
-                                      {value}
-                                    </pre>
                                   </div>
                                 ) : (
                                   <div className="text-slate-600 whitespace-pre-wrap break-words">

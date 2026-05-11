@@ -7,6 +7,7 @@ import {
   SparkleIcon,
   ArrowRight,
   Link,
+  ExternalLink,
 } from "lucide-react";
 import {
   FiLink,
@@ -40,146 +41,400 @@ function ValidTick() {
   );
 }
 
-function useLIInsert() {
-  const [status, setStatus] = useState(null);
-  const [result, setResult] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
+const LI_API_KEY = "YOUR_SECRET_EXTRACT_HERE";
 
-  const insertLink = async ({
-    anchor_text,
-    backlink_url,
-    target_url,
-    domain,
-  }) => {
-    setStatus("loading");
-    setResult(null);
+/**
+ * Renders a paragraph preview with every occurrence of `anchor` highlighted
+ * via a yellow <mark>. Pure text, so it's safe even when the WP post
+ * contains arbitrary HTML.
+ */
+function HighlightedAnchor({ text, anchor }) {
+  if (!anchor || !text) return <>{text}</>;
+  const parts = text.split(anchor);
+  return (
+    <>
+      {parts.map((part, i) => (
+        <span key={i}>
+          {part}
+          {i < parts.length - 1 && (
+            <mark className="bg-yellow-200 text-slate-900 font-semibold rounded px-0.5">
+              {anchor}
+            </mark>
+          )}
+        </span>
+      ))}
+    </>
+  );
+}
+
+function LIInsertPopup({ link, orderId, onClose, onInserted }) {
+  const dispatch = useDispatch();
+  const orders = useSelector((state) => state.orders.orders);
+  const { user, businessEmail } = useSelector((state) => state.user);
+  const { currentUser } = useSelector((state) => state.crmUser);
+  const gpcUserEmail = user?.email || currentUser?.description || businessEmail || "";
+
+  // Stages: "fetching" | "selecting" | "inserting" | "success" | "error"
+  const [stage, setStage] = useState("fetching");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [occurrences, setOccurrences] = useState([]);
+  const [meta, setMeta] = useState({ total: 0, unlinked: 0, title: "" });
+  const [selected, setSelected] = useState(() => new Set());
+  const [result, setResult] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const domain = link.name;
+  const anchorText = link.anchor_text_c || "";
+  const targetUrl = link.target_url_c || "";
+  const backlinkUrl = link.backlink_url || "";
+
+  // ── 1. Fetch anchor occurrences when the popup opens ────────────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      setStage("fetching");
+      setErrorMsg("");
+      setOccurrences([]);
+      setSelected(new Set());
+
+      try {
+        if (!gpcUserEmail) {
+          setStage("error");
+          setErrorMsg("Could not verify the current GPC user for WordPress authorization.");
+          return;
+        }
+
+        const data = await apiRequest({
+          endpoint: `${domain}/wp-json/my-api/v1/anchor-occurrences`,
+          method: "GET",
+          params: { url: targetUrl, anchor_text: anchorText },
+          headers: {
+            "X-API-Key": LI_API_KEY,
+            "X-GPC-User-Email": gpcUserEmail,
+          },
+        });
+
+        if (cancelled) return;
+
+        if (!data?.success) {
+          setStage("error");
+          setErrorMsg(data?.message || "Failed to fetch anchor occurrences.");
+          return;
+        }
+
+        const list = Array.isArray(data.occurrences) ? data.occurrences : [];
+        setOccurrences(list);
+        setMeta({
+          total: data.total || 0,
+          unlinked: data.unlinked || 0,
+          title: data.title || "",
+        });
+
+        setSelected(new Set());
+
+        setStage("selecting");
+      } catch (err) {
+        if (cancelled) return;
+        setStage("error");
+        setErrorMsg(
+          err?.message ||
+            (err?.code === "target_url_not_found"
+              ? "Please enter an appropriate target URL."
+              : "Could not load anchor occurrences. Please try again."),
+        );
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [domain, targetUrl, anchorText, gpcUserEmail, reloadKey]);
+
+  // Helpers ───────────────────────────────────────────────────────────────
+  const unlinkedItems = occurrences.filter(
+    (o) => !o.already_linked && o.index !== null && o.index !== undefined,
+  );
+  const allSelected =
+    unlinkedItems.length > 0 &&
+    unlinkedItems.every((o) => selected.has(o.index));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(unlinkedItems.map((o) => o.index)));
+    }
+  };
+
+  const toggleOne = (idx) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  // ── 2. Insert backlinks into the chosen occurrences ─────────────────────
+  const handleInsert = async () => {
+    if (selected.size === 0) return;
+    setStage("inserting");
     setErrorMsg("");
+
     try {
+      if (!gpcUserEmail) {
+        setStage("error");
+        setErrorMsg("Could not verify the current GPC user for WordPress authorization.");
+        return;
+      }
+
       const data = await apiRequest({
         endpoint: `${domain}/wp-json/my-api/v1/create-post`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-API-Key": "YOUR_SECRET_EXTRACT_HERE",
+          "X-API-Key": LI_API_KEY,
+          "X-GPC-User-Email": gpcUserEmail,
         },
         body: JSON.stringify({
           type: "li",
-          anchor_text,
-          backlink_url,
-          target_url,
+          gpc_user_email: gpcUserEmail,
+          anchor_text: anchorText,
+          backlink_url: backlinkUrl,
+          target_url: targetUrl,
+          occurrences: Array.from(selected),
         }),
       });
-      if (data.success) {
-        setStatus("success");
-        setResult(data);
-      } else {
-        setStatus("error");
-        setErrorMsg(
-          data.code === "target_url_not_found"
-            ? "Please enter an appropriate target URL."
-            : data.message || "Something went wrong.",
+
+      if (!data?.success) {
+        setStage("error");
+        setErrorMsg(data?.message || "Insert failed.");
+        return;
+      }
+
+      setResult(data);
+      setStage("success");
+
+      if (data.post_url) {
+        const updatedLink = {
+          ...link,
+          assigned_user_link: data.post_url,
+          post_id: data.post_url,
+        };
+        onInserted?.(updatedLink);
+        dispatch(
+          orderAction.setUpdateOrder(
+            orders.map((order) => {
+              if (order.order_id !== orderId && order.id !== orderId) {
+                return order;
+              }
+
+              return {
+                ...order,
+                seo_backlinks: order.seo_backlinks.map((seoLink) =>
+                  seoLink.id === link.id
+                    ? {
+                        ...seoLink,
+                        ...updatedLink,
+                      }
+                    : seoLink,
+                ),
+              };
+            }),
+          ),
+        );
+        dispatch(
+          updateSeoLink(orderId, updatedLink),
         );
       }
-    } catch {
-      setStatus("error");
-      setErrorMsg("Network error. Please try again.");
+    } catch (err) {
+      setStage("error");
+      setErrorMsg(
+        err?.message ||
+          (err?.code === "target_url_not_found"
+            ? "Please enter an appropriate target URL."
+            : "Network error. Please try again."),
+      );
     }
   };
 
-  const reset = () => {
-    setStatus(null);
-    setResult(null);
-    setErrorMsg("");
-  };
-  return { status, result, errorMsg, insertLink, reset };
-}
-
-function LIInsertPopup({ link, onClose }) {
-  const { status, result, errorMsg, insertLink, reset } = useLIInsert();
-
-  const handleInsert = () => {
-    insertLink({
-      anchor_text: link.anchor_text_c,
-      backlink_url: link.backlink_url,
-      target_url: link.target_url_c,
-      domain: link.name,
-    });
-  };
+  const retry = () => setReloadKey((k) => k + 1);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-500 to-purple-600">
-          <div className="flex items-center gap-2">
-            <Link size={16} className="text-white" />
-            <h2 className="text-white font-semibold text-sm">
-              Insert Backlink
+          <div className="flex items-center gap-2 min-w-0">
+            <Link size={16} className="text-white shrink-0" />
+            <h2 className="text-white font-semibold text-sm truncate">
+              Insert Backlink {meta.title ? `— ${meta.title}` : ""}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-white/80 hover:text-white transition text-lg leading-none"
+            className="text-white/80 hover:text-white transition text-lg leading-none shrink-0"
           >
             ✕
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-5 space-y-4">
-          <div className="space-y-2 text-xs">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-slate-400 font-medium uppercase tracking-wider">
-                Anchor Text
-              </span>
-              <span className="font-semibold text-slate-700">
-                {link.anchor_text_c || "—"}
-              </span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-slate-400 font-medium uppercase tracking-wider">
-                Backlink URL
-              </span>
-              <span className="font-semibold text-indigo-600 break-all">
-                {link.backlink_url || "—"}
-              </span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-slate-400 font-medium uppercase tracking-wider">
-                Target URL
-              </span>
-              <span className="font-semibold text-slate-700 break-all">
-                {link.target_url_c || "—"}
-              </span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-slate-400 font-medium uppercase tracking-wider">
-                Domain
-              </span>
-              <span className="font-semibold text-slate-700 break-all">
-                {link.name || "—"}
-              </span>
-            </div>
+        {/* Summary fields */}
+        <div className="px-5 pt-4 pb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs border-b border-slate-100">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="text-slate-400 font-medium uppercase tracking-wider">
+              Anchor Text
+            </span>
+            <span className="font-semibold text-slate-700 truncate">
+              {anchorText || "—"}
+            </span>
           </div>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="text-slate-400 font-medium uppercase tracking-wider">
+              Backlink URL
+            </span>
+            <span className="font-semibold text-indigo-600 truncate">
+              {backlinkUrl || "—"}
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5 min-w-0 col-span-2">
+            <span className="text-slate-400 font-medium uppercase tracking-wider">
+              Target URL
+            </span>
+            <span className="font-semibold text-slate-700 truncate">
+              {targetUrl || "—"}
+            </span>
+          </div>
+        </div>
 
-          {status === "loading" && (
-            <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium py-2">
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 min-h-0">
+          {stage === "fetching" && (
+            <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium py-6 justify-center">
               <span className="w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-              Inserting backlink...
+              Scanning blog post for anchor text…
             </div>
           )}
 
-          {status === "error" && (
-            <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-red-600 text-sm font-medium">
-              <span>⚠️</span>
-              <span>{errorMsg}</span>
+          {stage === "error" && (
+            <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-red-600 text-sm font-medium">
+              <span className="shrink-0">⚠️</span>
+              <span className="break-words">{errorMsg}</span>
             </div>
           )}
 
-          {status === "success" && result && (
+          {(stage === "selecting" || stage === "inserting") &&
+            occurrences.length === 0 && (
+              <div className="text-center text-sm text-slate-500 py-6">
+                No occurrences of the anchor text were found in the post.
+              </div>
+            )}
+
+          {(stage === "selecting" || stage === "inserting") &&
+            occurrences.length > 0 && (
+              <>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-xs text-slate-500">
+                    Found{" "}
+                    <span className="font-semibold text-slate-700">
+                      {meta.total}
+                    </span>{" "}
+                    occurrence{meta.total !== 1 ? "s" : ""} ·{" "}
+                    <span className="font-semibold text-emerald-700">
+                      {meta.unlinked}
+                    </span>{" "}
+                    available ·{" "}
+                    <span className="font-semibold text-amber-700">
+                      {meta.total - meta.unlinked}
+                    </span>{" "}
+                    already linked
+                  </div>
+                  {unlinkedItems.length > 0 && (
+                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 accent-indigo-600"
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                        disabled={stage === "inserting"}
+                      />
+                      Select all
+                    </label>
+                  )}
+                </div>
+
+                <ul className="space-y-2">
+                  {occurrences.map((o) => {
+                    const isLinked = o.already_linked;
+                    const idx = o.index;
+                    const checkable = !isLinked && idx !== null;
+                    const isChecked = checkable && selected.has(idx);
+
+                    return (
+                      <li
+                        key={`${o.absolute_index}-${o.paragraph_text?.slice(0, 16)}`}
+                        className={`rounded-xl border px-3 py-2.5 flex items-start gap-2.5 ${
+                          isLinked
+                            ? "bg-amber-50 border-amber-200 opacity-80"
+                            : isChecked
+                              ? "bg-indigo-50 border-indigo-300"
+                              : "bg-slate-50 border-slate-200 hover:border-indigo-300"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 w-4 h-4 accent-indigo-600 shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                          checked={isChecked}
+                          onChange={() => toggleOne(idx)}
+                          disabled={!checkable || stage === "inserting"}
+                        />
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold">
+                              #{o.absolute_index + 1}
+                            </span>
+                            {isLinked ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
+                                Already linked
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5">
+                                Available
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-700 leading-snug break-words">
+                            <HighlightedAnchor
+                              text={o.paragraph_text || ""}
+                              anchor={anchorText}
+                            />
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
+
+          {stage === "inserting" && (
+            <div className="flex items-center gap-2 text-indigo-600 text-sm font-medium py-2 justify-center">
+              <span className="w-4 h-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+              Inserting backlink in {selected.size} location
+              {selected.size !== 1 ? "s" : ""}…
+            </div>
+          )}
+
+          {stage === "success" && result && (
             <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 space-y-2">
               <div className="flex items-center gap-2 text-emerald-700 font-semibold text-sm">
-                <span>✅</span> Backlink inserted successfully!
+                <span>✅</span>
+                Backlink inserted in {result.inserted_count ||
+                  selected.size}{" "}
+                location
+                {(result.inserted_count || selected.size) !== 1 ? "s" : ""}!
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs text-slate-400 uppercase tracking-wider font-medium">
@@ -200,28 +455,40 @@ function LIInsertPopup({ link, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 flex gap-2 justify-end">
-          {status !== "success" && (
+        <div className="px-5 py-4 border-t border-slate-100 flex items-center justify-end gap-2 flex-wrap">
+          {stage === "error" && (
             <button
-              onClick={handleInsert}
-              disabled={status === "loading"}
-              className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow"
+              onClick={retry}
+              className="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition shadow"
             >
-              {status === "loading"
-                ? "Inserting..."
-                : status === "error"
-                  ? "Retry"
-                  : "Insert Link"}
+              Retry
             </button>
           )}
+
+          {stage === "selecting" && unlinkedItems.length > 0 && (
+            <button
+              onClick={handleInsert}
+              disabled={selected.size === 0}
+              className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow"
+            >
+              Insert Selected ({selected.size})
+            </button>
+          )}
+
+          {stage === "inserting" && (
+            <button
+              disabled
+              className="px-4 py-2 rounded-xl bg-indigo-400 text-white text-sm font-semibold opacity-70 cursor-not-allowed shadow"
+            >
+              Inserting…
+            </button>
+          )}
+
           <button
-            onClick={() => {
-              reset();
-              onClose();
-            }}
+            onClick={onClose}
             className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-slate-200 transition"
           >
-            {status === "success" ? "Done" : "Cancel"}
+            {stage === "success" ? "Done" : "Cancel"}
           </button>
         </div>
       </div>
@@ -341,9 +608,9 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
         />
       )}
 
-      <div className="flex flex-col gap-10">
-        <div className="flex flex-col gap-3 group relative">
-          <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)]">
+      <div className="flex flex-col gap-10 w-full min-w-0">
+        <div className="flex flex-col gap-3 group relative w-full min-w-0">
+          <div className="relative flex flex-col gap-3 bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-2xl p-3 border border-slate-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_10px_30px_rgba(0,0,0,0.15)] w-full min-w-0">
             {/* GP LINKS: one card per unique doc URL */}
             {Object.entries(gpLinkGroups).map(([docUrl, links], groupIndex) => (
               <div key={docUrl} className="relative mb-4">
@@ -388,6 +655,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
                     setLinkId={setLinkId}
                     linkId={linkId}
                     handleDelete={handleDelete}
+                    orderId={orderId}
                   />
                 </div>
               ),
@@ -424,7 +692,7 @@ function LinkTableHeader() {
     "Action",
   ];
   return (
-    <div className="flex items-center gap-3 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200">
+    <div className="flex items-center gap-3 text-sm font-semibold text-gray-700 px-4 py-3 bg-slate-50 border-t border-slate-200 w-full min-w-0">
       {labels.map((label, i) => (
         <div key={label} className={COL_STYLES[i]}>
           {label}
@@ -445,6 +713,362 @@ const formatLinkType = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
 
+/* ─────────────────────────────────────────────
+   Post-status lookup against the WordPress
+   plugin (custom-api-poster). Each card calls
+   GET /wp-json/my-api/v1/post-status?url=...
+   on mount so we know whether the post is
+   still Live, Trashed, Draft, or Not Found.
+───────────────────────────────────────────── */
+const POST_STATUS_API_KEY = "YOUR_SECRET_EXTRACT_HERE";
+
+const isNumericPostId = (value) => /^\d+$/.test(String(value ?? "").trim());
+
+const buildPostLookupParams = (postRef) => {
+  const value = String(postRef ?? "").trim();
+  return isNumericPostId(value) ? { post_id: value } : { url: value };
+};
+
+const getWebsiteDomain = (website) =>
+  String(website ?? "")
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+
+function usePostStatus(postRef, website) {
+  const [state, setState] = useState({
+    loading: false,
+    status: null,
+    exists: null,
+    permalink: null,
+    title: null,
+    error: false,
+  });
+
+  useEffect(() => {
+    if (!postRef || !website) {
+      setState({
+        loading: false,
+        status: null,
+        exists: null,
+        permalink: null,
+        title: null,
+        error: false,
+      });
+      return;
+    }
+
+    let cancelled = false;
+    setState({
+      loading: true,
+      status: null,
+      exists: null,
+      permalink: null,
+      title: null,
+      error: false,
+    });
+
+    const domain = getWebsiteDomain(website);
+    apiRequest({
+      endpoint: `https://${domain}/wp-json/my-api/v1/post-status`,
+      method: "GET",
+      params: buildPostLookupParams(postRef),
+      headers: { "X-Api-Key": POST_STATUS_API_KEY },
+    })
+      .then((data) => {
+        if (cancelled) return;
+        setState({
+          loading: false,
+          status: data?.status ?? null,
+          exists: !!data?.exists,
+          permalink: data?.permalink ?? null,
+          title: data?.title ?? null,
+          error: false,
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState({
+          loading: false,
+          status: null,
+          exists: null,
+          permalink: null,
+          title: null,
+          error: true,
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [postRef, website]);
+
+  return state;
+}
+
+function useLinkInsertionStatus({ postRef, website, backlinkUrl, anchorText }) {
+  const [state, setState] = useState({
+    loading: false,
+    status: null,
+    exists: null,
+    permalink: null,
+    title: null,
+    linkLive: null,
+    linkFound: null,
+    error: false,
+  });
+
+  useEffect(() => {
+    if (!postRef || !website || !backlinkUrl) {
+      setState({
+        loading: false,
+        status: null,
+        exists: null,
+        permalink: null,
+        title: null,
+        linkLive: null,
+        linkFound: null,
+        error: false,
+      });
+      return;
+    }
+
+    let cancelled = false;
+    setState({
+      loading: true,
+      status: null,
+      exists: null,
+      permalink: null,
+      title: null,
+      linkLive: null,
+      linkFound: null,
+      error: false,
+    });
+
+    const domain = getWebsiteDomain(website);
+    const params = {
+      ...buildPostLookupParams(postRef),
+      backlink_url: backlinkUrl,
+    };
+    if (anchorText) params.anchor_text = anchorText;
+
+    apiRequest({
+      endpoint: `https://${domain}/wp-json/my-api/v1/link-status`,
+      method: "GET",
+      params,
+      headers: { "X-Api-Key": POST_STATUS_API_KEY },
+    })
+      .then((data) => {
+        if (cancelled) return;
+        setState({
+          loading: false,
+          status: data?.status ?? null,
+          exists: !!data?.exists,
+          permalink: data?.permalink ?? null,
+          title: data?.title ?? null,
+          linkLive: !!data?.link_live,
+          linkFound: !!data?.link_found,
+          error: false,
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState({
+          loading: false,
+          status: null,
+          exists: null,
+          permalink: null,
+          title: null,
+          linkLive: null,
+          linkFound: null,
+          error: true,
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [postRef, website, backlinkUrl, anchorText]);
+
+  return state;
+}
+
+const STATUS_THEME = {
+  publish: {
+    label: "Live",
+    bg: "bg-emerald-50",
+    hover: "hover:bg-emerald-100",
+    text: "text-emerald-700",
+    sub: "text-emerald-600/70",
+    dot: "bg-emerald-500",
+    spinnerBorder: "border-emerald-500",
+  },
+  draft: {
+    label: "Draft",
+    bg: "bg-amber-50",
+    hover: "hover:bg-amber-100",
+    text: "text-amber-700",
+    sub: "text-amber-600/70",
+    dot: "bg-amber-500",
+    spinnerBorder: "border-amber-500",
+  },
+  pending: {
+    label: "Pending",
+    bg: "bg-amber-50",
+    hover: "hover:bg-amber-100",
+    text: "text-amber-700",
+    sub: "text-amber-600/70",
+    dot: "bg-amber-500",
+    spinnerBorder: "border-amber-500",
+  },
+  future: {
+    label: "Scheduled",
+    bg: "bg-blue-50",
+    hover: "hover:bg-blue-100",
+    text: "text-blue-700",
+    sub: "text-blue-600/70",
+    dot: "bg-blue-500",
+    spinnerBorder: "border-blue-500",
+  },
+  private: {
+    label: "Private",
+    bg: "bg-slate-100",
+    hover: "hover:bg-slate-200",
+    text: "text-slate-700",
+    sub: "text-slate-500",
+    dot: "bg-slate-500",
+    spinnerBorder: "border-slate-500",
+  },
+  trash: {
+    label: "Trashed",
+    bg: "bg-rose-50",
+    hover: "hover:bg-rose-100",
+    text: "text-rose-700",
+    sub: "text-rose-600/70",
+    dot: "bg-rose-500",
+    spinnerBorder: "border-rose-500",
+  },
+  notfound: {
+    label: "Not Found",
+    bg: "bg-rose-50",
+    hover: "hover:bg-rose-100",
+    text: "text-rose-700",
+    sub: "text-rose-600/70",
+    dot: "bg-rose-500",
+    spinnerBorder: "border-rose-500",
+  },
+  unknown: {
+    label: "Unknown",
+    bg: "bg-slate-100",
+    hover: "hover:bg-slate-200",
+    text: "text-slate-700",
+    sub: "text-slate-500",
+    dot: "bg-slate-400",
+    spinnerBorder: "border-slate-400",
+  },
+  loading: {
+    label: "Checking…",
+    bg: "bg-slate-100",
+    hover: "hover:bg-slate-200",
+    text: "text-slate-600",
+    sub: "text-slate-400",
+    dot: "bg-slate-400",
+    spinnerBorder: "border-slate-400",
+  },
+};
+
+function getStatusTheme(s) {
+  if (s.loading) return STATUS_THEME.loading;
+  if (s.error) return STATUS_THEME.unknown;
+  if (s.exists === false) return STATUS_THEME.notfound;
+  return STATUS_THEME[s.status] || STATUS_THEME.unknown;
+}
+
+function PostStatusBadge({ state, url, size = "md" }) {
+  const theme = getStatusTheme(state);
+  const href = state.permalink || (isNumericPostId(url) ? "#" : url);
+  const label = theme.label;
+  const sub = state.title || (isNumericPostId(url) ? `Post #${url}` : url);
+
+  const sizing =
+    size === "sm" ? "px-2 py-1 text-xs gap-1" : "px-2 py-1 text-sm gap-2";
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={state.title ? `${label} — ${state.title}` : label}
+      className={`group flex items-center rounded-lg ${theme.bg} ${theme.hover} transition w-full min-w-0 ${sizing}`}
+    >
+      {state.loading ? (
+        <span
+          className={`w-3 h-3 rounded-full border-2 ${theme.spinnerBorder} border-t-transparent animate-spin shrink-0`}
+        />
+      ) : (
+        <span className={`w-1.5 h-1.5 rounded-full ${theme.dot} shrink-0`} />
+      )}
+      <span className={`font-semibold ${theme.text} shrink-0`}>{label}</span>
+      <span className={`${theme.sub} truncate min-w-0`}>{sub}</span>
+      <span className="opacity-0 group-hover:opacity-100 transition text-slate-400 ml-auto shrink-0">
+        ↗
+      </span>
+    </a>
+  );
+}
+
+function getLinkInsertionTheme(state) {
+  if (state.loading) return STATUS_THEME.loading;
+  if (state.error) return STATUS_THEME.unknown;
+  if (state.exists === false) return STATUS_THEME.notfound;
+  if (state.linkLive) return STATUS_THEME.publish;
+  if (state.linkFound === false) return STATUS_THEME.trash;
+  return STATUS_THEME[state.status] || STATUS_THEME.unknown;
+}
+
+function LinkInsertionStatusBadge({ state, postRef, size = "md" }) {
+  const theme = getLinkInsertionTheme(state);
+  const href = state.permalink || (isNumericPostId(postRef) ? "#" : postRef);
+  const label = state.linkLive
+    ? "Live Link"
+    : state.linkFound === false && state.exists !== false
+      ? "Link Removed"
+      : theme.label;
+  const sub =
+    state.title || (isNumericPostId(postRef) ? `Post #${postRef}` : postRef);
+
+  const sizing =
+    size === "sm" ? "px-2 py-1 text-xs gap-1" : "px-2 py-1 text-sm gap-2";
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={state.title ? `${label} - ${state.title}` : label}
+      className={`group flex items-center rounded-lg ${theme.bg} ${theme.hover} transition w-full min-w-0 ${sizing}`}
+    >
+      {state.loading ? (
+        <span
+          className={`w-3 h-3 rounded-full border-2 ${theme.spinnerBorder} border-t-transparent animate-spin shrink-0`}
+        />
+      ) : (
+        <span className={`w-1.5 h-1.5 rounded-full ${theme.dot} shrink-0`} />
+      )}
+      <span className={`font-semibold ${theme.text} shrink-0`}>{label}</span>
+      <span className={`${theme.sub} truncate min-w-0`}>{sub}</span>
+      <ExternalLink
+        size={12}
+        className="opacity-0 group-hover:opacity-100 transition text-slate-400 ml-auto shrink-0"
+      />
+    </a>
+  );
+}
+
+function PostStatusChip({ url, website, size = "md" }) {
+  const state = usePostStatus(url, website);
+  return <PostStatusBadge state={state} url={url} size={size} />;
+}
+
 function LinkTableRow({
   link,
   rowIndex,
@@ -454,14 +1078,13 @@ function LinkTableRow({
   linkId,
   deleting,
   handleDelete,
+  orderId,
 }) {
   const spam = getSpamLabel(link.spam_score_c);
-  const [liPopupOpen, setLiPopupOpen] = useState(false);
   const navigateTo = useNavigate();
-
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 border-t border-slate-100 text-sm ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
+      className={`flex items-center gap-3 px-4 py-3 border-t border-slate-100 text-sm w-full min-w-0 ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
     >
       {/* Col 0 — # */}
       <div className={COL_STYLES[0]}>
@@ -605,23 +1228,6 @@ function LinkTableRow({
             <Trash size={14} />
           )}
         </button>
-        {link.type_c === "LI" && (
-          <>
-            <button
-              onClick={() => setLiPopupOpen(true)}
-              className="px-2 py-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition shadow"
-              title="Insert Backlink"
-            >
-              <Link size={14} />
-            </button>
-            {liPopupOpen && (
-              <LIInsertPopup
-                link={link}
-                onClose={() => setLiPopupOpen(false)}
-              />
-            )}
-          </>
-        )}
       </div>
     </div>
   );
@@ -655,6 +1261,7 @@ function GPLinksTable({
         linkCount={gpLinks.length}
         linkId={rep.id}
         link={rep}
+        gpLinks={gpLinks}
         ContentVerdictPromptLedger={rep.guestpost_prompt_ledger[0]}
       />
       <LinkTableHeader />
@@ -687,14 +1294,17 @@ function LILinksTable({
   setLinkId,
   linkId,
   handleDelete,
+  orderId,
 }) {
   const rep = liLinks[0];
   return (
-    <div className="overflow-hidden mb-4 border-2 border-emerald-300 rounded-xl">
+    <div className="overflow-hidden mb-4 border-2 border-emerald-300 rounded-xl w-full min-w-0">
       <LIAnalysisCard
         targetUrl={rep.target_url_c}
         website={rep.name}
         linkCount={liLinks.length}
+        link={rep}
+        orderId={orderId}
       />
       <LinkTableHeader />
       {liLinks.map((liLink, rowIndex) => (
@@ -708,6 +1318,7 @@ function LILinksTable({
           linkId={linkId}
           deleting={deleting}
           handleDelete={handleDelete}
+          orderId={orderId}
         />
       ))}
     </div>
@@ -729,6 +1340,7 @@ function DocumentAnalysisCard({
   orderId,
   linkId,
   link,
+  gpLinks = [],
 }) {
   const navigateTo = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -739,6 +1351,13 @@ function DocumentAnalysisCard({
 
   const domain = crmEndpoint.split("?")[0];
   const isLoading = loading || updateLinkLoading;
+  const postedUrl = link?.post_id || link?.assigned_user_link || "";
+  const postStatus = usePostStatus(postedUrl, website);
+  // When the WordPress lookup definitively says the post is gone
+  // (exists === false), revert to the ZeroGPT Start-Now flow so the
+  // user can republish. We deliberately stay "posted" during loading,
+  // network errors, and other statuses (draft, trash, etc.).
+  const treatAsPosted = !!postedUrl && postStatus.exists !== false;
   const handleStartNow = async () => {
     try {
       setLoading(true);
@@ -782,7 +1401,9 @@ function DocumentAnalysisCard({
           <div className="text-sm font-semibold text-gray-500">
             Content Verdict
           </div>
-          <div className="text-sm font-semibold text-gray-500">ZeroGPT</div>
+          <div className="text-sm font-semibold text-gray-500">
+            {treatAsPosted ? "Blog Status" : "ZeroGPT"}
+          </div>
           <div className="text-sm font-semibold text-gray-500">Link Count</div>
 
           <a
@@ -823,29 +1444,33 @@ function DocumentAnalysisCard({
             <ValidationBadge valid={ContentValid} />
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleStartNow}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
-              style={{
-                background: isLoading ? "#9ca3af" : "#eab308",
-                cursor: isLoading ? "not-allowed" : "pointer",
-                opacity: isLoading ? 0.7 : 1,
-              }}
-            >
-              {isLoading ? (
-                <>
-                  <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Start Now
-                  <ArrowRight size={16} />
-                </>
-              )}
-            </button>
+          <div className="flex items-center gap-2 min-w-0">
+            {treatAsPosted ? (
+              <PostStatusBadge state={postStatus} url={postedUrl} />
+            ) : (
+              <button
+                onClick={handleStartNow}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-200"
+                style={{
+                  background: isLoading ? "#9ca3af" : "#eab308",
+                  cursor: isLoading ? "not-allowed" : "pointer",
+                  opacity: isLoading ? 0.7 : 1,
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Start Now
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           <div className="flex items-center">
@@ -860,6 +1485,7 @@ function DocumentAnalysisCard({
             website={website}
             orderId={orderId}
             link={link}
+            backlinks={gpLinks}
             linkId={linkId}
             onClose={() => setOpenPopup(false)}
           />
@@ -872,18 +1498,29 @@ function DocumentAnalysisCard({
 /* ─────────────────────────────────────────────
    LIAnalysisCard  –  LI header
 ───────────────────────────────────────────── */
-function LIAnalysisCard({ targetUrl, website, linkCount }) {
+function LIAnalysisCard({ targetUrl, website, link, orderId }) {
+  const [liPopupOpen, setLiPopupOpen] = useState(false);
+  const liPostRef = link?.post_id || link?.assigned_user_link || "";
+  const liStatus = useLinkInsertionStatus({
+    postRef: liPostRef,
+    website,
+    backlinkUrl: link?.backlink_url || "",
+    anchorText: link?.anchor_text_c || "",
+  });
+  const liTreatAsPosted =
+    !!liPostRef && liStatus.exists !== false && liStatus.linkFound !== false;
+
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden w-full min-w-0">
       {/* HEADER */}
-      <div className="flex items-center justify-center gap-2 bg-emerald-400 px-4 py-2">
-        <div className="text-white text-md font-bold flex items-center gap-2">
-          Link Insertion for
+      <div className="flex items-center justify-center gap-2 bg-emerald-400 px-4 py-2 min-w-0">
+        <div className="text-white text-md font-bold flex items-center gap-2 min-w-0 max-w-full">
+          <span className="shrink-0">Link Insertion for</span>
           <a
             href={targetUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-bold text-md ml-2 text-black p-1 rounded-2xl hover:underline"
+            className="font-bold text-md ml-2 text-black p-1 rounded-2xl hover:underline truncate min-w-0"
           >
             {website ?? targetUrl ?? "-"}
           </a>
@@ -891,29 +1528,34 @@ function LIAnalysisCard({ targetUrl, website, linkCount }) {
       </div>
 
       {/* CONTENT */}
-      <div className="flex items-center gap-4 p-4">
-        <div className="flex-1 bg-white rounded-lg px-2 py-3 shadow grid grid-cols-2 gap-4">
-          <div className="text-sm font-semibold text-gray-500">Target URL</div>
-          <div className="text-sm font-semibold text-gray-500">
+      <div className="flex items-center gap-4 p-4 min-w-0">
+        <div className="flex-1 min-w-0 bg-white rounded-lg px-3 py-3 shadow grid grid-cols-3 gap-6 items-center">
+          <div className="text-sm font-semibold text-gray-500 min-w-0">
+            Target URL
+          </div>
+          <div className="text-sm font-semibold text-gray-500 min-w-0">
             Monthly Traffic
+          </div>
+          <div className="text-sm font-semibold text-gray-500 min-w-0">
+            Action
           </div>
 
           <a
             href={targetUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 rounded-lg bg-emerald-50 px-1 py-1 text-sm hover:bg-emerald-100 transition w-full"
+            className="group flex items-center gap-2 rounded-lg bg-emerald-50 px-1 py-1 text-sm hover:bg-emerald-100 transition w-full min-w-0"
           >
-            <span className="font-semibold text-emerald-700 truncate w-full">
+            <span className="font-semibold text-emerald-700 truncate min-w-0 flex-1">
               {targetUrl || "No Target URL"}
             </span>
-            <span className="opacity-0 group-hover:opacity-100 transition text-emerald-500 ml-1">
+            <span className="opacity-0 group-hover:opacity-100 transition text-emerald-500 ml-1 shrink-0">
               ↗
             </span>
           </a>
 
           {/* Traffic mini badges */}
-          <div className="flex flex-wrap gap-1.5 items-center">
+          <div className="flex flex-wrap gap-1.5 items-center min-w-0">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold">
               <FaGoogle size={10} /> 100
             </span>
@@ -924,8 +1566,35 @@ function LIAnalysisCard({ targetUrl, website, linkCount }) {
               <FaAccusoft size={10} /> 100
             </span>
           </div>
+          <div className="flex items-center justify-start min-w-0">
+            {liTreatAsPosted ? (
+              <div className="min-w-0 max-w-[220px]">
+                <LinkInsertionStatusBadge
+                  state={liStatus}
+                  postRef={liPostRef}
+                  size="sm"
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => setLiPopupOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition shadow whitespace-nowrap"
+                title="Insert Backlink"
+              >
+                <Link size={16} />
+                <span>Insert Backlink</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
+      {liPopupOpen && (
+        <LIInsertPopup
+          link={link}
+          orderId={orderId}
+          onClose={() => setLiPopupOpen(false)}
+        />
+      )}
     </div>
   );
 }
