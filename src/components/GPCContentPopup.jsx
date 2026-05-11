@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { apiRequest } from "../services/api";
 import { updateSeoLink } from "../store/Slices/orders";
 import { useDispatch, useSelector } from "react-redux";
@@ -67,7 +67,8 @@ export default function GPCContentPopup({
   const aiScore = data?.data?.ai_score ?? 34;
   const humanizedScore = data?.data?.human_score.toFixed(2) ?? 66;
   const initialBacklinks = useMemo(() => {
-    const source = Array.isArray(backlinks) && backlinks.length ? backlinks : [link];
+    const source =
+      Array.isArray(backlinks) && backlinks.length ? backlinks : [link];
     const seen = new Set();
 
     return source
@@ -94,17 +95,38 @@ export default function GPCContentPopup({
   const [humanizingAll, setHumanizingAll] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [anchorPicker, setAnchorPicker] = useState(null);
+  const finalOutputRef = useRef(null);
+  const anchorPickerRef = useRef(null);
   const dispatch = useDispatch();
   const { user, businessEmail } = useSelector((state) => state.user);
   const { currentUser } = useSelector((state) => state.crmUser);
-  const gpcUserEmail = user?.email || currentUser?.description || businessEmail || "";
+  const gpcUserEmail =
+    user?.email || currentUser?.description || businessEmail || "";
   // Dynamic publishing domain based on passed website
   const publishDomain = website
     ? website.replace(/^https?:\/\//, "").replace(/\/$/, "")
     : "www.mailsextract.com";
 
   useEffect(() => {
-    setEditableBacklinks(initialBacklinks);
+    // Merge incoming backlinks with any user edits already in local state so
+    // that a Redux refresh (e.g. after publishing, which rewrites post_id on
+    // the order) does not overwrite the anchor the user just picked from the
+    // Final Output selector. We keep structural changes from the server
+    // (added / removed backlinks) but preserve user-edited anchor + url.
+    setEditableBacklinks((prev) => {
+      if (!prev || prev.length === 0) return initialBacklinks;
+      const prevById = new Map(prev.map((item) => [item.id, item]));
+      return initialBacklinks.map((incoming) => {
+        const existing = prevById.get(incoming.id);
+        if (!existing) return incoming;
+        return {
+          ...incoming,
+          anchor: existing.anchor,
+          url: existing.url,
+        };
+      });
+    });
   }, [initialBacklinks]);
 
   const finalOutputTextBlocks = useMemo(
@@ -159,9 +181,7 @@ export default function GPCContentPopup({
 
   const updateBacklink = (id, field, value) => {
     setEditableBacklinks((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item,
-      ),
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
     );
     setIsDirty(true);
   };
@@ -227,7 +247,8 @@ export default function GPCContentPopup({
       const normalizedText = normalizeText(text);
       if (!normalizedText) return false;
       return normalizedHighlights.some(
-        (line) => normalizedText.includes(line) || line.includes(normalizedText),
+        (line) =>
+          normalizedText.includes(line) || line.includes(normalizedText),
       );
     };
 
@@ -274,6 +295,111 @@ export default function GPCContentPopup({
       setHumanizingAll(false);
     }, 400);
   };
+
+  const closeAnchorPicker = useCallback(() => {
+    setAnchorPicker(null);
+    const sel = window.getSelection?.();
+    if (sel && !sel.isCollapsed) sel.removeAllRanges();
+  }, []);
+
+  const assignAnchorToBacklink = useCallback(
+    (backlinkId, newAnchor) => {
+      const cleaned = String(newAnchor ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!cleaned) return;
+      setEditableBacklinks((prev) =>
+        prev.map((item) =>
+          item.id === backlinkId ? { ...item, anchor: cleaned } : item,
+        ),
+      );
+      setIsDirty(true);
+      closeAnchorPicker();
+    },
+    [closeAnchorPicker],
+  );
+
+  // Detect text selection inside the Final Output column and show a
+  // floating picker that lets the user assign that text as the anchor
+  // for any backlink in the order.
+  useEffect(() => {
+    const handleMouseUp = (event) => {
+      // Ignore clicks/releases on the picker itself.
+      if (
+        anchorPickerRef.current &&
+        anchorPickerRef.current.contains(event.target)
+      ) {
+        return;
+      }
+
+      const container = finalOutputRef.current;
+      if (!container) return;
+
+      const selection = window.getSelection?.();
+      if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+        setAnchorPicker(null);
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      if (
+        !container.contains(range.startContainer) ||
+        !container.contains(range.endContainer)
+      ) {
+        setAnchorPicker(null);
+        return;
+      }
+
+      const text = selection.toString().replace(/\s+/g, " ").trim();
+      if (!text) {
+        setAnchorPicker(null);
+        return;
+      }
+
+      const rect = range.getBoundingClientRect();
+      setAnchorPicker({
+        text,
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left + rect.width / 2,
+      });
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => document.removeEventListener("mouseup", handleMouseUp);
+  }, []);
+
+  // Dismiss the picker on Escape, scroll inside the column, or window resize.
+  useEffect(() => {
+    if (!anchorPicker) return;
+
+    const handleKey = (event) => {
+      if (event.key === "Escape") closeAnchorPicker();
+    };
+    const handleDismiss = () => closeAnchorPicker();
+    const handleMouseDown = (event) => {
+      if (
+        anchorPickerRef.current &&
+        anchorPickerRef.current.contains(event.target)
+      ) {
+        return;
+      }
+      closeAnchorPicker();
+    };
+
+    document.addEventListener("keydown", handleKey);
+    window.addEventListener("resize", handleDismiss);
+    document.addEventListener("mousedown", handleMouseDown);
+    const column = finalOutputRef.current;
+    column?.addEventListener("scroll", handleDismiss);
+
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      window.removeEventListener("resize", handleDismiss);
+      document.removeEventListener("mousedown", handleMouseDown);
+      column?.removeEventListener("scroll", handleDismiss);
+    };
+  }, [anchorPicker, closeAnchorPicker]);
 
   const applyBacklinksToText = (text, usedBacklinkIds) => {
     let output = String(text ?? "");
@@ -323,7 +449,9 @@ export default function GPCContentPopup({
     setPublishedUrl(null);
     try {
       if (!gpcUserEmail) {
-        toast.error("Could not verify the current GPC user for WordPress authorization.");
+        toast.error(
+          "Could not verify the current GPC user for WordPress authorization.",
+        );
         return;
       }
 
@@ -367,13 +495,65 @@ export default function GPCContentPopup({
         setPublishedUrl(result.url);
         setIsDirty(false);
 
-        dispatch(
-          updateSeoLink(orderId, {
-            ...link,
-            assigned_user_link: result.url,
-            post_id: result.url,
-          }),
+        // Persist the post URL + any user-edited anchor/url back to the CRM.
+        // `editableBacklinks` holds the current picker edits; we compare each
+        // to the original record to avoid pointless writes, while also
+        // making sure the primary link is updated even if nothing changed
+        // so that post_id / assigned_user_link land on the order.
+        const originalBacklinksArr =
+          Array.isArray(backlinks) && backlinks.length
+            ? backlinks
+            : [link].filter(Boolean);
+        const originalById = new Map(
+          originalBacklinksArr.filter(Boolean).map((b) => [b.id, b]),
         );
+        const primaryLinkId = link?.id;
+        const dispatchedIds = new Set();
+
+        editableBacklinks.forEach((edited) => {
+          const original = originalById.get(edited.id);
+          if (!original) return;
+
+          const anchorChanged =
+            String(original.anchor_text_c || "").trim() !==
+            String(edited.anchor || "").trim();
+          const urlChanged =
+            String(original.backlink_url || "").trim() !==
+            String(edited.url || "").trim();
+          const isPrimary =
+            primaryLinkId != null && edited.id === primaryLinkId;
+
+          if (!anchorChanged && !urlChanged && !isPrimary) return;
+
+          const payload = {
+            ...original,
+            anchor_text_c: edited.anchor,
+            backlink_url: edited.url,
+          };
+          if (isPrimary) {
+            payload.assigned_user_link = result.url;
+            payload.post_id = result.url;
+          }
+
+          dispatchedIds.add(edited.id);
+          dispatch(updateSeoLink(orderId, payload));
+        });
+
+        // Fallback: ensure the primary link still gets the post URL even if
+        // it was deduplicated out of editableBacklinks.
+        if (
+          link &&
+          primaryLinkId != null &&
+          !dispatchedIds.has(primaryLinkId)
+        ) {
+          dispatch(
+            updateSeoLink(orderId, {
+              ...link,
+              assigned_user_link: result.url,
+              post_id: result.url,
+            }),
+          );
+        }
       } else toast.error("Publishing failed. Please try again.");
     } catch (err) {
       toast.error(err?.message || "Publishing failed. Please try again.");
@@ -479,7 +659,13 @@ export default function GPCContentPopup({
             href={backlink.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded px-1 font-semibold text-emerald-200 underline decoration-emerald-400/70 underline-offset-2"
+            title={backlink.url}
+            onClick={(e) => {
+              // Allow opening with Ctrl/Cmd-click, but otherwise keep
+              // the click focused on text-selection inside the column.
+              if (!(e.ctrlKey || e.metaKey)) e.preventDefault();
+            }}
+            className="rounded px-1 font-semibold text-emerald-200 underline decoration-emerald-400/70 underline-offset-2 cursor-text"
             style={{ background: "rgba(16,185,129,0.18)" }}
           >
             {matchedText}
@@ -677,13 +863,13 @@ export default function GPCContentPopup({
                     ? "rgba(100,100,100,0.2)"
                     : hasBacklinkPublishBlockers
                       ? "rgba(245,158,11,0.15)"
-                    : "rgba(16,185,129,0.15)",
+                      : "rgba(16,185,129,0.15)",
                 color:
                   publishing || (publishedUrl && !isDirty)
                     ? "#6b7280"
                     : hasBacklinkPublishBlockers
                       ? "#fbbf24"
-                    : "#34d399",
+                      : "#34d399",
                 border: hasBacklinkPublishBlockers
                   ? "1px solid rgba(245,158,11,0.35)"
                   : "1px solid rgba(16,185,129,0.35)",
@@ -809,71 +995,80 @@ export default function GPCContentPopup({
                   const key = `heading-${si}`;
                   const highlighted = highlightedKeys.has(key);
                   return (
-                <div
-                  className="flex items-start gap-2 mb-2 px-3 py-2 rounded-lg"
-                  style={{
-                    background: highlighted
-                      ? "rgba(250,204,21,0.13)"
-                      : "rgba(96,165,250,0.07)",
-                    border: highlighted
-                      ? "1px solid rgba(250,204,21,0.35)"
-                      : "1px solid rgba(96,165,250,0.12)",
-                  }}
-                >
-                  <div className="flex-1 text-blue-200">
-                    {renderContent(sec.tag_name, sec.Original_heading, highlighted)}
-                  </div>
-                </div>
+                    <div
+                      className="flex items-start gap-2 mb-2 px-3 py-2 rounded-lg"
+                      style={{
+                        background: highlighted
+                          ? "rgba(250,204,21,0.13)"
+                          : "rgba(96,165,250,0.07)",
+                        border: highlighted
+                          ? "1px solid rgba(250,204,21,0.35)"
+                          : "1px solid rgba(96,165,250,0.12)",
+                      }}
+                    >
+                      <div className="flex-1 text-blue-200">
+                        {renderContent(
+                          sec.tag_name,
+                          sec.Original_heading,
+                          highlighted,
+                        )}
+                      </div>
+                    </div>
                   );
                 })()}
-                {sec.items.map((item, ii) => (
+                {sec.items.map((item, ii) =>
                   (() => {
                     const key = `${si}-${ii}`;
                     const highlighted = highlightedKeys.has(key);
                     return (
-                  <div
-                    key={ii}
-                    className="flex items-start gap-2 mb-2 px-3 py-2.5 rounded-lg group"
-                    style={{
-                      background: highlighted
-                        ? "rgba(250,204,21,0.1)"
-                        : "rgba(255,255,255,0.03)",
-                      border: highlighted
-                        ? "1px solid rgba(250,204,21,0.32)"
-                        : "1px solid rgba(255,255,255,0.06)",
-                    }}
-                  >
-                    <div className="flex-1 text-slate-300">
-                      {renderContent(item.tag_name, item.original_text, highlighted)}
-                    </div>
-                    <button
-                      onClick={() =>
-                        setValue(
-                          `${si}-${ii}`,
-                          item.original_text,
-                          getVal(`${si}-${ii}`, item.original_text),
-                        )
-                      }
-                      className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity font-medium"
-                      style={{
-                        background: "rgba(96,165,250,0.15)",
-                        color: "#93c5fd",
-                        border: "1px solid rgba(96,165,250,0.25)",
-                      }}
-                    >
-                      Use
-                    </button>
-                  </div>
+                      <div
+                        key={ii}
+                        className="flex items-start gap-2 mb-2 px-3 py-2.5 rounded-lg group"
+                        style={{
+                          background: highlighted
+                            ? "rgba(250,204,21,0.1)"
+                            : "rgba(255,255,255,0.03)",
+                          border: highlighted
+                            ? "1px solid rgba(250,204,21,0.32)"
+                            : "1px solid rgba(255,255,255,0.06)",
+                        }}
+                      >
+                        <div className="flex-1 text-slate-300">
+                          {renderContent(
+                            item.tag_name,
+                            item.original_text,
+                            highlighted,
+                          )}
+                        </div>
+                        <button
+                          onClick={() =>
+                            setValue(
+                              `${si}-${ii}`,
+                              item.original_text,
+                              getVal(`${si}-${ii}`, item.original_text),
+                            )
+                          }
+                          className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity font-medium"
+                          style={{
+                            background: "rgba(96,165,250,0.15)",
+                            color: "#93c5fd",
+                            border: "1px solid rgba(96,165,250,0.25)",
+                          }}
+                        >
+                          Use
+                        </button>
+                      </div>
                     );
-                  })()
-                ))}
+                  })(),
+                )}
               </div>
             ))}
           </div>
 
           {/* FINAL OUTPUT */}
           <div
-            className="overflow-y-auto px-4 py-4 space-y-4"
+            ref={finalOutputRef}
+            className="overflow-y-auto px-4 py-4 space-y-4 select-text"
             style={{
               borderRight: "1px solid rgba(255,255,255,0.07)",
               background: "rgba(255,255,255,0.015)",
@@ -914,7 +1109,10 @@ export default function GPCContentPopup({
                           <div className="flex-1 text-slate-200">
                             {renderContent(
                               item.tag_name,
-                              renderLinkedPreviewText(val, previewUsedBacklinkIds),
+                              renderLinkedPreviewText(
+                                val,
+                                previewUsedBacklinkIds,
+                              ),
                             )}
                           </div>
                           <UndoBtn keyName={key} />
@@ -995,6 +1193,145 @@ export default function GPCContentPopup({
           </div>
         </div>
 
+        {anchorPicker &&
+          (() => {
+            const PICKER_WIDTH = 320;
+            const PICKER_HEIGHT_GUESS = 60 + editableBacklinks.length * 56;
+            const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+            const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+            const left = Math.max(
+              12,
+              Math.min(
+                vw - PICKER_WIDTH - 12,
+                anchorPicker.left - PICKER_WIDTH / 2,
+              ),
+            );
+            const showAbove = anchorPicker.top > PICKER_HEIGHT_GUESS + 16;
+            const top = showAbove
+              ? Math.max(12, anchorPicker.top - PICKER_HEIGHT_GUESS - 10)
+              : Math.min(
+                  vh - PICKER_HEIGHT_GUESS - 12,
+                  anchorPicker.bottom + 10,
+                );
+
+            return (
+              <div
+                ref={anchorPickerRef}
+                className="fixed z-60 rounded-xl shadow-2xl"
+                style={{
+                  top,
+                  left,
+                  width: PICKER_WIDTH,
+                  background: "#15161c",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  boxShadow: "0 18px 48px rgba(0,0,0,0.55)",
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <div
+                  className="px-3.5 py-2.5"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                      Assign anchor to backlink
+                    </span>
+                    <button
+                      type="button"
+                      onClick={closeAnchorPicker}
+                      className="w-5 h-5 rounded text-slate-400 hover:text-white"
+                      style={{ background: "rgba(255,255,255,0.05)" }}
+                      title="Close"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div
+                    className="mt-1.5 truncate text-xs font-semibold text-emerald-200"
+                    title={anchorPicker.text}
+                  >
+                    “{anchorPicker.text}”
+                  </div>
+                </div>
+
+                <div className="max-h-72 overflow-y-auto py-1">
+                  {editableBacklinks.length === 0 ? (
+                    <div className="px-3.5 py-4 text-xs text-slate-400">
+                      No backlinks on this order yet.
+                    </div>
+                  ) : (
+                    editableBacklinks.map((bl) => {
+                      const status = backlinkStatuses.find(
+                        (s) => s.id === bl.id,
+                      );
+                      const isCurrent =
+                        (status?.anchor || "").trim().toLowerCase() ===
+                        anchorPicker.text.toLowerCase();
+                      const dotColor =
+                        status?.status === "ready"
+                          ? "#34d399"
+                          : status?.status === "invalid"
+                            ? "#f87171"
+                            : "#fbbf24";
+
+                      return (
+                        <button
+                          key={bl.id}
+                          type="button"
+                          disabled={isCurrent}
+                          onClick={() =>
+                            assignAnchorToBacklink(bl.id, anchorPicker.text)
+                          }
+                          className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left transition-colors"
+                          style={{
+                            opacity: isCurrent ? 0.55 : 1,
+                            cursor: isCurrent ? "default" : "pointer",
+                            background: "transparent",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isCurrent)
+                              e.currentTarget.style.background =
+                                "rgba(255,255,255,0.05)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                          }}
+                        >
+                          <span
+                            className="mt-1 h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: dotColor }}
+                            title={status?.status || ""}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-sm font-medium text-slate-100">
+                              {bl.anchor || (
+                                <span className="italic text-slate-500">
+                                  No anchor yet
+                                </span>
+                              )}
+                            </div>
+                            <div className="truncate text-[11px] text-slate-400">
+                              {bl.url || "Missing URL"}
+                            </div>
+                          </div>
+                          {isCurrent ? (
+                            <span className="shrink-0 text-[10px] font-semibold text-emerald-300">
+                              CURRENT
+                            </span>
+                          ) : (
+                            <span className="shrink-0 text-[10px] font-semibold text-slate-400">
+                              Use →
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
         {showBacklinkEditor && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/55 px-4">
             <div
@@ -1061,7 +1398,11 @@ export default function GPCContentPopup({
                                 : "#fbbf24",
                           }}
                         >
-                          {ready ? "Ready" : invalid ? "Incomplete" : "Anchor missing"}
+                          {ready
+                            ? "Ready"
+                            : invalid
+                              ? "Incomplete"
+                              : "Anchor missing"}
                         </span>
                       </div>
 
