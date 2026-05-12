@@ -10,7 +10,9 @@ import {
   Globe,
   Joystick,
   Phone,
+  Recycle,
   TestTubeIcon,
+  User,
   Users,
 } from "lucide-react";
 import { BsExplicit } from "react-icons/bs";
@@ -94,6 +96,20 @@ export function SettingsPage() {
       icon: <ChartBarStackedIcon className="w-8 h-8 text-blue-600" />,
       bg: "bg-blue-50",
       link: "prompt-testing",
+    },
+    {
+      title: "User Activity",
+      subtitle: "Manage User Activity",
+      icon: <User className="w-8 h-8 text-teal-600" />,
+      bg: "bg-teal-50",
+      link: "user-activity",
+    },
+    {
+      title: "Recycle",
+      subtitle: "Manage Trash",
+      icon: <Recycle className="w-8 h-8 text-red-600" />,
+      bg: "bg-red-50",
+      link: "recycle",
     },
   ];
 

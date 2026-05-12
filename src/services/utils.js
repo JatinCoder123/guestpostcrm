@@ -70,7 +70,7 @@ export const buildLedgerItem = ({
   parent_id: ladgerState.parent_id || "",
   parent_name,
   template_id: ladgerState.template_id || "",
-  assigned_user_id: user?.id || "",
+  assigned_user_id: CURRENT_USER?.id || "",
 });
 
 export const applyHashtag = async ({

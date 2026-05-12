@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { CREATE_DEAL_API_KEY } from "../constants";
 
 const orderRemSlice = createSlice({
   name: "reminders",
@@ -96,21 +97,29 @@ export const cancelReminder = (reminderId) => {
     dispatch(orderRemSlice.actions.sendReminderRequest(reminderId));
 
     try {
-      const data = await apiRequest({ endpoint: getState().user.crmEndpoint.split('?')[0], params: { action_type: "post_data", reminder_id: reminderId } });
+      const data = await apiRequest({
+        endpoint: `${getState().user.crmEndpoint.split("?")[0]}?entryPoint=get_post_all`, params: { action_type: "post_data" }, body: {
+          parent_bean: {
+            "module": "outr_snts",
+            "id": reminderId,
+            "status": "cancel"
+          }
+        },
+        method: "POST",
+        headers: {
+          "x-api-key": CREATE_DEAL_API_KEY,
+          "Content-Type": "application/json",
+        },
+      });
       showConsole && console.log(`Send Reminders`, data);
-      if (data?.success) {
-        dispatch(
-          orderRemSlice.actions.sendReminderSuccess("Reminder Sent Successfully.")
-        );
-        dispatch(orderRemSlice.actions.clearAllErrors());
-      }
-      else {
-        throw new Error("Failed To send Reminder")
-      }
+      dispatch(
+        orderRemSlice.actions.sendReminderSuccess("Reminder Cancel Successfully.")
+      );
+      dispatch(orderRemSlice.actions.clearAllErrors());
 
     } catch (error) {
       dispatch(
-        orderRemSlice.actions.sendReminderFailed("Failed To Send Reminder")
+        orderRemSlice.actions.sendReminderFailed("Failed To Cancel Reminder")
       );
     }
   };

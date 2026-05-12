@@ -17,7 +17,7 @@ import { excludeName, extractEmail } from "../../assets/assets.js";
 import TableView, { Table } from "../ui/table/Table.jsx";
 import TableTitleBar from "../ui/table/TableTitleBar.jsx";
 import { LoadingChase } from "../Loading.jsx"
-import { getOrderRem, orderRemAction, sendReminder } from "../../store/Slices/reminder.js";
+import { cancelReminder, getOrderRem, orderRemAction, sendReminder } from "../../store/Slices/reminder.js";
 import { toast } from "react-toastify";
 const STATUS_CONFIG = [
   {
@@ -154,6 +154,8 @@ export function ReminderPage() {
               <button
                 className={`px-3 py-1   rounded-lg hover:scale-110 transition-colors text-sm ${valid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                 disabled={valid}
+                onClick={() => { dispatch(cancelReminder(row.id)) }}
+
               >
                 <CircleX color="red" />
               </button>
