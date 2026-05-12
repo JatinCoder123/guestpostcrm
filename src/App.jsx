@@ -55,6 +55,9 @@ import PromptExplorer from "./components/pages/settingpages/PromptExplorer";
 import Ip from "./components/Ip";
 import IpManager from "./components/pages/IpManager";
 import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
+import UserActivity from "./components/pages/settingpages/UserActivity";
+import { Recycle } from "lucide-react";
+import RecyclePage from "./components/pages/settingpages/Recycle";
 
 const router = createBrowserRouter([
   {
@@ -286,6 +289,14 @@ const router = createBrowserRouter([
           {
             path: "data-modelling",
             element: <DataModellingPage />,
+          },
+          {
+            path: "user-activity",
+            element: <UserActivity />,
+          },
+          {
+            path: "recycle",
+            element: <RecyclePage />,
           },
         ],
       },

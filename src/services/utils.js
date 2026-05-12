@@ -1,4 +1,5 @@
 import { showConsole } from "../assets/assets";
+import { FETCH_GPC_X_API_KEY } from "../store/constants";
 import { apiRequest, fetchGpc } from "./api";
 
 let CURRENT_USER = {
@@ -70,7 +71,7 @@ export const buildLedgerItem = ({
   parent_id: ladgerState.parent_id || "",
   parent_name,
   template_id: ladgerState.template_id || "",
-  assigned_user_id: user?.id || "",
+  assigned_user_id: CURRENT_USER?.id || "",
 });
 
 export const applyHashtag = async ({
@@ -95,9 +96,11 @@ export const applyHashtag = async ({
 
 export const generatePDF = async (html, id = "invoice") => {
   try {
-    const response = await fetchGpc("https://socket.guestpostcrm.com/generate-pdf", {
+    const response = await fetch("https://anshik.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_pdf", {
       method: "POST",
       headers: {
+        "X-Api-Key": FETCH_GPC_X_API_KEY,
+
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ html }),
