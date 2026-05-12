@@ -1,6 +1,7 @@
 import {
   Bot,
   Bug,
+  ChartBarStackedIcon,
   Cpu,
   CreditCard,
   Database,
@@ -9,6 +10,7 @@ import {
   Globe,
   Joystick,
   Phone,
+  TestTubeIcon,
   Users,
 } from "lucide-react";
 import { BsExplicit } from "react-icons/bs";
@@ -85,6 +87,13 @@ export function SettingsPage() {
       icon: <Database className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
       link: "data-modelling",
+    },
+    {
+      title: "Prompt Testing",
+      subtitle: "Test prompts",
+      icon: <ChartBarStackedIcon className="w-8 h-8 text-blue-600" />,
+      bg: "bg-blue-50",
+      link: "prompt-testing",
     },
   ];
 
