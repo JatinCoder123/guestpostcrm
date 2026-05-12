@@ -197,7 +197,7 @@ export function InvoicesPage() {
       accessor: "status_c",
       headerClasses: "",
       icon: ChartNoAxesColumn,
-      classes: "truncate max-w-[300px]",
+      classes: "truncate max-w-[200px]",
 
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
@@ -298,7 +298,7 @@ export function InvoicesPage() {
       )}
       <TableView tableData={invoices} tableName={"Invoices"} columns={columns} slice={"invoices"} statusKey={"status_c"} statusList={statusList} fetchNextPage={() => dispatch(getInvoices({ page: pageIndex + 1 }))}   >
         <TableTitleBar Icon={FileText} title={"Invoices"} titleClass={"text-orange-700"} />
-        <Table headerStyle={"  bg-orange-600"} layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_300px_200px_200px_1fr]"} />
+        <Table headerStyle={"  bg-orange-600"} layoutStyle={"grid grid-cols-8"} />
       </TableView></>
 
   );

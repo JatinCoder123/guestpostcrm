@@ -191,7 +191,7 @@ export default function WebsitesPage() {
         <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {websites.map((item) => {
             const rawName =
-              item.website_name || item.name || item.website || "";
+              item.name || item.website || "";
             const domain = getDomain(rawName);
             const fullUrl = getFullUrl(rawName);
             const favicon = getFavicon(domain);
@@ -456,7 +456,6 @@ export default function WebsitesPage() {
                           refreshingId === item.id ? "animate-spin" : ""
                         }
                       />
-                      {refreshingId === item.id ? "Refreshing" : "Refresh"}
                     </button>
                     <button
                       onClick={() => setEditItem(item)}
@@ -469,7 +468,6 @@ export default function WebsitesPage() {
                         transition-all disabled:opacity-50"
                     >
                       <Edit3 size={14} />
-                      Edit
                     </button>
                     <button
                       onClick={() => handleDelete(item)}
@@ -486,7 +484,6 @@ export default function WebsitesPage() {
                       ) : (
                         <>
                           <Trash2 size={14} />
-                          Delete
                         </>
                       )}
                     </button>
@@ -506,6 +503,7 @@ export default function WebsitesPage() {
         handleCreate={handleCreate}
         saving={creating || updating}
       />
+
     </div>
   );
 }

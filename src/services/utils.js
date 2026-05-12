@@ -95,7 +95,7 @@ export const applyHashtag = async ({
 
 export const generatePDF = async (html, id = "invoice") => {
   try {
-    const response = await fetch("https://socket.guestpostcrm.com/generate-pdf", {
+    const response = await fetchGpc("https://socket.guestpostcrm.com/generate-pdf", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { fetchGpc } from "../../services/api";
-import { emojiByUnified } from "emoji-picker-react";
 
 
 const duplicateEmailSlice = createSlice({
