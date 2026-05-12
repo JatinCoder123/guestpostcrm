@@ -11,11 +11,9 @@ import {
   Joystick,
   Phone,
   Recycle,
-  TestTubeIcon,
   User,
   Users,
 } from "lucide-react";
-import { BsExplicit } from "react-icons/bs";
 import { Link, Outlet } from "react-router-dom";
 
 export function SettingsPage() {
@@ -98,15 +96,15 @@ export function SettingsPage() {
       link: "prompt-testing",
     },
     {
-      title: "User Activity",
+      title: "User Activities",
       subtitle: "Manage User Activity",
       icon: <User className="w-8 h-8 text-teal-600" />,
       bg: "bg-teal-50",
       link: "user-activity",
     },
     {
-      title: "Recycle",
-      subtitle: "Manage Trash",
+      title: "Recycle Bin",
+      subtitle: "Manage Recycle Bin",
       icon: <Recycle className="w-8 h-8 text-red-600" />,
       bg: "bg-red-50",
       link: "recycle",

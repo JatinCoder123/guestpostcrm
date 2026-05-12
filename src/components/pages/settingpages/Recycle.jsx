@@ -6,7 +6,7 @@ const RecyclePage = () => {
         <div className="p-8">
             {/* Header */}
             <Header
-                text={"Recycle"}
+                text={"Recycle Bin"}
             />
 
         </div>
