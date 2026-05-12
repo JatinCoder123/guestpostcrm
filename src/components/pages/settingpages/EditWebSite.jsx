@@ -90,12 +90,7 @@ const fieldConfig = [
   },
 ];
 
-export default function EditWebSite({
-  item,
-  onClose,
-  handleUpdate,
-  ...props
-}) {
+export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
   const [form, setForm] = useState({});
 
   useEffect(() => {
@@ -133,6 +128,7 @@ export default function EditWebSite({
       toast.error("Website name cannot be empty");
       return;
     }
+    console.log(form);
 
     const updated = { ...item, ...form };
 
@@ -153,19 +149,21 @@ export default function EditWebSite({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 py-8 "
-        >          <Motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 30 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 30 }}
-          transition={{ duration: 0.25 }}
-          className="bg-white w-full max-w-7xl rounded-3xl shadow-2xl my-6 max-h-[92vh] flex flex-col"
-        >            {/* HEADER */}
+        >
+          {" "}
+          <Motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 30 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 30 }}
+            transition={{ duration: 0.25 }}
+            className="bg-white w-full max-w-7xl rounded-3xl shadow-2xl my-6 max-h-[92vh] flex flex-col"
+          >
+            {" "}
+            {/* HEADER */}
             <div className="flex items-center justify-between border-b px-8 py-5">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">
-                  {item.type === "new"
-                    ? "Create Website"
-                    : "Edit Website"}
+                  {item.type === "new" ? "Create Website" : "Edit Website"}
                 </h2>
 
                 <p className="text-gray-500 mt-1 text-sm">
@@ -180,37 +178,33 @@ export default function EditWebSite({
                 <X size={20} />
               </button>
             </div>
-
             {/* BODY */}
-            <div className="p-8 overflow-y-auto flex-1">              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {fieldConfig.map((field) => {
-                const Icon = field.icon;
+            <div className="p-8 overflow-y-auto flex-1">
+              {" "}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {fieldConfig.map((field) => {
+                  const Icon = field.icon;
 
-                return (
-                  <div
-                    key={field.key}
-                    className="border border-gray-200 rounded-2xl p-5 bg-gray-50"
-                  >
-                    {/* LABEL */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        {Icon && (
-                          <Icon
-                            size={18}
-                            className="text-blue-600"
-                          />
-                        )}
+                  return (
+                    <div
+                      key={field.key}
+                      className="border border-gray-200 rounded-2xl p-5 bg-gray-50"
+                    >
+                      {/* LABEL */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          {Icon && <Icon size={18} className="text-blue-600" />}
 
-                        <label className="font-semibold text-gray-800">
-                          {field.label}
-                        </label>
+                          <label className="font-semibold text-gray-800">
+                            {field.label}
+                          </label>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* INPUT */}
-                    {(field.type === "text" ||
-                      field.type === "number" ||
-                      field.type === "url") && (
+                      {/* INPUT */}
+                      {(field.type === "text" ||
+                        field.type === "number" ||
+                        field.type === "url") && (
                         <input
                           type={field.type}
                           value={form[field.key] || ""}
@@ -222,53 +216,47 @@ export default function EditWebSite({
                         />
                       )}
 
-                    {/* CHECKBOX */}
-                    {field.type === "checkbox" && (
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={!!form[field.key]}
+                      {/* CHECKBOX */}
+                      {field.type === "checkbox" && (
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={!!form[field.key]}
+                            onChange={(e) =>
+                              updateField(field.key, e.target.checked)
+                            }
+                            className="w-5 h-5"
+                          />
+
+                          <span className="text-gray-700 font-medium">
+                            Enable {field.label}
+                          </span>
+                        </label>
+                      )}
+
+                      {/* DROPDOWN */}
+                      {field.type === "dropdown" && (
+                        <select
+                          value={form[field.key] || ""}
                           onChange={(e) =>
-                            updateField(
-                              field.key,
-                              e.target.checked
-                            )
+                            updateField(field.key, e.target.value)
                           }
-                          className="w-5 h-5"
-                        />
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select {field.label}</option>
 
-                        <span className="text-gray-700 font-medium">
-                          Enable {field.label}
-                        </span>
-                      </label>
-                    )}
-
-                    {/* DROPDOWN */}
-                    {field.type === "dropdown" && (
-                      <select
-                        value={form[field.key] || ""}
-                        onChange={(e) =>
-                          updateField(field.key, e.target.value)
-                        }
-                        className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">
-                          Select {field.label}
-                        </option>
-
-                        {field.options?.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                );
-              })}
+                          {field.options?.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            </div>
-
             {/* FOOTER */}
             <div className="border-t bg-gray-50 px-8 py-5 flex items-center justify-end gap-3">
               <button

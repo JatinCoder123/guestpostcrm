@@ -96,24 +96,6 @@ const webManagerSlice = createSlice({
   },
 });
 
-const buildWebsitePayload = (website, includeId = false) => {
-  const payload = {
-    website_name: website.website_name || website.name || website.website || "",
-    slug: website.slug || "",
-    maxAmount: website.maxAmount ?? website.amount ?? "",
-    minAmount: website.minAmount ?? website.minimum_price ?? "",
-  };
-
-  if (includeId) {
-    return {
-      id: website.id,
-      ...payload,
-    };
-  }
-
-  return payload;
-};
-
 const assertSuccess = (data) => {
   if (data?.success === false) {
     throw new Error(data.message);
@@ -152,13 +134,13 @@ export const getManageWeb = (loading = true) => {
 export const createWebsite = (website) => {
   return async (dispatch) => {
     dispatch(webManagerSlice.actions.createWebsiteRequest());
+    console.log(website);
 
     try {
-      const payload = buildWebsitePayload(website);
       const data = await fetchGpc({
         method: "POST",
         params: { type: "get_website" },
-        body: payload,
+        body: website,
       });
 
       showConsole && console.log("Create Manager Website", data);
@@ -186,22 +168,17 @@ export const updateWebsite = (website, options = {}) => {
     dispatch(webManagerSlice.actions.updateWebsiteRequest());
 
     try {
-      // Refresh path only needs the id so the backend can re-scrape without
-      // touching the existing fields. Edit path sends the full payload.
-      const payload = idOnly
-        ? { id: website.id }
-        : buildWebsitePayload(website, true);
       const data = await fetchGpc({
         method: "PUT",
         params: { type: "get_website" },
-        body: payload,
+        body: website,
       });
 
       showConsole && console.log("Update Manager Website", data);
       assertSuccess(data);
       dispatch(
         webManagerSlice.actions.updateWebsiteSuccess({
-          website: payload,
+          website: website,
           message:
             successMessage ?? data.message ?? "Website Updated Successfully",
         }),
