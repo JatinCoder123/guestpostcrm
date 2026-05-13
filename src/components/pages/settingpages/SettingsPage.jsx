@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
+import Header from "./Header"
 
 export function SettingsPage() {
   const menuItems = [
@@ -26,7 +27,7 @@ export function SettingsPage() {
       link: "machine-learning",
     },
     {
-      title: "PayPal Credentials Management",
+      title: "API Credentials Management",
       subtitle: "Manage payments",
       icon: <CreditCard className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
@@ -89,7 +90,7 @@ export function SettingsPage() {
       link: "data-modelling",
     },
     {
-      title: "Prompt Testing",
+      title: "Prompt Management",
       subtitle: "Test prompts",
       icon: <ChartBarStackedIcon className="w-8 h-8 text-blue-600" />,
       bg: "bg-blue-50",
@@ -113,9 +114,9 @@ export function SettingsPage() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-6">Settings</h2>
+      <Header text={"Settings"} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {menuItems.map((item, index) => (
           <Link
             to={item.link}

@@ -11,6 +11,8 @@ const eventSlice = createSlice({
         events: [],
         count: 0,
         error: null,
+        pageCount: 1,
+        pageIndex: 1,
         message: null,
     },
     reducers: {
@@ -19,10 +21,16 @@ const eventSlice = createSlice({
             state.error = null;
         },
         getEventsSucess(state, action) {
-            const { count, events } = action.payload;
+            const { count, events, pageIndex, pageCount } = action.payload;
             state.loading = false;
-            state.events = events;
+            if (pageIndex === 1) {
+                state.events = events;
+            } else {
+                state.events = [...state.events, ...events];
+            }
             state.count = count;
+            state.pageIndex = pageIndex;
+            state.pageCount = pageCount;
             state.error = null;
         },
         getEventsFailed(state, action) {
@@ -66,17 +74,19 @@ const eventSlice = createSlice({
 });
 
 
-export const getEvents = ({ timeFilter = null, search = null }) => {
+export const getEvents = ({ timeFilter = null, search = null, page = 1 }) => {
     return async (dispatch, getState) => {
         dispatch(eventSlice.actions.getEventsRequest());
 
         try {
-            const data = await fetchGpc({ params: { type: "recent_activities", ...(timeFilter ? { filter: timeline } : {}), ...(search ? { search } : {}), page: 1, page_size: 50 } });
+            const data = await fetchGpc({ params: { type: "recent_activities", ...(timeFilter ? { filter: timeline } : {}), ...(search ? { search } : {}), page, page_size: 50 } });
             showConsole && console.log(`events`, data);
             dispatch(
                 eventSlice.actions.getEventsSucess({
-                    count: 0,
+                    count: data?.data_count,
                     events: data.data ?? [],
+                    pageCount: data.total_pages,
+                    pageIndex: data.current_page,
                 })
             );
 
