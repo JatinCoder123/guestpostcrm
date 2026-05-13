@@ -142,7 +142,7 @@ function AiGenerateModal({
             <BotIcon size={24} />
             <h2 className="text-xl font-bold">
               {context === "edit"
-                ? "Regenerate Template with AI"
+                ? "Rebuild Template with AI"
                 : "Generate Template with AI"}
             </h2>
           </div>
