@@ -45,14 +45,13 @@ const Tooltip = ({ content, children }) => {
 export function RecentEntry() {
   const dispatch = useDispatch();
 
-  const { events } = useSelector((state) => state.events);
+  const { events, pageIndex, loading } = useSelector((state) => state.events);
 
   const { crmEndpoint } = useSelector((state) => state.user);
 
   const { loading: grpLoading, data: grpData } = useModule({
-    url: `${
-      crmEndpoint.split("?")[0]
-    }?entryPoint=get_post_all&action_type=get_data`,
+    url: `${crmEndpoint.split("?")[0]
+      }?entryPoint=get_post_all&action_type=get_data`,
     method: "POST",
     body: {
       module: "outr_ledger_manager",
@@ -216,6 +215,7 @@ export function RecentEntry() {
       tableName={"Recent Entries"}
       columns={columns}
       slice={"events"}
+      fetchNextPage={() => dispatch(getEvents({ page: pageIndex + 1 }))}
     >
       <TableTitleBar
         Icon={Activity}
@@ -224,7 +224,7 @@ export function RecentEntry() {
       />
 
       {/* FILTERS */}
-      <div className="p-4 border-b flex flex-wrap gap-4 items-center bg-gray-50">
+      <div className="absolute top-0 right-[30%] p-4  flex flex-wrap gap-4 items-center ">
         <CustomDropdown
           className="w-[240px]"
           onChange={(value) => {
@@ -232,6 +232,7 @@ export function RecentEntry() {
             setSearchTerm(value);
           }}
           value={selectedGrp}
+          placeholder="Select Group"
           options={grpData?.map((grp) => ({
             value: grp.name,
             label: grp.description,

@@ -103,7 +103,7 @@ export const generatePDF = async (html, id = "invoice") => {
 
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ html }),
+      body: JSON.stringify({ html, id }),
     });
 
     if (!response.ok) {
