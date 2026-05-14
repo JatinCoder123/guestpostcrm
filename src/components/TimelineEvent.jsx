@@ -312,13 +312,12 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     className={`absolute top-1 left-1 h-[calc(100%-8px)]
         w-[calc(33.333%-4px)]
         rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${
-          selectedView === "all"
-            ? "translate-x-0"
-            : selectedView === "important"
-              ? "translate-x-full"
-              : "translate-x-[200%]"
-        }`}
+        ${selectedView === "all"
+                        ? "translate-x-0"
+                        : selectedView === "important"
+                          ? "translate-x-full"
+                          : "translate-x-[200%]"
+                      }`}
                   />
 
                   {[
@@ -331,11 +330,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
                       onClick={() => setSelectedView(tab.key)}
                       className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
           transition-colors duration-300
-          ${
-            selectedView === tab.key
-              ? "text-white"
-              : "text-gray-600 hover:text-purple-600"
-          }`}
+          ${selectedView === tab.key
+                          ? "text-white"
+                          : "text-gray-600 hover:text-purple-600"
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -404,11 +402,10 @@ const TimelineEvent = ({ handleMessageClick }) => {
                     </div>
                     <div
                       className={`group flex-1 border-2 rounded-xl p-4 mt-3 shadow-sm relative
-                      ${
-                        index === 0
+                      ${index === 0
                           ? "bg-gradient-to-r from-yellow-200 to-white border-yellow-300"
                           : "bg-white border-gray-200"
-                      }`}
+                        }`}
                     >
                       {/* 🔥 HOVER ACTION BAR */}
                       <div
@@ -455,7 +452,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
                         {event?.prompt_details?.length > 0 && (
                           <button
                             onClick={() =>
-                              navigateTo("settings/machine-learning", {
+                              navigateTo("settings/debugging", {
                                 state: { prompt: event.prompt_details[0] },
                               })
                             }
@@ -718,10 +715,9 @@ const TimelineEvent = ({ handleMessageClick }) => {
         <div
           className={`fixed right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50
             transition-all duration-300 ease-out
-            ${
-              showScrollButtons
-                ? "opacity-100 translate-x-0 pointer-events-auto"
-                : "opacity-0 translate-x-4 pointer-events-none"
+            ${showScrollButtons
+              ? "opacity-100 translate-x-0 pointer-events-auto"
+              : "opacity-0 translate-x-4 pointer-events-none"
             }`}
         >
           {/* Go to Top */}

@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { CREATE_DEAL_API_KEY } from "../constants";
+import { getLadger } from "./ladger";
+import { buildLedgerItem, createLedgerEntry } from "../../services/utils";
 
 const orderRemSlice = createSlice({
   name: "reminders",
@@ -92,7 +94,7 @@ export const sendReminder = (reminderId) => {
     }
   };
 };
-export const cancelReminder = (reminderId) => {
+export const cancelReminder = ({ email, reminderId }) => {
   return async (dispatch, getState) => {
     dispatch(orderRemSlice.actions.sendReminderRequest(reminderId));
 
@@ -115,7 +117,23 @@ export const cancelReminder = (reminderId) => {
       dispatch(
         orderRemSlice.actions.sendReminderSuccess("Reminder Cancel Successfully.")
       );
+
       dispatch(orderRemSlice.actions.clearAllErrors());
+      await createLedgerEntry({
+        domain: getState().user.crmEndpoint.split("?")[0],
+        email: email,
+        group: "Reminder",
+        items: [
+          buildLedgerItem({
+            status: "Cancel Reminder",
+            detail: `Reminder Id ${reminderId}`,
+            ladgerState: getState().ladger,
+            user: getState().crmUser.currentUser,
+          }),
+        ],
+        okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),
+      });
+
 
     } catch (error) {
       dispatch(

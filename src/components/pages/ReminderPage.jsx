@@ -154,7 +154,7 @@ export function ReminderPage() {
               <button
                 className={`px-3 py-1   rounded-lg hover:scale-110 transition-colors text-sm ${valid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                 disabled={valid}
-                onClick={() => { dispatch(cancelReminder(row.id)) }}
+                onClick={() => { dispatch(cancelReminder({ email: extractEmail(row?.real_name), reminderId: row.id })) }}
 
               >
                 <CircleX color="red" />
