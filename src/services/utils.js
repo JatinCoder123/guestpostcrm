@@ -96,14 +96,15 @@ export const applyHashtag = async ({
 
 export const generatePDF = async (html, id = "invoice") => {
   try {
-    const response = await fetch("https://anshik.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_pdf", {
+    const response = await fetchGpc({
+      params: { type: 'get_pdf' },
       method: "POST",
       headers: {
         "X-Api-Key": FETCH_GPC_X_API_KEY,
 
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ html, id }),
+      body: { html, id },
     });
 
     if (!response.ok) {
