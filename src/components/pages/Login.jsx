@@ -3,13 +3,14 @@ import { AUTH_URL } from "../../store/constants.js";
 
 export default function Login() {
   const handleLoginWithGoogle = () => {
-    window.location.href = `${AUTH_URL}?controller=auth&action=googleLogin`;
+    window.location.href =
+      `${AUTH_URL}?controller=auth&action=googleLogin&frontend=${encodeURIComponent(window.location.origin)}`;
   };
 
   const handleLoginWithMicrosoft = () => {
-    window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin`;
+    window.location.href =
+      `${AUTH_URL}?controller=auth&action=microsoftLogin&frontend=${encodeURIComponent(window.location.origin)}`;
   };
-
   const loginImg = "https://app.guestpostcrm.com/images/loginPage.jpg";
 
   return (
