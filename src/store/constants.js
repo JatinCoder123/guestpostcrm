@@ -10,7 +10,7 @@ export const LOCAL_KEY = "create_deals_draft_v1";
 
 // Tiny Editor Keys
 const TINY_EDITOR_KEYS = [
-  "yafcvj676aralwgcexthy7sckzm80mima0kw290ow95jar14", // key 2
+  "4ofpapiyvfsmje7jcmx7ohdnq7vcmw5k92fl8buc0woanflw", // key 2
 ];
 
 // Function to get rotating key
