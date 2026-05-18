@@ -94,10 +94,9 @@ export function CustomDropdown({
                   className={`
                     w-full flex items-center justify-between
                     px-4 py-2 text-sm transition
-                    ${
-                      isSelected
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-gray-700 hover:bg-gray-100"
+                    ${isSelected
+                      ? "bg-indigo-50 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100"
                     }
                   `}
                 >
@@ -418,16 +417,12 @@ const PromptTestingPage = () => {
       setThreadIds([]);
       setFormData((prev) => ({ ...prev, thread_id: "" }));
 
-      const response = await fetch(`${crmEndpoint}&type=prompt_testing`, {
+      const data = await fetchGpc({
+        params: { type: 'prompt_testing' },
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": FETCH_GPC_X_API_KEY,
-        },
-        body: JSON.stringify({ email: emailSearchValue.trim() }),
+        body: { email: emailSearchValue.trim() },
       });
 
-      const data = await response.json();
       const ids = data?.thread_ids || [];
 
       if (ids.length === 0) {
@@ -624,10 +619,9 @@ const PromptTestingPage = () => {
                       }
                       className={`
                         px-4 py-2 rounded-full text-sm font-medium transition border
-                        ${
-                          formData.stage === key
-                            ? "bg-indigo-600 text-white border-indigo-600 shadow"
-                            : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
+                        ${formData.stage === key
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow"
+                          : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-600"
                         }
                       `}
                     >
@@ -733,10 +727,9 @@ const PromptTestingPage = () => {
                       }}
                       className={`
                         w-5 h-5 rounded border-2 flex items-center justify-center transition
-                        ${
-                          useLatest
-                            ? "bg-emerald-600 border-emerald-600"
-                            : "bg-white border-slate-300 hover:border-emerald-400"
+                        ${useLatest
+                          ? "bg-emerald-600 border-emerald-600"
+                          : "bg-white border-slate-300 hover:border-emerald-400"
                         }
                       `}
                     >
@@ -865,7 +858,7 @@ const PromptTestingPage = () => {
                       </h4>
 
                       {typeof response?.response === "object" &&
-                      response?.response !== null ? (
+                        response?.response !== null ? (
                         <div className="bg-slate-100 rounded-xl p-4 text-sm space-y-4">
                           {Object.entries(response.response).map(
                             ([key, value]) => {
