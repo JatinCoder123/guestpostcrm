@@ -92,6 +92,7 @@ export function MovedPage() {
       label: "Sender",
       accessor: "email",
       icon: User2,
+      classes: "truncate max-w-[200px]",
 
       render: (row) => (
         <span className="font-medium text-gray-700">{row?.email}</span>
@@ -102,6 +103,7 @@ export function MovedPage() {
       label: "Subject",
       accessor: "subject",
       icon: Globe,
+      classes: "truncate max-w-[200px]",
 
       onClick: (row) =>
         handleMove({
@@ -110,7 +112,7 @@ export function MovedPage() {
         }),
 
       render: (row) => (
-        <span className="font-medium text-purple-700 cursor-pointer">
+        <span className="font-medium text-purple-700 cursor-pointer ">
           {row?.subject}
         </span>
       ),
@@ -122,7 +124,7 @@ export function MovedPage() {
       icon: BadgeDollarSign,
 
       render: (row) => (
-        <span className="font-medium text-green-700">{row?.label_name}</span>
+        <span className="font-medium text-green-700 ">{row?.label_name}</span>
       ),
     },
 
@@ -130,9 +132,10 @@ export function MovedPage() {
       label: "Reason",
       accessor: "reason",
       icon: ChartNoAxesColumn,
+      classes: "truncate max-w-[200px]",
 
       render: (row) => (
-        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm truncate max-w-[200px]">
           {row?.reason || "Moved"}
         </span>
       ),
@@ -150,11 +153,11 @@ export function MovedPage() {
             handleRestore(row);
           }}
           disabled={restoringId === row.thread_id}
-          className="px-3 py-1 rounded-lg bg-green-500 text-white text-sm hover:bg-green-600 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          className="px-3 py-1 rounded-lg bg-green-500 text-white text-sm hover:bg-green-600 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer ml-auto"
         >
           {restoringId === row.thread_id ? (
             <>
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin "></span>
               Restoring...
             </>
           ) : (
@@ -182,7 +185,7 @@ export function MovedPage() {
 
       <Table
         headerStyle={"bg-blue-600"}
-        layoutStyle={"grid grid-cols-[1fr_1fr_1fr_200px_1fr_1fr]"}
+        layoutStyle={"grid grid-cols-6"}
       />
     </TableView>
   );

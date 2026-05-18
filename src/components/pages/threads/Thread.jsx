@@ -175,6 +175,7 @@ const Thread = () => {
     files,
     setFiles,
     editorContent,
+    moveToNext,
     setEditorContent,
     htmlfile,
     setHtmlfile,
