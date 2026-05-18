@@ -270,10 +270,11 @@ function AiGenerateModal({
           <button
             onClick={onGenerate}
             disabled={isGenerating || !aiMotive.trim()}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition ${isGenerating || !aiMotive.trim()
-              ? "bg-gray-300 cursor-not-allowed text-gray-500"
-              : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90"
-              }`}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition ${
+              isGenerating || !aiMotive.trim()
+                ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90"
+            }`}
           >
             {isGenerating ? (
               <>
@@ -394,15 +395,26 @@ export default function TemplatesPage() {
   useEffect(() => {
     const fetchMotives = async () => {
       setMotiveListLoading(true);
+
       try {
-        const res = await fetchGpc({ params: { type: 'motive_list' } });
-        if (Array.isArray(json)) setMotiveList(res);
+        const res = await fetchGpc({
+          params: { type: "motive_list" },
+        });
+
+        console.log("Motives Response:", res);
+
+        if (Array.isArray(res)) {
+          setMotiveList(res);
+        } else {
+          console.error("Response is not an array:", res);
+        }
       } catch (err) {
         console.error("Failed to fetch motive list", err);
       } finally {
         setMotiveListLoading(false);
       }
     };
+
     fetchMotives();
   }, [crmEndpoint]);
 
@@ -461,13 +473,11 @@ export default function TemplatesPage() {
         formData.append("html", decodeHtmlEntities(currentHtml));
       }
 
-      const result = await fetchGpc(
-        {
-          params: { type: 'generate_template' },
-          method: "POST",
-          body: formData,
-        },
-      );
+      const result = await fetchGpc({
+        params: { type: "generate_template" },
+        method: "POST",
+        body: formData,
+      });
       showConsole && console.log("AI generate result:", result);
 
       if (result?.success && result?.data?.html) {
@@ -850,10 +860,11 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleCreateNewTemplate}
                   disabled={isCreating}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition text-white ${isCreating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700"
-                    }`}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition text-white ${
+                    isCreating
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
                 >
                   {isCreating ? (
                     <>
@@ -929,10 +940,11 @@ export default function TemplatesPage() {
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                      }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                      isSaving
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                   >
                     {isSaving ? (
                       <>
@@ -1014,10 +1026,11 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
-                ? "bg-indigo-600 text-white shadow-lg"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                stageType === key
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
             >
               {label}
             </button>
