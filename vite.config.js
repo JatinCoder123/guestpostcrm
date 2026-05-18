@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "https://app.guestpostcrm.com/",
+  base: "https://appstage.guestpostcrm.com/",
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {

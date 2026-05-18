@@ -45,7 +45,57 @@ const Inbox = ({
       toast.error("Something went wrong while downloading the file");
     }
   };
+  const formatMessage = (html) => {
+    if (!html) return "";
 
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    // ✅ 1. Fix already existing <a> tags
+    doc.querySelectorAll("a").forEach((a) => {
+      const href = a.getAttribute("href");
+      if (!href) return;
+
+      // keep original text IF it's meaningful
+      const text = a.textContent.trim();
+
+      if (!text || text === href) {
+        // if ugly or same as URL → shorten it
+        let short = href.replace(/^https?:\/\//, "");
+        if (short.length > 50) short = short.slice(0, 50) + "...";
+        a.textContent = short;
+      }
+
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer");
+    });
+
+    // ✅ 2. Convert ONLY plain text URLs (not inside <a>)
+    const walk = (node) => {
+      if (node.nodeType === 3) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+        if (urlRegex.test(node.nodeValue)) {
+          const span = document.createElement("span");
+
+          span.innerHTML = node.nodeValue.replace(urlRegex, (url) => {
+            let short = url.replace(/^https?:\/\//, "");
+            if (short.length > 50) short = short.slice(0, 50) + "...";
+
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${short}</a>`;
+          });
+
+          node.replaceWith(...span.childNodes);
+        }
+      } else if (node.nodeType === 1 && node.tagName !== "A") {
+        node.childNodes.forEach(walk);
+      }
+    };
+
+    walk(doc.body);
+
+    return doc.body.innerHTML;
+  };
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -72,57 +122,7 @@ const Inbox = ({
         // ✅ REAL index calculation
         const baseIndex = emails?.length - visibleMessages?.length;
         const realIndex = baseIndex + idx + 1;
-        const formatMessage = (html) => {
-          if (!html) return "";
 
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html");
-
-          // ✅ 1. Fix already existing <a> tags
-          doc.querySelectorAll("a").forEach((a) => {
-            const href = a.getAttribute("href");
-            if (!href) return;
-
-            // keep original text IF it's meaningful
-            const text = a.textContent.trim();
-
-            if (!text || text === href) {
-              // if ugly or same as URL → shorten it
-              let short = href.replace(/^https?:\/\//, "");
-              if (short.length > 50) short = short.slice(0, 50) + "...";
-              a.textContent = short;
-            }
-
-            a.setAttribute("target", "_blank");
-            a.setAttribute("rel", "noopener noreferrer");
-          });
-
-          // ✅ 2. Convert ONLY plain text URLs (not inside <a>)
-          const walk = (node) => {
-            if (node.nodeType === 3) {
-              const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-              if (urlRegex.test(node.nodeValue)) {
-                const span = document.createElement("span");
-
-                span.innerHTML = node.nodeValue.replace(urlRegex, (url) => {
-                  let short = url.replace(/^https?:\/\//, "");
-                  if (short.length > 50) short = short.slice(0, 50) + "...";
-
-                  return `<a href="${url}" target="_blank" rel="noopener noreferrer">${short}</a>`;
-                });
-
-                node.replaceWith(...span.childNodes);
-              }
-            } else if (node.nodeType === 1 && node.tagName !== "A") {
-              node.childNodes.forEach(walk);
-            }
-          };
-
-          walk(doc.body);
-
-          return doc.body.innerHTML;
-        };
         return (
           <motion.div
             key={mail.message_id || idx}
@@ -133,49 +133,50 @@ const Inbox = ({
             className={`flex ${isUser ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`relative max-w-[70%] p-5 rounded-2xl transition-all duration-300
-  ${
-    isUser
-      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
-      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-  }
+              className={`relative max-w-[40%]  p-5 rounded-2xl transition-all duration-300
+  ${isUser
+                  ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
+                  : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                }
   ${isLast ? "shadow-2xl scale-[1]" : "shadow-lg"}
 `}
             >
-              <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
-                {realIndex}
-              </div>
-              {isLast && (
-                <div
-                  className={`absolute -inset-1 rounded-3xl blur-2xl opacity-50 -z-10
+              <div>
+                <div className="absolute -top-4 left-4 px-2 py-1 mt-5 ml-0 text-xs font-semibold text-white bg-blue-500 rounded-full shadow-sm">
+                  {realIndex}
+                </div>
+                {isLast && (
+                  <div
+                    className={`absolute -inset-1 rounded-3xl blur-2xl opacity-50 -z-10
         ${isUser ? "bg-indigo-500" : "bg-blue-400"}
       `}
-                />
-              )}
-              <div
-                className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${
-                  isUser
+                  />
+                )}
+                <div
+                  className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
                     ? "bg-white/20 text-white"
                     : "bg-gray-100 text-gray-700 border border-gray-200"
-                }`}
-              >
-                {/* NAME */}
-                <div className="flex items-center gap-2 font-semibold">
-                  <User className="w-3.5 h-3.5 opacity-70" />
-                  <span>{isUser ? "You" : mail.from_name || "Sender"}</span>
+                    }`}
+                >
+                  {/* NAME */}
+                  <div className="flex items-center gap-2 font-semibold">
+                    <User className="w-3.5 h-3.5 opacity-70" />
+                    <span>{isUser ? "You" : mail.from_name || "Sender"}</span>
+                  </div>
+
+                  {/* DATE & TIME */}
+                  <div className="flex flex-col text-right leading-tight">
+                    <span
+                      className={`${isUser ? "opacity-90" : "text-gray-500"}`}
+                    >
+                      {mail.date_created}
+                    </span>
+                    <span className="text-[10px] opacity-70">
+                      {mail.date_created_ago}
+                    </span>
+                  </div>
                 </div>
 
-                {/* DATE & TIME */}
-                <div className="flex flex-col text-right leading-tight">
-                  <span
-                    className={`${isUser ? "opacity-90" : "text-gray-500"}`}
-                  >
-                    {mail.date_created}
-                  </span>
-                  <span className="text-[10px] opacity-70">
-                    {mail.date_created_ago}
-                  </span>
-                </div>
               </div>
 
               <div

@@ -10,6 +10,7 @@ import { fetchGpc } from "../../../services/api";
 import { generatePDF } from "../../../services/utils";
 import { extractEmail } from "../../../assets/assets";
 import { unrepliedAction } from "../../../store/Slices/unrepliedEmails";
+import { getDuplicateEmails } from "../../../store/Slices/duplicateEmailSlice";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -114,21 +115,26 @@ const Thread = () => {
     if (
       currentEmail &&
       currentThread &&
-      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)
+      !(state?.viewEmails && (state?.viewEmails[0]?.from_email == currentEmail && state?.viewEmails[0]?.thread_id == currentThread))
     ) {
       dispatch(getThreadEmail(currentEmail, currentThread));
     } else {
+
       setEmails(state?.viewEmails);
     }
+    console.log("HELLO")
   }, [currentEmail, currentThread]);
   useEffect(() => {
     if (
       threadEmail?.length > 0 &&
-      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)
+      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail && state?.viewEmails[0]?.thread_id == currentThread)
     ) {
       setEmails(threadEmail);
     }
   }, [threadEmail]);
+  useEffect(() => {
+    dispatch(getDuplicateEmails(currentEmail));
+  }, [dispatch, currentEmail]);
   useEffect(() => {
     if (!currentThread) {
       toast.error("Thread id is missing!");
