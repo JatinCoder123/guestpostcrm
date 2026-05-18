@@ -192,7 +192,7 @@ function AiGenerateModal({
           {/* Motive — dropdown from API */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Motive <span className="text-red-500">*</span>
+              Motive
             </label>
             {motiveListLoading ? (
               <div className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-400">
@@ -269,9 +269,9 @@ function AiGenerateModal({
           </button>
           <button
             onClick={onGenerate}
-            disabled={isGenerating || !aiMotive.trim()}
+            disabled={isGenerating}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition ${
-              isGenerating || !aiMotive.trim()
+              isGenerating
                 ? "bg-gray-300 cursor-not-allowed text-gray-500"
                 : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90"
             }`}
