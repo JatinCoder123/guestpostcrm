@@ -593,11 +593,9 @@ export default function TemplatesPage() {
       alert("Please enter template name");
       return;
     }
-    if (!newDescription.trim()) {
-      alert("Please select a user");
-      return;
-    }
+
     setIsCreating(true);
+
     try {
       const requestBody = {
         parent_bean: {
@@ -618,6 +616,7 @@ export default function TemplatesPage() {
             .replace("T", " "),
         },
       };
+
       const data = await apiRequest({
         method: "POST",
         headers: {
@@ -628,19 +627,26 @@ export default function TemplatesPage() {
         endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
         params: { action_type: "post_data" },
       });
+
       showConsole && console.log("Create response:", data);
+
       if (data.parent_updated === true || data.parent_id || data.id) {
         alert("✅ New template created successfully!");
+
         setNewTemplateName("");
         setNewDescription("");
         setNewTemplateContent("");
+
         setShowNewTemplateModal(false);
+
         setTimeout(() => {
           refetch();
         }, 1000);
       } else {
         alert(
-          `❌ Failed to create template: ${data.error || data.message || "Unknown error"}`,
+          `❌ Failed to create template: ${
+            data.error || data.message || "Unknown error"
+          }`,
         );
       }
     } catch (err) {
@@ -754,7 +760,7 @@ export default function TemplatesPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Template Name *
+                    Template Name
                   </label>
                   <input
                     type="text"
@@ -766,7 +772,7 @@ export default function TemplatesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    User *
+                    User
                   </label>
                   <select
                     value={newDescription}
@@ -873,7 +879,7 @@ export default function TemplatesPage() {
                     </>
                   ) : (
                     <>
-                      <Save size={16} /> Create Template
+                      <Save size={16} /> Save Template
                     </>
                   )}
                 </button>
