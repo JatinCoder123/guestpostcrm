@@ -29,8 +29,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
   const [timelineData, setTimelineData] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeVisualization, setActiveVisualization] = useState(null);
-  const [showVisualization, setShowVisualization] = useState(false);
   const [showScrollButtons, setShowScrollButtons] = useState(false);
   const topRef = useRef(null);
   const headerRef = useRef(null);
@@ -344,9 +342,23 @@ const TimelineEvent = ({ handleMessageClick }) => {
             )}
           </div>
         </div>
-        <LadgerCard />
+        <LadgerCard timelineData={timelineData} handleMessageClick={handleMessageClick} />
 
-
+        {timelineData?.length > 0 && (
+          <Pagination
+            slice={"ladger"}
+            fn={(page) =>
+              dispatch(
+                getLadger({
+                  email: contactInfo?.email1,
+                  loading: false,
+                  force: true,
+                  page,
+                }),
+              )
+            }
+          />
+        )}
       </div>
 
       {timelineData?.length > 8 && (
