@@ -473,11 +473,23 @@ export default function TemplatesPage() {
         formData.append("html", decodeHtmlEntities(currentHtml));
       }
 
-      const result = await fetchGpc({
-        params: { type: "generate_template" },
-        method: "POST",
-        body: formData,
-      });
+      const baseUrl = crmEndpoint.split("?")[0];
+      const res = await fetch(
+        `${baseUrl}?entryPoint=fetch_gpc&type=generate_template`,
+        {
+          method: "POST",
+          headers: {
+            "X-Api-Key": FETCH_GPC_X_API_KEY,
+          },
+          body: formData,
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      const result = await res.json();
       showConsole && console.log("AI generate result:", result);
 
       if (result?.success && result?.data?.html) {
