@@ -1,4 +1,4 @@
-import { Mail, Activity, Hash } from "lucide-react";
+import { Mail, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -61,24 +61,24 @@ export const Duplicate = () => {
 
           {/* Rows */}
           {!loading &&
-            entries.map(([threadId, item]) => (
+            duplicateEmail.map(thread => (
               <div
-                key={threadId}
+                key={thread.thread_id}
                 className="grid grid-cols-2 px-8 py-5 border-b last:border-b-0 hover:bg-gray-50 transition"
               >
                 {/* Date */}
                 <div className="text-blue-600 font-medium">
-                  {item.date_created ? item.date_created : "-"}
+                  {thread.date_created ? thread.date_created : "-"}
                 </div>
 
                 {/* Subject */}
                 <button
                   onClick={() =>
-                    handleMove({ email: item.from_email, threadId })
+                    handleMove({ email: thread.from_email, threadId: thread.thread_id })
                   }
                   className="text-gray-800 font-medium text-left cursor-pointer hover:text-blue-600"
                 >
-                  {item.subject}
+                  {thread.subject}
                 </button>
               </div>
             ))}

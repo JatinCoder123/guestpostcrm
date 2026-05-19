@@ -132,7 +132,7 @@ export function TopNav() {
   };
 
   return (
-    <div className="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div className="bg-white border-b p-1 py-2 flex items-center justify-between sticky top-0 z-50">
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
@@ -264,9 +264,9 @@ export function TopNav() {
               }
               : {}
           }
-          className="relative p-4 bg-orange-500 text-white rounded-full"
+          className="relative bg-orange-500 text-white rounded-full p-2"
         >
-          <Flame />
+          <Flame size={20} />
 
           {count > 0 && (
             <span className="absolute -top-1 -right-1 bg-orange-800 text-xs w-5 h-5 rounded-full flex items-center justify-center">
@@ -314,9 +314,9 @@ export function TopNav() {
 
         <button
           onClick={() => navigateTo("ai-credits")}
-          className="p-4 bg-purple-600 text-white rounded-full"
+          className="p-2 bg-purple-600 text-white rounded-full"
         >
-          <Sparkles />
+          <Sparkles size={20} />
         </button>
 
         {/* PROFILE */}

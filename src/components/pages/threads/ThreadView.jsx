@@ -32,6 +32,7 @@ import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import CopyButton from "../../CopyButton.jsx";
 import RightThreadHeader from "./RightThreadHeader.jsx";
+import NavigationBar from "./NavigationBar.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
@@ -363,67 +364,6 @@ export default function ThreadView() {
   );
 }
 
-function NavigationBar({ messageLimit, setMessageLimit, emails, scrollRef }) {
-  return (
-    <div className="p-3 flex gap-3 border-b  backdrop-blur-xl ">
-      {messageLimit < emails?.length && (
-        <>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => setMessageLimit((p) => p + 3)}
-            className="px-5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            Load More
-          </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => setMessageLimit(emails.length)}
-            className="px-5 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            Show All
-          </motion.button>
-        </>
-      )}
 
-      {/* FIRST / LAST (ALWAYS AVAILABLE) */}
-      {emails?.length > 0 && (
-        <>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => {
-              // Step 1: show all messages if not already
-              if (messageLimit < emails.length) {
-                setMessageLimit(emails.length);
-              }
 
-              // Step 2: wait for DOM update, then scroll
-              setTimeout(() => {
-                scrollRef.current?.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                });
-              }, 50);
-            }}
-            className="p-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-full font-medium shadow-sm hover:shadow-md transition-all cursor-pointer"
-          >
-            <ArrowBigUp />
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => {
-              scrollRef.current?.scrollTo({
-                top: scrollRef.current.scrollHeight,
-                behavior: "smooth",
-              });
-            }}
-            className="p-1 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full font-medium shadow-sm hover:shadow-md transition-all cursor-pointer"
-          >
-            <ArrowBigDown />
-          </motion.button>
-        </>
-      )}
-    </div>
-  );
-}

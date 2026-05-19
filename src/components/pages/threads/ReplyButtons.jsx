@@ -24,14 +24,20 @@ import {
   Settings,
   PenLine,
   Check,
+  StopCircle,
+  CircleStop,
 } from "lucide-react";
 import Attachment from "../../Attachment";
 import MicInput from "../../MicInput";
 import { LoadingChase } from "../../Loading";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
+import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../../store/constants";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply";
 import FirstReplyBtn from "../../FirstReplyBtn";
 import { SmallTinyEditor } from "../../TinyEditor";
+import IconButton from "../../ui/Buttons/IconButton";
+import { BiSolidMessageCheck } from "react-icons/bi";
+import { editContact, viewEmailAction } from "../../../store/Slices/viewEmail";
+import { fetchGpc } from "../../../services/api";
 
 const ReplyButtons = ({ editorRef, editorReady }) => {
   const {
@@ -41,6 +47,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     editorContent,
     setContentLoading,
     htmlfile,
+    moveToNext,
     setHtmlfile,
     pdfLoading,
   } = useOutletContext();
@@ -59,6 +66,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
   const [showHtmlEditor, setShowHtmlEditor] = useState(false);
   const [tempHtml, setTempHtml] = useState(htmlfile || "");
   const [editorReadyLocal, setEditorReadyLocal] = useState(false);
+
   const editorRefLocal = useRef(null);
 
   const {
@@ -75,6 +83,15 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_buttons&type=regular&email=${currentEmail}`,
     name: "BUTTONS",
     dependencies: [currentEmail, favourites],
+  });
+  const { loading: contactLoading, data: contact } = useModule({
+    url: `${crmEndpoint}&type=get_contact&email=${currentEmail}`,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+
+    }, name: "GETTING CONTACT",
+    dependencies: [currentEmail],
   });
 
   const {
@@ -146,7 +163,12 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
       );
     }
   };
-
+  const [stopLoading, setStopLoading] = useState(false)
+  const hanldeConvDone = () => {
+    dispatch(editContact({ contact: { ...contact.contact, conversation_complete: "1" }, account: { ...contact.account }, }, null,));
+    dispatch(viewEmailAction.compleConv({ message: `Conversion Complete with ${currentEmail}`, sendedEmail: currentEmail }));
+    moveToNext(currentEmail)
+  };
   function insertAiReply(input) {
     setOpenParent(null);
     setTemplateId(null);
@@ -276,7 +298,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
           <Btn
             gradient="bg-gradient-to-r from-indigo-500 to-purple-600"
             icon={Sparkles}
-            label="AI Smart Reply"
+            label="AI  Reply"
             onClick={() => {
               if (aiReplyContent === "") dispatch(getAiReply(threadId));
               insertAiReply(aiReplyContent);
@@ -455,6 +477,63 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
 
           {/* ── First Reply ── */}
           <FirstReplyBtn email={currentEmail} />
+          <motion.button
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400 }}
+            className="flex items-center justify-center bg-slate-600 hover:bg-green-700 cursor-pointer text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={hanldeConvDone}
+            disabled={contactLoading}
+          >
+            <BiSolidMessageCheck className="w-6 h-6" />
+          </motion.button>
+          <IconButton
+            disabled={stopLoading || contactLoading}
+            loading={stopLoading}
+            onClick={async () => {
+              setStopLoading(true);
+
+              try {
+                const newValue =
+                  contact?.contact?.is_stop === "1" ? "0" : "1";
+
+                const data = await fetchGpc({
+                  params: {
+                    type: "force_stop",
+                    id: contact?.contact?.id,
+                    new_value: newValue,
+                    user: currentEmail,
+                  },
+                });
+
+                console.log(data);
+                toast.success(
+                  newValue === "1"
+                    ? "Emails stopped successfully"
+                    : "Emails resumed successfully"
+                );
+                moveToNext(currentEmail)
+              } catch (err) {
+                console.error(err);
+                toast.error("Something went wrong");
+              } finally {
+                setStopLoading(false);
+              }
+            }}
+            label={contact?.contact?.is_stop === "1"
+              ? "Resume Emails"
+              : "Stop Future Emails"}
+            icon={StopCircle}
+            className={`flex items-center gap-2 text-white text-[10.5px] font-medium
+    p-2 rounded-full shadow-sm hover:shadow-md transition-all duration-150
+    whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed
+    ${contact?.contact?.is_stop === "1"
+                ? "bg-gradient-to-r from-red-500 to-red-700"
+                : "bg-gradient-to-r from-yellow-400 to-orange-500"
+              }`}
+          />
+
+
 
           {/* ── Edit Invoice (only if htmlfile exists) ── */}
           {htmlfile && (

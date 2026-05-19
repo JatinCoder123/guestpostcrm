@@ -16,7 +16,6 @@ import { getAiCredits } from "../store/Slices/aiCredits";
 import { getLadger } from "../store/Slices/ladger";
 import {
     checkForDuplicates,
-    getDuplicateCount,
 } from "../store/Slices/duplicateEmailSlice";
 import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getOrders } from "../store/Slices/orders";
@@ -91,7 +90,6 @@ function useRefresh() {
         dispatch(getmovedEmails(enteredEmail));
         // dispatch(getAllAvatar());
         dispatch(getQuickActionBtn());
-        dispatch(getDuplicateCount());
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {
         dispatch(getLinkExchange());

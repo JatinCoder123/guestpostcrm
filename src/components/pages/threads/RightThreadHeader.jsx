@@ -1,5 +1,6 @@
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import NextPrev from "../../NextPrev";
+import CopyButton from "../../CopyButton"
 
 
 const RightThreadHeader = () => {
@@ -13,6 +14,7 @@ const RightThreadHeader = () => {
                 <div className="bg-white text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
                     {sender}
                 </div>
+                <CopyButton text={sender} />
             </div>
 
             {/* Right Section */}

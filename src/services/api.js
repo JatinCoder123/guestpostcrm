@@ -55,7 +55,6 @@ export const fetchGpc = async ({
   params = {},
   headers = {},
 }) => {
-  console.log(DB_NAME)
   const response = await apiClient({
     url: CRMENDPOINT,
     method,
