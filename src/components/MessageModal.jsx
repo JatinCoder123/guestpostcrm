@@ -16,7 +16,6 @@ const MessageModal = ({
 }) => {
   const [messageContent, setMessageContent] = useState("");
   const [isMessageLoading, setIsMessageLoading] = useState(false);
-  const { crmEndpoint } = useSelector((s) => s.user);
   const { handleMove } = useThreadContext();
   const [messageMeta, setMessageMeta] = useState({
     subject: "",
