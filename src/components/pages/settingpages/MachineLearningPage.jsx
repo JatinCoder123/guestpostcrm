@@ -239,9 +239,9 @@ export function MachineLearningPage() {
           prev.map((row) =>
             row.id === updatedItem.id
               ? {
-                ...row,
-                ...updatedItem,
-              }
+                  ...row,
+                  ...updatedItem,
+                }
               : row,
           ),
         );
@@ -347,7 +347,7 @@ export function MachineLearningPage() {
 
   return (
     <div className="p-8 relative">
-      <Header text={"Machine Learning Manager"} handleCreate={() => setShowCreateModal(true)} />
+      <Header text={"Machine Learning Manager"} />
 
       {/* ===================================================== */}
       {/* TOAST */}
@@ -377,15 +377,30 @@ export function MachineLearningPage() {
             key={key}
             onClick={() => setActiveStage(key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition
-              ${activeStage === key
-                ? "bg-blue-600 text-white shadow"
-                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              ${
+                activeStage === key
+                  ? "bg-blue-600 text-white shadow"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
               }`}
           >
             {label}
           </button>
         ))}
       </div>
+
+      {/* ===================================================== */}
+      {/* CREATE BUTTON */}
+      {/* ===================================================== */}
+      <div className="mt-6 flex justify-end">
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
+        >
+          <Plus size={18} />
+          Create Prompt
+        </button>
+      </div>
+
       {/* ===================================================== */}
       {/* PAGE LOADING */}
       {/* ===================================================== */}

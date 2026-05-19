@@ -192,7 +192,7 @@ function AiGenerateModal({
           {/* Motive — dropdown from API */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Motive <span className="text-red-500">*</span>
+              Motive
             </label>
             {motiveListLoading ? (
               <div className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-400">
@@ -269,11 +269,12 @@ function AiGenerateModal({
           </button>
           <button
             onClick={onGenerate}
-            disabled={isGenerating || !aiMotive.trim()}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition ${isGenerating || !aiMotive.trim()
-              ? "bg-gray-300 cursor-not-allowed text-gray-500"
-              : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90"
-              }`}
+            disabled={isGenerating}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition ${
+              isGenerating
+                ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90"
+            }`}
           >
             {isGenerating ? (
               <>
@@ -394,15 +395,26 @@ export default function TemplatesPage() {
   useEffect(() => {
     const fetchMotives = async () => {
       setMotiveListLoading(true);
+
       try {
-        const res = await fetchGpc({ params: { type: 'motive_list' } });
-        if (Array.isArray(json)) setMotiveList(res);
+        const res = await fetchGpc({
+          params: { type: "motive_list" },
+        });
+
+        console.log("Motives Response:", res);
+
+        if (Array.isArray(res)) {
+          setMotiveList(res);
+        } else {
+          console.error("Response is not an array:", res);
+        }
       } catch (err) {
         console.error("Failed to fetch motive list", err);
       } finally {
         setMotiveListLoading(false);
       }
     };
+
     fetchMotives();
   }, [crmEndpoint]);
 
@@ -461,13 +473,23 @@ export default function TemplatesPage() {
         formData.append("html", decodeHtmlEntities(currentHtml));
       }
 
-      const result = await fetchGpc(
+      const baseUrl = crmEndpoint.split("?")[0];
+      const res = await fetch(
+        `${baseUrl}?entryPoint=fetch_gpc&type=generate_template`,
         {
-          params: { type: 'generate_template' },
           method: "POST",
+          headers: {
+            "X-Api-Key": FETCH_GPC_X_API_KEY,
+          },
           body: formData,
         },
       );
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      const result = await res.json();
       showConsole && console.log("AI generate result:", result);
 
       if (result?.success && result?.data?.html) {
@@ -583,11 +605,9 @@ export default function TemplatesPage() {
       alert("Please enter template name");
       return;
     }
-    if (!newDescription.trim()) {
-      alert("Please select a user");
-      return;
-    }
+
     setIsCreating(true);
+
     try {
       const requestBody = {
         parent_bean: {
@@ -608,6 +628,7 @@ export default function TemplatesPage() {
             .replace("T", " "),
         },
       };
+
       const data = await apiRequest({
         method: "POST",
         headers: {
@@ -618,19 +639,26 @@ export default function TemplatesPage() {
         endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
         params: { action_type: "post_data" },
       });
+
       showConsole && console.log("Create response:", data);
+
       if (data.parent_updated === true || data.parent_id || data.id) {
         alert("✅ New template created successfully!");
+
         setNewTemplateName("");
         setNewDescription("");
         setNewTemplateContent("");
+
         setShowNewTemplateModal(false);
+
         setTimeout(() => {
           refetch();
         }, 1000);
       } else {
         alert(
-          `❌ Failed to create template: ${data.error || data.message || "Unknown error"}`,
+          `❌ Failed to create template: ${
+            data.error || data.message || "Unknown error"
+          }`,
         );
       }
     } catch (err) {
@@ -744,7 +772,7 @@ export default function TemplatesPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Template Name *
+                    Template Name
                   </label>
                   <input
                     type="text"
@@ -756,7 +784,7 @@ export default function TemplatesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    User *
+                    User
                   </label>
                   <select
                     value={newDescription}
@@ -850,10 +878,11 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleCreateNewTemplate}
                   disabled={isCreating}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition text-white ${isCreating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700"
-                    }`}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition text-white ${
+                    isCreating
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
                 >
                   {isCreating ? (
                     <>
@@ -862,7 +891,7 @@ export default function TemplatesPage() {
                     </>
                   ) : (
                     <>
-                      <Save size={16} /> Create Template
+                      <Save size={16} /> Save Template
                     </>
                   )}
                 </button>
@@ -929,10 +958,11 @@ export default function TemplatesPage() {
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${isSaving
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 active:scale-95"
-                      }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                      isSaving
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 active:scale-95"
+                    }`}
                   >
                     {isSaving ? (
                       <>
@@ -1014,10 +1044,11 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
-                ? "bg-indigo-600 text-white shadow-lg"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                stageType === key
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
             >
               {label}
             </button>

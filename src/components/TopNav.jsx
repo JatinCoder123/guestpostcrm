@@ -7,6 +7,7 @@ import {
   CircleAlert,
   Copy,
   Check,
+  BellIcon,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -30,7 +31,8 @@ export function TopNav() {
     handleClear,
     setShowNextPrev,
     handleDateClick,
-    superfastReply, superfastToggle
+    superfastReply,
+    superfastToggle,
   } = useContext(PageContext);
   const [search, setSearch] = useState("");
 
@@ -191,9 +193,10 @@ export function TopNav() {
                 className={`
                   absolute right-2 top-1/2 -translate-y-1/2
                   w-6 h-6 flex items-center justify-center rounded-md
-                  ${isBlinking
-                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                    : "bg-gray-300 text-gray-700"
+                  ${
+                    isBlinking
+                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
+                      : "bg-gray-300 text-gray-700"
                   }
                 `}
               >
@@ -224,6 +227,18 @@ export function TopNav() {
 
       {/* RIGHT */}
       <div className="flex items-center gap-3">
+        <button className="group relative cursor-pointer flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.6)] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(217,70,239,0.9)]">
+          {/* Animated background ring */}
+          <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:scale-125 transition-all duration-500"></span>
+
+          {/* Bell */}
+          <BellIcon className="w-4 h-4 z-10 group-hover:-rotate-12 group-hover:animate-pulse transition-all duration-300" />
+
+          {/* Notification badge */}
+          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-[14px] px-1 rounded-full bg-red-500 text-[10px] font-bold text-white border border-white shadow-md animate-bounce">
+            3
+          </span>
+        </button>
         <div
           onClick={superfastToggle}
           className="flex items-center gap-2 cursor-pointer"
@@ -231,37 +246,40 @@ export function TopNav() {
           <span className="text-sm font-medium">⚡ Superfast Reply</span>
 
           <div
-            className={`w-10 h-5 flex items-center rounded-full p-1 transition ${superfastReply ? "bg-green-500" : "bg-gray-300"
-              }`}
+            className={`w-10 h-5 flex items-center rounded-full p-1 transition ${
+              superfastReply ? "bg-green-500" : "bg-gray-300"
+            }`}
           >
             <div
-              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${superfastReply ? "translate-x-5" : ""
-                }`}
+              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
+                superfastReply ? "translate-x-5" : ""
+              }`}
             />
           </div>
         </div>
+
         <motion.button
           onClick={() => navigateTo("hot-records")}
           animate={
             count > 0
               ? {
-                scale: [1, 1.12, 1],
-                boxShadow: [
-                  "0 0 0px rgba(59,130,246,0)",
-                  "0 0 18px rgba(59,130,246,0.9)",
-                  "0 0 18px rgba(239, 68, 213, 0.9)",
-                  "0 0 0px rgba(239,68,68,0)",
-                ],
-              }
+                  scale: [1, 1.12, 1],
+                  boxShadow: [
+                    "0 0 0px rgba(59,130,246,0)",
+                    "0 0 18px rgba(59,130,246,0.9)",
+                    "0 0 18px rgba(239, 68, 213, 0.9)",
+                    "0 0 0px rgba(239,68,68,0)",
+                  ],
+                }
               : {}
           }
           transition={
             count > 0
               ? {
-                repeat: Infinity,
-                duration: 1.6, // normal speed
-                ease: "easeInOut",
-              }
+                  repeat: Infinity,
+                  duration: 1.6, // normal speed
+                  ease: "easeInOut",
+                }
               : {}
           }
           className="relative bg-orange-500 text-white rounded-full p-2"
@@ -283,22 +301,22 @@ export function TopNav() {
             animate={
               errorLogCount > 0
                 ? {
-                  scale: [1, 1.08, 1],
-                  boxShadow: [
-                    "0 0 0px rgba(239,68,68,0)",
-                    "0 0 20px rgba(239,68,68,0.9)",
-                    "0 0 0px rgba(239,68,68,0)",
-                  ],
-                }
+                    scale: [1, 1.08, 1],
+                    boxShadow: [
+                      "0 0 0px rgba(239,68,68,0)",
+                      "0 0 20px rgba(239,68,68,0.9)",
+                      "0 0 0px rgba(239,68,68,0)",
+                    ],
+                  }
                 : {}
             }
             transition={
               errorLogCount > 0
                 ? {
-                  repeat: Infinity,
-                  duration: 1.4,
-                  ease: "easeInOut",
-                }
+                    repeat: Infinity,
+                    duration: 1.4,
+                    ease: "easeInOut",
+                  }
                 : {}
             }
           >
