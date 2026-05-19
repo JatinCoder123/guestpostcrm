@@ -232,7 +232,7 @@ export function Sidebar() {
       <motion.div
         animate={{ width: collapsed ? 100 : 260 }}
         transition={{ duration: 0.25 }}
-        className="bg-white border-r border-gray-200 min-h-[calc(100vh-65px)]
+        className="bg-white border-r border-gray-200 min-h-full
                    p-4 relative flex flex-col shadow-sm"
       >
         {/* COLLAPSE BUTTON */}
@@ -271,7 +271,7 @@ export function Sidebar() {
                 setActivePage(item.id);
                 navigateTo(item.id);
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2  transition-all duration-200 cursor-pointer
+              className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer
                 ${collapsed ? "justify-center" : ""}
                     ${activePage === item.id
                   ? `${item.countBg}  shadow-2xl rounded-full `
@@ -296,7 +296,7 @@ export function Sidebar() {
                     <span
                       className={`px-2 py-0.5 rounded-full ${activePage == item.id ? "text-md" : "text-xs"} ${item.countBg}`}
                     >
-                      {item.loading ? <LoadingSpin /> : <>{item.count}</>}
+                      {item.loading ? <LoadingSpin /> : item.count}
                     </span>
                   )}
                 </>
