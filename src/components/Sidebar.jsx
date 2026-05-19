@@ -233,7 +233,7 @@ export function Sidebar() {
         animate={{ width: collapsed ? 100 : 260 }}
         transition={{ duration: 0.25 }}
         className="bg-white border-r border-gray-200 min-h-full
-                   p-4 relative flex flex-col shadow-sm"
+                   p-2 relative flex flex-col shadow-sm"
       >
         {/* COLLAPSE BUTTON */}
         <button
