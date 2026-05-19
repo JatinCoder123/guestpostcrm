@@ -1,7 +1,7 @@
 import axios from "axios";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
 let CRMENDPOINT = "";
-let DB_NAME = '';
+let DB_NAME = "";
 export function setConfig(endpoint, db_name) {
   CRMENDPOINT = endpoint;
   DB_NAME = db_name;
@@ -55,14 +55,12 @@ export const fetchGpc = async ({
   params = {},
   headers = {},
 }) => {
+  const params1 = DB_NAME ? { ...params, db_name: DB_NAME } : params;
   const response = await apiClient({
     url: CRMENDPOINT,
     method,
     data: body,
-    params: {
-      db_name: DB_NAME,
-      ...params
-    },
+    params: params1,
     headers: {
       "Content-Type": "application/json",
       "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable

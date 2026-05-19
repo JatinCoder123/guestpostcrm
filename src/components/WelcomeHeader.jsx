@@ -1,12 +1,59 @@
-import { Mail, Link2, List, MailCheck } from "lucide-react";
+import {
+  Mail,
+  Link2,
+  List,
+  MailCheck,
+  MailOpen,
+  Send,
+  Bell,
+} from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
-import { periodOptions } from "../assets/assets";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
-import wolfImg from "../assets/wolf-5.gif";
-import { getUnrepliedEmail, unrepliedAction } from "../store/Slices/unrepliedEmails";
+import {
+  getUnrepliedEmail,
+  unrepliedAction,
+} from "../store/Slices/unrepliedEmails";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchGpc } from "../services/api";
+
+const StatBadge = ({
+  icon: Icon,
+  label,
+  value,
+  colorClass,
+  bgClass,
+  borderClass,
+}) => {
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    setAnimate(true);
+    const t = setTimeout(() => setAnimate(false), 400);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  return (
+    <div
+      className={`group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border ${borderClass} ${bgClass} transition-all duration-400 cursor-default`}
+    >
+      <Icon
+        className={`w-4 h-4 ${colorClass} group-hover:scale-125 transition-transform duration-300`}
+      />
+      <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
+        {label}:
+      </span>
+      <span
+        className={`text-xs font-bold ${colorClass} transition-all duration-300 ${
+          animate ? "scale-125 opacity-100" : "scale-100 opacity-90"
+        } inline-block`}
+      >
+        {value ?? "—"}
+      </span>
+    </div>
+  );
+};
 
 const WelcomeHeader = () => {
   const dispatch = useDispatch();
@@ -15,14 +62,43 @@ const WelcomeHeader = () => {
   const path = location.pathname;
   const { contactInfo } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
-  const email = contactInfo?.email1
-  const { setEnteredEmail, setCurrentIndex, handleClear } =
-    useContext(PageContext);
+  const email = contactInfo?.email1;
+  const { setEnteredEmail, handleClear } = useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
   const [animate, setAnimate] = useState(false);
-  const formatRouteName = (route) => {
 
+  // ── Stats state ──────────────────────────────────────────────
+  const [stats, setStats] = useState({
+    reply_recieved: null,
+    reply_sent: null,
+    reminder_sent: null,
+  });
+
+  // ── Fetch stats on mount ──────────────────────────────────────
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await fetchGpc({
+          method: "GET",
+          params: { type: "statscount" },
+        });
+        if (data?.success && data?.stats) {
+          setStats({
+            reply_recieved: data.stats.reply_recieved,
+            reply_sent: data.stats.reply_sent,
+            reminder_sent: data.stats.reminder_sent,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    };
+
+    loadStats();
+  }, []);
+
+  const formatRouteName = (route) => {
     if (route === "/") {
       return (
         <span
@@ -36,11 +112,11 @@ const WelcomeHeader = () => {
         </span>
       );
     }
-    return route.split("/")[1].toUpperCase()
-
+    return route.split("/")[1].toUpperCase();
   };
 
   const resultTitle = formatRouteName(path);
+
   /* ---------------- EFFECTS ---------------- */
 
   useEffect(() => {
@@ -91,11 +167,12 @@ const WelcomeHeader = () => {
                 ],
               }}
               onClick={() => {
-                dispatch(unrepliedAction.setShowNewEmailBanner(false)); // ✅ ADD THIS
+                dispatch(unrepliedAction.setShowNewEmailBanner(false));
                 handleClear();
                 navigate("/");
-                dispatch(getUnrepliedEmail({ loading: true, type: "email_inbound" }));
-                // setCurrentIndex(0);
+                dispatch(
+                  getUnrepliedEmail({ loading: true, type: "email_inbound" }),
+                );
               }}
               transition={{ duration: 2, repeat: Infinity }}
               className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:cursor-pointer
@@ -106,11 +183,9 @@ const WelcomeHeader = () => {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-white opacity-60 animate-ping" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
               </span>
-
               <p className="text-sm font-semibold tracking-wide">
                 New email received
               </p>
-
               <motion.span
                 animate={{ rotate: [0, -10, 10, -10, 0] }}
                 transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2 }}
@@ -126,7 +201,7 @@ const WelcomeHeader = () => {
         {/* LEFT */}
         <div className="flex items-center gap-5">
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
-            <span className="font-bold text-gray-900">Results for  </span>
+            <span className="font-bold text-gray-900">Results for </span>
             <span className="font-bold text-gray-900">{resultTitle}</span>
           </p>
 
@@ -174,12 +249,31 @@ const WelcomeHeader = () => {
           </div>
         </div>
 
-        {/* Wolf GIF */}
-        <div className="flex-shrink-0 pr-2">
-          <img
-            src={wolfImg}
-            alt="Wolf"
-            className="h-14 w-auto object-contain drop-shadow-md"
+        {/* RIGHT — Stats badges */}
+        <div className="flex-shrink-0 flex items-center gap-2 pr-2">
+          <StatBadge
+            icon={MailOpen}
+            label="Received"
+            value={stats.reply_recieved}
+            colorClass="text-emerald-600"
+            bgClass="hover:bg-emerald-50"
+            borderClass="border-gray-200 hover:border-emerald-300"
+          />
+          <StatBadge
+            icon={Send}
+            label="Sent"
+            value={stats.reply_sent}
+            colorClass="text-blue-600"
+            bgClass="hover:bg-blue-50"
+            borderClass="border-gray-200 hover:border-blue-300"
+          />
+          <StatBadge
+            icon={Bell}
+            label="Reminders"
+            value={stats.reminder_sent}
+            colorClass="text-amber-600"
+            bgClass="hover:bg-amber-50"
+            borderClass="border-gray-200 hover:border-amber-300"
           />
         </div>
       </div>
