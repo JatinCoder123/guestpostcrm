@@ -16,7 +16,7 @@ import useRefresh from "./hooks/useRefresh";
 import { unrepliedAction } from "./store/Slices/unrepliedEmails";
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
-  const { message } = useSelector((state) => state.viewEmail);
+  const { message, error } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, currentScore } = useSelector((state) => state.user);
   const {
     displayIntro,
@@ -52,7 +52,11 @@ const RootLayout = () => {
       dispatch(viewEmailAction.clearAllMessage());
       toast.success(message);
     }
-  }, [message]);
+    if (error) {
+      dispatch(viewEmailAction.clearAllErrors());
+      toast.error(error);
+    }
+  }, [message, error]);
 
   // Set active page based on URL
   useEffect(() => {

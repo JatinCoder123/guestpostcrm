@@ -42,19 +42,23 @@ const Thread = () => {
     try {
       setCheckingTheadId(true);
       const data = await fetchGpc({
-        params: { type: "re_check_thread", email: currentEmail },
+        params: { type: "re_check_thread", thread_id: currentThread },
       });
       console.log("MATHED THREAD ID", data);
 
-      if (!(data?.success || data.thread_id)) {
+      if (!(data?.success || data.data)) {
         toast.error("Failed to verify thread!");
+        return;
+      }
+      if (data.data !== currentEmail) {
+        toast.error('Wrong Thread Id Detected! Try Again.')
         return;
       }
       console.log("THREAD", currentThread);
 
       const contentToSend = editorContent;
       const formData = new FormData();
-      formData.append("threadId", data.thread_id);
+      formData.append("threadId", currentThread);
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
@@ -122,7 +126,6 @@ const Thread = () => {
 
       setEmails(state?.viewEmails);
     }
-    console.log("HELLO")
   }, [currentEmail, currentThread]);
   useEffect(() => {
     if (
