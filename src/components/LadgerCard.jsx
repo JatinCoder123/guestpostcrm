@@ -126,7 +126,7 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                             {isOpen && (
                                 <div className="mt-5 ml-2 space-y-4 relative">
 
-                                    {parent.children.map((child) => {
+                                    {parent?.children?.map((child) => {
 
                                         const Icon = child.icon;
                                         const colors =
@@ -355,7 +355,7 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                                                             </div>
 
                                                             <h3 className="font-medium text-gray-800">
-                                                                {child.subject_c}
+                                                                {child?.type_c}
                                                             </h3>
                                                         </div>
 

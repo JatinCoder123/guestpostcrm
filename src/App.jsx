@@ -307,8 +307,11 @@ export default function App() {
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const email = searchParams.get("email");
   useEffect(() => {
-    dispatch(getUser());
+    dispatch(getUser(email));
   }, []);
   useEffect(() => {
     if (error) {
