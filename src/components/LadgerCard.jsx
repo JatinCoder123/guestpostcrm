@@ -261,9 +261,9 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {/* CONNECTOR */}
+
                                                 <div
-                                                    className="absolute right-4 top-10 flex gap-3 bg-white border rounded-lg px-3 py-2 shadow-md
+                                                    className="absolute right-4 top-10 flex gap-3  
              opacity-0 translate-y-1 pointer-events-none
              group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto
              transition-all duration-200 z-20"
@@ -327,6 +327,7 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                                                         </button>
                                                     )}
                                                 </div>
+                                                {/* CONNECTOR */}
                                                 <div className="absolute -left-[40px] top-6 w-8 border-t-2 border-dashed border-gray-300"></div>
 
                                                 {/* DOT */}

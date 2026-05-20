@@ -36,6 +36,8 @@ import reportReducer from "./Slices/reportSlice.js";
 import crmUserReducer from "./Slices/crmUser.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
+import tinyKeyReducer from "./Slices/tinyKey.js";
+
 export const store = configureStore({
   reducer: {
     ladger: ladgerReducer,
@@ -76,5 +78,6 @@ export const store = configureStore({
     crmUser: crmUserReducer,
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,
+    tinyKey: tinyKeyReducer
   },
 });
