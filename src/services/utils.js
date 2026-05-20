@@ -94,6 +94,7 @@ export const applyHashtag = async ({
 };
 
 
+
 export const generatePDF = async (html, id = "invoice") => {
   try {
     const response = await fetchGpc({

@@ -34,6 +34,7 @@ import { extractEmail } from "../assets/assets";
 import { getBacklinks } from "../store/Slices/backlinks.js";
 import { getAllContacts } from "../store/Slices/contacts.js";
 import { getAllUsers } from "../store/Slices/crmUser.js";
+import { getTinyKey } from "../store/Slices/tinyKey.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -72,6 +73,7 @@ function useRefresh() {
         dispatch(getUnrepliedEmail({}));
         dispatch(getAllContacts({}))
         dispatch(getEmailsCount({}))
+        dispatch(getTinyKey())
 
     }, [])
     useEffect(() => {

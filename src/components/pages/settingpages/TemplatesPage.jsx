@@ -2,7 +2,6 @@ import useModule from "../../../hooks/useModule";
 import {
   CREATE_DEAL_API_KEY,
   FETCH_GPC_X_API_KEY,
-  TINY_EDITOR_API_KEY,
 } from "../../../store/constants";
 import { motion } from "framer-motion";
 import { Eye, X, Save, Plus, BotIcon } from "lucide-react";
@@ -270,11 +269,10 @@ function AiGenerateModal({
           <button
             onClick={onGenerate}
             disabled={isGenerating}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition ${
-              isGenerating
-                ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90"
-            }`}
+            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition ${isGenerating
+              ? "bg-gray-300 cursor-not-allowed text-gray-500"
+              : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:opacity-90"
+              }`}
           >
             {isGenerating ? (
               <>
@@ -295,6 +293,8 @@ function AiGenerateModal({
 
 // ════════════════════════════════════════════════════════════════════════════
 export default function TemplatesPage() {
+  const { tinyKey: TINY_EDITOR_API_KEY } = useSelector(state => state.tinyKey)
+
   const [viewItem, setViewItem] = useState(null);
   const [editorContent, setEditorContent] = useState("");
   const [originalContent, setOriginalContent] = useState("");
@@ -656,8 +656,7 @@ export default function TemplatesPage() {
         }, 1000);
       } else {
         alert(
-          `❌ Failed to create template: ${
-            data.error || data.message || "Unknown error"
+          `❌ Failed to create template: ${data.error || data.message || "Unknown error"
           }`,
         );
       }
@@ -878,11 +877,10 @@ export default function TemplatesPage() {
                 <button
                   onClick={handleCreateNewTemplate}
                   disabled={isCreating}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition text-white ${
-                    isCreating
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700"
-                  }`}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm transition text-white ${isCreating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                    }`}
                 >
                   {isCreating ? (
                     <>
@@ -958,11 +956,10 @@ export default function TemplatesPage() {
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                      isSaving
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 active:scale-95"
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${isSaving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 active:scale-95"
+                      }`}
                   >
                     {isSaving ? (
                       <>
@@ -1044,11 +1041,10 @@ export default function TemplatesPage() {
             <button
               key={key}
               onClick={() => setStageType(key)}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                stageType === key
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-              }`}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${stageType === key
+                ? "bg-indigo-600 text-white shadow-lg"
+                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
             >
               {label}
             </button>

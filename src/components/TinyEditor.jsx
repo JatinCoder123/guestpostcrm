@@ -1,6 +1,6 @@
 import { Editor } from "@tinymce/tinymce-react";
-import { TINY_EDITOR_API_KEY } from "../store/constants";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 
 const TinyEditor = ({
   editorContent,
@@ -8,6 +8,7 @@ const TinyEditor = ({
   editorRef,
   setEditorReady
 }) => {
+  const { tinyKey: TINY_EDITOR_API_KEY } = useSelector(state => state.tinyKey)
   return (
     <div className="flex-1  overflow-hidden">
       <motion.div
@@ -147,6 +148,8 @@ export const SmallTinyEditor = ({
   editorRef,
   setEditorReady,
 }) => {
+  const { tinyKey: TINY_EDITOR_API_KEY } = useSelector(state => state.tinyKey)
+
   return (
     <div className="overflow-hidden h-full">
       <motion.div
