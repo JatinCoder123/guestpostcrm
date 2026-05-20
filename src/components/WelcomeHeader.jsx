@@ -269,6 +269,123 @@ const WelcomeHeader = () => {
 
         {/* RIGHT */}
         <div className="flex-shrink-0 flex items-center gap-2 pr-2">
+          {/* SUMMARY */}
+          <div
+            onClick={() => navigate("/settings/controller")}
+            className="relative group cursor-pointer flex items-center justify-center"
+          >
+            {/* Circular Score */}
+            <div className="relative w-16 h-16 hover:scale-110 transition-all duration-300">
+              {/* Animated Ring */}
+              <svg
+                className="w-16 h-16 rotate-[-90deg]"
+                viewBox="0 0 120 120"
+              >
+                {/* Background */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  stroke="#ede9fe"
+                  strokeWidth="10"
+                  fill="none"
+                />
+
+                {/* Progress */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  stroke="url(#gradient)"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={326.72}
+                  strokeDashoffset={
+                    326.72 -
+                    ((summary?.total_score || 0) / 100) * 326.72
+                  }
+                  className="transition-all duration-1000 ease-out"
+                />
+
+                {/* Gradient */}
+                <defs>
+                  <linearGradient id="gradient">
+                    <stop offset="0%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#d946ef" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              {/* Center */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-violet-700">
+                  {summary?.total_score || 0}%
+                </span>
+              </div>
+
+              {/* Pulse Glow */}
+              <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-xl scale-90 animate-pulse -z-10" />
+            </div>
+
+            {/* HOVER CARD */}
+            <div
+              className="
+    absolute top-20 right-0
+    w-72
+    opacity-0 invisible
+    translate-y-2
+    group-hover:opacity-100
+    group-hover:visible
+    group-hover:translate-y-0
+    transition-all duration-300
+    bg-white/95 backdrop-blur-xl
+    text-gray-800
+    rounded-3xl shadow-2xl
+    border border-gray-200
+    p-5 z-50
+  "
+            >
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="
+        w-10 h-10 rounded-2xl
+        bg-gradient-to-r from-violet-500 to-fuchsia-500
+        flex items-center justify-center
+        shadow-lg
+      "
+                >
+                  <ChartSpline className="w-5 h-5 text-white" />
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-violet-700">
+                    Automation Summary
+                  </h3>
+
+                  <p className="text-xs text-gray-500">
+                    AI performance overview
+                  </p>
+                </div>
+              </div>
+
+              {/* Summary Only */}
+              <div
+                className="
+      p-4 rounded-2xl
+      bg-gradient-to-br from-violet-50 to-fuchsia-50
+      border border-violet-100
+    "
+              >
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {summary?.automation_summary ||
+                    "No automation summary available"}
+                </p>
+              </div>
+
+            </div>
+          </div>
           <StatBadge
             icon={MailOpen}
             label="Received"
@@ -297,67 +414,7 @@ const WelcomeHeader = () => {
           />
 
           {/* SUMMARY */}
-          <div
-            onClick={() => navigate("/settings/controller")}
-            className="
-              relative group cursor-pointer
-              px-4 py-2 rounded-2xl
-              bg-gradient-to-r from-violet-500 to-fuchsia-500
-              text-white shadow-lg
-              hover:scale-105 transition-all duration-300
-              overflow-visible
-            "
-          >
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition duration-300 rounded-2xl" />
 
-            <div className="relative z-10 flex items-center gap-2">
-              <ChartSpline className="w-4 h-4" />
-
-              <span className="text-xs font-bold whitespace-nowrap">
-                GPC Summary
-              </span>
-            </div>
-
-            {/* HOVER CARD */}
-            <div
-              className="
-                absolute top-14 right-0
-                w-72
-                opacity-0 invisible
-                group-hover:opacity-100 group-hover:visible
-                transition-all duration-300
-                bg-white text-gray-800
-                rounded-2xl shadow-2xl border border-gray-200
-                p-4 z-50
-              "
-            >
-              <h3 className="text-sm font-bold text-violet-700 mb-3">
-                Automation Summary
-              </h3>
-
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Total Score</span>
-
-                  <span className="font-bold text-violet-600">
-                    {summary?.total_score ?? 0}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Allowed Records</span>
-
-                  <span className="font-bold text-emerald-600">
-                    {summary?.allowed_records ?? 0}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-3 text-[11px] text-violet-600 font-semibold">
-                Click to open GPC Controller →
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
