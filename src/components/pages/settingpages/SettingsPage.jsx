@@ -1,6 +1,7 @@
 import {
   Bot,
   Bug,
+  ChartBarStackedIcon,
   Cpu,
   CreditCard,
   Database,
@@ -9,10 +10,12 @@ import {
   Globe,
   Joystick,
   Phone,
+  Recycle,
+  User,
   Users,
 } from "lucide-react";
-import { BsExplicit } from "react-icons/bs";
 import { Link, Outlet } from "react-router-dom";
+import Header from "./Header"
 
 export function SettingsPage() {
   const menuItems = [
@@ -24,7 +27,7 @@ export function SettingsPage() {
       link: "machine-learning",
     },
     {
-      title: "PayPal Credentials Management",
+      title: "API Credentials Management",
       subtitle: "Manage payments",
       icon: <CreditCard className="w-8 h-8 text-green-600" />,
       bg: "bg-green-50",
@@ -86,13 +89,34 @@ export function SettingsPage() {
       bg: "bg-green-50",
       link: "data-modelling",
     },
+    {
+      title: "Prompt Management",
+      subtitle: "Test prompts",
+      icon: <ChartBarStackedIcon className="w-8 h-8 text-blue-600" />,
+      bg: "bg-blue-50",
+      link: "prompt-testing",
+    },
+    {
+      title: "User Activities",
+      subtitle: "Manage User Activity",
+      icon: <User className="w-8 h-8 text-teal-600" />,
+      bg: "bg-teal-50",
+      link: "user-activity",
+    },
+    {
+      title: "Recycle Bin",
+      subtitle: "Manage Recycle Bin",
+      icon: <Recycle className="w-8 h-8 text-red-600" />,
+      bg: "bg-red-50",
+      link: "recycle",
+    },
   ];
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-6">Settings</h2>
+      <Header text={"Settings"} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {menuItems.map((item, index) => (
           <Link
             to={item.link}

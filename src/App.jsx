@@ -55,7 +55,9 @@ import PromptExplorer from "./components/pages/settingpages/PromptExplorer";
 import Ip from "./components/Ip";
 import IpManager from "./components/pages/IpManager";
 import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
-
+import UserActivity from "./components/pages/settingpages/UserActivity";
+import RecyclePage from "./components/pages/settingpages/Recycle";
+import Profile from "./components/pages/Profile"
 const router = createBrowserRouter([
   {
     path: "*",
@@ -82,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: "unreplied-emails",
         element: <UnrepliedEmailsPage />,
+      },
+      {
+        path: "profile",
+        element: <Profile />,
       },
       {
         path: "ai-credits",
@@ -287,6 +293,15 @@ const router = createBrowserRouter([
             path: "data-modelling",
             element: <DataModellingPage />,
           },
+          {
+            path: "user-activity",
+            element: <UserActivity />,
+          },
+          {
+            path: "recycle",
+            element: <RecyclePage />,
+          },
+
         ],
       },
     ],
@@ -297,8 +312,11 @@ export default function App() {
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const email = searchParams.get("email");
   useEffect(() => {
-    dispatch(getUser());
+    dispatch(getUser(email));
   }, []);
   useEffect(() => {
     if (error) {

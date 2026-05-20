@@ -9,6 +9,7 @@ const gpcControllerSlice = createSlice({
     updating: false,
     checkboxes: [],
     error: null,
+    summary: {},
     message: null,
   },
   reducers: {
@@ -18,7 +19,8 @@ const gpcControllerSlice = createSlice({
     },
     getGpcSuccess(state, action) {
       state.loading = false;
-      state.checkboxes = action.payload;
+      state.checkboxes = action.payload.checkBox;
+      state.summary = action.payload.summary
     },
     getGpcFailed(state, action) {
       state.loading = false;
@@ -55,8 +57,8 @@ export const fetchGpcController = () => {
 
       const data = await fetchGpc({ method: "POST", params: { type: 'manage_gpc' }, body: { current_email: getState().user.user.email } });
 
-      showConsole && console.log(`GPC Data`, data?.data?.available_checkbox);
-      dispatch(gpcControllerSlice.actions.getGpcSuccess(data?.data || []));
+      showConsole && console.log(`GPC Data`, data);
+      dispatch(gpcControllerSlice.actions.getGpcSuccess({ checkBox: data?.data || [], summary: data.summary }));
     } catch (error) {
       dispatch(
         gpcControllerSlice.actions.getGpcFailed(

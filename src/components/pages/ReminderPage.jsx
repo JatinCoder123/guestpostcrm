@@ -8,6 +8,7 @@ import {
   Send,
   StopCircle,
   Ban,
+  CircleX,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect } from "react";
@@ -16,21 +17,21 @@ import { excludeName, extractEmail } from "../../assets/assets.js";
 import TableView, { Table } from "../ui/table/Table.jsx";
 import TableTitleBar from "../ui/table/TableTitleBar.jsx";
 import { LoadingChase } from "../Loading.jsx"
-import { getOrderRem, orderRemAction, sendReminder } from "../../store/Slices/reminder.js";
+import { cancelReminder, getOrderRem, orderRemAction, sendReminder } from "../../store/Slices/reminder.js";
 import { toast } from "react-toastify";
 const STATUS_CONFIG = [
   {
     value: "sent",
     label: "Sent",
     icon: Send,
-    color: "#056439ff", // orange (amber-500)
+    color: "#056439", // orange (amber-500)
     showAmount: true
   },
   {
     value: "pending",
     label: "Pending",
     icon: StopCircle,
-    color: "#d8ef44ff", // red (red-500)
+    color: "#d8ef44", // red (red-500)
   },
   {
     value: "cancel",
@@ -89,18 +90,7 @@ export function ReminderPage() {
             "N/A"}        </span>
       )
     },
-    {
-      label: "SCHEDULED TIME",
-      accessor: "scheduled_time",
-      headerClasses: "",
-      icon: Calendar,
 
-      classes: "truncate max-w-[200px]",
-      render: (row) => (
-        <span className="font-medium text-green-700 cursor-pointer">
-          {row.scheduled_time || "N/A"}        </span>
-      )
-    },
     {
       label: "STATUS",
       accessor: "status",
@@ -121,6 +111,19 @@ export function ReminderPage() {
         </span>
       )
     },
+    {
+      label: "Left Time",
+      accessor: "remaining_time",
+      headerClasses: "",
+      icon: BadgeDollarSign,
+      classes: "truncate max-w-[300px] ",
+
+      render: (row) => (
+        <span className="font-medium text-gray-700 cursor-pointer">
+          {row.remaining_time}
+        </span>
+      )
+    },
 
     {
       label: "Action",
@@ -128,36 +131,39 @@ export function ReminderPage() {
       headerClasses: "ml-auto",
       icon: Clapperboard,
       classes: "truncate max-w-[300px] ml-auto",
-      render: (row) => (
-        <div className="flex items-center justify-center gap-2">
+      render: (row) => {
+        const valid = row.status?.toLowerCase() === "sent" || row.status?.toLowerCase() === "cancel"
+        return <div className="flex items-center justify-center gap-2">
           {sending && sendReminderId === row.id ? (
             <LoadingChase size="20" color="blue" />
           ) : (
-            <button
-              className={`px-3 py-1  text-white rounded-lg hover:scale-110 transition-colors text-sm 
-                            ${row.status === "Sent" ||
-                  row.status === "cancel"
-                  ? "opacity-50 cursor-not-allowed"
-                  : "cursor-pointer"
-                }
-                          `}
-              onClick={() => {
-                dispatch(sendReminder(row.id))
-              }}
-              disabled={
-                row.status === "Sent" || row.status === "cancel"
-              }
-            >
-              <img
-                width="34"
-                height="34"
-                src="https://img.icons8.com/arcade/64/send.png"
-                alt="send"
-              />
-            </button>
+            <>
+              <button
+                className={`px-3 py-1  text-white rounded-lg hover:scale-110 transition-colors text-sm 
+                            ${valid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                onClick={() => { dispatch(sendReminder(row.id)) }}
+                disabled={valid}
+              >
+                <img
+                  width="34"
+                  height="34"
+                  src="https://img.icons8.com/arcade/64/send.png"
+                  alt="send"
+                />
+              </button>
+              <button
+                className={`px-3 py-1   rounded-lg hover:scale-110 transition-colors text-sm ${valid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                disabled={valid}
+                onClick={() => { dispatch(cancelReminder({ email: extractEmail(row?.real_name), reminderId: row.id })) }}
+
+              >
+                <CircleX color="red" />
+              </button>
+            </>
+
           )}
         </div>
-      )
+      }
     },
 
 
@@ -166,7 +172,7 @@ export function ReminderPage() {
 
     return {
       ...config,
-      count: Number(summary?.[`${config.value}_deals`] || 0),
+      count: Number(summary?.[`${config.value}`] || 0),
     };
 
   });
@@ -197,7 +203,7 @@ export function ReminderPage() {
 
         <Table
           headerStyle={"bg-lime-600"}
-          layoutStyle={"grid grid-cols-[200px_200px_200px_300px_200px_1fr]"}
+          layoutStyle={"grid grid-cols-6"}
           rowClassName={(row) =>
             row.id === sendReminderId ? "bg-lime-200 hover:bg-lime-200" : ""
           }

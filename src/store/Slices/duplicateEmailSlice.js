@@ -1,14 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { fetchGpc } from "../../services/api";
-import { emojiByUnified } from "emoji-picker-react";
+import { getCache, setCache } from "../../services/cache";
 
 
 const duplicateEmailSlice = createSlice({
     name: "duplicateEmails",
     initialState: {
         loading: false,
-        duplicateEmail: {},
+        duplicateEmail: [],
         count: 0,
         error: null,
         lastResetTime: null,
@@ -42,16 +42,6 @@ const duplicateEmailSlice = createSlice({
             }
         },
 
-        resetDuplicateCount(state) {
-            state.count = 0;
-            state.shouldIgnoreUpdates = true;
-            state.lastResetTime = Date.now();
-        },
-
-        enableDuplicateUpdates(state) {
-            state.shouldIgnoreUpdates = false;
-
-        },
         setDuplicateCount(state, action) {
             state.count = action.payload;
 
@@ -59,21 +49,85 @@ const duplicateEmailSlice = createSlice({
     },
 });
 
-export const getDuplicateEmails = () => {
+export const getDuplicateEmails = (
+    email = null,
+    force = false,
+    loading = true
+) => {
     return async (dispatch, getState) => {
-        dispatch(duplicateEmailSlice.actions.getDuplicateEmailsRequest());
+        loading &&
+            dispatch(
+                duplicateEmailSlice.actions.getDuplicateEmailsRequest()
+            );
 
         try {
-            const data = await fetchGpc({ params: { type: 'get_dupliacte_threads', email: getState().viewEmail.contactInfo?.email1 } });
-            showConsole && console.log(data)
+            const targetEmail =
+                email ??
+                getState().viewEmail.contactInfo?.email1;
+
+            const trimmedEmail = targetEmail?.trim();
+
+            // =========================
+            // CACHE CHECK
+            // =========================
+            if (!force) {
+                const cachedData = getCache(
+                    "duplicateEmails",
+                    trimmedEmail
+                );
+
+                if (cachedData) {
+                    dispatch(
+                        duplicateEmailSlice.actions.getDuplicateEmailsSuccess(
+                            cachedData
+                        )
+                    );
+
+                    return;
+                }
+            }
+
+            // =========================
+            // API CALL
+            // =========================
+            const data = await fetchGpc({
+                params: {
+                    type: "get_dupliacte_threads",
+                    email: trimmedEmail,
+                },
+            });
+
+            showConsole && console.log("DUPLICATE", data);
+
+            const freshData = {
+                emails: data?.data ?? [],
+                count: data?.data_count ?? 0,
+            };
+
+            // =========================
+            // SAVE CACHE
+            // =========================
+            setCache(
+                "duplicateEmails",
+                trimmedEmail,
+                freshData
+            );
+
+            // =========================
+            // SAVE REDUX
+            // =========================
             dispatch(
-                duplicateEmailSlice.actions.getDuplicateEmailsSuccess({
-                    emails: data?.threads,
-                    count: data?.data_count ?? 0,
-                })
+                duplicateEmailSlice.actions.getDuplicateEmailsSuccess(
+                    freshData
+                )
+            );
+
+            dispatch(
+                duplicateEmailSlice.actions.clearDuplicateEmailErrors()
             );
         } catch (error) {
             console.error(error);
+
             dispatch(
                 duplicateEmailSlice.actions.getDuplicateEmailsFailed(
                     "Fetching Duplicate Emails Failed"
@@ -82,7 +136,6 @@ export const getDuplicateEmails = () => {
         }
     };
 };
-
 
 export const getDuplicateCount = () => {
     return async (dispatch, getState) => {
@@ -126,18 +179,8 @@ export const checkForDuplicates = () => {
 };
 
 
-export const resetDuplicateCount = () => {
-    return (dispatch) => {
-        dispatch(duplicateEmailSlice.actions.resetDuplicateCount());
-    };
-};
 
 
-export const enableDuplicateUpdates = () => {
-    return (dispatch) => {
-        dispatch(duplicateEmailSlice.actions.enableDuplicateUpdates());
-    };
-};
 
 // ✅ Async Thunk for count
 export const fetchDuplicateCount = createAsyncThunk(

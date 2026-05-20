@@ -7,6 +7,8 @@ import {
   CircleAlert,
   Copy,
   Check,
+  BellIcon,
+  User2,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -30,7 +32,8 @@ export function TopNav() {
     handleClear,
     setShowNextPrev,
     handleDateClick,
-    superfastReply, superfastToggle
+    superfastReply,
+    superfastToggle,
   } = useContext(PageContext);
   const [search, setSearch] = useState("");
 
@@ -132,7 +135,7 @@ export function TopNav() {
   };
 
   return (
-    <div className="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div className="bg-white border-b p-1 py-2 flex items-center justify-between sticky top-0 z-50">
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
@@ -240,6 +243,20 @@ export function TopNav() {
             />
           </div>
         </div>
+        <button className="group relative cursor-pointer flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.6)] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(217,70,239,0.9)]">
+          {/* Animated background ring */}
+          <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:scale-125 transition-all duration-500"></span>
+
+          {/* Bell */}
+          <BellIcon className="w-4 h-4 z-10 group-hover:-rotate-12 group-hover:animate-pulse transition-all duration-300" />
+
+          {/* Notification badge */}
+          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-[14px] px-1 rounded-full bg-red-500 text-[10px] font-bold text-white border border-white shadow-md animate-bounce">
+            3
+          </span>
+        </button>
+
+
         <motion.button
           onClick={() => navigateTo("hot-records")}
           animate={
@@ -264,9 +281,9 @@ export function TopNav() {
               }
               : {}
           }
-          className="relative p-4 bg-orange-500 text-white rounded-full"
+          className="relative bg-orange-500 text-white rounded-full p-2"
         >
-          <Flame />
+          <Flame size={20} />
 
           {count > 0 && (
             <span className="absolute -top-1 -right-1 bg-orange-800 text-xs w-5 h-5 rounded-full flex items-center justify-center">
@@ -279,7 +296,7 @@ export function TopNav() {
         {notificationCount.error_log_created && (
           <motion.button
             onClick={() => navigateTo("/settings/debugging")}
-            className="relative p-4 bg-red-500 text-white rounded-full"
+            className="relative p-2 bg-red-500 text-white rounded-full"
             animate={
               errorLogCount > 0
                 ? {
@@ -314,9 +331,9 @@ export function TopNav() {
 
         <button
           onClick={() => navigateTo("ai-credits")}
-          className="p-4 bg-purple-600 text-white rounded-full"
+          className="p-2 bg-purple-600 text-white rounded-full"
         >
-          <Sparkles />
+          <Sparkles size={20} />
         </button>
 
         {/* PROFILE */}
@@ -336,9 +353,14 @@ export function TopNav() {
                 exit={{ opacity: 0, y: -10 }}
                 className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl"
               >
-                <div className="p-4">
-                  <p className="font-semibold">{user?.name}</p>
-                  <p className="text-sm text-gray-500">{user?.email}</p>
+                <div onClick={() => {
+                  navigateTo('/profile')
+                }} className="p-4 flex items-center gap-3 border-b">
+                  <User2 className="w-6 h-6 mb-2 text-gray-600" />
+                  <div>
+                    <p className="font-semibold">{user?.name}</p>
+                    <p className="text-sm text-gray-500">{user?.email}</p>
+                  </div>
                 </div>
                 <button
                   onClick={handleLogout}

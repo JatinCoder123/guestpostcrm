@@ -9,6 +9,7 @@ const ladgerSlice = createSlice({
     loading: false,
     email: localStorage.getItem("email") || null,
     ladger: [],
+    type: 'get_card_ledger',
     noSearchResultData: null,
     mailersSummary: null,
     pageCount: 1,
@@ -149,7 +150,7 @@ export const getLadger = ({
       const timeline = getState().ladger.timeline
       const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: trimmedEmail, page, page_size: "50" }
       brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "timeline", ...params } })
-        : res = await fetchGpc({ params: { type: "ledger", ...params } });
+        : res = await fetchGpc({ params: { type: getState().ladger.type, ...params } });
       const data = brand ? res.data.timeline : res
       console.log(`${brand && "BRAND"} LADGER`, data)
       const freshData = {

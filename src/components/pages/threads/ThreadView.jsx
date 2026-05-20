@@ -1,13 +1,24 @@
-import { User, Globe, Send, X, ChevronLeft, Move, CornerUpRight, Mail, Edit, DollarSign, ArrowBigUp, ArrowBigDown, Copy } from "lucide-react";
+import {
+  User,
+  Globe,
+  Send,
+  X,
+  ChevronLeft,
+  Move,
+  CornerUpRight,
+  Mail,
+  Edit,
+  DollarSign,
+  ArrowBigUp,
+  ArrowBigDown,
+  Copy,
+} from "lucide-react";
 import { motion, AnimatePresence, useMotionTemplate } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { getDomain } from "../../../assets/assets.js";
-import {
-  useNavigate,
-  useOutletContext,
-} from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
@@ -21,12 +32,24 @@ import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import CopyButton from "../../CopyButton.jsx";
 import RightThreadHeader from "./RightThreadHeader.jsx";
+import NavigationBar from "./NavigationBar.jsx";
 
 export default function ThreadView() {
   const scrollRef = useRef();
-  const { emails, loadAiReply = true, superfastReply, editorContent, setEditorContent, handleSendClick, checkingThreadId, contentLoading } = useOutletContext() || [];
+  const {
+    emails,
+    loadAiReply = true,
+    superfastReply,
+    editorContent,
+    setEditorContent,
+    handleSendClick,
+    checkingThreadId,
+    contentLoading,
+  } = useOutletContext() || [];
   const firstMessageRef = useRef(null);
-  const { context: { currentThread: threadId, currentEmail } } = useThreadContext();
+  const {
+    context: { currentThread: threadId, currentEmail },
+  } = useThreadContext();
   const lastMessageRef = useRef(null);
   useIdle({ idle: false });
   const navigate = useNavigate();
@@ -51,18 +74,20 @@ export default function ThreadView() {
   } = useSelector((state) => state.aiReply);
   useEffect(() => {
     dispatch(getAiReply(threadId));
-    setEditorContent("")
+    setEditorContent("");
   }, [threadId]);
   useEffect(() => {
     if (message && aiResponse) {
-      setEditorContent(aiResponse)
-      dispatch(aiReplyAction.clearMessge())
+      setEditorContent(aiResponse);
+      dispatch(aiReplyAction.clearMessge());
     }
   }, [aiResponse, aiError, message]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
-      const data = await fetchGpc({ params: { type: 'view_msg', message_id: messageId, full: 1 } });
+      const data = await fetchGpc({
+        params: { type: "view_msg", message_id: messageId, full: 1 },
+      });
       if (data?.success) {
         setFullMessage(data.email);
       } else {
@@ -112,7 +137,10 @@ export default function ThreadView() {
 
   return (
     <>
-      <SendingOverlay sending={sending || checkingThreadId} email={currentEmail} />
+      <SendingOverlay
+        sending={sending || checkingThreadId}
+        email={currentEmail}
+      />
 
       <motion.div
         className="
@@ -124,108 +152,118 @@ export default function ThreadView() {
   "
       >
         {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
-
+        <div className="flex justify-between flex-wrap items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
           {/* 🔹 LEFT SIDE */}
           <div className="flex items-center gap-3">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
 
             <div className="flex items-center gap-3 group">
-
               {/* OPEN GMAIL */}
               <div
                 className="flex items-center gap-3 cursor-pointer transition"
                 onClick={() =>
                   window.open(
                     `https://mail.google.com/mail/u/0/#inbox/${threadId}`,
-                    "_blank"
+                    "_blank",
                   )
                 }
               >
-
-                <h2 className="text-md font-semibold tracking-tight truncate max-w-[400px]
+                <h2
+                  className="text-md font-semibold tracking-tight truncate max-w-[400px]
       transition-all duration-300 
       hover:text-blue-200 hover:underline"
                 >
                   {emails?.[emails?.length - 1]?.subject}
                 </h2>
               </div>
-
-
             </div>
           </div>
           <RightThreadHeader />
-
-
         </div>
         {loading ? (
           <ThreadSkeleton />
         ) : (
           <>
-            <NavigationBar messageLimit={messageLimit} setMessageLimit={setMessageLimit} emails={emails} scrollRef={scrollRef} />
+            <NavigationBar
+              messageLimit={messageLimit}
+              setMessageLimit={setMessageLimit}
+              emails={emails}
+              scrollRef={scrollRef}
+            />
             <PanelGroup direction="vertical" className="h-full">
               <Panel defaultSize={45} minSize={20}>
-                <Inbox scrollRef={scrollRef} visibleMessages={visibleMessages} emails={emails} firstMessageRef={firstMessageRef} lastMessageRef={lastMessageRef} setOpenMessageId={setOpenMessageId} fetchFullMessage={fetchFullMessage} />
+                <Inbox
+                  scrollRef={scrollRef}
+                  visibleMessages={visibleMessages}
+                  emails={emails}
+                  firstMessageRef={firstMessageRef}
+                  lastMessageRef={lastMessageRef}
+                  setOpenMessageId={setOpenMessageId}
+                  fetchFullMessage={fetchFullMessage}
+                />
               </Panel>
-              <PanelResizeHandle className="cursor-row-resize" disabled={!superfastReply} />
+              <PanelResizeHandle
+                className="cursor-row-resize"
+                disabled={!superfastReply}
+              />
               <Panel defaultSize={!superfastReply ? 1 : 55} minSize={10}>
                 <div className="h-full p-2 border-t bg-gradient-to-r from-blue-500 to-indigo-600 shadow-2xl relative rounded-t-3xl">
                   {loadAiReply || superfastReply ? (
                     <div className="relative  rounded-2xl overflow-hidden h-full  flex justify-end gap-4 shadow-lg">
-
                       {/* 🔥 LEFT PANEL */}
                       <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col justify-between gap-4 rounded-lg">
-
                         {/* ✨ Title Section */}
                         <div className="flex justify-between">
                           <h2 className="text-lg font-bold flex items-center gap-2">
                             ⚡ Super Fast Reply
                           </h2>
-                          <div className="flex gap-3"> <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={handleSendClick}
-                            disabled={checkingThreadId || sending}
-                            className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
-                          >
-                            <Send className="w-4 h-4" />
-                            Send
-                          </motion.button>
+                          <div className="flex gap-3">
+                            {" "}
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={handleSendClick}
+                              disabled={checkingThreadId || sending}
+                              className="bg-white text-indigo-600 px-4 py-2 rounded-xl text-sm font-semibold flex w-fit ml-auto items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+                            >
+                              <Send className="w-4 h-4" />
+                              Send
+                            </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               title="Compose"
-
                               onClick={() => navigate(`/thread/reply`)}
                               className="bg-white/20 backdrop-blur-md cursor-pointer px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/30 transition"
                             >
                               <CornerUpRight className="w-4 h-4" />
-                            </motion.button></div>
-
-
-
+                            </motion.button>
+                          </div>
                         </div>
-                        <ReplyButtons editorReady={editorReady} editorRef={editorRef} />
+                        <ReplyButtons
+                          editorReady={editorReady}
+                          editorRef={editorRef}
+                        />
                         {/* Send Button */}
-
                       </div>
 
                       {/* ✨ RIGHT PANEL (EDITOR ONLY) */}
                       <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
-
                         {/* 🔥 LOADING OVERLAY */}
                         {contentLoading && (
                           <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                              <p className="text-sm text-gray-600 font-medium">Loading content...</p>
+                              <p className="text-sm text-gray-600 font-medium">
+                                Loading content...
+                              </p>
                             </div>
                           </div>
                         )}
@@ -237,10 +275,8 @@ export default function ThreadView() {
                           setEditorReady={setEditorReady}
                           editorRef={editorRef}
                         />
-
                       </div>
                     </div>
-
                   ) : (
                     <motion.button
                       whileHover={{ scale: 1.05, y: -2 }}
@@ -252,10 +288,9 @@ export default function ThreadView() {
                       <span>Reply</span>
                     </motion.button>
                   )}
-                </div></Panel>
-            </PanelGroup >
-
-
+                </div>
+              </Panel>
+            </PanelGroup>
           </>
         )}
 
@@ -332,67 +367,3 @@ export default function ThreadView() {
 
 
 
-function NavigationBar({ messageLimit, setMessageLimit, emails, scrollRef }) {
-  return (
-    <div className="p-3 flex gap-3 border-b  backdrop-blur-xl ">
-      {messageLimit < emails?.length && (
-        <>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => setMessageLimit((p) => p + 3)}
-            className="px-5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            Load More
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => setMessageLimit(emails.length)}
-            className="px-5 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            Show All
-          </motion.button>
-        </>
-      )}
-
-      {/* FIRST / LAST (ALWAYS AVAILABLE) */}
-      {emails?.length > 0 && (
-        <>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => {
-              // Step 1: show all messages if not already
-              if (messageLimit < emails.length) {
-                setMessageLimit(emails.length);
-              }
-
-              // Step 2: wait for DOM update, then scroll
-              setTimeout(() => {
-                scrollRef.current?.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                });
-              }, 50);
-            }}
-            className="p-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-full font-medium shadow-sm hover:shadow-md transition-all cursor-pointer"
-          >
-            <ArrowBigUp />
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            onClick={() => {
-              scrollRef.current?.scrollTo({
-                top: scrollRef.current.scrollHeight,
-                behavior: "smooth",
-              });
-            }}
-            className="p-1 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full font-medium shadow-sm hover:shadow-md transition-all cursor-pointer"
-          >
-            <ArrowBigDown />
-          </motion.button>
-        </>
-      )}
-    </div>
-  )
-}

@@ -1,28 +1,108 @@
-import { Mail, Link2, List, MailCheck } from "lucide-react";
+import {
+  Mail,
+  Link2,
+  List,
+  MailCheck,
+  MailOpen,
+  Send,
+  Bell,
+  ChartSpline,
+} from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
-import { periodOptions } from "../assets/assets";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
-import wolfImg from "../assets/wolf-5.gif";
-import { getUnrepliedEmail, unrepliedAction } from "../store/Slices/unrepliedEmails";
+import {
+  getUnrepliedEmail,
+  unrepliedAction,
+} from "../store/Slices/unrepliedEmails";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchGpc } from "../services/api";
+
+const StatBadge = ({
+  icon: Icon,
+  label,
+  value,
+  colorClass,
+  bgClass,
+  borderClass,
+}) => {
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    setAnimate(true);
+    const t = setTimeout(() => setAnimate(false), 400);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  return (
+    <div
+      className={`group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border ${borderClass} ${bgClass} transition-all duration-400 cursor-default`}
+    >
+      <Icon
+        className={`w-4 h-4 ${colorClass} group-hover:scale-125 transition-transform duration-300`}
+      />
+      <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
+        {label}:
+      </span>
+      <span
+        className={`text-xs font-bold ${colorClass} transition-all duration-300 ${animate ? "scale-125 opacity-100" : "scale-100 opacity-90"
+          } inline-block`}
+      >
+        {value ?? "—"}
+      </span>
+    </div>
+  );
+};
 
 const WelcomeHeader = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
+
   const { contactInfo } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
-  const email = contactInfo?.email1
-  const { setEnteredEmail, setCurrentIndex, handleClear } =
-    useContext(PageContext);
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
-  const [animate, setAnimate] = useState(false);
-  const formatRouteName = (route) => {
+  const { summary } = useSelector((state) => state.gpcController);
 
+  const email = contactInfo?.email1;
+
+  const { setEnteredEmail, handleClear } = useContext(PageContext);
+
+  const [animate, setAnimate] = useState(false);
+
+  const [stats, setStats] = useState({
+    reply_recieved: null,
+    reply_sent: null,
+    reminder_sent: null,
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await fetchGpc({
+          method: "GET",
+          params: { type: "statscount" },
+        });
+
+        if (data?.success && data?.stats) {
+          setStats({
+            reply_recieved: data.stats.reply_recieved,
+            reply_sent: data.stats.reply_sent,
+            reminder_sent: data.stats.reminder_sent,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    };
+
+    loadStats();
+  }, []);
+
+  const formatRouteName = (route) => {
     if (route === "/") {
       return (
         <span
@@ -36,12 +116,11 @@ const WelcomeHeader = () => {
         </span>
       );
     }
-    return route.split("/")[1].toUpperCase()
 
+    return route.split("/")[1].toUpperCase();
   };
 
   const resultTitle = formatRouteName(path);
-  /* ---------------- EFFECTS ---------------- */
 
   useEffect(() => {
     setAnimate(true);
@@ -54,11 +133,10 @@ const WelcomeHeader = () => {
       const timer = setTimeout(() => {
         dispatch(unrepliedAction.setShowNewEmailBanner(false));
       }, 7000);
+
       return () => clearTimeout(timer);
     }
   }, [showNewEmailBanner, dispatch]);
-
-  /* ---------------- DOMAIN ---------------- */
 
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
@@ -66,13 +144,13 @@ const WelcomeHeader = () => {
     ?.split("/")[0];
 
   return (
-    <div className="h-20 w-full relative overflow-hidden rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
+    <div className="h-20 w-full relative overflow-visible rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-50/80 via-purple-50/60 to-pink-50/80" />
       <div className="absolute top-0 left-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-30" />
       <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-30" />
 
-      {/* 🔔 New Email Notification */}
+      {/* Notification */}
       <AnimatePresence>
         {showNewEmailBanner && (
           <motion.div
@@ -91,14 +169,19 @@ const WelcomeHeader = () => {
                 ],
               }}
               onClick={() => {
-                dispatch(unrepliedAction.setShowNewEmailBanner(false)); // ✅ ADD THIS
+                dispatch(unrepliedAction.setShowNewEmailBanner(false));
                 handleClear();
                 navigate("/");
-                dispatch(getUnrepliedEmail({ loading: true, type: "email_inbound" }));
-                // setCurrentIndex(0);
+
+                dispatch(
+                  getUnrepliedEmail({
+                    loading: true,
+                    type: "email_inbound",
+                  }),
+                );
               }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="flex items-center gap-3 px-4 py-2 rounded-2xl hover:cursor-pointer
+              className="flex items-center gap-3 px-4 py-2 rounded-2xl
               bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
               text-white shadow-xl"
             >
@@ -113,7 +196,11 @@ const WelcomeHeader = () => {
 
               <motion.span
                 animate={{ rotate: [0, -10, 10, -10, 0] }}
-                transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2 }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  repeatDelay: 2,
+                }}
               >
                 <MailCheck />
               </motion.span>
@@ -126,7 +213,7 @@ const WelcomeHeader = () => {
         {/* LEFT */}
         <div className="flex items-center gap-5">
           <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
-            <span className="font-bold text-gray-900">Results for  </span>
+            <span className="font-bold text-gray-900">Results for </span>
             <span className="font-bold text-gray-900">{resultTitle}</span>
           </p>
 
@@ -135,6 +222,7 @@ const WelcomeHeader = () => {
             {crmDomain && (
               <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-all duration-400 cursor-pointer">
                 <Link2 className="w-4 h-4 text-purple-600 group-hover:scale-125 transition-transform duration-300" />
+
                 <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-64 transition-all duration-600">
                   CRM:{" "}
                   <span className="font-bold text-purple-700">
@@ -147,6 +235,7 @@ const WelcomeHeader = () => {
             {businessEmail && (
               <div className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer">
                 <Mail className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
+
                 <span className="text-xs font-medium text-gray-700 max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-80 transition-all duration-600">
                   Business Email:{" "}
                   <span className="font-bold text-blue-700">
@@ -161,12 +250,16 @@ const WelcomeHeader = () => {
               className="group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-400 cursor-pointer relative"
             >
               <List className="w-4 h-4 text-blue-600 group-hover:scale-125 transition-transform duration-300" />
+
               <div
                 className={`absolute -top-2 -right-2
                 bg-blue-600 text-white text-xs font-semibold
                 rounded-full w-5 h-5 flex items-center justify-center
                 shadow-md transition-all duration-300 ease-out
-                ${animate ? "scale-125 opacity-100" : "scale-90 opacity-90"}`}
+                ${animate
+                    ? "scale-125 opacity-100"
+                    : "scale-90 opacity-90"
+                  }`}
               >
                 {count}
               </div>
@@ -174,13 +267,154 @@ const WelcomeHeader = () => {
           </div>
         </div>
 
-        {/* Wolf GIF */}
-        <div className="flex-shrink-0 pr-2">
-          <img
-            src={wolfImg}
-            alt="Wolf"
-            className="h-14 w-auto object-contain drop-shadow-md"
+        {/* RIGHT */}
+        <div className="flex-shrink-0 flex items-center gap-2 pr-2">
+          {/* SUMMARY */}
+          <div
+            onClick={() => navigate("/settings/controller")}
+            className="relative group cursor-pointer flex items-center justify-center"
+          >
+            {/* Circular Score */}
+            <div className="relative w-16 h-16 hover:scale-110 transition-all duration-300">
+              {/* Animated Ring */}
+              <svg
+                className="w-16 h-16 rotate-[-90deg]"
+                viewBox="0 0 120 120"
+              >
+                {/* Background */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  stroke="#ede9fe"
+                  strokeWidth="10"
+                  fill="none"
+                />
+
+                {/* Progress */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  stroke="url(#gradient)"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={326.72}
+                  strokeDashoffset={
+                    326.72 -
+                    ((summary?.total_score || 0) / 100) * 326.72
+                  }
+                  className="transition-all duration-1000 ease-out"
+                />
+
+                {/* Gradient */}
+                <defs>
+                  <linearGradient id="gradient">
+                    <stop offset="0%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#d946ef" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              {/* Center */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-violet-700">
+                  {summary?.total_score || 0}%
+                </span>
+              </div>
+
+              {/* Pulse Glow */}
+              <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-xl scale-90 animate-pulse -z-10" />
+            </div>
+
+            {/* HOVER CARD */}
+            <div
+              className="
+    absolute top-20 right-0
+    w-72
+    opacity-0 invisible
+    translate-y-2
+    group-hover:opacity-100
+    group-hover:visible
+    group-hover:translate-y-0
+    transition-all duration-300
+    bg-white/95 backdrop-blur-xl
+    text-gray-800
+    rounded-3xl shadow-2xl
+    border border-gray-200
+    p-5 z-50
+  "
+            >
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="
+        w-10 h-10 rounded-2xl
+        bg-gradient-to-r from-violet-500 to-fuchsia-500
+        flex items-center justify-center
+        shadow-lg
+      "
+                >
+                  <ChartSpline className="w-5 h-5 text-white" />
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-violet-700">
+                    Automation Summary
+                  </h3>
+
+                  <p className="text-xs text-gray-500">
+                    AI performance overview
+                  </p>
+                </div>
+              </div>
+
+              {/* Summary Only */}
+              <div
+                className="
+      p-4 rounded-2xl
+      bg-gradient-to-br from-violet-50 to-fuchsia-50
+      border border-violet-100
+    "
+              >
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {summary?.automation_summary ||
+                    "No automation summary available"}
+                </p>
+              </div>
+
+            </div>
+          </div>
+          <StatBadge
+            icon={MailOpen}
+            label="Received"
+            value={stats.reply_recieved}
+            colorClass="text-emerald-600"
+            bgClass="hover:bg-emerald-50"
+            borderClass="border-gray-200 hover:border-emerald-300"
           />
+
+          <StatBadge
+            icon={Send}
+            label="Sent"
+            value={stats.reply_sent}
+            colorClass="text-blue-600"
+            bgClass="hover:bg-blue-50"
+            borderClass="border-gray-200 hover:border-blue-300"
+          />
+
+          <StatBadge
+            icon={Bell}
+            label="Reminders"
+            value={stats.reminder_sent}
+            colorClass="text-amber-600"
+            bgClass="hover:bg-amber-50"
+            borderClass="border-gray-200 hover:border-amber-300"
+          />
+
+          {/* SUMMARY */}
+
         </div>
       </div>
     </div>

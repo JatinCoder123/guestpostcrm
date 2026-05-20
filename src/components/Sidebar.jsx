@@ -232,8 +232,8 @@ export function Sidebar() {
       <motion.div
         animate={{ width: collapsed ? 100 : 260 }}
         transition={{ duration: 0.25 }}
-        className="bg-white border-r border-gray-200 min-h-[calc(100vh-65px)]
-                   p-4 relative flex flex-col shadow-sm"
+        className="bg-white border-r border-gray-200 min-h-full
+                   p-2 relative flex flex-col shadow-sm"
       >
         {/* COLLAPSE BUTTON */}
         <button
@@ -271,7 +271,7 @@ export function Sidebar() {
                 setActivePage(item.id);
                 navigateTo(item.id);
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2  transition-all duration-200 cursor-pointer
+              className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer
                 ${collapsed ? "justify-center" : ""}
                     ${activePage === item.id
                   ? `${item.countBg}  shadow-2xl rounded-full `
@@ -296,7 +296,7 @@ export function Sidebar() {
                     <span
                       className={`px-2 py-0.5 rounded-full ${activePage == item.id ? "text-md" : "text-xs"} ${item.countBg}`}
                     >
-                      {item.loading ? <LoadingSpin /> : <>{item.count}</>}
+                      {item.loading ? <LoadingSpin /> : item.count}
                     </span>
                   )}
                 </>
@@ -318,102 +318,7 @@ export function Sidebar() {
         </button>
       </motion.div>
 
-      {/* SETTINGS MODAL */}
-      <AnimatePresence>
-        {openSettingsCard && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
-          >
-            <motion.div
-              ref={cardRef}
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.7, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="bg-white p-6 rounded-2xl shadow-2xl w-[90%] max-w-3xl"
-            >
-              {/* HEADER */}
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">Settings</h2>
 
-                <button
-                  onClick={() => setOpenSettingsCard(false)}
-                  className="w-8 h-8 cursor-pointer  bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* CARDS GRID */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {/* Machine Learning */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => setOpenSettingsCard(false)}
-                  className="p-4 bg-blue-50 rounded-xl shadow hover:shadow-lg"
-                >
-                  <Cpu className="w-8 h-8 text-blue-600 mb-2" />
-                  <div className="font-semibold text-gray-800">
-                    Machine Learning
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Update ML settings
-                  </div>
-                </motion.button>
-
-                {/* PayPal */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => setOpenSettingsCard(false)}
-                  className="p-4 bg-green-50 rounded-xl shadow hover:shadow-lg"
-                >
-                  <CreditCard className="w-8 h-8 text-green-600 mb-2" />
-                  <div className="font-semibold text-gray-800">
-                    PayPal Credentials
-                  </div>
-                  <div className="text-sm text-gray-500">Manage payments</div>
-                </motion.button>
-
-                {/* Templates */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => setOpenSettingsCard(false)}
-                  className="p-4 bg-purple-50 rounded-xl shadow hover:shadow-lg"
-                >
-                  <FileText className="w-8 h-8 text-purple-600 mb-2" />
-                  <div className="font-semibold text-gray-800">Templates</div>
-                  <div className="text-sm text-gray-500">Manage templates</div>
-                </motion.button>
-
-                {/* Websites */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => setOpenSettingsCard(false)}
-                  className="p-4 bg-indigo-50 rounded-xl shadow hover:shadow-lg"
-                >
-                  <Globe className="w-8 h-8 text-indigo-600 mb-2" />
-                  <div className="font-semibold text-gray-800">Websites</div>
-                  <div className="text-sm text-gray-500">Manage websites</div>
-                </motion.button>
-
-                {/* Users */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => setOpenSettingsCard(false)}
-                  className="p-4 bg-yellow-50 rounded-xl shadow hover:shadow-lg"
-                >
-                  <User className="w-8 h-8 text-yellow-600 mb-2" />
-                  <div className="font-semibold text-gray-800">Users</div>
-                  <div className="text-sm text-gray-500">Manage users</div>
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

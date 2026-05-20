@@ -269,7 +269,7 @@ const ContactHeader = () => {
 
                 {isBrand && (
                   <IconButton
-                    icon={showBrandTimeline ? EyeOff : Eye}
+                    icon={showBrandTimeline ? Eye : EyeOff}
                     label={
                       showBrandTimeline
                         ? "Hide Brand Timeline"

@@ -91,7 +91,7 @@ const TableView = ({
 
     // 🎯 Status / other filters
     Object.entries(filters).forEach(([key, value]) => {
-      data = data.filter((row) => row[key] === value);
+      data = data.filter((row) => row[key]?.toLowerCase() === value?.toLowerCase());
     });
 
     // ✅ 🕒 DATE RANGE FILTER (MAIN PART)

@@ -110,7 +110,7 @@ export const ViewReminder = ({ reminder, onSend, loading, onClose }) => {
                                 <Detail label="Recipient Email" value={reminder?.recipient} />
                                 <Detail label="Sender" value={reminder?.sender} />
                                 <Detail label="Scheduled Time" value={reminder?.scheduled_time} />
-                                <Detail label="Created At" value={reminder?.date_entered_formatted} />
+                                <Detail label="Created At" value={reminder?.date_entered} />
                                 <Detail label="Last Modified" value={reminder?.date_modified_formatted} />
                                 <Detail label="Thread ID" value={reminder?.thread_id} mono />
                                 <Detail label="Template ID" value={reminder?.template_id} mono />

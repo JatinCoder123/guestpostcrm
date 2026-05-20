@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { AUTH_URL } from "../constants";
 import { showConsole } from "../../assets/assets";
-import { apiRequest, setCrmEndpoint } from "../../services/api";
+import { apiRequest, setConfig } from "../../services/api";
 
 const userSlice = createSlice({
   name: "user",
@@ -9,6 +9,7 @@ const userSlice = createSlice({
     loading: false,
     user: {},
     isAuthenticated: false,
+    db_name: '',
     crmEndpoint: null,
     id: null,
     currentScore: null,
@@ -28,12 +29,13 @@ const userSlice = createSlice({
       state.error = null;
     },
     loadUserSuccess(state, action) {
-      const { crmEndpoint, businessEmail, user, currentScore, id } = action.payload;
+      const { crmEndpoint, businessEmail, user, currentScore, id, db_name } = action.payload;
       state.loading = false;
       state.isAuthenticated = true;
       state.user = user;
       state.crmEndpoint = crmEndpoint;
       state.id = id;
+      state.db_name = db_name;
       state.currentScore = currentScore;
       state.businessEmail = businessEmail;
       state.error = null;
@@ -59,6 +61,7 @@ const userSlice = createSlice({
       state.id = null;
       state.crmEndpoint = null;
       state.businessEmail = null;
+      state.db_name = '';
       state.error = null;
       state.message = action.payload;
     },
@@ -72,12 +75,12 @@ const userSlice = createSlice({
   },
 });
 
-export const getUser = () => {
+export const getUser = (email = null) => {
   return async (dispatch) => {
     dispatch(userSlice.actions.loadUserRequest());
 
     try {
-      const data = await apiRequest({ endpoint: `${AUTH_URL}?controller=auth`, params: { action: 'me' }, withCredentials: true }
+      const data = await apiRequest({ endpoint: `${AUTH_URL}?controller=auth`, params: { action: 'me', email: email }, withCredentials: true }
       );
       showConsole && console.log("user", data);
       dispatch(
@@ -85,11 +88,12 @@ export const getUser = () => {
           user: data.user,
           crmEndpoint: data.crmEndpoint,
           currentScore: data.current_score,
+          db_name: data.db_name,
           businessEmail: data.businessEmail,
           id: data.id,
         })
       );
-      setCrmEndpoint(data.crmEndpoint)
+      setConfig(data.crmEndpoint, data.db_name)
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       showConsole && console.log(error);

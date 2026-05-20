@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import {
   PRESETS,
+  N_MINUTE_FILTERS,
   resolvePreset,
+  resolveNMinutesRange,
   fmtDisplay,
   dtFromStrings,
   dtToStrings,
   fmtDtDisplay,
-} from "../services/dateRangeUtils"
+} from "../services/dateRangeUtils";
 import { DateTimePicker } from "./DateTimePicker";
-import { CalendarDays, ChevronDown, RefreshCcw } from "lucide-react";
+import { CalendarDays, ChevronDown, RefreshCcw, Clock } from "lucide-react";
+
 export function DateRangeFilter({
   fromDate,
   fromTime,
@@ -25,6 +28,7 @@ export function DateRangeFilter({
   const [open, setOpen] = useState(false);
   const [activePreset, setActivePreset] = useState(null);
   const [openPicker, setOpenPicker] = useState(null);
+  const [lastNMinutes, setLastNMinutes] = useState(null); // null = All Day
   const dropRef = useRef(null);
 
   useEffect(() => {
@@ -46,6 +50,20 @@ export function DateRangeFilter({
     setToTime(tt);
     setActivePreset(id);
     setOpenPicker(null);
+    // Reset N-minutes filter when switching presets
+    if (id !== "equals") {
+      setLastNMinutes(null);
+    }
+  }
+
+  function applyNMinutes(value) {
+    setLastNMinutes(value);
+    const today = resolvePreset("equals");
+    const { ft, tt } = resolveNMinutesRange(value);
+    setFromDate(today.from);
+    setToDate(today.to);
+    setFromTime(ft);
+    setToTime(tt);
   }
 
   const activePresetLabel = PRESETS.find((p) => p.id === activePreset)?.label;
@@ -76,10 +94,20 @@ export function DateRangeFilter({
     },
   ];
 
+  // Summary text shown below the N-minutes buttons
+  const nMinSummary = (() => {
+    if (activePreset !== "equals") return null;
+    if (!lastNMinutes) {
+      return `Showing all activity for today (${fromTime || "00:01"} → ${toTime || "23:59"})`;
+    }
+    const found = N_MINUTE_FILTERS.find((f) => f.value === lastNMinutes);
+    return `Showing activity for the ${found?.label?.toLowerCase() ?? ""} (${fromTime} → ${toTime})`;
+  })();
+
   return (
-    <div className="relative " ref={dropRef}>
+    <div className="relative" ref={dropRef}>
       {/* Trigger */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-5 py-3.5 flex flex-wrap items-center gap-3 ">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-5 py-3.5 flex flex-wrap items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
           <CalendarDays size={15} className="text-blue-700" />
         </div>
@@ -89,7 +117,7 @@ export function DateRangeFilter({
         >
           <div className="flex flex-col min-w-0">
             {activePresetLabel && (
-              <span className="text-[9px] font-black  text-blue-600 leading-none mb-0.5">
+              <span className="text-[9px] font-black text-blue-600 leading-none mb-0.5">
                 {activePresetLabel}
               </span>
             )}
@@ -109,6 +137,7 @@ export function DateRangeFilter({
             <button
               onClick={() => {
                 setActivePreset(null);
+                setLastNMinutes(null);
                 setOpen(false);
                 onReset();
               }}
@@ -129,7 +158,7 @@ export function DateRangeFilter({
         </div>
       </div>
 
-      {/* Dropdown — allows natural height growth, no overflow-hidden */}
+      {/* Dropdown */}
       {open && (
         <div
           className="absolute left-0 top-full mt-2 z-[9999] bg-white border border-gray-200 rounded-2xl shadow-2xl"
@@ -144,22 +173,24 @@ export function DateRangeFilter({
               <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 pt-2 pb-2">
                 Quick Select
               </p>
-              {PRESETS.map((p, i) =>
+              {PRESETS.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => applyPreset(p.id)}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${activePreset === p.id
-                    ? "bg-blue-700 text-white"
-                    : "text-gray-600 hover:bg-white hover:text-gray-900"
-                    }`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${
+                    activePreset === p.id
+                      ? "bg-blue-700 text-white"
+                      : "text-gray-600 hover:bg-white hover:text-gray-900"
+                  }`}
                 >
                   {p.label}
                 </button>
-              )}
+              ))}
             </div>
 
             {/* Right panel */}
             <div className="flex-1 p-5 flex flex-col gap-4 min-w-0">
+              {/* Selected Period */}
               <div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">
                   Selected Period
@@ -179,7 +210,51 @@ export function DateRangeFilter({
                 </div>
               </div>
 
-              {/* Between pickers — completely inline, grow the dropdown naturally */}
+              {/* N-Minutes filter — only for Today */}
+              {activePreset === "equals" && (
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
+                    <Clock size={9} className="text-gray-400" />
+                    Filter by Last N Minutes
+                    <span className="normal-case font-medium text-gray-300 tracking-normal">
+                      (optional)
+                    </span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {N_MINUTE_FILTERS.map((f) => {
+                      const isActive = lastNMinutes === f.value;
+                      return (
+                        <button
+                          key={String(f.value)}
+                          onClick={() => applyNMinutes(f.value)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                            isActive
+                              ? "bg-blue-700 text-white border-blue-700 shadow-sm"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
+                          }`}
+                        >
+                          {f.value !== null && (
+                            <Clock
+                              size={10}
+                              className={
+                                isActive ? "text-blue-200" : "text-gray-400"
+                              }
+                            />
+                          )}
+                          {f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {nMinSummary && (
+                    <p className="text-[11px] text-gray-400 mt-2.5 font-medium">
+                      {nMinSummary}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Between pickers */}
               {activePreset === "between" && (
                 <div className="flex flex-col gap-3">
                   <div className="grid grid-cols-1 gap-3">
@@ -203,14 +278,14 @@ export function DateRangeFilter({
                               e.stopPropagation();
                               setOpenPicker(openPicker === key ? null : key);
                             }}
-                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${openPicker === key
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                              }`}
+                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${
+                              openPicker === key
+                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                            }`}
                           >
                             {fmtDtDisplay(dtFromStrings(date, time))}
                           </button>
-
                           {openPicker === key && (
                             <div className="mt-2">
                               <DateTimePicker
@@ -231,7 +306,6 @@ export function DateRangeFilter({
                       ),
                     )}
                   </div>
-
                   <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 text-xs text-blue-700 font-semibold">
                     {fmtDisplay(fromDate, fromTime)} →{" "}
                     {fmtDisplay(toDate, toTime)}

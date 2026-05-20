@@ -1,3 +1,4 @@
+import { ArrowLeftCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Header = ({ text, handleCreate }) => {
@@ -6,15 +7,10 @@ const Header = ({ text, handleCreate }) => {
       {/* LEFT: Back Button + Title */}
       <div className="flex gap-3 items-center">
         <Link to={-1} className="hover:scale-110 transition">
-          <img
-            width="48"
-            height="48"
-            src="https://img.icons8.com/arcade/64/back.png"
-            alt="back"
-          />
+          <ArrowLeftCircle />
         </Link>
 
-        <h1 className="text-3xl font-semibold">{text}</h1>
+        <h1 className="text-2xl font-semibold">{text}</h1>
       </div>
 
       {/* RIGHT: Create Button */}

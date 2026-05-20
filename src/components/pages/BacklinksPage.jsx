@@ -69,7 +69,7 @@ export function BacklinksPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: extractEmail(row?.post_author_email_c), navigate: "/" }),
+      onClick: (row) => setCurrentBacklinkId(row.id),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -169,10 +169,10 @@ export function BacklinksPage() {
 
 
   ]
-  if (showDetail && currentBacklinkId) {
+  if (currentBacklinkId) {
     return (
       <BacklinkDetailBox
-        onClose={() => setShowDetail(false)}
+        onClose={() => setCurrentBacklinkId(null)}
         backlinkId={currentBacklinkId}
       />
     );

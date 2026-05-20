@@ -10,6 +10,7 @@ import { fetchGpc } from "../../../services/api";
 import { generatePDF } from "../../../services/utils";
 import { extractEmail } from "../../../assets/assets";
 import { unrepliedAction } from "../../../store/Slices/unrepliedEmails";
+import { getDuplicateEmails } from "../../../store/Slices/duplicateEmailSlice";
 
 const Thread = () => {
   const dispatch = useDispatch();
@@ -41,19 +42,23 @@ const Thread = () => {
     try {
       setCheckingTheadId(true);
       const data = await fetchGpc({
-        params: { type: "re_check_thread", email: currentEmail },
+        params: { type: "re_check_thread", thread_id: currentThread },
       });
       console.log("MATHED THREAD ID", data);
 
-      if (!(data?.success || data.thread_id)) {
+      if (!(data?.success || data.data)) {
         toast.error("Failed to verify thread!");
+        return;
+      }
+      if (data.data !== currentEmail) {
+        toast.error('Wrong Thread Id Detected! Try Again.')
         return;
       }
       console.log("THREAD", currentThread);
 
       const contentToSend = editorContent;
       const formData = new FormData();
-      formData.append("threadId", data.thread_id);
+      formData.append("threadId", currentThread);
       formData.append("replyBody", contentToSend);
       formData.append("email", currentEmail);
       formData.append("current_email", user.email);
@@ -114,21 +119,25 @@ const Thread = () => {
     if (
       currentEmail &&
       currentThread &&
-      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)
+      !(state?.viewEmails && (state?.viewEmails[0]?.from_email == currentEmail && state?.viewEmails[0]?.thread_id == currentThread))
     ) {
       dispatch(getThreadEmail(currentEmail, currentThread));
     } else {
+
       setEmails(state?.viewEmails);
     }
   }, [currentEmail, currentThread]);
   useEffect(() => {
     if (
       threadEmail?.length > 0 &&
-      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail)
+      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail && state?.viewEmails[0]?.thread_id == currentThread)
     ) {
       setEmails(threadEmail);
     }
   }, [threadEmail]);
+  useEffect(() => {
+    dispatch(getDuplicateEmails(currentEmail));
+  }, [dispatch, currentEmail]);
   useEffect(() => {
     if (!currentThread) {
       toast.error("Thread id is missing!");

@@ -16,7 +16,6 @@ import { getAiCredits } from "../store/Slices/aiCredits";
 import { getLadger } from "../store/Slices/ladger";
 import {
     checkForDuplicates,
-    getDuplicateCount,
 } from "../store/Slices/duplicateEmailSlice";
 import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getOrders } from "../store/Slices/orders";
@@ -35,6 +34,7 @@ import { extractEmail } from "../assets/assets";
 import { getBacklinks } from "../store/Slices/backlinks.js";
 import { getAllContacts } from "../store/Slices/contacts.js";
 import { getAllUsers } from "../store/Slices/crmUser.js";
+import { getTinyKey } from "../store/Slices/tinyKey.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -69,6 +69,7 @@ function useRefresh() {
 
     };
     useEffect(() => {
+        dispatch(getTinyKey())
         dispatch(getAllUsers())
         dispatch(getUnrepliedEmail({}));
         dispatch(getAllContacts({}))
@@ -91,7 +92,6 @@ function useRefresh() {
         dispatch(getmovedEmails(enteredEmail));
         // dispatch(getAllAvatar());
         dispatch(getQuickActionBtn());
-        dispatch(getDuplicateCount());
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {
         dispatch(getLinkExchange());

@@ -298,7 +298,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
           <Btn
             gradient="bg-gradient-to-r from-indigo-500 to-purple-600"
             icon={Sparkles}
-            label="AI Smart Reply"
+            label="AI  Reply"
             onClick={() => {
               if (aiReplyContent === "") dispatch(getAiReply(threadId));
               insertAiReply(aiReplyContent);
