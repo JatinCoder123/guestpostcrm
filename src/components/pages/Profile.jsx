@@ -126,14 +126,14 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="">
+          <div className="min-w-[240px]">
             <div className="mb-2 flex items-center justify-between text-sm font-bold text-slate-700">
               <span>{completion}% completed</span>
               <span>Step {activeStep}</span>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-slate-100">
               <div
-                className="h-full rounded-full  from-emerald-500 via-indigo-500 to-cyan-500 transition-all"
+                className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500 transition-all"
                 style={{ width: `${completion}%` }}
               />
             </div>
