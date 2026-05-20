@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { showConsole } from "../../assets/assets";
-import { apiRequest, fetchGpc } from "../../services/api";
-import { helix } from "ldrs";
+import { apiRequest } from "../../services/api";
 
 const tinyKey = createSlice({
     name: "tinyKey",
@@ -38,7 +36,6 @@ export const getTinyKey = () => {
         dispatch(tinyKey.actions.getTinyKeyRequest());
         try {
             const data = await apiRequest({ endpoint: 'https://crm.outrightsystems.org/index.php', method: "GET", params: { entryPoint: "get_tiny" }, headers: { 'X-Api-Key': import.meta.env.VITE_TINY_MCE_KEY_X_API_KEY } })
-            console.log("TINY KEY", data)
             dispatch(tinyKey.actions.getTinyKeySuccess({ tinyKey: data.token }));
             dispatch(tinyKey.actions.clearAllErrors());
         } catch (error) {

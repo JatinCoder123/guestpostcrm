@@ -133,7 +133,11 @@ const Inbox = ({
             className={`flex ${isUser ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`relative max-w-[40%]  p-5 rounded-2xl transition-all duration-300
+              className={`relative
+w-full sm:w-[85%] md:w-[70%] lg:w-[55%] xl:w-[40%]
+min-h-[220px] sm:min-h-[240px] md:min-h-[260px]
+p-5 rounded-2xl transition-all duration-300
+flex flex-col justify-between
   ${isUser
                   ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-br-sm"
                   : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
@@ -178,7 +182,6 @@ const Inbox = ({
                 </div>
 
               </div>
-
               <div
                 dangerouslySetInnerHTML={{
                   __html: formatMessage(
@@ -186,7 +189,11 @@ const Inbox = ({
                   ),
                 }}
                 className="mail-content text-sm leading-relaxed max-w-full
-    overflow-x-auto break-words [&_*]:max-w-full"
+break-words [&_*]:max-w-full
+flex-1
+max-h-[140px] sm:max-h-[180px] md:max-h-[220px]
+overflow-y-auto overflow-x-auto
+pr-2"
               />
               {/* ATTACHMENTS BUTTON */}
               {mail?.attachment?.length > 0 && (
