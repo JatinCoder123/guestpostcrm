@@ -23,6 +23,8 @@ export function MachineLearningPage() {
 
   const [stages, setStages] = useState({});
   const [activeStage, setActiveStage] = useState("");
+  const [motiveList, setMotiveList] = useState([]);
+  const [motiveListLoading, setMotiveListLoading] = useState(false);
 
   const [rows, setRows] = useState([]);
 
@@ -54,6 +56,16 @@ export function MachineLearningPage() {
   );
 
   const [createForm, setCreateForm] = useState(initialForm);
+
+  const handleCreateMotiveChange = (motive) => {
+    const selectedMotive = motiveList.find((item) => item.motive === motive);
+
+    setCreateForm((prev) => ({
+      ...prev,
+      motive,
+      description: selectedMotive?.description || prev.description,
+    }));
+  };
 
   // =========================================================
   // ✅ TOAST HELPER
@@ -322,11 +334,32 @@ export function MachineLearningPage() {
     }
   };
 
+  const fetchMotives = async () => {
+    try {
+      setMotiveListLoading(true);
+
+      const data = await fetchGpc({
+        params: {
+          type: "motive_list",
+        },
+      });
+
+      setMotiveList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch motive list", err);
+
+      showToast("Failed to load motives", "error");
+    } finally {
+      setMotiveListLoading(false);
+    }
+  };
+
   // =========================================================
   // EFFECTS
   // =========================================================
   useEffect(() => {
     fetchStages();
+    fetchMotives();
   }, []);
 
   useEffect(() => {
@@ -347,7 +380,10 @@ export function MachineLearningPage() {
 
   return (
     <div className="p-8 relative">
-      <Header text={"Machine Learning Manager"} />
+      <Header
+        text="Machine Learning Manager"
+        handleCreate={() => setShowCreateModal(true)}
+      />
 
       {/* ===================================================== */}
       {/* TOAST */}
@@ -386,19 +422,6 @@ export function MachineLearningPage() {
             {label}
           </button>
         ))}
-      </div>
-
-      {/* ===================================================== */}
-      {/* CREATE BUTTON */}
-      {/* ===================================================== */}
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
-        >
-          <Plus size={18} />
-          Create Prompt
-        </button>
       </div>
 
       {/* ===================================================== */}
@@ -491,7 +514,7 @@ export function MachineLearningPage() {
 
             <h2 className="text-2xl font-semibold mb-6">Create AI Prompt</h2>
 
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-3 gap-5">
               {/* NAME */}
               <div>
                 <label className="block mb-2 text-sm font-medium">Name</label>
@@ -513,42 +536,28 @@ export function MachineLearningPage() {
               <div>
                 <label className="block mb-2 text-sm font-medium">Motive</label>
 
-                <input
-                  type="text"
+                <select
                   value={createForm.motive}
-                  onChange={(e) =>
-                    setCreateForm((prev) => ({
-                      ...prev,
-                      motive: e.target.value,
-                    }))
-                  }
+                  onChange={(e) => handleCreateMotiveChange(e.target.value)}
+                  disabled={motiveListLoading}
                   className="w-full border rounded-xl px-4 py-3"
-                />
-              </div>
-
-              {/* TYPE */}
-              <div>
-                <label className="block mb-2 text-sm font-medium">Type</label>
-
-                <input
-                  type="text"
-                  value={createForm.type}
-                  onChange={(e) =>
-                    setCreateForm((prev) => ({
-                      ...prev,
-                      type: e.target.value,
-                    }))
-                  }
-                  className="w-full border rounded-xl px-4 py-3"
-                />
+                >
+                  <option value="">
+                    {motiveListLoading ? "Loading motives..." : "Select Motive"}
+                  </option>
+                  {motiveList.map((item, index) => (
+                    <option key={`${item.motive}-${index}`} value={item.motive}>
+                      {item.motive}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* STAGE */}
               <div>
                 <label className="block mb-2 text-sm font-medium">Stage</label>
 
-                <input
-                  type="text"
+                <select
                   value={createForm.stage}
                   onChange={(e) =>
                     setCreateForm((prev) => ({
@@ -557,11 +566,18 @@ export function MachineLearningPage() {
                     }))
                   }
                   className="w-full border rounded-xl px-4 py-3"
-                />
+                >
+                  <option value="">Select Stage</option>
+                  {Object.entries(stages).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* DESCRIPTION */}
-              <div className="col-span-2">
+              <div className="col-span-3">
                 <label className="block mb-2 text-sm font-medium">
                   Description
                 </label>
