@@ -339,7 +339,7 @@ export const editContact = (contactData, message = "") => {
       showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess({ message }));
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      dispatch(getContact(contactData?.email1));
+      dispatch(getContact(contactData?.contact.email1));
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed"),
