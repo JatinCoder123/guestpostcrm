@@ -69,11 +69,11 @@ function useRefresh() {
 
     };
     useEffect(() => {
+        dispatch(getTinyKey())
         dispatch(getAllUsers())
         dispatch(getUnrepliedEmail({}));
         dispatch(getAllContacts({}))
         dispatch(getEmailsCount({}))
-        dispatch(getTinyKey())
 
     }, [])
     useEffect(() => {

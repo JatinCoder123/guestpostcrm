@@ -152,7 +152,7 @@ export default function ThreadView() {
   "
       >
         {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
+        <div className="flex justify-between flex-wrap items-center px-6 py-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-lg">
           {/* 🔹 LEFT SIDE */}
           <div className="flex items-center gap-3">
             <motion.button
