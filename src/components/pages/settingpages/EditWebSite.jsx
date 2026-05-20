@@ -42,6 +42,12 @@ const fieldConfig = [
     icon: Activity,
   },
   {
+    key: "traffic",
+    label: "Monthly Traffic",
+    type: "text",
+    icon: Activity,
+  },
+  {
     key: "semrush_traffic",
     label: "Semrush Traffic",
     type: "number",
@@ -84,9 +90,15 @@ const fieldConfig = [
   },
   {
     key: "category",
-    label: "Category",
-    type: "dropdown",
-    options: ["High", "Medium", "Low", "New"],
+    label: "Categories",
+    type: "text",
+    icon: FileText,
+  },
+  {
+    key: "country",
+    label: "Country",
+    type: "text",
+    icon: Globe,
   },
 ];
 
@@ -104,6 +116,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
         dr: item.dr || "",
         spam_score: item.spam_score || "",
         google_traffic: item.google_traffic || "",
+        traffic: item.traffic || "",
         ahref_traffic: item.ahref_traffic || "",
         semrush_traffic: item.semrush_traffic || "",
         amount: item.amount ?? "",
@@ -112,6 +125,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
         non_brand_maximum_amount: item.non_brand_maximum_amount ?? "",
         premium: item.premium ?? false,
         category: item.category || "",
+        country: item.country || "",
       });
     }
   }, [item]);
