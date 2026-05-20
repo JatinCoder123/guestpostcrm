@@ -57,7 +57,7 @@ import IpManager from "./components/pages/IpManager";
 import DataModellingPage from "./components/pages/settingpages/DataModellingPage";
 import UserActivity from "./components/pages/settingpages/UserActivity";
 import RecyclePage from "./components/pages/settingpages/Recycle";
-
+import Profile from "./components/pages/Profile"
 const router = createBrowserRouter([
   {
     path: "*",
@@ -84,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: "unreplied-emails",
         element: <UnrepliedEmailsPage />,
+      },
+      {
+        path: "profile",
+        element: <Profile />,
       },
       {
         path: "ai-credits",
@@ -297,6 +301,7 @@ const router = createBrowserRouter([
             path: "recycle",
             element: <RecyclePage />,
           },
+
         ],
       },
     ],
