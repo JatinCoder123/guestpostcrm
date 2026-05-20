@@ -24,10 +24,11 @@ import {
 } from "../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 import AccountPage from "../components/pages/AccountPage";
+import { LoadingAll } from "./Loading";
 
 
 export default function ContactDetail() {
-    const { contactInfo, accountInfo, dealInfo, message, error, loading } =
+    const { contactInfo, accountInfo, dealInfo, message, error, contactLoading } =
         useSelector((state) => state.viewEmail);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -150,7 +151,22 @@ export default function ContactDetail() {
             dispatch(viewEmailAction.clearAllErrors());
         }
     }, [message, error, dispatch]);
-
+    if (contactLoading) {
+        return (
+            <div className="w-full mt-10  flex items-center justify-center bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8]">
+                <div className="backdrop-blur-xl bg-white/40 border border-white/50 rounded-3xl px-10 py-12 shadow-2xl flex flex-col items-center">
+                    <LoadingAll
+                        type="hourglass"
+                        size="70"
+                        color="#9333ea"
+                    />
+                    <p className="mt-5 text-lg font-semibold text-gray-700">
+                        Loading Contact Details...
+                    </p>
+                </div>
+            </div>
+        );
+    }
     if (accountShow) {
         return (
             <AccountPage
