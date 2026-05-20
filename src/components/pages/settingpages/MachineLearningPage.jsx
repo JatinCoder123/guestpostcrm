@@ -151,14 +151,13 @@ export function MachineLearningPage() {
           motive: createForm.motive,
           type: createForm.type,
           stage: createForm.stage,
-          description: createForm.description,
+          description: manualPrompt,
 
           role_prompt: aiResponse.role_prompt || "",
           output_format: aiResponse.output_format || "",
 
           // ✅ CLEANED PROMPTS
           overwrite_prompt: overwritePrompt,
-          manual_prompt: manualPrompt,
         },
       };
 
@@ -225,7 +224,7 @@ export function MachineLearningPage() {
           motive: updatedItem.motive,
           type: updatedItem.type,
           stage: updatedItem.stage,
-          description: updatedItem.description,
+          description: manualPrompt,
 
           role_prompt: updatedItem.role_prompt,
           output_format: updatedItem.output_format,
