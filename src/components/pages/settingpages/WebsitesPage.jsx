@@ -1,4 +1,5 @@
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import { createElement } from "react";
 import {
   Edit3,
   Trash2,
@@ -18,8 +19,10 @@ import {
   BadgeInfo,
   Layers3,
   Sparkles,
+  MapPin,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Loading from "../../Loading";
 import Header from "./Header";
 import ErrorBox from "./ErrorBox";
@@ -97,13 +100,13 @@ const Pill = ({ label, value, accent = "#6366f1" }) => (
 );
 
 /* ─── Row detail for the expanded drawer ───────────────────── */
-const DrawerRow = ({ icon: Icon, label, value }) => {
+const DrawerRow = ({ icon, label, value }) => {
   const cleaned = cleanValue(value);
   const linked = cleaned && isUrl(cleaned);
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
       <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
-        <Icon size={12} />
+        {createElement(icon, { size: 12 })}
         {label}
       </div>
       {cleaned ? (
@@ -301,13 +304,13 @@ function WebCard({
           { icon: Activity, label: "Traffic", value: traffic },
           { icon: FileText, label: "GP", value: gpCount },
           { icon: Link2, label: "LI", value: liCount },
-        ].map(({ icon: Icon, label, value }) => (
+        ].map(({ icon, label, value }) => (
           <div
             key={label}
             className="rounded-xl bg-gray-50 border border-gray-100 p-2.5 text-center"
           >
             <div className="flex items-center justify-center gap-1 text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-1">
-              <Icon size={9} />
+              {createElement(icon, { size: 9 })}
               {label}
             </div>
             <div className="text-sm font-black text-gray-800">
@@ -388,9 +391,10 @@ function WebCard({
             <div className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-1">
               <DrawerRow
                 icon={BadgeInfo}
-                label="Category"
+                label="Categories"
                 value={item.category}
               />
+              <DrawerRow icon={MapPin} label="Country" value={item.country} />
               <DrawerRow icon={Layers3} label="Premium" value={item.premium} />
               <DrawerRow
                 icon={Activity}
@@ -473,6 +477,11 @@ function WebCard({
 export default function WebsitesPage() {
   const [editItem, setEditItem] = useState(null);
   const [refreshingId, setRefreshingId] = useState(null);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const openedOnboardingCreate = useRef(false);
+  const onboardingCreateSubmitted = useRef(false);
+  const isOnboardingStep3 = searchParams.get("onboarding") === "step3";
 
   const {
     websites,
@@ -486,7 +495,12 @@ export default function WebsitesPage() {
   } = useSelector((state) => state.webManager);
   const dispatch = useDispatch();
 
-  const handleCreate = (updatedItem) => dispatch(createWebsite(updatedItem));
+  const handleCreate = (updatedItem) => {
+    if (isOnboardingStep3) {
+      onboardingCreateSubmitted.current = true;
+    }
+    dispatch(createWebsite(updatedItem));
+  };
   const handleUpdate = (updatedItem) => dispatch(updateWebsite(updatedItem));
 
   const handleDelete = (item) => {
@@ -515,10 +529,25 @@ export default function WebsitesPage() {
     dispatch(getManageWeb());
   }, [dispatch]);
   useEffect(() => {
+    if (
+      isOnboardingStep3 &&
+      searchParams.get("create") === "website" &&
+      !openedOnboardingCreate.current
+    ) {
+      openedOnboardingCreate.current = true;
+      setEditItem({ type: "new" });
+    }
+  }, [isOnboardingStep3, searchParams]);
+  useEffect(() => {
     if (!message) return;
     toast.success(message);
+    if (onboardingCreateSubmitted.current) {
+      onboardingCreateSubmitted.current = false;
+      localStorage.setItem("guestpostcrm:onboarding:website_added", "true");
+      navigate("/profile?step=5");
+    }
     dispatch(webManagerAction.clearAllMessages());
-  }, [dispatch, message]);
+  }, [dispatch, message, navigate]);
   useEffect(() => {
     if (!error) return;
     toast.error(error);

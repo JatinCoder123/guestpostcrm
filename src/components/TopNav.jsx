@@ -8,6 +8,7 @@ import {
   Copy,
   Check,
   BellIcon,
+  User2,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -352,9 +353,14 @@ export function TopNav() {
                 exit={{ opacity: 0, y: -10 }}
                 className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl"
               >
-                <div className="p-4">
+                <div onClick={()=>{
+                    navigateTo('/profile')
+                  }} className="p-4 flex items-center gap-3 border-b">
+                  <User2 className="w-6 h-6 mb-2 text-gray-600" />
+                  <div>
                   <p className="font-semibold">{user?.name}</p>
                   <p className="text-sm text-gray-500">{user?.email}</p>
+                  </div>
                 </div>
                 <button
                   onClick={handleLogout}
