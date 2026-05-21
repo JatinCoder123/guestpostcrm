@@ -1,6 +1,26 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { fetchGpc } from "../../services/api";
+import { apiRequest, fetchGpc } from "../../services/api";
+import { CREATE_DEAL_API_KEY } from "../constants";
+
+const ALLOWED_SITES_MODULE = "outr_allowed_sites";
+
+const getPostAllEndpoint = (crmEndpoint) =>
+  `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`;
+
+const getPostAllHeaders = () => ({
+  "x-api-key": CREATE_DEAL_API_KEY,
+  "Content-Type": "application/json",
+});
+
+const toAllowedSitePayload = (website) => {
+  const rest = { ...website };
+  delete rest.type;
+  return {
+    module: ALLOWED_SITES_MODULE,
+    ...rest,
+  };
+};
 
 const webManagerSlice = createSlice({
   name: "webManager",
@@ -103,28 +123,40 @@ const assertSuccess = (data) => {
 };
 
 export const getManageWeb = (loading = true) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     if (loading) {
       dispatch(webManagerSlice.actions.getWebsitesRequest());
     }
     try {
-      const data = await fetchGpc({ params: { type: "get_website" } });
-      showConsole && console.log(`WEBSITE MANAGER SITEs`, data);
-      if (!data.success) {
-        throw new Error();
+      const { crmEndpoint } = getState().user;
+      if (!crmEndpoint) {
+        throw new Error("CRM endpoint missing");
       }
+
+      const data = await apiRequest({
+        endpoint: getPostAllEndpoint(crmEndpoint),
+        method: "POST",
+        params: { action_type: "get_data" },
+        body: { module: ALLOWED_SITES_MODULE },
+        headers: getPostAllHeaders(),
+      });
+      showConsole && console.log(`WEBSITE MANAGER SITEs`, data);
+      if (data?.success === false) {
+        throw new Error(data.message);
+      }
+      const websites = Array.isArray(data) ? data : data.data ?? [];
       dispatch(
         webManagerSlice.actions.getWebsitesSucess({
-          count: data.data_count ?? data.data?.length ?? 0,
-          websites: data.data ?? [],
+          count: data.data_count ?? websites.length,
+          websites,
           summary: data.summary ?? null,
         }),
       );
       dispatch(webManagerSlice.actions.clearAllErrors());
-    } catch {
+    } catch (error) {
       dispatch(
         webManagerSlice.actions.getWebsitesFailed(
-          "Fetching Manger Website Failed",
+          error.message ?? "Fetching Manger Website Failed",
         ),
       );
     }
@@ -132,15 +164,24 @@ export const getManageWeb = (loading = true) => {
 };
 
 export const createWebsite = (website) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     dispatch(webManagerSlice.actions.createWebsiteRequest());
     console.log(website);
 
     try {
-      const data = await fetchGpc({
+      const { crmEndpoint } = getState().user;
+      if (!crmEndpoint) {
+        throw new Error("CRM endpoint missing");
+      }
+
+      const data = await apiRequest({
+        endpoint: getPostAllEndpoint(crmEndpoint),
         method: "POST",
-        params: { type: "get_website" },
-        body: website,
+        params: { action_type: "post_data" },
+        body: {
+          parent_bean: toAllowedSitePayload(website),
+        },
+        headers: getPostAllHeaders(),
       });
 
       showConsole && console.log("Create Manager Website", data);
@@ -163,15 +204,24 @@ export const createWebsite = (website) => {
 };
 
 export const updateWebsite = (website, options = {}) => {
-  const { successMessage, failureMessage, idOnly = false } = options;
-  return async (dispatch) => {
+  const { successMessage, failureMessage } = options;
+  return async (dispatch, getState) => {
     dispatch(webManagerSlice.actions.updateWebsiteRequest());
 
     try {
-      const data = await fetchGpc({
-        method: "PUT",
-        params: { type: "get_website" },
-        body: website,
+      const { crmEndpoint } = getState().user;
+      if (!crmEndpoint) {
+        throw new Error("CRM endpoint missing");
+      }
+
+      const data = await apiRequest({
+        endpoint: getPostAllEndpoint(crmEndpoint),
+        method: "POST",
+        params: { action_type: "post_data" },
+        body: {
+          parent_bean: toAllowedSitePayload(website),
+        },
+        headers: getPostAllHeaders(),
       });
 
       showConsole && console.log("Update Manager Website", data);

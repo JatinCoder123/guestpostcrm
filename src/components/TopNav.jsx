@@ -3,12 +3,13 @@ import {
   Sparkles,
   Flame,
   X,
-  User2Icon,
   CircleAlert,
   Copy,
   Check,
   BellIcon,
   User2,
+  ChevronDown,
+  LogOut,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -338,12 +339,23 @@ export function TopNav() {
 
         {/* PROFILE */}
         <div ref={profileMenuRef} className="relative">
-          <div
+          <button
+            type="button"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+            aria-label="Open profile menu"
+            aria-expanded={showProfileMenu}
+            className="
+              group flex items-center gap-2 rounded-full border border-slate-200
+              bg-white px-2.5 py-1.5 text-slate-700 shadow-sm transition-all
+              hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50
+              hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500/25
+            "
           >
-            <span className="font-semibold">{getUserInitials()}</span>
-          </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm font-black text-white shadow-sm">
+              {getUserInitials()}
+            </span>
+        
+          </button>
 
           <AnimatePresence>
             {showProfileMenu && (
@@ -351,21 +363,39 @@ export function TopNav() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl"
+                className="absolute right-0 mt-3 w-72 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
               >
-                <div onClick={()=>{
-                    navigateTo('/profile')
-                  }} className="p-4 flex items-center gap-3 border-b">
-                  <User2 className="w-6 h-6 mb-2 text-gray-600" />
-                  <div>
-                  <p className="font-semibold">{user?.name}</p>
-                  <p className="text-sm text-gray-500">{user?.email}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowProfileMenu(false);
+                  }}
+                  className="group/menu flex w-full items-center gap-3 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white p-4 text-left transition hover:from-indigo-50 hover:to-cyan-50"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white shadow-md shadow-indigo-500/25">
+                    {getUserInitials()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <User2 className="h-4 w-4 text-indigo-500" />
+                      <p className="text-sm font-black text-slate-900">
+                        View Profile
+                      </p>
+                    </div>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-700">
+                      {user?.name || "User"}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">
+                      {user?.email}
+                    </p>
                   </div>
-                </div>
+                </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-600 transition hover:bg-red-50"
                 >
+                  <LogOut size={16} />
                   Logout
                 </button>
               </motion.div>

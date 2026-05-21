@@ -7,20 +7,39 @@ import {
   Send,
   Bell,
   ChartSpline,
+  ArrowRight,
+  UserCircle2,
+  Loader2,
+  CheckCircle2,
+  PartyPopper,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState, useContext } from "react";
+import { createElement, useEffect, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import {
   getUnrepliedEmail,
   unrepliedAction,
 } from "../store/Slices/unrepliedEmails";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { fetchGpc } from "../services/api";
 
+const WEBSITE_DONE_KEY = "guestpostcrm:onboarding:website_added";
+const SYNC_DONE_KEY = "guestpostcrm:onboarding:first_sync_done";
+const FIRST_SYNC_STATUS_KEY = "guestpostcrm:first_sync:status";
+const FIRST_SYNC_RESULT_KEY = "guestpostcrm:first_sync:result";
+const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
+
+const getStoredFirstSync = () => {
+  try {
+    return JSON.parse(localStorage.getItem(FIRST_SYNC_RESULT_KEY) || "null");
+  } catch {
+    return null;
+  }
+};
+
 const StatBadge = ({
-  icon: Icon,
+  icon,
   label,
   value,
   colorClass,
@@ -39,9 +58,9 @@ const StatBadge = ({
     <div
       className={`group flex items-center gap-2 px-3 py-1.5 bg-white/70 backdrop-blur-md rounded-xl border ${borderClass} ${bgClass} transition-all duration-400 cursor-default`}
     >
-      <Icon
-        className={`w-4 h-4 ${colorClass} group-hover:scale-125 transition-transform duration-300`}
-      />
+      {createElement(icon, {
+        className: `w-4 h-4 ${colorClass} group-hover:scale-125 transition-transform duration-300`,
+      })}
       <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
         {label}:
       </span>
@@ -78,6 +97,10 @@ const WelcomeHeader = () => {
     reply_sent: null,
     reminder_sent: null,
   });
+  const [firstSyncState, setFirstSyncState] = useState(() => ({
+    status: localStorage.getItem(FIRST_SYNC_STATUS_KEY) || "idle",
+    result: getStoredFirstSync(),
+  }));
 
   useEffect(() => {
     const loadStats = async () => {
@@ -138,10 +161,59 @@ const WelcomeHeader = () => {
     }
   }, [showNewEmailBanner, dispatch]);
 
+  useEffect(() => {
+    const syncHandler = (event) => {
+      setFirstSyncState({
+        status: event.detail?.status || "idle",
+        result: event.detail?.result ?? getStoredFirstSync(),
+      });
+    };
+
+    const storageHandler = (event) => {
+      if (
+        event.key === FIRST_SYNC_STATUS_KEY ||
+        event.key === FIRST_SYNC_RESULT_KEY
+      ) {
+        setFirstSyncState({
+          status: localStorage.getItem(FIRST_SYNC_STATUS_KEY) || "idle",
+          result: getStoredFirstSync(),
+        });
+      }
+    };
+
+    window.addEventListener(FIRST_SYNC_EVENT, syncHandler);
+    window.addEventListener("storage", storageHandler);
+
+    return () => {
+      window.removeEventListener(FIRST_SYNC_EVENT, syncHandler);
+      window.removeEventListener("storage", storageHandler);
+    };
+  }, []);
+
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
+  const websiteDone = localStorage.getItem(WEBSITE_DONE_KEY) === "true";
+  const syncDone = localStorage.getItem(SYNC_DONE_KEY) === "true";
+  const firstSyncLoading = firstSyncState.status === "loading";
+  const firstSyncCompleted = firstSyncState.status === "completed" || syncDone;
+  const profileCompletion = firstSyncCompleted ? 100 : websiteDone ? 70 : 50;
+  const showProfilePrompt =
+  path !== "/profile" &&
+  (profileCompletion < 100 || firstSyncLoading);
+  const profilePromptText = firstSyncLoading
+    ? "First sync is running..."
+    : firstSyncCompleted
+      ? `Sync completed${firstSyncState.result?.count ? `: ${firstSyncState.result.count} records` : ""}`
+      : websiteDone
+    ? "Run first sync to unlock full setup"
+    : "Complete your profile setup";
+  const ProfileIcon = firstSyncLoading
+    ? Loader2
+    : firstSyncCompleted
+      ? CheckCircle2
+      : UserCircle2;
 
   return (
     <div className="h-20 w-full relative overflow-visible rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
@@ -153,14 +225,14 @@ const WelcomeHeader = () => {
       {/* Notification */}
       <AnimatePresence>
         {showNewEmailBanner && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: -30, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 320, damping: 22 }}
             className="absolute top-3 right-50 z-50"
           >
-            <motion.button
+            <Motion.button
               animate={{
                 boxShadow: [
                   "0 0 0 rgba(59,130,246,0)",
@@ -194,7 +266,7 @@ const WelcomeHeader = () => {
                 New email received
               </p>
 
-              <motion.span
+              <Motion.span
                 animate={{ rotate: [0, -10, 10, -10, 0] }}
                 transition={{
                   duration: 0.6,
@@ -203,9 +275,9 @@ const WelcomeHeader = () => {
                 }}
               >
                 <MailCheck />
-              </motion.span>
-            </motion.button>
-          </motion.div>
+              </Motion.span>
+            </Motion.button>
+          </Motion.div>
         )}
       </AnimatePresence>
 
@@ -265,6 +337,63 @@ const WelcomeHeader = () => {
               </div>
             </div>
           </div>
+
+          {showProfilePrompt && (
+            <Motion.button
+              type="button"
+              onClick={() => navigate("/profile")}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="
+                group relative flex min-w-[255px] items-center gap-3 overflow-hidden rounded-2xl
+                border border-indigo-200 bg-white/85 px-3 py-2 text-left shadow-lg
+                shadow-indigo-500/10 backdrop-blur-xl transition-all
+                hover:border-indigo-300 hover:bg-white hover:shadow-xl hover:shadow-indigo-500/20
+              "
+            >
+              <span className="absolute inset-x-0 bottom-0 h-1 bg-slate-100">
+                <span
+                  className="block h-full rounded-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500 transition-all duration-700"
+                  style={{ width: `${profileCompletion}%` }}
+                />
+              </span>
+
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md ${firstSyncCompleted
+                    ? "bg-emerald-500 shadow-emerald-500/25"
+                    : "bg-gradient-to-br from-indigo-600 to-cyan-500 shadow-indigo-500/25"
+                  }`}
+              >
+                <ProfileIcon
+                  size={20}
+                  className={firstSyncLoading ? "animate-spin" : ""}
+                />
+              </span>
+
+              <span className="min-w-0 flex-1">
+                <span
+                  className={`block text-xs font-black uppercase tracking-wide ${firstSyncCompleted ? "text-emerald-600" : "text-indigo-600"
+                    }`}
+                >
+                  {firstSyncCompleted ? "Boom, completed" : `Profile ${profileCompletion}%`}
+                </span>
+                <span className="block truncate text-sm font-bold text-slate-900">
+                  {profilePromptText}
+                </span>
+              </span>
+
+              {firstSyncCompleted ? (
+                <PartyPopper size={18} className="shrink-0 text-emerald-500" />
+              ) : (
+                <ArrowRight
+                  size={18}
+                  className="shrink-0 text-indigo-500 transition-transform group-hover:translate-x-1"
+                />
+              )}
+            </Motion.button>
+          )}
         </div>
 
         {/* RIGHT */}
