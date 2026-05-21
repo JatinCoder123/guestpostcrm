@@ -139,7 +139,7 @@ export function TopNav() {
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
-          src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/png%20(1).png"
+          src="./headingLogo.webp"
           className="w-72 h-10 object-contain cursor-pointer"
           onClick={() => navigateTo("")}
         />

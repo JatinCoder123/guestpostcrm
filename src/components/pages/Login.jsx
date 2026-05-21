@@ -25,7 +25,7 @@ export default function Login() {
       >
         {/* Logo */}
         <img
-          src="/login_logo.png"
+          src="/login_logo.webp"
           alt="GuestPostCRM"
           className="w-56 mb-10 select-none"
         />
