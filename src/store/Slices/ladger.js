@@ -52,7 +52,7 @@ const ladgerSlice = createSlice({
 
     getLadgerFailed(state, action) {
       state.loading = false;
-      state.error = action.payload || "Something went wrong";
+      state.error = action.payload;
       state.ladger = []
     },
 
@@ -214,11 +214,7 @@ export const getLadger = ({
 
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(
-        ladgerSlice.actions.getLadgerFailed(
-          error.response?.data?.message
-        )
-      );
+      dispatch(ladgerSlice.actions.getLadgerFailed("Failed To Get Ladger"));
     }
   };
 };
