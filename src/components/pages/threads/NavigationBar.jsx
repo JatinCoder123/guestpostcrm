@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -29,9 +29,14 @@ function NavigationBar({
     const { currentThread, setCurrentThread } =
         useContext(ThreadContext);
 
-    const [showThreads, setShowThreads] = useState(true);
+    const [showThreads, setShowThreads] = useState(false);
 
     const topThreads = duplicateEmail?.slice(0, 5) || [];
+    useEffect(() => {
+        if (!loading && duplicateEmail) {
+            setShowThreads(true)
+        }
+    }, [duplicateEmail, loading])
 
     return (
         <>
@@ -128,23 +133,33 @@ function NavigationBar({
                     </div>
 
                     {/* THREAD BUTTON */}
-                    {duplicateEmail.length > 0 && <IconButton
+                    {/* THREAD BUTTON */}
+                    <IconButton
                         whileTap={{ scale: 0.97 }}
                         whileHover={{ y: -1 }}
-                        onClick={() => setShowThreads(true)}
+                        onClick={() => {
+                            // Don't open sidebar while loading
+                            if (!loading) {
+                                setShowThreads(true);
+                            }
+                        }}
                         className="
-            px-5 py-2
-                    rounded-xl
-                    bg-gradient-to-r from-purple-500 to-indigo-500
-                    text-white text-sm font-semibold
-                    shadow-md hover:shadow-lg
-                    transition-all duration-300
-            "
+        px-5 py-2
+        rounded-xl
+        bg-gradient-to-r from-purple-500 to-indigo-500
+        text-white text-sm font-semibold
+        shadow-md hover:shadow-lg
+        transition-all duration-300
+        relative
+    "
                         icon={Link2}
-                        label={"Thread"}
+                        loading={loading}
+                        label={
+                            loading
+                                ? "Loading Threads..."
+                                : `Threads (${duplicateEmail?.length || 0})`
+                        }
                     />
-                    }
-
                 </div>
             </div>
 
@@ -207,9 +222,24 @@ function NavigationBar({
                             {/* THREADS */}
                             <div className="flex-1 overflow-y-auto p-3 space-y-2">
                                 {loading ? (
-                                    <div className="flex items-center gap-2 text-sm text-gray-500 p-2">
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        Loading threads...
+                                    <div className="space-y-3">
+                                        {[1, 2, 3, 4, 5].map((item) => (
+                                            <div
+                                                key={item}
+                                                className="
+                    w-full rounded-2xl border border-gray-200
+                    p-4 animate-pulse
+                "
+                                            >
+                                                <div className="h-4 bg-gray-200 rounded w-3/4" />
+
+                                                <div className="flex items-center justify-between mt-4">
+                                                    <div className="h-3 bg-gray-200 rounded w-20" />
+
+                                                    <div className="h-6 w-10 bg-gray-200 rounded-full" />
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 ) : topThreads.length > 0 ? (
                                     topThreads.map((thread) => {
