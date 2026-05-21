@@ -355,10 +355,7 @@ export const sendEmail = (formData) => {
       const data = await fetchGpc({ method: "POST", body: formData, headers: { "Content-Type": "multipart/form-data" }, params: { type: "thread_reply" } })
       showConsole && console.log("Reply Data", data);
       if (!data.success && data.response) {
-        dispatch(
-          viewEmailSlice.actions.sendEmailWrong({ response: data.response }),
-        );
-        return;
+        throw Error("Detect Outbound Message.");
       }
       if (!data.success) {
         throw Error("Error While Sending Email");
@@ -379,7 +376,7 @@ export const sendEmail = (formData) => {
     } catch (error) {
       showConsole && console.log(error);
       dispatch(
-        viewEmailSlice.actions.sendEmailFailed("Error while sending email"),
+        viewEmailSlice.actions.sendEmailFailed(error.message),
       );
     }
   };

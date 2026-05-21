@@ -9,7 +9,6 @@ const ladgerSlice = createSlice({
     loading: false,
     email: localStorage.getItem("email") || null,
     ladger: [],
-    type: 'get_card_ledger',
     noSearchResultData: null,
     mailersSummary: null,
     pageCount: 1,
@@ -148,9 +147,9 @@ export const getLadger = ({
       // Fetch fresh current ledger
       let res;
       const timeline = getState().ladger.timeline
-      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: trimmedEmail, page, page_size: "50" }
+      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: trimmedEmail, page, page_size: "10" }
       brand ? res = await fetchGpc({ params: { type: "brandTimeline", case: "timeline", ...params } })
-        : res = await fetchGpc({ params: { type: getState().ladger.type, ...params } });
+        : res = await fetchGpc({ params: { type: 'get_card_ledger', ...params } });
       const data = brand ? res.data.timeline : res
       console.log(`${brand && "BRAND"} LADGER`, data)
       const freshData = {
@@ -197,8 +196,8 @@ export const getLadger = ({
 
           if (!getCache("ledgers", prefetchCacheKey)) {
             try {
-              const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: prefetchEmail.trim(), page: 1, page_size: "50" }
-              const data = await fetchGpc({ params: { type: "ledger", ...params } });
+              const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), email: prefetchEmail.trim(), page: 1, page_size: "10" }
+              const data = await fetchGpc({ params: { type: "get_card_ledger", ...params } });
               setCache("ledgers", prefetchCacheKey, {
                 duplicate: data.duplicate_threads_count,
                 ladger: data.data ?? [],
