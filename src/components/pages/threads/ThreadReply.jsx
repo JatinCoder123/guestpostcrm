@@ -22,8 +22,6 @@ const ThreadReply = () => {
     setEditorContent,
     handleSendClick,
     checkingThreadId,
-    contentLoading,
-    files
   } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
