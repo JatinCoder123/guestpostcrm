@@ -44,8 +44,9 @@ export const getMailerSummary = ({ loading = true, email, force = false }) => {
                 }
             }
 
-            const data = await fetchGpc({ method: "GET", params: { type: "mailer_summary", email } })
+            const data = await fetchGpc({ params: { type: "mailer_summary", email } })
             console.log(`Mailer Summary`, data);
+            setCache("mailer_summary", email, { mailersSummary: data.mailers_summary });
             dispatch(mailerSummarySlice.actions.getMailerSummarySuccess({ mailersSummary: data.mailers_summary }));
             // PREFETCH NEXT / PREV EMAIL LEDGER
             const index = localStorage.getItem("currentIndex") && Number(localStorage.getItem("currentIndex"))
@@ -67,9 +68,9 @@ export const getMailerSummary = ({ loading = true, email, force = false }) => {
                     if (!prefetchEmail) return;
 
 
-                    if (!getCache("ledgers", prefetchEmail)) {
+                    if (!getCache("mailer_summary", prefetchEmail)) {
                         try {
-                            const data = await fetchGpc({ params: { type: "mailer_summary" } });
+                            const data = await fetchGpc({ params: { type: "mailer_summary", email: prefetchEmail } });
                             setCache("mailer_summary", prefetchEmail, {
                                 mailersSummary: data.mailers_summary,
                             });

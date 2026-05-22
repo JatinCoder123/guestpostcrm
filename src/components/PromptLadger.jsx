@@ -23,7 +23,28 @@ const PromptLadger = ({
     const modalRef = useRef(null);
 
     const navigateTo = useNavigate();
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                modalRef.current &&
+                !modalRef.current.contains(event.target)
+            ) {
+                handleClose();
+            }
+        };
 
+        document.addEventListener(
+            "mousedown",
+            handleClickOutside,
+        );
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleClickOutside,
+            );
+        };
+    }, []);
     useEffect(() => {
         if (!activePromptId) return;
 
@@ -69,15 +90,6 @@ const PromptLadger = ({
         setActivePromptId(null);
     };
 
-    // OUTSIDE CLICK
-    const handleOutsideClick = (e) => {
-        if (
-            modalRef.current &&
-            !modalRef.current.contains(e.target)
-        ) {
-            handleClose();
-        }
-    };
 
     // SPLIT PROMPT
     const splitPrompt = (text = "") => {
@@ -128,30 +140,28 @@ const PromptLadger = ({
 
     return (
         <div
-            onClick={handleOutsideClick}
             className="
-                fixed inset-0
-                bg-black/50
-                flex items-center justify-center
-                z-[9999]
-                p-4
-            "
+            fixed inset-0
+            bg-black/50
+            flex items-center justify-center
+            z-[9999]
+            p-4
+        "
+
         >
             <div
                 ref={modalRef}
-                onClick={(e) =>
-                    e.stopPropagation()
-                }
+
                 className="
-                    bg-white
-                    rounded-2xl
-                    shadow-2xl
-                    w-full
-                    max-w-7xl
-                    max-h-[92vh]
-                    overflow-y-auto
-                    border border-gray-200
-                "
+                bg-white
+                rounded-2xl
+                shadow-2xl
+                w-full
+                max-w-7xl
+                max-h-[92vh]
+                overflow-y-auto
+                border border-gray-200
+            "
             >
                 {/* HEADER */}
                 <div className="sticky top-0 z-20 bg-white border-b px-6 py-4 flex justify-between items-center">
