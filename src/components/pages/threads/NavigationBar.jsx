@@ -2,15 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    ArrowBigDown,
     ArrowBigDownDash,
-    ArrowBigUp,
     ArrowBigUpDash,
     Link2,
     ListRestart,
     ListStart,
-    Loader2,
-    Sparkles,
 } from "lucide-react";
 
 import { ThreadContext } from "../../../context/ThreadContext";

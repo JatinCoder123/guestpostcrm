@@ -23,11 +23,13 @@ import { toast } from "react-toastify";
 import EmojiInput from "./EmojiPicker";
 import { fetchGpc } from "../services/api";
 import FirstReplyBtn from "./FirstReplyBtn";
+import { useNext } from "../hooks/useNext";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { handleMove } = useThreadContext();
   const { crmEndpoint } = useSelector((state) => state.user);
+  const { moveToNext } = useNext()
   const { mailersSummary } = useSelector((state) => state.ladger);
   const {
     buttons,
@@ -52,6 +54,7 @@ const LatestMessage = ({ handleMessageClick }) => {
         sendedEmail: contactInfo?.email1,
       }),
     );
+    moveToNext(contactInfo?.email1)
   };
   const email1 = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;

@@ -38,6 +38,7 @@ import IconButton from "../../ui/Buttons/IconButton";
 import { BiSolidMessageCheck } from "react-icons/bi";
 import { editContact, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
+import { useNext } from "../../../hooks/useNext";
 
 const ReplyButtons = ({ editorRef, editorReady }) => {
   const {
@@ -47,14 +48,13 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     editorContent,
     setContentLoading,
     htmlfile,
-    moveToNext,
     setHtmlfile,
     pdfLoading,
   } = useOutletContext();
   const {
     context: { currentEmail, currentThread: threadId },
   } = useThreadContext();
-
+  const { moveToNext } = useNext()
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
   const [aiReplyContent, setAiReplyContent] = useState("");
   const [openParent, setOpenParent] = useState(null);
