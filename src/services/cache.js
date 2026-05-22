@@ -1,14 +1,18 @@
 const viewMails = {};
 const threadMails = {};
 const ledgers = {};
+const ledgers_child = {};
 const contacts = {};
 const duplicateEmails = {};
+const mailer_summary = {};
 
 const cacheStore = {
     viewMails,
     threadMails,
     ledgers,
+    ledgers_child,
     contacts,
+    mailer_summary,
     duplicateEmails
 };
 
