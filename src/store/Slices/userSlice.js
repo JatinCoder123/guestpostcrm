@@ -139,15 +139,28 @@ export const getUser = (email = null) => {
 export const logout = () => {
   return async (dispatch) => {
     dispatch(userSlice.actions.logoutRequest());
-    localStorage.setItem('displayIntro', "true")
 
     try {
-      const data = await apiRequest({ endpoint: `${AUTH_URL}?controller=auth`, params: { action: "logout" }, withCredentials: true });
+      const data = await apiRequest({
+        endpoint: `${AUTH_URL}?controller=auth`,
+        params: { action: "logout" },
+        withCredentials: true,
+      });
+
+      // Clear all localStorage
+      localStorage.clear();
+
+      // Optional: set intro again after clear
+      localStorage.setItem("displayIntro", "true");
 
       dispatch(userSlice.actions.logoutSuccess(data.message));
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
-      dispatch(userSlice.actions.logoutFailed(error.response.data.message));
+      dispatch(
+        userSlice.actions.logoutFailed(
+          error?.response?.data?.message || "Logout Failed"
+        )
+      );
     }
   };
 };

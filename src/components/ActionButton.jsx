@@ -316,8 +316,9 @@ const ActionButton = () => {
       // GET when stopping emails, DELETE when resuming
       action: async () => {
         setStopLoading(true);
+        const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
         try {
-          const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
+
           const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: enteredEmail } });
           console.log(data);
           dispatch(
@@ -341,7 +342,7 @@ const ActionButton = () => {
             newValue === "1" ? "GET" : "DELETE",
           );
         } catch (err) {
-          toast.error("Something went wrong");
+          toast.error(`Failed To ${newValue === '1' ? 'Stopped' : 'Resumed'} Email `);
         } finally {
           setStopLoading(false);
         }

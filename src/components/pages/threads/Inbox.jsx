@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { FETCH_GPC_X_API_KEY } from "../../../store/constants";
+import { toast } from "react-toastify";
 const Inbox = ({
   scrollRef,
   visibleMessages,

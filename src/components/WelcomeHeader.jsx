@@ -15,28 +15,28 @@ import {
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import { createElement, useEffect, useState, useContext } from "react";
+import { createElement, useEffect, useMemo, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import {
   getUnrepliedEmail,
   unrepliedAction,
 } from "../store/Slices/unrepliedEmails";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { fetchGpc } from "../services/api";
+import { apiRequest, fetchGpc } from "../services/api";
+import { CREATE_DEAL_API_KEY } from "../store/constants";
+import {
+  BASE_ONBOARDING_KEYS,
+  getOnboardingKeys,
+  readOnboardingFlag,
+  readOnboardingJson,
+  writeOnboardingFlag,
+} from "../utils/onboardingStorage";
 
-const WEBSITE_DONE_KEY = "guestpostcrm:onboarding:website_added";
-const SYNC_DONE_KEY = "guestpostcrm:onboarding:first_sync_done";
-const FIRST_SYNC_STATUS_KEY = "guestpostcrm:first_sync:status";
-const FIRST_SYNC_RESULT_KEY = "guestpostcrm:first_sync:result";
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
+const ALLOWED_SITES_MODULE = "outr_allowed_sites";
 
-const getStoredFirstSync = () => {
-  try {
-    return JSON.parse(localStorage.getItem(FIRST_SYNC_RESULT_KEY) || "null");
-  } catch {
-    return null;
-  }
-};
+const getStoredFirstSync = (keys) =>
+  readOnboardingJson(keys.firstSyncResult, BASE_ONBOARDING_KEYS.firstSyncResult);
 
 const StatBadge = ({
   icon,
@@ -81,7 +81,9 @@ const WelcomeHeader = () => {
   const path = location.pathname;
 
   const { contactInfo } = useSelector((state) => state.viewEmail);
-  const { crmEndpoint, businessEmail } = useSelector((state) => state.user);
+  const { crmEndpoint, businessEmail, user, db_name, id } = useSelector(
+    (state) => state.user,
+  );
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
   const { summary } = useSelector((state) => state.gpcController);
@@ -90,6 +92,17 @@ const WelcomeHeader = () => {
 
   const { setEnteredEmail, handleClear } = useContext(PageContext);
 
+  const onboardingKeys = useMemo(
+    () =>
+      getOnboardingKeys({
+        user,
+        businessEmail,
+        crmEndpoint,
+        dbName: db_name,
+        id,
+      }),
+    [businessEmail, crmEndpoint, db_name, id, user],
+  );
   const [animate, setAnimate] = useState(false);
 
   const [stats, setStats] = useState({
@@ -98,9 +111,21 @@ const WelcomeHeader = () => {
     reminder_sent: null,
   });
   const [firstSyncState, setFirstSyncState] = useState(() => ({
-    status: localStorage.getItem(FIRST_SYNC_STATUS_KEY) || "idle",
-    result: getStoredFirstSync(),
+    status:
+      localStorage.getItem(onboardingKeys.firstSyncStatus) ||
+      localStorage.getItem(BASE_ONBOARDING_KEYS.firstSyncStatus) ||
+      "idle",
+    result: getStoredFirstSync(onboardingKeys),
   }));
+  const [websiteDone, setWebsiteDone] = useState(() =>
+    readOnboardingFlag(
+      onboardingKeys.websiteDone,
+      BASE_ONBOARDING_KEYS.websiteDone,
+    ),
+  );
+  const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(() =>
+    readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
+  );
 
   useEffect(() => {
     const loadStats = async () => {
@@ -163,21 +188,43 @@ const WelcomeHeader = () => {
 
   useEffect(() => {
     const syncHandler = (event) => {
+      if (event.detail?.websiteDone) {
+        setWebsiteDone(true);
+      }
+      if (event.detail?.status === "completed") {
+        setFirstSyncRecordsSeen(false);
+      }
+
       setFirstSyncState({
-        status: event.detail?.status || "idle",
-        result: event.detail?.result ?? getStoredFirstSync(),
+        status:
+          event.detail?.status ||
+          localStorage.getItem(onboardingKeys.firstSyncStatus) ||
+          "idle",
+        result: event.detail?.result ?? getStoredFirstSync(onboardingKeys),
       });
     };
 
     const storageHandler = (event) => {
       if (
-        event.key === FIRST_SYNC_STATUS_KEY ||
-        event.key === FIRST_SYNC_RESULT_KEY
+        event.key === onboardingKeys.firstSyncStatus ||
+        event.key === onboardingKeys.firstSyncResult ||
+        event.key === onboardingKeys.firstSyncRecordsSeen ||
+        event.key === onboardingKeys.websiteDone
       ) {
+        setWebsiteDone(
+          readOnboardingFlag(
+            onboardingKeys.websiteDone,
+            BASE_ONBOARDING_KEYS.websiteDone,
+          ),
+        );
         setFirstSyncState({
-          status: localStorage.getItem(FIRST_SYNC_STATUS_KEY) || "idle",
-          result: getStoredFirstSync(),
+          status:
+            localStorage.getItem(onboardingKeys.firstSyncStatus) || "idle",
+          result: getStoredFirstSync(onboardingKeys),
         });
+        setFirstSyncRecordsSeen(
+          readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
+        );
       }
     };
 
@@ -188,20 +235,77 @@ const WelcomeHeader = () => {
       window.removeEventListener(FIRST_SYNC_EVENT, syncHandler);
       window.removeEventListener("storage", storageHandler);
     };
-  }, []);
+  }, [onboardingKeys]);
+
+  useEffect(() => {
+    setWebsiteDone(
+      readOnboardingFlag(
+        onboardingKeys.websiteDone,
+        BASE_ONBOARDING_KEYS.websiteDone,
+      ),
+    );
+    setFirstSyncState({
+      status:
+        localStorage.getItem(onboardingKeys.firstSyncStatus) ||
+        localStorage.getItem(BASE_ONBOARDING_KEYS.firstSyncStatus) ||
+        "idle",
+      result: getStoredFirstSync(onboardingKeys),
+    });
+    setFirstSyncRecordsSeen(
+      readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
+    );
+  }, [onboardingKeys]);
+
+  useEffect(() => {
+    if (!crmEndpoint || websiteDone) return;
+
+    const verifyWebsiteDone = async () => {
+      try {
+        const data = await apiRequest({
+          endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+          method: "POST",
+          params: { action_type: "get_data" },
+          body: { module: ALLOWED_SITES_MODULE },
+          headers: {
+            "x-api-key": CREATE_DEAL_API_KEY,
+            "Content-Type": "application/json",
+          },
+        });
+        const websites = Array.isArray(data) ? data : data?.data ?? [];
+        if (websites.length > 0) {
+          writeOnboardingFlag(onboardingKeys.websiteDone, true);
+          setWebsiteDone(true);
+        }
+      } catch (err) {
+        console.error("Failed to verify onboarding websites:", err);
+      }
+    };
+
+    verifyWebsiteDone();
+  }, [crmEndpoint, onboardingKeys.websiteDone, websiteDone]);
 
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
-  const websiteDone = localStorage.getItem(WEBSITE_DONE_KEY) === "true";
-  const syncDone = localStorage.getItem(SYNC_DONE_KEY) === "true";
+  const syncDone = readOnboardingFlag(
+    onboardingKeys.syncDone,
+    BASE_ONBOARDING_KEYS.syncDone,
+  );
   const firstSyncLoading = firstSyncState.status === "loading";
   const firstSyncCompleted = firstSyncState.status === "completed" || syncDone;
+  const firstSyncRecords = Array.isArray(firstSyncState.result?.records)
+    ? firstSyncState.result.records
+    : [];
   const profileCompletion = firstSyncCompleted ? 100 : websiteDone ? 70 : 50;
   const showProfilePrompt =
   path !== "/profile" &&
   (profileCompletion < 100 || firstSyncLoading);
+  const showFirstSyncRecordsPrompt =
+    path !== "/profile" &&
+    firstSyncCompleted &&
+    firstSyncRecords.length > 0 &&
+    !firstSyncRecordsSeen;
   const profilePromptText = firstSyncLoading
     ? "First sync is running..."
     : firstSyncCompleted
@@ -214,6 +318,11 @@ const WelcomeHeader = () => {
     : firstSyncCompleted
       ? CheckCircle2
       : UserCircle2;
+  const handleShowFirstSyncRecords = () => {
+    writeOnboardingFlag(onboardingKeys.firstSyncRecordsSeen, true);
+    setFirstSyncRecordsSeen(true);
+    navigate("/profile?showFirstSync=1");
+  };
 
   return (
     <div className="h-20 w-full relative overflow-visible rounded-3xl bg-white shadow-lg border border-gray-100 mb-5 flex items-center">
@@ -392,6 +501,42 @@ const WelcomeHeader = () => {
                   className="shrink-0 text-indigo-500 transition-transform group-hover:translate-x-1"
                 />
               )}
+            </Motion.button>
+          )}
+
+          {showFirstSyncRecordsPrompt && (
+            <Motion.button
+              type="button"
+              onClick={handleShowFirstSyncRecords}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="
+                group relative flex min-w-[220px] items-center gap-3 overflow-hidden rounded-2xl
+                border border-emerald-200 bg-white/90 px-3 py-2 text-left shadow-lg
+                shadow-emerald-500/10 backdrop-blur-xl transition-all
+                hover:border-emerald-300 hover:bg-white hover:shadow-xl hover:shadow-emerald-500/20
+              "
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-md shadow-emerald-500/25">
+                <List size={20} />
+              </span>
+
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-black uppercase tracking-wide text-emerald-600">
+                  First Sync
+                </span>
+                <span className="block truncate text-sm font-bold text-slate-900">
+                  Show {firstSyncRecords.length} record
+                  {firstSyncRecords.length === 1 ? "" : "s"}
+                </span>
+              </span>
+
+              <ArrowRight
+                size={18}
+                className="shrink-0 text-emerald-500 transition-transform group-hover:translate-x-1"
+              />
             </Motion.button>
           )}
         </div>

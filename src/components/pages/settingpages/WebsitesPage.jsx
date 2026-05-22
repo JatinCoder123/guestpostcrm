@@ -36,6 +36,10 @@ import {
   webManagerAction,
 } from "../../../store/Slices/webManager.js";
 import { toast } from "react-toastify";
+import {
+  getOnboardingKeys,
+  writeOnboardingFlag,
+} from "../../../utils/onboardingStorage.js";
 
 /* ─── helpers ───────────────────────────────────────────────── */
 const getDomain = (raw) => {
@@ -493,6 +497,16 @@ export default function WebsitesPage() {
     deleting,
     deleteWebsiteId,
   } = useSelector((state) => state.webManager);
+  const { user, businessEmail, crmEndpoint, db_name, id } = useSelector(
+    (state) => state.user,
+  );
+  const onboardingKeys = getOnboardingKeys({
+    user,
+    businessEmail,
+    crmEndpoint,
+    dbName: db_name,
+    id,
+  });
   const dispatch = useDispatch();
 
   const handleCreate = (updatedItem) => {
@@ -543,11 +557,16 @@ export default function WebsitesPage() {
     toast.success(message);
     if (onboardingCreateSubmitted.current) {
       onboardingCreateSubmitted.current = false;
-      localStorage.setItem("guestpostcrm:onboarding:website_added", "true");
+      writeOnboardingFlag(onboardingKeys.websiteDone, true);
+      window.dispatchEvent(
+        new CustomEvent("guestpostcrm:first-sync", {
+          detail: { websiteDone: true },
+        }),
+      );
       navigate("/profile?step=5");
     }
     dispatch(webManagerAction.clearAllMessages());
-  }, [dispatch, message, navigate]);
+  }, [dispatch, message, navigate, onboardingKeys.websiteDone]);
   useEffect(() => {
     if (!error) return;
     toast.error(error);

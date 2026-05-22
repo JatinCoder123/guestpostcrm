@@ -297,7 +297,7 @@ export function TopNav() {
         {notificationCount.error_log_created && (
           <motion.button
             onClick={() => navigateTo("/settings/debugging")}
-            className="relative p-4 bg-red-500 text-white rounded-full"
+            className="relative p-2 bg-red-500 text-white rounded-full"
             animate={
               errorLogCount > 0
                 ? {
