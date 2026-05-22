@@ -30,7 +30,7 @@ const LatestMessage = ({ handleMessageClick }) => {
   const { handleMove } = useThreadContext();
   const { crmEndpoint } = useSelector((state) => state.user);
   const { moveToNext } = useNext()
-  const { mailersSummary } = useSelector((state) => state.ladger);
+  const { mailersSummary } = useSelector((state) => state.mailersSummary);
   const {
     buttons,
     error: buttonsError,
