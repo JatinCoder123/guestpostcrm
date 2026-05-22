@@ -31,7 +31,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { apiRequest } from "../services/api";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
-
+const SESSION_KEY = "gpc_report_filters";
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
@@ -317,28 +317,28 @@ function ClockFace({ hour, min, pickingHour, onPickHour, onPickMin }) {
     R = 76;
   const items = pickingHour
     ? Array.from({ length: 12 }, (_, i) => {
-        const lbl = i === 0 ? 12 : i;
-        const ang = (i / 12) * 360 - 90;
-        const [x, y] = polar(cx, cy, R - 14, ang);
-        return {
-          x,
-          y,
-          lbl: String(lbl),
-          sel: hour % 12 === i,
-          onClick: () => onPickHour(i),
-        };
-      })
+      const lbl = i === 0 ? 12 : i;
+      const ang = (i / 12) * 360 - 90;
+      const [x, y] = polar(cx, cy, R - 14, ang);
+      return {
+        x,
+        y,
+        lbl: String(lbl),
+        sel: hour % 12 === i,
+        onClick: () => onPickHour(i),
+      };
+    })
     : [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((mv, i) => {
-        const ang = (i / 12) * 360 - 90;
-        const [x, y] = polar(cx, cy, R - 14, ang);
-        return {
-          x,
-          y,
-          lbl: pad(mv),
-          sel: min === mv,
-          onClick: () => onPickMin(mv),
-        };
-      });
+      const ang = (i / 12) * 360 - 90;
+      const [x, y] = polar(cx, cy, R - 14, ang);
+      return {
+        x,
+        y,
+        lbl: pad(mv),
+        sel: min === mv,
+        onClick: () => onPickMin(mv),
+      };
+    });
 
   const [hx, hy] = polar(cx, cy, 44, ((hour % 12) / 12) * 360 - 90);
   const [mx, my] = polar(cx, cy, 60, (min / 60) * 360 - 90);
@@ -485,11 +485,10 @@ function DateTimePicker({
               e.stopPropagation();
               setStep(s);
             }}
-            className={`flex-1 py-2.5 text-xs font-bold tracking-wide transition-all ${
-              step === s
-                ? "bg-blue-700 text-white"
-                : "bg-gray-50 text-gray-400 hover:text-gray-700"
-            }`}
+            className={`flex-1 py-2.5 text-xs font-bold tracking-wide transition-all ${step === s
+              ? "bg-blue-700 text-white"
+              : "bg-gray-50 text-gray-400 hover:text-gray-700"
+              }`}
           >
             {lbl}
           </button>
@@ -601,13 +600,12 @@ function DateTimePicker({
                     e.stopPropagation();
                     selectDay(d);
                   }}
-                  className={`text-[11px] py-1.5 rounded-lg font-medium transition-all ${
-                    isSel
-                      ? "bg-blue-700 text-white shadow-sm font-bold"
-                      : isToday
-                        ? "ring-2 ring-blue-400 text-blue-700 font-bold"
-                        : "hover:bg-blue-50 text-gray-700"
-                  }`}
+                  className={`text-[11px] py-1.5 rounded-lg font-medium transition-all ${isSel
+                    ? "bg-blue-700 text-white shadow-sm font-bold"
+                    : isToday
+                      ? "ring-2 ring-blue-400 text-blue-700 font-bold"
+                      : "hover:bg-blue-50 text-gray-700"
+                    }`}
                 >
                   {d}
                 </button>
@@ -643,11 +641,10 @@ function DateTimePicker({
                   e.stopPropagation();
                   setPickingHour(isHour);
                 }}
-                className={`px-5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  pickingHour === isHour
-                    ? "bg-blue-700 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
+                className={`px-5 py-1.5 rounded-xl text-xs font-bold transition-all ${pickingHour === isHour
+                  ? "bg-blue-700 text-white shadow-sm"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
               >
                 {lbl}
               </button>
@@ -826,11 +823,10 @@ function DateRangeFilter({
                   <button
                     key={p.id}
                     onClick={() => applyPreset(p.id)}
-                    className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${
-                      activePreset === p.id
-                        ? "bg-blue-700 text-white"
-                        : "text-gray-600 hover:bg-white hover:text-gray-900"
-                    }`}
+                    className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${activePreset === p.id
+                      ? "bg-blue-700 text-white"
+                      : "text-gray-600 hover:bg-white hover:text-gray-900"
+                      }`}
                   >
                     {p.label}
                   </button>
@@ -876,11 +872,10 @@ function DateRangeFilter({
                         e.stopPropagation();
                         if (duration !== null) handleDurationChange(duration); // deselect = set null
                       }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-                        duration === null
-                          ? "bg-blue-700 border-blue-700 text-white shadow-sm"
-                          : "bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-700"
-                      }`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${duration === null
+                        ? "bg-blue-700 border-blue-700 text-white shadow-sm"
+                        : "bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-700"
+                        }`}
                     >
                       All Day
                     </button>
@@ -891,11 +886,10 @@ function DateRangeFilter({
                           e.stopPropagation();
                           handleDurationChange(opt.value);
                         }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-                          duration === opt.value
-                            ? "bg-blue-700 border-blue-700 text-white shadow-sm"
-                            : "bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                        }`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${duration === opt.value
+                          ? "bg-blue-700 border-blue-700 text-white shadow-sm"
+                          : "bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                          }`}
                       >
                         <Clock
                           size={11}
@@ -954,11 +948,10 @@ function DateRangeFilter({
                               e.stopPropagation();
                               setOpenPicker(openPicker === key ? null : key);
                             }}
-                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${
-                              openPicker === key
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                            }`}
+                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${openPicker === key
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                              }`}
                           >
                             {fmtDtDisplay(dtFromStrings(date, time))}
                           </button>
@@ -1109,12 +1102,33 @@ export default function ViewReports() {
   const [openExport, setOpenExport] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
   const exportRef = useRef(null);
+  const savedFilters = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || null;
+    } catch {
+      return null;
+    }
+  })();
 
-  const [fromDate, setFromDate] = useState(todayStr());
-  const [fromTime, setFromTime] = useState("00:01");
-  const [toDate, setToDate] = useState(todayStr());
-  const [toTime, setToTime] = useState("23:59");
-  const [filterActive, setFilterActive] = useState(false);
+  const [fromDate, setFromDate] = useState(
+    savedFilters?.fromDate || todayStr(),
+  );
+
+  const [fromTime, setFromTime] = useState(
+    savedFilters?.fromTime || "00:01",
+  );
+
+  const [toDate, setToDate] = useState(
+    savedFilters?.toDate || todayStr(),
+  );
+
+  const [toTime, setToTime] = useState(
+    savedFilters?.toTime || "23:59",
+  );
+
+  const [filterActive, setFilterActive] = useState(
+    savedFilters?.filterActive ?? false,
+  );
 
   const { crmEndpoint } = useSelector((state) => state.user);
 
@@ -1126,7 +1140,18 @@ export default function ViewReports() {
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
-
+  useEffect(() => {
+    sessionStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        fromDate,
+        fromTime,
+        toDate,
+        toTime,
+        filterActive,
+      }),
+    );
+  }, [fromDate, fromTime, toDate, toTime, filterActive]);
   // ── Derived ──────────────────────────────────────────────────────────────────
   const rows = apiResponse?.data ?? [];
   const grouped = groupByDescription(rows);
@@ -1512,8 +1537,8 @@ export default function ViewReports() {
       onClick: () =>
         filterActive
           ? fetchTable(fromDate, fromTime, toDate, toTime, {
-              user_id: u.user_id,
-            })
+            user_id: u.user_id,
+          })
           : fetchTablePlain({ user_id: u.user_id }),
     })),
     {

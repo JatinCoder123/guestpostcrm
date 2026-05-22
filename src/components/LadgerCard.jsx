@@ -121,6 +121,8 @@ function ChildCard({ parentId, handleMessageClick }) {
             const Icon = child.icon;
             const isHovered =
                 hoveredChild === child.id;
+            const user = child[0]?.user_details.length > 0 ? child[0]?.user_details[0].name : "GPC"
+
 
             return (
                 <div
@@ -132,7 +134,7 @@ function ChildCard({ parentId, handleMessageClick }) {
                     <Visualization activeVisualizationId={activeVisualizationId} setActiveVisualizationId={setActiveVisualizationId} />
                     <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} />
                     <div
-                        className="absolute right-4 top-10 flex gap-3  
+                        className="absolute right-4 top-14 flex gap-3  
              opacity-0 translate-y-1 pointer-events-none
              group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto
              transition-all duration-200 z-20"
@@ -200,20 +202,36 @@ function ChildCard({ parentId, handleMessageClick }) {
                                 : "border-gray-200 shadow-sm"}
                             `}
                     >
-
                         <div className="px-5 py-4 flex items-center justify-between">
 
+                            {/* LEFT */}
                             <div className="flex items-center gap-3">
 
                                 <div
-                                    className={`w-9 h-9 rounded-lg flex items-center justify-center bg-green-50`}
+                                    className="w-9 h-9 rounded-lg flex items-center justify-center bg-green-50"
                                 >
                                     <img src={Icon} />
                                 </div>
 
-                                <h3 className="font-medium text-gray-800">
-                                    {child?.type_c}
-                                </h3>
+                                <div>
+                                    <h3 className="font-medium text-gray-800">
+                                        {child?.type_c}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            {/* RIGHT */}
+                            <div className="text-right ml-4">
+                                <p className="text-xs text-gray-500 whitespace-nowrap">
+                                    {child?.date_entered}
+                                </p>
+
+                                <p className="text-sm text-gray-700 mt-1 whitespace-nowrap">
+                                    <i>- by</i>{" "}
+                                    {child?.user_details != []
+                                        ? child.user_details?.name
+                                        : "GPC"}
+                                </p>
                             </div>
                         </div>
                     </div>
