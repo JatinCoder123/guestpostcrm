@@ -2,15 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    ArrowBigDown,
     ArrowBigDownDash,
-    ArrowBigUp,
     ArrowBigUpDash,
     Link2,
     ListRestart,
     ListStart,
-    Loader2,
-    Sparkles,
 } from "lucide-react";
 
 import { ThreadContext } from "../../../context/ThreadContext";
@@ -33,7 +29,7 @@ function NavigationBar({
 
     const topThreads = duplicateEmail?.slice(0, 5) || [];
     useEffect(() => {
-        if (!loading && duplicateEmail) {
+        if (!loading && duplicateEmail?.length > 1) {
             setShowThreads(true)
         }
     }, [duplicateEmail, loading])
@@ -132,11 +128,8 @@ function NavigationBar({
                             label={"Last Email"} />
                     </div>
 
-                    {/* THREAD BUTTON */}
-                    {/* THREAD BUTTON */}
+
                     <IconButton
-                        whileTap={{ scale: 0.97 }}
-                        whileHover={{ y: -1 }}
                         onClick={() => {
                             // Don't open sidebar while loading
                             if (!loading) {
