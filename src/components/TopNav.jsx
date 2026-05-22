@@ -140,7 +140,7 @@ export function TopNav() {
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
-          src="https://dev.outrightcrm.in/dev/Try_our_CRM/wp-content/uploads/images/png%20(1).png"
+          src="./headingLogo.webp"
           className="w-72 h-10 object-contain cursor-pointer"
           onClick={() => navigateTo("")}
         />
@@ -148,7 +148,7 @@ export function TopNav() {
         {/* SEARCH AREA */}
         <div className="flex items-center gap-2">
           {/* INPUT */}
-          <div className="relative w-[380px]">
+          <div className="relative w-95">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
             <input
@@ -244,7 +244,7 @@ export function TopNav() {
             />
           </div>
         </div>
-        <button className="group relative cursor-pointer flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.6)] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(217,70,239,0.9)]">
+        <button className="group relative cursor-pointer flex items-center justify-center w-8 h-8 rounded-full bg-linear-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.6)] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(217,70,239,0.9)]">
           {/* Animated background ring */}
           <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:scale-125 transition-all duration-500"></span>
 
@@ -252,7 +252,7 @@ export function TopNav() {
           <BellIcon className="w-4 h-4 z-10 group-hover:-rotate-12 group-hover:animate-pulse transition-all duration-300" />
 
           {/* Notification badge */}
-          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-[14px] px-1 rounded-full bg-red-500 text-[10px] font-bold text-white border border-white shadow-md animate-bounce">
+          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-3.5 h-3.5 px-1 rounded-full bg-red-500 text-[10px] font-bold text-white border border-white shadow-md animate-bounce">
             3
           </span>
         </button>
