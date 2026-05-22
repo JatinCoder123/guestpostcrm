@@ -24,7 +24,6 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
 
                 const ParentIcon = MailCheck;
                 const isOpen = activeParent === parent.id;
-                const user = parent?.children?.length > 0 && parent?.children[0]?.user_details.length > 0 ? parent?.children[0]?.user_details[0].name : "GPC"
 
                 return (
                     <div key={parent.id} className="flex gap-5  ">
@@ -45,7 +44,7 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                         <div className="flex-1 relative">
                             <div className="absolute -left-[38px] top-[36px] w-10 h-1   bg-gradient-to-r from-blue-500 to-purple-600"></div>
                             {/* PARENT CARD */}
-                            <ParentCard parent={parent} toggleParent={toggleParent} user={user} />
+                            <ParentCard parent={parent} toggleParent={toggleParent} />
                             {/* CHILDREN */}
                             {isOpen && <ChildCard parentId={parent.id} handleMessageClick={handleMessageClick} />}
                         </div>
@@ -55,7 +54,7 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
         </div>
     );
 };
-function ParentCard({ parent, toggleParent, user }) {
+function ParentCard({ parent, toggleParent }) {
     return <div
         onClick={() => toggleParent(parent.id)}
         className="group bg-white border border-gray-200 rounded-2xl px-6 py-5 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -70,13 +69,10 @@ function ParentCard({ parent, toggleParent, user }) {
             </div>
 
             <div className="text-right">
-                <p className="text-xs text-gray-500 truncate max-w-[100px]">
+                <p className="text-xs text-gray-500 ">
                     {parent.date_entered}
                 </p>
 
-                <p className="text-sm text-gray-700 mt-1 truncate max-w-[100px]">
-                    <i> - by</i> {user}
-                </p>
             </div>
         </div>
     </div>
@@ -119,11 +115,7 @@ function ChildCard({ parentId, handleMessageClick }) {
         ) : (ladgerChild?.map((child) => {
 
             const Icon = child.icon;
-            const isHovered =
-                hoveredChild === child.id;
-            const user = child[0]?.user_details.length > 0 ? child[0]?.user_details[0].name : "GPC"
-
-
+            const isHovered = hoveredChild === child.id;
             return (
                 <div
                     key={child.id}
@@ -228,7 +220,7 @@ function ChildCard({ parentId, handleMessageClick }) {
 
                                 <p className="text-sm text-gray-700 mt-1 whitespace-nowrap">
                                     <i>- by</i>{" "}
-                                    {child?.user_details != []
+                                    {!Array.isArray(child?.user_details)
                                         ? child.user_details?.name
                                         : "GPC"}
                                 </p>

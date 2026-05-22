@@ -24,11 +24,13 @@ import EmojiInput from "./EmojiPicker";
 import { fetchGpc } from "../services/api";
 import FirstReplyBtn from "./FirstReplyBtn";
 import { useNext } from "../hooks/useNext";
+import PromptLadger from "./PromptLadger";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { handleMove } = useThreadContext();
   const { crmEndpoint } = useSelector((state) => state.user);
+  const [activePromptId, setActivePromptId] = useState(null)
   const { moveToNext } = useNext()
   const { mailersSummary } = useSelector((state) => state.mailersSummary);
   const {
@@ -96,6 +98,7 @@ const LatestMessage = ({ handleMessageClick }) => {
   return (
     <>
       <div className=" flex flex-col justify-between bg-slate-50 rounded-3xl shadow-xl border border-slate-200 p-4  overflow-y-auto custom-scrollbar ">
+        <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} />
         <div className="flex flex-col gap-2 justify-center mb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -199,11 +202,7 @@ const LatestMessage = ({ handleMessageClick }) => {
               disabled={sending || !mailersSummary?.ai_response}
               tooltip="AI Reply"
               onEditClick={() => {
-                navigate("/settings/debugging", {
-                  state: {
-                    prompt: mailersSummary.prompt_details[0],
-                  },
-                });
+                setActivePromptId(mailersSummary.prompt_id)
               }}
             />
             <QuickBtn
@@ -213,11 +212,7 @@ const LatestMessage = ({ handleMessageClick }) => {
               disabled={sending || !mailersSummary?.ai_response}
               tooltip="AI Summary"
               onEditClick={() => {
-                navigate("/settings/debugging", {
-                  state: {
-                    prompt: mailersSummary.prompt_details[0],
-                  },
-                });
+                setActivePromptId(mailersSummary.prompt_id)
               }}
             />
             {buttonsLoading ? (
