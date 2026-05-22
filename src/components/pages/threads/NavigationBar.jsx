@@ -33,7 +33,7 @@ function NavigationBar({
 
     const topThreads = duplicateEmail?.slice(0, 5) || [];
     useEffect(() => {
-        if (!loading && duplicateEmail) {
+        if (!loading && duplicateEmail?.length > 1) {
             setShowThreads(true)
         }
     }, [duplicateEmail, loading])
@@ -132,11 +132,8 @@ function NavigationBar({
                             label={"Last Email"} />
                     </div>
 
-                    {/* THREAD BUTTON */}
-                    {/* THREAD BUTTON */}
+
                     <IconButton
-                        whileTap={{ scale: 0.97 }}
-                        whileHover={{ y: -1 }}
                         onClick={() => {
                             // Don't open sidebar while loading
                             if (!loading) {
