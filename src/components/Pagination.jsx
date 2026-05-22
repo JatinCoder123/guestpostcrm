@@ -87,7 +87,7 @@ function Pagination({ slice, fn }) {
               <button
                 key={p * Math.random()}
                 onClick={() => goToPage(p)}
-                className={`w-12 h-12 flex items-center justify-center cursor-pointer rounded-full text-lg font-semibold transition
+                className={`w-8 h-8 flex items-center justify-center cursor-pointer rounded-full text-lg font-semibold transition
                 ${p == pageIndex
                     ? "bg-cyan-600 text-white scale-110 shadow-md"
                     : "bg-cyan-100 text-cyan-700 hover:bg-cyan-200"

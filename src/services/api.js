@@ -21,29 +21,19 @@ export const apiRequest = async ({
   params = {},
   withCredentials = false,
 }) => {
-  try {
-    const response = await apiClient({
-      url: endpoint,
-      method,
-      data: body,
-      headers,
-      params: {
-        db_name: DB_NAME,
-        ...params,
-      },
-      withCredentials,
-    });
+  const response = await apiClient({
+    url: endpoint,
+    method,
+    data: body,
+    headers,
+    params: {
+      db_name: DB_NAME,
+      ...params,
+    },
+    withCredentials,
+  });
 
-    return response.data;
-  } catch (error) {
-    console.error("API Error:", error?.response || error.message);
-
-    throw (
-      error?.response?.data || {
-        message: "Something went wrong",
-      }
-    );
-  }
+  return response.data;
 };
 
 /**

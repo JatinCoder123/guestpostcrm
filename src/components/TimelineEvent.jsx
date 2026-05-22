@@ -266,22 +266,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
           </div>
         </div>
         <LadgerCard timelineData={timelineData} handleMessageClick={handleMessageClick} />
-
-        {timelineData?.length > 0 && (
-          <Pagination
-            slice={"ladger"}
-            fn={(page) =>
-              dispatch(
-                getLadger({
-                  email: contactInfo?.email1,
-                  loading: false,
-                  force: true,
-                  page,
-                }),
-              )
-            }
-          />
-        )}
       </div>
 
       {timelineData?.length > 8 && (

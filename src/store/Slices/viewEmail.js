@@ -174,7 +174,7 @@ export const getViewEmail = ({ email = null, force = false }) => {
           );
         }
       }
-      const data = await fetchGpc({ method: "GET", params: { type: "view_email", email: trimmedEmail } });
+      const data = await fetchGpc({ params: { type: "view_email", email: trimmedEmail } });
       console.log("VIEW EMAIL", data);
       const freshData = {
         emails: data.emails,
