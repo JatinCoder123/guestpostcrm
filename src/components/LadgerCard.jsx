@@ -24,7 +24,6 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
 
                 const ParentIcon = MailCheck;
                 const isOpen = activeParent === parent.id;
-                const user = parent?.children?.length > 0 && parent?.children[0]?.user_details.length > 0 ? parent?.children[0]?.user_details[0].name : "GPC"
 
                 return (
                     <div key={parent.id} className="flex gap-5  ">
@@ -45,7 +44,7 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                         <div className="flex-1 relative">
                             <div className="absolute -left-[38px] top-[36px] w-10 h-1   bg-gradient-to-r from-blue-500 to-purple-600"></div>
                             {/* PARENT CARD */}
-                            <ParentCard parent={parent} toggleParent={toggleParent} user={user} />
+                            <ParentCard parent={parent} toggleParent={toggleParent} />
                             {/* CHILDREN */}
                             {isOpen && <ChildCard parentId={parent.id} handleMessageClick={handleMessageClick} />}
                         </div>
@@ -55,7 +54,7 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
         </div>
     );
 };
-function ParentCard({ parent, toggleParent, user }) {
+function ParentCard({ parent, toggleParent }) {
     return <div
         onClick={() => toggleParent(parent.id)}
         className="group bg-white border border-gray-200 rounded-2xl px-6 py-5 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -70,13 +69,10 @@ function ParentCard({ parent, toggleParent, user }) {
             </div>
 
             <div className="text-right">
-                <p className="text-xs text-gray-500 truncate max-w-[100px]">
+                <p className="text-xs text-gray-500 ">
                     {parent.date_entered}
                 </p>
 
-                <p className="text-sm text-gray-700 mt-1 truncate max-w-[100px]">
-                    <i> - by</i> {user}
-                </p>
             </div>
         </div>
     </div>
@@ -119,9 +115,7 @@ function ChildCard({ parentId, handleMessageClick }) {
         ) : (ladgerChild?.map((child) => {
 
             const Icon = child.icon;
-            const isHovered =
-                hoveredChild === child.id;
-
+            const isHovered = hoveredChild === child.id;
             return (
                 <div
                     key={child.id}
@@ -132,7 +126,7 @@ function ChildCard({ parentId, handleMessageClick }) {
                     <Visualization activeVisualizationId={activeVisualizationId} setActiveVisualizationId={setActiveVisualizationId} />
                     <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} />
                     <div
-                        className="absolute right-4 top-10 flex gap-3  
+                        className="absolute right-4 top-14 flex gap-3  
              opacity-0 translate-y-1 pointer-events-none
              group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto
              transition-all duration-200 z-20"
@@ -200,20 +194,36 @@ function ChildCard({ parentId, handleMessageClick }) {
                                 : "border-gray-200 shadow-sm"}
                             `}
                     >
-
                         <div className="px-5 py-4 flex items-center justify-between">
 
+                            {/* LEFT */}
                             <div className="flex items-center gap-3">
 
                                 <div
-                                    className={`w-9 h-9 rounded-lg flex items-center justify-center bg-green-50`}
+                                    className="w-9 h-9 rounded-lg flex items-center justify-center bg-green-50"
                                 >
                                     <img src={Icon} />
                                 </div>
 
-                                <h3 className="font-medium text-gray-800">
-                                    {child?.type_c}
-                                </h3>
+                                <div>
+                                    <h3 className="font-medium text-gray-800">
+                                        {child?.type_c}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            {/* RIGHT */}
+                            <div className="text-right ml-4">
+                                <p className="text-xs text-gray-500 whitespace-nowrap">
+                                    {child?.date_entered}
+                                </p>
+
+                                <p className="text-sm text-gray-700 mt-1 whitespace-nowrap">
+                                    <i>- by</i>{" "}
+                                    {!Array.isArray(child?.user_details)
+                                        ? child.user_details?.name
+                                        : "GPC"}
+                                </p>
                             </div>
                         </div>
                     </div>

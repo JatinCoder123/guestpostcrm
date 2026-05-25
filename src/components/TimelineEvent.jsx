@@ -1,29 +1,20 @@
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Eye,
-  SparkleIcon,
-  FileText,
-  MessageSquare,
+
   Search,
-  Cross,
-  Workflow,
+
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { getLadger } from "../store/Slices/ladger";
-import Pagination from "./Pagination";
 import LadgerCard from "./LadgerCard";
 const TimelineEvent = ({ handleMessageClick }) => {
-  const { ladger, email, pageCount, pageIndex, loading } = useSelector(
+  const { ladger, loading } = useSelector(
     (state) => state.ladger,
   );
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
-  const { contactInfo } = useSelector((state) => state.viewEmail);
-  const dispatch = useDispatch();
   const [selectedView, setSelectedView] = useState("important");
 
   const [timelineData, setTimelineData] = useState([]);
@@ -99,60 +90,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
       setTimelineData(finalData);
     }
   }, [selectedView, ladger]);
-
-  const navigateTo = useNavigate();
-
-  const getContactIdFromEvent = (event) => {
-    if (event.contact_id) {
-      return event.contact_id;
-    }
-
-    if (event.module === "Contacts" && event.parent_id) {
-      return event.parent_id;
-    }
-
-    if (event.parent_type === "Contacts" && event.parent_id) {
-      return event.parent_id;
-    }
-
-    if (event.description || event.subject) {
-      const text = (event.description || event.subject).toLowerCase();
-      const idMatch = text.match(/id[: ]\s*(\d+)/i);
-      if (idMatch) {
-        return idMatch[1];
-      }
-    }
-
-    return null;
-  };
-
-  const getReminderFilterType = (eventType) => {
-    if (!eventType) return "";
-
-    const type = eventType.toLowerCase();
-
-    const mappings = {
-      reply: "Before_Reply_Reminder",
-      offer: "Before_Offer_Reminder",
-      deal: "Deal_Reminder",
-      order: "Order_Reminder",
-      invoice: "Invoice_Reminder",
-      payment: "Payment_Reminder",
-      follow: "Followup_Reminder",
-    };
-
-    for (const key in mappings) {
-      if (type.includes(key)) {
-        return mappings[key];
-      }
-    }
-
-    return eventType
-      .replace(/scheduled|reminder/gi, "")
-      .trim()
-      .replace(/\s+/g, "_");
-  };
-
 
 
   const scrollToTop = () => {
