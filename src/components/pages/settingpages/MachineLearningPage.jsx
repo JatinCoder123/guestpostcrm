@@ -201,7 +201,7 @@ export function MachineLearningPage() {
 
       setError(err);
 
-      showToast(err?.message || "Something went wrong", "error");
+      showToast(err?.message || "Failed To Create Prompt", "error");
     } finally {
       setCreating(false);
     }
@@ -250,9 +250,9 @@ export function MachineLearningPage() {
           prev.map((row) =>
             row.id === updatedItem.id
               ? {
-                  ...row,
-                  ...updatedItem,
-                }
+                ...row,
+                ...updatedItem,
+              }
               : row,
           ),
         );
@@ -412,10 +412,9 @@ export function MachineLearningPage() {
             key={key}
             onClick={() => setActiveStage(key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition
-              ${
-                activeStage === key
-                  ? "bg-blue-600 text-white shadow"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              ${activeStage === key
+                ? "bg-blue-600 text-white shadow"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
               }`}
           >
             {label}

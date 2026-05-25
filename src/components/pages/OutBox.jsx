@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
     Calendar,
     Mail,
@@ -21,13 +21,14 @@ import IconButton from "../ui/Buttons/IconButton";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import { deleteOutBoxEmail, outboxAction } from "../../store/Slices/outbox";
 import { toast } from "react-toastify";
+import { PageContext } from "../../context/pageContext";
 
 
 const OutBox = () => {
     const [deleteId, setDeleteId] = useState(null)
     const dispatch = useDispatch();
     const { handleMove } = useThreadContext()
-
+    const { handleDateClick } = useContext(PageContext)
     const {
         emails: outbox = [],
         loading,
@@ -48,6 +49,7 @@ const OutBox = () => {
     // OPEN MODAL
     const handleSend = (row) => {
         handleMove({ email: row.client_email, threadId: row.threadId, reply: row.replyBody })
+        dispatch(deleteOutBoxEmail(row.id))
         return
 
     }
@@ -77,9 +79,10 @@ const OutBox = () => {
             accessor: "date_entered",
             icon: Calendar,
             classes: "truncate max-w-[180px]",
-
+            onClick: (row, index) =>
+                handleDateClick({ email: row.client_email, navigate: "/", index, nextPrev: true }),
             render: (row) => (
-                <div className="flex flex-col">
+                <div className="flex flex-col cursor-pointer">
                     <span className="font-semibold text-gray-700">
                         {row?.date_entered || "N/A"}
                     </span>
@@ -92,9 +95,10 @@ const OutBox = () => {
             accessor: "client_email",
             icon: User,
             classes: "truncate max-w-[250px]",
-
+            onClick: (row, index) =>
+                handleDateClick({ email: row.client_email, navigate: "/contacts", index, nextPrev: true }),
             render: (row) => (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 cursor-pointer">
                     <div className="flex flex-col">
                         <span className="font-medium text-gray-700">
                             {row?.client_email || "N/A"}

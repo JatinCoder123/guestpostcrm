@@ -247,9 +247,8 @@ export function TopNav() {
           </div>
         </div>
 
-        {outboxEmails.length > 0 && !loading && (
-          <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
-        )}
+        <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
+
         {outboxEmails.length > 0 && !loading && (
           <IconButton tooltipPosition="bottom" label="OutBox Emails" onClick={() => navigateTo('/outbox')} icon={MailWarning} variant="primary" className="p-2 rounded-full" rounded="full" iconColor="white" count={outboxEmails.length} />
         )}
@@ -326,12 +325,9 @@ export function TopNav() {
           </motion.button>
         )}
 
-        <button
-          onClick={() => navigateTo("ai-credits")}
-          className="p-2 bg-purple-600 text-white rounded-full"
-        >
-          <Sparkles size={20} />
-        </button>
+
+        <IconButton onClick={() => navigateTo("ai-credits")}
+          tooltipPosition="bottom" label="AI Credits" icon={Sparkles} variant="primary" className="p-2  bg-indigo-600 hover:bg-indigo-700" rounded="full" iconColor="white" />
 
         {/* PROFILE */}
         <div ref={profileMenuRef} className="relative">
@@ -373,12 +369,7 @@ export function TopNav() {
                     {getUserInitials()}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <User2 className="h-4 w-4 text-indigo-500" />
-                      <p className="text-sm font-black text-slate-900">
-                        View Profile
-                      </p>
-                    </div>
+
                     <p className="mt-0.5 truncate text-sm font-semibold text-slate-700">
                       {user?.name || "User"}
                     </p>
