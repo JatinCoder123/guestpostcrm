@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { motion as Motion } from "framer-motion";
 import { useSelector } from "react-redux";
@@ -29,6 +29,14 @@ import {
   readOnboardingJson,
   writeOnboardingFlag,
 } from "../../utils/onboardingStorage";
+import {
+  ONBOARDING_STEP,
+  getOnboardingRecordName,
+  hasContactInfoRecord,
+  markSyncDoneFromExistingContact,
+  syncLocalOnboardingFromCrmStep,
+  upsertOnboardingProgress,
+} from "../../utils/onboardingCompletion";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 const ALLOWED_SITES_MODULE = "outr_allowed_sites";
@@ -49,13 +57,17 @@ const Profile = () => {
   const { user, businessEmail, currentScore, crmEndpoint, db_name, id } = useSelector(
     (state) => state.user,
   );
-  const onboardingKeys = getOnboardingKeys({
-    user,
-    businessEmail,
-    crmEndpoint,
-    dbName: db_name,
-    id,
-  });
+  const onboardingKeys = useMemo(
+    () =>
+      getOnboardingKeys({
+        user,
+        businessEmail,
+        crmEndpoint,
+        dbName: db_name,
+        id,
+      }),
+    [businessEmail, crmEndpoint, db_name, id, user],
+  );
   const [websites, setWebsites] = useState([]);
   const [websitesLoading, setWebsitesLoading] = useState(false);
   const [websiteSaving, setWebsiteSaving] = useState(false);
@@ -80,11 +92,17 @@ const Profile = () => {
     () =>
       readOnboardingFlag(onboardingKeys.syncDone, BASE_ONBOARDING_KEYS.syncDone),
   );
+  const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
   const celebratedCompleteRef = useRef(syncDone);
 
   const profileEmail = getEmail({ user, businessEmail });
+  const onboardingRecordName = getOnboardingRecordName({
+    user,
+    businessEmail: profileEmail,
+  });
   const step3Done =
     websites.length > 0 ||
+    crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED ||
     readOnboardingFlag(
       onboardingKeys.websiteDone,
       BASE_ONBOARDING_KEYS.websiteDone,
@@ -155,6 +173,82 @@ const Profile = () => {
       broadcastSyncState({ websiteDone: true });
     }
   }, [onboardingKeys.websiteDone, websites.length]);
+
+  useEffect(() => {
+    if (!crmEndpoint || !onboardingRecordName) return;
+
+    let ignore = false;
+
+    const loadCrmOnboardingProgress = async () => {
+      try {
+        const { step } = await upsertOnboardingProgress({
+          crmEndpoint,
+          name: onboardingRecordName,
+          step: ONBOARDING_STEP.PROFILE_STARTED,
+        });
+        if (ignore) return;
+
+        setCrmOnboardingStep(step);
+        const result = syncLocalOnboardingFromCrmStep(onboardingKeys, step);
+        if (step >= ONBOARDING_STEP.WEBSITE_ADDED) {
+          broadcastSyncState({ websiteDone: true, onboardingStep: step });
+        }
+        if (result) {
+          setSyncing(false);
+          setSyncResult(result);
+          setSyncDone(true);
+          celebratedCompleteRef.current = true;
+          broadcastSyncState({
+            status: "completed",
+            result,
+            onboardingStep: step,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load CRM onboarding progress:", error);
+      }
+    };
+
+    loadCrmOnboardingProgress();
+
+    return () => {
+      ignore = true;
+    };
+  }, [crmEndpoint, onboardingKeys, onboardingRecordName]);
+
+  useEffect(() => {
+    if (!crmEndpoint || syncDone) return;
+
+    let ignore = false;
+
+    const verifyExistingContact = async () => {
+      try {
+        const contactExists = await hasContactInfoRecord();
+        if (!contactExists || ignore) return;
+
+        await upsertOnboardingProgress({
+          crmEndpoint,
+          name: onboardingRecordName,
+          step: ONBOARDING_STEP.FIRST_SYNC_DONE,
+        });
+        setCrmOnboardingStep(ONBOARDING_STEP.FIRST_SYNC_DONE);
+        const result = markSyncDoneFromExistingContact(onboardingKeys);
+        setSyncing(false);
+        setSyncResult(result);
+        setSyncDone(true);
+        celebratedCompleteRef.current = true;
+        broadcastSyncState({ status: "completed", result });
+      } catch (error) {
+        console.error("Failed to verify onboarding contacts:", error);
+      }
+    };
+
+    verifyExistingContact();
+
+    return () => {
+      ignore = true;
+    };
+  }, [crmEndpoint, onboardingKeys, onboardingRecordName, syncDone]);
 
   const celebrate = (options = {}) => {
     confetti({
@@ -227,8 +321,17 @@ const Profile = () => {
 
       const createdWebsite = data?.data || data?.website || payload;
       setWebsites((prev) => [createdWebsite, ...prev]);
+      await upsertOnboardingProgress({
+        crmEndpoint,
+        name: onboardingRecordName,
+        step: ONBOARDING_STEP.WEBSITE_ADDED,
+      });
+      setCrmOnboardingStep(ONBOARDING_STEP.WEBSITE_ADDED);
       writeOnboardingFlag(onboardingKeys.websiteDone, true);
-      broadcastSyncState({ websiteDone: true });
+      broadcastSyncState({
+        websiteDone: true,
+        onboardingStep: ONBOARDING_STEP.WEBSITE_ADDED,
+      });
       setWebsiteForm({ name: "", minimum_price: "", amount: "" });
       toast.success(data?.message || "Website saved successfully");
     } catch (error) {
@@ -274,6 +377,12 @@ const Profile = () => {
         records,
         message: data?.message || `First sync completed for ${count} records.`,
       };
+      await upsertOnboardingProgress({
+        crmEndpoint,
+        name: onboardingRecordName,
+        step: ONBOARDING_STEP.FIRST_SYNC_DONE,
+      });
+      setCrmOnboardingStep(ONBOARDING_STEP.FIRST_SYNC_DONE);
       setSyncResult(result);
       setSyncDone(true);
       localStorage.setItem(onboardingKeys.firstSyncStatus, "completed");
