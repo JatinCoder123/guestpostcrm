@@ -154,6 +154,17 @@ const RootLayout = () => {
     setShowGuidedWalkthrough(false);
   };
 
+  const hitTryNowEndpoint = async () => {
+    if (!email) return;
+
+    await fetch(
+      `https://crm.outrightsystems.org/index.php?entryPoint=trynow&email=${encodeURIComponent(email)}&sync=1`,
+      { method: "GET", mode: "no-cors", cache: "no-store" },
+    ).catch(() => {
+      // Keep onboarding moving even if the tracking endpoint is unavailable.
+    });
+  };
+
   const isLowCredit = Number(currentScore) <= 0;
 
   if (displayIntro) {
@@ -267,9 +278,10 @@ const RootLayout = () => {
                   )}
 
                   <button
-                    onClick={() => {
+                    onClick={async () => {
+                      await hitTryNowEndpoint();
                       setShowOnboardingPopup(false);
-                      navigate("/profile");
+                      window.location.assign("/profile");
                     }}
                     className="
                       mt-6 w-full py-3 rounded-2xl
@@ -283,7 +295,11 @@ const RootLayout = () => {
                   </button>
 
                   <button
-                    onClick={() => setShowOnboardingPopup(false)}
+                    onClick={async () => {
+                      await hitTryNowEndpoint();
+                      setShowOnboardingPopup(false);
+                      window.location.reload();
+                    }}
                     className="
                       mt-3 text-sm text-gray-500
                       hover:text-gray-700 transition
