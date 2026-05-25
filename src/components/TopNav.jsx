@@ -10,6 +10,7 @@ import {
   User2,
   ChevronDown,
   LogOut,
+  MailWarning,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -22,11 +23,12 @@ import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { periodOptions } from "../assets/assets";
 import { SocketContext } from "../context/SocketContext";
-
+import IconButton from "./ui/Buttons/IconButton";
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const [animate, setAnimate] = useState(false);
+  const { emails: outboxEmails, loading } = useSelector(state => state.outbox)
   const {
     enteredEmail,
     setEnteredEmail,
@@ -244,19 +246,13 @@ export function TopNav() {
             />
           </div>
         </div>
-        <button className="group relative cursor-pointer flex items-center justify-center w-8 h-8 rounded-full bg-linear-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.6)] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(217,70,239,0.9)]">
-          {/* Animated background ring */}
-          <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:scale-125 transition-all duration-500"></span>
 
-          {/* Bell */}
-          <BellIcon className="w-4 h-4 z-10 group-hover:-rotate-12 group-hover:animate-pulse transition-all duration-300" />
-
-          {/* Notification badge */}
-          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-3.5 h-3.5 px-1 rounded-full bg-red-500 text-[10px] font-bold text-white border border-white shadow-md animate-bounce">
-            3
-          </span>
-        </button>
-
+        {outboxEmails.length > 0 && !loading && (
+          <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
+        )}
+        {outboxEmails.length > 0 && !loading && (
+          <IconButton tooltipPosition="bottom" label="OutBox Emails" onClick={() => navigateTo('/outbox')} icon={MailWarning} variant="primary" className="p-2 rounded-full" rounded="full" iconColor="white" count={outboxEmails.length} />
+        )}
 
         <motion.button
           onClick={() => navigateTo("hot-records")}
@@ -354,7 +350,7 @@ export function TopNav() {
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm font-black text-white shadow-sm">
               {getUserInitials()}
             </span>
-        
+
           </button>
 
           <AnimatePresence>

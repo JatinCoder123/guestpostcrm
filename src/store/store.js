@@ -38,6 +38,7 @@ import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
 import tinyKeyReducer from "./Slices/tinyKey.js";
 import mailerSummaryReducer from "./Slices/mailerSummary.js";
+import outBoxReducer from "./Slices/outbox.js";
 
 export const store = configureStore({
   reducer: {
@@ -80,6 +81,7 @@ export const store = configureStore({
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,
     tinyKey: tinyKeyReducer,
-    mailersSummary: mailerSummaryReducer
+    mailersSummary: mailerSummaryReducer,
+    outbox: outBoxReducer
   },
 });

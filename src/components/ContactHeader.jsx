@@ -270,6 +270,7 @@ const ContactHeader = () => {
                 {isBrand && (
                   <IconButton
                     icon={showBrandTimeline ? Eye : EyeOff}
+                    variant="glass"
                     label={
                       showBrandTimeline
                         ? "Hide Brand Timeline"
