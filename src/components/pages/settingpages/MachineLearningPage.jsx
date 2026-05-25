@@ -335,7 +335,7 @@ export function MachineLearningPage() {
           motive: updatedItem.motive,
           type: updatedItem.type,
           stage: updatedItem.stage,
-          description: manualPrompt,
+          description: updatedItem.description || "",
 
           role_prompt: updatedItem.role_prompt,
           output_format: updatedItem.output_format,
