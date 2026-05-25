@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import { Edit3, Plus, X } from "lucide-react";
 
 import Header from "./Header";
 import Loading from "../../Loading";
@@ -11,10 +10,10 @@ import EditModal from "./EditModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { apiRequest, fetchGpc } from "../../../services/api";
+import { Edit3, Plus, X, Copy, CopyPlusIcon } from "lucide-react";
 
 export function MachineLearningPage() {
   const { crmEndpoint } = useSelector((state) => state.user);
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -77,7 +76,119 @@ export function MachineLearningPage() {
       setToast(null);
     }, 3000);
   };
+  // =========================================================
+  // ✅ DUPLICATE PROMPT
+  // =========================================================
+  const handleDuplicate = async (item) => {
+    try {
+      setCreating(true);
 
+      // =====================================================
+      // DATE + TIME
+      // =====================================================
+      const now = new Date();
+
+      const formattedDate = now
+        .toISOString()
+        .split("T")[0];
+
+      const formattedTime = now
+        .toTimeString()
+        .split(" ")[0]
+        .replace(/:/g, "-");
+
+      // =====================================================
+      // NEW DUPLICATE NAME
+      // Example:
+      // SEO_PROMPT_2026-05-25_14-32-10
+      // =====================================================
+      const duplicatedName = `${item.name}_${formattedDate}_${formattedTime}`;
+
+      // =====================================================
+      // PAYLOAD
+      // =====================================================
+      const payload = {
+        parent_bean: {
+          module: "outr_machine_learning",
+
+          // NEW NAME
+          name: duplicatedName,
+
+          // COPY ALL VALUES
+          motive: item.motive,
+          type: item.type,
+          stage: item.stage,
+          description: item.description,
+
+          role_prompt:
+            item.role_prompt || "",
+
+          output_format:
+            item.output_format || "",
+
+          overwrite_prompt:
+            item.overwrite_prompt || "",
+        },
+      };
+
+      // =====================================================
+      // API REQUEST
+      // =====================================================
+      const data = await apiRequest({
+        endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
+
+        params: {
+          action_type: "post_data",
+        },
+
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          "x-api-key":
+            CREATE_DEAL_API_KEY,
+        },
+
+        body: JSON.stringify(payload),
+      });
+
+      console.log(
+        "DUPLICATE RESPONSE",
+        data
+      );
+
+      // =====================================================
+      // SUCCESS
+      // =====================================================
+      if (
+        data?.parent_updated ||
+        data?.success
+      ) {
+        showToast(
+          "Prompt duplicated successfully"
+        );
+
+        // REFRESH TABLE
+        await fetchStageData(activeStage);
+      } else {
+        showToast(
+          "Failed to duplicate prompt",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error(error);
+
+      showToast(
+        "Duplicate failed",
+        "error"
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
   // =========================================================
   // ✅ CREATE PROMPT
   // =========================================================
@@ -250,9 +361,9 @@ export function MachineLearningPage() {
           prev.map((row) =>
             row.id === updatedItem.id
               ? {
-                  ...row,
-                  ...updatedItem,
-                }
+                ...row,
+                ...updatedItem,
+              }
               : row,
           ),
         );
@@ -412,10 +523,9 @@ export function MachineLearningPage() {
             key={key}
             onClick={() => setActiveStage(key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition
-              ${
-                activeStage === key
-                  ? "bg-blue-600 text-white shadow"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              ${activeStage === key
+                ? "bg-blue-600 text-white shadow"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
               }`}
           >
             {label}
@@ -482,14 +592,47 @@ export function MachineLearningPage() {
 
                   <td className="p-4">{item.stage}</td>
 
-                  <td className="p-4 text-right">
-                    <button
-                      onClick={() => setEditItem(item)}
-                      className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg ml-auto"
-                    >
-                      <Edit3 size={16} />
-                      Edit
-                    </button>
+                  <td className="p-4">
+                    <div className="flex items-center justify-end gap-3">
+
+                      {/* DUPLICATE */}
+                      <button
+                        onClick={() =>
+                          handleDuplicate(item)
+                        }
+                        className="
+        flex items-center gap-2
+        px-3 py-2
+        bg-purple-600
+        hover:bg-purple-700
+        text-white
+        rounded-lg
+        transition-all
+        duration-200
+        shadow-sm
+      "
+                      >
+                        <CopyPlusIcon size={16} />
+                      </button>
+
+                      {/* EDIT */}
+                      <button
+                        onClick={() => setEditItem(item)}
+                        className="
+        flex items-center gap-2
+        px-3 py-2
+        bg-blue-600
+        hover:bg-blue-700
+        text-white
+        rounded-lg
+        transition-all
+        duration-200
+        shadow-sm
+      "
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </motion.tr>
               ))}
