@@ -136,7 +136,10 @@ export function TopNav() {
   };
 
   return (
-    <div className="bg-white border-b p-1 py-2 flex items-center justify-between sticky top-0 z-50">
+    <div
+      data-tour="top-nav"
+      className="bg-white border-b p-1 py-2 flex items-center justify-between sticky top-0 z-50"
+    >
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
@@ -146,7 +149,7 @@ export function TopNav() {
         />
 
         {/* SEARCH AREA */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-tour="top-nav-search">
           {/* INPUT */}
           <div className="relative w-95">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

@@ -1,6 +1,6 @@
 import { TopNav } from "./components/TopNav";
 import { Sidebar } from "./components/Sidebar";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { viewEmailAction } from "./store/Slices/viewEmail";
@@ -11,17 +11,39 @@ import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
 import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
+import GuidedWalkthrough from "./components/GuidedWalkthrough";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import { unrepliedAction } from "./store/Slices/unrepliedEmails";
 import { X, UserCircle2, Sparkles } from "lucide-react";
+import {
+  BASE_ONBOARDING_KEYS,
+  getOnboardingKeys,
+  readOnboardingFlag,
+  writeOnboardingFlag,
+} from "./utils/onboardingStorage";
+
+const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
 const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
+  const [showGuidedWalkthrough, setShowGuidedWalkthrough] = useState(false);
 
   const { message, error } = useSelector((state) => state.viewEmail);
-  const { crmEndpoint, currentScore } = useSelector((state) => state.user);
+  const { crmEndpoint, currentScore, user, businessEmail, db_name, id } =
+    useSelector((state) => state.user);
+  const onboardingKeys = useMemo(
+    () =>
+      getOnboardingKeys({
+        user,
+        businessEmail,
+        crmEndpoint,
+        dbName: db_name,
+        id,
+      }),
+    [businessEmail, crmEndpoint, db_name, id, user],
+  );
 
   const {
     displayIntro,
@@ -94,6 +116,44 @@ const RootLayout = () => {
     }
   }, [email]);
 
+  useEffect(() => {
+    const maybeStartWalkthrough = () => {
+      const syncDone = readOnboardingFlag(
+        onboardingKeys.syncDone,
+        BASE_ONBOARDING_KEYS.syncDone,
+      );
+      const walkthroughSeen = readOnboardingFlag(
+        onboardingKeys.guidedWalkthroughSeen,
+        BASE_ONBOARDING_KEYS.guidedWalkthroughSeen,
+      );
+
+      if (syncDone && !walkthroughSeen) {
+        setShowGuidedWalkthrough(true);
+      }
+    };
+
+    maybeStartWalkthrough();
+
+    const syncHandler = (event) => {
+      if (event.detail?.status === "completed") {
+        maybeStartWalkthrough();
+      }
+    };
+
+    window.addEventListener(FIRST_SYNC_EVENT, syncHandler);
+    window.addEventListener("storage", maybeStartWalkthrough);
+
+    return () => {
+      window.removeEventListener(FIRST_SYNC_EVENT, syncHandler);
+      window.removeEventListener("storage", maybeStartWalkthrough);
+    };
+  }, [onboardingKeys]);
+
+  const closeGuidedWalkthrough = () => {
+    writeOnboardingFlag(onboardingKeys.guidedWalkthroughSeen, true);
+    setShowGuidedWalkthrough(false);
+  };
+
   const isLowCredit = Number(currentScore) <= 0;
 
   if (displayIntro) {
@@ -114,7 +174,7 @@ const RootLayout = () => {
           className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
             }`}
         >
-          <div className="p-3">
+          <div className="p-3" data-tour="main-workspace">
             {isLowCredit && <LowCreditWarning score={currentScore} />}
 
             <div className="p-3">
@@ -239,6 +299,11 @@ const RootLayout = () => {
           <Footer />
         </main>
       </div>
+      <GuidedWalkthrough
+        open={showGuidedWalkthrough}
+        onClose={closeGuidedWalkthrough}
+        navigate={navigate}
+      />
     </div>
   );
 };
