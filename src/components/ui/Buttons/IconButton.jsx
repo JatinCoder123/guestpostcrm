@@ -113,8 +113,7 @@ const IconButton = ({
             : count;
 
     return (
-        <div className="relative group inline-flex">
-            {/* BUTTON */}
+        <div className="relative group inline-flex overflow-visible">            {/* BUTTON */}
             <button
                 type={type}
                 onClick={onClick}
@@ -188,8 +187,7 @@ const IconButton = ({
                 !loading && (
                     <span
                         className={`
-              absolute z-50
-              whitespace-nowrap
+absolute z-[999999]              whitespace-nowrap
               rounded-lg
               bg-black
               text-white

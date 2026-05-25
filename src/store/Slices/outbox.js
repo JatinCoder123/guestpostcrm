@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { CREATE_DEAL_API_KEY } from "../constants";
-import { bouncy } from "ldrs";
 const outboxSlice = createSlice({
     name: "outbox",
     initialState: {
@@ -12,6 +11,8 @@ const outboxSlice = createSlice({
         pageCount: 1,
         pageIndex: 1,
         error: null,
+        message: null,
+        deleting: false
     },
     reducers: {
         getOutboxRequest(state, action) {
@@ -31,15 +32,31 @@ const outboxSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        deleteRequest(state, action) {
+            state.deleting = true;
+            state.error = null;
+        },
+        deleteSuccess(state, action) {
+            state.deleting = false;
+            state.error = null;
+            state.message = action.payload;
+        },
+        deleteFailed(state, action) {
+            state.deleting = false;
+            state.error = action.payload;
+        },
         clearAllErrors(state) {
             state.error = null;
+        },
+        clearAllMessage(state) {
+            state.message = null;
         },
     },
 });
 
 export const getOutboxEmails = ({ loading = true }) => {
     return async (dispatch, getState) => {
-        dispatch(outboxSlice.actions.getOutboxRequest({ loading }));
+        loading && dispatch(outboxSlice.actions.getOutboxRequest({ loading }));
         try {
             const data = await apiRequest({
                 endpoint: `${getState().user.crmEndpoint.split('?')[0]}?entryPoint=get_post_all`, method: "POST", params: { action_type: 'get_data', }, headers: {
@@ -55,6 +72,24 @@ export const getOutboxEmails = ({ loading = true }) => {
             dispatch(outboxSlice.actions.clearAllErrors());
         } catch (error) {
             dispatch(outboxSlice.actions.getOutboxFailed("Fetching OutBox Record Failed"));
+        }
+    };
+};
+export const deleteOutBoxEmail = (id) => {
+    return async (dispatch, getState) => {
+        dispatch(outboxSlice.actions.deleteRequest());
+
+        try {
+            const data = await fetchGpc({
+                params: { type: 'delete_record', module_name: "outr_outbox", record_id: id },
+
+            })
+            console.log("DELTE ", data)
+            dispatch(getOutboxEmails({ loading: false }))
+            dispatch(outboxSlice.actions.deleteSuccess('Outbox Email Deleted Successfully'));
+
+        } catch (error) {
+            dispatch(outboxSlice.actions.getOutboxFailed("Deleting OutBox Record Failed"));
         }
     };
 };

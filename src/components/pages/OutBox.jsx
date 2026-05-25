@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Calendar,
     Mail,
@@ -9,6 +9,7 @@ import {
     User,
     X,
     Send,
+    Trash,
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -17,14 +18,23 @@ import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { IconBase } from "react-icons/lib";
 import IconButton from "../ui/Buttons/IconButton";
+import { useThreadContext } from "../../hooks/useThreadContext";
+import { deleteOutBoxEmail, outboxAction } from "../../store/Slices/outbox";
+import { toast } from "react-toastify";
+
 
 const OutBox = () => {
+    const [deleteId, setDeleteId] = useState(null)
     const dispatch = useDispatch();
+    const { handleMove } = useThreadContext()
 
     const {
         emails: outbox = [],
         loading,
         pageIndex = 1,
+        deleting,
+        message,
+        error
     } = useSelector((state) => state.outbox);
 
     // MODAL STATES
@@ -34,13 +44,24 @@ const OutBox = () => {
     const [showReplyModal, setShowReplyModal] =
         useState(false);
 
+
     // OPEN MODAL
+    const handleSend = (row) => {
+        handleMove({ email: row.client_email, threadId: row.threadId, reply: row.replyBody })
+        return
+
+    }
+    const handelDelete = (row) => {
+        setDeleteId(row.id)
+        dispatch(deleteOutBoxEmail(row.id))
+        return
+
+    }
     const openReplyModal = (row) => {
         setSelectedReply(row);
         setShowReplyModal(true);
     };
 
-    // CLOSE MODAL
     const closeReplyModal = () => {
         setShowReplyModal(false);
         setSelectedReply(null);
@@ -141,16 +162,24 @@ const OutBox = () => {
 
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    {/* SEND BUTTON */}
-                    <IconButton label="Send Email" icon={Send} />
-                    <IconButton label="Send Email" icon={X} />
-
-
+                    <IconButton icon={Send} onClick={() => handleSend(row)} size="sm" rounded="full" iconColor="green" />
+                    <IconButton icon={Trash} onClick={() => handelDelete(row)} iconColor="red" size="sm" rounded="full" disabled={deleting} loading={deleteId == row.id && deleting} />
                 </div>
             ),
         },
     ];
+    useEffect(() => {
+        if (message) {
+            toast.success(message)
+            dispatch(outboxAction.clearAllMessage())
+            setDeleteId(null)
+        }
+        if (error) {
+            toast.error(error)
+            dispatch(outboxAction.clearAllErrors())
 
+        }
+    }, [message, error, deleting])
     return (
         <>
             {/* REPLY BODY MODAL */}
@@ -269,10 +298,7 @@ const OutBox = () => {
                             {/* SEND */}
                             <button
                                 onClick={() => {
-                                    console.log(
-                                        "SEND:",
-                                        selectedReply
-                                    );
+                                    handleSend(selectedReply)
                                 }}
                                 className="
                   px-5 py-2.5
