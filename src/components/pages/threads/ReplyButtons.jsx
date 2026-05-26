@@ -515,7 +515,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                 moveToNext(currentEmail)
               } catch (err) {
                 console.error(err);
-                toast.error("Something went wrong");
+                toast.error("Failed To Change Email State!");
               } finally {
                 setStopLoading(false);
               }

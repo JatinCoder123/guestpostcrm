@@ -123,7 +123,7 @@ export default function ThreadView() {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong");
+      toast.error("Failed To Fetch Full Message!");
     }
   };
 

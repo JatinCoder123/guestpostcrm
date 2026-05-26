@@ -65,6 +65,7 @@ const Thread = () => {
       });
 
       dispatch(sendEmail(formData));
+      state?.handleAfterSuccessMailSent?.()
       moveToNext(currentEmail)
     } catch (error) {
       console.error(error);

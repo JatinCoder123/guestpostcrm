@@ -101,7 +101,7 @@ const ladgerSlice = createSlice({
     getNoSearchResultDataFailed(state, action) {
       state.noSearchFoundLoading = false;
       state.noSearchResultData = null;
-      state.error = action.payload || "Something went wrong";
+      state.error = action.payload
     },
     manualScanRequest(state) {
       state.manualScanLoading = true;
@@ -114,7 +114,7 @@ const ladgerSlice = createSlice({
     },
     manualScanFailed(state, action) {
       state.manualScanLoading = false;
-      state.error = action.payload || "Something went wrong";
+      state.error = action.payload
     },
 
     clearAllErrors(state) {
@@ -315,9 +315,7 @@ export const getNoSearchResultData = (search) => {
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        ladgerSlice.actions.getNoSearchResultDataFailed(
-          error.response?.data?.message,
-        ),
+        ladgerSlice.actions.getNoSearchResultDataFailed(),
       );
     }
   };
