@@ -2,6 +2,7 @@ import logo from "./logo.png";
 import loginImg from "./loginPage.jpg";
 import duplicateImg from "./duplicate.png";
 import headingLogoImg from "./headingLogo.webp";
+import logoTextImg from "./logoText.webp";
 import send from "./send.png";
 import preview from "./preview.png";
 import onlyupdate from "./onlyupdate.png";
@@ -9,6 +10,7 @@ import update_With_send from "./update_With_send.jpg";
 export default logo;
 export const logingImg = loginImg;
 export const headingLogo = headingLogoImg
+export const logoText = logoTextImg
 export const images = { duplicateImg };
 import DOMPurify from "dompurify";
 
