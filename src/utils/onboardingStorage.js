@@ -4,6 +4,7 @@ const BASE_KEYS = {
   firstSyncStatus: "guestpostcrm:first_sync:status",
   firstSyncResult: "guestpostcrm:first_sync:result",
   firstSyncRecordsSeen: "guestpostcrm:first_sync:records_seen",
+  guidedWalkthroughSeen: "guestpostcrm:onboarding:guided_walkthrough_seen",
 };
 
 const getRawUserScope = ({ user, businessEmail, crmEndpoint, dbName, id } = {}) =>
