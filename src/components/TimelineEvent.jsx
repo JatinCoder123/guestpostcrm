@@ -125,81 +125,29 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
         <div className="flex justify-center mt-6">
           <div className="relative w-[360px]">
-            {/* 🔍 SEARCH MODE */}
-            {isSearchOpen ? (
-              <div className="relative flex items-center bg-white rounded-full shadow-md border border-gray-300 p-4">
-                <input
-                  autoFocus
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search timeline..."
-                  className="flex-1 px-3 bg-transparent focus:outline-none text-sm"
-                />
+            <div className="relative flex items-center bg-white rounded-full shadow-md border border-gray-300 p-4">
+              <Search className="w-4 h-4" />
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search timeline..."
+                className="flex-1 px-3 bg-transparent focus:outline-none text-sm"
+              />
 
-                {/* ❌ CLOSE SEARCH */}
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setIsSearchOpen(false);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 transition"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-            ) : (
-              <div className="relative flex items-center bg-gray-100 rounded-full p-1 shadow-inner w-[360px]">
-                {/* 🔍 Search icon (outside pill area) */}
-                <button
-                  onClick={() => setIsSearchOpen(true)}
-                  className="flex items-center justify-center w-10 h-10 text-gray-600 hover:text-purple-600 transition z-10"
-                >
-                  <Search className="w-5 h-5" />
-                </button>
+              {/* ❌ CLOSE SEARCH */}
+              {searchQuery && <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setIsSearchOpen(false);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <X className="w-6 h-6" />
+              </button>}
 
-                {/* Tabs wrapper (pill only moves here) */}
-                <div className="relative flex flex-1 items-center">
-                  {/* Sliding pill */}
-                  <motion.div
-                    layout
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 30,
-                    }}
-                    className={`absolute top-1 left-1 h-[calc(100%-8px)]
-        w-[calc(33.333%-4px)]
-        rounded-full bg-gradient-to-r from-purple-600 to-blue-600 shadow-md
-        ${selectedView === "all"
-                        ? "translate-x-0"
-                        : selectedView === "important"
-                          ? "translate-x-full"
-                          : "translate-x-[200%]"
-                      }`}
-                  />
-
-                  {[
-                    { key: "all", label: "All" },
-                    { key: "important", label: "Important" },
-                    { key: "orderMain", label: "Orders" },
-                  ].map((tab) => (
-                    <button
-                      key={tab.key}
-                      onClick={() => setSelectedView(tab.key)}
-                      className={`relative z-10 flex-1 py-4 text-sm font-semibold rounded-full
-          transition-colors duration-300
-          ${selectedView === tab.key
-                          ? "text-white"
-                          : "text-gray-600 hover:text-purple-600"
-                        }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
         <LadgerCard timelineData={timelineData} handleMessageClick={handleMessageClick} />

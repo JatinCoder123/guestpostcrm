@@ -1,4 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+
 import { fetchGpc } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +18,7 @@ const LARGE_FIELDS = [
 const PromptLadger = ({
     activePromptId,
     setActivePromptId,
+    isModal = true,
 }) => {
     const [activePrompt, setActivePrompt] =
         useState(null);
@@ -23,11 +29,16 @@ const PromptLadger = ({
     const modalRef = useRef(null);
 
     const navigateTo = useNavigate();
+
     useEffect(() => {
+        if (!isModal) return;
+
         const handleClickOutside = (event) => {
             if (
                 modalRef.current &&
-                !modalRef.current.contains(event.target)
+                !modalRef.current.contains(
+                    event.target,
+                )
             ) {
                 handleClose();
             }
@@ -44,7 +55,8 @@ const PromptLadger = ({
                 handleClickOutside,
             );
         };
-    }, []);
+    }, [isModal]);
+
     useEffect(() => {
         if (!activePromptId) return;
 
@@ -62,15 +74,11 @@ const PromptLadger = ({
                     },
                 });
 
-                console.log(
-                    "PROMPT DATA",
-                    response,
-                );
-
                 if (response?.success) {
                     setActivePrompt(
                         response?.Prompt?.[0] ||
-                        response?.prompt_details?.[0] ||
+                        response
+                            ?.prompt_details?.[0] ||
                         {},
                     );
                 }
@@ -84,14 +92,12 @@ const PromptLadger = ({
         getPromptData();
     }, [activePromptId]);
 
-    // CLOSE
     const handleClose = () => {
         setActivePrompt(null);
+
         setActivePromptId(null);
     };
 
-
-    // SPLIT PROMPT
     const splitPrompt = (text = "") => {
         const separator =
             "----------------------------------------------------------------------";
@@ -115,8 +121,9 @@ const PromptLadger = ({
         };
     };
 
-    // STATS
-    const getPromptStats = (text = "") => {
+    const getPromptStats = (
+        text = "",
+    ) => {
         return {
             words:
                 text
@@ -129,7 +136,6 @@ const PromptLadger = ({
         };
     };
 
-    // DON'T RENDER
     if (
         !activePrompt &&
         !promptLoading &&
@@ -138,131 +144,121 @@ const PromptLadger = ({
         return null;
     }
 
-    return (
+    const content = (
         <div
-            className="
-            fixed inset-0
-            bg-black/50
-            flex items-center justify-center
-            z-[9999]
-            p-4
-        "
-
-        >
-            <div
-                ref={modalRef}
-
-                className="
-                bg-white
+            ref={modalRef}
+            className={`
                 rounded-2xl
-                shadow-2xl
-                w-full
-                max-w-7xl
-                max-h-[92vh]
-                overflow-y-auto
                 border border-gray-200
-            "
-            >
-                {/* HEADER */}
-                <div className="sticky top-0 z-20 bg-white border-b px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-semibold text-gray-800">
-                            Prompt Ledger
-                        </h2>
+                bg-white
+                overflow-hidden
+                ${isModal
+                    ? "shadow-2xl w-full max-w-7xl max-h-[92vh]"
+                    : "w-full h-full shadow-md"
+                }
+            `}
+        >
+            {/* HEADER */}
+            <div className="sticky top-0 z-20 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                        Prompt Ledger
+                    </h2>
 
-                        {activePrompt?.prompt_id && (
-                            <>
-                                {/* EDIT */}
-                                <button
-                                    onClick={() => {
+                    {activePrompt?.prompt_id && (
+                        <>
+                            {/* EDIT */}
+                            <button
+                                onClick={() => {
+                                    navigateTo(
+                                        "/settings/machine-learning",
+                                        {
+                                            state: {
+                                                promptId:
+                                                    activePrompt.prompt_id,
+                                                promptStatus:
+                                                    activePrompt.prompt_stage,
+                                            },
+                                        },
+                                    );
+                                }}
+                                className="
+                                    px-4 py-2
+                                    text-sm
+                                    bg-blue-600
+                                    text-white
+                                    rounded-lg
+                                    hover:bg-blue-700
+                                    transition-all
+                                "
+                            >
+                                Edit
+                            </button>
+
+                            {/* EXPLORE */}
+                            <button
+                                onClick={() => {
+                                    const sys =
+                                        activePrompt?.system_prompt?.trim();
+
+                                    const usr =
+                                        activePrompt?.user_prompt?.trim();
+
+                                    if (
+                                        sys ||
+                                        usr
+                                    ) {
                                         navigateTo(
-                                            "/settings/machine-learning",
+                                            "/settings/prompt-explorer",
                                             {
                                                 state: {
-                                                    promptId:
-                                                        activePrompt.prompt_id,
-                                                    promptStatus:
-                                                        activePrompt.prompt_stage,
+                                                    system:
+                                                        sys ||
+                                                        "",
+                                                    user:
+                                                        usr ||
+                                                        "",
                                                 },
                                             },
                                         );
-                                    }}
-                                    className="
-                                        px-4 py-2
-                                        text-sm
-                                        bg-blue-600
-                                        text-white
-                                        rounded-lg
-                                        hover:bg-blue-700
-                                        transition-all
-                                    "
-                                >
-                                    Edit
-                                </button>
-
-                                {/* EXPLORE */}
-                                <button
-                                    onClick={() => {
-                                        const sys =
-                                            activePrompt?.system_prompt?.trim();
-
-                                        const usr =
-                                            activePrompt?.user_prompt?.trim();
-
-                                        if (
-                                            sys ||
-                                            usr
-                                        ) {
-                                            navigateTo(
-                                                "/settings/prompt-explorer",
-                                                {
-                                                    state: {
-                                                        system:
-                                                            sys ||
-                                                            "",
-                                                        user:
-                                                            usr ||
-                                                            "",
-                                                    },
-                                                },
+                                    } else {
+                                        const {
+                                            system,
+                                            user,
+                                        } =
+                                            splitPrompt(
+                                                activePrompt?.full_prompt,
                                             );
-                                        } else {
-                                            const {
-                                                system,
-                                                user,
-                                            } =
-                                                splitPrompt(
-                                                    activePrompt?.full_prompt,
-                                                );
 
-                                            navigateTo(
-                                                "/settings/prompt-explorer",
-                                                {
-                                                    state: {
-                                                        system,
-                                                        user,
-                                                    },
+                                        navigateTo(
+                                            "/settings/prompt-explorer",
+                                            {
+                                                state: {
+                                                    system,
+                                                    user,
                                                 },
-                                            );
-                                        }
-                                    }}
-                                    className="
-                                        px-4 py-2
-                                        text-sm
-                                        bg-purple-600
-                                        text-white
-                                        rounded-lg
-                                        hover:bg-purple-700
-                                        transition-all
-                                    "
-                                >
-                                    Explore
-                                </button>
-                            </>
-                        )}
-                    </div>
+                                            },
+                                        );
+                                    }
+                                }}
+                                className="
+                                    px-4 py-2
+                                    text-sm
+                                    bg-purple-600
+                                    text-white
+                                    rounded-lg
+                                    hover:bg-purple-700
+                                    transition-all
+                                "
+                            >
+                                Explore
+                            </button>
+                        </>
+                    )}
+                </div>
 
-                    {/* CLOSE */}
+                {/* CLOSE */}
+                {isModal && (
                     <button
                         onClick={handleClose}
                         className="
@@ -277,9 +273,18 @@ const PromptLadger = ({
                     >
                         ✕
                     </button>
-                </div>
+                )}
+            </div>
 
-                {/* LOADING */}
+            {/* BODY */}
+            <div
+                className={`
+                    ${isModal
+                        ? "max-h-[calc(92vh-80px)] overflow-y-auto"
+                        : "h-full overflow-y-auto"
+                    }
+                `}
+            >
                 {promptLoading ? (
                     <div className="p-6 space-y-5">
                         {[1, 2, 3, 4].map(
@@ -298,6 +303,7 @@ const PromptLadger = ({
 
                                     <div className="flex gap-4 mb-4">
                                         <div className="h-6 w-20 bg-gray-200 rounded-lg" />
+
                                         <div className="h-6 w-20 bg-gray-200 rounded-lg" />
                                     </div>
 
@@ -317,18 +323,21 @@ const PromptLadger = ({
                                         key,
                                     ) &&
                                     value !== "" &&
-                                    value !== null &&
+                                    value !==
+                                    null &&
                                     value !==
                                     undefined,
                             )
                             .sort(([a], [b]) => {
                                 if (
-                                    a === "response"
+                                    a ===
+                                    "response"
                                 )
                                     return -1;
 
                                 if (
-                                    b === "response"
+                                    b ===
+                                    "response"
                                 )
                                     return 1;
 
@@ -438,6 +447,24 @@ const PromptLadger = ({
                     </div>
                 )}
             </div>
+        </div>
+    );
+
+    if (!isModal) {
+        return content;
+    }
+
+    return (
+        <div
+            className="
+                fixed inset-0
+                flex items-center justify-center
+                z-[9999]
+                backdrop-blur-md
+                p-4
+            "
+        >
+            {content}
         </div>
     );
 };
