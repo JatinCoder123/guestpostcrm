@@ -253,20 +253,6 @@ const RootLayout = () => {
               >
                 {/* TOP */}
                 <div className="h-28 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 relative">
-                  <button
-                    onClick={() => setShowOnboardingPopup(false)}
-                    disabled={isOnboardingLoading}
-                    className="
-                      absolute top-4 right-4
-                      bg-white/20 hover:bg-white/30
-                      text-white p-2 rounded-full
-                      transition
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                    "
-                  >
-                    <X size={18} />
-                  </button>
-
                   <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
                     <div
                       className="
