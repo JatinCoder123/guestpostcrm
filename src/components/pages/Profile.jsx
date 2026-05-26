@@ -3,7 +3,7 @@ import confetti from "canvas-confetti";
 import { motion as Motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Activity,
@@ -54,6 +54,7 @@ const broadcastSyncState = (detail) => {
 const Profile = () => {
   const { handleDateClick } = useContext(PageContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, businessEmail, currentScore, crmEndpoint, db_name, id } = useSelector(
     (state) => state.user,
   );
@@ -92,6 +93,9 @@ const Profile = () => {
     () =>
       readOnboardingFlag(onboardingKeys.syncDone, BASE_ONBOARDING_KEYS.syncDone),
   );
+  const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(() =>
+    readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
+  );
   const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
   const celebratedCompleteRef = useRef(syncDone);
 
@@ -111,6 +115,13 @@ const Profile = () => {
   const syncRecords = Array.isArray(syncResult?.records)
     ? syncResult.records
     : [];
+  const forceShowFirstSyncRecords = new URLSearchParams(location.search).get(
+    "showFirstSync",
+  ) === "1";
+  const showFirstSyncRecords =
+    syncDone &&
+    syncResult &&
+    (!firstSyncRecordsSeen || forceShowFirstSyncRecords);
 
   useEffect(() => {
     setSyncing(
@@ -128,12 +139,22 @@ const Profile = () => {
       BASE_ONBOARDING_KEYS.syncDone,
     );
     setSyncDone(nextSyncDone);
+    setFirstSyncRecordsSeen(
+      readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
+    );
     celebratedCompleteRef.current = nextSyncDone;
   }, [
     onboardingKeys.firstSyncResult,
     onboardingKeys.firstSyncStatus,
+    onboardingKeys.firstSyncRecordsSeen,
     onboardingKeys.syncDone,
   ]);
+
+  useEffect(() => {
+    if (!showFirstSyncRecords) return;
+
+    writeOnboardingFlag(onboardingKeys.firstSyncRecordsSeen, true);
+  }, [onboardingKeys.firstSyncRecordsSeen, showFirstSyncRecords]);
 
   useEffect(() => {
     const loadWebsites = async () => {
@@ -197,6 +218,7 @@ const Profile = () => {
           setSyncing(false);
           setSyncResult(result);
           setSyncDone(true);
+          setFirstSyncRecordsSeen(true);
           celebratedCompleteRef.current = true;
           broadcastSyncState({
             status: "completed",
@@ -236,6 +258,7 @@ const Profile = () => {
         setSyncing(false);
         setSyncResult(result);
         setSyncDone(true);
+        setFirstSyncRecordsSeen(true);
         celebratedCompleteRef.current = true;
         broadcastSyncState({ status: "completed", result });
       } catch (error) {
@@ -385,6 +408,7 @@ const Profile = () => {
       setCrmOnboardingStep(ONBOARDING_STEP.FIRST_SYNC_DONE);
       setSyncResult(result);
       setSyncDone(true);
+      setFirstSyncRecordsSeen(false);
       localStorage.setItem(onboardingKeys.firstSyncStatus, "completed");
       localStorage.setItem(
         onboardingKeys.firstSyncResult,
@@ -531,7 +555,7 @@ const Profile = () => {
         </section>
       )}
 
-      {syncDone && (
+      {showFirstSyncRecords && (
         <FirstSyncRecordsTable
           records={syncRecords}
           result={syncResult}
