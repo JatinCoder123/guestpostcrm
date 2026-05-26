@@ -19,7 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
-import { periodOptions } from "../assets/assets";
+import { headingLogo, periodOptions } from "../assets/assets";
 import { SocketContext } from "../context/SocketContext";
 
 export function TopNav() {
@@ -139,7 +139,7 @@ export function TopNav() {
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
-          src="./headingLogo.webp"
+          src={headingLogo}
           className="w-72 h-10 object-contain cursor-pointer"
           onClick={() => navigateTo("")}
         />
