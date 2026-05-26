@@ -1,4 +1,4 @@
-import { Globe, Mail, Heart, Link, CircleStop } from "lucide-react";
+import { Globe, Mail, Heart, Link, CircleStop, NotebookPen } from "lucide-react";
 import Loading, { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
@@ -346,6 +346,18 @@ const ActionButton = () => {
         } finally {
           setStopLoading(false);
         }
+      },
+    },
+    {
+      icon: <NotebookPen
+        size={25}
+        color={contactInfo?.is_stop === "1" ? "red" : "#890993ff"}
+      />,
+      disabled: stopLoading,
+
+      label: "Add Notes",
+      action: async () => {
+
       },
     },
   ];
