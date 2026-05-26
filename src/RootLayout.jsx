@@ -29,10 +29,12 @@ const RootLayout = () => {
   const [showAvatar, setShowAvatar] = useState(true);
   const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
   const [showGuidedWalkthrough, setShowGuidedWalkthrough] = useState(false);
+  const [isOnboardingLoading, setIsOnboardingLoading] = useState(false);
 
   const { message, error } = useSelector((state) => state.viewEmail);
   const { crmEndpoint, currentScore, user, businessEmail, db_name, id } =
     useSelector((state) => state.user);
+
   const onboardingKeys = useMemo(
     () =>
       getOnboardingKeys({
@@ -122,6 +124,7 @@ const RootLayout = () => {
         onboardingKeys.syncDone,
         BASE_ONBOARDING_KEYS.syncDone,
       );
+
       const walkthroughSeen = readOnboardingFlag(
         onboardingKeys.guidedWalkthroughSeen,
         BASE_ONBOARDING_KEYS.guidedWalkthroughSeen,
@@ -158,11 +161,43 @@ const RootLayout = () => {
     if (!email) return;
 
     await fetch(
-      `https://crm.outrightsystems.org/index.php?entryPoint=trynow&email=${encodeURIComponent(email)}&sync=1`,
-      { method: "GET", mode: "no-cors", cache: "no-store" },
+      `https://crm.outrightsystems.org/index.php?entryPoint=trynow&email=${encodeURIComponent(
+        email,
+      )}&sync=1`,
+      {
+        method: "GET",
+        mode: "no-cors",
+        cache: "no-store",
+      },
     ).catch(() => {
       // Keep onboarding moving even if the tracking endpoint is unavailable.
     });
+  };
+
+  const handleCompleteProfile = async () => {
+    try {
+      setIsOnboardingLoading(true);
+
+      await hitTryNowEndpoint();
+
+      setShowOnboardingPopup(false);
+      window.location.assign("/profile");
+    } finally {
+      setIsOnboardingLoading(false);
+    }
+  };
+
+  const handleSkipForNow = async () => {
+    try {
+      setIsOnboardingLoading(true);
+
+      await hitTryNowEndpoint();
+
+      setShowOnboardingPopup(false);
+      window.location.reload();
+    } finally {
+      setIsOnboardingLoading(false);
+    }
   };
 
   const isLowCredit = Number(currentScore) <= 0;
@@ -182,8 +217,9 @@ const RootLayout = () => {
 
         <main
           ref={mainRef}
-          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-            }`}
+          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${
+            collapsed ? "ml-4" : "ml-0"
+          }`}
         >
           <div className="p-3" data-tour="main-workspace">
             {isLowCredit && <LowCreditWarning score={currentScore} />}
@@ -219,11 +255,13 @@ const RootLayout = () => {
                 <div className="h-28 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 relative">
                   <button
                     onClick={() => setShowOnboardingPopup(false)}
+                    disabled={isOnboardingLoading}
                     className="
                       absolute top-4 right-4
                       bg-white/20 hover:bg-white/30
                       text-white p-2 rounded-full
                       transition
+                      disabled:opacity-50 disabled:cursor-not-allowed
                     "
                   >
                     <X size={18} />
@@ -278,34 +316,34 @@ const RootLayout = () => {
                   )}
 
                   <button
-                    onClick={async () => {
-                      await hitTryNowEndpoint();
-                      setShowOnboardingPopup(false);
-                      window.location.assign("/profile");
-                    }}
+                    onClick={handleCompleteProfile}
+                    disabled={isOnboardingLoading}
                     className="
                       mt-6 w-full py-3 rounded-2xl
                       bg-gradient-to-r from-violet-500 to-fuchsia-500
                       text-white font-semibold
                       shadow-lg hover:scale-[1.02]
                       transition-all duration-300
+                      disabled:opacity-70 disabled:cursor-not-allowed
                     "
                   >
-                    Complete Profile
+                    {isOnboardingLoading
+                      ? "Please wait..."
+                      : "Complete Profile"}
                   </button>
 
                   <button
-                    onClick={async () => {
-                      await hitTryNowEndpoint();
-                      setShowOnboardingPopup(false);
-                      window.location.reload();
-                    }}
+                    onClick={handleSkipForNow}
+                    disabled={isOnboardingLoading}
                     className="
                       mt-3 text-sm text-gray-500
                       hover:text-gray-700 transition
+                      disabled:opacity-70 disabled:cursor-not-allowed
                     "
                   >
-                    Skip for now
+                    {isOnboardingLoading
+                      ? "Loading..."
+                      : "Skip for now"}
                   </button>
                 </div>
               </div>
@@ -315,6 +353,7 @@ const RootLayout = () => {
           <Footer />
         </main>
       </div>
+
       <GuidedWalkthrough
         open={showGuidedWalkthrough}
         onClose={closeGuidedWalkthrough}
