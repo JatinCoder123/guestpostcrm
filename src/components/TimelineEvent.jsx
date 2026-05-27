@@ -105,7 +105,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
     };
   }, []);
 
-  // Scroll button visibility
   useEffect(() => {
     const header = headerRef.current;
 
@@ -166,15 +165,9 @@ const TimelineEvent = ({ handleMessageClick }) => {
   }, []);
 
   const scrollToTop = () => {
-    const scrollParent = document.querySelector(
-      ".hide-scrollbar"
-    );
-
-    if (!scrollParent) return;
-
-    scrollParent.scrollTo({
-      top: 0,
+    topRef.current?.scrollIntoView({
       behavior: "smooth",
+      block: "start",
     });
   };
 

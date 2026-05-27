@@ -59,6 +59,7 @@ import UserActivity from "./components/pages/settingpages/UserActivity";
 import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
+import RedirectHandler from "./components/pages/RedirectHandler";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -118,6 +119,10 @@ const router = createBrowserRouter([
       {
         path: "console",
         element: <ConsoleHandler />,
+      },
+      {
+        path: "redirect",
+        element: <RedirectHandler />,
       },
 
       {

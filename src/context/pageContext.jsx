@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ladgerAction } from "../store/Slices/ladger";
 import { toast } from "react-toastify";
+const STORAGE_KEY = "emailSearchHistory";
 
 export const PageContext = createContext();
 
@@ -56,12 +57,50 @@ export const PageContextProvider = (props) => {
       toast.error("NO Email Is There!");
       return;
     }
+
+    // SAVE SEARCH TERM
     localStorage.setItem("searchTerm", email);
+
+    // SAVE SEARCH HISTORY
+    const STORAGE_KEY = "emailSearchHistory";
+
+    let history = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) || "[]"
+    );
+
+    // REMOVE DUPLICATES
+    history = history.filter(
+      (item) => item.value !== email
+    );
+
+    // ADD NEW SEARCH
+    history.unshift({
+      value: email,
+      time: new Date().toLocaleString(),
+    });
+
+    // KEEP ONLY LAST 3
+    history = history.slice(0, 3);
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(history)
+    );
+
+    // UPDATE STATE
     setEnteredEmail(email);
+
     dispatch(ladgerAction.setTimeline(null));
-    if (index != null) setCurrentIndex(index);
+
+    if (index != null) {
+      setCurrentIndex(index);
+    }
+
     setShowNextPrev(nextPrev);
-    navigate != null && navigateTo(navigate);
+
+    if (navigate != null) {
+      navigateTo(navigate);
+    }
   };
 
   // Set activePage based on current URL
