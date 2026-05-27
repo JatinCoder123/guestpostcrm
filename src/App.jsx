@@ -58,6 +58,7 @@ import DataModellingPage from "./components/pages/settingpages/DataModellingPage
 import UserActivity from "./components/pages/settingpages/UserActivity";
 import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
+import OutBox from "./components/pages/OutBox";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -175,6 +176,10 @@ const router = createBrowserRouter([
       {
         path: "timeline",
         element: <TimelinePage />,
+      },
+      {
+        path: "outbox",
+        element: <OutBox />,
       },
       {
         path: "ip",
@@ -328,6 +333,7 @@ export default function App() {
     <>
       {isAuthenticated && <RouterProvider router={router} />}
       {!isAuthenticated && loading && <LoadingPage />}
+
       {!isAuthenticated && !loading && <Login />}
       <ToastContainer
         position="top-right"

@@ -3,12 +3,14 @@ import {
   Sparkles,
   Flame,
   X,
-  User2Icon,
   CircleAlert,
   Copy,
   Check,
   BellIcon,
   User2,
+  ChevronDown,
+  LogOut,
+  MailWarning,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -21,11 +23,12 @@ import { logout, userAction } from "../store/Slices/userSlice";
 import DropDown from "./DropDown";
 import { headingLogo, periodOptions } from "../assets/assets";
 import { SocketContext } from "../context/SocketContext";
-
+import IconButton from "./ui/Buttons/IconButton";
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const [animate, setAnimate] = useState(false);
+  const { emails: outboxEmails, loading } = useSelector(state => state.outbox)
   const {
     enteredEmail,
     setEnteredEmail,
@@ -135,7 +138,10 @@ export function TopNav() {
   };
 
   return (
-    <div className="bg-white border-b p-1 py-2 flex items-center justify-between sticky top-0 z-50">
+    <div
+      data-tour="top-nav"
+      className="bg-white border-b p-1 py-2 flex items-center justify-between sticky top-0 z-50"
+    >
       {/* LEFT */}
       <div className="flex items-center gap-4">
         <img
@@ -145,9 +151,9 @@ export function TopNav() {
         />
 
         {/* SEARCH AREA */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-tour="top-nav-search">
           {/* INPUT */}
-          <div className="relative w-[380px]">
+          <div className="relative w-95">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
             <input
@@ -243,19 +249,12 @@ export function TopNav() {
             />
           </div>
         </div>
-        <button className="group relative cursor-pointer flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.6)] transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(217,70,239,0.9)]">
-          {/* Animated background ring */}
-          <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:scale-125 transition-all duration-500"></span>
 
-          {/* Bell */}
-          <BellIcon className="w-4 h-4 z-10 group-hover:-rotate-12 group-hover:animate-pulse transition-all duration-300" />
+        <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
 
-          {/* Notification badge */}
-          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[14px] h-[14px] px-1 rounded-full bg-red-500 text-[10px] font-bold text-white border border-white shadow-md animate-bounce">
-            3
-          </span>
-        </button>
-
+        {outboxEmails.length > 0 && !loading && (
+          <IconButton tooltipPosition="bottom" label="OutBox Emails" onClick={() => navigateTo('/outbox')} icon={MailWarning} variant="primary" className="p-2 rounded-full" rounded="full" iconColor="white" count={outboxEmails.length} />
+        )}
 
         <motion.button
           onClick={() => navigateTo("hot-records")}
@@ -294,56 +293,39 @@ export function TopNav() {
         {/* end */}
 
         {notificationCount.error_log_created && (
-          <motion.button
+          <IconButton
             onClick={() => navigateTo("/settings/debugging")}
-            className="relative p-2 bg-red-500 text-white rounded-full"
-            animate={
-              errorLogCount > 0
-                ? {
-                  scale: [1, 1.08, 1],
-                  boxShadow: [
-                    "0 0 0px rgba(239,68,68,0)",
-                    "0 0 20px rgba(239,68,68,0.9)",
-                    "0 0 0px rgba(239,68,68,0)",
-                  ],
-                }
-                : {}
-            }
-            transition={
-              errorLogCount > 0
-                ? {
-                  repeat: Infinity,
-                  duration: 1.4,
-                  ease: "easeInOut",
-                }
-                : {}
-            }
-          >
-            <CircleAlert />
+            icon={CircleAlert}
+            count={errorLogCount}
+            variant="danger"
+            rounded="full"
+            label="Error Logs"
+            tooltipPosition="bottom"
+          />)
+        }
 
-            {errorLogCount > 0 && (
-              <motion.span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full shadow">
-                {errorLogCount}
-              </motion.span>
-            )}
-          </motion.button>
-        )}
-
-        <button
-          onClick={() => navigateTo("ai-credits")}
-          className="p-2 bg-purple-600 text-white rounded-full"
-        >
-          <Sparkles size={20} />
-        </button>
+        <IconButton onClick={() => navigateTo("ai-credits")}
+          tooltipPosition="bottom" label="AI Credits" icon={Sparkles} variant="primary" className="p-2  bg-indigo-600 hover:bg-indigo-700" rounded="full" iconColor="white" />
 
         {/* PROFILE */}
         <div ref={profileMenuRef} className="relative">
-          <div
+          <button
+            type="button"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+            aria-label="Open profile menu"
+            aria-expanded={showProfileMenu}
+            className="
+              group flex items-center gap-2 rounded-full border border-slate-200
+              bg-white px-2.5 py-1.5 text-slate-700 shadow-sm transition-all
+              hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50
+              hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500/25
+            "
           >
-            <span className="font-semibold">{getUserInitials()}</span>
-          </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm font-black text-white shadow-sm">
+              {getUserInitials()}
+            </span>
+
+          </button>
 
           <AnimatePresence>
             {showProfileMenu && (
@@ -351,21 +333,34 @@ export function TopNav() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 mt-2 w-64 bg-white border rounded-xl shadow-xl"
+                className="absolute right-0 mt-3 w-72 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
               >
-                <div onClick={() => {
-                  navigateTo('/profile')
-                }} className="p-4 flex items-center gap-3 border-b">
-                  <User2 className="w-6 h-6 mb-2 text-gray-600" />
-                  <div>
-                    <p className="font-semibold">{user?.name}</p>
-                    <p className="text-sm text-gray-500">{user?.email}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowProfileMenu(false);
+                  }}
+                  className="group/menu flex w-full items-center gap-3 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white p-4 text-left transition hover:from-indigo-50 hover:to-cyan-50"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white shadow-md shadow-indigo-500/25">
+                    {getUserInitials()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-700">
+                      {user?.name || "User"}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">
+                      {user?.email}
+                    </p>
                   </div>
-                </div>
+                </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-600 transition hover:bg-red-50"
                 >
+                  <LogOut size={16} />
                   Logout
                 </button>
               </motion.div>

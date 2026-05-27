@@ -312,7 +312,7 @@ export function MachineLearningPage() {
 
       setError(err);
 
-      showToast(err?.message || "Something went wrong", "error");
+      showToast(err?.message || "Failed To Create Prompt", "error");
     } finally {
       setCreating(false);
     }

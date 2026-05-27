@@ -20,6 +20,9 @@ import {
   Layers3,
   Sparkles,
   MapPin,
+  Upload,
+  X,
+  CheckCircle,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -36,6 +39,11 @@ import {
   webManagerAction,
 } from "../../../store/Slices/webManager.js";
 import { toast } from "react-toastify";
+import { fetchGpc } from "../../../services/api";
+import {
+  getOnboardingKeys,
+  writeOnboardingFlag,
+} from "../../../utils/onboardingStorage.js";
 
 /* ─── helpers ───────────────────────────────────────────────── */
 const getDomain = (raw) => {
@@ -130,6 +138,390 @@ const DrawerRow = ({ icon, label, value }) => {
     </div>
   );
 };
+
+/* ─── Import CSV Component ──────────────────────────────────── */
+/* ─── Import CSV Component ──────────────────────────────────── */
+function ImportCSV({ onImportSuccess }) {
+  const [step, setStep] = useState("idle");
+  const [file, setFile] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [mapping, setMapping] = useState({});
+  const [importResult, setImportResult] = useState(null);
+  const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
+  const fileRef = useRef(null);
+
+  /* Fields to hide — system/internal only */
+  const SKIP_FIELDS = new Set([
+    "id",
+    "date_entered",
+    "date_modified",
+    "modified_user_id",
+    "modified_by_name",
+    "created_by",
+    "created_by_name",
+    "deleted",
+    "created_by_link",
+    "modified_user_link",
+    "assigned_user_id",
+    "assigned_user_name",
+    "assigned_user_link",
+    "description",
+    "li_count",
+    "gp_count",
+  ]);
+
+  /* Derive the mappable fields from available_fields in the API response */
+  const getMappableFields = (availableFields = {}) =>
+    Object.entries(availableFields)
+      .filter(([key]) => !SKIP_FIELDS.has(key))
+      .map(([key, meta]) => ({
+        key,
+        label: meta.label
+          /* Convert LBL_NON_BRAND_MINIMUM_AMOUNT → Non Brand Minimum Amount */
+          .replace(/^LBL_/, "")
+          .replace(/_/g, " ")
+          .toLowerCase()
+          .replace(/\b\w/g, (c) => c.toUpperCase()),
+        required: meta.required,
+        type: meta.type,
+      }));
+
+  const reset = () => {
+    setStep("idle");
+    setFile(null);
+    setPreviewData(null);
+    setMapping({});
+    setImportResult(null);
+    setError(null);
+    fileRef.current = null;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  /* ── Step 1: upload CSV, get column headers + available_fields ── */
+  const handleFileChange = async (e) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+    if (!selected.name.toLowerCase().endsWith(".csv")) {
+      setError("Only .csv files are allowed.");
+      setStep("error");
+      return;
+    }
+    setError(null);
+    setFile(selected);
+    fileRef.current = selected;
+    setStep("previewing");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selected, selected.name);
+
+      const json = await fetchGpc({
+        method: "POST",
+        params: { type: "get_json" },
+        body: formData,
+      });
+      if (!json.success) throw new Error(json.message || json.error || "Preview failed");
+
+      setPreviewData(json);
+
+      /* Auto-map: if a CSV column name exactly matches a field label, pre-select it */
+      const fields = getMappableFields(json.available_fields);
+      const autoMap = {};
+      fields.forEach((f) => {
+        if (json.data?.includes(f.label)) autoMap[f.key] = f.label;
+        else if (json.data?.includes(f.key)) autoMap[f.key] = f.key;
+      });
+      setMapping(autoMap);
+
+      setStep("mapping");
+    } catch (err) {
+      setError(err.message || "Failed to read CSV. Please try again.");
+      setStep("error");
+    }
+  };
+
+  /* ── Step 2: post file + mapping ── */
+  const handleImport = async () => {
+    const currentFile = fileRef.current;
+    if (!currentFile) return;
+    setStep("importing");
+    setError(null);
+
+    try {
+      const freshFile = new File([currentFile], currentFile.name, {
+        type: "text/csv",
+      });
+
+      const formData = new FormData();
+      formData.append("file", freshFile, freshFile.name);
+      formData.append(
+        "data",
+        new Blob([JSON.stringify(mapping)], { type: "text/plain" }),
+      );
+
+      const json = await fetchGpc({
+        method: "POST",
+        params: { type: "get_json", upload: 1 },
+        body: formData,
+      });
+      if (!json.success) throw new Error(json.message || json.error || "Import failed");
+
+      setImportResult(json);
+      setStep("done");
+      onImportSuccess?.();
+    } catch (err) {
+      setError(err.message || "Import failed. Please try again.");
+      setStep("mapping");
+    }
+  };
+
+  const updateMapping = (fieldKey, csvCol) => {
+    setMapping((prev) => {
+      const next = { ...prev };
+      if (csvCol) next[fieldKey] = csvCol;
+      else delete next[fieldKey];
+      return next;
+    });
+  };
+
+  const showModal = step !== "idle";
+  const mappableFields = previewData ? getMappableFields(previewData.available_fields) : [];
+  const csvColumns = previewData?.data ?? [];
+
+  return (
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={step === "mapping" || step === "importing"}
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 text-sm font-bold hover:bg-indigo-100 hover:border-indigo-300 active:scale-95 transition-all disabled:opacity-50"
+      >
+        <Upload size={14} />
+        Import CSV
+      </button>
+
+      <AnimatePresence>
+        {showModal && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          >
+            <Motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-lg overflow-hidden"
+            >
+              <div className="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-400" />
+
+              {/* Modal header */}
+              <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-gray-50">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                    <Upload size={13} className="text-indigo-500" />
+                  </div>
+                  <span className="text-sm font-black text-gray-900">
+                    {step === "mapping" ? "Map CSV Columns" : "Import Websites"}
+                  </span>
+                  {step === "mapping" && previewData && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500 border border-indigo-100">
+                      {previewData.total_rows} rows
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={reset}
+                  disabled={step === "importing"}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all disabled:opacity-30"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="p-5">
+                {error && (
+                  <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100 text-xs text-red-600 font-semibold">
+                    <ShieldAlert size={13} className="mt-0.5 flex-shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                {/* ── Loading preview ── */}
+                {step === "previewing" && (
+                  <div className="py-8 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-3">
+                      <RefreshCw size={20} className="text-indigo-500 animate-spin" />
+                    </div>
+                    <p className="text-sm font-black text-gray-800">Reading CSV…</p>
+                    <p className="text-xs text-gray-400 mt-1">Fetching column info</p>
+                  </div>
+                )}
+
+                {/* ── Mapping step ── */}
+                {step === "mapping" && previewData && (
+                  <>
+                    {/* file chip */}
+                    {file && (
+                      <div className="mb-4 flex items-center gap-3 p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+                        <FileText size={16} className="text-indigo-400 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-black text-indigo-700 truncate">{file.name}</div>
+                          <div className="text-[10px] text-indigo-400 font-medium">
+                            {(file.size / 1024).toFixed(1)} KB · {previewData.total_rows} rows · {mappableFields.length} mappable fields
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* column headers row */}
+                    <div className="grid grid-cols-[1fr_16px_1fr] gap-2 px-1 mb-1.5">
+                      <div className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Field</div>
+                      <div />
+                      <div className="text-[9px] uppercase tracking-widest font-bold text-gray-400">CSV Column</div>
+                    </div>
+
+                    {/* scrollable field list */}
+                    <div className="space-y-1.5 mb-4 max-h-72 overflow-y-auto pr-1">
+                      {mappableFields.map((f) => (
+                        <div
+                          key={f.key}
+                          className={`grid grid-cols-[1fr_16px_1fr] items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${
+                            mapping[f.key]
+                              ? "border-indigo-200 bg-indigo-50/60"
+                              : "border-gray-100 bg-gray-50"
+                          }`}
+                        >
+                          {/* field info */}
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-gray-800 truncate flex items-center gap-1">
+                              {f.label}
+                              {f.required && (
+                                <span className="text-[8px] font-black text-red-400 uppercase tracking-wide">*req</span>
+                              )}
+                            </div>
+                            <div className="text-[9px] text-gray-400 font-mono truncate">{f.key}</div>
+                          </div>
+
+                          {/* arrow */}
+                          <ChevronDown size={10} className="text-gray-300 mx-auto" />
+
+                          {/* csv column selector */}
+                          <select
+                            value={mapping[f.key] ?? ""}
+                            onChange={(e) => updateMapping(f.key, e.target.value)}
+                            className="w-full text-xs rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent truncate"
+                          >
+                            <option value="">— skip —</option>
+                            {csvColumns.map((col) => (
+                              <option key={col} value={col}>{col}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* mapped count */}
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-gray-400">
+                        {Object.keys(mapping).length} of {mappableFields.length} fields mapped
+                      </span>
+                      {Object.keys(mapping).length > 0 && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                          Ready to import
+                        </span>
+                      )}
+                    </div>
+
+                    {/* mapping JSON preview (collapsible) */}
+                    <details className="mb-4 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden">
+                      <summary className="text-[9px] uppercase tracking-widest font-bold text-gray-400 px-3 py-2 cursor-pointer select-none hover:text-gray-600">
+                        Preview mapping JSON
+                      </summary>
+                      <pre className="text-[10px] font-mono text-gray-600 px-3 pb-3 overflow-x-auto whitespace-pre-wrap break-all">
+                        {JSON.stringify(mapping, null, 2)}
+                      </pre>
+                    </details>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={reset}
+                        className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-500 hover:bg-gray-50 transition-all active:scale-95"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleImport}
+                        disabled={Object.keys(mapping).length === 0}
+                        className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-black hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-40"
+                      >
+                        Import {previewData.total_rows} Websites
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Importing ── */}
+                {step === "importing" && (
+                  <div className="py-8 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-3">
+                      <RefreshCw size={20} className="text-indigo-500 animate-spin" />
+                    </div>
+                    <p className="text-sm font-black text-gray-800">Importing websites…</p>
+                    <p className="text-xs text-gray-400 mt-1">Please wait a moment</p>
+                  </div>
+                )}
+
+                {/* ── Error ── */}
+                {step === "error" && (
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={reset} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-500 hover:bg-gray-50 transition-all active:scale-95">
+                      Close
+                    </button>
+                    <button onClick={() => fileInputRef.current?.click()} className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-black hover:bg-indigo-700 active:scale-95 transition-all">
+                      Try Again
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Done ── */}
+                {step === "done" && importResult && (
+                  <div className="py-4 text-center">
+                    <Motion.div
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-3"
+                    >
+                      <CheckCircle size={26} className="text-emerald-500" />
+                    </Motion.div>
+                    <p className="text-sm font-black text-gray-800">Import Successful!</p>
+                    <p className="text-xs text-gray-400 mt-1 mb-5">
+                      {importResult.count} website{importResult.count !== 1 ? "s" : ""} imported successfully
+                    </p>
+                    <button onClick={reset} className="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700 active:scale-95 transition-all">
+                      Done
+                    </button>
+                  </div>
+                )}
+              </div>
+            </Motion.div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
 
 /* ─── Main Card ─────────────────────────────────────────────── */
 function WebCard({
@@ -493,6 +885,16 @@ export default function WebsitesPage() {
     deleting,
     deleteWebsiteId,
   } = useSelector((state) => state.webManager);
+  const { user, businessEmail, crmEndpoint, db_name, id } = useSelector(
+    (state) => state.user,
+  );
+  const onboardingKeys = getOnboardingKeys({
+    user,
+    businessEmail,
+    crmEndpoint,
+    dbName: db_name,
+    id,
+  });
   const dispatch = useDispatch();
 
   const handleCreate = (updatedItem) => {
@@ -525,9 +927,11 @@ export default function WebsitesPage() {
   useEffect(() => {
     if (!updating && refreshingId) setRefreshingId(null);
   }, [updating, refreshingId]);
+
   useEffect(() => {
     dispatch(getManageWeb());
   }, [dispatch]);
+
   useEffect(() => {
     if (
       isOnboardingStep3 &&
@@ -538,16 +942,23 @@ export default function WebsitesPage() {
       setEditItem({ type: "new" });
     }
   }, [isOnboardingStep3, searchParams]);
+
   useEffect(() => {
     if (!message) return;
     toast.success(message);
     if (onboardingCreateSubmitted.current) {
       onboardingCreateSubmitted.current = false;
-      localStorage.setItem("guestpostcrm:onboarding:website_added", "true");
+      writeOnboardingFlag(onboardingKeys.websiteDone, true);
+      window.dispatchEvent(
+        new CustomEvent("guestpostcrm:first-sync", {
+          detail: { websiteDone: true },
+        }),
+      );
       navigate("/profile?step=5");
     }
     dispatch(webManagerAction.clearAllMessages());
-  }, [dispatch, message, navigate]);
+  }, [dispatch, message, navigate, onboardingKeys.websiteDone]);
+
   useEffect(() => {
     if (!error) return;
     toast.error(error);
@@ -556,10 +967,14 @@ export default function WebsitesPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <Header
-        text="Website Manager"
-        handleCreate={() => setEditItem({ type: "new" })}
-      />
+      {/* ── Page Header Row ── */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <Header
+          text="Website Manager"
+          handleCreate={() => setEditItem({ type: "new" })}
+        />
+        <ImportCSV onImportSuccess={() => dispatch(getManageWeb())} />
+      </div>
 
       {loading && <Loading text="Websites" />}
 

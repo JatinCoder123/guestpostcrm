@@ -129,10 +129,9 @@ const Debug = () => {
   const [activeTab, setActiveTab] = useState(getInitialTab);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
-  const [timeline, setTimeline] = useState(1);
+  const [timeline, setTimeline] = useState('all');
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [emailSearch, setEmailSearch] = useState("");
-  const [exploreData, setExploreData] = useState(null);
   const getPromptStats = (text) => {
     if (!text) return { words: 0, lines: 0 };
 
@@ -161,23 +160,14 @@ const Debug = () => {
 
   useEffect(() => {
     if (activeTab.key !== "prompt") return;
-    if (state?.prompt) setSelectedRecord(state?.prompt);
-  }, [loading, data, state?.promptId, activeTab]);
+    if (state?.prompt) setSelectedRecord(data?.find(p => p.id == state?.prompt));
+  }, [loading, data, state?.prompt, activeTab]);
 
   useEffect(() => {
     refetch();
   }, [activeTab]);
 
-  /* set timeline based on date */
-  useEffect(() => {
-    const today = getToday();
 
-    if (selectedDate === today) {
-      setTimeline(1);
-    } else {
-      setTimeline("all");
-    }
-  }, [selectedDate]);
 
   /* CLICK OUTSIDE MODAL */
   useEffect(() => {
@@ -296,7 +286,7 @@ const Debug = () => {
     try {
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
-    } catch {}
+    } catch { }
 
     let content = parsed?.reply || parsed;
 
@@ -356,37 +346,8 @@ const Debug = () => {
       <div className="p-6 space-y-6">
         {/* Filters */}
         <div className="flex justify-center gap-6 flex-wrap">
-          {/* Email Search */}
-          {/* <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
-            <span className="text-sm font-medium text-gray-600">Email</span>
-
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search email..."
-                value={emailSearch}
-                onChange={(e) => setEmailSearch(e.target.value)}
-                className="bg-white border rounded-md px-3 py-1 pr-8 text-sm focus:ring-2 focus:ring-blue-500"
-              />
-
-              {emailSearch && (
-                <button
-                  onClick={() => setEmailSearch("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div> */}
-          {/* Tabs (Replaced with Dropdown) */}
           <div className="flex items-center justify-between flex items-center gap-3 bg-blue-50 border border-2 border-blue-600 rounded-xl px-4 py-2 shadow-sm ">
-            {/* ACTIVE TAB NAME */}
-            {/* <div className="text-lg font-semibold text-blue-600">
-              {activeTab.label}
-            </div> */}
 
-            {/* DROPDOWN */}
             <div>
               <select
                 value={activeTab.key}
@@ -506,12 +467,11 @@ const Debug = () => {
                     {columns.map((col) => (
                       <td
                         key={col}
-                        className={`px-4 py-3 max-w-xs truncate ${
-                          activeTab.key === "process_audit" &&
+                        className={`px-4 py-3 max-w-xs truncate ${activeTab.key === "process_audit" &&
                           col === "message_id"
-                            ? "cursor-pointer text-blue-600 hover:underline"
-                            : ""
-                        }`}
+                          ? "cursor-pointer text-blue-600 hover:underline"
+                          : ""
+                          }`}
                         onClick={() => {
                           if (
                             activeTab.key === "process_audit" &&
@@ -549,11 +509,11 @@ const Debug = () => {
                   {state?.prompt && (
                     <button
                       onClick={() => {
-                        console.log("prompt id", state?.prompt.prompt_id);
+                        console.log("prompt id", state?.prompt);
                         navigateTo("/settings/machine-learning", {
                           state: {
-                            promptId: state?.prompt.prompt_id,
-                            promptStatus: state?.prompt.prompt_stage,
+                            promptId: selectedRecord.prompt_id,
+                            promptStatus: selectedRecord.prompt_stage,
                           },
                         });
                       }}
@@ -599,9 +559,8 @@ const Debug = () => {
                     return (
                       <div
                         key={key}
-                        className={`border rounded-lg p-3 bg-gray-50 ${
-                          large ? "md:col-span-2" : ""
-                        }`}
+                        className={`border rounded-lg p-3 bg-gray-50 ${large ? "md:col-span-2" : ""
+                          }`}
                       >
                         <div className="text-xs text-gray-500 mb-1">
                           {key.replace(/_/g, " ").toUpperCase()}
@@ -714,30 +673,6 @@ const Debug = () => {
           </div>
         )}
       </div>
-      {/* Prompt Explorer Modal */}
-      {exploreData && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Prompt Explorer
-              </h2>
-              <button
-                onClick={() => setExploreData(null)}
-                className="text-gray-500 hover:text-black text-xl"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="p-4">
-              <PromptExplorer
-                initialSystem={exploreData.system}
-                initialUser={exploreData.user}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

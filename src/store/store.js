@@ -37,6 +37,8 @@ import crmUserReducer from "./Slices/crmUser.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
 import tinyKeyReducer from "./Slices/tinyKey.js";
+import mailerSummaryReducer from "./Slices/mailerSummary.js";
+import outBoxReducer from "./Slices/outbox.js";
 
 export const store = configureStore({
   reducer: {
@@ -78,6 +80,8 @@ export const store = configureStore({
     crmUser: crmUserReducer,
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,
-    tinyKey: tinyKeyReducer
+    tinyKey: tinyKeyReducer,
+    mailersSummary: mailerSummaryReducer,
+    outbox: outBoxReducer
   },
 });
