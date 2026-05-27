@@ -293,41 +293,16 @@ export function TopNav() {
         {/* end */}
 
         {notificationCount.error_log_created && (
-          <motion.button
+          <IconButton
             onClick={() => navigateTo("/settings/debugging")}
-            className="relative p-2 bg-red-500 text-white rounded-full"
-            animate={
-              errorLogCount > 0
-                ? {
-                  scale: [1, 1.08, 1],
-                  boxShadow: [
-                    "0 0 0px rgba(239,68,68,0)",
-                    "0 0 20px rgba(239,68,68,0.9)",
-                    "0 0 0px rgba(239,68,68,0)",
-                  ],
-                }
-                : {}
-            }
-            transition={
-              errorLogCount > 0
-                ? {
-                  repeat: Infinity,
-                  duration: 1.4,
-                  ease: "easeInOut",
-                }
-                : {}
-            }
-          >
-            <CircleAlert />
-
-            {errorLogCount > 0 && (
-              <motion.span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full shadow">
-                {errorLogCount}
-              </motion.span>
-            )}
-          </motion.button>
-        )}
-
+            icon={CircleAlert}
+            count={errorLogCount}
+            variant="danger"
+            rounded="full"
+            label="Error Logs"
+            tooltipPosition="bottom"
+          />)
+        }
 
         <IconButton onClick={() => navigateTo("ai-credits")}
           tooltipPosition="bottom" label="AI Credits" icon={Sparkles} variant="primary" className="p-2  bg-indigo-600 hover:bg-indigo-700" rounded="full" iconColor="white" />
