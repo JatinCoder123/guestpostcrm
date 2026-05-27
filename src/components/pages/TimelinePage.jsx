@@ -28,7 +28,7 @@ export function TimelinePage() {
     (state) => state.viewEmail,
   );
   const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
-  if ((Array.isArray(ladger) && ladger.length == 0 && !ladgerLoading) || (!ladger && !ladgerLoading)) {
+  if ((Array.isArray(ladger) && ladger.length == 0 && !ladgerLoading && !unrepliedLoading) || (!ladger && !ladgerLoading && !unrepliedLoading)) {
     return <NoSearchFoundPage />;
   }
 
