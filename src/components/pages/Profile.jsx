@@ -36,7 +36,6 @@ import {
 import {
   ONBOARDING_STEP,
   getOnboardingRecordName,
-  hasContactForEmail,
   syncLocalOnboardingFromCrmStep,
   upsertOnboardingProgress,
 } from "../../utils/onboardingCompletion";
@@ -53,8 +52,7 @@ const createEmptyWebsiteForm = () => ({
 const getUserName = (user) =>
   user?.name || user?.full_name || user?.first_name || user?.user_name || "User";
 
-const getEmail = ({ user, businessEmail }) =>
-  businessEmail || user?.email || user?.email1 || user?.email_address || "";
+
 
 const broadcastSyncState = (detail) => {
   window.dispatchEvent(new CustomEvent(FIRST_SYNC_EVENT, { detail }));
@@ -100,6 +98,9 @@ const Profile = () => {
   const { user, businessEmail, currentScore, crmEndpoint, db_name, id } = useSelector(
     (state) => state.user,
   );
+  const { loading: contactLoading, contacts } = useSelector(
+    (state) => state.contacts,
+  );
   const onboardingKeys = useMemo(
     () =>
       getOnboardingKeys({
@@ -131,23 +132,21 @@ const Profile = () => {
     readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
   );
   const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
-  const [contactOnboardingDone, setContactOnboardingDone] = useState(false);
-  const [contactOnboardingLoading, setContactOnboardingLoading] =
-    useState(true);
   const celebratedCompleteRef = useRef(false);
 
-  const profileEmail = getEmail({ user, businessEmail });
+  const profileEmail = user.email;
   const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail: profileEmail,
   });
+  const contactOnboardingDone =
+    Array.isArray(contacts) && contacts.length > 0;
   const step3Done =
     contactOnboardingDone || crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED;
   const syncDone =
     contactOnboardingDone ||
     crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
-  const onboardingLoading =
-    contactOnboardingLoading && !contactOnboardingDone;
+  const onboardingLoading = contactLoading && !contactOnboardingDone;
   const completion = syncDone ? 100 : step3Done ? 70 : 50;
   const syncRecords = Array.isArray(syncResult?.records)
     ? syncResult.records
@@ -192,46 +191,20 @@ const Profile = () => {
   }, [onboardingKeys.firstSyncRecordsSeen, showFirstSyncRecords]);
 
   useEffect(() => {
-    if (!profileEmail) {
-      setContactOnboardingLoading(false);
-      return;
-    }
+    if (!contactOnboardingDone) return;
 
-    let ignore = false;
-    setContactOnboardingLoading(true);
-
-    const checkContactOnboarding = async () => {
-      try {
-        const contactExists = await hasContactForEmail(profileEmail);
-        if (ignore || !contactExists) return;
-
-        setContactOnboardingDone(true);
-        setCrmOnboardingStep((step) =>
-          Math.max(step, ONBOARDING_STEP.FIRST_SYNC_DONE),
-        );
-        setSyncing(false);
-        setFirstSyncRecordsSeen(true);
-        celebratedCompleteRef.current = true;
-        broadcastSyncState({
-          status: "completed",
-          result: syncResult,
-          onboardingStep: ONBOARDING_STEP.FIRST_SYNC_DONE,
-        });
-      } catch (error) {
-        console.error("Failed to check onboarding contact:", error);
-      } finally {
-        if (!ignore) {
-          setContactOnboardingLoading(false);
-        }
-      }
-    };
-
-    checkContactOnboarding();
-
-    return () => {
-      ignore = true;
-    };
-  }, [profileEmail, syncResult]);
+    setCrmOnboardingStep((step) =>
+      Math.max(step, ONBOARDING_STEP.FIRST_SYNC_DONE),
+    );
+    setSyncing(false);
+    setFirstSyncRecordsSeen(true);
+    celebratedCompleteRef.current = true;
+    broadcastSyncState({
+      status: "completed",
+      result: syncResult,
+      onboardingStep: ONBOARDING_STEP.FIRST_SYNC_DONE,
+    });
+  }, [contactOnboardingDone, syncResult]);
 
   const loadWebsites = useCallback(async () => {
     if (!crmEndpoint) return [];

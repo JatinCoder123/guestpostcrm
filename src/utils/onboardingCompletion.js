@@ -115,21 +115,6 @@ export const hasContactInfoRecord = async () => {
   return count > 0 || records.length > 0;
 };
 
-export const hasContactForEmail = async (email) => {
-  const trimmedEmail = email?.trim();
-  if (!trimmedEmail) return false;
-
-  const data = await fetchGpc({
-    method: "GET",
-    params: { type: "get_contact", email: trimmedEmail },
-  });
-
-  if (!data || data?.success === false) return false;
-  if (Array.isArray(data)) return data.length > 0;
-  if (typeof data === "object") return Object.keys(data).length > 0;
-  return true;
-};
-
 export const syncLocalOnboardingFromCrmStep = (onboardingKeys, step) => {
   if (step >= ONBOARDING_STEP.WEBSITE_ADDED) {
     writeOnboardingFlag(onboardingKeys.websiteDone, true);

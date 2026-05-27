@@ -33,7 +33,6 @@ import {
 import {
   ONBOARDING_STEP,
   getOnboardingRecordName,
-  hasContactForEmail,
   syncLocalOnboardingFromCrmStep,
   upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
@@ -92,10 +91,11 @@ const WelcomeHeader = () => {
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
   const { summary } = useSelector((state) => state.gpcController);
+  const { loading: contactLoading, contacts } = useSelector(
+    (state) => state.contacts,
+  );
 
   const email = contactInfo?.email1;
-  const onboardingEmail =
-    businessEmail || user?.email || user?.email1 || user?.email_address || "";
   const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail,
@@ -130,9 +130,6 @@ const WelcomeHeader = () => {
   }));
   const [websiteDone, setWebsiteDone] = useState(false);
   const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
-  const [contactOnboardingDone, setContactOnboardingDone] = useState(false);
-  const [contactOnboardingLoading, setContactOnboardingLoading] =
-    useState(true);
   const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(() =>
     readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
   );
@@ -287,55 +284,16 @@ const WelcomeHeader = () => {
     };
   }, [crmEndpoint, onboardingKeys, onboardingRecordName]);
 
-  useEffect(() => {
-    if (!onboardingEmail) {
-      setContactOnboardingLoading(false);
-      return;
-    }
-
-    let ignore = false;
-    setContactOnboardingLoading(true);
-
-    const checkContactOnboarding = async () => {
-      try {
-        const contactExists = await hasContactForEmail(onboardingEmail);
-        if (ignore || !contactExists) return;
-
-        setContactOnboardingDone(true);
-        setWebsiteDone(true);
-        setCrmOnboardingStep((step) =>
-          Math.max(step, ONBOARDING_STEP.FIRST_SYNC_DONE),
-        );
-        setFirstSyncRecordsSeen(true);
-        setFirstSyncState((prev) => ({
-          ...prev,
-          status: "completed",
-        }));
-      } catch (err) {
-        console.error("Failed to check onboarding contact:", err);
-      } finally {
-        if (!ignore) {
-          setContactOnboardingLoading(false);
-        }
-      }
-    };
-
-    checkContactOnboarding();
-
-    return () => {
-      ignore = true;
-    };
-  }, [onboardingEmail]);
-
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
+  const contactOnboardingDone =
+    Array.isArray(contacts) && contacts.length > 0;
   const syncDone =
     contactOnboardingDone ||
     crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
-  const contactCheckLoading =
-    contactOnboardingLoading && !contactOnboardingDone;
+  const contactCheckLoading = contactLoading && !contactOnboardingDone;
   const firstSyncLoading = firstSyncState.status === "loading";
   const firstSyncCompleted = syncDone;
   const firstSyncRecords = Array.isArray(firstSyncState.result?.records)
