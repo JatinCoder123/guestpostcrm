@@ -64,7 +64,7 @@ export default function Login() {
         <p className="mt-6 text-gray-600 text-sm">
           Don’t have an account?
           <a
-            href="https://www.guestpostcrm.com/rightee/intro.php"
+            href="https://www.guestpostcrm.com/rightee/google.php"
             className="ml-1 text-purple-600 font-medium hover:underline"
           >
             Sign Up
