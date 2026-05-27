@@ -22,8 +22,7 @@ import {
   unrepliedAction,
 } from "../store/Slices/unrepliedEmails";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { apiRequest, fetchGpc } from "../services/api";
-import { CREATE_DEAL_API_KEY } from "../store/constants";
+import { fetchGpc } from "../services/api";
 import {
   BASE_ONBOARDING_KEYS,
   getOnboardingKeys,
@@ -34,14 +33,11 @@ import {
 import {
   ONBOARDING_STEP,
   getOnboardingRecordName,
-  hasContactInfoRecord,
-  markSyncDoneFromExistingContact,
   syncLocalOnboardingFromCrmStep,
   upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
-const ALLOWED_SITES_MODULE = "outr_allowed_sites";
 
 const getStoredFirstSync = (keys) =>
   readOnboardingJson(keys.firstSyncResult, BASE_ONBOARDING_KEYS.firstSyncResult);
@@ -95,6 +91,9 @@ const WelcomeHeader = () => {
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
   const { summary } = useSelector((state) => state.gpcController);
+  const { loading: contactLoading, contacts } = useSelector(
+    (state) => state.contacts,
+  );
 
   const email = contactInfo?.email1;
   const onboardingRecordName = getOnboardingRecordName({
@@ -129,12 +128,8 @@ const WelcomeHeader = () => {
       "idle",
     result: getStoredFirstSync(onboardingKeys),
   }));
-  const [websiteDone, setWebsiteDone] = useState(() =>
-    readOnboardingFlag(
-      onboardingKeys.websiteDone,
-      BASE_ONBOARDING_KEYS.websiteDone,
-    ),
-  );
+  const [websiteDone, setWebsiteDone] = useState(false);
+  const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
   const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(() =>
     readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
   );
@@ -200,11 +195,11 @@ const WelcomeHeader = () => {
 
   useEffect(() => {
     const syncHandler = (event) => {
-      if (event.detail?.websiteDone) {
-        setWebsiteDone(true);
-      }
-      if (event.detail?.onboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED) {
-        setWebsiteDone(true);
+      if (typeof event.detail?.onboardingStep === "number") {
+        setCrmOnboardingStep(event.detail.onboardingStep);
+        setWebsiteDone(
+          event.detail.onboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED,
+        );
       }
       if (event.detail?.status === "completed") {
         setFirstSyncRecordsSeen(false);
@@ -223,15 +218,8 @@ const WelcomeHeader = () => {
       if (
         event.key === onboardingKeys.firstSyncStatus ||
         event.key === onboardingKeys.firstSyncResult ||
-        event.key === onboardingKeys.firstSyncRecordsSeen ||
-        event.key === onboardingKeys.websiteDone
+        event.key === onboardingKeys.firstSyncRecordsSeen
       ) {
-        setWebsiteDone(
-          readOnboardingFlag(
-            onboardingKeys.websiteDone,
-            BASE_ONBOARDING_KEYS.websiteDone,
-          ),
-        );
         setFirstSyncState({
           status:
             localStorage.getItem(onboardingKeys.firstSyncStatus) || "idle",
@@ -256,12 +244,6 @@ const WelcomeHeader = () => {
     let ignore = false;
 
     const loadCrmOnboardingProgress = async () => {
-      setWebsiteDone(
-        readOnboardingFlag(
-          onboardingKeys.websiteDone,
-          BASE_ONBOARDING_KEYS.websiteDone,
-        ),
-      );
       setFirstSyncState({
         status:
           localStorage.getItem(onboardingKeys.firstSyncStatus) ||
@@ -283,10 +265,9 @@ const WelcomeHeader = () => {
         });
         if (ignore) return;
 
+        setCrmOnboardingStep(step);
+        setWebsiteDone(step >= ONBOARDING_STEP.WEBSITE_ADDED);
         const result = syncLocalOnboardingFromCrmStep(onboardingKeys, step);
-        if (step >= ONBOARDING_STEP.WEBSITE_ADDED) {
-          setWebsiteDone(true);
-        }
         if (result) {
           setFirstSyncRecordsSeen(true);
           setFirstSyncState({ status: "completed", result });
@@ -303,100 +284,25 @@ const WelcomeHeader = () => {
     };
   }, [crmEndpoint, onboardingKeys, onboardingRecordName]);
 
-  useEffect(() => {
-    if (!crmEndpoint || websiteDone) return;
-
-    const verifyWebsiteDone = async () => {
-      try {
-        const data = await apiRequest({
-          endpoint: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`,
-          method: "POST",
-          params: { action_type: "get_data" },
-          body: { module: ALLOWED_SITES_MODULE },
-          headers: {
-            "x-api-key": CREATE_DEAL_API_KEY,
-            "Content-Type": "application/json",
-          },
-        });
-        const websites = Array.isArray(data) ? data : data?.data ?? [];
-        if (websites.length > 0) {
-          await upsertOnboardingProgress({
-            crmEndpoint,
-            name: onboardingRecordName,
-            step: ONBOARDING_STEP.WEBSITE_ADDED,
-          });
-          writeOnboardingFlag(onboardingKeys.websiteDone, true);
-          setWebsiteDone(true);
-        }
-      } catch (err) {
-        console.error("Failed to verify onboarding websites:", err);
-      }
-    };
-
-    verifyWebsiteDone();
-  }, [
-    crmEndpoint,
-    onboardingKeys.websiteDone,
-    onboardingRecordName,
-    websiteDone,
-  ]);
-
-  useEffect(() => {
-    const currentSyncDone = readOnboardingFlag(
-      onboardingKeys.syncDone,
-      BASE_ONBOARDING_KEYS.syncDone,
-    );
-    if (!crmEndpoint || currentSyncDone) return;
-
-    let ignore = false;
-
-    const verifyExistingContact = async () => {
-      try {
-        const contactExists = await hasContactInfoRecord();
-        if (!contactExists || ignore) return;
-
-        await upsertOnboardingProgress({
-          crmEndpoint,
-          name: onboardingRecordName,
-          step: ONBOARDING_STEP.FIRST_SYNC_DONE,
-        });
-        const result = markSyncDoneFromExistingContact(onboardingKeys);
-        setFirstSyncRecordsSeen(true);
-        setFirstSyncState({ status: "completed", result });
-        window.dispatchEvent(
-          new CustomEvent(FIRST_SYNC_EVENT, {
-            detail: { status: "completed", result },
-          }),
-        );
-      } catch (err) {
-        console.error("Failed to verify onboarding contacts:", err);
-      }
-    };
-
-    verifyExistingContact();
-
-    return () => {
-      ignore = true;
-    };
-  }, [crmEndpoint, onboardingKeys, onboardingRecordName]);
-
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
-  const syncDone = readOnboardingFlag(
-    onboardingKeys.syncDone,
-    BASE_ONBOARDING_KEYS.syncDone,
-  );
+  const contactOnboardingDone =
+    Array.isArray(contacts) && contacts.length > 0;
+  const syncDone =
+    contactOnboardingDone ||
+    crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
+  const contactCheckLoading = contactLoading && !contactOnboardingDone;
   const firstSyncLoading = firstSyncState.status === "loading";
-  const firstSyncCompleted = firstSyncState.status === "completed" || syncDone;
+  const firstSyncCompleted = syncDone;
   const firstSyncRecords = Array.isArray(firstSyncState.result?.records)
     ? firstSyncState.result.records
     : [];
   const profileCompletion = firstSyncCompleted ? 100 : websiteDone ? 70 : 50;
   const showProfilePrompt =
   path !== "/profile" &&
-  (profileCompletion < 100 || firstSyncLoading);
+  (profileCompletion < 100 || firstSyncLoading || contactCheckLoading);
   const showFirstSyncRecordsPrompt =
     path !== "/profile" &&
     firstSyncCompleted &&
@@ -404,12 +310,14 @@ const WelcomeHeader = () => {
     !firstSyncRecordsSeen;
   const profilePromptText = firstSyncLoading
     ? "First sync is running..."
+    : contactCheckLoading
+      ? "Loading onboarding status..."
     : firstSyncCompleted
       ? `Sync completed${firstSyncState.result?.count ? `: ${firstSyncState.result.count} records` : ""}`
       : websiteDone
     ? "Run first sync to unlock full setup"
     : "Complete your profile setup";
-  const ProfileIcon = firstSyncLoading
+  const ProfileIcon = firstSyncLoading || contactCheckLoading
     ? Loader2
     : firstSyncCompleted
       ? CheckCircle2
@@ -563,8 +471,16 @@ const WelcomeHeader = () => {
             >
               <span className="absolute inset-x-0 bottom-0 h-1 bg-slate-100">
                 <span
-                  className="block h-full rounded-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500 transition-all duration-700"
-                  style={{ width: `${profileCompletion}%` }}
+                  className={`block h-full rounded-full transition-all duration-700 ${
+                    contactCheckLoading
+                      ? "animate-pulse bg-slate-300"
+                      : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500"
+                  }`}
+                  style={{
+                    width: contactCheckLoading
+                      ? "35%"
+                      : `${profileCompletion}%`,
+                  }}
                 />
               </span>
 
@@ -576,7 +492,11 @@ const WelcomeHeader = () => {
               >
                 <ProfileIcon
                   size={20}
-                  className={firstSyncLoading ? "animate-spin" : ""}
+                  className={
+                    firstSyncLoading || contactCheckLoading
+                      ? "animate-spin"
+                      : ""
+                  }
                 />
               </span>
 
@@ -585,14 +505,20 @@ const WelcomeHeader = () => {
                   className={`block text-xs font-black uppercase tracking-wide ${firstSyncCompleted ? "text-emerald-600" : "text-indigo-600"
                     }`}
                 >
-                  {firstSyncCompleted ? "Boom, completed" : `Profile ${profileCompletion}%`}
+                  {contactCheckLoading
+                    ? "Checking setup"
+                    : firstSyncCompleted
+                      ? "Boom, completed"
+                      : `Profile ${profileCompletion}%`}
                 </span>
                 <span className="block truncate text-sm font-bold text-slate-900">
                   {profilePromptText}
                 </span>
               </span>
 
-              {firstSyncCompleted ? (
+              {contactCheckLoading ? (
+                <Loader2 size={18} className="shrink-0 animate-spin text-indigo-500" />
+              ) : firstSyncCompleted ? (
                 <PartyPopper size={18} className="shrink-0 text-emerald-500" />
               ) : (
                 <ArrowRight
