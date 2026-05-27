@@ -39,6 +39,7 @@ import {
   webManagerAction,
 } from "../../../store/Slices/webManager.js";
 import { toast } from "react-toastify";
+import { fetchGpc } from "../../../services/api";
 import {
   getOnboardingKeys,
   writeOnboardingFlag,
@@ -150,10 +151,6 @@ function ImportCSV({ onImportSuccess }) {
   const fileInputRef = useRef(null);
   const fileRef = useRef(null);
 
-  const API_KEY = "nmD5WeHdY8i4kTUK!.7_Fzp7}K@AAX1X";
-  const BASE_URL =
-    "https://kartikey.guestpostcrm.com/index.php?entryPoint=fetch_gpc&type=get_json";
-
   /* Fields to hide — system/internal only */
   const SKIP_FIELDS = new Set([
     "id",
@@ -219,12 +216,11 @@ function ImportCSV({ onImportSuccess }) {
       const formData = new FormData();
       formData.append("file", selected, selected.name);
 
-      const res = await fetch(BASE_URL, {
+      const json = await fetchGpc({
         method: "POST",
-        headers: { "X-Api-Key": API_KEY },
+        params: { type: "get_json" },
         body: formData,
       });
-      const json = await res.json();
       if (!json.success) throw new Error(json.message || json.error || "Preview failed");
 
       setPreviewData(json);
@@ -264,12 +260,11 @@ function ImportCSV({ onImportSuccess }) {
         new Blob([JSON.stringify(mapping)], { type: "text/plain" }),
       );
 
-      const res = await fetch(`${BASE_URL}&upload=1`, {
+      const json = await fetchGpc({
         method: "POST",
-        headers: { "X-Api-Key": API_KEY },
+        params: { type: "get_json", upload: 1 },
         body: formData,
       });
-      const json = await res.json();
       if (!json.success) throw new Error(json.message || json.error || "Import failed");
 
       setImportResult(json);
