@@ -47,7 +47,7 @@ const Thread = () => {
         toast.error("Failed to verify thread!");
         return;
       }
-      if (!data?.data?.find(email => email == currentEmail)) {
+      if (!data?.data?.find(email => email.toLowerCase() == currentEmail.toLowerCase())) {
         toast.error('Wrong Thread Id Detected! Try Again.')
         return;
       }

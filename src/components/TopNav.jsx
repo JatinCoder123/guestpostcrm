@@ -24,6 +24,7 @@ import DropDown from "./DropDown";
 import { headingLogo, periodOptions } from "../assets/assets";
 import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
+import GlobalSearch from "./GlobalSearch";
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
@@ -152,76 +153,7 @@ export function TopNav() {
 
         {/* SEARCH AREA */}
         <div className="flex items-center gap-2" data-tour="top-nav-search">
-          {/* INPUT */}
-          <div className="relative w-95">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Input Email to Search"
-              className="
-                w-full pl-10 pr-10 py-2
-                bg-gray-50 border border-gray-200 rounded-lg
-                focus:outline-none focus:ring-2 focus:ring-purple-500/20
-                focus:border-purple-500 shadow-lg
-              "
-            />
-            {/* 📋 COPY BUTTON */}
-            {search && (
-              <motion.button
-                onClick={handleCopy}
-                whileTap={{ scale: 0.9 }}
-                className="
-        absolute right-10 top-1/2 -translate-y-1/2
-        w-6 h-6 flex items-center justify-center rounded-md
-        bg-blue-500 text-white hover:bg-blue-600
-      "
-              >
-                {copied ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </motion.button>
-            )}
-
-            {/* ❌ CLEAR INSIDE INPUT */}
-            {search && (
-              <motion.button
-                onClick={() => {
-                  (setSearch(""), handleClear());
-                }}
-                animate={isBlinking ? { scale: [1, 1.1, 1] } : {}}
-                transition={
-                  isBlinking ? { repeat: Infinity, duration: 0.7 } : {}
-                }
-                className={`
-                  absolute right-2 top-1/2 -translate-y-1/2
-                  w-6 h-6 flex items-center justify-center rounded-md
-                  ${isBlinking
-                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.9)]"
-                    : "bg-gray-300 text-gray-700"
-                  }
-                `}
-              >
-                <X className="w-4 h-4" />
-              </motion.button>
-            )}
-          </div>
-
-          {/* 🔍 SEARCH BUTTON OUTSIDE */}
-          <button
-            onClick={handleSearch}
-            className="
-              px-4 py-2 flex items-center gap-2
-              bg-blue-600 text-white rounded-lg
-              hover:bg-blue-700
-            "
-          >
-            <Search className="w-4 h-4" />
-          </button>
+          <GlobalSearch />
 
           <DropDown
             options={periodOptions}
@@ -255,79 +187,21 @@ export function TopNav() {
         {outboxEmails.length > 0 && !loading && (
           <IconButton tooltipPosition="bottom" label="OutBox Emails" onClick={() => navigateTo('/outbox')} icon={MailWarning} variant="primary" className="p-2 rounded-full" rounded="full" iconColor="white" count={outboxEmails.length} />
         )}
+        <IconButton tooltipPosition="bottom" label="Hot Notification" onClick={() => navigateTo("hot-records")}
+          icon={Flame} variant="primary" className="p-2 rounded-full bg-orange-500 hover:bg-orange-600" rounded="full" iconColor="white" count={count} />
 
-        <motion.button
-          onClick={() => navigateTo("hot-records")}
-          animate={
-            count > 0
-              ? {
-                scale: [1, 1.12, 1],
-                boxShadow: [
-                  "0 0 0px rgba(59,130,246,0)",
-                  "0 0 18px rgba(59,130,246,0.9)",
-                  "0 0 18px rgba(239, 68, 213, 0.9)",
-                  "0 0 0px rgba(239,68,68,0)",
-                ],
-              }
-              : {}
-          }
-          transition={
-            count > 0
-              ? {
-                repeat: Infinity,
-                duration: 1.6, // normal speed
-                ease: "easeInOut",
-              }
-              : {}
-          }
-          className="relative bg-orange-500 text-white rounded-full p-2"
-        >
-          <Flame size={20} />
-
-          {count > 0 && (
-            <span className="absolute -top-1 -right-1 bg-orange-800 text-xs w-5 h-5 rounded-full flex items-center justify-center">
-              {count}
-            </span>
-          )}
-        </motion.button>
-        {/* end */}
 
         {notificationCount.error_log_created && (
-          <motion.button
+          <IconButton
             onClick={() => navigateTo("/settings/debugging")}
-            className="relative p-2 bg-red-500 text-white rounded-full"
-            animate={
-              errorLogCount > 0
-                ? {
-                  scale: [1, 1.08, 1],
-                  boxShadow: [
-                    "0 0 0px rgba(239,68,68,0)",
-                    "0 0 20px rgba(239,68,68,0.9)",
-                    "0 0 0px rgba(239,68,68,0)",
-                  ],
-                }
-                : {}
-            }
-            transition={
-              errorLogCount > 0
-                ? {
-                  repeat: Infinity,
-                  duration: 1.4,
-                  ease: "easeInOut",
-                }
-                : {}
-            }
-          >
-            <CircleAlert />
-
-            {errorLogCount > 0 && (
-              <motion.span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full shadow">
-                {errorLogCount}
-              </motion.span>
-            )}
-          </motion.button>
-        )}
-
+            icon={CircleAlert}
+            count={errorLogCount}
+            variant="danger"
+            rounded="full"
+            label="Error Logs"
+            tooltipPosition="bottom"
+          />)
+        }
 
         <IconButton onClick={() => navigateTo("ai-credits")}
           tooltipPosition="bottom" label="AI Credits" icon={Sparkles} variant="primary" className="p-2  bg-indigo-600 hover:bg-indigo-700" rounded="full" iconColor="white" />

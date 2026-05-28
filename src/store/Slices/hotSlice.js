@@ -9,6 +9,8 @@ const hotSlice = createSlice({
     count: 0,
     hots: [],
     error: null,
+    pageIndex: 1,
+    pageCount: 1,
   },
   reducers: {
     getAllHotsRequest(state) {
@@ -42,12 +44,12 @@ const hotSlice = createSlice({
   },
 });
 
-export const getAllHot = () => {
+export const getAllHot = ({ loading = true, page = 1 }) => {
   return async (dispatch, getState) => {
     dispatch(hotSlice.actions.getAllHotsRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     try {
-      const data = await fetchGpc({ params: { type: 'get_alerts', filter: getState().ladger.timeline, page: 1, page_size: 50, label: 'hot' } });
+      const data = await fetchGpc({ params: { type: 'get_alerts', filter: getState().ladger.timeline, page, page_size: 50, label: 'hot' } });
       showConsole && console.log(`hot data`, data);
       dispatch(hotSlice.actions.getAllhotsucess({ count: 0, hots: data.data ?? [] }));
       dispatch(hotSlice.actions.clearAllErrors());

@@ -95,7 +95,7 @@ export function DealsPage() {
     },
 
     {
-      label: "Stage",
+      label: "Status",
       accessor: "status",
       headerClasses: "",
       icon: ChartNoAxesColumn,

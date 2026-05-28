@@ -128,6 +128,14 @@ const OnBoarding = () => {
         ).catch(() => { });
     };
 
+    const redirectToDomainWithEmail = () => {
+        window.location.assign(
+            `${window.location.origin}?email=${encodeURIComponent(
+                email
+            )}`
+        );
+    };
+
     const handleCompleteProfile = async () => {
         try {
             setIsOnboardingLoading(true);
@@ -136,7 +144,7 @@ const OnBoarding = () => {
 
             setShowOnboardingPopup(false);
 
-            window.location.assign("/profile");
+            redirectToDomainWithEmail();
         } finally {
             setIsOnboardingLoading(false);
         }
@@ -150,7 +158,7 @@ const OnBoarding = () => {
 
             setShowOnboardingPopup(false);
 
-            window.location.reload();
+            redirectToDomainWithEmail();
         } finally {
             setIsOnboardingLoading(false);
         }

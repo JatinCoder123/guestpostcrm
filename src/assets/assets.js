@@ -8,7 +8,7 @@ import onlyupdate from "./onlyupdate.png";
 import update_With_send from "./update_With_send.jpg";
 export default logo;
 export const logingImg = loginImg;
-export const headingLogo = headingLogoImg
+export const headingLogo = headingLogoImg;
 export const images = { duplicateImg };
 import DOMPurify from "dompurify";
 
