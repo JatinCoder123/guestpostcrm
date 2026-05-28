@@ -126,14 +126,112 @@ const PromptLadger = ({
     ) => {
         return {
             words:
-                text
+                String(text)
                     ?.split(/\s+/)
                     ?.filter(Boolean)
                     ?.length || 0,
 
             lines:
-                text?.split("\n")?.length || 0,
+                String(text)?.split("\n")
+                    ?.length || 0,
         };
+    };
+
+    const formatValue = (
+        value,
+        key = "",
+    ) => {
+        try {
+            // NULL / UNDEFINED
+            if (
+                value === null ||
+                value === undefined
+            ) {
+                return "";
+            }
+
+            // RESPONSE OBJECT
+            if (
+                key === "response" &&
+                typeof value === "object"
+            ) {
+                return Object.entries(value)
+                    .map(([k, v]) => {
+                        // ARRAY
+                        if (
+                            Array.isArray(v)
+                        ) {
+                            return `${k}:\n${v.length
+                                ? JSON.stringify(
+                                    v,
+                                    null,
+                                    2,
+                                )
+                                : "[]"
+                                }`;
+                        }
+
+                        // OBJECT
+                        if (
+                            typeof v ===
+                            "object" &&
+                            v !== null
+                        ) {
+                            return `${k}:\n${JSON.stringify(
+                                v,
+                                null,
+                                2,
+                            )}`;
+                        }
+
+                        // NORMAL VALUE
+                        return `${k}: ${v}`;
+                    })
+                    .join("\n\n");
+            }
+
+            // NORMAL OBJECT
+            if (
+                typeof value === "object"
+            ) {
+                return JSON.stringify(
+                    value,
+                    null,
+                    2,
+                );
+            }
+
+            // STRINGIFIED JSON
+            if (
+                typeof value === "string"
+            ) {
+                try {
+                    const parsed =
+                        JSON.parse(value);
+
+                    if (
+                        typeof parsed ===
+                        "object"
+                    ) {
+                        return JSON.stringify(
+                            parsed,
+                            null,
+                            2,
+                        );
+                    }
+
+                    return value;
+                } catch {
+                    return value;
+                }
+            }
+
+            return String(value);
+        } catch (error) {
+            console.log(error);
+
+            return String(value);
+        }
     };
 
     if (
@@ -326,7 +424,15 @@ const PromptLadger = ({
                                     value !==
                                     null &&
                                     value !==
-                                    undefined,
+                                    undefined &&
+                                    !(
+                                        typeof value ===
+                                        "object" &&
+                                        Object.keys(
+                                            value,
+                                        ).length ===
+                                        0
+                                    ),
                             )
                             .sort(([a], [b]) => {
                                 if (
@@ -369,31 +475,29 @@ const PromptLadger = ({
                                         {key ===
                                             "response" ? (
                                             <div className="w-full max-h-[500px] overflow-auto text-sm bg-black text-green-400 p-4 rounded-xl whitespace-pre-wrap break-words font-mono">
-                                                {(() => {
-                                                    try {
-                                                        return JSON.stringify(
-                                                            JSON.parse(
-                                                                value,
-                                                            ),
-                                                            null,
-                                                            2,
-                                                        );
-                                                    } catch {
-                                                        return value;
-                                                    }
-                                                })()}
+                                                {formatValue(
+                                                    value,
+                                                    key,
+                                                )}
                                             </div>
                                         ) : (
                                             <>
                                                 {/* STATS */}
-                                                {typeof value ===
-                                                    "string" && (
+                                                {(typeof value ===
+                                                    "string" ||
+                                                    typeof value ===
+                                                    "number" ||
+                                                    typeof value ===
+                                                    "object") && (
                                                         <div className="flex gap-4 text-xs text-gray-600 bg-gray-200 px-3 py-1 rounded-lg w-fit mb-3">
                                                             <span>
                                                                 Words:{" "}
                                                                 {
                                                                     getPromptStats(
-                                                                        value,
+                                                                        formatValue(
+                                                                            value,
+                                                                            key,
+                                                                        ),
                                                                     )
                                                                         .words
                                                                 }
@@ -403,7 +507,10 @@ const PromptLadger = ({
                                                                 Lines:{" "}
                                                                 {
                                                                     getPromptStats(
-                                                                        value,
+                                                                        formatValue(
+                                                                            value,
+                                                                            key,
+                                                                        ),
                                                                     )
                                                                         .lines
                                                                 }
@@ -414,18 +521,10 @@ const PromptLadger = ({
                                                 {/* TEXTAREA */}
                                                 <textarea
                                                     readOnly
-                                                    value={
-                                                        typeof value ===
-                                                            "object"
-                                                            ? JSON.stringify(
-                                                                value,
-                                                                null,
-                                                                2,
-                                                            )
-                                                            : String(
-                                                                value,
-                                                            )
-                                                    }
+                                                    value={formatValue(
+                                                        value,
+                                                        key,
+                                                    )}
                                                     className="
                                                         w-full
                                                         h-[320px]

@@ -124,7 +124,7 @@ export function OffersPage() {
       ),
     },
     {
-      label: "Stage",
+      label: "Status",
       accessor: "offer_status",
       headerClasses: "",
       icon: ChartNoAxesColumn,
