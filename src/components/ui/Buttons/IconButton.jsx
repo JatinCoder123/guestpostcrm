@@ -14,6 +14,12 @@ const IconButton = ({
     iconClassName = "",
     iconColor = "currentColor",
 
+    // TEXT
+    text = "",
+    textClassName = "",
+    textPosition = "right",
+    gap = "gap-2",
+
     // BUTTON
     size = "md",
     variant = "default",
@@ -41,11 +47,11 @@ const IconButton = ({
 }) => {
     // SIZE CLASSES
     const sizeClasses = {
-        xs: "p-1.5",
-        sm: "p-2",
-        md: "p-3",
-        lg: "p-4",
-        xl: "p-5",
+        xs: "p-1.5 text-xs",
+        sm: "p-2 text-sm",
+        md: "p-3 text-sm",
+        lg: "p-4 text-base",
+        xl: "p-5 text-lg",
     };
 
     // ROUNDED CLASSES
@@ -113,28 +119,29 @@ const IconButton = ({
             : count;
 
     return (
-        <div className="relative group inline-flex overflow-visible">            {/* BUTTON */}
+        <div className="relative group inline-flex overflow-visible">
+            {/* BUTTON */}
             <button
                 type={type}
                 onClick={onClick}
                 disabled={disabled || loading}
                 className={`
-          relative
-          flex items-center justify-center
-          transition-all duration-200
-          active:scale-95
+                    relative
+                    flex items-center justify-center
+                    transition-all duration-200
+                    active:scale-95
 
-          ${sizeClasses[size]}
-          ${roundedClasses[rounded]}
-          ${variantClasses[variant]}
+                    ${sizeClasses[size]}
+                    ${roundedClasses[rounded]}
+                    ${variantClasses[variant]}
 
-          ${disabled || loading
+                    ${disabled || loading
                         ? "opacity-50 cursor-not-allowed"
                         : "hover:scale-105 cursor-pointer"
                     }
 
-          ${className}
-        `}
+                    ${className}
+                `}
             >
                 {loading ? (
                     renderLoading?.() || (
@@ -146,11 +153,30 @@ const IconButton = ({
                 ) : children ? (
                     children
                 ) : (
-                    <Icon
-                        size={iconSize}
-                        color={iconColor}
-                        className={iconClassName}
-                    />
+                    <div
+                        className={`
+                            flex items-center
+                            ${gap}
+                            ${textPosition === "left"
+                                ? "flex-row-reverse"
+                                : ""
+                            }
+                        `}
+                    >
+                        {Icon && (
+                            <Icon
+                                size={iconSize}
+                                color={iconColor}
+                                className={iconClassName}
+                            />
+                        )}
+
+                        {text && (
+                            <span className={textClassName}>
+                                {text}
+                            </span>
+                        )}
+                    </div>
                 )}
             </button>
 
@@ -161,21 +187,21 @@ const IconButton = ({
                 count !== 0 && (
                     <span
                         className={`
-              absolute z-40
-              min-w-[18px]
-              h-[18px]
-              px-1
-              flex items-center justify-center
-              rounded-full
-              bg-red-500
-              text-white
-              text-[10px]
-              font-bold
-              shadow-md
+                            absolute z-40
+                            min-w-[18px]
+                            h-[18px]
+                            px-1
+                            flex items-center justify-center
+                            rounded-full
+                            bg-red-500
+                            text-white
+                            text-[10px]
+                            font-bold
+                            shadow-md
 
-              ${countPositions[countPosition]}
-              ${countClassName}
-            `}
+                            ${countPositions[countPosition]}
+                            ${countClassName}
+                        `}
                     >
                         {formattedCount}
                     </span>
@@ -187,20 +213,21 @@ const IconButton = ({
                 !loading && (
                     <span
                         className={`
-absolute z-[999999]              whitespace-nowrap
-              rounded-lg
-              bg-black
-              text-white
-              text-xs
-              px-2 py-1
-              opacity-0
-              group-hover:opacity-100
-              pointer-events-none
-              transition-all duration-200
+                            absolute z-[999999]
+                            whitespace-nowrap
+                            rounded-lg
+                            bg-black
+                            text-white
+                            text-xs
+                            px-2 py-1
+                            opacity-0
+                            group-hover:opacity-100
+                            pointer-events-none
+                            transition-all duration-200
 
-              ${tooltipPositions[tooltipPosition]}
-              ${tooltipClassName}
-            `}
+                            ${tooltipPositions[tooltipPosition]}
+                            ${tooltipClassName}
+                        `}
                     >
                         {label}
                     </span>
