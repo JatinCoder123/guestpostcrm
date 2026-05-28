@@ -550,6 +550,7 @@ const Profile = () => {
           name: item.name,
           minimum_price: item.minimum_price,
           amount: item.amount,
+          description: item.name
         };
         const data = await saveWebsitePayload(payload);
         createdWebsites.push(data?.data || data?.website || payload);
