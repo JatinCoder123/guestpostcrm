@@ -297,7 +297,7 @@ const TableView = ({
         <div className="flex items-center  gap-3 bg-white border rounded-xl p-3">
           <div className="flex items-center gap-2">
             {/* FILTER TOGGLE */}
-            <IconButton
+            {filterColumns.length > 0 && <IconButton
               onClick={() =>
                 setShowFilterColumn(
                   (prev) => !prev,
@@ -306,18 +306,20 @@ const TableView = ({
               className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
               icon={showFilterColumn ? Funnel : FunnelX}
               label={showFilterColumn ? "Hide Filters" : "Show Filter"}
-            />
+            />}
+
 
 
             {/* STATUS TOGGLE */}
-            <IconButton
+            {statusList.length > 0 && <IconButton
               onClick={() =>
                 setShowStatus((prev) => !prev)
               }
               className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
               icon={showStatus ? Eye : EyeOff}
               label={showStatus ? "Hide Stats" : "Show Stats"}
-            />
+            />}
+
             <SortDropdown />
 
           </div>
@@ -342,7 +344,7 @@ const TableView = ({
 
         {/* MAIN CONTENT */}
         <div className="flex gap-3">
-          {showFilterColumn && <FilterColumn />}
+          {showFilterColumn && filterColumns.length > 0 && <FilterColumn />}
 
           {/* TABLE */}
           <motion.div

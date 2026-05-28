@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { fetchGpc } from "../../services/api";
+import { fetchGpc, http } from "../../services/api";
 
 const contactSlice = createSlice({
     name: "contacts",
@@ -68,14 +68,23 @@ export const getAllContacts = ({ page = 1 }) => {
         dispatch(contactSlice.actions.getAllContactsRequest());
         const domain = getState().user.crmEndpoint.split("?")[0];
         try {
-            const data = await fetchGpc({ params: { type: 'contacts', page, page_size: 20 } })
+            const data = await http({
+                method: "POST",
+                body: {
+                    "action": "fetch",
+                    "module": "Contacts",
+                    // "fields": ["first_name", "last_name", "type"],
+                    "page": page,
+                    "per_page": 20
+                }
+            })
             showConsole && console.log(`CONTACTS ALL `, data);
             dispatch(contactSlice.actions.getAllContactsSucess({
-                count: data.data_count ?? 0,
-                contacts: data.data ?? [],
+                count: data.total ?? 0,
+                contacts: data.records ?? [],
                 pageCount: data.total_pages ?? 1,
-                pageIndex: data.current_page,
-                summary: data.summary
+                pageIndex: data.page,
+                summary: {}
             }));
             dispatch(contactSlice.actions.clearAllErrors());
         } catch (error) {
