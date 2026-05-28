@@ -107,7 +107,7 @@ export function DateRangeFilter({
   return (
     <div className="relative" ref={dropRef}>
       {/* Trigger */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-5 py-3.5 flex flex-wrap items-center gap-3">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-5 py-1 flex flex-wrap items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
           <CalendarDays size={15} className="text-blue-700" />
         </div>
@@ -146,15 +146,6 @@ export function DateRangeFilter({
               <RefreshCcw size={11} /> Reset
             </button>
           )}
-          <button
-            onClick={() => {
-              setOpen(false);
-              onApply();
-            }}
-            className="px-5 py-2 bg-blue-700 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-all shadow-sm cursor-pointer"
-          >
-            Apply
-          </button>
         </div>
       </div>
 
@@ -177,11 +168,10 @@ export function DateRangeFilter({
                 <button
                   key={p.id}
                   onClick={() => applyPreset(p.id)}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${
-                    activePreset === p.id
-                      ? "bg-blue-700 text-white"
-                      : "text-gray-600 hover:bg-white hover:text-gray-900"
-                  }`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${activePreset === p.id
+                    ? "bg-blue-700 text-white"
+                    : "text-gray-600 hover:bg-white hover:text-gray-900"
+                    }`}
                 >
                   {p.label}
                 </button>
@@ -227,11 +217,10 @@ export function DateRangeFilter({
                         <button
                           key={String(f.value)}
                           onClick={() => applyNMinutes(f.value)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                            isActive
-                              ? "bg-blue-700 text-white border-blue-700 shadow-sm"
-                              : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
-                          }`}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${isActive
+                            ? "bg-blue-700 text-white border-blue-700 shadow-sm"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
+                            }`}
                         >
                           {f.value !== null && (
                             <Clock
@@ -278,11 +267,10 @@ export function DateRangeFilter({
                               e.stopPropagation();
                               setOpenPicker(openPicker === key ? null : key);
                             }}
-                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${
-                              openPicker === key
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                            }`}
+                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${openPicker === key
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                              }`}
                           >
                             {fmtDtDisplay(dtFromStrings(date, time))}
                           </button>

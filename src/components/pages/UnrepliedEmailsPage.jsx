@@ -112,7 +112,6 @@ export function UnrepliedEmailsPage() {
       accessor: "date_entered",
       headerClasses: "",
       icon: Calendar,
-
       onClick: (row, index) =>
         handleDateClick({ email: extractEmail(row?.from), navigate: "/", index, nextPrev: true }),
       classes: "truncate max-w-[200px]",
@@ -194,6 +193,51 @@ export function UnrepliedEmailsPage() {
       ),
     },
   ];
+  const filterColumns = [
+    {
+      label: "Type",
+      accessor: "type",
+
+      values: [
+        {
+          label: "Brand",
+          value: "Brand",
+        },
+
+        {
+          label: "Non-Brand",
+          value: "Non-Brand",
+        },
+      ],
+    },
+
+    {
+      label: "Stage",
+      accessor: "stage",
+
+      values: [
+        {
+          label: "Order",
+          value: "order",
+        },
+
+        {
+          label: "Offer",
+          value: "offer",
+        },
+
+        {
+          label: "Invoice",
+          value: "invoice",
+        },
+
+        {
+          label: "Deal",
+          value: "deal",
+        },
+      ],
+    },
+  ];
   const status_list = STATUS_CONFIG.map((s) => ({
     ...s,
     handleStatusClick: () => {
@@ -215,6 +259,7 @@ export function UnrepliedEmailsPage() {
         tableData={emails}
         tableName={"Unreplied"}
         columns={columns}
+        filterColumns={filterColumns}
         slice={"unreplied"}
         statusList={status_list}
         statusCount={statusCount}

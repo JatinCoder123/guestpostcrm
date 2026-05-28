@@ -178,6 +178,93 @@ export default function AllContacts() {
         },
 
     ];
+    const filterColumns = [
+        {
+            label: "Type",
+            accessor: "type",
+
+            values: [
+                {
+                    label: "Brand",
+                    value: "Brand",
+                },
+
+                {
+                    label: "Non-Brand",
+                    value: "Non-Brand",
+                },
+            ],
+        },
+
+        {
+            label: "Stage",
+            accessor: "stage",
+
+            values: [
+                {
+                    label: "Order",
+                    value: "order",
+                },
+
+                {
+                    label: "Offer",
+                    value: "offer",
+                },
+
+                {
+                    label: "Invoice",
+                    value: "invoice",
+                },
+
+                {
+                    label: "Deal",
+                    value: "deal",
+                },
+                {
+                    label: "New",
+                    value: "new",
+                },
+            ],
+        },
+        {
+            label: "Customer Type",
+            accessor: "customer_type",
+
+            values: [
+                {
+                    label: "Unverified",
+                    value: "unverified",
+                },
+                {
+                    label: "Verified",
+                    value: "verified",
+                },
+
+                {
+                    label: "Defaulter",
+                    value: "defaulter",
+                },
+            ],
+        },
+        {
+            label: "Status",
+            accessor: "status",
+
+            values: [
+                {
+                    label: "Unreplied",
+                    value: "unreplied",
+                },
+                {
+                    label: "Replied",
+                    value: "replied",
+                },
+
+
+
+            ],
+        },
+    ];
     const statusList = STATUS_CONFIG.map((config) => {
         return {
             ...config,
@@ -223,6 +310,7 @@ export default function AllContacts() {
                 tableName={"Contacts"}
                 columns={columns}
                 slice={"contacts"}
+                filterColumns={filterColumns}
                 statusKey={"stage"}
                 statusList={statusList}
                 statusCount={statusCount}
