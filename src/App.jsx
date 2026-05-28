@@ -319,27 +319,43 @@ const router = createBrowserRouter([
 ]);
 export default function App() {
   const dispatch = useDispatch();
+
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );
-  const searchParams = new URLSearchParams(window.location.search);
 
-  const email = searchParams.get("email");
   useEffect(() => {
-    dispatch(getUser(email));
-  }, []);
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const email = searchParams.get("email");
+
+    // Only allow email param when URL has no extra path
+    const isOnlyDomain =
+      window.location.pathname === "/" ||
+      window.location.pathname === "";
+
+    if (isOnlyDomain && email) {
+      dispatch(getUser(email));
+    } else {
+      dispatch(getUser());
+    }
+  }, [dispatch]);
+
   useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(userAction.clearAllErrors());
     }
   }, [dispatch, error]);
+
   return (
     <>
       {isAuthenticated && <RouterProvider router={router} />}
+
       {!isAuthenticated && loading && <LoadingPage />}
 
       {!isAuthenticated && !loading && <Login />}
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -350,7 +366,7 @@ export default function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark" // you can change to "light"
+        theme="dark"
       />
     </>
   );

@@ -2,17 +2,20 @@ import { motion } from "framer-motion";
 import { AUTH_URL } from "../../store/constants.js";
 
 export default function Login() {
+  const currentUrl = window.location.href;
+
   const handleLoginWithGoogle = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=googleLogin&frontend=${encodeURIComponent(
-      window.location.origin
+      currentUrl
     )}`;
   };
 
   const handleLoginWithMicrosoft = () => {
     window.location.href = `${AUTH_URL}?controller=auth&action=microsoftLogin&frontend=${encodeURIComponent(
-      window.location.origin
+      currentUrl
     )}`;
   };
+
 
   const loginImg =
     "https://app.guestpostcrm.com/images/loginPage.jpg";
