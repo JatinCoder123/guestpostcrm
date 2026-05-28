@@ -177,7 +177,7 @@ const Profile = () => {
   const { handleDateClick } = useContext(PageContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, currentScore, crmEndpoint } = useSelector(
+  const { user, businessEmail, currentScore, crmEndpoint } = useSelector(
     (state) => state.user,
   );
   const { tinyKey: TINY_EDITOR_API_KEY } = useSelector((state) => state.tinyKey);
@@ -208,6 +208,7 @@ const Profile = () => {
   const [aiStage, setAiStage] = useState("");
   const [aiIncludeHtml, setAiIncludeHtml] = useState(true);
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [profileDeleting, setProfileDeleting] = useState(false);
   const [syncLimit, setSyncLimit] = useState(10);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
@@ -216,7 +217,7 @@ const Profile = () => {
   const [crmProgressLoading, setCrmProgressLoading] = useState(true);
   const celebratedCompleteRef = useRef(false);
 
-  const profileEmail = user.email;
+  const profileEmail = businessEmail || user.email;
   const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail: profileEmail,
@@ -814,13 +815,57 @@ const Profile = () => {
     handleDateClick({ email: record.email, navigate: "/" });
   };
 
+  const handleDeleteProfile = async () => {
+    if (!profileEmail) {
+      toast.error("Business email is required to delete profile");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete profile data for ${profileEmail}? This action cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setProfileDeleting(true);
+    try {
+      const response = await fetch(
+        `https://crm.outrightsystems.org/index.php?entryPoint=trynow&email=${encodeURIComponent(
+          profileEmail,
+        )}&delete=1`,
+      );
+
+      const text = await response.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
+
+      if (!response.ok || data?.success === false) {
+        throw new Error(
+          data?.message ||
+            data?.error ||
+            text ||
+            `Delete failed with status ${response.status}`,
+        );
+      }
+
+      toast.success(data?.message || "Profile delete request completed");
+    } catch (error) {
+      toast.error(error?.message || "Unable to delete profile");
+    } finally {
+      setProfileDeleting(false);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-              <UserCircle2 size={38} />
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <UserCircle2 size={38} />
             </div>
             <div>
               <p className="text-sm font-bold uppercase tracking-widest text-indigo-500">
@@ -833,7 +878,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-[auto_auto_240px] sm:items-center">
+          <div className="grid gap-3 sm:grid-cols-[auto_auto_240px_auto] sm:items-center">
             <MetricCard
               label="AI Credits"
               value={currentScore ?? "N/A"}
@@ -864,6 +909,19 @@ const Profile = () => {
                 />
               </div>
             </div>
+            <button
+              type="button"
+              onClick={handleDeleteProfile}
+              disabled={profileDeleting}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {profileDeleting ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Trash2 size={16} />
+              )}
+              {profileDeleting ? "Deleting..." : "Delete Profile"}
+            </button>
           </div>
         </div>
       </section>
