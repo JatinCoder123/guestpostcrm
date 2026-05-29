@@ -493,7 +493,7 @@ export const updateOrder = ({ order }) => {
         items: [
           buildLedgerItem({
             status: ledgerStatus,
-            detail: `order_id: {${order.id}}`,
+            detail: `order_id: {${order.order_id}}`,
             ladgerState: getState().ladger,
             user: getState().crmUser.currentUser,
             parent_name: "outr_order_gp_li",

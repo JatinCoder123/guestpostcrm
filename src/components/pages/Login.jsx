@@ -72,16 +72,30 @@ export default function Login() {
           </span>
         </button>
 
-        {/* Signup */}
-        <p className="mt-6 text-gray-600 text-sm text-center">
-          Don’t have an account?
-          <a
-            href="https://www.guestpostcrm.com/rightee/google.php"
-            className="ml-1 text-purple-600 font-medium hover:underline"
-          >
-            Sign Up
-          </a>
-        </p>
+{/* Signup */}
+<p className="mt-6 text-gray-600 text-sm text-center">
+  Don’t have an account?
+  <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+
+      // First hit destroy.php
+      fetch("https://www.guestpostcrm.com/rightee/destroy.php", {
+        method: "GET",
+        credentials: "include",
+      })
+        .finally(() => {
+          // Then redirect to google.php
+          window.location.href =
+            "https://www.guestpostcrm.com/rightee/google.php";
+        });
+    }}
+    className="ml-1 text-purple-600 font-medium hover:underline"
+  >
+    Sign Up
+  </a>
+</p>
       </motion.div>
 
       {/* RIGHT SECTION */}
