@@ -527,8 +527,7 @@ const WelcomeHeader = () => {
                   First Sync
                 </span>
                 <span className="block truncate text-sm font-bold text-slate-900">
-                  Show {firstSyncRecords.length} record
-                  {firstSyncRecords.length === 1 ? "" : "s"}
+                 Completed
                 </span>
               </span>
 
