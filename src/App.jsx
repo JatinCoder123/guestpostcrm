@@ -319,7 +319,6 @@ const router = createBrowserRouter([
 ]);
 export default function App() {
   const dispatch = useDispatch();
-
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );

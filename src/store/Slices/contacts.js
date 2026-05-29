@@ -1,19 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { fetchGpc, http } from "../../services/api";
+import { commonState } from "../shared/commonState";
 
 const contactSlice = createSlice({
     name: "contacts",
     initialState: {
-        loading: false,
-        count: 0,
         contacts: [],
-        error: null,
-        summary: {},
-        pageIndex: 1,
-        pageCount: 1,
         adding: false,
-        message: null
+        ...commonState
 
     },
     reducers: {
@@ -66,14 +61,13 @@ const contactSlice = createSlice({
 export const getAllContacts = ({ page = 1 }) => {
     return async (dispatch, getState) => {
         dispatch(contactSlice.actions.getAllContactsRequest());
-        const domain = getState().user.crmEndpoint.split("?")[0];
         try {
             const data = await http({
                 method: "POST",
                 body: {
                     "action": "fetch",
                     "module": "Contacts",
-                    // "fields": ["first_name", "last_name", "type"],
+                    "fields": ["first_name", "last_name", "type", "stage", "status", "customer_type", "date_entered", "email1"],
                     "page": page,
                     "per_page": 20
                 }
