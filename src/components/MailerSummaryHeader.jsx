@@ -22,6 +22,7 @@ import {
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
 import { getMailerSummary } from "../store/Slices/mailerSummary";
+import IconButton from "../components/ui/Buttons/IconButton"
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
@@ -344,7 +345,7 @@ function SummaryCard({
       ) : (
         <>
           <div className="flex items-center gap-3">
-            {type == "orders" && data.length == 0 ? (
+            {type == "orders" ? (
               <button
                 className="cursor-pointer"
                 onClick={() =>
@@ -381,24 +382,29 @@ function SummaryCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            {type == "orders" && data.length > 0 && <IconButton
+              onClick={() => dispatch(createOrder())}
+              disabled={type == "invoice"}
+              icon={Plus}
+              label="Fetch Order"
+              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
+            />
+            }
+            <IconButton
               onClick={handleClick}
               disabled={type == "invoice"}
+              icon={data?.length > 0 ? Eye : Plus}
+              label={data?.length > 0 ? `View ${type}` : `${type == "orders" ? "Fetch" : "Create"} ${type}`}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-            >
-              {data?.length > 0 ? (
-                <Eye className="w-4 h-4" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-            </button>
-            <button
+            />
+            <IconButton
               onClick={handleSync}
+              icon={RefreshCcw}
+              label={`Fetch ${type} from threads`}
               disabled={syncing || type == "invoice"}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-            >
-              <RefreshCcw className="w-4 h-4" />
-            </button>
+            />
+
           </div>
         </>
       )}

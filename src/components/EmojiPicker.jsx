@@ -35,14 +35,22 @@ const EmojiInput = () => {
         try {
             setCheckingTheadId(true);
 
-            const data = await fetchGpc({ params: { type: "re_check_thread", email: contactInfo?.email1 } });
-            if (!(data?.success || data.thread_id)) {
+            const data = await fetchGpc({
+                params: { type: "re_check_thread", thread_id: contactInfo?.thread_id },
+            });
+            console.log("MATHED THREAD ID", data);
+
+            if (!(data?.success || data.data)) {
                 toast.error("Failed to verify thread!");
+                return;
+            }
+            if (!data?.data?.find(email => email.toLowerCase() == currentEmail.toLowerCase())) {
+                toast.error('Wrong Thread Id Detected! Try Again.')
                 return;
             }
 
             const formData = new FormData();
-            formData.append("threadId", data.thread_id);
+            formData.append("threadId", contactInfo.thread_id);
             formData.append("replyBody", selectedEmoji);
             formData.append("email", contactInfo?.email1);
             formData.append("current_email", user.email);

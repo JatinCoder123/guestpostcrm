@@ -3,6 +3,19 @@ import { CREATE_DEAL_API_KEY } from "../../../store/constants.js";
 import useModule from "../../../hooks/useModule.js";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  AlertCircle,
+  CalendarDays,
+  Clock3,
+  Database,
+  ExternalLink,
+  FileText,
+  Loader2,
+  Pencil,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import PromptViewer from "../../PromptViewer.jsx";
 import PromptSectionsViewer from "../../PromptViewer.jsx";
 import Header from "./Header.jsx";
@@ -129,7 +142,7 @@ const Debug = () => {
   const [activeTab, setActiveTab] = useState(getInitialTab);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
-  const [timeline, setTimeline] = useState('all');
+  const [timeline, setTimeline] = useState("all");
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [emailSearch, setEmailSearch] = useState("");
   const getPromptStats = (text) => {
@@ -160,14 +173,13 @@ const Debug = () => {
 
   useEffect(() => {
     if (activeTab.key !== "prompt") return;
-    if (state?.prompt) setSelectedRecord(data?.find(p => p.id == state?.prompt));
+    if (state?.prompt)
+      setSelectedRecord(data?.find((p) => p.id == state?.prompt));
   }, [loading, data, state?.prompt, activeTab]);
 
   useEffect(() => {
     refetch();
   }, [activeTab]);
-
-
 
   /* CLICK OUTSIDE MODAL */
   useEffect(() => {
@@ -286,7 +298,7 @@ const Debug = () => {
     try {
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
       if (typeof parsed === "string") parsed = JSON.parse(parsed);
-    } catch { }
+    } catch {}
 
     let content = parsed?.reply || parsed;
 
@@ -339,339 +351,428 @@ const Debug = () => {
     }
   };
 
+  const formatColumnLabel = (column) => column.replace(/_/g, " ").toUpperCase();
+
+  const controlClass =
+    "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+
+  const totalRecords = data?.length || 0;
+
   return (
     <>
-      {" "}
-      <Header text={"QA PlayGround"} />
-      <div className="p-6 space-y-6">
-        {/* Filters */}
-        <div className="flex justify-center gap-6 flex-wrap">
-          <div className="flex items-center justify-between flex items-center gap-3 bg-blue-50 border border-2 border-blue-600 rounded-xl px-4 py-2 shadow-sm ">
-
-            <div>
-              <select
-                value={activeTab.key}
-                onChange={(e) => {
-                  const selected = TABS.find((t) => t.key === e.target.value);
-
-                  if (!selected) return;
-
-                  // 🔥 Navigation logic
-                  if (selected.key === "prompt_testing") {
-                    navigateTo("/settings/prompt-testing");
-                    return;
-                  }
-
-                  if (selected.key === "ml") {
-                    navigateTo("/settings/machine-learning");
-                    return;
-                  }
-
-                  if (selected.key === "self_test") {
-                    navigateTo("/settings/self-test");
-                    return;
-                  }
-                  if (selected.key === "data_modelling") {
-                    navigateTo("/settings/data-modelling");
-                    return;
-                  }
-                  if (selected.key === "prompt_explorer") {
-                    navigateTo("/settings/prompt-explorer");
-                    return;
-                  }
-
-                  // बाकी tabs same rahenge
-                  if (selected?.disabled) return;
-
-                  setActiveTab(selected);
-                }}
-                className="border px-4 py-2 rounded-md text-sm bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
-              >
-                {TABS.map((tab) => (
-                  <option key={tab.key} value={tab.key} disabled={tab.disabled}>
-                    {tab.label} {tab.disabled ? " (Coming Soon)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Timeline */}
-          <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
-            <span className="text-sm font-medium text-gray-600">Timeline</span>
-
-            <select
-              value={timeline}
-              onChange={(e) => {
-                const value =
-                  e.target.value === "all" ? "all" : Number(e.target.value);
-                setTimeline(value);
-              }}
-              className="bg-white border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
-            >
-              {TIME_FILTERS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Date */}
-          <div className="flex items-center gap-3 bg-gray-100 border rounded-xl px-4 py-2 shadow-sm">
-            <span className="text-sm font-medium text-gray-600">Date</span>
-
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-white border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow border overflow-x-auto">
-          {loading && (
-            <div className="p-6 text-sm text-gray-500">
-              Loading {activeTab.label}...
-            </div>
-          )}
-
-          {error && (
-            <div className="p-6 text-sm text-red-600">Failed to load data</div>
-          )}
-
-          {!loading && !error && filteredData.length > 0 && (
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-100 text-left">
-                <tr>
-                  {columns.map((col) => (
-                    <th
-                      key={col}
-                      className="px-4 py-3 font-semibold text-gray-600"
-                    >
-                      {col.replace(/_/g, " ").toUpperCase()}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredData.map((row, index) => (
-                  <tr
-                    key={index}
-                    onClick={() => setSelectedRecord(row)}
-                    className="border-t hover:bg-gray-50 cursor-pointer"
-                  >
-                    {columns.map((col) => (
-                      <td
-                        key={col}
-                        className={`px-4 py-3 max-w-xs truncate ${activeTab.key === "process_audit" &&
-                          col === "message_id"
-                          ? "cursor-pointer text-blue-600 hover:underline"
-                          : ""
-                          }`}
-                        onClick={() => {
-                          if (
-                            activeTab.key === "process_audit" &&
-                            col === "message_id"
-                          ) {
-                            handleRowClick(row);
-                          }
-                        }}
-                      >
-                        {truncate(row[col])}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          {!loading && !error && filteredData.length === 0 && (
-            <div className="p-6 text-sm text-gray-500">No records found.</div>
-          )}
-        </div>
-
-        {/* Modal */}
-        {selectedRecord && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div
-              ref={modalRef}
-              className="bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex justify-between items-center border-b px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-lg font-semibold">Record Details</h2>
-
-                  {state?.prompt && (
-                    <button
-                      onClick={() => {
-                        console.log("prompt id", state?.prompt);
-                        navigateTo("/settings/machine-learning", {
-                          state: {
-                            promptId: selectedRecord.prompt_id,
-                            promptStatus: selectedRecord.prompt_stage,
-                          },
-                        });
-                      }}
-                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      Edit
-                    </button>
-                  )}
+      <div className="min-h-[calc(100vh-1rem)] bg-slate-50/70 px-4 py-5 sm:px-6">
+        <Header text={"QA Playground"} />
+        <div className="space-y-5">
+          {/* Filters */}
+          <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <SlidersHorizontal className="h-4 w-4 text-blue-600" />
+                  Debug Console
                 </div>
-
-                <button
-                  onClick={() => {
-                    if (state?.prompt) navigateTo(-1);
-                    setSelectedRecord(null);
-                  }}
-                  className="text-gray-500 hover:text-black text-xl"
-                >
-                  ✕
-                </button>
+                <p className="mt-1 text-xs text-slate-500">
+                  {filteredData.length} of {totalRecords} records shown
+                </p>
               </div>
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(selectedRecord)
-                  .filter(([key]) => {
-                    // hide global fields
-                    if (HIDDEN_FIELDS.includes(key)) return false;
 
-                    // hide description ONLY in prompt tab
-                    if (activeTab.key === "prompt" && key === "description")
-                      return false;
+              <span className="rounded-md bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                {activeTab.label}
+              </span>
+            </div>
 
-                    return true;
-                  })
-                  .sort(([a], [b]) => {
-                    if (a === "response") return -1;
-                    if (b === "response") return 1;
-                    if (a === "full_prompt") return 1;
-                    if (b === "full_prompt") return -1;
-                    return 0;
-                  })
-                  .map(([key, value]) => {
-                    const large = isLargeField(key);
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[1.2fr_0.7fr_0.7fr]">
+              <div className="space-y-1">
+                <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <FileText className="h-3.5 w-3.5" />
+                  Log Type
+                </span>
 
-                    return (
-                      <div
-                        key={key}
-                        className={`border rounded-lg p-3 bg-gray-50 ${large ? "md:col-span-2" : ""
-                          }`}
+                <div>
+                  <select
+                    value={activeTab.key}
+                    onChange={(e) => {
+                      const selected = TABS.find(
+                        (t) => t.key === e.target.value,
+                      );
+
+                      if (!selected) return;
+
+                      // Navigation-only pages.
+                      if (selected.key === "prompt_testing") {
+                        navigateTo("/settings/prompt-testing");
+                        return;
+                      }
+
+                      if (selected.key === "ml") {
+                        navigateTo("/settings/machine-learning");
+                        return;
+                      }
+
+                      if (selected.key === "self_test") {
+                        navigateTo("/settings/self-test");
+                        return;
+                      }
+                      if (selected.key === "data_modelling") {
+                        navigateTo("/settings/data-modelling");
+                        return;
+                      }
+                      if (selected.key === "prompt_explorer") {
+                        navigateTo("/settings/prompt-explorer");
+                        return;
+                      }
+
+                      if (selected?.disabled) return;
+
+                      setActiveTab(selected);
+                    }}
+                    className={controlClass}
+                  >
+                    {TABS.map((tab) => (
+                      <option
+                        key={tab.key}
+                        value={tab.key}
+                        disabled={tab.disabled}
                       >
-                        <div className="text-xs text-gray-500 mb-1">
-                          {key.replace(/_/g, " ").toUpperCase()}
-                        </div>
-
-                        {key === "full_prompt" ? (
-                          (() => {
-                            const stats = getPromptStats(value);
-
-                            return (
-                              <div className="space-y-2">
-                                {/* Stats */}
-                                <div className="flex gap-4 text-xs text-gray-600 bg-gray-200 px-3 py-1 rounded-md w-fit">
-                                  <span>Words: {stats.words}</span>
-                                  <span>Lines: {stats.lines}</span>
-                                </div>
-
-                                {/* Viewer */}
-                                {value?.includes(
-                                  "----------------------------------------------------------------------",
-                                ) ? (
-                                  <PromptSectionsViewer
-                                    prompt={value}
-                                    onExplore={() => {
-                                      const sys =
-                                        selectedRecord?.system_prompt?.trim();
-                                      const usr =
-                                        selectedRecord?.user_prompt?.trim();
-                                      if (sys || usr) {
-                                        navigateTo(
-                                          "/settings/prompt-explorer",
-                                          {
-                                            state: {
-                                              system: sys || "",
-                                              user: usr || "",
-                                            },
-                                          },
-                                        );
-                                      } else {
-                                        // Both empty/null → split fullPrompt
-                                        const { system, user } =
-                                          splitPrompt(value);
-                                        navigateTo(
-                                          "/settings/prompt-explorer",
-                                          { state: { system, user } },
-                                        );
-                                      }
-                                    }}
-                                  />
-                                ) : (
-                                  <PromptViewer
-                                    prompt={value}
-                                    onExplore={() => {
-                                      const sys =
-                                        selectedRecord?.system_prompt?.trim();
-                                      const usr =
-                                        selectedRecord?.user_prompt?.trim();
-                                      if (sys || usr) {
-                                        navigateTo(
-                                          "/settings/prompt-explorer",
-                                          {
-                                            state: {
-                                              system: sys || "",
-                                              user: usr || "",
-                                            },
-                                          },
-                                        );
-                                      } else {
-                                        // Both empty/null → split fullPrompt
-                                        const { system, user } =
-                                          splitPrompt(value);
-                                        navigateTo(
-                                          "/settings/prompt-explorer",
-                                          { state: { system, user } },
-                                        );
-                                      }
-                                    }}
-                                  />
-                                )}
-                              </div>
-                            );
-                          })()
-                        ) : large ? (
-                          key === "response" ? (
-                            <div
-                              className="w-full max-h-[400px] overflow-auto text-sm bg-black text-green-400 p-4 rounded"
-                              dangerouslySetInnerHTML={{
-                                __html: parseAndDecode(value),
-                              }}
-                            />
-                          ) : (
-                            <textarea
-                              readOnly
-                              value={formatJSON(value)}
-                              className="w-full h-40 text-xs font-mono bg-black text-green-400 p-3 rounded"
-                            />
-                          )
-                        ) : (
-                          <div className="text-sm break-words">
-                            {typeof value === "object"
-                              ? JSON.stringify(value)
-                              : String(value)}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        {tab.label} {tab.disabled ? " (Coming Soon)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {/* Timeline */}
+              <div className="space-y-1">
+                <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <Clock3 className="h-3.5 w-3.5" />
+                  Timeline
+                </span>
+
+                <select
+                  value={timeline}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === "all" ? "all" : Number(e.target.value);
+                    setTimeline(value);
+                  }}
+                  className={controlClass}
+                >
+                  {TIME_FILTERS.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date */}
+              <div className="space-y-1">
+                <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  Date
+                </span>
+
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className={controlClass}
+                />
+              </div>
+
             </div>
           </div>
-        )}
+
+          {/* Table */}
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">
+                  {activeTab.label}
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Click any row to inspect the complete record payload.
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              {loading && (
+                <div className="flex items-center gap-3 px-5 py-8 text-sm text-slate-500">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  Loading {activeTab.label}...
+                </div>
+              )}
+
+              {error && (
+                <div className="flex items-center gap-3 px-5 py-8 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  Failed to load data
+                </div>
+              )}
+
+              {!loading && !error && filteredData.length > 0 && (
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50 text-left">
+                    <tr>
+                      {columns.map((col) => (
+                        <th
+                          key={col}
+                          className="whitespace-nowrap px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                        >
+                          {formatColumnLabel(col)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredData.map((row, index) => (
+                      <tr
+                        key={row.id || index}
+                        onClick={() => setSelectedRecord(row)}
+                        className="cursor-pointer transition hover:bg-blue-50/50"
+                      >
+                        {columns.map((col) => (
+                          <td
+                            key={col}
+                            className={`max-w-xs px-5 py-3 text-slate-700 ${
+                              activeTab.key === "process_audit" &&
+                              col === "message_id"
+                                ? "font-medium text-blue-600 hover:underline"
+                                : ""
+                            }`}
+                            onClick={(e) => {
+                              if (
+                                activeTab.key === "process_audit" &&
+                                col === "message_id"
+                              ) {
+                                e.stopPropagation();
+                                handleRowClick(row);
+                              }
+                            }}
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              <span className="truncate">
+                                {truncate(row[col])}
+                              </span>
+                              {activeTab.key === "process_audit" &&
+                                col === "message_id" && (
+                                  <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                                )}
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+              {!loading && !error && filteredData.length === 0 && (
+                <div className="flex min-h-44 flex-col items-center justify-center px-6 py-10 text-center">
+                  <div className="mb-3 rounded-md bg-slate-100 p-3 text-slate-500">
+                    <Database className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-slate-800">
+                    No records found
+                  </h3>
+                  <p className="mt-1 max-w-md text-sm text-slate-500">
+                    Try changing the log type, timeline, date, or email search.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Modal */}
+          {selectedRecord && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+              <div
+                ref={modalRef}
+                className="max-h-[90vh] w-full max-w-6xl overflow-hidden rounded-md bg-white shadow-2xl"
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <h2 className="text-base font-semibold text-slate-900">
+                        Record Details
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        {activeTab.label}
+                      </p>
+                    </div>
+
+                    {state?.prompt && (
+                      <button
+                        onClick={() => {
+                          console.log("prompt id", state?.prompt);
+                          navigateTo("/settings/machine-learning", {
+                            state: {
+                              promptId: selectedRecord.prompt_id,
+                              promptStatus: selectedRecord.prompt_stage,
+                            },
+                          });
+                        }}
+                        className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm text-white transition hover:bg-blue-700"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (state?.prompt) navigateTo(-1);
+                      setSelectedRecord(null);
+                    }}
+                    className="rounded-md p-2 text-slate-500 transition hover:bg-white hover:text-slate-900"
+                    aria-label="Close"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="grid max-h-[calc(90vh-73px)] grid-cols-1 gap-4 overflow-y-auto p-6 md:grid-cols-2">
+                  {Object.entries(selectedRecord)
+                    .filter(([key]) => {
+                      // hide global fields
+                      if (HIDDEN_FIELDS.includes(key)) return false;
+
+                      // hide description ONLY in prompt tab
+                      if (activeTab.key === "prompt" && key === "description")
+                        return false;
+
+                      return true;
+                    })
+                    .sort(([a], [b]) => {
+                      if (a === "response") return -1;
+                      if (b === "response") return 1;
+                      if (a === "full_prompt") return 1;
+                      if (b === "full_prompt") return -1;
+                      return 0;
+                    })
+                    .map(([key, value]) => {
+                      const large = isLargeField(key);
+
+                      return (
+                        <div
+                          key={key}
+                          className={`rounded-md border bg-gray-50 p-3 ${
+                            large ? "md:col-span-2" : ""
+                          }`}
+                        >
+                          <div className="text-xs text-gray-500 mb-1">
+                            {key.replace(/_/g, " ").toUpperCase()}
+                          </div>
+
+                          {key === "full_prompt" ? (
+                            (() => {
+                              const stats = getPromptStats(value);
+
+                              return (
+                                <div className="space-y-2">
+                                  {/* Stats */}
+                                  <div className="flex gap-4 text-xs text-gray-600 bg-gray-200 px-3 py-1 rounded-md w-fit">
+                                    <span>Words: {stats.words}</span>
+                                    <span>Lines: {stats.lines}</span>
+                                  </div>
+
+                                  {/* Viewer */}
+                                  {value?.includes(
+                                    "----------------------------------------------------------------------",
+                                  ) ? (
+                                    <PromptSectionsViewer
+                                      prompt={value}
+                                      onExplore={() => {
+                                        const sys =
+                                          selectedRecord?.system_prompt?.trim();
+                                        const usr =
+                                          selectedRecord?.user_prompt?.trim();
+                                        if (sys || usr) {
+                                          navigateTo(
+                                            "/settings/prompt-explorer",
+                                            {
+                                              state: {
+                                                system: sys || "",
+                                                user: usr || "",
+                                              },
+                                            },
+                                          );
+                                        } else {
+                                          // Split the stored prompt when the structured fields are empty.
+                                          const { system, user } =
+                                            splitPrompt(value);
+                                          navigateTo(
+                                            "/settings/prompt-explorer",
+                                            { state: { system, user } },
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    <PromptViewer
+                                      prompt={value}
+                                      onExplore={() => {
+                                        const sys =
+                                          selectedRecord?.system_prompt?.trim();
+                                        const usr =
+                                          selectedRecord?.user_prompt?.trim();
+                                        if (sys || usr) {
+                                          navigateTo(
+                                            "/settings/prompt-explorer",
+                                            {
+                                              state: {
+                                                system: sys || "",
+                                                user: usr || "",
+                                              },
+                                            },
+                                          );
+                                        } else {
+                                          // Split the stored prompt when the structured fields are empty.
+                                          const { system, user } =
+                                            splitPrompt(value);
+                                          navigateTo(
+                                            "/settings/prompt-explorer",
+                                            { state: { system, user } },
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })()
+                          ) : large ? (
+                            key === "response" ? (
+                              <div
+                                className="max-h-[400px] w-full overflow-auto rounded-md bg-black p-4 text-sm text-green-400"
+                                dangerouslySetInnerHTML={{
+                                  __html: parseAndDecode(value),
+                                }}
+                              />
+                            ) : (
+                              <textarea
+                                readOnly
+                                value={formatJSON(value)}
+                                className="h-40 w-full rounded-md bg-black p-3 font-mono text-xs text-green-400"
+                              />
+                            )
+                          ) : (
+                            <div className="text-sm break-words">
+                              {typeof value === "object"
+                                ? JSON.stringify(value)
+                                : String(value)}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

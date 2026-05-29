@@ -41,6 +41,10 @@ const unrepliedSlice = createSlice({
     getEmailFailed(state, action) {
       state.loading = false;
       state.error = action.payload;
+      state.count = 0;
+      state.emails = [];
+      state.pageCount = 0;
+      state.pageIndex = 0
     },
     getEmailsCountRequest(state, action) {
       state.countLoading = action.payload.loading;

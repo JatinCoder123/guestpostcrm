@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import { createElement, useEffect, useMemo, useState, useContext } from "react";
+import { createElement, useEffect, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import {
   getUnrepliedEmail,
@@ -24,23 +24,13 @@ import {
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import { fetchGpc } from "../services/api";
 import {
-  BASE_ONBOARDING_KEYS,
-  getOnboardingKeys,
-  readOnboardingFlag,
-  readOnboardingJson,
-  writeOnboardingFlag,
-} from "../utils/onboardingStorage";
-import {
   ONBOARDING_STEP,
+  fetchOnboardingProgress,
   getOnboardingRecordName,
-  syncLocalOnboardingFromCrmStep,
   upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
-
-const getStoredFirstSync = (keys) =>
-  readOnboardingJson(keys.firstSyncResult, BASE_ONBOARDING_KEYS.firstSyncResult);
 
 const StatBadge = ({
   icon,
@@ -78,6 +68,20 @@ const StatBadge = ({
   );
 };
 
+const ProfilePromptSkeleton = () => (
+  <div className="relative flex min-w-[255px] items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white/80 px-3 py-2 shadow-lg shadow-slate-500/10 backdrop-blur-xl">
+    <span className="absolute inset-x-0 bottom-0 h-1 bg-slate-100">
+      <span className="block h-full w-1/3 animate-pulse rounded-full bg-slate-300" />
+    </span>
+    <span className="h-9 w-9 shrink-0 animate-pulse rounded-xl bg-slate-200" />
+    <span className="min-w-0 flex-1 space-y-2">
+      <span className="block h-3 w-24 animate-pulse rounded-full bg-slate-200" />
+      <span className="block h-4 w-40 animate-pulse rounded-full bg-slate-100" />
+    </span>
+    <span className="h-5 w-5 shrink-0 animate-pulse rounded-full bg-slate-200" />
+  </div>
+);
+
 const WelcomeHeader = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -85,7 +89,7 @@ const WelcomeHeader = () => {
   const path = location.pathname;
 
   const { contactInfo } = useSelector((state) => state.viewEmail);
-  const { crmEndpoint, businessEmail, user, db_name, id } = useSelector(
+  const { crmEndpoint, businessEmail, user } = useSelector(
     (state) => state.user,
   );
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
@@ -103,17 +107,6 @@ const WelcomeHeader = () => {
 
   const { setEnteredEmail, handleClear } = useContext(PageContext);
 
-  const onboardingKeys = useMemo(
-    () =>
-      getOnboardingKeys({
-        user,
-        businessEmail,
-        crmEndpoint,
-        dbName: db_name,
-        id,
-      }),
-    [businessEmail, crmEndpoint, db_name, id, user],
-  );
   const [animate, setAnimate] = useState(false);
 
   const [stats, setStats] = useState({
@@ -121,18 +114,14 @@ const WelcomeHeader = () => {
     reply_sent: null,
     reminder_sent: null,
   });
-  const [firstSyncState, setFirstSyncState] = useState(() => ({
-    status:
-      localStorage.getItem(onboardingKeys.firstSyncStatus) ||
-      localStorage.getItem(BASE_ONBOARDING_KEYS.firstSyncStatus) ||
-      "idle",
-    result: getStoredFirstSync(onboardingKeys),
-  }));
+  const [firstSyncState, setFirstSyncState] = useState({
+    status: "idle",
+    result: null,
+  });
   const [websiteDone, setWebsiteDone] = useState(false);
   const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
-  const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(() =>
-    readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
-  );
+  const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(false);
+  const [crmProgressLoading, setCrmProgressLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -206,74 +195,53 @@ const WelcomeHeader = () => {
       }
 
       setFirstSyncState({
-        status:
-          event.detail?.status ||
-          localStorage.getItem(onboardingKeys.firstSyncStatus) ||
-          "idle",
-        result: event.detail?.result ?? getStoredFirstSync(onboardingKeys),
+        status: event.detail?.status || "idle",
+        result: event.detail?.result ?? null,
       });
     };
 
-    const storageHandler = (event) => {
-      if (
-        event.key === onboardingKeys.firstSyncStatus ||
-        event.key === onboardingKeys.firstSyncResult ||
-        event.key === onboardingKeys.firstSyncRecordsSeen
-      ) {
-        setFirstSyncState({
-          status:
-            localStorage.getItem(onboardingKeys.firstSyncStatus) || "idle",
-          result: getStoredFirstSync(onboardingKeys),
-        });
-        setFirstSyncRecordsSeen(
-          readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
-        );
-      }
-    };
-
     window.addEventListener(FIRST_SYNC_EVENT, syncHandler);
-    window.addEventListener("storage", storageHandler);
 
     return () => {
       window.removeEventListener(FIRST_SYNC_EVENT, syncHandler);
-      window.removeEventListener("storage", storageHandler);
     };
-  }, [onboardingKeys]);
+  }, []);
 
   useEffect(() => {
     let ignore = false;
 
     const loadCrmOnboardingProgress = async () => {
-      setFirstSyncState({
-        status:
-          localStorage.getItem(onboardingKeys.firstSyncStatus) ||
-          localStorage.getItem(BASE_ONBOARDING_KEYS.firstSyncStatus) ||
-          "idle",
-        result: getStoredFirstSync(onboardingKeys),
-      });
-      setFirstSyncRecordsSeen(
-        readOnboardingFlag(onboardingKeys.firstSyncRecordsSeen),
-      );
+      if (!crmEndpoint || !onboardingRecordName) {
+        setCrmProgressLoading(false);
+        return;
+      }
 
-      if (!crmEndpoint || !onboardingRecordName) return;
-
+      setCrmProgressLoading(true);
       try {
-        const { step } = await upsertOnboardingProgress({
+        const current = await fetchOnboardingProgress({
           crmEndpoint,
           name: onboardingRecordName,
-          step: ONBOARDING_STEP.PROFILE_STARTED,
         });
+        const progress =
+          current.step > 0
+            ? current
+            : await upsertOnboardingProgress({
+                crmEndpoint,
+                name: onboardingRecordName,
+                step: ONBOARDING_STEP.PROFILE_STARTED,
+              });
         if (ignore) return;
 
-        setCrmOnboardingStep(step);
-        setWebsiteDone(step >= ONBOARDING_STEP.WEBSITE_ADDED);
-        const result = syncLocalOnboardingFromCrmStep(onboardingKeys, step);
-        if (result) {
+        setCrmOnboardingStep(progress.step);
+        setWebsiteDone(progress.step >= ONBOARDING_STEP.WEBSITE_ADDED);
+        if (progress.step >= ONBOARDING_STEP.FIRST_SYNC_DONE) {
           setFirstSyncRecordsSeen(true);
-          setFirstSyncState({ status: "completed", result });
+          setFirstSyncState({ status: "completed", result: null });
         }
       } catch (err) {
         console.error("Failed to load CRM onboarding progress:", err);
+      } finally {
+        if (!ignore) setCrmProgressLoading(false);
       }
     };
 
@@ -282,7 +250,7 @@ const WelcomeHeader = () => {
     return () => {
       ignore = true;
     };
-  }, [crmEndpoint, onboardingKeys, onboardingRecordName]);
+  }, [crmEndpoint, onboardingRecordName]);
 
   const crmDomain = crmEndpoint
     ?.replace("https://", "")
@@ -293,13 +261,16 @@ const WelcomeHeader = () => {
   const syncDone =
     contactOnboardingDone ||
     crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
-  const contactCheckLoading = contactLoading && !contactOnboardingDone;
+  const contactCheckLoading =
+    crmProgressLoading || (contactLoading && !contactOnboardingDone);
   const firstSyncLoading = firstSyncState.status === "loading";
   const firstSyncCompleted = syncDone;
+  const templateDone =
+    contactOnboardingDone || crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
   const firstSyncRecords = Array.isArray(firstSyncState.result?.records)
     ? firstSyncState.result.records
     : [];
-  const profileCompletion = firstSyncCompleted ? 100 : websiteDone ? 70 : 50;
+  const profileCompletion = firstSyncCompleted ? 100 : templateDone ? 85 : websiteDone ? 70 : 50;
   const showProfilePrompt =
   path !== "/profile" &&
   (profileCompletion < 100 || firstSyncLoading || contactCheckLoading);
@@ -315,7 +286,9 @@ const WelcomeHeader = () => {
     : firstSyncCompleted
       ? `Sync completed${firstSyncState.result?.count ? `: ${firstSyncState.result.count} records` : ""}`
       : websiteDone
-    ? "Run first sync to unlock full setup"
+    ? templateDone
+      ? "Run first sync to unlock full setup"
+      : "Save one template to continue setup"
     : "Complete your profile setup";
   const ProfileIcon = firstSyncLoading || contactCheckLoading
     ? Loader2
@@ -323,7 +296,6 @@ const WelcomeHeader = () => {
       ? CheckCircle2
       : UserCircle2;
   const handleShowFirstSyncRecords = () => {
-    writeOnboardingFlag(onboardingKeys.firstSyncRecordsSeen, true);
     setFirstSyncRecordsSeen(true);
     navigate("/profile?showFirstSync=1");
   };
@@ -454,7 +426,9 @@ const WelcomeHeader = () => {
             </div>
           </div>
 
-          {showProfilePrompt && (
+          {showProfilePrompt && contactCheckLoading ? (
+            <ProfilePromptSkeleton />
+          ) : showProfilePrompt ? (
             <Motion.button
               type="button"
               onClick={() => navigate("/profile")}
@@ -527,7 +501,7 @@ const WelcomeHeader = () => {
                 />
               )}
             </Motion.button>
-          )}
+          ) : null}
 
           {showFirstSyncRecordsPrompt && (
             <Motion.button
@@ -553,8 +527,7 @@ const WelcomeHeader = () => {
                   First Sync
                 </span>
                 <span className="block truncate text-sm font-bold text-slate-900">
-                  Show {firstSyncRecords.length} record
-                  {firstSyncRecords.length === 1 ? "" : "s"}
+                 Completed
                 </span>
               </span>
 
