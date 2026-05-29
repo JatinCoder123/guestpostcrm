@@ -104,7 +104,7 @@ export default function AllContacts() {
     const columns = [
         {
             label: "Created At",
-            accessor: "date_entered",
+            accessor: "date_entered_time_ago",
             headerClasses: "",
             icon: Calendar,
 
@@ -112,7 +112,7 @@ export default function AllContacts() {
             classes: "truncate max-w-[200px]",
             render: (row) => (
                 <span className="font-medium text-gray-700 cursor-pointer">
-                    {row.date_entered}
+                    {row?.date_entered_time_ago}
                 </span>
             ),
         },

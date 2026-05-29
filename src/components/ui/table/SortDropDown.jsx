@@ -2,8 +2,9 @@ import {
     ArrowUpDown,
     ChevronDown,
     Check,
+    X,
 } from "lucide-react";
-
+import { useDispatch } from "react-redux";
 import {
     useEffect,
     useMemo,
@@ -18,20 +19,29 @@ import {
 
 import { useTableContext } from "./Table";
 import IconButton from "../Buttons/IconButton";
+import { preferencesAction } from "../../../store/Slices/preferencesSlice";
 
 function SortDropdown() {
-    const {
-        visibleColumns,
-        sort,
-        setSort,
-    } = useTableContext();
+    const { visibleColumns, sorting, slice } =
+        useTableContext();
+
+    const dispatch = useDispatch();
+
+    const getCurrentSorting = () => ({
+        column: sorting?.order_by || null,
+        direction:
+            sorting?.order_dir || "DESC",
+    });
+
+    const [sort, setSort] = useState(
+        getCurrentSorting()
+    );
 
     const [open, setOpen] =
         useState(false);
 
     const wrapperRef = useRef(null);
-
-    // CLOSE OUTSIDE
+    const hasActiveSort = sort?.column;
     useEffect(() => {
         const handleOutside = (e) => {
             if (
@@ -40,6 +50,10 @@ function SortDropdown() {
                     e.target
                 )
             ) {
+                setSort(
+                    getCurrentSorting()
+                );
+
                 setOpen(false);
             }
         };
@@ -55,8 +69,13 @@ function SortDropdown() {
                 handleOutside
             );
         };
-    }, []);
-
+    }, [sorting]);
+    useEffect(() => {
+        setSort(getCurrentSorting());
+    }, [
+        sorting?.order_by,
+        sorting?.order_dir,
+    ]);
     // SORTABLE COLUMNS
     const sortableColumns =
         useMemo(() => {
@@ -77,19 +96,34 @@ function SortDropdown() {
 
     const sortDirection =
         sort?.direction ||
-        "asc";
+        "ASC";
 
-    // APPLY SORT
     const handleApply = () => {
+        dispatch(
+            preferencesAction.updateTablePreference(
+                {
+                    table: slice,
+                    key: "sorting",
+                    value: {
+                        order_by:
+                            sort.column || "",
+                        order_dir:
+                            sort.direction ||
+                            "DESC",
+                    },
+                }
+            )
+        );
+
         setOpen(false);
     };
 
-    // RESET SORT
     const handleReset = () => {
-        setSort({
-            column: null,
-            direction: "asc",
-        });
+        setSort(
+            getCurrentSorting()
+        );
+
+        setOpen(false);
     };
 
     return (
@@ -97,18 +131,89 @@ function SortDropdown() {
             ref={wrapperRef}
             className="relative"
         >
-            {/* TRIGGER */}
-            <IconButton
-                icon={ArrowUpDown}
-                className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
+            <div className="relative">
+                <IconButton
+                    icon={ArrowUpDown}
+                    className={`
+            rounded-lg border transition
+            flex items-center justify-center
 
-                onClick={() =>
-                    setOpen((prev) => !prev)
-                }
-                label="Sort Table"
+            ${hasActiveSort
+                            ? "border-blue-600 bg-blue-300 text-blue-600"
+                            : "bg-white hover:bg-gray-100"
+                        }
+        `}
+                    onClick={() => {
+                        if (!open) {
+                            setSort(
+                                getCurrentSorting()
+                            );
+                        }
 
-            />
+                        setOpen((prev) => !prev);
+                    }}
+                    text={
+                        hasActiveSort
+                            ? `${selectedColumn?.label ?? ""} (${sorting?.order_dir})`
+                            : ""
+                    }
+                    textClassName="text-xs text-blue-600"
+                    label="Sort Table"
+                    iconColor={
+                        hasActiveSort
+                            ? "blue"
+                            : "black"
+                    }
+                />
 
+                {hasActiveSort && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+
+                            dispatch(
+                                preferencesAction.updateTablePreference(
+                                    {
+                                        table: slice,
+                                        key: "sorting",
+                                        value: {
+                                            order_by: "",
+                                            order_dir:
+                                                "DESC",
+                                        },
+                                    }
+                                )
+                            );
+
+                            setSort({
+                                column: null,
+                                direction:
+                                    "DESC",
+                            });
+                        }}
+                        className="
+                        absolute
+                        -top-1
+                        right-0
+
+                h-4
+                w-4
+                rounded-lg
+                border
+                border-red-200
+                bg-red-50
+                text-red-500
+                flex
+                items-center
+                justify-center
+                hover:bg-red-100
+                transition-all
+            "
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
 
             {/* DROPDOWN */}
             <AnimatePresence>
@@ -293,7 +398,7 @@ function SortDropdown() {
                                                         ...prev,
 
                                                         direction:
-                                                            "asc",
+                                                            "ASC",
                                                     })
                                                 )
                                             }
@@ -310,7 +415,7 @@ function SortDropdown() {
                                                 transition-all
 
                                                 ${sortDirection ===
-                                                    "asc"
+                                                    "ASC"
                                                     ? "bg-blue-600 border-blue-600 text-white"
                                                     : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
                                                 }
@@ -319,7 +424,7 @@ function SortDropdown() {
                                             Ascending
 
                                             {sortDirection ===
-                                                "asc" && (
+                                                "ASC" && (
                                                     <Check className="w-4 h-4" />
                                                 )}
                                         </button>
@@ -333,7 +438,7 @@ function SortDropdown() {
                                                         ...prev,
 
                                                         direction:
-                                                            "desc",
+                                                            "DESC",
                                                     })
                                                 )
                                             }
@@ -350,7 +455,7 @@ function SortDropdown() {
                                                 transition-all
 
                                                 ${sortDirection ===
-                                                    "desc"
+                                                    "DESC"
                                                     ? "bg-blue-600 border-blue-600 text-white"
                                                     : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
                                                 }
@@ -359,49 +464,13 @@ function SortDropdown() {
                                             Descending
 
                                             {sortDirection ===
-                                                "desc" && (
+                                                "DESC" && (
                                                     <Check className="w-4 h-4" />
                                                 )}
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* ACTIVE SORT */}
-                                {selectedColumn && (
-                                    <div
-                                        className="
-                                            flex
-                                            items-center
-                                            gap-2
-                                            px-3
-                                            py-2.5
-                                            rounded-xl
-                                            bg-blue-50
-                                            border
-                                            border-blue-100
-                                            text-xs
-                                            text-blue-700
-                                        "
-                                    >
-                                        <span className="font-medium">
-                                            Active:
-                                        </span>
-
-                                        <span>
-                                            {
-                                                selectedColumn.label
-                                            }
-                                        </span>
-
-                                        <span className="capitalize">
-                                            (
-                                            {
-                                                sortDirection
-                                            }
-                                            )
-                                        </span>
-                                    </div>
-                                )}
                             </div>
 
                             {/* FOOTER */}

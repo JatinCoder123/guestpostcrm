@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { fetchGpc, http } from "../../services/api";
 import { commonState } from "../shared/commonState";
+import { getTablePreference } from "./preferencesSlice";
+import { buildTableRequestBody } from "../../utils/preferenceStorage";
 
 const contactSlice = createSlice({
     name: "contacts",
@@ -69,7 +71,8 @@ export const getAllContacts = ({ page = 1 }) => {
                     "module": "Contacts",
                     "fields": ["first_name", "last_name", "type", "stage", "status", "customer_type", "date_entered", "email1"],
                     "page": page,
-                    "per_page": 20
+                    "per_page": 20,
+                    ...buildTableRequestBody(dispatch(getTablePreference('contacts')))
                 }
             })
             showConsole && console.log(`CONTACTS ALL `, data);

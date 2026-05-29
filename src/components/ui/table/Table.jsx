@@ -10,7 +10,7 @@ import TableHeader from "./TableHeader";
 import TableBody from "./TableBody";
 import FilterRow from "./FilterRow";
 import StatusRow from "./StatusRow";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Eye,
   EyeOff,
@@ -23,6 +23,7 @@ import IconButton from "../Buttons/IconButton"
 import SearchBar from "./SearchBar";
 import SortDropdown from "./SortDropDown";
 import FilterColumn from "./FilterColumn";
+import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
 
 const TableContext = createContext();
 
@@ -85,7 +86,10 @@ const TableView = ({
   children,
   showLoading = true,
 }) => {
-  const [fromDate, setFromDate] =
+  const dispatch = useDispatch()
+  const { sorting } = useSelector((state) =>
+    getPreference(state, slice)
+  ); const [fromDate, setFromDate] =
     useState(todayStr());
 
   const [fromTime, setFromTime] =
@@ -120,12 +124,6 @@ const TableView = ({
 
     return {};
   });
-
-  const [sort, setSort] = useState({
-    column: null,
-    direction: "asc",
-  });
-
   const [selectedRows, setSelectedRows] =
     useState([]);
 
@@ -191,33 +189,11 @@ const TableView = ({
         return rowDate >= from && rowDate <= to;
       });
     }
-
-    // SORTING
-    if (sort.column) {
-      data.sort((a, b) => {
-        const valA = a[sort.column];
-        const valB = b[sort.column];
-
-        if (valA > valB)
-          return sort.direction === "asc"
-            ? 1
-            : -1;
-
-        if (valA < valB)
-          return sort.direction === "asc"
-            ? -1
-            : 1;
-
-        return 0;
-      });
-    }
-
     return data;
   }, [
     tableData,
     search,
     filters,
-    sort,
     filterActive,
     fromDate,
     fromTime,
@@ -247,9 +223,9 @@ const TableView = ({
     search,
     setSearch,
     filters,
+    slice,
     setFilters,
-    sort,
-    setSort,
+    sorting,
     fetchNextPage,
     filterColumns,
     loading,
