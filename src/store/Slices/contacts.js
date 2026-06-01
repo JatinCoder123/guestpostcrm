@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
 import { fetchGpc, http } from "../../services/api";
 import { commonState } from "../shared/commonState";
-import { getTablePreference } from "./preferencesSlice";
 import { buildTableRequestBody } from "../../utils/preferenceStorage";
 
 const contactSlice = createSlice({
@@ -60,37 +59,7 @@ const contactSlice = createSlice({
     },
 });
 
-export const getAllContacts = ({ page = 1 }) => {
-    return async (dispatch, getState) => {
-        dispatch(contactSlice.actions.getAllContactsRequest());
-        try {
-            const data = await http({
-                method: "POST",
-                body: {
-                    "action": "fetch",
-                    "module": "Contacts",
-                    "fields": ["first_name", "last_name", "type", "stage", "status", "customer_type", "date_entered", "email1"],
-                    "page": page,
-                    "per_page": 20,
-                    ...buildTableRequestBody(dispatch(getTablePreference('contacts')))
-                }
-            })
-            showConsole && console.log(`CONTACTS ALL `, data);
-            dispatch(contactSlice.actions.getAllContactsSucess({
-                count: data.total ?? 0,
-                contacts: data.records ?? [],
-                pageCount: data.total_pages ?? 1,
-                pageIndex: data.page,
-                summary: {}
-            }));
-            dispatch(contactSlice.actions.clearAllErrors());
-        } catch (error) {
-            dispatch(
-                contactSlice.actions.getAllContactsFailed("Fetching All Contact Record Failed")
-            );
-        }
-    };
-};
+
 export const addContact = (contactData) => {
     return async (dispatch, getState) => {
         dispatch(contactSlice.actions.addContactRequest());
@@ -98,7 +67,7 @@ export const addContact = (contactData) => {
         try {
             const data = await fetchGpc({ params: { type: 'create_contact' }, method: "POST", body: contactData });
             showConsole && console.log("added contact", data);
-            dispatch(getAllContacts({}));
+            // dispatch(getAllContacts({}));
             dispatch(contactSlice.actions.addContactSucess("Contact Created Successfully."));
             dispatch(contactSlice.actions.clearAllErrors());
 

@@ -17,10 +17,6 @@ export function DateRangeFilter({
   fromTime,
   toDate,
   toTime,
-  setFromDate,
-  setFromTime,
-  setToDate,
-  setToTime,
   filterActive,
   onApply,
   onReset,
@@ -29,6 +25,10 @@ export function DateRangeFilter({
   const [activePreset, setActivePreset] = useState(null);
   const [openPicker, setOpenPicker] = useState(null);
   const [lastNMinutes, setLastNMinutes] = useState(null); // null = All Day
+  const [localFromDate, setLocalFromDate] = useState(fromDate);
+  const [localFromTime, setLocalFromTime] = useState(fromTime);
+  const [localToDate, setLocalToDate] = useState(toDate);
+  const [localToTime, setLocalToTime] = useState(toTime);
   const dropRef = useRef(null);
 
   useEffect(() => {
@@ -41,13 +41,23 @@ export function DateRangeFilter({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
+  useEffect(() => {
+    setLocalFromDate(fromDate);
+    setLocalFromTime(fromTime);
+    setLocalToDate(toDate);
+    setLocalToTime(toTime);
+  }, [
+    fromDate,
+    fromTime,
+    toDate,
+    toTime,
+  ]);
   function applyPreset(id) {
     const { from, ft, to, tt } = resolvePreset(id);
-    setFromDate(from);
-    setFromTime(ft);
-    setToDate(to);
-    setToTime(tt);
+    setLocalFromDate(from);
+    setLocalFromTime(ft);
+    setLocalToDate(to);
+    setLocalToTime(tt);
     setActivePreset(id);
     setOpenPicker(null);
     // Reset N-minutes filter when switching presets
@@ -60,35 +70,35 @@ export function DateRangeFilter({
     setLastNMinutes(value);
     const today = resolvePreset("equals");
     const { ft, tt } = resolveNMinutesRange(value);
-    setFromDate(today.from);
-    setToDate(today.to);
-    setFromTime(ft);
-    setToTime(tt);
+    setLocalFromDate(today.from);
+    setLocalToDate(today.to);
+    setLocalFromTime(ft);
+    setLocalToTime(tt);
   }
 
   const activePresetLabel = PRESETS.find((p) => p.id === activePreset)?.label;
   const rangeLabel = filterActive
-    ? `${fmtDisplay(fromDate, fromTime)}  →  ${fmtDisplay(toDate, toTime)}`
+    ? `${fmtDisplay(localFromDate, localFromTime)} → ${fmtDisplay(localToDate, localToTime)}`
     : "Select a period…";
 
   const pickerFields = [
     {
       label: "From",
       key: "from",
-      date: fromDate,
-      time: fromTime,
-      setDate: setFromDate,
-      setTime: setFromTime,
+      date: localFromDate,
+      time: localFromTime,
+      setDate: setLocalFromDate,
+      setTime: setLocalFromTime,
       dh: 0,
       dm: 1,
     },
     {
       label: "To",
       key: "to",
-      date: toDate,
-      time: toTime,
-      setDate: setToDate,
-      setTime: setToTime,
+      date: localToDate,
+      time: localToTime,
+      setDate: setLocalToDate,
+      setTime: setLocalToTime,
       dh: 23,
       dm: 59,
     },
@@ -98,10 +108,10 @@ export function DateRangeFilter({
   const nMinSummary = (() => {
     if (activePreset !== "equals") return null;
     if (!lastNMinutes) {
-      return `Showing all activity for today (${fromTime || "00:01"} → ${toTime || "23:59"})`;
+      return `Showing all activity for today (${localFromTime || "00:01"} → ${localToTime || "23:59"})`;
     }
     const found = N_MINUTE_FILTERS.find((f) => f.value === lastNMinutes);
-    return `Showing activity for the ${found?.label?.toLowerCase() ?? ""} (${fromTime} → ${toTime})`;
+    return `Showing activity for the ${found?.label?.toLowerCase() ?? ""} (${localFromTime} → ${localToTime})`;
   })();
 
   return (
@@ -193,8 +203,8 @@ export function DateRangeFilter({
                   </p>
                   {filterActive && (
                     <p className="text-xs text-blue-600 mt-0.5 font-medium">
-                      {fmtDisplay(fromDate, fromTime)} →{" "}
-                      {fmtDisplay(toDate, toTime)}
+                      {fmtDisplay(localFromDate, localFromTime)} →{" "}
+                      {fmtDisplay(localToDate, localToTime)}
                     </p>
                   )}
                 </div>
@@ -295,8 +305,8 @@ export function DateRangeFilter({
                     )}
                   </div>
                   <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 text-xs text-blue-700 font-semibold">
-                    {fmtDisplay(fromDate, fromTime)} →{" "}
-                    {fmtDisplay(toDate, toTime)}
+                    {fmtDisplay(localFromDate, localFromTime)} →{" "}
+                    {fmtDisplay(localToDate, localToTime)}
                   </div>
                 </div>
               )}
@@ -318,7 +328,12 @@ export function DateRangeFilter({
               onClick={() => {
                 setOpen(false);
                 setOpenPicker(null);
-                onApply();
+                onApply({
+                  fromDate: localFromDate,
+                  fromTime: localFromTime,
+                  toDate: localToDate,
+                  toTime: localToTime,
+                });
               }}
               className="px-6 py-2 text-xs font-bold bg-blue-700 text-white rounded-xl hover:bg-blue-800 transition-all cursor-pointer"
             >

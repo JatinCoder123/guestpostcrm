@@ -32,7 +32,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { getOrderRem } from "../store/Slices/reminder.js";
 import { extractEmail } from "../assets/assets";
 import { getBacklinks } from "../store/Slices/backlinks.js";
-import { getAllContacts } from "../store/Slices/contacts.js";
 import { getAllUsers } from "../store/Slices/crmUser.js";
 import { getTinyKey } from "../store/Slices/tinyKey.js";
 import { getMailerSummary } from "../store/Slices/mailerSummary.js";
@@ -76,7 +75,6 @@ function useRefresh() {
         dispatch(getTinyKey())
         dispatch(getAllUsers())
         dispatch(getUnrepliedEmail({}));
-        dispatch(getAllContacts({}))
         dispatch(getEmailsCount({}))
 
     }, [])

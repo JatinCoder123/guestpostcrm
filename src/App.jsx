@@ -60,6 +60,7 @@ import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
+import { Toaster } from "react-hot-toast";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -349,6 +350,7 @@ export default function App() {
 
   return (
     <>
+      <Toaster />
       {isAuthenticated && <RouterProvider router={router} />}
 
       {!isAuthenticated && loading && <LoadingPage />}

@@ -25,7 +25,17 @@ function SearchBar() {
         setSearch,
         visibleColumns,
     } = useTableContext();
+    const [searchValue, setSearchValue] =
+        useState(search?.search || "");
 
+    const [selectedColumns, setSelectedColumns] =
+        useState(search?.search_fields || []);
+    useEffect(() => {
+        setSearchValue(search?.search);
+        setSelectedColumns(search?.search_fields)
+    }, [
+        search
+    ]);
     const wrapperRef = useRef(null);
 
     const [open, setOpen] =
@@ -42,9 +52,6 @@ function SearchBar() {
             );
         }, [visibleColumns]);
 
-    // SELECTED COLUMNS
-    const selectedColumns =
-        search?.columns || [];
 
     // EXPAND SEARCH
     const expanded =
@@ -80,47 +87,38 @@ function SearchBar() {
     }, []);
 
     // TOGGLE COLUMN
-    const toggleColumn = (
-        accessor
-    ) => {
-        setSearch((prev) => {
-            const exists =
-                prev?.columns?.includes(
-                    accessor
-                );
-
-            return {
-                ...prev,
-
-                columns: exists
-                    ? prev.columns.filter(
-                        (c) =>
-                            c !== accessor
-                    )
-                    : [
-                        ...(prev?.columns ||
-                            []),
-                        accessor,
-                    ],
-            };
-        });
+    const toggleColumn = (accessor) => {
+        setSelectedColumns((prev) =>
+            prev.includes(accessor)
+                ? prev.filter(
+                    (item) => item !== accessor
+                )
+                : [...prev, accessor]
+        );
     };
 
     // REMOVE COLUMN
-    const removeColumn = (
-        accessor
-    ) => {
-        setSearch((prev) => ({
-            ...prev,
-
-            columns:
-                prev?.columns?.filter(
-                    (c) =>
-                        c !== accessor
-                ) || [],
-        }));
+    const removeColumn = (accessor) => {
+        setSelectedColumns((prev) =>
+            prev.filter(
+                (column) => column !== accessor
+            )
+        );
     };
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const value = searchValue.trim();
+            setSearch({
+                search: value,
+                search_fields: selectedColumns,
+            });
+        }, 500);
 
+        return () => clearTimeout(timer);
+    }, [
+        searchValue,
+        selectedColumns,
+    ]);
     return (
         <div
             ref={wrapperRef}
@@ -313,25 +311,13 @@ function SearchBar() {
                                 }}
                                 type="text"
                                 value={
-                                    search?.value ||
-                                    ""
+                                    searchValue
                                 }
-                                onChange={(
-                                    e
-                                ) =>
-                                    setSearch(
-                                        (
-                                            prev
-                                        ) => ({
-                                            ...prev,
+                                onChange={(e) => {
+                                    const value = e.target.value;
 
-                                            value:
-                                                e
-                                                    .target
-                                                    .value,
-                                        })
-                                    )
-                                }
+                                    setSearchValue(value);
+                                }}
                                 placeholder="Search..."
                                 className="
                                     flex-1

@@ -23,8 +23,9 @@ import {
     ShoppingCart,
     AlertTriangle
 } from "lucide-react";
-import { addContact, contactAction, getAllContacts } from "../../store/Slices/contacts.js";
-import { toast } from "react-toastify";
+import { contactKeys, useContactStats, useCreateContact, useInfiniteContacts } from "../../queries/contact.queries.js";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { queryClient } from "../../lib/queryClient.js";
 
 const STATUS_CONFIG = [
     {
@@ -32,75 +33,95 @@ const STATUS_CONFIG = [
         label: "New",
         icon: ShieldCheckIcon,
         color: "#3B82F6", // blue
-        showAmount: true,
+        filter: 'stage'
     },
     {
         value: "unverified",
         label: "Unverified",
         icon: UserX,
         color: "#F59E0B", // amber
-        showAmount: true,
+        filter: 'customer_type'
+
+
     },
     {
         value: "verified",
         label: "Verified",
         icon: UserCheck,
         color: "#10B981", // green
-        showAmount: true,
+        filter: 'customer_type'
+
     },
     {
         value: "deal",
         label: "Deal",
         icon: FileText,
         color: "#6366F1", // indigo
-        showAmount: true,
+        filter: 'stage'
+
     },
     {
         value: "offer",
         label: "Offer",
         icon: BadgeCheck,
         color: "#8B5CF6", // violet
-        showAmount: true,
+        filter: 'stage'
+
     },
     {
         value: "order",
         label: "Order",
         icon: ShoppingCart,
         color: "#22C55E", // green
-        showAmount: true,
+        filter: 'stage'
+
     },
     {
         value: "defaulter",
         label: "Defaulter",
         icon: AlertTriangle,
         color: "#EF4444", // red
-        showAmount: true,
+        filter: 'customer_type'
+
     }
 ];
 export default function AllContacts() {
-    const { count, contacts, loading, pageIndex, summary, adding, message, error } =
-        useSelector((state) => state.contacts);
-    const [open, setOpen] = useState(false)
-
+    const preferences = useTablePreference("contacts");
     const { handleDateClick } =
         useContext(PageContext);
-    const navigateTo = useNavigate();
-    const dispatch = useDispatch();
-    useEffect(() => {
-        if (message) {
-            toast.success(message)
-            setOpen(false)
-            dispatch(contactAction.clearAllMessage())
-            navigateTo("/")
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isPending,
+    } = useInfiniteContacts(preferences);
+    const {
+        data: summary,
+        isPending: summaryLoading,
+    } = useContactStats();
+    if (!isPending) {
+        console.log("CONTACTS", data)
+    }
 
+    const { mutate, isPending: creating } =
+        useCreateContact(handleDateClick);
 
-        }
-        if (error) {
-            toast.error(error)
-            setOpen(false)
-            dispatch(contactAction.clearAllErrors)
-        }
-    }, [message, error])
+    const contacts =
+        data?.pages?.flatMap(
+            (page) => page.records || page.data || []
+        ) ?? [];
+    const pages = data?.pages ?? [];
+
+    const lastPage = pages[pages.length - 1] ?? {};
+    const firstPage = pages[0] ?? {};
+
+    const pageIndex = lastPage.page ?? 1;
+    const pageCount = firstPage.total_pages ?? 0;
+    const count = firstPage.total ?? 0;
+
+    const loading = isPending || isFetchingNextPage;
+    const [open, setOpen] = useState(false)
     const columns = [
         {
             label: "Created At",
@@ -268,29 +289,28 @@ export default function AllContacts() {
     const statusList = STATUS_CONFIG.map((config) => {
         return {
             ...config,
-            count: Number(summary?.[`${config.value}`]?.count || 0),
-            field: summary?.[`${config.value}`]?.field
+            count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
         };
     });
-    const statusCount = Object.values(summary).reduce((acc, curr) => acc + curr?.count, 0)
+    const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
     return (
         <>
             {open && <UpdatePopup
                 open={open}
-                loading={adding}
+                loading={creating}
                 onClose={() => setOpen(false)}
                 title="Create Contact"
                 fields={[
                     {
                         label: "Name",
-                        name: "name",
+                        name: "full_name",
                         type: "text",
                         value: "",
                         required: true,
                     },
                     {
                         label: "Email",
-                        name: "email",
+                        name: "email1",
                         type: "text",
                         value: "",
                         required: true
@@ -302,20 +322,36 @@ export default function AllContacts() {
                         value: "Direct Email",
                     },
                 ]}
-                onUpdate={(contact) => dispatch(addContact(contact))}
+                onUpdate={(contact) => mutate(contact)}
                 buttonLabel="Create"
             />}
             <TableView
                 tableData={contacts}
                 tableName={"Contacts"}
+                preferences={preferences}
                 columns={columns}
                 slice={"contacts"}
                 filterColumns={filterColumns}
+                handleRefresh={() => {
+                    queryClient.resetQueries({
+                        queryKey: ["contacts"],
+                    });
+                }}
                 statusKey={"stage"}
                 statusList={statusList}
+                pageIndex={pageIndex}
+                pageCount={pageCount}
+                count={count}
+                loading={loading}
                 statusCount={statusCount}
-                fetchNextPage={() => dispatch(
-                    getAllContacts({ page: pageIndex + 1 }))}
+                fetchNextPage={() => {
+                    if (
+                        hasNextPage &&
+                        !isFetchingNextPage
+                    ) {
+                        fetchNextPage();
+                    }
+                }}
             >{
                     <div className="absolute -top-1 right-10">
                         <button
@@ -340,7 +376,7 @@ export default function AllContacts() {
                     headerStyle={"  bg-fuchsia-600"}
                     layoutStyle={"grid grid-cols-[1fr_1fr_1fr_200px_200px_1fr]"}
                 />
-            </TableView>
+            </TableView >
         </>
 
     );

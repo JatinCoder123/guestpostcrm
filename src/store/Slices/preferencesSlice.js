@@ -6,8 +6,11 @@ import { getStoredPreferences } from "../../utils/preferenceStorage";
 
 export const getDefaultTablePreference = () => ({
     filters: {},
-    search: "",
-    search_fields: [],
+    search_filter: {
+        search: "",
+        search_fields: [],
+    },
+
     sorting: {
         order_by: "",
         order_dir: "DESC",
@@ -93,21 +96,17 @@ const preferenceSlice = createSlice({
         resetAllPreferences: () => initialState,
     },
 });
-export const getTablePreference = (table) => {
-    return (dispatch, getState) => {
-        dispatch(
-            preferencesAction.ensureTableExists(table)
-        );
 
-        return getState().preferences.tables[table];
-    };
-};
 export const getPreference = (state, table) => {
     return (
         state.preferences.tables[table] ||
         getDefaultTablePreference()
     );
 };
+export const selectTablePreference =
+    (table) => (state) =>
+        state.preferences.tables[table] ||
+        getDefaultTablePreference();
 export const preferencesAction =
     preferenceSlice.actions;
 

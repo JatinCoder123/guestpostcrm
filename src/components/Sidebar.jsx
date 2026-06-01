@@ -32,6 +32,7 @@ import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence, color } from "framer-motion";
 import { LoadingSpin } from "./Loading";
 import { BarChart3 } from "lucide-react";
+import { useContactStats } from "../queries/contact.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -79,9 +80,7 @@ export function Sidebar() {
   const { count: backlinkCount, loading: backlinkLoading } = useSelector(
     (s) => s.backlinks,
   );
-  const { count: contactCount, loading: allContactLoading } = useSelector(
-    (s) => s.contacts,
-  );
+  const { isPending: contactStatLoading, data: contactStats } = useContactStats()
 
 
   const { count: linkExchangeCount, loading: linkExchangeLoading } =
@@ -107,8 +106,8 @@ export function Sidebar() {
       id: "contacts",
       label: "Contacts",
       icon: Contact2Icon,
-      loading: allContactLoading,
-      count: contactCount,
+      loading: contactStatLoading,
+      count: contactStats?.stats?.all?.count,
       color: "text-fuchsia-600",
       hover: "hover:bg-fuchsia-50",
       countBg: "bg-fuchsia-500 text-white",

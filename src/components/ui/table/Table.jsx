@@ -16,6 +16,7 @@ import {
   EyeOff,
   Funnel,
   FunnelX,
+  RotateCcw,
 } from "lucide-react";
 import { DateRangeFilter } from "../../DateRangeFilter";
 import { todayStr } from "../../../services/dateRangeUtils";
@@ -24,6 +25,8 @@ import SearchBar from "./SearchBar";
 import SortDropdown from "./SortDropDown";
 import FilterColumn from "./FilterColumn";
 import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
+import { queryClient } from "../../../lib/queryClient";
+import { contactKeys } from "../../../queries/contact.queries";
 
 const TableContext = createContext();
 
@@ -72,7 +75,7 @@ const TableSkeleton = ({
 
 
 const TableView = ({
-  tableData,
+  tableData = [],
   tableName,
   columns,
   slice,
@@ -81,49 +84,37 @@ const TableView = ({
   statusCount = null,
   searchType = "date_entered",
   filterColumns = [],
+  preferences,
   defaultStatus,
   fetchNextPage,
   children,
+  pageCount,
+  pageIndex,
+  count,
+  loading,
   showLoading = true,
+  handleRefresh,
 }) => {
-  const dispatch = useDispatch()
-  const { sorting } = useSelector((state) =>
-    getPreference(state, slice)
-  ); const [fromDate, setFromDate] =
-    useState(todayStr());
+  const sorting = preferences.sorting
+  const dateFilter = preferences.date_filter || {};
+  const fromDate = dateFilter.date_from?.split(" ")[0] || todayStr();
+  const fromTime = dateFilter.date_from?.split(" ")[1] || "00:01";
+  const toDate = dateFilter.date_to?.split(" ")[0] || todayStr();
+  const toTime = dateFilter.date_to?.split(" ")[1] || "23:59";
+  const filterActive = !!dateFilter.date_from && !!dateFilter.date_to;
+  const filters = preferences.filters;
+  const search = {
+    search: preferences.search_filter?.search || "",
+    search_fields: preferences.search_filter?.search_fields || [],
+  };
+  const [showStatus, setShowStatus] = useState(true);
+  const [showFilterColumn, setShowFilterColumn] = useState(true);
+  const dispatch = useDispatch();
 
-  const [fromTime, setFromTime] =
-    useState("00:01");
 
-  const [toDate, setToDate] =
-    useState(todayStr());
 
-  const [toTime, setToTime] =
-    useState("23:59");
 
-  const [filterActive, setFilterActive] =
-    useState(false);
 
-  const [showStatus, setShowStatus] =
-    useState(true);
-
-  const [showFilterColumn, setShowFilterColumn] =
-    useState(true);
-
-  const { pageIndex, pageCount, count, loading } =
-    useSelector((state) => state[slice]);
-
-  const [search, setSearch] = useState({
-    value: "",
-    type: searchType,
-  });
-
-  const [filters, setFilters] = useState(() => {
-    if (defaultStatus)
-      return { [statusKey]: defaultStatus };
-
-    return {};
-  });
   const [selectedRows, setSelectedRows] =
     useState([]);
 
@@ -134,81 +125,53 @@ const TableView = ({
     setVisibleColumns(columns);
   }, [columns]);
 
-  const processedData = useMemo(() => {
-    let data = [...tableData];
 
-    // SEARCH FILTER
-    if (search?.value) {
-      if (search.type) {
-        data = data.filter((row) =>
-          String(row[search.type] || "")
-            .toLowerCase()
-            .includes(
-              search.value.toLowerCase(),
-            ),
-        );
-      } else {
-        data = data.filter((row) =>
-          Object.values(row)
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase()
-            .includes(
-              search.value.toLowerCase(),
-            ),
-        );
-      }
-    }
-
-    // STATUS FILTER
-    Object.entries(filters).forEach(
-      ([key, value]) => {
-        data = data.filter(
-          (row) =>
-            row[key]?.toLowerCase() ===
-            value?.toLowerCase(),
-        );
-      },
+  const updateSearch = (value) => {
+    dispatch(
+      preferencesAction.updateTablePreference({
+        table: slice,
+        key: "search_filter",
+        value,
+      })
     );
-
-    // DATE RANGE FILTER
-    if (filterActive) {
-      const from = new Date(
-        `${fromDate} ${fromTime}`,
-      );
-
-      const to = new Date(
-        `${toDate} ${toTime}`,
-      );
-
-      data = data.filter((row) => {
-        const rowDate = new Date(
-          row.real_date_entered,
-        );
-
-        return rowDate >= from && rowDate <= to;
-      });
-    }
-    return data;
-  }, [
-    tableData,
-    search,
-    filters,
-    filterActive,
-    fromDate,
-    fromTime,
-    toDate,
-    toTime,
-  ]);
-
+  };
+  const updateFilters = (value) => {
+    dispatch(
+      preferencesAction.updateTablePreference({
+        table: slice,
+        key: "filters",
+        value,
+      })
+    );
+  };
+  const updateDateFilter = (
+    date_from,
+    date_to
+  ) => {
+    dispatch(
+      preferencesAction.updateTablePreference({
+        table: slice,
+        key: "date_filter",
+        value: {
+          date_from,
+          date_to,
+        },
+      })
+    );
+  };
   const handleResetFilter = () => {
-    const today = todayStr();
-
-    setFromDate(today);
-    setFromTime("00:01");
-    setToDate(today);
-    setToTime("23:59");
-    setFilterActive(false);
+    dispatch(
+      preferencesAction.updateTablePreference({
+        table: slice,
+        key: "date_filter",
+        value: {
+          date_from: "",
+          date_to: "",
+          date_field: "",
+          date_range: "",
+        },
+      })
+    );
   };
 
   const value = {
@@ -221,10 +184,10 @@ const TableView = ({
     showStatus,
     setShowStatus,
     search,
-    setSearch,
+    setSearch: updateSearch,
     filters,
+    setFilters: updateFilters,
     slice,
-    setFilters,
     sorting,
     fetchNextPage,
     filterColumns,
@@ -234,7 +197,7 @@ const TableView = ({
     pageIndex,
     pageCount,
     count,
-    data: processedData,
+    data: tableData,
   };
 
   return (
@@ -304,18 +267,29 @@ const TableView = ({
             fromTime={fromTime}
             toDate={toDate}
             toTime={toTime}
-            setFromDate={setFromDate}
-            setFromTime={setFromTime}
-            setToDate={setToDate}
-            setToTime={setToTime}
             filterActive={filterActive}
-            onApply={() =>
-              setFilterActive(true)
+            onApply={({
+              fromDate,
+              fromTime,
+              toDate,
+              toTime,
+            }) =>
+              updateDateFilter(
+                `${fromDate} ${fromTime}`,
+                `${toDate} ${toTime}`
+              )
             }
             onReset={handleResetFilter}
           />
           <SearchBar />
-
+          <div className="ml-auto">
+            <IconButton
+              onClick={handleRefresh}
+              className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
+              icon={RotateCcw}
+              label="Refresh"
+            />
+          </div>
         </div>
 
         {/* MAIN CONTENT */}
@@ -336,7 +310,7 @@ const TableView = ({
 
             {/* TABLE LOADING */}
             {loading &&
-              pageIndex === 1 && processedData.length == 0 &&
+              pageIndex === 1 && tableData.length == 0 &&
               showLoading && (
                 <table className="w-full">
                   <TableSkeleton
@@ -348,7 +322,7 @@ const TableView = ({
               )}
 
             {/* EMPTY STATE */}
-            {!loading && processedData?.length === 0 && <EmptyCard />}
+            {!loading && tableData?.length === 0 && <EmptyCard />}
           </motion.div>
         </div>
       </motion.div>

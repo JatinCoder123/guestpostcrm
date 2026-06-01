@@ -43,18 +43,21 @@ export const buildTableRequestBody = (
     ) {
         body.filters = preferences.filters;
     }
-
     // Search
-    if (preferences?.search?.trim()) {
-        body.search = preferences.search.trim();
+    if (
+        preferences?.search_filter?.search?.trim()
+    ) {
+        body.search =
+            preferences.search_filter.search.trim();
     }
 
     // Search Fields
     if (
-        preferences?.search_fields?.length
+        preferences?.search_filter?.search_fields
+            ?.length
     ) {
         body.search_fields =
-            preferences.search_fields;
+            preferences.search_filter.search_fields;
     }
 
 

@@ -20,7 +20,6 @@ const FilterColumn = () => {
         filters,
         setFilters,
     } = useTableContext();
-
     const [search, setSearch] =
         useState("");
 
@@ -64,21 +63,16 @@ const FilterColumn = () => {
         };
 
     // SELECT RADIO
-    const handleSelect =
-        (
-            accessor,
-            value
-        ) => {
-            setFilters(
-                (prev) => ({
-                    ...prev,
-
-                    [accessor]:
-                        value,
-                })
-            );
-        };
-
+    const handleSelect = (
+        accessor,
+        value
+    ) => {
+        console.log("filters", filters)
+        setFilters({
+            ...filters,
+            [accessor]: value,
+        });
+    };
     return (
         <motion.div
             initial={{
@@ -267,42 +261,21 @@ const FilterColumn = () => {
                                                     .accessor
                                                 ]
                                             }
-                                            onChange={(
-                                                e
-                                            ) => {
-                                                // UNCHECK
-                                                if (
-                                                    !e
-                                                        .target
-                                                        .checked
-                                                ) {
-                                                    setFilters(
-                                                        (
-                                                            prev
-                                                        ) => {
-                                                            const updated =
-                                                            {
-                                                                ...prev,
-                                                            };
+                                            onChange={(e) => {
+                                                if (!e.target.checked) {
+                                                    const updated = {
+                                                        ...filters,
+                                                    };
 
-                                                            delete updated[
-                                                                filter
-                                                                    .accessor
-                                                            ];
+                                                    delete updated[
+                                                        filter.accessor
+                                                    ];
 
-                                                            return updated;
-                                                        }
-                                                    );
-                                                }
-
-                                                // AUTO EXPAND
-                                                else {
+                                                    setFilters(updated);
+                                                } else {
                                                     setExpanded(
-                                                        (
-                                                            prev
-                                                        ) => ({
+                                                        (prev) => ({
                                                             ...prev,
-
                                                             [filter.accessor]:
                                                                 true,
                                                         })
