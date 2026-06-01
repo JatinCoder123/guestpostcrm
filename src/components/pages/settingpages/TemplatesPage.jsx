@@ -494,7 +494,23 @@ export default function TemplatesPage() {
 
       if (result?.success && result?.data?.html) {
         if (aiModalContext === "edit") {
-          setEditorContent(result.data.html);
+          let html = result.data.html;
+
+// If html is actually JSON string
+if (typeof html === "string" && html.startsWith("{")) {
+  try {
+    html = JSON.parse(html).html;
+  } catch (e) {}
+}
+
+html = html
+  .replace(/^\{"html":"?/i, "") // remove starting {"html":"
+  .replace(/"}$/i, "")          // remove ending "}
+  .replace(/\\"/g, '"')
+  .replace(/\\n/g, "")
+  .replace(/\\r/g, "");
+
+setEditorContent(html);
           setIsChanged(result.data.html !== originalContent);
         } else {
           setNewTemplateContent(result.data.html);
