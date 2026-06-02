@@ -332,11 +332,7 @@ export default function AllContacts() {
                 columns={columns}
                 slice={"contacts"}
                 filterColumns={filterColumns}
-                handleRefresh={() => {
-                    queryClient.resetQueries({
-                        queryKey: ["contacts"],
-                    });
-                }}
+                refreshKey={['contacts']}
                 statusKey={"stage"}
                 statusList={statusList}
                 pageIndex={pageIndex}

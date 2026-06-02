@@ -64,6 +64,41 @@ export const getContactStats = async (
                     "filters": {
                         "customer_type": "defaulter"
                     }
+                },
+                {
+                    "key": "replied",
+                    "module": "Contacts",
+                    "filters": {
+                        "status": "replied"
+                    }
+                },
+                {
+                    "key": "unreplied",
+                    "module": "Contacts",
+                    "filters": {
+                        "status": "unreplied"
+                    }
+                },
+                {
+                    "key": "brand",
+                    "module": "Contacts",
+                    "filters": {
+                        "type": "Brand"
+                    }
+                },
+                {
+                    "key": "completed",
+                    "module": "Contacts",
+                    "filters": {
+                        "conversation_complete": "1"
+                    }
+                },
+                {
+                    "key": "stop",
+                    "module": "Contacts",
+                    "filters": {
+                        "is_stop": "1"
+                    }
                 }
 
 
@@ -83,7 +118,7 @@ export const getAllContacts = async ({
         body: {
             "action": "fetch",
             "module": "Contacts",
-            "fields": ["first_name", "last_name", "type", "stage", "status", "customer_type", "date_entered", "email1", 'full_name'],
+            "fields": ["first_name", "last_name", "type", "stage", "status", "customer_type", "date_entered", "email1", 'full_name', "subject", "thread_id", "message_id"],
             "page": page,
             "per_page": 20,
             ...buildTableRequestBody(preferences)

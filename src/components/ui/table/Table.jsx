@@ -93,7 +93,7 @@ const TableView = ({
   count,
   loading,
   showLoading = true,
-  handleRefresh,
+  refreshKey
 }) => {
   const sorting = preferences.sorting
   const dateFilter = preferences.date_filter || {};
@@ -173,7 +173,11 @@ const TableView = ({
       })
     );
   };
-
+  const handleRefresh = () => {
+    queryClient.resetQueries({
+      queryKey: refreshKey,
+    });
+  }
   const value = {
     tableName,
     columns,
