@@ -13,6 +13,7 @@ export const getStoredPreferences = () => {
 
 export const buildTableRequestBody = (
     preferences,
+    defaults
 ) => {
     const body = {};
 
@@ -36,13 +37,16 @@ export const buildTableRequestBody = (
         }
     }
 
-    // Equality Filters
-    if (
-        preferences?.filters &&
-        Object.keys(preferences.filters).length
-    ) {
-        body.filters = preferences.filters;
+    // Merge Default Filters + User Filters
+    const mergedFilters = {
+        ...(defaults?.filters || {}),
+        ...(preferences?.filters || {}),
+    };
+
+    if (Object.keys(mergedFilters).length) {
+        body.filters = mergedFilters;
     }
+
     // Search
     if (
         preferences?.search_filter?.search?.trim()
@@ -59,7 +63,6 @@ export const buildTableRequestBody = (
         body.search_fields =
             preferences.search_filter.search_fields;
     }
-
 
     // Sorting
     if (

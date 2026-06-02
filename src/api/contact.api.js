@@ -99,6 +99,27 @@ export const getContactStats = async (
                     "filters": {
                         "is_stop": "1"
                     }
+                },
+                {
+                    "key": "link_exchange",
+                    "module": "Contacts",
+                    "filters": {
+                        "exchange": "1"
+                    }
+                },
+                {
+                    "key": "favorite",
+                    "module": "Contacts",
+                    "filters": {
+                        "favorite": "1"
+                    }
+                },
+                {
+                    "key": "forwarded",
+                    "module": "Contacts",
+                    "filters": {
+                        "forwarded": "1"
+                    }
                 }
 
 
@@ -111,7 +132,8 @@ export const getContactStats = async (
  */
 export const getAllContacts = async ({
     page = 1,
-    preferences
+    preferences,
+    defaults={}
 } = {}) => {
     const data = await http({
         method: "POST",
@@ -121,7 +143,7 @@ export const getAllContacts = async ({
             "fields": ["first_name", "last_name", "type", "stage", "status", "customer_type", "date_entered", "email1", 'full_name', "subject", "thread_id", "message_id"],
             "page": page,
             "per_page": 20,
-            ...buildTableRequestBody(preferences)
+            ...buildTableRequestBody(preferences, defaults)
         }
     });
     return data;
