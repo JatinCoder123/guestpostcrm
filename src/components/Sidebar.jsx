@@ -4,23 +4,15 @@ import {
   Gift,
   ShoppingCart,
   FileText,
-  CreditCard,
   ChevronLeft,
   ChevronRight,
   Settings,
-  Cpu,
   Radio,
-  Globe,
-  User,
   Forward,
   Heart,
-  Cog,
-  Layers,
   RectangleEllipsis,
-  Link2Off,
   Link,
   BellRing,
-  Plus,
   Contact2Icon,
   Cable,
 } from "lucide-react";
@@ -35,6 +27,12 @@ import { BarChart3 } from "lucide-react";
 import { useContactStats } from "../queries/contact.queries";
 import { useEmailStats } from "../queries/email.queries";
 import { useOrderStats } from "../queries/orders.queries";
+import { useForwardedStats } from "../queries/forwarded.queries";
+import { useFavoriteStats } from "../queries/favourite.queries";
+import { useDealStats } from "../queries/deals.queries";
+import { useOfferStats } from "../queries/offers.queries";
+import { useExchangeStats } from "../queries/exchange.queries";
+import { useBacklinkStats } from "../queries/backlinks.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -56,11 +54,6 @@ export function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
-
-  const { loading: dealsLoading, summary: dealsSummary } = useSelector(
-    (s) => s.deals,
-  );
   const { loading: offersLoading, summary: offersSummary } = useSelector(
     (s) => s.offers,
   );
@@ -71,20 +64,19 @@ export function Sidebar() {
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
     (s) => s.reminders,
   );
-  const { count: backlinkCount, loading: backlinkLoading } = useSelector(
-    (s) => s.backlinks,
-  );
+
   const { isPending: contactStatLoading, data: contactStats } = useContactStats()
   const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
   const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats()
+  const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats()
+  const { isPending: favStatLoading, data: favStats } = useFavoriteStats()
+  const { isPending: dealStatLoading, data: dealStats } = useDealStats()
+  const { isPending: offerStatLoading, data: offerStats } = useOfferStats()
+  const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
+  const { isPending: backlinkStatLoading, data: backlinkStats } = useBacklinkStats()
 
 
-  const { count: linkExchangeCount, loading: linkExchangeLoading } =
-    useSelector((s) => s.linkExchange);
-  const { count: favCount, loading: favLoading } = useSelector((s) => s.fav);
-  const { count: forwardCount, loading: forwardLoading } = useSelector(
-    (s) => s.forwarded,
-  );
+
 
   // MENU ITEMS WITH COLORS
   const menuItems = [
@@ -93,7 +85,7 @@ export function Sidebar() {
       label: "Unreplied ",
       icon: Mail,
       loading: emailStatsLoading,
-      count: contactStats?.stats?.unreplied?.count,
+      count: emailsStats?.stats?.unreplied?.count,
       color: "text-rose-600",
       hover: "hover:bg-rose-50",
       countBg: "bg-rose-500 text-white",
@@ -112,8 +104,8 @@ export function Sidebar() {
       id: "forwarded-emails",
       label: "Assigned",
       icon: Forward,
-      loading: forwardLoading,
-      count: forwardCount,
+      loading: forwardStatLoading,
+      count: forwardStats?.stats?.forwarded?.count,
       color: "text-sky-600",
       hover: "hover:bg-sky-50",
       countBg: "bg-sky-500 text-white",
@@ -122,8 +114,8 @@ export function Sidebar() {
       id: "favourite-emails",
       label: "Favourite ",
       icon: Heart,
-      loading: favLoading,
-      count: favCount,
+      loading: favStatLoading,
+      count: favStats?.stats?.favorite?.count,
       color: "text-pink-600",
       hover: "hover:bg-pink-50",
       countBg: "bg-pink-500 text-white",
@@ -132,8 +124,8 @@ export function Sidebar() {
       id: "link-exchange",
       label: "Links Exchange",
       icon: Link,
-      loading: linkExchangeLoading,
-      count: linkExchangeCount,
+      loading: exchangeStatLoading,
+      count: exchangeStats?.stats?.exchange?.count,
       color: "text-violet-600",
       hover: "hover:bg-violet-50",
       countBg: "bg-violet-500 text-white",
@@ -142,8 +134,8 @@ export function Sidebar() {
       id: "offers",
       label: "Offers",
       icon: Gift,
-      loading: offersLoading,
-      count: offersSummary?.active_offers,
+      loading: offerStatLoading,
+      count: offerStats?.stats?.active?.count,
       color: "text-green-600",
       hover: "hover:bg-green-50",
       countBg: "bg-green-500 text-white",
@@ -152,8 +144,8 @@ export function Sidebar() {
       id: "deals",
       label: "Deals",
       icon: Handshake,
-      loading: dealsLoading,
-      count: dealsSummary?.active_deals,
+      loading: dealStatLoading,
+      count: dealStats?.stats?.active?.count,
       color: "text-blue-600",
       hover: "hover:bg-blue-50",
       countBg: "bg-blue-500 text-white",
@@ -193,8 +185,8 @@ export function Sidebar() {
       id: "backlinks",
       label: "Backlinks",
       icon: Cable,
-      loading: backlinkLoading,
-      count: backlinkCount,
+      loading: backlinkStatLoading,
+      count: backlinkStats?.stats?.all?.count,
       color: "text-teal-600",
       hover: "hover:bg-teal-50",
       countBg: "bg-teal-500 text-white",

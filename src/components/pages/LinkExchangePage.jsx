@@ -17,6 +17,8 @@ import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { getFavEmails } from "../../store/Slices/favEmailSlice.js";
 import { getLinkExchange } from "../../store/Slices/linkExchange.js";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { useExchangeStats, useInfiniteExchange } from "../../queries/exchange.queries.js";
 const STATUS_CONFIG = [
   {
     value: "connected",
@@ -35,9 +37,26 @@ const STATUS_CONFIG = [
   }
 ];
 export function LinkExchangePage() {
-  const { count, emails, loading, pageIndex, } = useSelector(
-    (state) => state.linkExchange
-  );
+  const preferences =
+    useTablePreference(
+      "exchange"
+    );
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } =
+    useInfiniteExchange(
+      preferences
+    );
+
+  const {
+    data: summary,
+  } =
+    useExchangeStats();
   const { handleMove } = useThreadContext()
   const { handleDateClick } =
     useContext(PageContext);
@@ -104,13 +123,79 @@ export function LinkExchangePage() {
       )
     },
   ]
+  const emails =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
 
+  const pages =
+    data?.pages ?? [];
 
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
+  const statusList =
+    STATUS_CONFIG.map(
+      (config) => ({
+        ...config,
+        count: Number(
+          summary?.stats?.[
+            config.value
+          ]?.count || 0
+        ),
+      })
+    );
   return (
     <>
 
-      <TableView tableData={emails} tableName={"Link Exchange Emails"} columns={columns} slice={"linkExchange"} statusList={STATUS_CONFIG} fetchNextPage={() => dispatch(getLinkExchange({ page: pageIndex + 1 }))}   >
-        <TableTitleBar Icon={Link2} title={"Link Exchange Emails"} titleClass={"text-violet-700"} />
+      <TableView
+        tableData={emails}
+        tableName={
+          "Link Exchange Emails"
+        }
+        columns={columns}
+        slice={"exchange"}
+        statusList={statusList}
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        preferences={
+          preferences
+        }
+        refreshKey={[
+          "exchange",
+        ]}
+        fetchNextPage={() => {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}
+      >        <TableTitleBar Icon={Link2} title={"Link Exchange Emails"} titleClass={"text-violet-700"} />
         <Table headerStyle={"  bg-violet-600"} body layoutStyle={"grid grid-cols-[200px_200px_1fr_1fr]"} />
       </TableView></>
 

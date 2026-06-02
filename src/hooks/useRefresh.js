@@ -1,8 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
-import { getForwardedEmails } from "../store/Slices/forwardedEmailSlice";
-import { getFavEmails } from "../store/Slices/favEmailSlice";
-import { getLinkExchange } from "../store/Slices/linkExchange";
-import { getAllAvatar } from "../store/Slices/avatarSlice";
+import { useContext, useEffect, useState } from "react";
 import { getdefaulterEmails } from "../store/Slices/defaulterEmails";
 import { getmovedEmails } from "../store/Slices/movedEmails";
 import { SocketContext } from "../context/SocketContext";
@@ -11,27 +7,20 @@ import { fetchGpcController } from "../store/Slices/gpcControllerSlice";
 import { getMarketplace } from "../store/Slices/Marketplace";
 import { getQuickActionBtn } from "../store/Slices/quickActionBtn";
 import { hotAction } from "../store/Slices/hotSlice";
-import { eventActions } from "../store/Slices/eventSlice";
 import { getAiCredits } from "../store/Slices/aiCredits";
 import { getLadger } from "../store/Slices/ladger";
-import {
-    checkForDuplicates,
-} from "../store/Slices/duplicateEmailSlice";
+import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";
 import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
 import { getOrders } from "../store/Slices/orders";
 import { getDeals } from "../store/Slices/deals";
 import { getInvoices } from "../store/Slices/invoices";
 import { getOffers } from "../store/Slices/offers";
 import { getDetection } from "../store/Slices/detection";
-import {
-    getContact,
-    getViewEmail,
-} from "../store/Slices/viewEmail";
+import { getContact, getViewEmail } from "../store/Slices/viewEmail";
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
 import { getOrderRem } from "../store/Slices/reminder.js";
 import { extractEmail } from "../assets/assets";
-import { getBacklinks } from "../store/Slices/backlinks.js";
 import { getAllUsers } from "../store/Slices/crmUser.js";
 import { getTinyKey } from "../store/Slices/tinyKey.js";
 import { getMailerSummary } from "../store/Slices/mailerSummary.js";
@@ -86,7 +75,6 @@ function useRefresh() {
         dispatch(getOrderRem({ email: enteredEmail }));
 
         dispatch(getMarketplace())
-        dispatch(getBacklinks({}));
         dispatch(getOrders({ email: enteredEmail, brand: showBrandTimeline }));
         dispatch(getDeals({ email: enteredEmail, brand: showBrandTimeline }));
         dispatch(getInvoices({ email: enteredEmail }));
@@ -95,15 +83,8 @@ function useRefresh() {
         dispatch(fetchGpcController());
         dispatch(getdefaulterEmails(enteredEmail));
         dispatch(getmovedEmails(enteredEmail));
-        // dispatch(getAllAvatar());
         dispatch(getQuickActionBtn());
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
-    useEffect(() => {
-        dispatch(getLinkExchange());
-        dispatch(getFavEmails({}));
-        dispatch(getForwardedEmails({}));
-    }, [timeline, dispatch]); // ✅ Added dependencies
-
     useEffect(() => {
         if (emails?.length > 0) {
             setFirstEmail(
