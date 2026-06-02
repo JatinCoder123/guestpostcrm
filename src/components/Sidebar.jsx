@@ -32,6 +32,9 @@ import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence, color } from "framer-motion";
 import { LoadingSpin } from "./Loading";
 import { BarChart3 } from "lucide-react";
+import { useContactStats } from "../queries/contact.queries";
+import { useEmailStats } from "../queries/email.queries";
+import { useOrderStats } from "../queries/orders.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -53,13 +56,8 @@ export function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Redux counts
-  const { countLoading, emailsCount } = useSelector(
-    (s) => s.unreplied,
-  );
-  const { contactLoading } = useSelector(
-    (s) => s.viewEmail,
-  );
+
+
   const { loading: dealsLoading, summary: dealsSummary } = useSelector(
     (s) => s.deals,
   );
@@ -70,18 +68,15 @@ export function Sidebar() {
   const { count: invoiceCount, loading: invoicesLoading } = useSelector(
     (s) => s.invoices,
   );
-  const { loading: ordersLoading, summary: ordersSummary } = useSelector(
-    (s) => s.orders,
-  );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
     (s) => s.reminders,
   );
   const { count: backlinkCount, loading: backlinkLoading } = useSelector(
     (s) => s.backlinks,
   );
-  const { count: contactCount, loading: allContactLoading } = useSelector(
-    (s) => s.contacts,
-  );
+  const { isPending: contactStatLoading, data: contactStats } = useContactStats()
+  const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
+  const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats()
 
 
   const { count: linkExchangeCount, loading: linkExchangeLoading } =
@@ -97,8 +92,8 @@ export function Sidebar() {
       id: "unreplied-emails",
       label: "Unreplied ",
       icon: Mail,
-      loading: countLoading,
-      count: emailsCount?.inbound,
+      loading: emailStatsLoading,
+      count: contactStats?.stats?.unreplied?.count,
       color: "text-rose-600",
       hover: "hover:bg-rose-50",
       countBg: "bg-rose-500 text-white",
@@ -107,8 +102,8 @@ export function Sidebar() {
       id: "contacts",
       label: "Contacts",
       icon: Contact2Icon,
-      loading: allContactLoading,
-      count: contactCount,
+      loading: contactStatLoading,
+      count: contactStats?.stats?.all?.count,
       color: "text-fuchsia-600",
       hover: "hover:bg-fuchsia-50",
       countBg: "bg-fuchsia-500 text-white",
@@ -167,8 +162,8 @@ export function Sidebar() {
       id: "orders",
       label: "Orders",
       icon: ShoppingCart,
-      loading: ordersLoading,
-      count: ordersSummary?.new_orders,
+      loading: orderStatsLoading,
+      count: ordersStats?.stats?.new?.count,
       color: "text-cyan-600",
       hover: "hover:bg-cyan-50",
       countBg: "bg-cyan-500 text-white",

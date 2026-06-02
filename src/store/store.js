@@ -39,6 +39,7 @@ import webManagerReducer from "./Slices/webManager.js";
 import tinyKeyReducer from "./Slices/tinyKey.js";
 import mailerSummaryReducer from "./Slices/mailerSummary.js";
 import outBoxReducer from "./Slices/outbox.js";
+import preferenceReducer from "./Slices/preferencesSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -82,6 +83,17 @@ export const store = configureStore({
     webManager: webManagerReducer,
     tinyKey: tinyKeyReducer,
     mailersSummary: mailerSummaryReducer,
-    outbox: outBoxReducer
+    outbox: outBoxReducer,
+    preferences: preferenceReducer
   },
+});
+// store.js
+
+store.subscribe(() => {
+  localStorage.setItem(
+    "preferences",
+    JSON.stringify(
+      store.getState().preferences
+    )
+  );
 });
