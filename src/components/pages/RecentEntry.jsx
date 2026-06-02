@@ -26,6 +26,8 @@ import { CustomDropdown } from "./settingpages/PromptTestingPage";
 
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
+import { useTablePreference } from "../../hooks/useTablePreference";
+import { useInfiniteRecentEvents } from "../../queries/recentAct.queries";
 
 /* 🔹 Tooltip */
 const Tooltip = ({ content, children }) => {
@@ -45,7 +47,15 @@ const Tooltip = ({ content, children }) => {
 export function RecentEntry() {
   const dispatch = useDispatch();
 
-  const { events, pageIndex, loading } = useSelector((state) => state.events);
+  const preferences = useTablePreference("recent");
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteRecentEvents(preferences);
 
   const { crmEndpoint } = useSelector((state) => state.user);
 
@@ -63,10 +73,6 @@ export function RecentEntry() {
     name: `Activity Group`,
   });
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGrp, setSelectedGrp] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [timeFilter, setTimeFilter] = useState(null);
 
   const { handleDateClick } = useContext(PageContext);
 
@@ -74,21 +80,23 @@ export function RecentEntry() {
 
   const navigateTo = useNavigate();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 500);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
-  useEffect(() => {
-    dispatch(getEvents({ search: debouncedSearch, timeFilter }));
-  }, [dispatch, debouncedSearch, timeFilter]);
 
-  const handleSelectPeriod = (option) => {
-    setTimeFilter(option);
-  };
+  const events =
+    data?.pages?.flatMap(
+      (page) => page.records || page.data || []
+    ) ?? [];
+  const pages = data?.pages ?? [];
+
+  const lastPage = pages[pages.length - 1] ?? {};
+  const firstPage = pages[0] ?? {};
+
+  const pageIndex = lastPage.page ?? 1;
+  const pageCount = firstPage.total_pages ?? 0;
+  const count = firstPage.total ?? 0;
+
+  const loading = isPending || isFetchingNextPage;
 
   const columns = [
     {
@@ -101,21 +109,21 @@ export function RecentEntry() {
           className="flex items-center gap-3 min-w-0 cursor-pointer"
           onClick={() =>
             handleDateClick({
-              email: extractEmail(event?.real_name),
+              email: event?.name,
               navigate: "/",
             })
           }
         >
-          <span className="truncate">{event.date_entered ?? "—"}</span>
+          <span className="truncate">{event.date_entered_time_ago ?? "—"}</span>
 
-          {event?.prompt_details?.length > 0 && (
+          {event?.prompt_id > 0 && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
 
                 navigateTo("/settings/machine-learning", {
                   state: {
-                    prompt: event.prompt_details[0],
+                    prompt: event.prompt_id
                   },
                 });
               }}
@@ -133,7 +141,7 @@ export function RecentEntry() {
       accessor: "real_name",
 
       render: (event) => {
-        const contactName = excludeName(event.real_name) ?? "—";
+        const contactName = event.name ?? "—";
 
         return (
           <Tooltip content={contactName}>
@@ -141,7 +149,7 @@ export function RecentEntry() {
               className="text-blue-600 cursor-pointer truncate"
               onClick={() =>
                 handleDateClick({
-                  email: extractEmail(event?.real_name),
+                  email: event.name,
                   navigate: "/contacts",
                 })
               }
@@ -160,9 +168,7 @@ export function RecentEntry() {
 
       render: (event) => {
         const emailValue =
-          extractEmail(
-            event.real_name === "User" ? event?.name : event.real_name,
-          ) ?? "—";
+          event?.name
 
         return (
           <Tooltip content={emailValue}>
@@ -170,7 +176,7 @@ export function RecentEntry() {
               className="flex items-center gap-2 text-blue-600 underline cursor-pointer truncate"
               onClick={() =>
                 handleMove({
-                  email: extractEmail(event?.real_name),
+                  email: event.name,
                   threadId: event.thread_id,
                 })
               }
@@ -208,14 +214,38 @@ export function RecentEntry() {
       ),
     },
   ];
-
+  const filterColumns = [
+    {
+      label: "Group",
+      accessor: "grp",
+      values:
+        grpData?.map((grp) => ({
+          value: grp.name,
+          label: grp.description,
+        })) || [],
+    },
+  ];
   return (
     <TableView
       tableData={events}
       tableName={"Recent Entries"}
       columns={columns}
-      slice={"events"}
-      fetchNextPage={() => dispatch(getEvents({ page: pageIndex + 1 }))}
+      slice={"recent"}
+      filterColumns={filterColumns}
+      preferences={preferences}
+      refreshKey={["recent"]}
+      pageIndex={pageIndex}
+      pageCount={pageCount}
+      count={count}
+      loading={loading}
+      fetchNextPage={() => {
+        if (
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}
     >
       <TableTitleBar
         Icon={Activity}
@@ -223,22 +253,7 @@ export function RecentEntry() {
         titleClass={"text-green-600"}
       />
 
-      {/* FILTERS */}
-      <div className="absolute top-0 right-[30%] p-4  flex flex-wrap gap-4 items-center ">
-        <CustomDropdown
-          className="w-[240px]"
-          onChange={(value) => {
-            setSelectedGrp(value);
-            setSearchTerm(value);
-          }}
-          value={selectedGrp}
-          placeholder="Select Group"
-          options={grpData?.map((grp) => ({
-            value: grp.name,
-            label: grp.description,
-          }))}
-        />
-      </div>
+
 
       <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-5"} />
     </TableView>

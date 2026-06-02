@@ -15,7 +15,6 @@ import {
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
-import { addEvent } from "../store/Slices/eventSlice";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { getTags, applyTag } from "../store/Slices/markTagSlice";
