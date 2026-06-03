@@ -1,12 +1,17 @@
 import axios from "axios";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
+import {store} from "../store/store";
 
 let CRMENDPOINT = "";
 let DB_NAME = "";
+let USER_ID = "";
+const getCurrentUserId = () => store.getState()?.crmUser?.currentUser?.id;
 
-export function setConfig(endpoint, db_name) {
+
+export function setConfig(endpoint, db_name, user_id) {
   CRMENDPOINT = endpoint;
   DB_NAME = db_name;
+  USER_ID = user_id;
 }
 
 const apiClient = axios.create({
@@ -42,7 +47,12 @@ export const fetchGpc = async ({
   params = {},
   headers = {},
 }) => {
-  const params1 = DB_NAME ? { ...params, db_name: DB_NAME } : params;
+  console.log(`Current User ID: ${getCurrentUserId()}`);
+  const params1 = {
+    ...params,
+    ...(DB_NAME ? { db_name: DB_NAME } : {}),
+    ...(getCurrentUserId() ? { user_id: getCurrentUserId() } : {}),
+  };
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const requestHeaders = {
     "X-Api-Key": FETCH_GPC_X_API_KEY,

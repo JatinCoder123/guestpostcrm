@@ -93,9 +93,9 @@ export default function ThreadView() {
   } = useSelector((state) => state.aiReply);
 
   useEffect(() => {
-    dispatch(getAiReply(threadId));
+    dispatch(getAiReply(threadId, null, null, currentEmail));
     setEditorContent("");
-  }, [threadId]);
+  }, [threadId, currentEmail]);
 
   useEffect(() => {
     if (message && aiResponse) {
@@ -356,7 +356,7 @@ export default function ThreadView() {
                         </div>
 
                         {/* SUMMARY */}
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 h-[260px] overflow-hidden flex flex-col">
+                        <div className="bg-yellow-100 backdrop-blur-md rounded-2xl p-4 border border-white/10 h-[260px] overflow-hidden flex flex-col">
 
 
 
@@ -373,7 +373,7 @@ export default function ThreadView() {
                               </div>
                             ) : (
                               <div className="h-full overflow-y-auto pr-2 custom-scrollbar">
-                                <p className="text-sm text-white/90 leading-7 whitespace-pre-wrap break-words">
+                                <p className="text-sm text-black/90 leading-7 whitespace-pre-wrap break-words">
                                   {mailersSummary?.summary || (
                                     <span className="text-white/50">
                                       No summary available

@@ -215,11 +215,7 @@ const router = createBrowserRouter([
         path: "moved-emails",
         element: <MovedPage />,
       },
-      {
-        path: "backlinks",
-        element: <BacklinksPage />,
-      },
-
+    
       {
         path: "other",
         element: <OtherPage />,
@@ -311,6 +307,11 @@ const router = createBrowserRouter([
             path: "recycle",
             element: <RecyclePage />,
           },
+ {
+        path: "backlinks",
+        element: <BacklinksPage />,
+      },
+
 
         ],
       },

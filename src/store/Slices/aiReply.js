@@ -37,24 +37,51 @@ const aiReplySlice = createSlice({
   },
 });
 
-export const getAiReply = (threadId = null, isNew = null, message = null) => {
-  return async (dispatch, getState) => {
+export const getAiReply = (threadId = null, isNew = null, message = null, email = null) => {
+  return async (dispatch) => {
     dispatch(aiReplySlice.actions.getAiReplyRequest());
 
     try {
       if (!threadId) {
         throw new Error("Please provide the thread Id");
       }
-      const data = await fetchGpc({
-        params: { type: 'ai_reply' }, method: "POST", body: {
+
+      const fetchAiReply = () => fetchGpc({
+        params: { type: "ai_reply" }, method: "POST", body: {
           thread_id: threadId,
           new: isNew,
           prompt_body: message
+        }
+      });
 
+      let data = await fetchAiReply();
+      showConsole && console.log(`aiReply`, data);
+
+      if (!data.reply_suggestion) {
+        try{
+          if (!email) {
+            throw new Error("Please provide the thread email");
+          }
+          const regenerateResponse = await fetchGpc({
+            params: { type: "regenerate_summary" }, method: "POST", body: {
+              email
+            }
+          });
+          console.log("Regenerate Response:", regenerateResponse);
+
+          if (regenerateResponse === true || regenerateResponse?.success === true) {
+            data = await fetchAiReply();
+            showConsole && console.log(`aiReply retry`, data);
+          }
+        } catch (error) {
+          console.error("Error occurred while regenerating summary:", error);
         }
       }
-      );
-      showConsole && console.log(`aiReply`, data);
+
+      if (!data.reply_suggestion) {
+        throw new Error("AI reply suggestion was not generated");
+      }
+
       dispatch(
         aiReplySlice.actions.getAiReplySucess({
           aiReply: data.reply_suggestion,
@@ -62,7 +89,7 @@ export const getAiReply = (threadId = null, isNew = null, message = null) => {
         }),
       );
       dispatch(aiReplySlice.actions.clearAllErrors());
-    } catch (error) {
+    } catch {
       dispatch(
         aiReplySlice.actions.getAiReplyFailed("Fetching AiReply   Failed"),
       );
