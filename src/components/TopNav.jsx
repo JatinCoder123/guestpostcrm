@@ -36,8 +36,6 @@ export function TopNav() {
     handleClear,
     setShowNextPrev,
     handleDateClick,
-    superfastReply,
-    superfastToggle,
   } = useContext(PageContext);
   const [search, setSearch] = useState("");
 
@@ -165,23 +163,6 @@ export function TopNav() {
 
       {/* RIGHT */}
       <div className="flex items-center gap-3">
-        <div
-          onClick={superfastToggle}
-          className="flex items-center gap-2 cursor-pointer"
-        >
-          <span className="text-sm font-medium">⚡ Superfast Reply</span>
-
-          <div
-            className={`w-10 h-5 flex items-center rounded-full p-1 transition ${superfastReply ? "bg-green-500" : "bg-gray-300"
-              }`}
-          >
-            <div
-              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${superfastReply ? "translate-x-5" : ""
-                }`}
-            />
-          </div>
-        </div>
-
         <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
 
         {outboxEmails.length > 0 && !loading && (

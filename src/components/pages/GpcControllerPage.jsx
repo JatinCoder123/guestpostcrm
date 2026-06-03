@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "./settingpages/Header";
+import { PageContext } from "../../context/pageContext";
 import {
   fetchGpcController,
   updateGpcController,
@@ -15,6 +16,7 @@ export default function GpcControllerPage() {
     (state) => state.gpcController,
   );
   const [stages, setStages] = useState({})
+  const { superfastReply, superfastToggle } = useContext(PageContext);
   const [activeStage, setActiveStage] = useState("others");
   const handleToggle = (id, value) => {
     const currentValue = value === "1" ? "0" : "1";
@@ -34,7 +36,6 @@ export default function GpcControllerPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       <Header text={"Gpc Controller"} />
-      {/* ✅ Stage Buttons */}
       <div className="flex flex-wrap gap-3 mt-6">
         {Object.entries(stages ?? {}).map(([key, label]) => (
           <button
@@ -59,7 +60,27 @@ export default function GpcControllerPage() {
               No settings available
             </p>
           )}
+{activeStage === "others" && (
+  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <span className="text-sm font-medium text-gray-700 capitalize">
+      Superfast Reply
+    </span>
 
+    <button
+      type="button"
+      onClick={superfastToggle}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+        superfastReply ? "bg-indigo-600" : "bg-gray-300"
+      }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+          superfastReply ? "translate-x-6" : "translate-x-1"
+        }`}
+      />
+    </button>
+  </div>
+)}
           {checkboxes.filter(control => !activeStage || control.stage === activeStage).map((control, index) => (
             <div
               key={control.id}
