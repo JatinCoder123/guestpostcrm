@@ -34,7 +34,10 @@ export const createLedgerEntry = async ({
   message_id,
   group = "General",
   items = [],
-  okHandler,
+  reminder_type,
+  websites = [],
+  extraPayload = {},
+  okHandler = () => {},
 }) => {
   try {
     const payload = {
@@ -43,7 +46,15 @@ export const createLedgerEntry = async ({
       message_id,
       group,
       item: items,
+
+      // optional fields
+      ...(reminder_type && { reminder_type }),
+      ...(websites?.length > 0 && { websites }),
+
+      // any future custom fields
+      ...extraPayload,
     };
+
     const data = await fetchGpc({
       method: "POST",
       body: payload,
@@ -51,9 +62,12 @@ export const createLedgerEntry = async ({
     });
 
     showConsole && console.log("Ledger Created", data);
-    okHandler();
+    okHandler(data);
+
+    return data;
   } catch (error) {
     showConsole && console.log("Ledger API Failed", error);
+    throw error;
   }
 };
 
