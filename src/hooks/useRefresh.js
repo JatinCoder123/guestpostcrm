@@ -74,7 +74,7 @@ function useRefresh() {
         dispatch(getMarketplace())
         // dispatch(getOrders({ email: enteredEmail, brand: showBrandTimeline }));
         // dispatch(getDeals({ email: enteredEmail, brand: showBrandTimeline }));
-        dispatch(getInvoices({ email: enteredEmail }));
+        // dispatch(getInvoices({ email: enteredEmail }));
         // dispatch(getOffers({ email: enteredEmail, brand: showBrandTimeline }));
         dispatch(getDetection(enteredEmail));
         dispatch(fetchGpcController());

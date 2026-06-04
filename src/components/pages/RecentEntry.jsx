@@ -7,22 +7,14 @@ import {
 } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { getEvents } from "../../store/Slices/eventSlice";
-
-import { excludeName, extractEmail, periodOptions } from "../../assets/assets";
-
 import { PageContext } from "../../context/pageContext";
 import { useThreadContext } from "../../hooks/useThreadContext";
 
-import DropDown from "../DropDown";
 import useModule from "../../hooks/useModule";
 
 import { CREATE_DEAL_API_KEY } from "../../store/constants";
 
-import { CustomDropdown } from "./settingpages/PromptTestingPage";
 
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";

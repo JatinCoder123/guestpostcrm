@@ -33,6 +33,7 @@ import { useDealStats } from "../queries/deals.queries";
 import { useOfferStats } from "../queries/offers.queries";
 import { useExchangeStats } from "../queries/exchange.queries";
 import { useBacklinkStats } from "../queries/backlinks.queries";
+import { useInvoiceStats } from "../queries/invoice.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -74,6 +75,7 @@ export function Sidebar() {
   const { isPending: offerStatLoading, data: offerStats } = useOfferStats()
   const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
   const { isPending: backlinkStatLoading, data: backlinkStats } = useBacklinkStats()
+  const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats()
 
 
 
@@ -164,8 +166,8 @@ export function Sidebar() {
       id: "invoices",
       label: "Invoices",
       icon: FileText,
-      loading: invoicesLoading,
-      count: invoiceCount,
+      loading: invoiceStatLoading,
+      count: invoiceStats?.stats?.all?.count,
       color: "text-orange-600",
       hover: "hover:bg-orange-50",
       countBg: "bg-orange-500 text-white",
