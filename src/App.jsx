@@ -60,6 +60,7 @@ import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
+import ReminderManagementPage from "./components/pages/ReminderManagement";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -227,6 +228,10 @@ const router = createBrowserRouter([
       {
         path: "hot-records",
         element: <HotPage />,
+      },
+      {
+        path: "reminder-management",
+        element: <ReminderManagementPage />,
       },
       {
         path: "thread",

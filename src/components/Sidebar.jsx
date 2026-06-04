@@ -215,6 +215,16 @@ export function Sidebar() {
       hover: "hover:bg-blue-50",
       countBg: "bg-blue-500 text-white",
     },
+ {
+  id: "reminder-management",
+  label: "Reminder Management",
+  icon: BellRing,
+  loading: null,
+  count: null,
+  color: "text-lime-600",
+  hover: "hover:bg-lime-50",
+  countBg: "bg-lime-500 text-white",
+ },
     {
       id: "other",
       label: "Others",
