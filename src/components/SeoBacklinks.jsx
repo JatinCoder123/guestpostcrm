@@ -27,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import GPCContentPopup from "./GPCContentPopup";
 import { apiRequest, fetchGpc } from "../services/api";
 import { toast } from "react-toastify";
+import PromptLadger from "./PromptLadger";
 
 function ValidTick() {
   return (
@@ -139,9 +140,9 @@ function LIInsertPopup({ link, orderId, onClose, onInserted }) {
         setStage("error");
         setErrorMsg(
           err?.message ||
-            (err?.code === "target_url_not_found"
-              ? "Please enter an appropriate target URL."
-              : "Could not load anchor occurrences. Please try again."),
+          (err?.code === "target_url_not_found"
+            ? "Please enter an appropriate target URL."
+            : "Could not load anchor occurrences. Please try again."),
         );
       }
     };
@@ -236,9 +237,9 @@ function LIInsertPopup({ link, orderId, onClose, onInserted }) {
                 seo_backlinks: order.seo_backlinks.map((seoLink) =>
                   seoLink.id === link.id
                     ? {
-                        ...seoLink,
-                        ...updatedLink,
-                      }
+                      ...seoLink,
+                      ...updatedLink,
+                    }
                     : seoLink,
                 ),
               };
@@ -253,9 +254,9 @@ function LIInsertPopup({ link, orderId, onClose, onInserted }) {
       setStage("error");
       setErrorMsg(
         err?.message ||
-          (err?.code === "target_url_not_found"
-            ? "Please enter an appropriate target URL."
-            : "Network error. Please try again."),
+        (err?.code === "target_url_not_found"
+          ? "Please enter an appropriate target URL."
+          : "Network error. Please try again."),
       );
     }
   };
@@ -375,13 +376,12 @@ function LIInsertPopup({ link, orderId, onClose, onInserted }) {
                     return (
                       <li
                         key={`${o.absolute_index}-${o.paragraph_text?.slice(0, 16)}`}
-                        className={`rounded-xl border px-3 py-2.5 flex items-start gap-2.5 ${
-                          isLinked
-                            ? "bg-amber-50 border-amber-200 opacity-80"
-                            : isChecked
-                              ? "bg-indigo-50 border-indigo-300"
-                              : "bg-slate-50 border-slate-200 hover:border-indigo-300"
-                        }`}
+                        className={`rounded-xl border px-3 py-2.5 flex items-start gap-2.5 ${isLinked
+                          ? "bg-amber-50 border-amber-200 opacity-80"
+                          : isChecked
+                            ? "bg-indigo-50 border-indigo-300"
+                            : "bg-slate-50 border-slate-200 hover:border-indigo-300"
+                          }`}
                       >
                         <input
                           type="checkbox"
@@ -575,17 +575,17 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
             },
             item.type_c === "LI"
               ? {
-                  label: "Our Link",
-                  name: "target_url_c",
-                  type: "text",
-                  value: item.target_url_c || "",
-                }
+                label: "Our Link",
+                name: "target_url_c",
+                type: "text",
+                value: item.target_url_c || "",
+              }
               : {
-                  label: "Doc Link",
-                  name: "gp_doc_url_c",
-                  type: "text",
-                  value: item.gp_doc_url_c || "",
-                },
+                label: "Doc Link",
+                name: "gp_doc_url_c",
+                type: "text",
+                value: item.gp_doc_url_c || "",
+              },
             {
               label: "Website",
               name: "name",
@@ -1082,10 +1082,12 @@ function LinkTableRow({
 }) {
   const spam = getSpamLabel(link.spam_score_c);
   const navigateTo = useNavigate();
+  const [activePromptId, setActivePromptId] = useState(null)
   return (
     <div
       className={`flex items-center gap-3 px-4 py-3 border-t border-slate-100 text-sm w-full min-w-0 ${link.link_type === "dofollow" ? "bg-green-100" : ""}`}
     >
+      <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} isModal={true} />
       {/* Col 0 — # */}
       <div className={COL_STYLES[0]}>
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold shadow-sm">
@@ -1096,18 +1098,15 @@ function LinkTableRow({
       {/* Col 1 — Anchor Text + verdict icon */}
       <div className={`${COL_STYLES[1]} flex items-center gap-1`}>
         <span
-          className={`truncate font-medium text-slate-800 ${
-            !Number(link.is_anchor_text_valid) ? "line-through" : ""
-          }`}
+          className={`truncate font-medium text-slate-800 ${!Number(link.is_anchor_text_valid) ? "line-through" : ""
+            }`}
         >
           {link.anchor_text_c || "-"}
         </span>
-        {link.link_verdict_prompt_ledger?.length > 0 && (
+        {link.link_verdict_prompt_ledger_id && (
           <button
             onClick={() =>
-              navigateTo("/settings/machine-learning", {
-                state: { prompt: link.link_verdict_prompt_ledger[0] },
-              })
+              setActivePromptId(link.link_verdict_prompt_ledger_id)
             }
             className="text-yellow-600 hover:scale-110 shrink-0"
           >
@@ -1125,9 +1124,8 @@ function LinkTableRow({
           className="group inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-100 transition min-w-0"
         >
           <span
-            className={`truncate font-medium text-slate-800 ${
-              !Number(link.is_link_valid) ? "line-through" : ""
-            }`}
+            className={`truncate font-medium text-slate-800 ${!Number(link.is_link_valid) ? "line-through" : ""
+              }`}
           >
             {link.backlink_url || "-"}
           </span>
@@ -1135,12 +1133,10 @@ function LinkTableRow({
             ↗
           </span>
         </a>
-        {link.link_verdict_prompt_ledger?.length > 0 && (
+        {link.link_verdict_prompt_ledger_id && (
           <button
             onClick={() =>
-              navigateTo("/settings/machine-learning", {
-                state: { prompt: link.link_verdict_prompt_ledger[0] },
-              })
+              setActivePromptId(link.link_verdict_prompt_ledger_id)
             }
             className="text-yellow-600 hover:scale-110 shrink-0"
           >
@@ -1152,9 +1148,8 @@ function LinkTableRow({
       {/* Col 3 — Spam Score */}
       <div className={`${COL_STYLES[3]} font-medium ${spam.color}`}>
         <div
-          className={`truncate max-w-[130px] font-medium text-slate-800 ${
-            link.spam_score_c > 7 ? "line-through" : ""
-          }`}
+          className={`truncate max-w-[130px] font-medium text-slate-800 ${link.spam_score_c > 7 ? "line-through" : ""
+            }`}
         >
           <span className="text-xs font-bold text-slate-500">MOZ</span>
           <span className="text-yellow-400 text-xs">★</span>
@@ -1177,9 +1172,8 @@ function LinkTableRow({
       {/* Col 5 — Domain + verdict icon */}
       <div className={`${COL_STYLES[5]} flex items-center gap-1 min-w-0`}>
         <span
-          className={`truncate font-medium text-slate-800 ${
-            !Number(link.is_domain_valid) ? "line-through" : ""
-          }`}
+          className={`truncate font-medium text-slate-800 ${!Number(link.is_domain_valid) ? "line-through" : ""
+            }`}
         >
           {(() => {
             try {
@@ -1189,12 +1183,10 @@ function LinkTableRow({
             }
           })()}
         </span>
-        {link.link_verdict_prompt_ledger?.length > 0 && (
+        {link.link_verdict_prompt_ledger_id && (
           <button
             onClick={() =>
-              navigateTo("/settings/machine-learning", {
-                state: { prompt: link.link_verdict_prompt_ledger[0] },
-              })
+              setActivePromptId(link.link_verdict_prompt_ledger_id)
             }
             className="text-yellow-600 hover:scale-110 shrink-0"
           >
@@ -1413,9 +1405,8 @@ function DocumentAnalysisCard({
             className="group flex items-center gap-2 rounded-lg bg-indigo-50 px-1 py-1 text-sm hover:bg-indigo-100 transition w-full"
           >
             <span
-              className={`truncate max-w-[130px] font-medium text-slate-800 ${
-                Number(link.is_content_valid) ? "" : "line-through"
-              }`}
+              className={`truncate max-w-[130px] font-medium text-slate-800 ${Number(link.is_content_valid) ? "" : "line-through"
+                }`}
             >
               {DocName || "Untitled Document"}
             </span>
@@ -1432,9 +1423,7 @@ function DocumentAnalysisCard({
             {ContentVerdictPromptLedger && (
               <button
                 onClick={() =>
-                  navigateTo("/settings/machine-learning", {
-                    state: { prompt: ContentVerdictPromptLedger },
-                  })
+                  setActivePromptId(ContentVerdictPromptLedger)
                 }
                 className="text-yellow-600 hover:scale-110"
               >
