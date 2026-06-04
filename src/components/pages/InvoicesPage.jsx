@@ -63,18 +63,23 @@ const STATUS_CONFIG = [
     label: "Sent",
     icon: SendHorizonal,
     color: "#2563eb", // orange (amber-500)
+    filter: "status_c"
   },
   {
     value: "PAID",
     label: "Paid",
     icon: DollarSign,
     color: "#10B981", // green (emerald-500)
+    filter: "status_c"
+
   },
   {
     value: "DRAFT",
     label: "Draft",
     icon: NotepadTextDashed,
     color: "#ca8a04",
+    filter: "status_c"
+
   }
 ];
 export function InvoicesPage() {

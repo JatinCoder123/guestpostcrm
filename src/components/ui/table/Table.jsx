@@ -16,6 +16,7 @@ import {
   EyeOff,
   Funnel,
   FunnelX,
+  Plus,
   RotateCcw,
 } from "lucide-react";
 import { DateRangeFilter } from "../../DateRangeFilter";
@@ -26,13 +27,9 @@ import SortDropdown from "./SortDropDown";
 import FilterColumn from "./FilterColumn";
 import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
 import { queryClient } from "../../../lib/queryClient";
-import { contactKeys } from "../../../queries/contact.queries";
-
 const TableContext = createContext();
-
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
-
   if (!ctx) {
     throw new Error(
       "You're using table context in wrong place",
@@ -90,6 +87,8 @@ const TableView = ({
   children,
   pageCount,
   pageIndex,
+  canAdd = false,
+  handleAddClick,
   count,
   loading,
   showLoading = true,
@@ -286,7 +285,14 @@ const TableView = ({
             onReset={handleResetFilter}
           />
           <SearchBar />
-          <div className="ml-auto">
+          <div className="ml-auto flex gap-2">
+            {canAdd && <IconButton
+              onClick={handleAddClick}
+              className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
+              icon={Plus}
+              label="Create"
+            />}
+
             <IconButton
               onClick={handleRefresh}
               className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"

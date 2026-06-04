@@ -187,14 +187,15 @@ export const createContact = async (payload) => {
  * Update contact
  */
 export const updateContact = async ({
-    email,
+    id,
     payload,
 }) => {
     const response = await http({
-        method: "PUT",
+        method: "POST",
         body: {
-            email,
-            ...payload,
+            module: "Contacts",
+            id,
+            data: { ...payload }
         },
     });
 

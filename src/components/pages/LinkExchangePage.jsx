@@ -10,13 +10,9 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
-import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getFavEmails } from "../../store/Slices/favEmailSlice.js";
-import { getLinkExchange } from "../../store/Slices/linkExchange.js";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { useExchangeStats, useInfiniteExchange } from "../../queries/exchange.queries.js";
 const STATUS_CONFIG = [
@@ -74,7 +70,7 @@ export function LinkExchangePage() {
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       )
     },

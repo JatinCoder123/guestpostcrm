@@ -20,6 +20,7 @@ import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { useTablePreference } from "../../hooks/useTablePreference";
 import { useInfiniteRecentEvents } from "../../queries/recentAct.queries";
+import { useContext } from "react";
 
 /* 🔹 Tooltip */
 const Tooltip = ({ content, children }) => {
@@ -37,8 +38,6 @@ const Tooltip = ({ content, children }) => {
 };
 
 export function RecentEntry() {
-  const dispatch = useDispatch();
-
   const preferences = useTablePreference("recent");
 
   const {
@@ -239,14 +238,7 @@ export function RecentEntry() {
         }
       }}
     >
-      <TableTitleBar
-        Icon={Activity}
-        title={"Recent Entries"}
-        titleClass={"text-green-600"}
-      />
-
-
-
+      <TableTitleBar Icon={Activity} title={"Recent Entries"} titleClass={"text-green-600"} />
       <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-5"} />
     </TableView>
   );

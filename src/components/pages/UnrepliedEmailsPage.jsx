@@ -1,11 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { PageContext } from "../../context/pageContext";
-import { excludeName, extractEmail } from "../../assets/assets";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails.js";
 import {
   Calendar,
   FileText,
@@ -111,9 +109,6 @@ const STATUS_CONFIG = [
 ];
 export function UnrepliedEmailsPage() {
   const preferences = useTablePreference("emails");
-
-  const { emailsCount, emailType } =
-    useSelector((state) => state.unreplied);
   const {
     data,
     fetchNextPage,
@@ -152,7 +147,7 @@ export function UnrepliedEmailsPage() {
       headerClasses: "",
       icon: Calendar,
       onClick: (row, index) =>
-        handleDateClick({ email: extractEmail(row?.from), navigate: "/", index, nextPrev: true }),
+        handleDateClick({ email: row?.email1, navigate: "/", index, nextPrev: true }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">

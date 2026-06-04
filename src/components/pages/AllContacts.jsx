@@ -340,6 +340,8 @@ export default function AllContacts() {
                 count={count}
                 loading={loading}
                 statusCount={statusCount}
+                canAdd={true}
+                handleAddClick={() => setOpen(true)}
                 fetchNextPage={() => {
                     if (
                         hasNextPage &&
@@ -348,21 +350,7 @@ export default function AllContacts() {
                         fetchNextPage();
                     }
                 }}
-            >{
-                    <div className="absolute -top-1 right-10">
-                        <button
-                            className="cursor-pointer"
-                            onClick={() => setOpen(true)}
-                        >
-                            <img
-                                width="30"
-                                height="30"
-                                src="https://img.icons8.com/arcade/64/plus.png"
-                                alt="plus"
-                            />
-                        </button>
-                    </div>
-                }
+            >
                 <TableTitleBar
                     Icon={ContactRound}
                     title={"Contacts"}
