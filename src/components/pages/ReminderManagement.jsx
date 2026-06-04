@@ -267,13 +267,13 @@ const handleDelete = async (item) => {
           <table className="w-full border-collapse text-left">
             <thead className="border-b bg-blue-600 text-white">
               <tr>
+                <th className="p-4 font-semibold">Created Date</th>
                 <th className="p-4 font-semibold">Reminder Name</th>
                 <th className="p-4 font-semibold">Event</th>
                 <th className="p-4 font-semibold">Type</th>
                 <th className="p-4 font-semibold">Interval</th>
                 <th className="p-4 font-semibold">Priority</th>
                 <th className="p-4 font-semibold">Delay</th>
-                <th className="p-4 font-semibold">Created Date</th>
                 <th className="p-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
@@ -287,6 +287,16 @@ const handleDelete = async (item) => {
                   transition={{ duration: 0.25, delay: index * 0.03 }}
                   className="border-b border-slate-100 transition hover:bg-slate-50"
                 >
+                    <td className="p-4 text-slate-700">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-slate-400" />
+                      <span>
+                        {item.date_entered
+                          ? new Date(item.date_entered).toLocaleString()
+                          : "-"}
+                      </span>
+                    </div>
+                  </td>
                   <td className="max-w-[220px] truncate p-4 font-medium text-slate-900">
                     {item.name || "-"}
                   </td>
@@ -303,16 +313,7 @@ const handleDelete = async (item) => {
                     {item.priority_c || "-"}
                   </td>
                   <td className="p-4 text-slate-700">{item.delay_c || "-"}</td>
-                  <td className="p-4 text-slate-700">
-                    <div className="flex items-center gap-2">
-                      <CalendarDays className="h-4 w-4 text-slate-400" />
-                      <span>
-                        {item.date_entered
-                          ? new Date(item.date_entered).toLocaleString()
-                          : "-"}
-                      </span>
-                    </div>
-                  </td>
+                  
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
                       <button
@@ -320,7 +321,6 @@ const handleDelete = async (item) => {
                         className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700"
                       >
                         <Edit3 className="h-4 w-4" />
-                        Edit
                       </button>
                       <button
                         onClick={() => handleDelete(item)}
@@ -328,7 +328,7 @@ const handleDelete = async (item) => {
                         className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <Trash2 className="h-4 w-4" />
-                        {deletingId === item.id ? "Deleting" : "Delete"}
+                        {deletingId === item.id }
                       </button>
                     </div>
                   </td>
