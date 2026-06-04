@@ -529,7 +529,7 @@ const ActionButton = () => {
 
                         <button
                           disabled={!selectedUser || !note.trim()}
-                          onClick={() => mutate()}
+                          onClick={() => alert("Feature in Progress")}
                           className="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg disabled:opacity-50"
                         >
                           Send Note
