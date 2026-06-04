@@ -24,7 +24,6 @@ import { extractEmail } from "../assets/assets";
 import { getAllUsers } from "../store/Slices/crmUser.js";
 import { getTinyKey } from "../store/Slices/tinyKey.js";
 import { getMailerSummary } from "../store/Slices/mailerSummary.js";
-import { getOutboxEmails } from "../store/Slices/outbox.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -66,11 +65,8 @@ function useRefresh() {
     }, [])
     useEffect(() => {
         dispatch(getAiCredits());
-        dispatch(getOutboxEmails({}));
-
         dispatch(getAllWebsites());
         dispatch(getOrderRem({ email: enteredEmail }));
-
         dispatch(getMarketplace())
         // dispatch(getOrders({ email: enteredEmail, brand: showBrandTimeline }));
         // dispatch(getDeals({ email: enteredEmail, brand: showBrandTimeline }));

@@ -25,11 +25,12 @@ import { headingLogo, periodOptions } from "../assets/assets";
 import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
 import GlobalSearch from "./GlobalSearch";
+import { useOutboxStats } from "../queries/outbox.queries";
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
   const [animate, setAnimate] = useState(false);
-  const { emails: outboxEmails, loading } = useSelector(state => state.outbox)
+  const { data, isPending } = useOutboxStats()
   const {
     enteredEmail,
     setEnteredEmail,
@@ -184,7 +185,7 @@ export function TopNav() {
 
         <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
 
-        {outboxEmails.length > 0 && !loading && (
+        {data?.stats?.all?.count > 0 && !isPending && (
           <IconButton tooltipPosition="bottom" label="OutBox Emails" onClick={() => navigateTo('/outbox')} icon={MailWarning} variant="primary" className="p-2 rounded-full" rounded="full" iconColor="white" count={outboxEmails.length} />
         )}
         <IconButton tooltipPosition="bottom" label="Hot Notification" onClick={() => navigateTo("hot-records")}
