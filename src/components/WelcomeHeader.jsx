@@ -658,6 +658,8 @@ const WelcomeHeader = () => {
 
             </div>
           </div>
+            {/* Vertical Divider */}
+<div className="mx-2 w-0.5 h-10 bg-gray-300"></div>
           <StatBadge
             icon={MailOpen}
             label="Received"
