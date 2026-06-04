@@ -28,11 +28,7 @@ function NavigationBar({
     const [showThreads, setShowThreads] = useState(false);
 
     const topThreads = duplicateEmail?.slice(0, 5) || [];
-    useEffect(() => {
-        if (!loading && duplicateEmail?.length > 1) {
-            setShowThreads(true)
-        }
-    }, [duplicateEmail, loading])
+
 
     return (
         <>
@@ -145,6 +141,7 @@ function NavigationBar({
         transition-all duration-300
         relative
     "
+                        text={`(${duplicateEmail?.length || 0})`}
                         icon={Link2}
                         loading={loading}
                         label={
