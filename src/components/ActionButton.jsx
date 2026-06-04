@@ -1,4 +1,4 @@
-import { Globe, Mail, Heart, Link, CircleStop, NotebookPen } from "lucide-react";
+import { Globe, Mail, Heart, Link, CircleStop, NotebookPen, UserSquare } from "lucide-react";
 import Loading, { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
@@ -29,8 +29,10 @@ import {
 import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
-import { applyHashtag } from "../services/utils";
+import { applyHashtag, getRighteeUsers } from "../services/utils";
 import { fetchGpc } from "../services/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { CustomDropdown } from "./pages/settingpages/PromptTestingPage";
 
 /* Memo numbers from CRM */
 const MEMO = {
@@ -50,9 +52,39 @@ const ActionButton = () => {
   const [showUsers, setShowUsers] = useState(false);
   const [stopLoading, setStopLoading] = useState(false);
   const [showTags, setShowTags] = useState(false);
-
+  const [note, setNote] = useState('')
+  const [selectedUser, setSelectedUser] = useState(null)
   const { enteredEmail } = useContext(PageContext);
   const { crmEndpoint } = useSelector((state) => state.user);
+  const [showNotes, setShowNotes] = useState(false);
+  const { isPending, data } = useQuery({
+    queryKey: ['righteeUsers'],
+    queryFn: getRighteeUsers
+  })
+  const addNotes = async () => {
+    const res = await fetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser, notes: note } })
+    return res
+
+
+  }
+  const { mutate, } = useMutation({
+    mutationFn: addNotes,
+    onSuccess: () => {
+      toast.success(
+        `Your Note Is Sent To ${selectedUser} Successfully!`
+      );
+      setShowNotes(false);
+    },
+    onError: () => {
+      toast.error(`Failed To Sent Note`)
+
+    },
+    onSettled: () => {
+      setNote("")
+      setSelectedUser(null)
+    }
+  })
+
 
   const { contactInfo, accountInfo, threadId, editMessage, contactLoading } =
     useSelector((s) => s.viewEmail);
@@ -349,15 +381,16 @@ const ActionButton = () => {
       },
     },
     {
-      icon: <NotebookPen
-        size={25}
-        color={contactInfo?.is_stop === "1" ? "red" : "#890993ff"}
-      />,
-      disabled: stopLoading,
-
+      icon: (
+        <NotebookPen
+          size={25}
+          color="#890993ff"
+        />
+      ),
+      disabled: false,
       label: "Add Notes",
-      action: async () => {
-
+      action: () => {
+        setShowNotes((p) => !p);
       },
     },
   ];
@@ -462,6 +495,46 @@ const ActionButton = () => {
                           </button>
                         ))
                       )}
+                    </div>
+                  </div>
+                )}
+                {showNotes && btn.label === "Add Notes" && (
+                  <div className="absolute top-14 right-0 w-80 z-50">
+                    <div className="bg-white rounded-xl border shadow-xl p-4 space-y-3">
+
+
+                      <CustomDropdown options={data?.map((user) => ({ label: user.user_name, value: user?.first_name }))} onChange={(user) => setSelectedUser(user)} value={selectedUser} disabled={isPending} placeholder="Select User" />
+
+                      {/* Note Box */}
+                      <textarea
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="Write your note..."
+                        rows={4}
+                        className="w-full border rounded-lg px-3 py-2 resize-none text-sm"
+                      />
+
+                      {/* Actions */}
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setShowNotes(false);
+                            setNote("");
+                            setSelectedUser(null);
+                          }}
+                          className="px-3 py-2 text-sm border rounded-lg"
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          disabled={!selectedUser || !note.trim()}
+                          onClick={() => mutate()}
+                          className="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg disabled:opacity-50"
+                        >
+                          Send Note
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}

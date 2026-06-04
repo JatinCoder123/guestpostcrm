@@ -37,7 +37,7 @@ export const createLedgerEntry = async ({
   reminder_type,
   websites = [],
   extraPayload = {},
-  okHandler = () => {},
+  okHandler = () => { },
 }) => {
   try {
     const payload = {
@@ -142,3 +142,7 @@ export const generatePDF = async (html, id = "invoice") => {
   }
 };
 
+export const getRighteeUsers = async () => {
+  const response = await apiRequest({ method: "POST", body: { module: 'users' }, endpoint: "https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=get_data", headers: { "X-Api-Key": import.meta.env.VITE_GUESTPOSTALL_X_API_KEY, } })
+  return response
+}
