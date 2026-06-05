@@ -27,6 +27,7 @@ import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
 import GlobalSearch from "./GlobalSearch";
 import { Camera } from "lucide-react";
+import ProfileImageCropper from "./ProfileImageCropper";
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
@@ -34,9 +35,6 @@ export function TopNav() {
   const { emails: outboxEmails, loading } = useSelector(state => state.outbox)
   const {
     enteredEmail,
-    setEnteredEmail,
-    handleClear,
-    setShowNextPrev,
     handleDateClick,
     superfastReply,
     superfastToggle,
@@ -51,17 +49,20 @@ export function TopNav() {
 
     const reader = new FileReader();
 
-    reader.onloadend = () => {
-      const imageBase64 = reader.result;
-
-      setProfilePreview(imageBase64);
-
-      localStorage.setItem("userProfileImage", imageBase64);
-
-      toast.success("Profile image updated");
+    reader.onload = () => {
+      setCropImage(reader.result);
+      setShowCropper(true);
     };
 
     reader.readAsDataURL(file);
+  };
+  const handleProfileSave = (croppedImage) => {
+    setProfilePreview(croppedImage);
+
+    localStorage.setItem(
+      "userProfileImage",
+      croppedImage
+    );
   };
   const profileMenuRef = useRef(null);
   const { notificationCount } = useContext(SocketContext);
@@ -81,6 +82,8 @@ export function TopNav() {
       ""
     );
   });
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropImage, setCropImage] = useState(null);
   /* 🔴 Blink while input has value */
   useEffect(() => {
     setIsBlinking(enteredEmail?.trim());
@@ -319,7 +322,12 @@ export function TopNav() {
                     onChange={handleProfileUpload}
                   />
                 </div>
-
+                <ProfileImageCropper
+                  isOpen={showCropper}
+                  image={cropImage}
+                  onClose={() => setShowCropper(false)}
+                  onSave={handleProfileSave}
+                />
                 <button
                   onClick={() => {
                     navigateTo("/profile");
