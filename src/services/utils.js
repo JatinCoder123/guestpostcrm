@@ -143,6 +143,7 @@ export const generatePDF = async (html, id = "invoice") => {
 };
 
 export const getRighteeUsers = async () => {
-  const response = await apiRequest({ method: "POST", body: { module: 'users' }, endpoint: "https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=get_data", headers: { "X-Api-Key": import.meta.env.VITE_GUESTPOSTALL_X_API_KEY, } })
-  return response
+  const response = await apiRequest({ endpoint: "https://crm.outrightsystems.org/index.php?entryPoint=trynow&team_member=1", })
+  console.log("CRM USER2", response)
+  return response.data ?? []
 }
