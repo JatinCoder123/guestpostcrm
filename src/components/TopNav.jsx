@@ -255,7 +255,7 @@ export function TopNav() {
               <img
                 src={profilePreview}
                 alt={user?.name}
-                className="h-8 w-8 rounded-full object-contain"
+                className="h-10 w-10 rounded-full object-cover"
               />
             ) : (
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm font-black text-white shadow-sm">
