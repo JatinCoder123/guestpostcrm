@@ -1,4 +1,4 @@
-import { Globe, Mail, Heart, Link, CircleStop, NotebookPen, UserSquare } from "lucide-react";
+import { Globe, Mail, Heart, Link, CircleStop, NotebookPen, UserSquare, Send } from "lucide-react";
 import Loading, { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
@@ -14,7 +14,7 @@ import {
   getForwardedEmails,
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { addEvent } from "../store/Slices/eventSlice";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
@@ -32,8 +32,7 @@ import { useNavigate } from "react-router-dom";
 import { applyHashtag, getRighteeUsers } from "../services/utils";
 import { fetchGpc } from "../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CustomDropdown } from "./pages/settingpages/PromptTestingPage";
-
+import IconButton from "./ui/Buttons/IconButton"
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -62,30 +61,56 @@ const ActionButton = () => {
     queryFn: getRighteeUsers
   })
   const addNotes = async () => {
-    const res = await fetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser, notes: note } })
+    const res = await fetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser.email, notes: note } })
     return res
-
-
   }
-  const { mutate, } = useMutation({
+  const { mutate, isPending: sendingNote } = useMutation({
     mutationFn: addNotes,
     onSuccess: () => {
       toast.success(
-        `Your Note Is Sent To ${selectedUser} Successfully!`
+        `Your Note Is Sent To ${selectedUser?.name} Successfully!`
       );
       setShowNotes(false);
+      setNote("")
+      setSelectedUser(null)
     },
     onError: () => {
       toast.error(`Failed To Sent Note`)
 
     },
-    onSettled: () => {
-      setNote("")
-      setSelectedUser(null)
-    }
   })
 
+  const noteRef = useRef(null);
+  const [searchUser, setSearchUser] = useState("");
 
+  const filteredUsers = useMemo(() => {
+    if (!searchUser.trim()) return data || [];
+
+    return (data || []).filter((user) =>
+      user.name.toLowerCase().includes(searchUser.toLowerCase())
+    );
+  }, [searchUser, data]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showNotes &&
+        noteRef.current &&
+        !noteRef.current.contains(event.target)
+      ) {
+        setShowNotes(false);
+
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, [showNotes]);
   const { contactInfo, accountInfo, threadId, editMessage, contactLoading } =
     useSelector((s) => s.viewEmail);
   const { sending, message, error } = useSelector((s) => s.threadEmail);
@@ -499,11 +524,84 @@ const ActionButton = () => {
                   </div>
                 )}
                 {showNotes && btn.label === "Add Notes" && (
-                  <div className="absolute top-14 right-0 w-80 z-50">
-                    <div className="bg-white rounded-xl border shadow-xl p-4 space-y-3">
+                  <div
+                    ref={noteRef}
+                    className="absolute top-14 right-0 w-96 z-50"
+                  >
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl p-4 space-y-4">
 
+                      {/* Search User */}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={searchUser}
+                          onChange={(e) => {
+                            setSearchUser(e.target.value);
+                            setSelectedUser(null);
+                          }}
+                          placeholder="Search user..."
+                          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                        />
 
-                      <CustomDropdown options={data?.map((user) => ({ label: user.user_name, value: user?.first_name }))} onChange={(user) => setSelectedUser(user)} value={selectedUser} disabled={isPending} placeholder="Select User" />
+                        {searchUser && !selectedUser && (
+                          <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                            {filteredUsers.length > 0 ? (
+                              filteredUsers.map((user) => (
+                                <button
+                                  key={user.email}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setSearchUser(user.name);
+                                  }}
+                                  className="w-full px-4 py-3 text-left hover:bg-indigo-50 transition flex items-center gap-3"
+                                >
+                                  <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center font-medium text-indigo-600">
+                                    {user.name?.charAt(0)}
+                                  </div>
+
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {user.name}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {user.email}
+                                    </div>
+                                  </div>
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-4 py-3 text-sm text-gray-500">
+                                No users found
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Selected User */}
+                      {selectedUser && (
+                        <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2">
+                          <div>
+                            <div className="font-medium text-sm">
+                              {selectedUser.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {selectedUser.email}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              setSelectedUser(null);
+                              setSearchUser("");
+                            }}
+                            className="text-gray-500 hover:text-red-500"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
 
                       {/* Note Box */}
                       <textarea
@@ -511,7 +609,7 @@ const ActionButton = () => {
                         onChange={(e) => setNote(e.target.value)}
                         placeholder="Write your note..."
                         rows={4}
-                        className="w-full border rounded-lg px-3 py-2 resize-none text-sm"
+                        className="w-full border rounded-xl px-3 py-3 resize-none text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
                       />
 
                       {/* Actions */}
@@ -519,21 +617,18 @@ const ActionButton = () => {
                         <button
                           onClick={() => {
                             setShowNotes(false);
-                            setNote("");
+                            setSearchUser("");
                             setSelectedUser(null);
+                            setNote("");
                           }}
-                          className="px-3 py-2 text-sm border rounded-lg"
+                          className="px-4 py-2 text-sm border rounded-xl hover:bg-gray-50"
                         >
                           Cancel
                         </button>
 
-                        <button
-                          disabled={!selectedUser || !note.trim()}
-                          onClick={() => alert("Feature in Progress")}
-                          className="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg disabled:opacity-50"
-                        >
-                          Send Note
-                        </button>
+
+                        <IconButton icon={Send} label="Send Note" loading={sendingNote} variant="primary" rounded="xl" disabled={isPending || !note.trim() || !selectedUser} onClick={() => mutate()}
+                        />
                       </div>
                     </div>
                   </div>

@@ -20,7 +20,6 @@ const Thread = () => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const { moveToNext } = useNext()
   const { superfastReply } = useContext(PageContext);
-  const [contentLoading, setContentLoading] = useState(false);
   const [htmlfile, setHtmlfile] = useState(state?.htmlFile)
   const [files, setFiles] = useState([]);
   const [editorContent, setEditorContent] = useState(state?.initialContent || "");
@@ -147,8 +146,6 @@ const Thread = () => {
     setEditorContent,
     htmlfile,
     setHtmlfile,
-    contentLoading,
-    setContentLoading,
     pdfLoading, // ✅ added
     handleSendClick,
     checkingThreadId,

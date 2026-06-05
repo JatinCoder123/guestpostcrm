@@ -47,7 +47,6 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     setFiles,
     files,
     editorContent,
-    setContentLoading,
     htmlfile,
     setHtmlfile,
     pdfLoading,
@@ -151,9 +150,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     }
   }, [message, aiResponse, dispatch]);
 
-  useEffect(() => {
-    setContentLoading(aiLoading);
-  }, [aiLoading]);
+
 
   /* ── helpers ─────────────────────────────────────────────── */
   const insertTextAtCursor = () => {
