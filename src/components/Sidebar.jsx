@@ -24,6 +24,7 @@ import {
   Contact2Icon,
   Cable,
   CircleX,
+  BellElectric,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -218,7 +219,7 @@ export function Sidebar() {
  {
   id: "reminder-management",
   label: "Reminder Management",
-  icon: BellRing,
+  icon: BellElectric,
   loading: null,
   count: null,
   color: "text-lime-600",
