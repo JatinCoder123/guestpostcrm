@@ -57,7 +57,7 @@ export function TopNav() {
   const handleProfileSave = (croppedImage) => {
     setProfilePreview(croppedImage);
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       "userProfileImage",
       croppedImage
     );
@@ -75,7 +75,7 @@ export function TopNav() {
   const [isBlinking, setIsBlinking] = useState(false);
   const [profilePreview, setProfilePreview] = useState(() => {
     return (
-      localStorage.getItem("userProfileImage") ||
+      sessionStorage.getItem("userProfileImage") ||
       user?.profileImage ||
       ""
     );
@@ -88,7 +88,7 @@ export function TopNav() {
     setSearch(enteredEmail);
   }, [enteredEmail]);
   useEffect(() => {
-    const savedImage = localStorage.getItem("userProfileImage");
+    const savedImage = sessionStorage.getItem("userProfileImage");
 
     if (savedImage) {
       setProfilePreview(savedImage);
