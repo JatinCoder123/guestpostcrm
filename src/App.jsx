@@ -61,6 +61,7 @@ import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
+import ReportTestPage from "./components/pages/Reportpagestest";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -232,6 +233,10 @@ const router = createBrowserRouter([
       {
         path: "reminder-management",
         element: <ReminderManagementPage />,
+      },
+      {
+        path: "reports2",
+        element: <ReportTestPage />,
       },
       {
         path: "thread",

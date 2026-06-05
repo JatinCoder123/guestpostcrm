@@ -4,14 +4,14 @@ import {store} from "../store/store";
 
 let CRMENDPOINT = "";
 let DB_NAME = "";
-let USER_ID = "";
+let USER_EMAIL = "";
 const getCurrentUserId = () => store.getState()?.crmUser?.currentUser?.id;
 
 
-export function setConfig(endpoint, db_name, user_id) {
+export function setConfig(endpoint, db_name, dash_user_email) {
   CRMENDPOINT = endpoint;
   DB_NAME = db_name;
-  USER_ID = user_id;
+  USER_EMAIL = dash_user_email;
 }
 
 const apiClient = axios.create({
@@ -51,7 +51,7 @@ export const fetchGpc = async ({
   const params1 = {
     ...params,
     ...(DB_NAME ? { db_name: DB_NAME } : {}),
-    ...(getCurrentUserId() ? { user_id: getCurrentUserId() } : {}),
+    ...(USER_EMAIL ? { dash_user_email: USER_EMAIL } : {}),
   };
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const requestHeaders = {
