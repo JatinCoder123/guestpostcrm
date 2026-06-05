@@ -11,6 +11,7 @@ import {
   ChevronDown,
   LogOut,
   MailWarning,
+  Upload,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -25,6 +26,7 @@ import { headingLogo, periodOptions } from "../assets/assets";
 import { SocketContext } from "../context/SocketContext";
 import IconButton from "./ui/Buttons/IconButton";
 import GlobalSearch from "./GlobalSearch";
+import { Camera } from "lucide-react";
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
@@ -41,6 +43,26 @@ export function TopNav() {
   } = useContext(PageContext);
   const [search, setSearch] = useState("");
 
+
+  const handleProfileUpload = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const imageBase64 = reader.result;
+
+      setProfilePreview(imageBase64);
+
+      localStorage.setItem("userProfileImage", imageBase64);
+
+      toast.success("Profile image updated");
+    };
+
+    reader.readAsDataURL(file);
+  };
   const profileMenuRef = useRef(null);
   const { notificationCount } = useContext(SocketContext);
   const [errorLogCount, setErrorLogCount] = useState(0);
@@ -52,13 +74,27 @@ export function TopNav() {
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
-
+  const [profilePreview, setProfilePreview] = useState(() => {
+    return (
+      localStorage.getItem("userProfileImage") ||
+      user?.profileImage ||
+      ""
+    );
+  });
   /* 🔴 Blink while input has value */
   useEffect(() => {
     setIsBlinking(enteredEmail?.trim());
     setSearch(enteredEmail);
   }, [enteredEmail]);
+  useEffect(() => {
+    const savedImage = localStorage.getItem("userProfileImage");
 
+    if (savedImage) {
+      setProfilePreview(savedImage);
+    } else if (user?.profileImage) {
+      setProfilePreview(user.profileImage);
+    }
+  }, [user?.profileImage]);
   /* 🔍 Search */
   const handleSearch = () => {
     if (!search?.trim()) {
@@ -89,10 +125,10 @@ export function TopNav() {
   };
 
   const handleLogout = () => {
+
     dispatch(logout());
     setShowProfileMenu(false);
   };
-
   /* Close profile on outside click */
   useEffect(() => {
     const handler = (e) => {
@@ -213,16 +249,19 @@ export function TopNav() {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             aria-label="Open profile menu"
             aria-expanded={showProfileMenu}
-            className="
-              group flex items-center gap-2 rounded-full border border-slate-200
-              bg-white px-2.5 py-1.5 text-slate-700 shadow-sm transition-all
-              hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50
-              hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500/25
-            "
+            className="p-1 rounded-full border-2"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm font-black text-white shadow-sm">
-              {getUserInitials()}
-            </span>
+            {profilePreview ? (
+              <img
+                src={profilePreview}
+                alt={user?.name}
+                className="h-8 w-8 rounded-full object-contain"
+              />
+            ) : (
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm font-black text-white shadow-sm">
+                {getUserInitials()}
+              </span>
+            )}
 
           </button>
 
@@ -242,9 +281,17 @@ export function TopNav() {
                   }}
                   className="group/menu flex w-full items-center gap-3 border-b border-slate-100 bg-linear-to-r from-slate-50 to-white p-4 text-left transition hover:from-indigo-50 hover:to-cyan-50"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white shadow-md shadow-indigo-500/25">
-                    {getUserInitials()}
-                  </span>
+                  {profilePreview ? (
+                    <img
+                      src={profilePreview}
+                      alt={user?.name}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 via-blue-600 to-cyan-500 text-sm font-black text-white shadow-sm">
+                      {getUserInitials()}
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1">
 
                     <p className="mt-0.5 truncate text-sm font-semibold text-slate-700">
@@ -255,6 +302,35 @@ export function TopNav() {
                     </p>
                   </div>
                 </button>
+                <div className="border-t border-slate-100 p-2">
+                  <label
+                    htmlFor="profile-upload"
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <Camera size={16} />
+                    Change Profile Photo
+                  </label>
+
+                  <input
+                    id="profile-upload"
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleProfileUpload}
+                  />
+                </div>
+
+                <button
+                  onClick={() => {
+                    navigateTo("/profile");
+                    setShowProfileMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  <User2 size={16} />
+                  Edit Profile
+                </button>
+
                 <button
                   onClick={handleLogout}
                   className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-bold text-red-600 transition hover:bg-red-50"
