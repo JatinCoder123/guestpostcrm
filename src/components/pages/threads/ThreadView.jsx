@@ -49,7 +49,6 @@ export default function ThreadView() {
     setEditorContent,
     handleSendClick,
     checkingThreadId,
-    contentLoading,
   } = useOutletContext() || [];
 
   const firstMessageRef = useRef(null);
@@ -92,18 +91,12 @@ export default function ThreadView() {
     message,
   } = useSelector((state) => state.aiReply);
 
-  useEffect(() => {
-    dispatch(getAiReply(threadId));
-    setEditorContent("");
-  }, [threadId]);
 
   useEffect(() => {
-    if (message && aiResponse) {
-      setEditorContent(aiResponse);
-      dispatch(aiReplyAction.clearMessge());
+    if (mailersSummary && !summaryLoading) {
+      setEditorContent(mailersSummary?.ai_response ?? "")
     }
-  }, [aiResponse, aiError, message]);
-
+  }, [mailersSummary, summaryLoading])
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -393,7 +386,7 @@ export default function ThreadView() {
                       {/* RIGHT PANEL */}
                       <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
                         {/* LOADING */}
-                        {contentLoading && (
+                        {summaryLoading && (
                           <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
