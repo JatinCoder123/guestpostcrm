@@ -13,9 +13,9 @@ export const useThreadContext = () => {
       },
     });
   };
-  const moveToReply = (initialContent, htmlFile) => {
+  const moveToReply = (initialContent, htmlFile, handleAfterSuccessMailSent) => {
     navigateTo(`/thread/reply`, {
-      state: { initialContent, htmlFile },
+      state: { initialContent, htmlFile, handleAfterSuccessMailSent },
     });
   };
   if (!context) {
@@ -31,10 +31,11 @@ export const useThreadContext = () => {
     addActivity = false,
     loadAiReply = false,
     htmlFile = null,
+    handleAfterSuccessMailSent = null,
   }) => {
     context.handleSetCurrent({ email, thread: threadId });
     reply !== false
-      ? moveToReply(reply, htmlFile)
+      ? moveToReply(reply, htmlFile, handleAfterSuccessMailSent)
       : moveToThread(viewEmail, loadAiReply);
     (addActivity || !reply) && localStorage.setItem("addActivity", true);
   };

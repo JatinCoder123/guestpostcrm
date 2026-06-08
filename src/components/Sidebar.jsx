@@ -230,6 +230,7 @@ export function Sidebar() {
     <>
       {/* SIDEBAR */}
       <motion.div
+        data-tour="sidebar"
         animate={{ width: collapsed ? 100 : 260 }}
         transition={{ duration: 0.25 }}
         className="bg-white border-r border-gray-200 min-h-full
@@ -247,6 +248,7 @@ export function Sidebar() {
 
         {/* LIVE BUTTON */}
         <button
+          data-tour="sidebar-live"
           onClick={() => {
             setActivePage("");
             navigateTo("");
@@ -307,6 +309,7 @@ export function Sidebar() {
 
         {/* SETTINGS BUTTON */}
         <button
+          data-tour="sidebar-settings"
           onClick={() => {
             setSidebarCollapsed(true);
             navigateTo("settings");

@@ -1,4 +1,5 @@
 import React from "react";
+import { headingLogo } from "../assets/assets";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -30,18 +31,15 @@ class ErrorBoundary extends React.Component {
         <div className="inset-0 z-[9999] flex items-center justify-center  px-4 h-[100vh]">
           <div className="w-full rounded-2xl bg-white p-8 text-center items-center justify-center">
             {/* Icon */}
-            <div className="mx-auto flex h-14 w-100 mt-14 items-center justify-center">
+            <div className="mx-auto flex h-14 w-100 mt-14 items-center justify-center mb-10">
               <img
-                src="https://example.guestpostcrm.com/images/image__53_-removebg-preview.png"
+                src={headingLogo}
                 alt=""
                 className="w-100"
               />
             </div>
 
-            {/* Title */}
-            <h2 className="mt-4 text-2xl font-semibold text-gray-900">
-              Server Busy
-            </h2>
+
 
             {/* Description */}
             <p className="mt-2 text-lg text-gray-600">

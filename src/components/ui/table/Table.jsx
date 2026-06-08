@@ -19,10 +19,31 @@ const TableContext = createContext();
 
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
+
   if (!ctx) {
     throw new Error("You're using table context in wrong place");
   }
+
   return ctx;
+};
+
+const TableSkeleton = ({ columnsLength = 5, rows = 6 }) => {
+  return (
+    <tbody>
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <tr
+          key={rowIndex}
+          className="border-b last:border-b-0"
+        >
+          {Array.from({ length: columnsLength }).map((_, colIndex) => (
+            <td key={colIndex} className="p-4">
+              <div className="h-4 w-full rounded bg-gray-300 animate-pulse" />
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  );
 };
 
 const TableView = ({
@@ -37,6 +58,7 @@ const TableView = ({
   defaultStatus,
   fetchNextPage,
   children,
+  showLoading = true,
 }) => {
   const [fromDate, setFromDate] = useState(todayStr());
   const [fromTime, setFromTime] = useState("00:01");
@@ -48,11 +70,16 @@ const TableView = ({
     (state) => state[slice],
   );
 
-  const [search, setSearch] = useState({ value: "", type: searchType });
+  const [search, setSearch] = useState({
+    value: "",
+    type: searchType,
+  });
+
   const [showStatus, setShowStatus] = useState(true);
 
   const [filters, setFilters] = useState(() => {
     if (defaultStatus) return { [statusKey]: defaultStatus };
+
     return {};
   });
 
@@ -67,6 +94,7 @@ const TableView = ({
   useEffect(() => {
     setVisibleColumns(columns);
   }, [columns]);
+
   const processedData = useMemo(() => {
     let data = [...tableData];
 
@@ -91,16 +119,20 @@ const TableView = ({
 
     // 🎯 Status / other filters
     Object.entries(filters).forEach(([key, value]) => {
-      data = data.filter((row) => row[key]?.toLowerCase() === value?.toLowerCase());
+      data = data.filter(
+        (row) =>
+          row[key]?.toLowerCase() === value?.toLowerCase(),
+      );
     });
 
-    // ✅ 🕒 DATE RANGE FILTER (MAIN PART)
+    // ✅ 🕒 DATE RANGE FILTER
     if (filterActive) {
       const from = new Date(`${fromDate} ${fromTime}`);
       const to = new Date(`${toDate} ${toTime}`);
 
       data = data.filter((row) => {
         const rowDate = new Date(row.real_date_entered);
+
         return rowDate >= from && rowDate <= to;
       });
     }
@@ -111,8 +143,12 @@ const TableView = ({
         const valA = a[sort.column];
         const valB = b[sort.column];
 
-        if (valA > valB) return sort.direction === "asc" ? 1 : -1;
-        if (valA < valB) return sort.direction === "asc" ? -1 : 1;
+        if (valA > valB)
+          return sort.direction === "asc" ? 1 : -1;
+
+        if (valA < valB)
+          return sort.direction === "asc" ? -1 : 1;
+
         return 0;
       });
     }
@@ -129,14 +165,17 @@ const TableView = ({
     toDate,
     toTime,
   ]);
+
   const handleResetFilter = () => {
     const today = todayStr();
+
     setFromDate(today);
     setFromTime("00:01");
     setToDate(today);
     setToTime("23:59");
     setFilterActive(false);
   };
+
   const value = {
     tableName,
     columns,
@@ -161,11 +200,13 @@ const TableView = ({
     count,
     data: processedData,
   };
+
   return (
     <TableContext.Provider value={value}>
       {/* 🔥 Layout animation wrapper */}
       <motion.div layout className="flex flex-col gap-2">
         <FilterRow />
+
         <motion.div
           layout
           initial={false}
@@ -184,7 +225,8 @@ const TableView = ({
             <StatusRow statusCount={statusCount} />
           )}
         </motion.div>
-        {/* <DateRangeFilter
+
+        <DateRangeFilter
           fromDate={fromDate}
           fromTime={fromTime}
           toDate={toDate}
@@ -196,7 +238,8 @@ const TableView = ({
           filterActive={filterActive}
           onApply={() => setFilterActive(true)}
           onReset={handleResetFilter}
-        /> */}
+        />
+
         <motion.div
           layout
           transition={{
@@ -204,10 +247,10 @@ const TableView = ({
             stiffness: 120,
             damping: 18,
           }}
-          className=" rounded-xl border overflow-hidden  relative"
+          className="rounded-xl border overflow-hidden relative"
         >
           {statusList.length > 0 && count > 0 && (
-            <div className="flex justify-start absolute top-0 right-1 z-[100] ">
+            <div className="flex justify-start absolute top-0 right-1 z-[100]">
               <button
                 onClick={() => setShowStatus((prev) => !prev)}
                 className="p-1 text-sm font-semibold rounded-lg bg-sky-400 text-white shadow hover:scale-105 transition cursor-pointer"
@@ -221,6 +264,31 @@ const TableView = ({
             </div>
           )}
           {children}
+
+          {/* TABLE LOADING */}
+          {loading && pageIndex === 1 && showLoading && (
+            <table className="w-full">
+              <TableSkeleton
+                columnsLength={columns?.length || 5}
+              />
+            </table>
+          )}
+          {/* EMPTY STATE */}
+          {!loading && processedData?.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-10 px-6 bg-white border-t">
+              <div className="text-5xl mb-4">📭</div>
+
+              <h3 className="text-xl font-semibold text-gray-700">
+                No {tableName} Available
+              </h3>
+
+              <p className="text-sm text-gray-500 mt-2 text-center max-w-md">
+                There are currently no records to display here.
+                Once new data is available, it will automatically appear.
+              </p>
+            </div>
+          )}
+
         </motion.div>
       </motion.div>
     </TableContext.Provider>

@@ -40,7 +40,10 @@ import {
 } from "../../../store/Slices/webManager.js";
 import { toast } from "react-toastify";
 import { fetchGpc } from "../../../services/api";
-
+import {
+  getOnboardingKeys,
+  writeOnboardingFlag,
+} from "../../../utils/onboardingStorage.js";
 
 /* ─── helpers ───────────────────────────────────────────────── */
 const getDomain = (raw) => {
@@ -894,7 +897,13 @@ export default function WebsitesPage() {
   const { user, businessEmail, crmEndpoint, db_name, id } = useSelector(
     (state) => state.user,
   );
-
+  const onboardingKeys = getOnboardingKeys({
+    user,
+    businessEmail,
+    crmEndpoint,
+    dbName: db_name,
+    id,
+  });
   const dispatch = useDispatch();
 
   const handleCreate = (updatedItem) => {
@@ -943,6 +952,21 @@ export default function WebsitesPage() {
     }
   }, [isOnboardingStep3, searchParams]);
 
+  useEffect(() => {
+    if (!message) return;
+    toast.success(message);
+    if (onboardingCreateSubmitted.current) {
+      onboardingCreateSubmitted.current = false;
+      writeOnboardingFlag(onboardingKeys.websiteDone, true);
+      window.dispatchEvent(
+        new CustomEvent("guestpostcrm:first-sync", {
+          detail: { websiteDone: true },
+        }),
+      );
+      navigate("/profile?step=5");
+    }
+    dispatch(webManagerAction.clearAllMessages());
+  }, [dispatch, message, navigate, onboardingKeys.websiteDone]);
 
   useEffect(() => {
     if (!error) return;

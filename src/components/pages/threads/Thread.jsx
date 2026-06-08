@@ -11,26 +11,22 @@ import { generatePDF } from "../../../services/utils";
 import { extractEmail } from "../../../assets/assets";
 import { unrepliedAction } from "../../../store/Slices/unrepliedEmails";
 import { getDuplicateEmails } from "../../../store/Slices/duplicateEmailSlice";
+import { useNext } from "../../../hooks/useNext";
 
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { state } = useLocation();
   const [pdfLoading, setPdfLoading] = useState(false);
-  const { handleMove } = useThreadContext();
-
-  const { superfastReply, setEnteredEmail,
-    currentIndex,
-    handleDateClick, } = useContext(PageContext);
-  const [contentLoading, setContentLoading] = useState(false);
+  const { moveToNext } = useNext()
+  const { superfastReply } = useContext(PageContext);
   const [htmlfile, setHtmlfile] = useState(state?.htmlFile)
   const [files, setFiles] = useState([]);
   const [editorContent, setEditorContent] = useState(state?.initialContent || "");
-  const { emails: inboxEmails } = useSelector((state) => state.unreplied);
   const [checkingThreadId, setCheckingTheadId] = useState(false);
   const { threadEmail } = useSelector((s) => s.threadEmail);
-  const { crmEndpoint, user } = useSelector((s) => s.user);
-  const { error: sendError, sendedEmail } = useSelector(
+  const { user } = useSelector((s) => s.user);
+  const { error: sendError } = useSelector(
     (s) => s.viewEmail,
   );
 
@@ -50,7 +46,7 @@ const Thread = () => {
         toast.error("Failed to verify thread!");
         return;
       }
-      if (!data?.data?.find(email => email == currentEmail)) {
+      if (!data?.data?.find(email => email.toLowerCase() == currentEmail.toLowerCase())) {
         toast.error('Wrong Thread Id Detected! Try Again.')
         return;
       }
@@ -68,6 +64,7 @@ const Thread = () => {
       });
 
       dispatch(sendEmail(formData));
+      state?.handleAfterSuccessMailSent?.()
       moveToNext(currentEmail)
     } catch (error) {
       console.error(error);
@@ -76,45 +73,7 @@ const Thread = () => {
       setCheckingTheadId(false);
     }
   };
-  const moveToNext = (sendemail) => {
-    const isLast = inboxEmails.length === currentIndex + 1;
-    const nextEmailObj = inboxEmails[currentIndex + 1];
-    if (isLast) {
-      localStorage.removeItem("email");
-      setEnteredEmail("");
-      navigate("/unreplied-emails");
-      return;
-    }
 
-    if (!nextEmailObj) {
-      localStorage.removeItem("email");
-      setEnteredEmail("");
-
-      navigate("/unreplied-emails");
-      return;
-    }
-    console.log("SUPER FAST REPLY", superfastReply);
-    dispatch(unrepliedAction.removeUnreplied(sendemail));
-    if (superfastReply) {
-      handleDateClick({
-        email: extractEmail(nextEmailObj?.from || ""),
-        nextPrev: true,
-      });
-      handleMove({
-        email: extractEmail(nextEmailObj?.from || ""),
-        threadId: nextEmailObj?.thread_id,
-        loadAiReply: true,
-      });
-      return;
-    }
-    handleDateClick({
-      email: extractEmail(nextEmailObj?.from || ""),
-      navigate: "/",
-      nextPrev: true,
-    });
-
-
-  };
   useEffect(() => {
     if (
       currentEmail &&
@@ -184,12 +143,9 @@ const Thread = () => {
     files,
     setFiles,
     editorContent,
-    moveToNext,
     setEditorContent,
     htmlfile,
     setHtmlfile,
-    contentLoading,
-    setContentLoading,
     pdfLoading, // ✅ added
     handleSendClick,
     checkingThreadId,

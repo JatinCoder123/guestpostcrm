@@ -15,9 +15,6 @@ export default function Contactpage() {
   if (id || enteredEmail) {
     return <ContactDetail />
   }
-
-
-
   return (
     <AllContacts />
   )

@@ -1,16 +1,16 @@
 import axios from "axios";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
+
 let CRMENDPOINT = "";
 let DB_NAME = "";
+
 export function setConfig(endpoint, db_name) {
   CRMENDPOINT = endpoint;
   DB_NAME = db_name;
-  return;
 }
 
 const apiClient = axios.create({
-  baseURL: "", // optional: set your base URL here
-  // timeout: 15000,
+  baseURL: "",
 });
 
 export const apiRequest = async ({
@@ -21,34 +21,21 @@ export const apiRequest = async ({
   params = {},
   withCredentials = false,
 }) => {
-  try {
-    const response = await apiClient({
-      url: endpoint,
-      method,
-      data: body,
-      headers,
-      params: {
-        db_name: DB_NAME,
-        ...params,
-      },
-      withCredentials,
-    });
+  const response = await apiClient({
+    url: endpoint,
+    method,
+    data: body,
+    headers,
+    params: {
+      db_name: DB_NAME,
+      ...params,
+    },
+    withCredentials,
+  });
 
-    return response.data;
-  } catch (error) {
-    console.error("API Error:", error?.response || error.message);
-
-    throw (
-      error?.response?.data || {
-        message: "Something went wrong",
-      }
-    );
-  }
+  return response.data;
 };
 
-/**
- * Special API function for GPC (with default API key)
- */
 export const fetchGpc = async ({
   method = "GET",
   body = null,
@@ -56,16 +43,22 @@ export const fetchGpc = async ({
   headers = {},
 }) => {
   const params1 = DB_NAME ? { ...params, db_name: DB_NAME } : params;
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const requestHeaders = {
+    "X-Api-Key": FETCH_GPC_X_API_KEY,
+    ...headers,
+  };
+
+  if (!isFormData && !requestHeaders["Content-Type"]) {
+    requestHeaders["Content-Type"] = "application/json";
+  }
+
   const response = await apiClient({
     url: CRMENDPOINT,
     method,
     data: body,
     params: params1,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
-      ...headers,
-    },
+    headers: requestHeaders,
   });
 
   return response.data;

@@ -35,6 +35,8 @@ import { getBacklinks } from "../store/Slices/backlinks.js";
 import { getAllContacts } from "../store/Slices/contacts.js";
 import { getAllUsers } from "../store/Slices/crmUser.js";
 import { getTinyKey } from "../store/Slices/tinyKey.js";
+import { getMailerSummary } from "../store/Slices/mailerSummary.js";
+import { getOutboxEmails } from "../store/Slices/outbox.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
@@ -55,10 +57,12 @@ function useRefresh() {
         if (currentEventThreadId == threadId) {
             if (enteredEmail) {
                 dispatch(getLadger({ email: enteredEmail, brand: showBrandTimeline }));
+                dispatch(getMailerSummary({ email: enteredEmail }))
                 dispatch(getViewEmail({ email: enteredEmail }));
                 dispatch(getContact(enteredEmail));
             } else if (firstEmail) {
                 dispatch(getLadger({ email: firstEmail, brand: showBrandTimeline }));
+                dispatch(getMailerSummary({ email: enteredEmail }))
                 dispatch(getViewEmail({ email: firstEmail }));
                 dispatch(getContact(firstEmail));
             }
@@ -78,8 +82,11 @@ function useRefresh() {
     }, [])
     useEffect(() => {
         dispatch(getAiCredits());
+        dispatch(getOutboxEmails({}));
+
         dispatch(getAllWebsites());
         dispatch(getOrderRem({ email: enteredEmail }));
+
         dispatch(getMarketplace())
         dispatch(getBacklinks({}));
         dispatch(getOrders({ email: enteredEmail, brand: showBrandTimeline }));
@@ -119,6 +126,7 @@ function useRefresh() {
         const emailToUse = enteredEmail
 
         dispatch(getLadger({ email: emailToUse, brand: showBrandTimeline }));
+        dispatch(getMailerSummary({ email: emailToUse }));
         dispatch(getViewEmail({ email: emailToUse }));
         dispatch(getContact(emailToUse));
     }, [enteredEmail]);
@@ -127,6 +135,7 @@ function useRefresh() {
         const emailToUse = firstEmail;
         if (!enteredEmail) {
             dispatch(getLadger({ email: emailToUse, brand: showBrandTimeline }));
+            dispatch(getMailerSummary({ email: emailToUse }));
             dispatch(getViewEmail({ email: emailToUse }));
             dispatch(getContact(emailToUse));
         }

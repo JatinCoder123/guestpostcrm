@@ -21,10 +21,11 @@ import {
 } from "lucide-react";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
+import { getMailerSummary } from "../store/Slices/mailerSummary";
+import IconButton from "../components/ui/Buttons/IconButton"
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
-  const { mailersSummary, loading } = useSelector((state) => state.ladger);
   const { contactInfo } = useSelector((state) => state.viewEmail);
   const email = contactInfo?.email1;
   const {
@@ -105,7 +106,7 @@ const MailerSummaryHeader = () => {
 
       <div className=" p-4 bg-slate-50 rounded-3xl shadow-xl border border-slate-200 flex flex-col gap-3">
         {/* TOP INFO */}
-        <MailerSummary mailersSummary={mailersSummary} />
+        <MailerSummary />
 
         {/* STATS CARDS */}
         <div className="rounded-3xl shadow-sm p-3">
@@ -164,18 +165,41 @@ export default MailerSummaryHeader;
 
 
 
-function MailerSummary({ mailersSummary }) {
+function MailerSummary() {
+  const { mailersSummary, loading } = useSelector(
+    (state) => state.mailersSummary
+  );
+  const { contactInfo } = useSelector((state) => state.viewEmail);
+  const dispatch = useDispatch();
+
   return (
     <>
-      {mailersSummary ? (
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {[1, 2, 3].map((item) => (
+            <div
+              key={item}
+              className="p-4 rounded-2xl border border-gray-200 bg-white shadow-sm animate-pulse"
+            >
+              <div className="h-3 w-24 bg-gray-200 rounded mb-3"></div>
+
+              <div className="h-5 w-40 bg-gray-300 rounded mb-2"></div>
+
+              <div className="h-3 w-28 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+      ) : mailersSummary ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div>
             <div className="text-xs text-gray-500 uppercase font-semibold">
               Created At
             </div>
+
             <div className="font-semibold text-gray-900 mt-1">
               {mailersSummary?.date_entered_formatted || ""}
             </div>
+
             <div className="text-xs text-gray-500">
               {mailersSummary?.date_entered || ""}
             </div>
@@ -185,6 +209,7 @@ function MailerSummary({ mailersSummary }) {
             <div className="text-xs text-gray-500 uppercase font-semibold">
               Subject
             </div>
+
             <Titletooltip content={mailersSummary?.subject || "No Subject"}>
               <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
                 {mailersSummary?.subject || ""}
@@ -196,6 +221,7 @@ function MailerSummary({ mailersSummary }) {
             <div className="text-xs text-gray-500 uppercase font-semibold">
               Motive
             </div>
+
             <Titletooltip content={mailersSummary?.correct_motive || "N/A"}>
               <div className="font-semibold text-gray-900 mt-1 cursor-pointer hover:text-blue-600 truncate max-w-[280px]">
                 {mailersSummary?.correct_motive || ""}
@@ -204,12 +230,19 @@ function MailerSummary({ mailersSummary }) {
           </div>
         </div>
       ) : (
-        <div className=" p-6 bg-gray-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4 mb-2">
+        <div className="p-6 bg-gray-50 rounded-3xl shadow-xl border border-white/40 flex flex-col items-center gap-4 mb-2">
           <p className="text-gray-800 font-semibold">
             No mail summary available for this email.
           </p>
+
           <button
-            onClick={() => window.location.reload()}
+            onClick={() =>
+              dispatch(
+                getMailerSummary({
+                  email: contactInfo?.email,
+                })
+              )
+            }
             className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
           >
             <RefreshCcwIcon className="w-4 h-4" />
@@ -218,7 +251,7 @@ function MailerSummary({ mailersSummary }) {
         </div>
       )}
     </>
-  )
+  );
 }
 /* ===================== SUMMARY CARD ===================== */
 function SummaryCard({
@@ -312,7 +345,7 @@ function SummaryCard({
       ) : (
         <>
           <div className="flex items-center gap-3">
-            {type == "orders" && data.length == 0 ? (
+            {type == "orders" ? (
               <button
                 className="cursor-pointer"
                 onClick={() =>
@@ -349,24 +382,29 @@ function SummaryCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            {type == "orders" && data.length > 0 && <IconButton
+              onClick={() => dispatch(createOrder())}
+              disabled={type == "invoice"}
+              icon={Plus}
+              label="Fetch Order"
+              className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
+            />
+            }
+            <IconButton
               onClick={handleClick}
               disabled={type == "invoice"}
+              icon={data?.length > 0 ? Eye : Plus}
+              label={data?.length > 0 ? `View ${type}` : `${type == "orders" ? "Fetch" : "Create"} ${type}`}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-            >
-              {data?.length > 0 ? (
-                <Eye className="w-4 h-4" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-            </button>
-            <button
+            />
+            <IconButton
               onClick={handleSync}
+              icon={RefreshCcw}
+              label={`Fetch ${type} from threads`}
               disabled={syncing || type == "invoice"}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
-            >
-              <RefreshCcw className="w-4 h-4" />
-            </button>
+            />
+
           </div>
         </>
       )}

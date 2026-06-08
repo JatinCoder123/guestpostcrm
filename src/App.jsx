@@ -58,6 +58,8 @@ import DataModellingPage from "./components/pages/settingpages/DataModellingPage
 import UserActivity from "./components/pages/settingpages/UserActivity";
 import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
+import OutBox from "./components/pages/OutBox";
+import RedirectHandler from "./components/pages/RedirectHandler";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -118,6 +120,10 @@ const router = createBrowserRouter([
         path: "console",
         element: <ConsoleHandler />,
       },
+      {
+        path: "redirect",
+        element: <RedirectHandler />,
+      },
 
       {
         path: "Marketplace",
@@ -175,6 +181,10 @@ const router = createBrowserRouter([
       {
         path: "timeline",
         element: <TimelinePage />,
+      },
+      {
+        path: "outbox",
+        element: <OutBox />,
       },
       {
         path: "ip",
@@ -309,26 +319,43 @@ const router = createBrowserRouter([
 ]);
 export default function App() {
   const dispatch = useDispatch();
+
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );
-  const searchParams = new URLSearchParams(window.location.search);
 
-  const email = searchParams.get("email");
   useEffect(() => {
-    dispatch(getUser(email));
-  }, []);
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const email = searchParams.get("email");
+
+    // Only allow email param when URL has no extra path
+    const isOnlyDomain =
+      window.location.pathname === "/" ||
+      window.location.pathname === "";
+
+    if (isOnlyDomain && email) {
+      dispatch(getUser(email));
+    } else {
+      dispatch(getUser());
+    }
+  }, [dispatch]);
+
   useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(userAction.clearAllErrors());
     }
   }, [dispatch, error]);
+
   return (
     <>
       {isAuthenticated && <RouterProvider router={router} />}
+
       {!isAuthenticated && loading && <LoadingPage />}
+
       {!isAuthenticated && !loading && <Login />}
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -339,7 +366,7 @@ export default function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark" // you can change to "light"
+        theme="dark"
       />
     </>
   );

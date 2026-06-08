@@ -49,10 +49,10 @@ export default function ThreadView() {
     setEditorContent,
     handleSendClick,
     checkingThreadId,
-    contentLoading,
   } = useOutletContext() || [];
 
   const firstMessageRef = useRef(null);
+  const { mailersSummary, loading: summaryLoading } = useSelector(state => state.mailersSummary)
 
   const {
     context: { currentThread: threadId, currentEmail },
@@ -91,18 +91,12 @@ export default function ThreadView() {
     message,
   } = useSelector((state) => state.aiReply);
 
-  useEffect(() => {
-    dispatch(getAiReply(threadId));
-    setEditorContent("");
-  }, [threadId]);
 
   useEffect(() => {
-    if (message && aiResponse) {
-      setEditorContent(aiResponse);
-      dispatch(aiReplyAction.clearMessge());
+    if (mailersSummary && !summaryLoading) {
+      setEditorContent(mailersSummary?.ai_response ?? "")
     }
-  }, [aiResponse, aiError, message]);
-
+  }, [mailersSummary, summaryLoading])
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -122,7 +116,7 @@ export default function ThreadView() {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong");
+      toast.error("Failed To Fetch Full Message!");
     }
   };
 
@@ -323,7 +317,7 @@ export default function ThreadView() {
                       <div className="w-[40%] bg-white/20 backdrop-blur-md text-white p-5 flex flex-col justify-between gap-4 rounded-lg">
                         <div className="flex justify-between">
                           <h2 className="text-lg font-bold flex items-center gap-2">
-                            ⚡ Super Fast Reply
+                            ⚡   AI Summary
                           </h2>
 
                           <div className="flex gap-3">
@@ -354,6 +348,35 @@ export default function ThreadView() {
                           </div>
                         </div>
 
+                        {/* SUMMARY */}
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 h-[260px] overflow-hidden flex flex-col">
+
+
+
+                          {/* CONTENT */}
+                          <div className="flex-1 overflow-hidden">
+                            {summaryLoading ? (
+                              <div className="space-y-3 animate-pulse">
+                                <div className="h-4 bg-white/20 rounded w-full"></div>
+                                <div className="h-4 bg-white/20 rounded w-[90%]"></div>
+                                <div className="h-4 bg-white/20 rounded w-[80%]"></div>
+                                <div className="h-4 bg-white/20 rounded w-[70%]"></div>
+                                <div className="h-4 bg-white/20 rounded w-[60%]"></div>
+                                <div className="h-4 bg-white/20 rounded w-[85%]"></div>
+                              </div>
+                            ) : (
+                              <div className="h-full overflow-y-auto pr-2 custom-scrollbar">
+                                <p className="text-sm text-white/90 leading-7 whitespace-pre-wrap break-words">
+                                  {mailersSummary?.summary || (
+                                    <span className="text-white/50">
+                                      No summary available
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                         <ReplyButtons
                           editorReady={editorReady}
                           editorRef={editorRef}
@@ -363,7 +386,7 @@ export default function ThreadView() {
                       {/* RIGHT PANEL */}
                       <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
                         {/* LOADING */}
-                        {contentLoading && (
+                        {summaryLoading && (
                           <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

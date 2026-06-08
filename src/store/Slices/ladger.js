@@ -1,16 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { getCache, setCache } from "../../services/cache";
+import { clearSectionCache, getCache, setCache } from "../../services/cache";
 import { fetchGpc } from "../../services/api";
 
 const ladgerSlice = createSlice({
   name: "ladger",
   initialState: {
     loading: false,
+    childLoading: false,
     email: localStorage.getItem("email") || null,
     ladger: [],
+    ladgerChild: [],
     noSearchResultData: null,
-    mailersSummary: null,
     pageCount: 1,
     pageIndex: 1,
     error: null,
@@ -25,7 +26,6 @@ const ladgerSlice = createSlice({
     getLadgerRequest(state) {
       state.loading = true;
       state.ladger = [];
-      state.mailersSummary = null
       state.error = null;
       state.email = null;
     },
@@ -35,16 +35,10 @@ const ladgerSlice = createSlice({
         duplicate,
         ladger,
         email,
-        pageCount,
-        pageIndex,
-        mailersSummary,
       } = action.payload;
 
       state.loading = false;
       state.ladger = ladger;
-      state.mailersSummary = mailersSummary || null;
-      state.pageCount = pageCount || 1;
-      state.pageIndex = pageIndex || 1;
       state.email = email || null;
       state.duplicate = duplicate || 0;
       state.error = null;
@@ -54,6 +48,35 @@ const ladgerSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
       state.ladger = []
+    },
+    getLadgerChildRequest(state) {
+      state.childLoading = true;
+      state.ladgerChild = [];
+      state.error = null;
+    },
+
+    getLadgerChildSuccess(state, action) {
+      const {
+        ladgerChild,
+        pageCount,
+        pageIndex,
+      } = action.payload;
+
+      state.childLoading = false;
+      if (pageIndex === 1) {
+        state.ladgerChild = ladgerChild;
+      } else {
+        state.ladgerChild = [...state.ladgerChild, ...ladgerChild];
+      }
+      state.pageCount = pageCount || 1;
+      state.pageIndex = pageIndex || 1;
+      state.error = null;
+    },
+
+    getLadgerChildFailed(state, action) {
+      state.childLoading = false;
+      state.error = action.payload;
+      state.ladgerChild = []
     },
 
     setTimeline(state, action) {
@@ -78,7 +101,7 @@ const ladgerSlice = createSlice({
     getNoSearchResultDataFailed(state, action) {
       state.noSearchFoundLoading = false;
       state.noSearchResultData = null;
-      state.error = action.payload || "Something went wrong";
+      state.error = action.payload
     },
     manualScanRequest(state) {
       state.manualScanLoading = true;
@@ -91,7 +114,7 @@ const ladgerSlice = createSlice({
     },
     manualScanFailed(state, action) {
       state.manualScanLoading = false;
-      state.error = action.payload || "Something went wrong";
+      state.error = action.payload
     },
 
     clearAllErrors(state) {
@@ -120,7 +143,7 @@ export const getLadger = ({
       `${targetEmail?.trim() || ""}_${targetPage}_${timeline || "all"}`;
 
     const cacheKey = buildCacheKey(trimmedEmail, page);
-
+    clearSectionCache('ledgers_child')
     if (loading) {
       dispatch(ladgerSlice.actions.getLadgerRequest());
     }
@@ -135,7 +158,6 @@ export const getLadger = ({
             ladgerSlice.actions.getLadgerSuccess({
               duplicate: cachedData.duplicate,
               ladger: cachedData.ladger,
-              mailersSummary: cachedData.mailersSummary,
               email: trimmedEmail,
               pageCount: cachedData.pageCount,
               pageIndex: cachedData.pageIndex,
@@ -155,7 +177,6 @@ export const getLadger = ({
       const freshData = {
         duplicate: data.duplicate_threads_count,
         ladger: data.data ?? [],
-        mailersSummary: data.mailers_summary,
         pageCount: data.total_pages,
         pageIndex: data.current_page,
       };
@@ -166,7 +187,6 @@ export const getLadger = ({
         ladgerSlice.actions.getLadgerSuccess({
           duplicate: freshData.duplicate,
           ladger: freshData.ladger,
-          mailersSummary: freshData.mailersSummary,
           email: trimmedEmail,
           pageCount: freshData.pageCount,
           pageIndex: freshData.pageIndex,
@@ -201,7 +221,6 @@ export const getLadger = ({
               setCache("ledgers", prefetchCacheKey, {
                 duplicate: data.duplicate_threads_count,
                 ladger: data.data ?? [],
-                mailersSummary: data.mailers_summary,
                 pageCount: data.total_pages,
                 pageIndex: data.current_page,
               });
@@ -215,6 +234,63 @@ export const getLadger = ({
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(ladgerSlice.actions.getLadgerFailed("Failed To Get Ladger"));
+    }
+  };
+};
+export const getLadgerChild = ({
+  loading = true,
+  page = 1,
+  force = false,
+  parentId,
+}) => {
+  return async (dispatch, getState) => {
+    const timeline = getState().ladger.timeline;
+
+    const buildCacheKey = (parentId, targetPage = 1) =>
+      `${parentId?.trim() || ""}_${targetPage}_${timeline || "all"}`;
+
+    const cacheKey = buildCacheKey(parentId, page);
+
+    if (loading) {
+      dispatch(ladgerSlice.actions.getLadgerChildRequest());
+    }
+
+    try {
+      // Serve cache instantly
+      if (!(force)) {
+        const cachedData = getCache("ledgers_child", cacheKey);
+
+        if (cachedData) {
+          dispatch(
+            ladgerSlice.actions.getLadgerChildSuccess({
+              ladgerChild: cachedData.ladgerChild,
+              pageCount: cachedData.pageCount,
+              pageIndex: cachedData.pageIndex,
+            })
+          );
+        }
+      }
+
+      const params = { ...(timeline && timeline !== "null" ? { filter: timeline } : {}), page, page_size: "10" }
+      const data = await fetchGpc({ params: { type: 'timeline_ledger', ...params }, method: "POST", body: { id: parentId } });
+      console.log(`CHILD LADGER`, data)
+      const freshData = {
+        ladgerChild: data.data ?? [],
+        pageCount: data.total_pages,
+        pageIndex: data.current_page,
+      };
+
+      setCache("ledgers_child", cacheKey, freshData);
+      dispatch(
+        ladgerSlice.actions.getLadgerChildSuccess({
+          ladgerChild: freshData.ladgerChild,
+          pageCount: freshData.pageCount,
+          pageIndex: freshData.pageIndex,
+        })
+      );
+      dispatch(ladgerSlice.actions.clearAllErrors());
+    } catch (error) {
+      dispatch(ladgerSlice.actions.getLadgerChildFailed("Failed To Get Ladger Child"));
     }
   };
 };
@@ -239,9 +315,7 @@ export const getNoSearchResultData = (search) => {
       dispatch(ladgerSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(
-        ladgerSlice.actions.getNoSearchResultDataFailed(
-          error.response?.data?.message,
-        ),
+        ladgerSlice.actions.getNoSearchResultDataFailed(),
       );
     }
   };

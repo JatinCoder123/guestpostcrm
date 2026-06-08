@@ -5,11 +5,13 @@ import { viewEmailAction } from "../store/Slices/viewEmail";
 import { fetchGpc } from "../services/api";
 import { showConsole } from "../assets/assets";
 import { LoadingChase } from "./Loading";
+import { useNext } from "../hooks/useNext";
 
 const FirstReplyBtn = ({ email }) => {
   const dispatch = useDispatch();
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
+  const { moveToNext } = useNext()
   const [frLoading, setFrLoading] = useState(false);
   const handleSendFirstReply = async () => {
     if (!reminderId) return;
@@ -26,6 +28,7 @@ const FirstReplyBtn = ({ email }) => {
           sendedEmail: email,
         }),
       );
+      moveToNext(email)
       setShowFirstReplyBtn(false);
     } catch (err) {
       console.error("Error sending first reply:", err);
@@ -57,9 +60,8 @@ const FirstReplyBtn = ({ email }) => {
   return (
     showFirstReplyBtn && (
       <div
-        className={` transition-opacity duration-200 ${
-          showFirstReplyBtn ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={` transition-opacity duration-200 ${showFirstReplyBtn ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div className="relative group flex items-center justify-center">
           <button

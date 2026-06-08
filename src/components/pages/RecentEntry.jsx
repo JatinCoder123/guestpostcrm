@@ -26,6 +26,7 @@ import { CustomDropdown } from "./settingpages/PromptTestingPage";
 
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
+import PromptLadger from "../PromptLadger";
 
 /* 🔹 Tooltip */
 const Tooltip = ({ content, children }) => {
@@ -71,7 +72,7 @@ export function RecentEntry() {
   const { handleDateClick } = useContext(PageContext);
 
   const { handleMove } = useThreadContext();
-
+  const [activePromptId, setActivePromptId] = useState()
   const navigateTo = useNavigate();
 
   useEffect(() => {
@@ -108,16 +109,12 @@ export function RecentEntry() {
         >
           <span className="truncate">{event.date_entered ?? "—"}</span>
 
-          {event?.prompt_details?.length > 0 && (
+          {event?.prompt_ledger_id && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
 
-                navigateTo("/settings/machine-learning", {
-                  state: {
-                    prompt: event.prompt_details[0],
-                  },
-                });
+                setActivePromptId(event.prompt_ledger_id)
               }}
               className="text-blue-600 hover:text-blue-700"
             >
@@ -210,37 +207,41 @@ export function RecentEntry() {
   ];
 
   return (
-    <TableView
-      tableData={events}
-      tableName={"Recent Entries"}
-      columns={columns}
-      slice={"events"}
-      fetchNextPage={() => dispatch(getEvents({ page: pageIndex + 1 }))}
-    >
-      <TableTitleBar
-        Icon={Activity}
-        title={"Recent Entries"}
-        titleClass={"text-green-600"}
-      />
-
-      {/* FILTERS */}
-      <div className="absolute top-0 right-[30%] p-4  flex flex-wrap gap-4 items-center ">
-        <CustomDropdown
-          className="w-[240px]"
-          onChange={(value) => {
-            setSelectedGrp(value);
-            setSearchTerm(value);
-          }}
-          value={selectedGrp}
-          placeholder="Select Group"
-          options={grpData?.map((grp) => ({
-            value: grp.name,
-            label: grp.description,
-          }))}
+    <>
+      <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} isModal={true} />
+      <TableView
+        tableData={events}
+        tableName={"Recent Entries"}
+        columns={columns}
+        slice={"events"}
+        fetchNextPage={() => dispatch(getEvents({ page: pageIndex + 1 }))}
+      >
+        <TableTitleBar
+          Icon={Activity}
+          title={"Recent Entries"}
+          titleClass={"text-green-600"}
         />
-      </div>
 
-      <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-5"} />
-    </TableView>
+        {/* FILTERS */}
+        <div className="absolute top-0 right-[30%] p-4  flex flex-wrap gap-4 items-center ">
+          <CustomDropdown
+            className="w-[240px]"
+            onChange={(value) => {
+              setSelectedGrp(value);
+              setSearchTerm(value);
+            }}
+            value={selectedGrp}
+            placeholder="Select Group"
+            options={grpData?.map((grp) => ({
+              value: grp.name,
+              label: grp.description,
+            }))}
+          />
+        </div>
+
+        <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-5"} />
+      </TableView>
+    </>
+
   );
 }

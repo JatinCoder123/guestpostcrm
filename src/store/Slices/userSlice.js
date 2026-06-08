@@ -96,8 +96,10 @@ export const getUser = (email = null) => {
       setConfig(data.crmEndpoint, data.db_name)
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
-      showConsole && console.log(error);
-      localStorage.setItem('displayIntro', "true")
+      console.log("Full Error:", error.response);
+
+      localStorage.setItem("displayIntro", "true");
+
       let message = "Something went wrong. Please try again.";
 
       if (error.response) {
@@ -111,24 +113,40 @@ export const getUser = (email = null) => {
 
           case 401:
             if (backendError.includes("Invalid token")) {
-              message = "Your session seems to have expired. Please sign in again.";
+              message = "Your session expired. Please login again.";
             } else if (backendError.includes("Unauthorized user")) {
               message = "You don’t have permission to access this area.";
-            } else if (backendError.includes("email missing")) {
-              message = "We couldn’t verify your session. Please log in again.";
+            } else if (
+              backendError.includes("email missing") ||
+              backendError.includes("Token and email both missing")
+            ) {
+              message = "Please login again.";
             } else {
-              message = "For security reasons, please sign in again.";
+              message = "Authentication failed.";
             }
             break;
 
           case 400:
-            message = "We couldn’t complete your request. Please try again.";
+            if (
+              backendError.includes("Token and email both missing")
+            ) {
+              message = "";
+            } else {
+              message = backendError || "Invalid request.";
+            }
+            break;
+
+          case 500:
+            message = "Server error. Please try again later.";
             break;
 
           default:
-            message = "Something went wrong on our side. Please try again in a moment.";
+            message =
+              backendError ||
+              "Something went wrong on our side.";
         }
-
+      } else if (error.request) {
+        message = "Network error. Please check your internet connection.";
       }
 
       dispatch(userSlice.actions.loadUserFailed(message));
