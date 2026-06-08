@@ -61,6 +61,7 @@ import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
 import { Toaster } from "react-hot-toast";
+import ReminderManagementPage from "./components/pages/ReminderManagement";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -216,10 +217,6 @@ const router = createBrowserRouter([
         path: "moved-emails",
         element: <MovedPage />,
       },
-      {
-        path: "backlinks",
-        element: <BacklinksPage />,
-      },
 
       {
         path: "other",
@@ -232,6 +229,10 @@ const router = createBrowserRouter([
       {
         path: "hot-records",
         element: <HotPage />,
+      },
+      {
+        path: "reminder-management",
+        element: <ReminderManagementPage />,
       },
       {
         path: "thread",
@@ -312,6 +313,11 @@ const router = createBrowserRouter([
             path: "recycle",
             element: <RecyclePage />,
           },
+          {
+            path: "backlinks",
+            element: <BacklinksPage />,
+          },
+
 
         ],
       },

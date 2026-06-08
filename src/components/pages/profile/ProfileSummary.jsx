@@ -83,14 +83,14 @@ function ProfileSummary({
             type="button"
             onClick={onDeleteProfile}
             disabled={profileDeleting}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-4 text-sm font-black text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {profileDeleting ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <Trash2 size={16} />
             )}
-            {profileDeleting ? "Deleting..." : "Delete Profile"}
+          
           </button>
         </div>
       </div>

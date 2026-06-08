@@ -33,6 +33,7 @@ import { LoadingChase } from "../../Loading";
 import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../../store/constants";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply";
 import FirstReplyBtn from "../../FirstReplyBtn";
+import {DeepReplyBtn} from "../../DeepReplyBtn";
 import { SmallTinyEditor } from "../../TinyEditor";
 import IconButton from "../../ui/Buttons/IconButton";
 import { BiSolidMessageCheck } from "react-icons/bi";
@@ -46,7 +47,6 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     setFiles,
     files,
     editorContent,
-    setContentLoading,
     htmlfile,
     setHtmlfile,
     pdfLoading,
@@ -150,9 +150,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     }
   }, [message, aiResponse, dispatch]);
 
-  useEffect(() => {
-    setContentLoading(aiLoading);
-  }, [aiLoading]);
+
 
   /* ── helpers ─────────────────────────────────────────────── */
   const insertTextAtCursor = () => {
@@ -300,7 +298,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             icon={Sparkles}
             label="AI  Reply"
             onClick={() => {
-              if (aiReplyContent === "") dispatch(getAiReply(threadId));
+              if (aiReplyContent === "") dispatch(getAiReply(threadId, null, null, currentEmail));
               insertAiReply(aiReplyContent);
             }}
             onEdit={() => navigate("/settings/templates")}
@@ -312,7 +310,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             icon={Zap}
             label="AI Now"
             onClick={() => {
-              dispatch(getAiReply(threadId, 1, editorContent));
+              dispatch(getAiReply(threadId, 1, editorContent, currentEmail));
               insertAiReply(editorContent);
             }}
             onEdit={() => navigate("/settings/templates")}
@@ -477,6 +475,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
 
           {/* ── First Reply ── */}
           <FirstReplyBtn email={currentEmail} />
+          <DeepReplyBtn />
           <motion.button
             whileHover={{ scale: 1.15 }}
             whileTap={{ scale: 0.95 }}

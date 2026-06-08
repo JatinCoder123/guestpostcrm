@@ -21,6 +21,7 @@ import TableTitleBar from "../ui/table/TableTitleBar";
 import { useTablePreference } from "../../hooks/useTablePreference";
 import { useInfiniteRecentEvents } from "../../queries/recentAct.queries";
 import { useContext } from "react";
+import PromptLadger from "../PromptLadger";
 
 /* 🔹 Tooltip */
 const Tooltip = ({ content, children }) => {
@@ -68,7 +69,7 @@ export function RecentEntry() {
   const { handleDateClick } = useContext(PageContext);
 
   const { handleMove } = useThreadContext();
-
+  const [activePromptId, setActivePromptId] = useState()
   const navigateTo = useNavigate();
 
 
@@ -107,16 +108,12 @@ export function RecentEntry() {
         >
           <span className="truncate">{event.date_entered_time_ago ?? "—"}</span>
 
-          {event?.prompt_id > 0 && (
+          {event?.prompt_ledger_id && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
 
-                navigateTo("/settings/machine-learning", {
-                  state: {
-                    prompt: event.prompt_id
-                  },
-                });
+                setActivePromptId(event.prompt_ledger_id)
               }}
               className="text-blue-600 hover:text-blue-700"
             >
@@ -217,29 +214,33 @@ export function RecentEntry() {
     },
   ];
   return (
-    <TableView
-      tableData={events}
-      tableName={"Recent Entries"}
-      columns={columns}
-      slice={"recent"}
-      filterColumns={filterColumns}
-      preferences={preferences}
-      refreshKey={["recent"]}
-      pageIndex={pageIndex}
-      pageCount={pageCount}
-      count={count}
-      loading={loading}
-      fetchNextPage={() => {
-        if (
-          hasNextPage &&
-          !isFetchingNextPage
-        ) {
-          fetchNextPage();
-        }
-      }}
-    >
-      <TableTitleBar Icon={Activity} title={"Recent Entries"} titleClass={"text-green-600"} />
-      <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-5"} />
-    </TableView>
+    <>
+      <PromptLadger activePromptId={activePromptId} setActivePromptId={setActivePromptId} isModal={true} />
+      <TableView
+        tableData={events}
+        tableName={"Recent Entries"}
+        columns={columns}
+        slice={"recent"}
+        filterColumns={filterColumns}
+        preferences={preferences}
+        refreshKey={["recent"]}
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        fetchNextPage={() => {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}
+      >
+        <TableTitleBar Icon={Activity} title={"Recent Entries"} titleClass={"text-green-600"} />
+        <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-5"} />
+      </TableView>
+    </>
+
   );
 }

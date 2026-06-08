@@ -49,7 +49,6 @@ export default function ThreadView() {
     setEditorContent,
     handleSendClick,
     checkingThreadId,
-    contentLoading,
   } = useOutletContext() || [];
 
   const firstMessageRef = useRef(null);
@@ -92,18 +91,12 @@ export default function ThreadView() {
     message,
   } = useSelector((state) => state.aiReply);
 
-  useEffect(() => {
-    dispatch(getAiReply(threadId));
-    setEditorContent("");
-  }, [threadId]);
 
   useEffect(() => {
-    if (message && aiResponse) {
-      setEditorContent(aiResponse);
-      dispatch(aiReplyAction.clearMessge());
+    if (mailersSummary && !summaryLoading) {
+      setEditorContent(mailersSummary?.ai_response ?? "")
     }
-  }, [aiResponse, aiError, message]);
-
+  }, [mailersSummary, summaryLoading])
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -356,7 +349,7 @@ export default function ThreadView() {
                         </div>
 
                         {/* SUMMARY */}
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 h-[260px] overflow-hidden flex flex-col">
+                        <div className="bg-yellow-100 backdrop-blur-md rounded-2xl p-4 border border-white/10 h-[260px] overflow-hidden flex flex-col">
 
 
 
@@ -373,7 +366,7 @@ export default function ThreadView() {
                               </div>
                             ) : (
                               <div className="h-full overflow-y-auto pr-2 custom-scrollbar">
-                                <p className="text-sm text-white/90 leading-7 whitespace-pre-wrap break-words">
+                                <p className="text-sm text-black/90 leading-7 whitespace-pre-wrap break-words">
                                   {mailersSummary?.summary || (
                                     <span className="text-white/50">
                                       No summary available
@@ -393,7 +386,7 @@ export default function ThreadView() {
                       {/* RIGHT PANEL */}
                       <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
                         {/* LOADING */}
-                        {contentLoading && (
+                        {summaryLoading && (
                           <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

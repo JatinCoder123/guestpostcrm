@@ -15,6 +15,8 @@ import {
   BellRing,
   Contact2Icon,
   Cable,
+  CircleX,
+  Layers,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -23,17 +25,17 @@ import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence, color } from "framer-motion";
 import { LoadingSpin } from "./Loading";
-import { BarChart3 } from "lucide-react";
-import { useContactStats } from "../queries/contact.queries";
+import { BarChart3, Cross, CrossIcon } from "lucide-react";
 import { useEmailStats } from "../queries/email.queries";
+import { useContactStats } from "../queries/contact.queries";
 import { useOrderStats } from "../queries/orders.queries";
 import { useForwardedStats } from "../queries/forwarded.queries";
-import { useFavoriteStats } from "../queries/favourite.queries";
 import { useDealStats } from "../queries/deals.queries";
-import { useOfferStats } from "../queries/offers.queries";
+import { useOffer, useOfferStats } from "../queries/offers.queries";
 import { useExchangeStats } from "../queries/exchange.queries";
 import { useBacklinkStats } from "../queries/backlinks.queries";
 import { useInvoiceStats } from "../queries/invoice.queries";
+import { useFavoriteStats } from "../queries/favourite.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -184,14 +186,34 @@ export function Sidebar() {
       countBg: "bg-lime-500 text-white",
     },
     {
-      id: "backlinks",
-      label: "Backlinks",
-      icon: Cable,
-      loading: backlinkStatLoading,
-      count: backlinkStats?.stats?.all?.count,
-      color: "text-teal-600",
-      hover: "hover:bg-teal-50",
-      countBg: "bg-teal-500 text-white",
+      id: "Duplicate Rejected",
+      label: "Duplicate Rejected",
+      icon: CircleX,
+      loading: false,
+      count: null,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-red-500 text-white",
+    },
+    {
+      id: "Listicle",
+      label: "Listicle",
+      icon: Layers,
+      loading: false,
+      count: null,
+      color: "text-blue-600",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
+    },
+    {
+      id: "reminder-management",
+      label: "Reminder Management",
+      icon: BellRing,
+      loading: null,
+      count: null,
+      color: "text-lime-600",
+      hover: "hover:bg-lime-50",
+      countBg: "bg-lime-500 text-white",
     },
     {
       id: "other",
@@ -212,7 +234,7 @@ export function Sidebar() {
       color: "text-teal-600",
       hover: "hover:bg-teal-50",
       countBg: "bg-teal-500 text-white ",
-    },
+    }
   ];
 
   return (

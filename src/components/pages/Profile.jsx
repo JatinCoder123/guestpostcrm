@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../store/constants";
 import { PageContext } from "../../context/pageContext";
+import {Loader2} from "lucide-react";
 import {
   ONBOARDING_STEP,
   fetchOnboardingProgress,
@@ -78,6 +79,9 @@ const Profile = () => {
   const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
   const [crmProgressLoading, setCrmProgressLoading] = useState(true);
   const celebratedCompleteRef = useRef(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [deleteReason, setDeleteReason] = useState("");
+const [otherReason, setOtherReason] = useState("");
 
   const profileEmail = businessEmail || user.email;
   const onboardingRecordName = getOnboardingRecordName({
@@ -86,8 +90,9 @@ const Profile = () => {
   });
   const contactOnboardingDone =
     Array.isArray(contacts) && contacts.length > 0;
+    const hasWebsites = websites.length > 0;
   const step3Done =
-    contactOnboardingDone || crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED;
+    hasWebsites || crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED;
   const templateDone =
     contactOnboardingDone || crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
   const syncDone =
@@ -110,6 +115,15 @@ const Profile = () => {
     const key = getTemplateKey(template);
     return savedTemplateIds.has(key) || skippedTemplateIds.has(key);
   }).length;
+
+  useEffect(() => {
+  if (
+    websites.length > 0 &&
+    crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
+  ) {
+    completeWebsiteStep();
+  }
+}, [websites.length, crmOnboardingStep]);
 
   useEffect(() => {
     celebratedCompleteRef.current =
@@ -759,23 +773,18 @@ const Profile = () => {
     handleDateClick({ email: record.email, navigate: "/" });
   };
 
-  const handleDeleteProfile = async () => {
+  const handleDeleteProfile = async (reason) => {
     if (!profileEmail) {
       toast.error("Business email is required to delete profile");
       return;
     }
-
-    const confirmed = window.confirm(
-      `Delete profile data for ${profileEmail}? This action cannot be undone.`,
-    );
-    if (!confirmed) return;
 
     setProfileDeleting(true);
     try {
       const response = await fetch(
         `https://crm.outrightsystems.org/index.php?entryPoint=trynow&email=${encodeURIComponent(
           profileEmail,
-        )}&delete=1`,
+        )}&delete=1&reason=${encodeURIComponent(reason)}`,
       );
 
       const text = await response.text();
@@ -797,6 +806,7 @@ const Profile = () => {
 
       toast.success(data?.message || "Profile delete request completed");
       window.setTimeout(() => {
+        setShowDeleteModal(false);
         window.location.reload();
       }, 800);
     } catch (error) {
@@ -818,7 +828,7 @@ const Profile = () => {
         completion={completion}
         syncDone={syncDone}
         profileDeleting={profileDeleting}
-        onDeleteProfile={handleDeleteProfile}
+        onDeleteProfile= {() => setShowDeleteModal(true)}
       />
 
       {onboardingLoading && <ProfileOnboardingSkeleton />}
@@ -923,6 +933,100 @@ const Profile = () => {
         onGenerate={handleGenerateTemplate}
         isGenerating={aiGenerating}
       />
+
+      {showDeleteModal && (
+  <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="w-full max-w-2xl rounded-3xl bg-white p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+
+      <div className="mb-6">
+        <h2 className="text-2xl font-black text-slate-900">
+          Before you delete your profile
+        </h2>
+
+        <p className="mt-2 text-slate-500">
+          We'd appreciate your feedback before you leave.
+        </p>
+      </div>
+
+      <div className="grid gap-3">
+        {[
+          "Found a better service",
+          "Too expensive",
+          "Missing features",
+          "Difficult to use",
+          "Technical issues",
+          "No longer needed",
+          "Created another account",
+          "Other",
+        ].map((reason) => (
+          <label
+            key={reason}
+            className={`cursor-pointer rounded-xl border p-4 transition ${
+              deleteReason === reason
+                ? "border-red-300 bg-red-50"
+                : "border-slate-200 hover:border-slate-300"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <input
+                type="radio"
+                value={reason}
+                checked={deleteReason === reason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+              />
+              <span className="font-medium">{reason}</span>
+            </div>
+          </label>
+        ))}
+      </div>
+
+      {deleteReason === "Other" && (
+        <textarea
+          rows={4}
+          value={otherReason}
+          onChange={(e) => setOtherReason(e.target.value)}
+          className="mt-4 w-full rounded-xl border p-3"
+          placeholder="Tell us more..."
+        />
+      )}
+
+      <div className="mt-8 flex justify-end gap-3">
+        <button
+  disabled={profileDeleting}
+  onClick={() => {
+    setShowDeleteModal(false);
+    setDeleteReason("");
+    setOtherReason("");
+  }}
+  className="rounded-xl border px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+>
+  Cancel
+</button>
+
+        <button
+  disabled={!deleteReason || profileDeleting}
+  onClick={() =>
+    handleDeleteProfile(
+      deleteReason === "Other"
+        ? otherReason
+        : deleteReason
+    )
+  }
+  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {profileDeleting ? (
+    <>
+      <Loader2 size={16} className="animate-spin" />
+      Deleting...
+    </>
+  ) : (
+    "Delete Profile"
+  )}
+</button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
