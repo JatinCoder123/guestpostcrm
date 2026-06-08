@@ -492,38 +492,68 @@ export default function TemplatesPage() {
       const result = await res.json();
       showConsole && console.log("AI generate result:", result);
 
-      if (result?.success && result?.data?.html) {
-        if (aiModalContext === "edit") {
-          let html = result.data.html;
+   if (result?.success && result?.data?.html) {
+  
+  // ── Utility: unwrap double/triple-encoded JSON → clean HTML string ──
+  const unwrapHtml = (raw) => {
+    let html = raw;
+    let maxDepth = 5;
 
-// If html is actually JSON string
-if (typeof html === "string" && html.startsWith("{")) {
-  try {
-    html = JSON.parse(html).html;
-  } catch (e) {}
-}
+    while (typeof html === "string" && maxDepth-- > 0) {
+      const trimmed = html.trim();
 
-html = html
-  .replace(/^\{"html":"?/i, "") // remove starting {"html":"
-  .replace(/"}$/i, "")          // remove ending "}
-  .replace(/\\"/g, '"')
-  .replace(/\\n/g, "")
-  .replace(/\\r/g, "");
-
-setEditorContent(html);
-          setIsChanged(result.data.html !== originalContent);
-        } else {
-          setNewTemplateContent(result.data.html);
-          if (aiName) setNewTemplateName(aiName);
-          if (aiStage) setNewStageType(aiStage);
+      if (trimmed.startsWith("{") || trimmed.startsWith('"')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (parsed && typeof parsed === "object" && parsed.html) {
+            html = parsed.html; // unwrap {"html": "..."}
+          } else if (typeof parsed === "string") {
+            html = parsed;      // unwrap a JSON-encoded string
+          } else {
+            break;
+          }
+        } catch {
+          break; // not JSON anymore — must be raw HTML now
         }
-        setShowAiModal(false);
-        alert("✅ Template generated successfully!");
       } else {
-        alert(
-          `❌ Generation failed: ${result?.message || result?.error || "Unknown error"}`,
-        );
+        break; // plain HTML, done
       }
+    }
+
+    // At this point html may still have JS escape sequences if the
+    // server returned a non-JSON-parsed string with literal \n \r \"
+    // Convert them to real characters
+    if (typeof html === "string") {
+      html = html
+        .replace(/\\"/g, '"')
+        .replace(/\\n/g, "\n")
+        .replace(/\\r/g, "")
+        .replace(/\\t/g, "\t")
+        .replace(/\\\//g, "/");   // unescape forward slashes  \/  → /
+    }
+
+    return html;
+  };
+
+  const cleanHtml = unwrapHtml(result.data.html);
+
+  if (aiModalContext === "edit") {
+    setEditorContent(cleanHtml);
+    setIsChanged(cleanHtml !== originalContent);
+  } else {
+    setNewTemplateContent(cleanHtml);
+    if (aiName) setNewTemplateName(aiName);
+    if (aiStage) setNewStageType(aiStage);
+  }
+
+  setShowAiModal(false);
+  alert("✅ Template generated successfully!");
+
+} else {
+  alert(
+    `❌ Generation failed: ${result?.message || result?.error || "Unknown error"}`
+  );
+}
     } catch (err) {
       console.error("Generate error:", err);
       alert(`❌ Generation failed: ${err.message}`);
