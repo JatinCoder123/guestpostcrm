@@ -174,9 +174,9 @@ const [stats, setStats] = useState({});
       category:       "",
       report_user_id: appliedFilters.user,
       page:           "",
-      size:           "",
-      ...getDateRange(appliedFilters.date),   // from / from_time / to / to_time
-      ...overrides,                           // caller overrides stage / category / page / size
+      size:           "20",
+      ...getDateRange(appliedFilters.date),  
+      ...overrides,                           
     }),
     [activeSection, appliedFilters],
   );
