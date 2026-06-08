@@ -544,6 +544,8 @@ function WebCard({
   const minRaw = item.minAmount ?? item.minimum_price;
   const maxRaw = item.maxAmount ?? item.amount;
   const minStr = formatMoney(minRaw);
+  const avgRaw = item.average_amount;
+  const avgStr = formatMoney(avgRaw);
   const maxStr = formatMoney(maxRaw);
   const minNum = Number(minRaw);
   const maxNum = Number(maxRaw);
@@ -725,33 +727,40 @@ function WebCard({
             </span>
           )}
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-1 text-[9px] text-emerald-600 font-bold uppercase tracking-wide">
-              <TrendingDown size={9} /> Min
-            </div>
-            <div className="text-lg font-black text-gray-900">
-              {minStr !== null ? `$${minStr}` : "—"}
-            </div>
-          </div>
-          {/* divider bar */}
-          <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden mx-2">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-indigo-500 to-cyan-400"
-              style={{
-                width: hasRange ? "100%" : minStr || maxStr ? "50%" : "0%",
-              }}
-            />
-          </div>
-          <div className="text-right">
-            <div className="flex items-center justify-end gap-1 text-[9px] text-indigo-600 font-bold uppercase tracking-wide">
-              Max <TrendingUp size={9} />
-            </div>
-            <div className="text-lg font-black text-gray-900">
-              {maxStr !== null ? `$${maxStr}` : "—"}
-            </div>
-          </div>
-        </div>
+  <div className="grid grid-cols-3 gap-4 text-center">
+  {/* Min */}
+  <div>
+    <div className="flex items-center justify-center gap-1 text-[9px] text-emerald-600 font-bold uppercase tracking-wide">
+      <TrendingDown size={9} />
+      Min
+    </div>
+    <div className="text-lg font-black text-gray-900">
+      {minStr !== null ? `$${minStr}` : "—"}
+    </div>
+  </div>
+
+  {/* Mid */}
+  <div className="border-x border-gray-200 px-2">
+    <div className="flex items-center justify-center gap-1 text-[9px] text-cyan-600 font-bold uppercase tracking-wide">
+      <DollarSign size={9} />
+      Mid
+    </div>
+    <div className="text-lg font-black text-gray-900">
+      {avgStr !== null ? `$${avgStr}` : "—"}
+    </div>
+  </div>
+
+  {/* Max */}
+  <div>
+    <div className="flex items-center justify-center gap-1 text-[9px] text-indigo-600 font-bold uppercase tracking-wide">
+      Max
+      <TrendingUp size={9} />
+    </div>
+    <div className="text-lg font-black text-gray-900">
+      {maxStr !== null ? `$${maxStr}` : "—"}
+    </div>
+  </div>
+</div>
       </div>
 
       {/* ── Expandable Details ── */}
