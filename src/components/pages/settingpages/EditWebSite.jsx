@@ -116,6 +116,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
       setForm({
         id: item.id || "",
         name: item.name || "",
+        description: item.name || "",
         slug: item.slug || "",
         da: item.da || "",
         pa: item.pa || "",
@@ -137,12 +138,13 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
     }
   }, [item]);
 
-  const updateField = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+const updateField = (key, value) => {
+  setForm((prev) => ({
+    ...prev,
+    [key]: value,
+    ...(key === "name" ? { description: value } : {}),
+  }));
+};
 
   const handleSave = () => {
     if (!form.name?.trim()) {
