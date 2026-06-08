@@ -16,15 +16,16 @@ import {
   ThumbsDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { SocketContext } from "../context/SocketContext";
 import { BsRobot } from "react-icons/bs";
 import { editContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { toast } from "react-toastify";
 import EmojiInput from "./EmojiPicker";
-import { fetchGpc } from "../services/api";
 import FirstReplyBtn from "./FirstReplyBtn";
 import { useNext } from "../hooks/useNext";
 import PromptLadger from "./PromptLadger";
+import { useMailerSummary } from "../queries/mailerSummary.queries";
+import { useTimeline } from "../context/TimelineContext";
+import { useThread } from "../queries/threads.queries";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -32,14 +33,17 @@ const LatestMessage = ({ handleMessageClick }) => {
   const { crmEndpoint } = useSelector((state) => state.user);
   const [activePromptId, setActivePromptId] = useState(null)
   const { moveToNext } = useNext()
-  const { mailersSummary } = useSelector((state) => state.mailersSummary);
+  const { currentEmail } = useTimeline()
+  const { mailersSummary } = useMailerSummary(currentEmail);
   const {
     buttons,
     error: buttonsError,
     loading: buttonsLoading,
   } = useSelector((s) => s.quickActionBtn);
-  const { message, viewEmail, sending, count, contactInfo, accountInfo } =
+  const { message, sending, contactInfo, accountInfo } =
     useSelector((state) => state.viewEmail);
+  const { data, isPending } = useThread(currentEmail)
+  const viewEmail = data?.emails
   const hanldeConvDone = () => {
     dispatch(
       editContact(
@@ -117,9 +121,9 @@ const LatestMessage = ({ handleMessageClick }) => {
                   src="https://img.icons8.com/keek/100/filled-message.png"
                   alt="filled-message"
                 />{" "}
-                {count > 0 && (
+                {viewEmail?.length > 0 && (
                   <span className="absolute -top-2 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {count}
+                    {viewEmail?.length}
                   </span>
                 )}
               </button>

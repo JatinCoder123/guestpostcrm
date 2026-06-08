@@ -14,7 +14,6 @@ import {
   Link,
   BellRing,
   Contact2Icon,
-  Cable,
   CircleX,
   Layers,
 } from "lucide-react";
@@ -23,17 +22,16 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
-import { motion, AnimatePresence, color } from "framer-motion";
+import { motion, } from "framer-motion";
 import { LoadingSpin } from "./Loading";
-import { BarChart3, Cross, CrossIcon } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { useEmailStats } from "../queries/email.queries";
 import { useContactStats } from "../queries/contact.queries";
 import { useOrderStats } from "../queries/orders.queries";
 import { useForwardedStats } from "../queries/forwarded.queries";
 import { useDealStats } from "../queries/deals.queries";
-import { useOffer, useOfferStats } from "../queries/offers.queries";
+import { useOfferStats } from "../queries/offers.queries";
 import { useExchangeStats } from "../queries/exchange.queries";
-import { useBacklinkStats } from "../queries/backlinks.queries";
 import { useInvoiceStats } from "../queries/invoice.queries";
 import { useFavoriteStats } from "../queries/favourite.queries";
 
@@ -57,13 +55,7 @@ export function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const { loading: offersLoading, summary: offersSummary } = useSelector(
-    (s) => s.offers,
-  );
 
-  const { count: invoiceCount, loading: invoicesLoading } = useSelector(
-    (s) => s.invoices,
-  );
   const { count: orderRemCount, loading: orderRemLoading } = useSelector(
     (s) => s.reminders,
   );
@@ -76,7 +68,6 @@ export function Sidebar() {
   const { isPending: dealStatLoading, data: dealStats } = useDealStats()
   const { isPending: offerStatLoading, data: offerStats } = useOfferStats()
   const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
-  const { isPending: backlinkStatLoading, data: backlinkStats } = useBacklinkStats()
   const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats()
 
 

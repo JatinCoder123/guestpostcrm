@@ -21,8 +21,9 @@ import {
 } from "lucide-react";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
-import { getMailerSummary } from "../store/Slices/mailerSummary";
 import IconButton from "../components/ui/Buttons/IconButton"
+import { useMailerSummary } from "../queries/mailerSummary.queries";
+import { useTimeline } from "../context/TimelineContext";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
@@ -166,15 +167,12 @@ export default MailerSummaryHeader;
 
 
 function MailerSummary() {
-  const { mailersSummary, loading } = useSelector(
-    (state) => state.mailersSummary
-  );
-  const { contactInfo } = useSelector((state) => state.viewEmail);
-  const dispatch = useDispatch();
-
+  const { currentEmail } = useTimeline()
+  const { data, isPending, refetch } = useMailerSummary(currentEmail);
+  const mailersSummary = data?.mailers_summary
   return (
     <>
-      {loading ? (
+      {isPending ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {[1, 2, 3].map((item) => (
             <div
@@ -236,13 +234,7 @@ function MailerSummary() {
           </p>
 
           <button
-            onClick={() =>
-              dispatch(
-                getMailerSummary({
-                  email: contactInfo?.email,
-                })
-              )
-            }
+            onClick={() => refetch()}
             className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
           >
             <RefreshCcwIcon className="w-4 h-4" />

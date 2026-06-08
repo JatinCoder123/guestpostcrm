@@ -7,6 +7,7 @@ import { buildTableRequestBody } from "../utils/preferenceStorage";
 export const getAllOrders = ({
     preferences,
     page = 1,
+    email = "",
 }) =>
     http({
         method: "POST",
@@ -18,6 +19,7 @@ export const getAllOrders = ({
                 preferences
             ),
         },
+        params: { email }
     });
 
 export const getOrderById = (

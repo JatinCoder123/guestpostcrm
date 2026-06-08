@@ -62,6 +62,7 @@ import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
 import { Toaster } from "react-hot-toast";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
+import { TimelineProvider } from "./context/TimelineContext";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -83,7 +84,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <TimelinePage />,
+        element: <TimelineProvider><TimelinePage /></TimelineProvider>,
       },
       {
         path: "unreplied-emails",

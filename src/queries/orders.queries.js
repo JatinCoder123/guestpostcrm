@@ -79,12 +79,14 @@ export const useOrderStats = (
  * Infinite Orders List
  */
 export const useInfiniteOrders = (
-    preferences = {}
+    preferences = {},
+    email = ""
 ) => {
     return useInfiniteQuery({
         queryKey:
             orderKeys.lists(
-                preferences
+                preferences,
+                email
             ),
 
         queryFn: ({
@@ -93,6 +95,7 @@ export const useInfiniteOrders = (
             getAllOrders({
                 preferences,
                 page: pageParam,
+                email
             }),
 
         initialPageParam: 1,

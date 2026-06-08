@@ -100,7 +100,7 @@ export const fetchGpc = async ({
   params = {},
   headers = {},
 }) => {
-  console.log(`Current User ID: ${getCurrentUserId()}`);
+  // console.log(`Current User ID: ${getCurrentUserId()}`);
   const params1 = {
     ...params,
     ...(DB_NAME ? { db_name: DB_NAME } : {}),

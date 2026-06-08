@@ -1,4 +1,4 @@
-import { http } from "../services/api";
+import { fetchGpc, http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
 
 // contact.api.js
@@ -156,14 +156,7 @@ export const getContactByEmail = async (email) => {
     if (!email) {
         throw new Error("Email is required");
     }
-
-    const response = await http({
-        method: "GET",
-        params: {
-            email,
-        },
-    });
-
+    const response = await fetchGpc({ params: { type: "get_contact", email } });
     return response;
 };
 

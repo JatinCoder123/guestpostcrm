@@ -1,15 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { getThreadEmail } from "../../../store/Slices/threadEmail";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { generatePDF } from "../../../services/utils";
-import { extractEmail } from "../../../assets/assets";
-import { unrepliedAction } from "../../../store/Slices/unrepliedEmails";
 import { getDuplicateEmails } from "../../../store/Slices/duplicateEmailSlice";
 import { useNext } from "../../../hooks/useNext";
 
@@ -24,7 +21,6 @@ const Thread = () => {
   const [files, setFiles] = useState([]);
   const [editorContent, setEditorContent] = useState(state?.initialContent || "");
   const [checkingThreadId, setCheckingTheadId] = useState(false);
-  const { threadEmail } = useSelector((s) => s.threadEmail);
   const { user } = useSelector((s) => s.user);
   const { error: sendError } = useSelector(
     (s) => s.viewEmail,
@@ -33,7 +29,6 @@ const Thread = () => {
   const {
     context: { currentEmail, currentThread },
   } = useThreadContext();
-  const [emails, setEmails] = useState([]);
   const handleSendClick = async (forceSend = 1) => {
     try {
       setCheckingTheadId(true);
@@ -73,27 +68,6 @@ const Thread = () => {
       setCheckingTheadId(false);
     }
   };
-
-  useEffect(() => {
-    if (
-      currentEmail &&
-      currentThread &&
-      !(state?.viewEmails && (state?.viewEmails[0]?.from_email == currentEmail && state?.viewEmails[0]?.thread_id == currentThread))
-    ) {
-      dispatch(getThreadEmail(currentEmail, currentThread));
-    } else {
-
-      setEmails(state?.viewEmails);
-    }
-  }, [currentEmail, currentThread]);
-  useEffect(() => {
-    if (
-      threadEmail?.length > 0 &&
-      !(state?.viewEmails && state?.viewEmails[0]?.from_email == currentEmail && state?.viewEmails[0]?.thread_id == currentThread)
-    ) {
-      setEmails(threadEmail);
-    }
-  }, [threadEmail]);
   useEffect(() => {
     dispatch(getDuplicateEmails(currentEmail));
   }, [dispatch, currentEmail]);
@@ -137,7 +111,6 @@ const Thread = () => {
     processFiles();
   }, [htmlfile]);
   const value = {
-    emails,
     loadAiReply: state?.loadAiReply,
     superfastReply,
     files,

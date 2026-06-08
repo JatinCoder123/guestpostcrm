@@ -36,7 +36,6 @@ import crmUserReducer from "./Slices/crmUser.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
 import tinyKeyReducer from "./Slices/tinyKey.js";
-import mailerSummaryReducer from "./Slices/mailerSummary.js";
 import preferenceReducer from "./Slices/preferencesSlice.js";
 
 export const store = configureStore({
@@ -79,7 +78,6 @@ export const store = configureStore({
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,
     tinyKey: tinyKeyReducer,
-    mailersSummary: mailerSummaryReducer,
     preferences: preferenceReducer
   },
 });

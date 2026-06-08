@@ -53,12 +53,14 @@ export const useDealStats =
 
 export const useInfiniteDeals =
     (
-        preferences = {}
+        { preferences = {},
+            email = "" }
     ) =>
         useInfiniteQuery({
             queryKey:
                 dealKeys.lists(
-                    preferences
+                    preferences,
+                    email
                 ),
 
             queryFn: ({
@@ -67,6 +69,7 @@ export const useInfiniteDeals =
                 getAllDeals({
                     preferences,
                     page: pageParam,
+                    email,
                 }),
 
             initialPageParam: 1,

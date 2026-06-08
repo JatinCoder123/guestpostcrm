@@ -37,12 +37,13 @@ import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import RightThreadHeader from "./RightThreadHeader.jsx";
 import NavigationBar from "./NavigationBar.jsx";
+import { useMailerSummary } from "../../../queries/mailerSummary.queries.js";
+import { useThread } from "../../../queries/threads.queries.js";
 
 export default function ThreadView() {
   const scrollRef = useRef();
 
   const {
-    emails,
     loadAiReply = true,
     superfastReply,
     editorContent,
@@ -50,13 +51,15 @@ export default function ThreadView() {
     handleSendClick,
     checkingThreadId,
   } = useOutletContext() || [];
-
-  const firstMessageRef = useRef(null);
-  const { mailersSummary, loading: summaryLoading } = useSelector(state => state.mailersSummary)
-
   const {
     context: { currentThread: threadId, currentEmail },
   } = useThreadContext();
+  const { data: { emails } } = useThread(currentEmail)
+  const firstMessageRef = useRef(null);
+  const { data, isPending: summaryLoading } = useMailerSummary(currentEmail)
+  const mailersSummary = data?.mailers_summary
+
+
 
   const lastMessageRef = useRef(null);
 

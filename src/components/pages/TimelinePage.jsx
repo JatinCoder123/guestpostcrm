@@ -11,11 +11,18 @@ import { NoSearchFoundPage } from "../NoSearchFoundPage";
 
 import MessageModal from "../MessageModal";
 import LatestMessage from "../LatestMessage";
+import { useTimeline } from "../../context/TimelineContext";
+import { useTimelineLoading } from "../../hooks/useTimelineLoading";
 export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const { isTimelineLoading } = useTimelineLoading()
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const { currentEmail } = useTimeline()
+  useEffect(() => {
+    console.log("CURRENT TIMELINE EMAIL", currentEmail)
 
+  }, [currentEmail])
 
   const { loading: ladgerLoading, ladger } = useSelector((state) => state.ladger);
 
@@ -24,7 +31,7 @@ export function TimelinePage() {
     setSelectedMessage(id);
     setShowMessageModal(true);
   };
-  const { viewEmail, threadId, count, contactInfo, contactLoading, loading } = useSelector(
+  const { viewEmail, threadId, count, contactInfo, } = useSelector(
     (state) => state.viewEmail,
   );
   const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
@@ -46,7 +53,7 @@ export function TimelinePage() {
       />
 
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {(unrepliedLoading || contactLoading || loading || ladgerLoading) ? <LoadingSkeleton /> : <>
+        {(unrepliedLoading || isTimelineLoading || ladgerLoading) ? <LoadingSkeleton /> : <>
           <div className="flex flex-col  border-b border-gray-200">
             <ContactHeader />
 

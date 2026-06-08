@@ -4,6 +4,7 @@ import { buildTableRequestBody } from "../utils/preferenceStorage";
 export const getAllOffers = ({
     preferences,
     page = 1,
+    email
 }) =>
     http({
         method: "POST",
@@ -29,6 +30,7 @@ export const getAllOffers = ({
                 preferences
             ),
         },
+        params: { email }
     });
 
 export const getOfferStats = (

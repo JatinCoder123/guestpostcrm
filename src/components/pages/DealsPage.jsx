@@ -53,7 +53,7 @@ export function DealsPage() {
     isFetchingNextPage,
     isPending,
   } = useInfiniteDeals(
-    preferences
+    { preferences }
   );
 
   const {
@@ -96,7 +96,7 @@ export function DealsPage() {
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row?.first_name || ""} {row?.last_name || ""}
+          {row?.first_name || ""} {row?.last_name || ""} {(!row?.first_name || !row?.last_name) ? row?.email : ""}
         </span>
       ),
     },
