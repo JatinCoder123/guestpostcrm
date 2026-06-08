@@ -494,46 +494,63 @@ export default function TemplatesPage() {
 
    if (result?.success && result?.data?.html) {
   
-  // ── Utility: unwrap double/triple-encoded JSON → clean HTML string ──
-  const unwrapHtml = (raw) => {
-    let html = raw;
-    let maxDepth = 5;
+const unwrapHtml = (raw) => {
+  let html = raw;
 
-    while (typeof html === "string" && maxDepth-- > 0) {
-      const trimmed = html.trim();
-
-      if (trimmed.startsWith("{") || trimmed.startsWith('"')) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          if (parsed && typeof parsed === "object" && parsed.html) {
-            html = parsed.html; // unwrap {"html": "..."}
-          } else if (typeof parsed === "string") {
-            html = parsed;      // unwrap a JSON-encoded string
-          } else {
-            break;
-          }
-        } catch {
-          break; // not JSON anymore — must be raw HTML now
+  // Step 1: Keep JSON-parsing until we can't anymore
+  let maxDepth = 5;
+  while (typeof html === "string" && maxDepth-- > 0) {
+    const trimmed = html.trim();
+    if (trimmed.startsWith("{") || trimmed.startsWith('"')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed && typeof parsed === "object" && parsed.html) {
+          html = parsed.html;
+        } else if (typeof parsed === "string") {
+          html = parsed;
+        } else {
+          break;
         }
-      } else {
-        break; // plain HTML, done
+      } catch {
+        // JSON.parse failed — string is malformed/truncated.
+        // Manually extract whatever is after "html":"
+        const match = trimmed.match(/["']?html["']?\s*:\s*["']?([\s\S]*)/i);
+        if (match) {
+          html = match[1]
+            .replace(/^"/, "")   // strip leading quote if present
+            .replace(/"?\s*}?\s*$/, ""); // strip trailing quote/brace
+        }
+        break;
       }
+    } else {
+      break;
     }
+  }
 
-    // At this point html may still have JS escape sequences if the
-    // server returned a non-JSON-parsed string with literal \n \r \"
-    // Convert them to real characters
-    if (typeof html === "string") {
-      html = html
-        .replace(/\\"/g, '"')
-        .replace(/\\n/g, "\n")
-        .replace(/\\r/g, "")
-        .replace(/\\t/g, "\t")
-        .replace(/\\\//g, "/");   // unescape forward slashes  \/  → /
-    }
+  // Step 2: Unescape all JS/JSON escape sequences
+  if (typeof html === "string") {
+    html = html
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "")
+      .replace(/\\t/g, "\t")
+      .replace(/\\\//g, "/")
+      .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) =>
+        String.fromCharCode(parseInt(code, 16))
+      );
+  }
 
-    return html;
-  };
+  // Step 3: Strip any leftover wrapper artifacts that survived
+  if (typeof html === "string") {
+    html = html
+      .trim()
+      .replace(/^\{"?html"?\s*:\s*"?/i, "")  // remove leading {"html":"
+      .replace(/"?\s*\}$/i, "")               // remove trailing "}
+      .trim();
+  }
+
+  return html;
+};
 
   const cleanHtml = unwrapHtml(result.data.html);
 
