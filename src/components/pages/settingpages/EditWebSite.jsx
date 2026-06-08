@@ -66,6 +66,12 @@ const fieldConfig = [
     icon: DollarSign,
   },
   {
+  key: "average_amount",
+  label: "Average Amount",
+  type: "number",
+  icon: DollarSign,
+},
+  {
     key: "amount",
     label: "Brand Maximum Amount",
     type: "number",
@@ -120,6 +126,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
         ahref_traffic: item.ahref_traffic || "",
         semrush_traffic: item.semrush_traffic || "",
         amount: item.amount ?? "",
+        average_amount: item.average_amount ?? "",
         minimum_price: item.minimum_price ?? "",
         non_brand_minimum_amount: item.non_brand_minimum_amount ?? "",
         non_brand_maximum_amount: item.non_brand_maximum_amount ?? "",
