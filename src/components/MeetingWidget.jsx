@@ -2,20 +2,27 @@ import React, { useState, useEffect, useRef } from "react";
 
 const MeetingWidget = () => {
   const hour = new Date().getHours();
-  const [state, setState] = useState("open"); // "open" | "mini" | "gone"
+  const [state, setState] = useState(() => {
+    return localStorage.getItem("gpc-widget-state") || "open";
+  });
   const widgetRef = useRef(null);
 
-    // Click outside full widget → minimize
+  const updateState = (newState) => {
+    localStorage.setItem("gpc-widget-state", newState);
+    setState(newState);
+  };
+
   useEffect(() => {
     if (state !== "open") return;
     const handler = (e) => {
       if (widgetRef.current && !widgetRef.current.contains(e.target)) {
-        setState("mini");
+        updateState("mini");
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [state]);
+
   if (hour < 9 || hour >= 18) return null;
   if (state === "gone") return null;
 
@@ -45,9 +52,8 @@ const MeetingWidget = () => {
             height: 56,
           }}
         >
-          {/* Main pill button */}
           <button
-            onClick={() => setState("open")}
+            onClick={() => updateState("open")}
             title="Talk to GPC Expert"
             style={{
               width: 56,
@@ -75,7 +81,6 @@ const MeetingWidget = () => {
             />
           </button>
 
-          {/* Online dot */}
           <span style={{
             position: "absolute",
             bottom: 2,
@@ -88,12 +93,11 @@ const MeetingWidget = () => {
             pointerEvents: "none",
           }} />
 
-          {/* X badge — appears on hover */}
           <button
             className="gpc-pill-x"
             onClick={(e) => {
               e.stopPropagation();
-              setState("gone");
+              updateState("gone");
             }}
             aria-label="Dismiss"
             style={{
@@ -148,7 +152,7 @@ const MeetingWidget = () => {
               FREE
             </span>
             <button
-              onClick={() => setState("mini")}
+              onClick={() => updateState("mini")}
               aria-label="Close"
               className="w-7 h-7 rounded-full bg-white/20 border border-white/40 flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-white/40 transition-colors duration-150"
             >
