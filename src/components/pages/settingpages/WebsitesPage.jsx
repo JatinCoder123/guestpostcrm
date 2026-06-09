@@ -865,16 +865,6 @@ function WebCard({
                 label="Semrush Traffic"
                 value={item.semrush_traffic}
               />
-              <DrawerRow
-                icon={DollarSign}
-                label="Non-Brand Min"
-                value={item.non_brand_minimum_amount}
-              />
-              <DrawerRow
-                icon={DollarSign}
-                label="Non-Brand Max"
-                value={item.non_brand_maximum_amount}
-              />
             </div>
           </Motion.div>
         )}
