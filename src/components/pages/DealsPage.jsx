@@ -13,10 +13,9 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
-import { deleteDeal, getDeals } from "../../store/Slices/deals.js";
+import { deleteDeal } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../assets/assets";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";

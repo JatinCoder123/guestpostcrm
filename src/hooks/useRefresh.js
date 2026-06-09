@@ -9,7 +9,6 @@ import { hotAction } from "../store/Slices/hotSlice";
 import { getAiCredits } from "../store/Slices/aiCredits";
 import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";
 import { getOrders } from "../store/Slices/orders";
-import { getDeals } from "../store/Slices/deals";
 import { getInvoices } from "../store/Slices/invoices";
 import { getOffers } from "../store/Slices/offers";
 import { getDetection } from "../store/Slices/detection";
@@ -55,7 +54,6 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_deal_fetch) {
-            dispatch(getDeals({ loading: false }));
             dispatch(hotAction.updateCount(1));
             setNotificationCount((prev) => ({
                 ...prev,

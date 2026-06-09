@@ -23,15 +23,6 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
-import {
-  brandTimelineAction,
-  getBrandTimeline,
-} from "../store/Slices/brandTimeline";
-import IconButton from "./ui/Buttons/IconButton";
-import { getLadger } from "../store/Slices/ladger";
-import { getOffers } from "../store/Slices/offers";
-import { getDeals } from "../store/Slices/deals";
-import { getOrders } from "../store/Slices/orders";
 import { useContact } from "../queries/contact.queries";
 import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
@@ -70,17 +61,7 @@ const ContactHeader = () => {
   const [showSidebar, setShowSidebar] = useState(false);
 
 
-  const handleBrandTimeline = () => {
-    dispatch(getLadger({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    dispatch(getOffers({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    dispatch(getDeals({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    dispatch(getOrders({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    if (showBrandTimeline) {
-      dispatch(brandTimelineAction.setShowBrandTimeline(false));
-    } else {
-      dispatch(getBrandTimeline({ email }));
-    }
-  };
+
 
   const CountUpWithBlast = ({ value, email }) => {
     const storageKey = `maxDealAnimated_${email}`;

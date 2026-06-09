@@ -9,7 +9,6 @@ import {
 } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
-import { useContact } from "../../queries/contact.queries";
 
 const dealsSlice = createSlice({
   name: "deals",
