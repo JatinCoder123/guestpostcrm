@@ -1,4 +1,4 @@
-import { http } from "../services/api";
+import { fetchGpc, http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
 
 
@@ -6,8 +6,9 @@ export const getAllDeals = ({
     preferences,
     page = 1,
     email = ""
-}) =>
-    http({
+}) => {
+    const params = email ? { email } : {}
+    return http({
         method: "POST",
         body: {
             "action": "fetch",
@@ -17,8 +18,10 @@ export const getAllDeals = ({
             "per_page": 20,
             ...buildTableRequestBody(preferences)
         },
-        params: { email }
+        params: { ...params }
     });
+}
+
 
 export const getDealStats = ({ filters }) =>
     http({
@@ -66,3 +69,4 @@ export const getDealById = (
         },
         body: { id },
     });
+export const getDealsByEmail = (email) => fetchGpc({ params: { type: "get_deals", email, page: 1, page_size: 50 } })

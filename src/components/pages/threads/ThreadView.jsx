@@ -54,7 +54,8 @@ export default function ThreadView() {
   const {
     context: { currentThread: threadId, currentEmail },
   } = useThreadContext();
-  const { data: { emails } } = useThread(currentEmail)
+  const { data: emailsData } = useThread(currentEmail)
+  const emails = emailsData?.emails
   const firstMessageRef = useRef(null);
   const { data, isPending: summaryLoading } = useMailerSummary(currentEmail)
   const mailersSummary = data?.mailers_summary

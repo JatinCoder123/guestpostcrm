@@ -129,7 +129,7 @@ export default function AllContacts() {
             headerClasses: "",
             icon: Calendar,
 
-            onClick: (row) => handleDateClick({ email: row?.email_address ?? `${row?.first_name} ${row?.last_name} `, navigate: "/" }),
+            onClick: (row) => handleDateClick({ email: row?.email1 ?? `${row?.first_name} ${row?.last_name} `, navigate: "/" }),
             classes: "truncate max-w-[200px]",
             render: (row) => (
                 <span className="font-medium text-gray-700 cursor-pointer">
@@ -144,7 +144,7 @@ export default function AllContacts() {
             icon: User2,
             classes: "truncate max-w-[200px]",
             onClick: (row) =>
-                handleDateClick({ email: row?.email_address, navigate: "/contacts" }),
+                handleDateClick({ email: row?.email1 ?? `${row?.first_name} ${row?.last_name} `, navigate: "/contacts" }),
 
             render: (row) => (
                 <span className="font-medium text-gray-700 cursor-pointer">

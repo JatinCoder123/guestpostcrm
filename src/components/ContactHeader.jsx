@@ -34,7 +34,7 @@ import { getDeals } from "../store/Slices/deals";
 import { getOrders } from "../store/Slices/orders";
 import { useContact } from "../queries/contact.queries";
 import { useTimeline } from "../context/TimelineContext";
-import { useInfiniteDeals } from "../queries/deals.queries";
+import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -59,8 +59,8 @@ const ContactHeader = () => {
   const email = contactInfo?.email1;
   const { showNextPrev, handleDateClick } = useContext(PageContext);
 
-  const { data: dealsData } = useInfiniteDeals({ email: currentEmail });
-  const emailDeals = dealsData?.records
+  const { data: dealsData } = useDealsByEmail(currentEmail);
+  const emailDeals = dealsData?.data ?? []
 
   const { showBrandTimeline, contacts = [] } = useSelector(
     (state) => state.brandTimeline,
@@ -250,13 +250,13 @@ const ContactHeader = () => {
           {!isPending && (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <Link to={"/contacts/id"} className="text-lg font-extrabold">
+                <Link to={`/contacts?email=${currentEmail}`} className="text-lg font-extrabold">
                   {contactInfo?.full_name?.trim()
                     ? contactInfo?.full_name
                     : email}
                 </Link>
 
-                {isBrand && (
+                {/* {isBrand && (
                   <IconButton
                     icon={showBrandTimeline ? Eye : EyeOff}
                     variant="glass"
@@ -267,7 +267,7 @@ const ContactHeader = () => {
                     }
                     onClick={handleBrandTimeline}
                   />
-                )}
+                )} */}
               </div>
             </div>
           )}

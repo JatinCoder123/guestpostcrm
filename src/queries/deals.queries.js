@@ -10,6 +10,7 @@ import {
     getDealStats,
     deleteDeal,
     getDealById,
+    getDealsByEmail,
 } from "../api/deals.api";
 
 import toast from "react-hot-toast";
@@ -35,6 +36,11 @@ export const dealKeys = {
         "deals",
         "id",
         id,
+    ],
+    byEmail: (email) => [
+        "deals",
+        "email",
+        email,
     ],
 };
 
@@ -86,6 +92,11 @@ export const useInfiniteDeals =
             staleTime:
                 5 * 60 * 1000,
         });
+export const useDealsByEmail = (email = "") =>
+    useQuery({
+        queryKey: dealKeys.byEmail(email),
+        queryFn: () => getDealsByEmail(email),
+    });
 
 export const useDeleteDeal =
     () => {

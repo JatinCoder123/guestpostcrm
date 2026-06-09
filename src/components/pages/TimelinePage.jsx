@@ -13,10 +13,11 @@ import MessageModal from "../MessageModal";
 import LatestMessage from "../LatestMessage";
 import { useTimeline } from "../../context/TimelineContext";
 import { useTimelineLoading } from "../../hooks/useTimelineLoading";
+import { useInfiniteLedger } from "../../queries/ledger.queries";
 export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
-  const { isTimelineLoading } = useTimelineLoading()
+  const { isTimelineLoading, emailsLoading, ledgerLoading } = useTimelineLoading()
   const [showMessageModal, setShowMessageModal] = useState(false);
   const { currentEmail } = useTimeline()
   useEffect(() => {
@@ -24,7 +25,11 @@ export function TimelinePage() {
 
   }, [currentEmail])
 
-  const { loading: ladgerLoading, ladger } = useSelector((state) => state.ladger);
+  const { data } = useInfiniteLedger(currentEmail);
+  const ladger =
+    data?.pages?.flatMap(
+      (page) => page.data || []
+    ) ?? [];
 
   const handleMessageClick = (id) => {
     console.log("Message clicked:", id);
@@ -34,8 +39,7 @@ export function TimelinePage() {
   const { viewEmail, threadId, count, contactInfo, } = useSelector(
     (state) => state.viewEmail,
   );
-  const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
-  if ((Array.isArray(ladger) && ladger.length == 0 && !ladgerLoading && !unrepliedLoading) || (!ladger && !ladgerLoading && !unrepliedLoading)) {
+  if ((Array.isArray(ladger) && ladger.length == 0 && !ledgerLoading && !emailsLoading) || (!ladger && !ledgerLoading && !emailsLoading)) {
     return <NoSearchFoundPage />;
   }
 
@@ -53,7 +57,7 @@ export function TimelinePage() {
       />
 
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {(unrepliedLoading || isTimelineLoading || ladgerLoading) ? <LoadingSkeleton /> : <>
+        {(isTimelineLoading) ? <LoadingSkeleton /> : <>
           <div className="flex flex-col  border-b border-gray-200">
             <ContactHeader />
 

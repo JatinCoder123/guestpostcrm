@@ -100,7 +100,7 @@ const RootLayout = () => {
             </div>
           </div>
 
-          <OnBoarding />
+          {/* <OnBoarding /> */}
 
           <Footer />
         </main>

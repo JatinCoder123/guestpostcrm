@@ -10,6 +10,7 @@ import {
     getOfferStats,
     deleteOffer,
     getOfferById,
+    getOffersByEmail,
 } from "../api/offers.api";
 
 import toast from "react-hot-toast";
@@ -37,6 +38,11 @@ export const offerKeys = {
         "offers",
         "id",
         id,
+    ],
+    byEmail: (email) => [
+        "offers",
+        "email",
+        email,
     ],
 };
 
@@ -151,3 +157,22 @@ export const useDeleteOffer =
             },
         });
     };
+export const useOffersByEmail = (
+    email = ""
+) =>
+    useQuery({
+        queryKey:
+            offerKeys.byEmail(
+                email
+            ),
+
+        queryFn: () =>
+            getOffersByEmail(
+                email
+            ),
+
+        enabled: !!email,
+
+        staleTime:
+            5 * 60 * 1000,
+    });

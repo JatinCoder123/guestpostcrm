@@ -39,7 +39,6 @@ export const apiRequest = async ({
     },
     withCredentials,
   });
-
   return response.data;
 };
 

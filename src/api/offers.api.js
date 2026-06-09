@@ -1,12 +1,13 @@
-import { http } from "../services/api";
+import { fetchGpc, http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
 
 export const getAllOffers = ({
     preferences,
     page = 1,
     email
-}) =>
-    http({
+}) => {
+    const params = email ? { email } : {}
+    return http({
         method: "POST",
         body: {
             action: "fetch",
@@ -30,8 +31,10 @@ export const getAllOffers = ({
                 preferences
             ),
         },
-        params: { email }
+        params: { ...params }
     });
+}
+
 
 export const getOfferStats = (
     filters = {}
@@ -98,5 +101,16 @@ export const getOfferById = (
             action:
                 "get_offer",
             id,
+        },
+    });
+export const getOffersByEmail = (
+    email
+) =>
+    fetchGpc({
+        params: {
+            type: "get_offers",
+            email,
+            page: 1,
+            page_size: 50,
         },
     });

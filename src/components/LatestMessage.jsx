@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useThreadContext } from "../hooks/useThreadContext";
 import { useNavigate } from "react-router-dom";
-import { CREATE_DEAL_API_KEY } from "../store/constants";
-import useModule from "../hooks/useModule";
 import { getDomain, getSafeHTML, showConsole } from "../assets/assets";
 import { BiSolidMessageCheck } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,22 +24,23 @@ import PromptLadger from "./PromptLadger";
 import { useMailerSummary } from "../queries/mailerSummary.queries";
 import { useTimeline } from "../context/TimelineContext";
 import { useThread } from "../queries/threads.queries";
+import { useTemplateByName } from "../queries/template.queries";
+import { useQuickBtn } from "../queries/quickBtn.queries";
+import { useContact } from "../queries/contact.queries";
 const LatestMessage = ({ handleMessageClick }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { handleMove } = useThreadContext();
-  const { crmEndpoint } = useSelector((state) => state.user);
   const [activePromptId, setActivePromptId] = useState(null)
   const { moveToNext } = useNext()
   const { currentEmail } = useTimeline()
-  const { mailersSummary } = useMailerSummary(currentEmail);
-  const {
-    buttons,
-    error: buttonsError,
-    loading: buttonsLoading,
-  } = useSelector((s) => s.quickActionBtn);
-  const { message, sending, contactInfo, accountInfo } =
-    useSelector((state) => state.viewEmail);
+  const { data: summary, isPending: mail } = useMailerSummary(currentEmail);
+  const { data: contactData, isPending: contactLoading } = useContact(currentEmail);
+  const contactInfo = contactData?.contact
+  const accountInfo = contactData?.account
+  const mailersSummary = summary?.mailers_summary
+  const { data: buttons, isError: buttonsError, isLoading: buttonsLoading } = useQuickBtn();
+  const { sending } = useSelector((state) => state.viewEmail);
   const { data, isPending } = useThread(currentEmail)
   const viewEmail = data?.emails
   const hanldeConvDone = () => {
@@ -64,40 +63,14 @@ const LatestMessage = ({ handleMessageClick }) => {
   };
   const email1 = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;
-  const { loading: askBudgetTempLoading, data: askBudgetTemp } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: { name: "Ask Budget" },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: `ASK BUDGET TEMPLATE`,
-  });
-  const { loading: sorryTemplateLoading, data: sorryTemp } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: { name: "Sorry" },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: `Sorry TEMPLATE`,
-  });
-
+  const { isPending: askBudgetTempLoading, data: askBudgetTemp } = useTemplateByName("Ask Budget");
+  const { isPending: sorryTempLoading, data: sorryTemp } = useTemplateByName("Sorry");
 
   useEffect(() => {
     if (buttonsError) {
-      toast.error(buttonsError);
-      dispatch(quickActionBtnActions.clearErrors());
+      toast.error("Failed To Load Quick Actin Buttons.");
     }
-  }, [dispatch, buttonsError, message]);
+  }, [buttonsError]);
 
   return (
     <>

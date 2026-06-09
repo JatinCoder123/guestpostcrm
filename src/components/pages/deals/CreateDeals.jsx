@@ -10,45 +10,36 @@ import { Trash2 } from "lucide-react";
 import { Save, Send } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
 import { toast } from "react-toastify";
-import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
 import { getOffers } from "../../../store/Slices/offers";
-import { extractEmail } from "../../../assets/assets";
-import { FcExpired } from "react-icons/fc";
+import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
+import { useTemplateByName } from "../../../queries/template.queries";
+import { dealKeys, useDealsByEmail } from "../../../queries/deals.queries";
+import { useContact } from "../../../queries/contact.queries";
+import { queryClient } from "../../../lib/queryClient";
 
 // 🔥 renamed component also
-export default function CreateDeals({ threadId, email }) {
+export default function CreateDeals({ email }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const { websites: websiteLists } = useSelector((state) => state.website);
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
-  const { crmEndpoint } = useSelector((state) => state.user);
-
   // 🔥 now using deals everywhere
-  const { deals, creating, message, error } = useSelector(
+  const { creating, message, error } = useSelector(
     (state) => state.deals,
   );
-  const { offers } = useSelector((state) => state.offers);
+  const { data: dealsData } = useDealsByEmail(email)
+  const { data: contactData } = useContact(email)
+  const threadId = contactData?.contact?.thread_id
+  const deals = dealsData?.data ?? []
+  const { data: offerData } = useOffersByEmail(email);
+  const offers = offerData?.data ?? []
 
   const [send, setSend] = useState(false);
   const { handleMove } = useThreadContext();
 
-  const { data: templateData } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: { name: "DealORG" },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "TemplateData",
-  });
-
+  const { data: templateData } = useTemplateByName("DealORG");
   // 🔥 NEW STATE (deal structure)
   const [newDeals, setNewDeals] = useState([{ website_c: "", dealamount: "" }]);
 
@@ -64,12 +55,8 @@ export default function CreateDeals({ threadId, email }) {
 
   // 🔥 FILTER VALID WEBSITES
   useEffect(() => {
-    const emailDeals = deals.filter(
-      (d) => extractEmail(d.real_name ?? d.email) == email,
-    );
-
     const valid = websiteLists.filter((w) => {
-      const usedInDeals = emailDeals.some((d) => d.website_c === w && d.status !== "expire");
+      const usedInDeals = deals.some((d) => d.website_c === w && d.status !== "expire");
 
       return !usedInDeals;
     });
@@ -103,7 +90,7 @@ export default function CreateDeals({ threadId, email }) {
   const handleSave = async (isSend = false) => {
     setSend(isSend);
 
-    dispatch(createDeal({ threadId, email, deals: newDeals, isSend }));
+    dispatch(createDeal({ threadId, email, deals: newDeals, isSend, contactId: contactData?.contact?.id }));
   };
 
   const handlePreview = () => {
@@ -121,8 +108,7 @@ export default function CreateDeals({ threadId, email }) {
   useEffect(() => {
     if (message) {
       toast.success(message);
-      dispatch(getDeals({ email, brand: showBrandTimeline }));
-      dispatch(getOffers({ email, brand: showBrandTimeline }));
+      queryClient.invalidateQueries({ queryKey: [dealKeys.all, offerKeys.all] })
       if (message?.includes("Created")) {
         if (send) {
           setSend(false);

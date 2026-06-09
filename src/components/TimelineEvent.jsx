@@ -8,11 +8,16 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import LadgerCard from "./LadgerCard";
+import { useInfiniteLedger } from "../queries/ledger.queries";
+import { useTimeline } from "../context/TimelineContext";
 
 const TimelineEvent = ({ handleMessageClick }) => {
-  const { ladger, loading } = useSelector(
-    (state) => state.ladger
-  );
+  const { currentEmail } = useTimeline()
+  const { data, isLoading: loading } = useInfiniteLedger(currentEmail);
+  const ladger =
+    data?.pages?.flatMap(
+      (page) => page.data || []
+    ) ?? [];
 
   const { showBrandTimeline } = useSelector(
     (state) => state.brandTimeline

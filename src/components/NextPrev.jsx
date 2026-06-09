@@ -1,18 +1,24 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { PageContext } from "../context/pageContext"
 import { useDispatch, useSelector } from 'react-redux'
-import { excludeName, extractEmail } from '../assets/assets'
 import { ladgerAction } from '../store/Slices/ladger'
 import { ThreadContext } from '../context/ThreadContext'
+import { useInfiniteEmails } from '../queries/email.queries'
+import { useTablePreference } from '../hooks/useTablePreference'
 const NextPrev = () => {
     const { currentIndex, setCurrentIndex, setEnteredEmail } = useContext(PageContext)
+    const preferences = useTablePreference("emails");
     const { handleSetCurrent } = useContext(ThreadContext)
-    const { emails } = useSelector((state) => state.unreplied);
+    const { data } = useInfiniteEmails(preferences);
+    const emails =
+        data?.pages?.flatMap(
+            (page) => page.records || page.data || []
+        ) ?? [];
     const dispatch = useDispatch()
     const handleNext = () => {
         if (currentIndex < emails?.length - 1) {
-            const input = extractEmail(emails[currentIndex + 1].from);
+            const input = emails[currentIndex + 1].email1;
             localStorage.setItem("searchTerm", input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
@@ -22,7 +28,7 @@ const NextPrev = () => {
     };
     const handlePrev = () => {
         if (currentIndex > 0) {
-            const input = extractEmail(emails[currentIndex - 1].from);
+            const input = emails[currentIndex - 1].email1
             localStorage.setItem("searchTerm", input);
             setEnteredEmail(input);
             dispatch(ladgerAction.setTimeline(null));
@@ -34,8 +40,8 @@ const NextPrev = () => {
     return (
 
         <div className="flex items-center gap-3">
-            <NextPrevButton first={true} onClick={handlePrev} disabled={currentIndex == 0} label={excludeName(emails[currentIndex - 1]?.from)?.trim() !== "" ? excludeName(emails[currentIndex - 1]?.from) : emails[currentIndex - 1]?.email1} Icon={ChevronLeft} emails={emails} currentIndex={currentIndex} />
-            <NextPrevButton onClick={handleNext} disabled={currentIndex === emails?.length - 1} label={excludeName(emails[currentIndex + 1]?.from)?.trim() !== "" ? excludeName(emails[currentIndex + 1]?.from) : emails[currentIndex + 1]?.email1} Icon={ChevronRight} emails={emails} currentIndex={currentIndex} />
+            <NextPrevButton first={true} onClick={handlePrev} disabled={currentIndex == 0} label={emails[currentIndex - 1]?.full_name ? emails[currentIndex - 1]?.full_name : emails[currentIndex - 1]?.email1} Icon={ChevronLeft} emails={emails} currentIndex={currentIndex} />
+            <NextPrevButton onClick={handleNext} disabled={currentIndex === emails?.length - 1} label={emails[currentIndex + 1]?.full_name ? emails[currentIndex + 1]?.full_name : emails[currentIndex + 1]?.email1} Icon={ChevronRight} emails={emails} currentIndex={currentIndex} />
         </div>
     )
 }
