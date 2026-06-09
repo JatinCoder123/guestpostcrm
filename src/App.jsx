@@ -61,6 +61,8 @@ import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
+import MeetingWidget from "./components/MeetingWidget";
+import TwakChat from "./components/TwakTo";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -82,7 +84,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <TimelinePage />,
+        element:(
+        <>
+          <TimelinePage />
+        </>
+        ),
       },
       {
         path: "unreplied-emails",
@@ -356,7 +362,13 @@ export default function App() {
 
   return (
     <>
-      {isAuthenticated && <RouterProvider router={router} />}
+      {isAuthenticated && !loading && (
+  <>
+    <MeetingWidget />
+    <TwakChat />
+    <RouterProvider router={router} />
+  </>
+)}
 
       {!isAuthenticated && loading && <LoadingPage />}
 
