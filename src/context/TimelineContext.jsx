@@ -9,6 +9,7 @@ import {
 import { PageContext } from '../context/pageContext'
 import { useInfiniteEmails } from "../queries/email.queries"
 import { useTablePreference } from "../hooks/useTablePreference";
+import { usePrefetchTimeline } from "../hooks/usePrefetchTimeline";
 const TimelineContext = createContext(null);
 
 export const TimelineProvider = ({ children }) => {
@@ -22,7 +23,10 @@ export const TimelineProvider = ({ children }) => {
     const [currentEmail, setCurrentEmail] = useState("");
 
     const [showBrandTimeline, setShowBrandTimeline] = useState(false);
-
+    usePrefetchTimeline(
+        emails,
+        currentEmail
+    );
     useEffect(() => {
         // if (currentEmail) return;
 

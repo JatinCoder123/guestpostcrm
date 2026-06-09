@@ -20,14 +20,12 @@ export const useTimelineLoading = () => {
     const dealsQuery = useDealsByEmail(currentEmail);
     const offersQuery = useOffersByEmail(currentEmail);
     const ordersQuery = useOrdersByEmail(currentEmail);
-
     const isTimelineLoading =
         contactQuery.isLoading ||
         mailerSummaryQuery.isLoading ||
         threadQuery.isLoading ||
         emailQuery.isLoading ||
         ledgerQuery.isLoading;
-
     return {
         isTimelineLoading,
 

@@ -49,10 +49,6 @@ export const getTemplateById =
  */
 export const getTemplateByName =
     async (name) => {
-        console.log(
-            "getTemplateByName called",
-            name
-        );
         const data = await apiRequest({
             endpoint: `${getCRM()}?entryPoint=get_post_all&action_type=get_data`,
             method: "POST",

@@ -108,7 +108,13 @@ export default function CreateDeals({ email }) {
   useEffect(() => {
     if (message) {
       toast.success(message);
-      queryClient.invalidateQueries({ queryKey: [dealKeys.all, offerKeys.all] })
+      queryClient.invalidateQueries({
+        queryKey: dealKeys.all,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: offerKeys.all,
+      });
       if (message?.includes("Created")) {
         if (send) {
           setSend(false);
