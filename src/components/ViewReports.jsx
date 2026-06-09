@@ -3,41 +3,51 @@ import {
   BarChart3,
   Calendar,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ChevronUp,
   Filter,
   Loader2,
   MessageSquare,
+  Search,
   Users,
+  Activity,
+  Layers,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import {getAllUsers} from "../store/Slices/crmUser.js";
-import {fetchGpc} from "../services/api.js";
+import { memo } from "react";
+import { getAllUsers } from "../store/Slices/crmUser.js";
+import { fetchGpc } from "../services/api.js";
+import {
+  setStagesLoading, setStagesData,
+  setCategoriesLoading, setCategoriesData, setCategoriesPage,
+  setDetailsLoading, setDetailsData, setDetailsPage,
+  toggleStage, toggleCategory,
+  setError, clearError, resetReport,
+  selectStages, selectCategories, selectDetails,
+  selectReportStats,
+  selectStagesLoading, selectCatsLoading, selectDetsLoading,
+  selectReportError,
+} from "../store/Slices/reportSlice.js";
 
-// ─── Phase config ─────────────────────────────────────────────────────────────
+// ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
   {
     key: "filtration",
     label: "Filtration",
+    sublabel: "Spam · Duplicates · Defaulters",
     icon: Filter,
-    active: "bg-green-50 border-green-500 shadow-lg",
-    iconBg: "bg-green-100",
-    iconText: "text-green-600",
-    accent: "bg-green-500",
-    total: "from-green-900 to-green-700",
-    desc: "Spam, Defaulters, Stop Emails, Duplicates and more.",
+    dot: "bg-emerald-500",
+    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   {
     key: "conversation",
     label: "Conversations",
+    sublabel: "Workflow · Stages · Outcomes",
     icon: MessageSquare,
-    active: "bg-blue-50 border-blue-500 shadow-lg",
-    iconBg: "bg-blue-100",
-    iconText: "text-blue-600",
-    accent: "bg-blue-500",
-    total: "from-slate-950 via-slate-900 to-blue-950",
-    desc: "Track complete conversation workflow stages.",
+    dot: "bg-blue-500",
+    badge: "bg-blue-50 text-blue-700 border-blue-200",
   },
 ];
 
@@ -48,307 +58,334 @@ const DATE_OPTIONS = [
   { value: "30days",    label: "Last 30 Days" },
 ];
 
+const PAGE_SIZE = 20;
+const DETAIL_PAGE_SIZE = 50;
+
+const STAT_THEMES = [
+  { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-700", label: "text-violet-500" },
+  { bg: "bg-sky-50",    border: "border-sky-200",    text: "text-sky-700",    label: "text-sky-500" },
+  { bg: "bg-amber-50",  border: "border-amber-200",  text: "text-amber-700",  label: "text-amber-500" },
+  { bg: "bg-rose-50",   border: "border-rose-200",   text: "text-rose-700",   label: "text-rose-500" },
+  { bg: "bg-teal-50",   border: "border-teal-200",   text: "text-teal-700",   label: "text-teal-500" },
+  { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", label: "text-orange-500" },
+];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pad = (n) => String(n).padStart(2, "0");
-const fmtDate = (d) =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const fmtDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-/**
- * Returns { from, from_time, to, to_time } for a preset key.
- * Times include seconds to match what the Postman body sends.
- */
 const getDateRange = (preset) => {
   const now = new Date();
-
   if (preset === "yesterday") {
     const y = new Date(now);
     y.setDate(now.getDate() - 1);
     const s = fmtDate(y);
     return { from: s, from_time: "00:00:00", to: s, to_time: "23:59:59" };
   }
-
   const start = new Date(now);
   if (preset === "7days")  start.setDate(now.getDate() - 7);
   if (preset === "30days") start.setDate(now.getDate() - 30);
-
-  return {
-    from:      fmtDate(start),
-    from_time: "00:00:00",
-    to:        fmtDate(now),
-    to_time:   "23:59:59",
-  };
+  return { from: fmtDate(start), from_time: "00:00:00", to: fmtDate(now), to_time: "23:59:59" };
 };
 
-const getCount = (row) =>
-  Number(row?.total_count ?? row?.total ?? row?.count ?? 0);
-
+const getCount = (row) => Number(row?.total_count ?? row?.total ?? row?.count ?? 0);
 const getUserLabel = (u) =>
-  u?.name || u?.user_name || u?.username ||
-  u?.first_name || u?.description || u?.email || u?.id || "Unnamed";
+  u?.name || u?.user_name || u?.username || u?.first_name || u?.description || u?.email || u?.id || "Unnamed";
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false }) => {
+  const [gotoValue, setGotoValue] = useState("");
+  if (!pageCount || pageCount <= 1) return null;
+
+  const handlePrev = () => { if (pageIndex > 1) onChange(pageIndex - 1); };
+  const handleNext = () => { if (pageIndex < pageCount) onChange(pageIndex + 1); };
+
+  const pagesToShow = [];
+  const start = Number(pageIndex);
+  const end   = Math.min(Number(pageIndex) + 2, pageCount);
+  for (let i = start; i <= end; i++) pagesToShow.push(i);
+  if (end < pageCount - 1) { pagesToShow.push("ellipsis"); pagesToShow.push(pageCount); }
+
+  const handleGoto = (e) => {
+    if (e.key === "Enter") {
+      const p = Number(gotoValue);
+      if (p >= 1 && p <= pageCount) { onChange(p); setGotoValue(""); }
+    }
+  };
+
+  if (compact) {
+    return (
+      <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white/60">
+        <span className="text-xs text-slate-400 font-medium tabular-nums">
+          Page {pageIndex} of {pageCount}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handlePrev}
+            disabled={pageIndex === 1}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <ChevronLeft size={13} />
+          </button>
+          {pagesToShow.map((p, idx) =>
+            p === "ellipsis" ? (
+              <span key={idx} className="w-7 text-center text-xs text-slate-400">…</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => onChange(p)}
+                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition-all
+                  ${p === pageIndex
+                    ? "bg-slate-800 text-white"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+          <button
+            onClick={handleNext}
+            disabled={pageIndex === pageCount}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <ChevronRight size={13} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handlePrev}
+          disabled={pageIndex === 1}
+          className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium transition-all"
+        >
+          <ChevronLeft size={14} /> Prev
+        </button>
+        <div className="flex items-center gap-1">
+          {pagesToShow.map((p, idx) =>
+            p === "ellipsis" ? (
+              <span key={idx} className="w-9 text-center text-sm text-slate-400">…</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => onChange(p)}
+                className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-semibold transition-all
+                  ${p === pageIndex
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+        </div>
+        <button
+          onClick={handleNext}
+          disabled={pageIndex === pageCount}
+          className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium transition-all"
+        >
+          Next <ChevronRight size={14} />
+        </button>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-slate-400">Jump to</span>
+        <input
+          type="number"
+          min="1"
+          max={pageCount}
+          value={gotoValue}
+          onChange={(e) => setGotoValue(e.target.value)}
+          onKeyDown={handleGoto}
+          className="w-16 h-9 px-3 text-sm border border-slate-200 rounded-xl text-slate-700 bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none transition-all"
+          placeholder="—"
+        />
+      </div>
+    </div>
+  );
+});
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+const SkeletonRow = () => (
+  <div className="p-6 flex justify-between items-center animate-pulse">
+    <div className="flex items-center gap-4">
+      <div className="w-7 h-7 bg-slate-100 rounded-lg" />
+      <div className="space-y-2">
+        <div className="h-4 w-28 bg-slate-100 rounded-lg" />
+        <div className="h-3 w-16 bg-slate-100 rounded-lg" />
+      </div>
+    </div>
+    <div className="h-7 w-24 bg-slate-100 rounded-xl" />
+  </div>
+);
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
 
 const EmptyState = ({ title, subtitle }) => (
-  <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-10 text-center">
-    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
-      <BarChart3 size={22} className="text-slate-400" />
+  <div className="flex flex-col items-center justify-center py-16 px-6">
+    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+      <BarChart3 size={20} className="text-slate-400" />
     </div>
-    <p className="font-semibold text-slate-700">{title}</p>
-    <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
+    <p className="font-semibold text-slate-700 text-sm">{title}</p>
+    <p className="text-xs text-slate-400 mt-1.5 max-w-xs text-center leading-relaxed">{subtitle}</p>
   </div>
 );
 
-const InlineSpinner = ({ text }) => (
-  <div className="px-6 py-5 flex items-center gap-2 text-sm font-medium text-slate-500">
-    <Loader2 size={16} className="animate-spin" />
-    {text}
-  </div>
-);
-
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function ViewReports() {
   const dispatch = useDispatch();
-  const { users = [], loading: usersLoading } = useSelector(
-    (state) => state.crmUser || {},
-  );
+  const { users = [], loading: usersLoading } = useSelector((s) => s.crmUser || {});
 
-  // ── Filter controls (uncommitted until Apply) ────────────────────────────────
+  const stages        = useSelector(selectStages);
+  const categories    = useSelector(selectCategories);
+  const details       = useSelector(selectDetails);
+  const stats         = useSelector(selectReportStats);
+  const stagesLoading = useSelector(selectStagesLoading);
+  const catsLoading   = useSelector(selectCatsLoading);
+  const detsLoading   = useSelector(selectDetsLoading);
+  const error         = useSelector(selectReportError);
+
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedDate, setSelectedDate] = useState("today");
-
-  // ── Committed filters — API fires only when these change ─────────────────────
-  const [appliedFilters, setAppliedFilters] = useState({
-    user: "",
-    date: "today",
-  });
-
-  // ── Navigation ───────────────────────────────────────────────────────────────
+  const [appliedFilters, setAppliedFilters] = useState({ user: "", date: "today" });
   const [activeSection, setActiveSection] = useState("filtration");
 
-  // ── Data ─────────────────────────────────────────────────────────────────────
-  const [stageRows,    setStageRows]    = useState([]);
-  const [categoryRows, setCategoryRows] = useState([]);
-  const [detailRows,   setDetailRows]   = useState([]);
-
-  // ── Open selections ───────────────────────────────────────────────────────────
-  const [openStage,    setOpenStage]    = useState("");
-  const [openCategory, setOpenCategory] = useState("");
-
-  // ── Loading flags ─────────────────────────────────────────────────────────────
-  const [stagesLoading,     setStagesLoading]     = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [detailsLoading,    setDetailsLoading]    = useState(false);
-
-  const [error, setError] = useState("");
-const [stats, setStats] = useState({});
   const phaseConfig = useMemo(
     () => PHASES.find((p) => p.key === activeSection) || PHASES[0],
     [activeSection],
   );
 
-  // ── Build POST body ───────────────────────────────────────────────────────────
-  //
-  //  This is the JSON body that goes to:
-  //    POST …/index.php?entryPoint=fetch_gpc&type=newReport
-  //
-  //  Matches exactly the Postman body:
-  //  {
-  //    "phase": "filtration",
-  //    "stage": "",
-  //    "report_user_id": "",
-  //    "category": "",
-  //    "page": "",
-  //    "size": "",
-  //    "from": "",
-  //    "from_time": "",
-  //    "to": "",
-  //    "to_time": ""
-  //  }
-  //
   const buildBody = useCallback(
     (overrides = {}) => ({
-      phase:          activeSection,
-      stage:          "",
-      category:       "",
+      phase: activeSection, stage: "", category: "",
       report_user_id: appliedFilters.user,
-      page:           "",
-      size:           "20",
-      ...getDateRange(appliedFilters.date),  
-      ...overrides,                           
+      page: "", size: String(PAGE_SIZE),
+      ...getDateRange(appliedFilters.date),
+      ...overrides,
     }),
     [activeSection, appliedFilters],
   );
 
-  // ── Single API wrapper ────────────────────────────────────────────────────────
   const callReport = useCallback(
-    (bodyOverrides = {}) =>
-      fetchGpc({
-        method: "POST",
-        params: { type: "newReport" },   // goes into URL query string
-        body:   buildBody(bodyOverrides), // goes into request body as JSON
-      }),
+    (overrides = {}) =>
+      fetchGpc({ method: "POST", params: { type: "newReport" }, body: buildBody(overrides) }),
     [buildBody],
   );
 
-  // ── Loaders ───────────────────────────────────────────────────────────────────
-
-  const loadStages = useCallback(async () => {
-    setStagesLoading(true);
-    setError("");
-    setStageRows([]);
-    setCategoryRows([]);
-    setDetailRows([]);
-    setOpenStage("");
-    setOpenCategory("");
-
+  const loadStages = useCallback(async (page = 1) => {
+    dispatch(setStagesLoading(true));
+    dispatch(clearError());
     try {
-      // Body: { phase, stage: "", category: "", report_user_id, from, … }
-      const data = await callReport();
-      setStats(data?.stats || {});
-      setStageRows((data?.records || []).filter((r) => r?.stage));
+      const data = await callReport({ page, size: String(PAGE_SIZE) });
+      dispatch(setStagesData({
+        records: data?.records || [], pagination: data?.pagination || {},
+        stats: data?.stats || {}, total_records: data?.total_records ?? 0,
+      }));
     } catch (e) {
-      console.error("[loadStages]", e);
-      setError("Unable to fetch report stages.");
+      dispatch(setError("Unable to fetch report stages."));
     } finally {
-      setStagesLoading(false);
+      dispatch(setStagesLoading(false));
     }
-  }, [callReport]);
+  }, [callReport, dispatch]);
 
-  const loadCategories = useCallback(
-    async (stageName) => {
-      // Toggle closed
-      if (openStage === stageName) {
-        setOpenStage("");
-        setCategoryRows([]);
-        setDetailRows([]);
-        setOpenCategory("");
-        return;
-      }
+  const loadCategories = useCallback(async (stageName, page = 1) => {
+    if (categories.openStage === stageName && page === categories.pageIndex) {
+      dispatch(toggleStage(stageName)); return;
+    }
+    dispatch(setCategoriesLoading(true));
+    dispatch(clearError());
+    try {
+      const data = await callReport({ stage: stageName, category: "", page, size: String(PAGE_SIZE) });
+      dispatch(setCategoriesData({
+        stageName, records: data?.records || [],
+        pagination: data?.pagination || {}, total_records: data?.total_records ?? 0,
+      }));
+    } catch (e) {
+      dispatch(setError("Unable to fetch categories."));
+    } finally {
+      dispatch(setCategoriesLoading(false));
+    }
+  }, [callReport, dispatch, categories.openStage, categories.pageIndex]);
 
-      setOpenStage(stageName);
-      setOpenCategory("");
-      setDetailRows([]);
-      setCategoryRows([]);
-      setCategoriesLoading(true);
-      setError("");
-
-      try {
-        // Body: { phase, stage: stageName, category: "", … }
-        const data = await callReport({ stage: stageName, category: "" });
-        const records = data?.records || [];
-        // Second-level response has `category` field on each row
-        setCategoryRows(records.filter((r) => r?.category));
-      } catch (e) {
-        console.error("[loadCategories]", e);
-        setError("Unable to fetch categories.");
-      } finally {
-        setCategoriesLoading(false);
-      }
-    },
-    [callReport, openStage],
-  );
-
-  const loadDetails = useCallback(
-    async (stageName, categoryName) => {
-      // Toggle closed
-      if (openCategory === categoryName) {
-        setOpenCategory("");
-        setDetailRows([]);
-        return;
-      }
-
-      setOpenCategory(categoryName);
-      setDetailRows([]);
-      setDetailsLoading(true);
-      setError("");
-
-      try {
-        // Body: { phase, stage, category, page: 1, size: 50, … }
-        const data = await callReport({
-          stage:    stageName,
-          category: categoryName,
-          page:     1,
-          size:     50,
-        });
-        setDetailRows(data?.records || []);
-      } catch (e) {
-        console.error("[loadDetails]", e);
-        setError("Unable to fetch records.");
-      } finally {
-        setDetailsLoading(false);
-      }
-    },
-    [callReport, openCategory],
-  );
-
-  // ── Effects ───────────────────────────────────────────────────────────────────
+  const loadDetails = useCallback(async (stageName, categoryName, page = 1) => {
+    if (details.openCategory === categoryName && page === details.pageIndex) {
+      dispatch(toggleCategory(categoryName)); return;
+    }
+    dispatch(setDetailsLoading(true));
+    dispatch(clearError());
+    try {
+      const data = await callReport({
+        stage: stageName, category: categoryName,
+        page, size: String(DETAIL_PAGE_SIZE),
+      });
+      dispatch(setDetailsData({
+        categoryName, records: data?.records || [],
+        pagination: data?.pagination || {}, total_records: data?.total_records ?? 0,
+      }));
+    } catch (e) {
+      dispatch(setError("Unable to fetch records."));
+    } finally {
+      dispatch(setDetailsLoading(false));
+    }
+  }, [callReport, dispatch, details.openCategory, details.pageIndex]);
 
   useEffect(() => {
     if (!users.length) dispatch(getAllUsers());
   }, [dispatch, users.length]);
 
-  // Re-fetch stages when phase switches OR filters are applied
   useEffect(() => {
-    loadStages();
-  }, [activeSection, appliedFilters]); // eslint-disable-line react-hooks/exhaustive-deps
+    dispatch(resetReport());
+    loadStages(1);
+  }, [activeSection, appliedFilters]); // eslint-disable-line
 
-  // ── Handlers ──────────────────────────────────────────────────────────────────
+  const grandTotal    = stages.rows.reduce((s, r) => s + getCount(r), 0);
+  const statsEntries  = Object.entries(stats);
 
-  const handleApply = () => {
-    setAppliedFilters({ user: selectedUser, date: selectedDate });
-  };
-
-  const handlePhaseSwitch = (key) => {
-    if (key === activeSection) return;
-    setActiveSection(key);
-  };
-
-  // ── Derived ───────────────────────────────────────────────────────────────────
-  const grandTotal = stageRows.reduce((s, r) => s + getCount(r), 0);
-
-  // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-100 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#f5f5f3] font-sans">
 
-        {/* ── Header / filter bar ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <MessageSquare size={20} className="text-green-600" />
+      {/* ── Sticky top nav ── */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center">
+              <Activity size={15} className="text-white" />
             </div>
-            <div>
-              <h1 className="font-semibold text-xl text-slate-800">Report Dashboard</h1>
-            </div>
+            <span className="font-semibold text-slate-900 tracking-tight text-[15px]">Reports</span>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            {/* User selector */}
+          <div className="flex items-center gap-2 flex-1 justify-end">
+
             <div className="relative">
-              <Users size={16} className="absolute left-3 top-3.5 text-slate-400" />
+              <Users size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <select
                 value={selectedUser}
                 onChange={(e) => setSelectedUser(e.target.value)}
-                className="h-11 pl-10 pr-4 border border-slate-300 rounded-xl bg-white min-w-[180px]"
+                className="h-9 pl-8 pr-3 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none appearance-none min-w-[150px] cursor-pointer transition-all"
               >
                 <option value="">All Users</option>
                 {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {getUserLabel(u)}
-                  </option>
+                  <option key={u.id} value={u.id}>{getUserLabel(u)}</option>
                 ))}
               </select>
             </div>
 
-            {/* Date preset */}
             <div className="relative">
-              <Calendar size={16} className="absolute left-3 top-3.5 text-slate-400" />
+              <Calendar size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <select
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="h-11 pl-10 pr-4 border border-slate-300 rounded-xl bg-white min-w-[180px]"
+                className="h-9 pl-8 pr-3 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none appearance-none min-w-[140px] cursor-pointer transition-all"
               >
                 {DATE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -357,265 +394,311 @@ const [stats, setStats] = useState({});
             </div>
 
             <button
-              onClick={handleApply}
+              onClick={() => setAppliedFilters({ user: selectedUser, date: selectedDate })}
               disabled={stagesLoading || usersLoading}
-              className="h-11 px-6 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white rounded-xl font-medium transition flex items-center gap-2"
+              className="h-9 px-5 bg-slate-900 hover:bg-slate-700 active:scale-95 disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
             >
-              {(stagesLoading || usersLoading) && (
-                <Loader2 size={16} className="animate-spin" />
-              )}
+              {(stagesLoading || usersLoading)
+                ? <Loader2 size={13} className="animate-spin" />
+                : <Search size={13} />
+              }
               Apply
             </button>
           </div>
         </div>
+      </div>
 
-        {/* ── Phase selector cards ── */}
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-5">
+
+        {/* ── Phase switcher ── */}
+        <div className="grid grid-cols-2 gap-3">
           {PHASES.map((phase) => {
             const Icon = phase.icon;
             const isActive = activeSection === phase.key;
             return (
-              <div
+              <button
                 key={phase.key}
-                onClick={() => handlePhaseSwitch(phase.key)}
-                className={`cursor-pointer rounded-3xl p-8 transition-all border ${
-                  isActive ? phase.active : "bg-white border-slate-200"
+                onClick={() => { if (phase.key !== activeSection) setActiveSection(phase.key); }}
+                className={`group text-left rounded-2xl p-5 border transition-all duration-200 ${
+                  isActive
+                    ? "bg-white border-slate-200 shadow-sm ring-1 ring-slate-900/5"
+                    : "bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-sm"
                 }`}
               >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className={`w-14 h-14 rounded-2xl ${phase.iconBg} flex items-center justify-center mb-4`}>
-                      <Icon size={24} className={phase.iconText} />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                      isActive ? "bg-slate-900" : "bg-slate-100 group-hover:bg-slate-200"
+                    }`}>
+                      <Icon size={16} className={isActive ? "text-white" : "text-slate-500"} />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-800">{phase.label}</h2>
-                    <p className="text-slate-500 mt-2">{phase.desc}</p>
+                    <div>
+                      <p className="font-semibold text-slate-900 text-sm">{phase.label}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{phase.sublabel}</p>
+                    </div>
                   </div>
-                  <ChevronRight />
+                  <div className={`w-2 h-2 rounded-full transition-all ${isActive ? phase.dot : "bg-slate-200"}`} />
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
 
-<div className="mt-10 bg-white rounded-3xl border border-slate-200 p-4">
-  <div className="grid grid-cols-2 md:grid-cols-2 gap-8">
-    
-</div>
+        {/* ── Stats strip ── */}
+        {statsEntries.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {statsEntries.map(([key, value], i) => {
+              const t = STAT_THEMES[i % STAT_THEMES.length];
+              return (
+                <div key={key} className={`${t.bg} border ${t.border} rounded-2xl p-4`}>
+                  <span className={`text-2xl font-bold tracking-tight ${t.text}`}>{value}</span>
+                  <p className={`text-[11px] font-semibold uppercase tracking-wider mt-1 ${t.label}`}>
+                    {key.replace(/_/g, " ")}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-  <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
-    {Object.entries(stats).map(([key, value], index) => {
-      const colors = [
-        "border-amber-500",
-        "border-emerald-500",
-        "border-blue-500",
-        "border-red-500",
-        "border-purple-500",
-        "border-pink-500",
-        "border-cyan-500",
-        "border-orange-500",
-      ];
+        {/* ── Error ── */}
+        {error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm font-medium text-red-700 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+            {error}
+          </div>
+        )}
 
-      return (
-        <div
-          key={key}
-          className="flex flex-col items-center"
-        >
-          <div
-            className={`w-20 h-20 rounded-full border-[10px] ${
-              colors[index % colors.length]
-            } flex items-center justify-center`}
-          >
-            <span className="text-2xl font-bold">
-              {value}
+        {/* ── Section header ── */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <h2 className="text-[17px] font-semibold text-slate-900 tracking-tight">
+              {phaseConfig.label} breakdown
+            </h2>
+            <p className="text-sm text-slate-400 mt-0.5">
+              {stages.totalRecords > 0
+                ? `${stages.totalRecords.toLocaleString()} total records · ${stages.rows.length} stage${stages.rows.length !== 1 ? "s" : ""}`
+                : "Records grouped by stage and category"
+              }
+            </p>
+          </div>
+          {!stagesLoading && stages.rows.length > 0 && (
+            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${phaseConfig.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot}`} />
+              {phaseConfig.label}
             </span>
-          </div>
-
-          <p className="mt-3 text-sm font-medium text-slate-600 text-center">
-            {key
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (c) => c.toUpperCase())}
-          </p>
-        </div>
-      );
-    })}
-  </div>
-  </div>
-
-
-        {/* ── Breakdown ── */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-xl font-bold text-slate-800">
-                {phaseConfig.label} Breakdown
-              </h2>
-              <p className="text-sm text-slate-500">
-                Records grouped by stage and category
-              </p>
-            </div>
-            {!stagesLoading && stageRows.length > 0 && (
-              <div className="px-4 py-2 bg-white border rounded-xl text-xs font-semibold tracking-widest text-slate-500">
-                {stageRows.length} Stage{stageRows.length !== 1 ? "s" : ""}
-              </div>
-            )}
-          </div>
-
-          {error && (
-            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-              {error}
-            </div>
           )}
+        </div>
 
+        {/* ── Main table card ── */}
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
           {stagesLoading ? (
-            <div className="bg-white rounded-3xl border border-slate-200 p-10 flex flex-col items-center gap-3">
-              <Loader2 size={32} className="animate-spin text-slate-400" />
-              <p className="text-sm font-medium text-slate-500">Loading report stages…</p>
+            <div className="divide-y divide-slate-100">
+              {[...Array(5)].map((_, i) => <SkeletonRow key={i} />)}
             </div>
-          ) : stageRows.length === 0 ? (
+          ) : stages.rows.length === 0 ? (
             <EmptyState
               title="No stages found"
-              subtitle="No data returned for the selected filters and phase."
+              subtitle="Try adjusting the date range or user filter."
             />
           ) : (
-            <div className="space-y-4">
+            <>
+              {/* Table header */}
+              <div className="grid grid-cols-[1fr_auto] px-6 py-3 border-b border-slate-100 bg-slate-50/80">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Stage</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Count</span>
+              </div>
 
-              {stageRows.map((stageRow) => {
-                const stageName   = stageRow.stage;
-                const isStageOpen = openStage === stageName;
+              <div className="divide-y divide-slate-100">
+                {stages.rows.map((stageRow, idx) => {
+                  const stageName   = stageRow.stage;
+                  const isStageOpen = categories.openStage === stageName;
+                  const count       = getCount(stageRow);
 
-                return (
-                  <div
-                    key={stageName}
-                    className="relative rounded-3xl overflow-hidden border border-slate-200 bg-white"
-                  >
-                    {/* Left accent bar */}
-                    <div className={`absolute left-0 top-0 h-full w-1 ${phaseConfig.accent}`} />
+                  return (
+                    <div key={stageName}>
 
-                    {/* Stage header */}
-                    <div
-                      onClick={() => loadCategories(stageName)}
-                      className="p-6 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors"
-                    >
-                      <div>
-                        <h3 className="font-bold text-lg text-slate-800 capitalize">
-                          {stageName}
-                        </h3>
-                        <p className="text-sm text-slate-500">{phaseConfig.label} Stage</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-slate-100 px-4 py-2 rounded-xl font-semibold text-slate-700">
-                          TOTAL {getCount(stageRow)}
-                        </div>
-                        <button className="w-10 h-10 rounded-xl border bg-white flex items-center justify-center">
-                          {isStageOpen
-                            ? <ChevronUp size={18} />
-                            : <ChevronDown size={18} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Category list */}
-                    {isStageOpen && (
-                      <div className="border-t bg-slate-50/70">
-                        {categoriesLoading ? (
-                          <InlineSpinner text="Loading categories…" />
-                        ) : categoryRows.length === 0 ? (
-                          <div className="px-6 py-5 text-sm font-medium text-slate-500">
-                            No categories found for this stage.
+                      {/* ── Stage row ── */}
+                      <div
+                        onClick={() => loadCategories(stageName, 1)}
+                        className={`group flex items-center justify-between px-6 py-4 cursor-pointer select-none transition-colors ${
+                          isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold flex items-center justify-center shrink-0 tabular-nums">
+                            {String(idx + 1).padStart(2, "0")}
+                          </span>
+                          <div>
+                            <p className="font-semibold text-slate-800 text-sm capitalize">{stageName}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} stage</p>
                           </div>
-                        ) : (
-                          categoryRows.map((catRow) => {
-                            const catName   = catRow.category;
-                            const isCatOpen = openCategory === catName;
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <span className={`text-xs font-semibold px-3 py-1.5 rounded-xl border ${phaseConfig.badge}`}>
+                            {count.toLocaleString()}
+                          </span>
+                          <span className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all ${
+                            isStageOpen
+                              ? "bg-slate-100 border-slate-200"
+                              : "bg-white border-slate-200 group-hover:border-slate-300"
+                          }`}>
+                            {isStageOpen
+                              ? <ChevronUp size={13} className="text-slate-500" />
+                              : <ChevronDown size={13} className="text-slate-400" />
+                            }
+                          </span>
+                        </div>
+                      </div>
 
-                            return (
-                              <div key={catName} className="border-b last:border-b-0">
+                      {/* ── Category accordion ── */}
+                      {isStageOpen && (
+                        <div className="bg-[#fafafa] border-t border-slate-100">
+                          {catsLoading ? (
+                            <div className="px-6 py-4 flex items-center gap-2 text-xs text-slate-400">
+                              <Loader2 size={13} className="animate-spin" /> Loading categories…
+                            </div>
+                          ) : categories.rows.length === 0 ? (
+                            <p className="px-6 py-4 text-xs text-slate-400">No categories found for this stage.</p>
+                          ) : (
+                            <>
+                              {/* Category sub-header */}
+                              <div className="grid grid-cols-[1fr_auto] px-6 py-2.5 border-b border-slate-100">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 pl-[calc(1rem+1px)]">Category</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Count</span>
+                              </div>
 
-                                {/* Category row */}
-                                <div
-                                  onClick={() => loadDetails(stageName, catName)}
-                                  className="flex justify-between items-center px-6 py-4 cursor-pointer hover:bg-white transition-colors"
-                                >
-                                  <span className="font-semibold text-slate-700">{catName}</span>
-                                  <div className="flex items-center gap-3">
-                                    <span className="font-bold text-slate-900">
-                                      {getCount(catRow)}
-                                    </span>
-                                    {isCatOpen
-                                      ? <ChevronUp size={16} className="text-slate-400" />
-                                      : <ChevronDown size={16} className="text-slate-400" />}
-                                  </div>
-                                </div>
+                              {categories.rows.map((catRow) => {
+                                const catName   = catRow.category;
+                                const isCatOpen = details.openCategory === catName;
+                                const catCount  = getCount(catRow);
 
-                                {/* Detail records table */}
-                                {isCatOpen && (
-                                  <div className="bg-white border-t">
-                                    {detailsLoading ? (
-                                      <InlineSpinner text="Loading records…" />
-                                    ) : detailRows.length === 0 ? (
-                                      <div className="px-8 py-4 text-sm font-medium text-slate-500">
-                                        No records found for this category.
+                                return (
+                                  <div key={catName} className="border-b border-slate-100 last:border-b-0">
+
+                                    {/* ── Category row ── */}
+                                    <div
+                                      onClick={() => loadDetails(stageName, catName, 1)}
+                                      className={`flex items-center justify-between px-6 py-3.5 cursor-pointer select-none transition-colors ${
+                                        isCatOpen ? "bg-white" : "hover:bg-white/70"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot} opacity-50`} />
+                                        <span className="text-sm font-medium text-slate-700">{catName}</span>
                                       </div>
-                                    ) : (
-                                      <div className="overflow-x-auto">
-                                        <table className="min-w-full text-sm">
-                                          <thead className="bg-slate-100 text-slate-500">
-                                            <tr>
-                                              <th className="text-left px-6 py-3 font-semibold">Sender</th>
-                                              <th className="text-left px-6 py-3 font-semibold">Action</th>
-                                              <th className="text-left px-6 py-3 font-semibold">Description</th>
-                                              <th className="text-left px-6 py-3 font-semibold">Date</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {detailRows.map((record, idx) => (
-                                              <tr
-                                                key={record.id || record.message_id || idx}
-                                                className="border-t hover:bg-slate-50"
-                                              >
-                                                <td className="px-6 py-3 text-slate-700">{record.sender_email || "—"}</td>
-                                                <td className="px-6 py-3 text-slate-700">{record.action        || "—"}</td>
-                                                <td className="px-6 py-3 text-slate-700">{record.description   || "—"}</td>
-                                                <td className="px-6 py-3 text-slate-700 whitespace-nowrap">{record.date_entered || "—"}</td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
+                                      <div className="flex items-center gap-2.5">
+                                        <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                          {catCount.toLocaleString()}
+                                        </span>
+                                        {isCatOpen
+                                          ? <ChevronUp size={13} className="text-slate-400" />
+                                          : <ChevronDown size={13} className="text-slate-300" />
+                                        }
+                                      </div>
+                                    </div>
+
+                                    {/* ── Detail table ── */}
+                                    {isCatOpen && (
+                                      <div className="bg-white border-t border-slate-100">
+                                        {detsLoading ? (
+                                          <div className="px-8 py-4 flex items-center gap-2 text-xs text-slate-400">
+                                            <Loader2 size={13} className="animate-spin" /> Loading records…
+                                          </div>
+                                        ) : details.rows.length === 0 ? (
+                                          <p className="px-8 py-4 text-xs text-slate-400">No records found.</p>
+                                        ) : (
+                                          <>
+                                            <div className="overflow-x-auto">
+                                              <table className="w-full text-xs">
+                                                <thead>
+                                                  <tr className="border-b border-slate-100 bg-slate-50/60">
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Sender</th>
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Action</th>
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Description</th>
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">Date</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-50">
+                                                  {details.rows.map((record, rIdx) => (
+                                                    <tr key={record.id || record.message_id || rIdx} className="hover:bg-slate-50/60 transition-colors">
+                                                      <td className="px-6 py-3 text-slate-700 font-medium">{record.sender_email || "—"}</td>
+                                                      <td className="px-6 py-3">
+                                                        {record.action
+                                                          ? <span className="inline-flex px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 font-medium">{record.action}</span>
+                                                          : <span className="text-slate-300">—</span>
+                                                        }
+                                                      </td>
+                                                      <td className="px-6 py-3 text-slate-500 max-w-[220px] truncate">{record.description || "—"}</td>
+                                                      <td className="px-6 py-3 text-slate-400 whitespace-nowrap font-mono">{record.date_entered || "—"}</td>
+                                                    </tr>
+                                                  ))}
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                            <ReportPagination
+                                              compact
+                                              pageIndex={details.pageIndex}
+                                              pageCount={details.pageCount}
+                                              onChange={(p) => loadDetails(stageName, catName, p)}
+                                            />
+                                          </>
+                                        )}
                                       </div>
                                     )}
                                   </div>
-                                )}
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                                );
+                              })}
 
-              {/* Grand total banner */}
-              <div className={`rounded-3xl overflow-hidden bg-gradient-to-r ${phaseConfig.total} shadow-xl`}>
-                <div className="flex items-center justify-between p-8">
-                  <div>
-                    <p className="uppercase text-xs tracking-[3px] text-slate-300">
-                      All {phaseConfig.label}
-                    </p>
-                    <h2 className="text-2xl font-bold text-white">Grand Total</h2>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-5xl font-bold text-white">{grandTotal}</div>
-                    <p className="text-sm text-slate-300">
-                      across {stageRows.length} stage{stageRows.length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </div>
+                              {/* Category-level pagination */}
+                              <ReportPagination
+                                compact
+                                pageIndex={categories.pageIndex}
+                                pageCount={categories.pageCount}
+                                onChange={(p) => loadCategories(stageName, p)}
+                              />
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-            </div>
+              {/* Stage-level pagination */}
+              <ReportPagination
+                pageIndex={stages.pageIndex}
+                pageCount={stages.pageCount}
+                onChange={(p) => loadStages(p)}
+              />
+            </>
           )}
         </div>
+
+        {/* ── Grand total ── */}
+        {!stagesLoading && stages.rows.length > 0 && (
+          <div className="rounded-2xl bg-slate-900 px-7 py-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                <Layers size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Grand Total</p>
+                <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} · all stages</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-4xl font-bold text-white tracking-tight tabular-nums leading-none">
+                {grandTotal.toLocaleString()}
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1 tabular-nums">
+                {stages.rows.length} stage{stages.rows.length !== 1 ? "s" : ""}
+                {stages.pageCount > 1 && ` · page ${stages.pageIndex}/${stages.pageCount}`}
+              </p>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
