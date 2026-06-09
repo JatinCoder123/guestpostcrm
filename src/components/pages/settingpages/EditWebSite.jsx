@@ -66,6 +66,18 @@ const fieldConfig = [
     icon: DollarSign,
   },
   {
+  key: "average_amount",
+  label: "Average Amount (Brand)",
+  type: "number",
+  icon: DollarSign,
+},
+  {
+  key: "non_brand_average_amount",
+  label: "Average Amount (Non-Brand)",
+  type: "number",
+  icon: DollarSign,
+},
+  {
     key: "amount",
     label: "Brand Maximum Amount",
     type: "number",
@@ -110,6 +122,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
       setForm({
         id: item.id || "",
         name: item.name || "",
+        description: item.name || "",
         slug: item.slug || "",
         da: item.da || "",
         pa: item.pa || "",
@@ -120,6 +133,8 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
         ahref_traffic: item.ahref_traffic || "",
         semrush_traffic: item.semrush_traffic || "",
         amount: item.amount ?? "",
+        average_amount: item.average_amount ?? "",
+        non_brand_average_amount: item.non_brand_average_amount ?? "",
         minimum_price: item.minimum_price ?? "",
         non_brand_minimum_amount: item.non_brand_minimum_amount ?? "",
         non_brand_maximum_amount: item.non_brand_maximum_amount ?? "",
@@ -130,12 +145,13 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
     }
   }, [item]);
 
-  const updateField = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+const updateField = (key, value) => {
+  setForm((prev) => ({
+    ...prev,
+    [key]: value,
+    ...(key === "name" ? { description: value } : {}),
+  }));
+};
 
   const handleSave = () => {
     if (!form.name?.trim()) {

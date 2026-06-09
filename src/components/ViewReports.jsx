@@ -315,16 +315,16 @@ function ClockFace({ hour, min, pickingHour, onPickHour, onPickMin }) {
   const cx = 90,
     cy = 90,
     R = 76;
-  const items = pickingHour
-    ? Array.from({ length: 12 }, (_, i) => {
-      const lbl = i === 0 ? 12 : i;
-      const ang = (i / 12) * 360 - 90;
-      const [x, y] = polar(cx, cy, R - 14, ang);
+ const items = pickingHour
+  ? Array.from({ length: 24 }, (_, i) => {
+      const ang = (i / 24) * 360 - 90;
+      // inner ring for 12–23, outer ring for 0–11
+      const radius = i >= 12 ? R - 28 : R - 14;
+      const [x, y] = polar(cx, cy, radius, ang);
       return {
-        x,
-        y,
-        lbl: String(lbl),
-        sel: hour % 12 === i,
+        x, y,
+        lbl: pad(i),
+        sel: hour === i,
         onClick: () => onPickHour(i),
       };
     })
@@ -340,7 +340,7 @@ function ClockFace({ hour, min, pickingHour, onPickHour, onPickMin }) {
       };
     });
 
-  const [hx, hy] = polar(cx, cy, 44, ((hour % 12) / 12) * 360 - 90);
+  const [hx, hy] = polar(cx, cy, 44, (hour / 24) * 360 - 90);
   const [mx, my] = polar(cx, cy, 60, (min / 60) * 360 - 90);
 
   return (
