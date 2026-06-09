@@ -543,8 +543,12 @@ function WebCard({
 
   const minRaw = item.minAmount ?? item.minimum_price;
   const maxRaw = item.maxAmount ?? item.amount;
+  const nonBrandMinRaw = item.non_brand_minimum_amount;
+  const nonBrandMaxRaw = item.non_brand_maximum_amount;
   const minStr = formatMoney(minRaw);
   const avgRaw = item.average_amount;
+  const avgNonBrandRaw = item.non_brand_average_amount;
+  const nonBrandAvgRaw = item.non_brand_average_amount;
   const avgStr = formatMoney(avgRaw);
   const maxStr = formatMoney(maxRaw);
   const minNum = Number(minRaw);
@@ -718,7 +722,7 @@ function WebCard({
       <div className="mx-4 mb-3 rounded-xl border border-gray-100 bg-gradient-to-br from-slate-50 to-gray-50 p-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[9px] uppercase tracking-widest font-bold text-gray-400">
-            Price Range
+            Price Range (Brand)
           </span>
           {avg !== null && (
             <span className="text-[10px] font-bold text-gray-500 flex items-center gap-0.5">
@@ -758,6 +762,55 @@ function WebCard({
     </div>
     <div className="text-lg font-black text-gray-900">
       {maxStr !== null ? `$${maxStr}` : "—"}
+    </div>
+  </div>
+</div>
+      </div>
+
+            {/* ──Non-Brand Price Range ── */}
+      <div className="mx-4 mb-3 rounded-xl border border-gray-100 bg-gradient-to-br from-slate-50 to-gray-50 p-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[9px] uppercase tracking-widest font-bold text-gray-400">
+            Price Range (Non-Brand)
+          </span>
+          {nonBrandAvgRaw !== null && (
+            <span className="text-[10px] font-bold text-gray-500 flex items-center gap-0.5">
+              <DollarSign size={9} />
+              avg ${formatMoney(nonBrandAvgRaw)}
+            </span>
+          )}
+        </div>
+  <div className="grid grid-cols-3 gap-4 text-center">
+  {/* Min */}
+  <div>
+    <div className="flex items-center justify-center gap-1 text-[9px] text-emerald-600 font-bold uppercase tracking-wide">
+      <TrendingDown size={9} />
+      Min
+    </div>
+    <div className="text-lg font-black text-gray-900">
+      {nonBrandMinRaw !== null ? `$${formatMoney(nonBrandMinRaw)}` : "—"}
+    </div>
+  </div>
+
+  {/* Mid */}
+  <div className="border-x border-gray-200 px-2">
+    <div className="flex items-center justify-center gap-1 text-[9px] text-cyan-600 font-bold uppercase tracking-wide">
+      <DollarSign size={9} />
+      Mid
+    </div>
+    <div className="text-lg font-black text-gray-900">
+      {nonBrandAvgRaw !== null ? `$${formatMoney(nonBrandAvgRaw)}` : "—"}
+    </div>
+  </div>
+
+  {/* Max */}
+  <div>
+    <div className="flex items-center justify-center gap-1 text-[9px] text-indigo-600 font-bold uppercase tracking-wide">
+      Max
+      <TrendingUp size={9} />
+    </div>
+    <div className="text-lg font-black text-gray-900">
+      {nonBrandMaxRaw !== null ? `$${formatMoney(nonBrandMaxRaw)}` : "—"}
     </div>
   </div>
 </div>

@@ -67,7 +67,13 @@ const fieldConfig = [
   },
   {
   key: "average_amount",
-  label: "Average Amount",
+  label: "Average Amount (Brand)",
+  type: "number",
+  icon: DollarSign,
+},
+  {
+  key: "non_brand_average_amount",
+  label: "Average Amount (Non-Brand)",
   type: "number",
   icon: DollarSign,
 },
@@ -128,6 +134,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
         semrush_traffic: item.semrush_traffic || "",
         amount: item.amount ?? "",
         average_amount: item.average_amount ?? "",
+        non_brand_average_amount: item.non_brand_average_amount ?? "",
         minimum_price: item.minimum_price ?? "",
         non_brand_minimum_amount: item.non_brand_minimum_amount ?? "",
         non_brand_maximum_amount: item.non_brand_maximum_amount ?? "",
