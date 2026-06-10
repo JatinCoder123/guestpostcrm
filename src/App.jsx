@@ -63,6 +63,8 @@ import RedirectHandler from "./components/pages/RedirectHandler";
 import { Toaster } from "react-hot-toast";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
 import { TimelineProvider } from "./context/TimelineContext";
+import MeetingWidget from "./components/MeetingWidget";
+import TwakChat from "./components/TwakTo";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -358,7 +360,13 @@ export default function App() {
   return (
     <>
       <Toaster />
-      {isAuthenticated && <RouterProvider router={router} />}
+      {isAuthenticated && !loading && (
+        <>
+          <MeetingWidget />
+          <TwakChat />
+          <RouterProvider router={router} />
+        </>
+      )}
 
       {!isAuthenticated && loading && <LoadingPage />}
 

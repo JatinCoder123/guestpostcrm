@@ -93,7 +93,7 @@ export const getUser = (email = null) => {
           id: data.id,
         })
       );
-      setConfig(data.crmEndpoint, data.db_name, data.id)
+      setConfig(data.crmEndpoint, data.db_name, data.businessEmail);
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       console.log("Full Error:", error.response);

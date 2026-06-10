@@ -492,38 +492,85 @@ export default function TemplatesPage() {
       const result = await res.json();
       showConsole && console.log("AI generate result:", result);
 
-      if (result?.success && result?.data?.html) {
-        if (aiModalContext === "edit") {
-          let html = result.data.html;
+   if (result?.success && result?.data?.html) {
+  
+const unwrapHtml = (raw) => {
+  let html = raw;
 
-// If html is actually JSON string
-if (typeof html === "string" && html.startsWith("{")) {
-  try {
-    html = JSON.parse(html).html;
-  } catch (e) {}
-}
-
-html = html
-  .replace(/^\{"html":"?/i, "") // remove starting {"html":"
-  .replace(/"}$/i, "")          // remove ending "}
-  .replace(/\\"/g, '"')
-  .replace(/\\n/g, "")
-  .replace(/\\r/g, "");
-
-setEditorContent(html);
-          setIsChanged(result.data.html !== originalContent);
+  // Step 1: Keep JSON-parsing until we can't anymore
+  let maxDepth = 5;
+  while (typeof html === "string" && maxDepth-- > 0) {
+    const trimmed = html.trim();
+    if (trimmed.startsWith("{") || trimmed.startsWith('"')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed && typeof parsed === "object" && parsed.html) {
+          html = parsed.html;
+        } else if (typeof parsed === "string") {
+          html = parsed;
         } else {
-          setNewTemplateContent(result.data.html);
-          if (aiName) setNewTemplateName(aiName);
-          if (aiStage) setNewStageType(aiStage);
+          break;
         }
-        setShowAiModal(false);
-        alert("✅ Template generated successfully!");
-      } else {
-        alert(
-          `❌ Generation failed: ${result?.message || result?.error || "Unknown error"}`,
-        );
+      } catch {
+        // JSON.parse failed — string is malformed/truncated.
+        // Manually extract whatever is after "html":"
+        const match = trimmed.match(/["']?html["']?\s*:\s*["']?([\s\S]*)/i);
+        if (match) {
+          html = match[1]
+            .replace(/^"/, "")   // strip leading quote if present
+            .replace(/"?\s*}?\s*$/, ""); // strip trailing quote/brace
+        }
+        break;
       }
+    } else {
+      break;
+    }
+  }
+
+  // Step 2: Unescape all JS/JSON escape sequences
+  if (typeof html === "string") {
+    html = html
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "")
+      .replace(/\\t/g, "\t")
+      .replace(/\\\//g, "/")
+      .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) =>
+        String.fromCharCode(parseInt(code, 16))
+      );
+  }
+
+  // Step 3: Strip any leftover wrapper artifacts that survived
+  if (typeof html === "string") {
+    html = html
+      .trim()
+      .replace(/^\{"?html"?\s*:\s*"?/i, "")  // remove leading {"html":"
+      .replace(/"?\s*\}$/i, "")               // remove trailing "}
+      .trim();
+  }
+
+  return html;
+};
+
+  const cleanHtml = unwrapHtml(result.data.html);
+
+  if (aiModalContext === "edit") {
+    setEditorContent(cleanHtml);
+    setIsChanged(cleanHtml !== originalContent);
+  } else {
+    setNewTemplateContent(cleanHtml);
+    if (aiName) setNewTemplateName(aiName);
+    if (aiStage) setNewStageType(aiStage);
+  }
+
+  setShowAiModal(false);
+  alert("✅ Template generated successfully!");
+
+} else {
+  alert(
+    `❌ Generation failed: ${result?.message || result?.error || "Unknown error"}`
+  );
+}
     } catch (err) {
       console.error("Generate error:", err);
       alert(`❌ Generation failed: ${err.message}`);

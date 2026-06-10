@@ -1,1924 +1,705 @@
-import React, { useEffect, useRef, useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
-  ArrowLeft,
-  CalendarDays,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Download,
-  TrendingUp,
-  Mail,
-  Send,
-  Tag,
-  Handshake,
-  ShoppingCart,
-  Activity,
-  User,
-  FileSpreadsheet,
-  FileText,
   BarChart3,
-  RefreshCw,
-  ArrowUpRight,
-  Bell,
-  MailCheck,
-  MailX,
+  Calendar,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Filter,
+  Loader2,
+  MessageSquare,
+  Search,
+  Users,
+  Activity,
+  Layers,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { apiRequest } from "../services/api";
-import { FETCH_GPC_X_API_KEY } from "../store/constants";
-const SESSION_KEY = "gpc_report_filters";
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
+import { useDispatch, useSelector } from "react-redux";
+import { memo } from "react";
+import { getAllUsers } from "../store/Slices/crmUser.js";
+import { fetchGpc } from "../services/api.js";
+import {
+  setStagesLoading, setStagesData,
+  setCategoriesLoading, setCategoriesData, setCategoriesPage,
+  setDetailsLoading, setDetailsData, setDetailsPage,
+  toggleStage, toggleCategory,
+  setError, clearError, resetReport,
+  selectStages, selectCategories, selectDetails,
+  selectReportStats,
+  selectStagesLoading, selectCatsLoading, selectDetsLoading,
+  selectReportError,
+} from "../store/Slices/reportSlice.js";
 
-const GROUP_COLORS = {
-  Reminder: {
-    header: "from-teal-500 to-teal-600",
-    dot: "#14b8a6",
-    light: "#f0fdfa",
-    text: "#0f766e",
-    badge: "#ccfbf1",
-  },
-  "Email-Accepted": {
-    header: "from-blue-500 to-blue-600",
-    dot: "#3b82f6",
-    light: "#eff6ff",
-    text: "#1d4ed8",
-    badge: "#dbeafe",
-  },
-  Deal: {
-    header: "from-indigo-500 to-indigo-700",
-    dot: "#6366f1",
-    light: "#eef2ff",
-    text: "#4338ca",
-    badge: "#e0e7ff",
-  },
-  Order: {
-    header: "from-amber-400 to-amber-500",
-    dot: "#f59e0b",
-    light: "#fffbeb",
-    text: "#b45309",
-    badge: "#fef3c7",
-  },
-  Offer: {
-    header: "from-orange-400 to-orange-500",
-    dot: "#f97316",
-    light: "#fff7ed",
-    text: "#c2410c",
-    badge: "#ffedd5",
-  },
-  "Email-Rejected": {
-    header: "from-slate-400 to-slate-600",
-    dot: "#64748b",
-    light: "#f8fafc",
-    text: "#475569",
-    badge: "#e2e8f0",
-  },
-};
-const DEFAULT_COLOR = {
-  header: "from-gray-400 to-gray-600",
-  dot: "#6b7280",
-  light: "#f9fafb",
-  text: "#374151",
-  badge: "#f3f4f6",
-};
+// ─── Config ───────────────────────────────────────────────────────────────────
 
-const GROUP_ICONS = {
-  Reminder: Bell,
-  "Email-Accepted": MailCheck,
-  "Email-Rejected": MailX,
-  Deal: Handshake,
-  Order: ShoppingCart,
-  Offer: Tag,
-};
-const DEFAULT_GROUP_ICON = Activity;
-
-const PRESETS = [
-  { label: "Today", id: "equals" },
-  { sep: true },
-  { label: "Yesterday", id: "yesterday" },
-  { sep: true },
-  { label: "Last 7 Days", id: "last7" },
-  { label: "Last 30 Days", id: "last30" },
-  { sep: true },
-  { label: "Last Month", id: "lastMonth" },
-  { sep: true },
-  { label: "Is Between", id: "between" },
+const PHASES = [
+  {
+    key: "filtration",
+    label: "Filtration",
+    sublabel: "Spam · Duplicates · Defaulters",
+    icon: Filter,
+    dot: "bg-emerald-500",
+    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  {
+    key: "conversation",
+    label: "Conversations",
+    sublabel: "Workflow · Stages · Outcomes",
+    icon: MessageSquare,
+    dot: "bg-blue-500",
+    badge: "bg-blue-50 text-blue-700 border-blue-200",
+  },
 ];
 
-// ── Duration options — secondary filter, only shown when Today is active ─────
-// null means "no duration filter — show full day"
-const DURATION_OPTIONS = [
-  { label: "Last 1 min", value: 1 },
-  { label: "Last 2 mins", value: 2 },
-  { label: "Last 5 mins", value: 5 },
-  { label: "Last 1 Hour", value: 60 },
-  { label: "Last 2 Hours", value: 120 },
-  { label: "Last 5 Hours", value: 300 },
+const DATE_OPTIONS = [
+  { value: "today",     label: "Today" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "7days",     label: "Last 7 Days" },
+  { value: "30days",    label: "Last 30 Days" },
 ];
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-const MONTH_SHORT = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-const DAY_HDRS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const PAGE_SIZE = 20;
+const DETAIL_PAGE_SIZE = 50;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+const STAT_THEMES = [
+  { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-700", label: "text-violet-500" },
+  { bg: "bg-sky-50",    border: "border-sky-200",    text: "text-sky-700",    label: "text-sky-500" },
+  { bg: "bg-amber-50",  border: "border-amber-200",  text: "text-amber-700",  label: "text-amber-500" },
+  { bg: "bg-rose-50",   border: "border-rose-200",   text: "text-rose-700",   label: "text-rose-500" },
+  { bg: "bg-teal-50",   border: "border-teal-200",   text: "text-teal-700",   label: "text-teal-500" },
+  { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", label: "text-orange-500" },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const pad = (n) => String(n).padStart(2, "0");
-const fmt = (d) =>
-  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const todayStr = () => fmt(new Date());
+const fmtDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-/**
- * Compute from_time as (now - durationMinutes), clamped to 00:00.
- * Returns "HH:MM" string.
- */
-function computeFromTime(durationMinutes) {
+const getDateRange = (preset) => {
   const now = new Date();
-  const past = new Date(now.getTime() - durationMinutes * 60 * 1000);
-  // If past rolled into yesterday (edge case near midnight), clamp to 00:00
-  const sameDay =
-    past.getFullYear() === now.getFullYear() &&
-    past.getMonth() === now.getMonth() &&
-    past.getDate() === now.getDate();
-  if (!sameDay) return "00:00";
-  return `${pad(past.getHours())}:${pad(past.getMinutes())}`;
-}
-
-function groupByDescription(data = []) {
-  return data.reduce((map, row) => {
-    (map[row.description] = map[row.description] || []).push(row);
-    return map;
-  }, {});
-}
-
-function normalizeReportKey(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
-}
-
-function sumActionTotal(
-  data = [],
-  actionAliases = [],
-  descriptionAliases = [],
-) {
-  const actions = actionAliases.map(normalizeReportKey);
-  const descriptions = descriptionAliases.map(normalizeReportKey);
-
-  return data.reduce((sum, row) => {
-    const actionMatch = actions.includes(normalizeReportKey(row.action));
-    const descriptionMatch =
-      !descriptions.length ||
-      descriptions.includes(normalizeReportKey(row.description));
-
-    return actionMatch && descriptionMatch
-      ? sum + (parseInt(row.total) || 0)
-      : sum;
-  }, 0);
-}
-
-function sumDescriptionTotal(data = [], descriptionAliases = []) {
-  const descriptions = descriptionAliases.map(normalizeReportKey);
-
-  return data.reduce(
-    (sum, row) =>
-      descriptions.includes(normalizeReportKey(row.description))
-        ? sum + (parseInt(row.total) || 0)
-        : sum,
-    0,
-  );
-}
-
-function fmtDisplay(dateStr, timeStr) {
-  if (!dateStr) return "";
-  try {
-    return new Date(`${dateStr}T${timeStr || "00:00"}`).toLocaleString(
-      "en-GB",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      },
-    );
-  } catch {
-    return dateStr;
+  if (preset === "yesterday") {
+    const y = new Date(now);
+    y.setDate(now.getDate() - 1);
+    const s = fmtDate(y);
+    return { from: s, from_time: "00:00:00", to: s, to_time: "23:59:59" };
   }
-}
+  const start = new Date(now);
+  if (preset === "7days")  start.setDate(now.getDate() - 7);
+  if (preset === "30days") start.setDate(now.getDate() - 30);
+  return { from: fmtDate(start), from_time: "00:00:00", to: fmtDate(now), to_time: "23:59:59" };
+};
 
-function resolvePreset(id) {
-  const now = new Date();
-  const y = now.getFullYear(),
-    m = now.getMonth(),
-    day = now.getDate();
-  let from,
-    ft = "00:00",
-    to,
-    tt = "23:59";
-  switch (id) {
-    case "equals":
-      from = to = todayStr();
-      ft = "00:01"; // will be overridden by computeFromTime when duration is set
-      break;
-    case "yesterday":
-      from = to = fmt(new Date(y, m, day - 1));
-      ft = "00:00";
-      tt = "23:59";
-      break;
-    case "last7":
-      from = fmt(new Date(y, m, day - 7));
-      to = todayStr();
-      break;
-    case "last30":
-      from = fmt(new Date(y, m, day - 30));
-      to = todayStr();
-      break;
-    case "lastMonth":
-      from = fmt(new Date(y, m - 1, 1));
-      to = fmt(new Date(y, m, 0));
-      break;
-    case "lastYear":
-      from = `${y - 1}-01-01`;
-      to = `${y - 1}-12-31`;
-      break;
-    default:
-      from = todayStr();
-      to = fmt(new Date(y, m, day + 7));
-  }
-  return { from, ft, to, tt };
-}
+const getCount = (row) => Number(row?.total_count ?? row?.total ?? row?.count ?? 0);
+const getUserLabel = (u) =>
+  u?.name || u?.user_name || u?.username || u?.first_name || u?.description || u?.email || u?.id || "Unnamed";
 
-function dtFromStrings(dateStr, timeStr) {
-  if (!dateStr) return {};
-  const [y, mo, d] = dateStr.split("-").map(Number);
-  const [h, mn] = (timeStr || "00:00").split(":").map(Number);
-  return { year: y, month: mo - 1, day: d, hour: h, min: mn };
-}
+// ─── Pagination ───────────────────────────────────────────────────────────────
 
-function dtToStrings(dt) {
-  return {
-    date: `${dt.year}-${pad(dt.month + 1)}-${pad(dt.day)}`,
-    time: `${pad(dt.hour ?? 0)}:${pad(dt.min ?? 0)}`,
+const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false }) => {
+  const [gotoValue, setGotoValue] = useState("");
+  if (!pageCount || pageCount <= 1) return null;
+
+  const handlePrev = () => { if (pageIndex > 1) onChange(pageIndex - 1); };
+  const handleNext = () => { if (pageIndex < pageCount) onChange(pageIndex + 1); };
+
+  const pagesToShow = [];
+  const start = Number(pageIndex);
+  const end   = Math.min(Number(pageIndex) + 2, pageCount);
+  for (let i = start; i <= end; i++) pagesToShow.push(i);
+  if (end < pageCount - 1) { pagesToShow.push("ellipsis"); pagesToShow.push(pageCount); }
+
+  const handleGoto = (e) => {
+    if (e.key === "Enter") {
+      const p = Number(gotoValue);
+      if (p >= 1 && p <= pageCount) { onChange(p); setGotoValue(""); }
+    }
   };
-}
 
-function fmtDtDisplay(dt) {
-  if (!dt?.year) return "Select date";
-  return `${pad(dt.day)} ${MONTH_SHORT[dt.month]} ${dt.year}  ${pad(dt.hour ?? 0)}:${pad(dt.min ?? 0)}`;
-}
-
-function polar(cx, cy, r, deg) {
-  const a = (deg * Math.PI) / 180;
-  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ClockFace
-// ─────────────────────────────────────────────────────────────────────────────
-
-function ClockFace({ hour, min, pickingHour, onPickHour, onPickMin }) {
-  const cx = 90,
-    cy = 90,
-    R = 76;
-  const items = pickingHour
-    ? Array.from({ length: 12 }, (_, i) => {
-      const lbl = i === 0 ? 12 : i;
-      const ang = (i / 12) * 360 - 90;
-      const [x, y] = polar(cx, cy, R - 14, ang);
-      return {
-        x,
-        y,
-        lbl: String(lbl),
-        sel: hour % 12 === i,
-        onClick: () => onPickHour(i),
-      };
-    })
-    : [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((mv, i) => {
-      const ang = (i / 12) * 360 - 90;
-      const [x, y] = polar(cx, cy, R - 14, ang);
-      return {
-        x,
-        y,
-        lbl: pad(mv),
-        sel: min === mv,
-        onClick: () => onPickMin(mv),
-      };
-    });
-
-  const [hx, hy] = polar(cx, cy, 44, ((hour % 12) / 12) * 360 - 90);
-  const [mx, my] = polar(cx, cy, 60, (min / 60) * 360 - 90);
-
-  return (
-    <svg viewBox="0 0 180 180" className="w-full h-full">
-      <circle
-        cx={cx}
-        cy={cy}
-        r={R}
-        fill="#f8fafc"
-        stroke="#e2e8f0"
-        strokeWidth="1"
-      />
-      {Array.from({ length: 60 }).map((_, i) => {
-        const ang = (i / 60) * 360 - 90;
-        const [x1, y1] = polar(cx, cy, i % 5 === 0 ? R - 5 : R - 2.5, ang);
-        const [x2, y2] = polar(cx, cy, R - 0.5, ang);
-        return (
-          <line
-            key={i}
-            x1={x1}
-            y1={y1}
-            x2={x2}
-            y2={y2}
-            stroke={i % 5 === 0 ? "#cbd5e1" : "#e2e8f0"}
-            strokeWidth={i % 5 === 0 ? "1.5" : "0.8"}
-          />
-        );
-      })}
-      {items.map((it, i) => (
-        <g key={i} onClick={it.onClick} style={{ cursor: "pointer" }}>
-          <circle
-            cx={it.x.toFixed(1)}
-            cy={it.y.toFixed(1)}
-            r="13"
-            fill={it.sel ? "#1d4ed8" : "transparent"}
-          />
-          <text
-            x={it.x.toFixed(1)}
-            y={(it.y + 4.5).toFixed(1)}
-            textAnchor="middle"
-            fontSize="10.5"
-            fontWeight={it.sel ? "700" : "400"}
-            fill={it.sel ? "#fff" : "#374151"}
-          >
-            {it.lbl}
-          </text>
-        </g>
-      ))}
-      <line
-        x1={cx}
-        y1={cy}
-        x2={hx.toFixed(1)}
-        y2={hy.toFixed(1)}
-        stroke={pickingHour ? "#1d4ed8" : "#94a3b8"}
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1={cx}
-        y1={cy}
-        x2={mx.toFixed(1)}
-        y2={my.toFixed(1)}
-        stroke={!pickingHour ? "#1d4ed8" : "#94a3b8"}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <circle cx={cx} cy={cy} r="5" fill="#1d4ed8" />
-      <circle cx={cx} cy={cy} r="2" fill="#fff" />
-    </svg>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DateTimePicker  — inline, no portal
-// ─────────────────────────────────────────────────────────────────────────────
-
-function DateTimePicker({
-  value,
-  onChange,
-  onClose,
-  defaultHour = 0,
-  defaultMin = 1,
-}) {
-  const [step, setStep] = useState("date");
-  const [pickingHour, setPickingHour] = useState(true);
-  const [navYear, setNavYear] = useState(
-    value?.year ?? new Date().getFullYear(),
-  );
-  const [navMonth, setNavMonth] = useState(
-    value?.month ?? new Date().getMonth(),
-  );
-  const today = new Date();
-  const firstDay = new Date(navYear, navMonth, 1).getDay();
-  const daysInMonth = new Date(navYear, navMonth + 1, 0).getDate();
-
-  const prevMonth = () =>
-    navMonth === 0
-      ? (setNavMonth(11), setNavYear((y) => y - 1))
-      : setNavMonth((m) => m - 1);
-  const nextMonth = () =>
-    navMonth === 11
-      ? (setNavMonth(0), setNavYear((y) => y + 1))
-      : setNavMonth((m) => m + 1);
-
-  function selectDay(d) {
-    onChange({
-      ...value,
-      year: navYear,
-      month: navMonth,
-      day: d,
-      hour: value?.hour ?? defaultHour,
-      min: value?.min ?? defaultMin,
-    });
-    setTimeout(() => {
-      setStep("time");
-      setPickingHour(true);
-    }, 120);
-  }
-  function pickHour(h) {
-    onChange({ ...value, hour: h });
-    setTimeout(() => setPickingHour(false), 120);
-  }
-  function pickMin(mv) {
-    onChange({ ...value, min: mv });
-    setTimeout(() => onClose?.(), 100);
-  }
-
-  return (
-    <div
-      className="bg-white border border-gray-200 rounded-2xl shadow-xl w-full overflow-hidden"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Tabs */}
-      <div className="flex">
-        {[
-          ["date", "📅 Date"],
-          ["time", "🕐 Time"],
-        ].map(([s, lbl]) => (
+  if (compact) {
+    return (
+      <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white/60">
+        <span className="text-xs text-slate-400 font-medium tabular-nums">
+          Page {pageIndex} of {pageCount}
+        </span>
+        <div className="flex items-center gap-1">
           <button
-            key={s}
-            onClick={(e) => {
-              e.stopPropagation();
-              setStep(s);
-            }}
-            className={`flex-1 py-2.5 text-xs font-bold tracking-wide transition-all ${step === s
-              ? "bg-blue-700 text-white"
-              : "bg-gray-50 text-gray-400 hover:text-gray-700"
-              }`}
+            onClick={handlePrev}
+            disabled={pageIndex === 1}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            {lbl}
+            <ChevronLeft size={13} />
           </button>
-        ))}
+          {pagesToShow.map((p, idx) =>
+            p === "ellipsis" ? (
+              <span key={idx} className="w-7 text-center text-xs text-slate-400">…</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => onChange(p)}
+                className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition-all
+                  ${p === pageIndex
+                    ? "bg-slate-800 text-white"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+          <button
+            onClick={handleNext}
+            disabled={pageIndex === pageCount}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            <ChevronRight size={13} />
+          </button>
+        </div>
       </div>
+    );
+  }
 
-      {/* ── DATE ── */}
-      {step === "date" && (
-        <div>
-          <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 border-b border-gray-100">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prevMonth();
-              }}
-              className="w-7 h-7 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-blue-700 hover:text-white hover:border-blue-700 transition-all font-bold flex items-center justify-center text-base"
-            >
-              ‹
-            </button>
+  return (
+    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handlePrev}
+          disabled={pageIndex === 1}
+          className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium transition-all"
+        >
+          <ChevronLeft size={14} /> Prev
+        </button>
+        <div className="flex items-center gap-1">
+          {pagesToShow.map((p, idx) =>
+            p === "ellipsis" ? (
+              <span key={idx} className="w-9 text-center text-sm text-slate-400">…</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => onChange(p)}
+                className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-semibold transition-all
+                  ${p === pageIndex
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+        </div>
+        <button
+          onClick={handleNext}
+          disabled={pageIndex === pageCount}
+          className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium transition-all"
+        >
+          Next <ChevronRight size={14} />
+        </button>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-slate-400">Jump to</span>
+        <input
+          type="number"
+          min="1"
+          max={pageCount}
+          value={gotoValue}
+          onChange={(e) => setGotoValue(e.target.value)}
+          onKeyDown={handleGoto}
+          className="w-16 h-9 px-3 text-sm border border-slate-200 rounded-xl text-slate-700 bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none transition-all"
+          placeholder="—"
+        />
+      </div>
+    </div>
+  );
+});
 
-            <div className="flex items-center gap-1.5">
-              {/* Month */}
-              <div className="relative">
-                <select
-                  value={navMonth}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    setNavMonth(Number(e.target.value));
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="appearance-none pl-2.5 pr-6 py-1.5 text-xs font-bold border border-gray-200 rounded-lg bg-white text-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {MONTHS.map((mo, i) => (
-                    <option key={mo} value={i}>
-                      {mo}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={10}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                />
-              </div>
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-              {/* Year */}
-              <div className="relative">
-                <select
-                  value={navYear}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    setNavYear(Number(e.target.value));
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="appearance-none pl-2.5 pr-6 py-1.5 text-xs font-bold border border-gray-200 rounded-lg bg-white text-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {Array.from(
-                    { length: 21 },
-                    (_, i) => new Date().getFullYear() - 10 + i,
-                  ).map((yr) => (
-                    <option key={yr} value={yr}>
-                      {yr}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={10}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                />
-              </div>
+const SkeletonRow = () => (
+  <div className="p-6 flex justify-between items-center animate-pulse">
+    <div className="flex items-center gap-4">
+      <div className="w-7 h-7 bg-slate-100 rounded-lg" />
+      <div className="space-y-2">
+        <div className="h-4 w-28 bg-slate-100 rounded-lg" />
+        <div className="h-3 w-16 bg-slate-100 rounded-lg" />
+      </div>
+    </div>
+    <div className="h-7 w-24 bg-slate-100 rounded-xl" />
+  </div>
+);
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+const EmptyState = ({ title, subtitle }) => (
+  <div className="flex flex-col items-center justify-center py-16 px-6">
+    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+      <BarChart3 size={20} className="text-slate-400" />
+    </div>
+    <p className="font-semibold text-slate-700 text-sm">{title}</p>
+    <p className="text-xs text-slate-400 mt-1.5 max-w-xs text-center leading-relaxed">{subtitle}</p>
+  </div>
+);
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export default function ViewReports() {
+  const dispatch = useDispatch();
+  const { users = [], loading: usersLoading } = useSelector((s) => s.crmUser || {});
+
+  const stages        = useSelector(selectStages);
+  const categories    = useSelector(selectCategories);
+  const details       = useSelector(selectDetails);
+  const stats         = useSelector(selectReportStats);
+  const stagesLoading = useSelector(selectStagesLoading);
+  const catsLoading   = useSelector(selectCatsLoading);
+  const detsLoading   = useSelector(selectDetsLoading);
+  const error         = useSelector(selectReportError);
+
+  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedDate, setSelectedDate] = useState("today");
+  const [appliedFilters, setAppliedFilters] = useState({ user: "", date: "today" });
+  const [activeSection, setActiveSection] = useState("filtration");
+
+  const phaseConfig = useMemo(
+    () => PHASES.find((p) => p.key === activeSection) || PHASES[0],
+    [activeSection],
+  );
+
+  const buildBody = useCallback(
+    (overrides = {}) => ({
+      phase: activeSection, stage: "", category: "",
+      report_user_id: appliedFilters.user,
+      page: "", size: String(PAGE_SIZE),
+      ...getDateRange(appliedFilters.date),
+      ...overrides,
+    }),
+    [activeSection, appliedFilters],
+  );
+
+  const callReport = useCallback(
+    (overrides = {}) =>
+      fetchGpc({ method: "POST", params: { type: "newReport" }, body: buildBody(overrides) }),
+    [buildBody],
+  );
+
+  const loadStages = useCallback(async (page = 1) => {
+    dispatch(setStagesLoading(true));
+    dispatch(clearError());
+    try {
+      const data = await callReport({ page, size: String(PAGE_SIZE) });
+      dispatch(setStagesData({
+        records: data?.records || [], pagination: data?.pagination || {},
+        stats: data?.stats || {}, total_records: data?.total_records ?? 0,
+      }));
+    } catch (e) {
+      dispatch(setError("Unable to fetch report stages."));
+    } finally {
+      dispatch(setStagesLoading(false));
+    }
+  }, [callReport, dispatch]);
+
+  const loadCategories = useCallback(async (stageName, page = 1) => {
+    if (categories.openStage === stageName && page === categories.pageIndex) {
+      dispatch(toggleStage(stageName)); return;
+    }
+    dispatch(setCategoriesLoading(true));
+    dispatch(clearError());
+    try {
+      const data = await callReport({ stage: stageName, category: "", page, size: String(PAGE_SIZE) });
+      dispatch(setCategoriesData({
+        stageName, records: data?.records || [],
+        pagination: data?.pagination || {}, total_records: data?.total_records ?? 0,
+      }));
+    } catch (e) {
+      dispatch(setError("Unable to fetch categories."));
+    } finally {
+      dispatch(setCategoriesLoading(false));
+    }
+  }, [callReport, dispatch, categories.openStage, categories.pageIndex]);
+
+  const loadDetails = useCallback(async (stageName, categoryName, page = 1) => {
+    if (details.openCategory === categoryName && page === details.pageIndex) {
+      dispatch(toggleCategory(categoryName)); return;
+    }
+    dispatch(setDetailsLoading(true));
+    dispatch(clearError());
+    try {
+      const data = await callReport({
+        stage: stageName, category: categoryName,
+        page, size: String(DETAIL_PAGE_SIZE),
+      });
+      dispatch(setDetailsData({
+        categoryName, records: data?.records || [],
+        pagination: data?.pagination || {}, total_records: data?.total_records ?? 0,
+      }));
+    } catch (e) {
+      dispatch(setError("Unable to fetch records."));
+    } finally {
+      dispatch(setDetailsLoading(false));
+    }
+  }, [callReport, dispatch, details.openCategory, details.pageIndex]);
+
+  useEffect(() => {
+    if (!users.length) dispatch(getAllUsers());
+  }, [dispatch, users.length]);
+
+  useEffect(() => {
+    dispatch(resetReport());
+    loadStages(1);
+  }, [activeSection, appliedFilters]); // eslint-disable-line
+
+  const grandTotal    = stages.rows.reduce((s, r) => s + getCount(r), 0);
+  const statsEntries  = Object.entries(stats);
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f3] font-sans">
+
+      {/* ── Sticky top nav ── */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center">
+              <Activity size={15} className="text-white" />
+            </div>
+            <span className="font-semibold text-slate-900 tracking-tight text-[15px]">Reports</span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-1 justify-end">
+
+            <div className="relative">
+              <Users size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <select
+                value={selectedUser}
+                onChange={(e) => setSelectedUser(e.target.value)}
+                className="h-9 pl-8 pr-3 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none appearance-none min-w-[150px] cursor-pointer transition-all"
+              >
+                <option value="">All Users</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>{getUserLabel(u)}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="relative">
+              <Calendar size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <select
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="h-9 pl-8 pr-3 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none appearance-none min-w-[140px] cursor-pointer transition-all"
+              >
+                {DATE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
             </div>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                nextMonth();
-              }}
-              className="w-7 h-7 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-blue-700 hover:text-white hover:border-blue-700 transition-all font-bold flex items-center justify-center text-base"
+              onClick={() => setAppliedFilters({ user: selectedUser, date: selectedDate })}
+              disabled={stagesLoading || usersLoading}
+              className="h-9 px-5 bg-slate-900 hover:bg-slate-700 active:scale-95 disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
             >
-              ›
+              {(stagesLoading || usersLoading)
+                ? <Loader2 size={13} className="animate-spin" />
+                : <Search size={13} />
+              }
+              Apply
             </button>
           </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-7 px-3 pt-2 pb-3">
-            {DAY_HDRS.map((d) => (
-              <div
-                key={d}
-                className="text-[9px] text-center text-gray-400 py-1 font-black tracking-widest"
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-5">
+
+        {/* ── Phase switcher ── */}
+        <div className="grid grid-cols-2 gap-3">
+          {PHASES.map((phase) => {
+            const Icon = phase.icon;
+            const isActive = activeSection === phase.key;
+            return (
+              <button
+                key={phase.key}
+                onClick={() => { if (phase.key !== activeSection) setActiveSection(phase.key); }}
+                className={`group text-left rounded-2xl p-5 border transition-all duration-200 ${
+                  isActive
+                    ? "bg-white border-slate-200 shadow-sm ring-1 ring-slate-900/5"
+                    : "bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-sm"
+                }`}
               >
-                {d}
-              </div>
-            ))}
-            {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={i} />
-            ))}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const d = i + 1;
-              const isToday =
-                d === today.getDate() &&
-                navMonth === today.getMonth() &&
-                navYear === today.getFullYear();
-              const isSel =
-                value?.day === d &&
-                value?.month === navMonth &&
-                value?.year === navYear;
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                      isActive ? "bg-slate-900" : "bg-slate-100 group-hover:bg-slate-200"
+                    }`}>
+                      <Icon size={16} className={isActive ? "text-white" : "text-slate-500"} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900 text-sm">{phase.label}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{phase.sublabel}</p>
+                    </div>
+                  </div>
+                  <div className={`w-2 h-2 rounded-full transition-all ${isActive ? phase.dot : "bg-slate-200"}`} />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Stats strip ── */}
+        {statsEntries.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {statsEntries.map(([key, value], i) => {
+              const t = STAT_THEMES[i % STAT_THEMES.length];
               return (
-                <button
-                  key={d}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectDay(d);
-                  }}
-                  className={`text-[11px] py-1.5 rounded-lg font-medium transition-all ${isSel
-                    ? "bg-blue-700 text-white shadow-sm font-bold"
-                    : isToday
-                      ? "ring-2 ring-blue-400 text-blue-700 font-bold"
-                      : "hover:bg-blue-50 text-gray-700"
-                    }`}
-                >
-                  {d}
-                </button>
+                <div key={key} className={`${t.bg} border ${t.border} rounded-2xl p-4`}>
+                  <span className={`text-2xl font-bold tracking-tight ${t.text}`}>{value}</span>
+                  <p className={`text-[11px] font-semibold uppercase tracking-wider mt-1 ${t.label}`}>
+                    {key.replace(/_/g, " ")}
+                  </p>
+                </div>
               );
             })}
           </div>
-        </div>
-      )}
-
-      {/* ── TIME ── */}
-      {step === "time" && (
-        <div className="p-4 flex flex-col items-center gap-3">
-          <div className="w-44 h-44">
-            <ClockFace
-              hour={value?.hour ?? defaultHour}
-              min={value?.min ?? defaultMin}
-              pickingHour={pickingHour}
-              onPickHour={pickHour}
-              onPickMin={pickMin}
-            />
-          </div>
-          <div className="text-2xl font-black text-gray-800 tracking-tight tabular-nums">
-            {pad(value?.hour ?? defaultHour)}:{pad(value?.min ?? defaultMin)}
-          </div>
-          <div className="flex gap-2">
-            {[
-              ["Hour", true],
-              ["Min", false],
-            ].map(([lbl, isHour]) => (
-              <button
-                key={lbl}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPickingHour(isHour);
-                }}
-                className={`px-5 py-1.5 rounded-xl text-xs font-bold transition-all ${pickingHour === isHour
-                  ? "bg-blue-700 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
-              >
-                {lbl}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DateRangeFilter
-// ─────────────────────────────────────────────────────────────────────────────
-
-function DateRangeFilter({
-  fromDate,
-  fromTime,
-  toDate,
-  toTime,
-  setFromDate,
-  setFromTime,
-  setToDate,
-  setToTime,
-  filterActive,
-  onApply,
-  onReset,
-}) {
-  const [open, setOpen] = useState(false);
-  const [activePreset, setActivePreset] = useState(null);
-  const [openPicker, setOpenPicker] = useState(null);
-  const dropRef = useRef(null);
-
-  // duration: null = show all of today; number = last N mins (optional extra filter)
-  const [duration, setDuration] = useState(null);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (dropRef.current && !dropRef.current.contains(e.target)) {
-        setOpen(false);
-        setOpenPicker(null);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  function applyPreset(id) {
-    const { from, ft, to, tt } = resolvePreset(id);
-    // Switching away from Today clears any duration filter
-    if (id !== "equals") setDuration(null);
-    setFromDate(from);
-    setFromTime(ft); // always reset to full-day from_time; duration applies on Apply
-    setToDate(to);
-    setToTime(tt);
-    setActivePreset(id);
-    setOpenPicker(null);
-  }
-
-  // Toggle: clicking active option deselects it (reverts to full day)
-  function handleDurationChange(val) {
-    const next = duration === val ? null : val;
-    setDuration(next);
-    if (activePreset === "equals") {
-      setFromTime(next === null ? "00:01" : computeFromTime(next));
-    }
-  }
-
-  const activePresetLabel = PRESETS.find((p) => p.id === activePreset)?.label;
-  const rangeLabel = filterActive
-    ? `${fmtDisplay(fromDate, fromTime)}  →  ${fmtDisplay(toDate, toTime)}`
-    : "Select a period…";
-
-  const pickerFields = [
-    {
-      label: "From",
-      key: "from",
-      date: fromDate,
-      time: fromTime,
-      setDate: setFromDate,
-      setTime: setFromTime,
-      dh: 0,
-      dm: 1,
-    },
-    {
-      label: "To",
-      key: "to",
-      date: toDate,
-      time: toTime,
-      setDate: setToDate,
-      setTime: setToTime,
-      dh: 23,
-      dm: 59,
-    },
-  ];
-
-  return (
-    <div className="relative" ref={dropRef}>
-      {/* Trigger */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-5 py-3.5 flex flex-wrap items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-          <CalendarDays size={15} className="text-blue-700" />
-        </div>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-2 flex-1 min-w-0 text-left"
-        >
-          <div className="flex flex-col min-w-0">
-            {activePresetLabel && (
-              <span className="text-[9px] font-black text-blue-600 leading-none mb-0.5 flex items-center gap-1">
-                {activePresetLabel}
-                {/* Badge only when a minute-level duration is active */}
-                {activePreset === "equals" && duration !== null && (
-                  <span className="inline-flex items-center gap-0.5 bg-blue-100 text-blue-700 rounded px-1.5 py-0.5 text-[8px] font-black">
-                    <Clock size={8} />
-                    {DURATION_OPTIONS.find((d) => d.value === duration)?.label}
-                  </span>
-                )}
-              </span>
-            )}
-            <span
-              className={`text-sm font-semibold truncate ${filterActive ? "text-gray-800" : "text-gray-400"}`}
-            >
-              {rangeLabel}
-            </span>
-          </div>
-          <ChevronDown
-            size={14}
-            className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          />
-        </button>
-        <div className="flex items-center gap-2">
-          {filterActive && (
-            <button
-              onClick={() => {
-                setActivePreset(null);
-                setOpen(false);
-                onReset();
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-500 text-xs font-semibold rounded-xl hover:bg-gray-200 transition-all"
-            >
-              <RefreshCw size={11} /> Reset
-            </button>
-          )}
-          <button
-            onClick={() => {
-              setOpen(false);
-              onApply();
-            }}
-            className="px-5 py-2 bg-blue-700 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-all shadow-sm"
-          >
-            Apply
-          </button>
-        </div>
-      </div>
-
-      {/* Dropdown — allows natural height growth, no overflow-hidden */}
-      {open && (
-        <div
-          className="absolute left-0 top-full mt-2 z-[9999] bg-white border border-gray-200 rounded-2xl shadow-2xl"
-          style={{ width: 520 }}
-        >
-          <div
-            className="flex rounded-t-2xl"
-            style={{ borderRadius: "16px 16px 0 0", overflow: "hidden" }}
-          >
-            {/* Preset sidebar */}
-            <div className="w-44 bg-gray-50 border-r border-gray-100 py-2 flex-shrink-0">
-              <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 pt-2 pb-2">
-                Quick Select
-              </p>
-              {PRESETS.map((p, i) =>
-                p.sep ? (
-                  <div key={i} className="my-1 mx-4 border-t border-gray-200" />
-                ) : (
-                  <button
-                    key={p.id}
-                    onClick={() => applyPreset(p.id)}
-                    className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${activePreset === p.id
-                      ? "bg-blue-700 text-white"
-                      : "text-gray-600 hover:bg-white hover:text-gray-900"
-                      }`}
-                  >
-                    {p.label}
-                  </button>
-                ),
-              )}
-            </div>
-
-            {/* Right panel */}
-            <div className="flex-1 p-5 flex flex-col gap-4 min-w-0">
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">
-                  Selected Period
-                </p>
-                <div
-                  className={`rounded-xl px-4 py-3 border ${activePresetLabel ? "bg-blue-50 border-blue-100" : "bg-gray-50 border-gray-100"}`}
-                >
-                  <p className="text-sm font-bold text-blue-700">
-                    {activePresetLabel || "Custom Range"}
-                  </p>
-                  {filterActive && (
-                    <p className="text-xs text-blue-600 mt-0.5 font-medium">
-                      {fmtDisplay(fromDate, fromTime)} →{" "}
-                      {fmtDisplay(toDate, toTime)}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Duration filter — optional, only visible when Today is selected */}
-              {activePreset === "equals" && (
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5 flex items-center gap-1.5">
-                    <Clock size={9} />
-                    Filter by last N minutes
-                    <span className="normal-case font-medium text-gray-300 ml-1">
-                      (optional)
-                    </span>
-                  </p>
-                  {/* "All Day" default chip */}
-                  <div className="flex flex-wrap gap-1.5">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (duration !== null) handleDurationChange(duration); // deselect = set null
-                      }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${duration === null
-                        ? "bg-blue-700 border-blue-700 text-white shadow-sm"
-                        : "bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-700"
-                        }`}
-                    >
-                      All Day
-                    </button>
-                    {DURATION_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDurationChange(opt.value);
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${duration === opt.value
-                          ? "bg-blue-700 border-blue-700 text-white shadow-sm"
-                          : "bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                          }`}
-                      >
-                        <Clock
-                          size={11}
-                          className={
-                            duration === opt.value
-                              ? "text-white"
-                              : "text-gray-400"
-                          }
-                        />
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  {/* Preview line */}
-                  <p className="mt-2 text-[11px] text-gray-400 font-medium">
-                    {duration === null ? (
-                      "Showing all activity for today (00:01 → 23:59)"
-                    ) : (
-                      <>
-                        Showing last{" "}
-                        <span className="font-black text-blue-700">
-                          {duration} min
-                        </span>{" "}
-                        — from{" "}
-                        <span className="font-black tabular-nums text-blue-700">
-                          {computeFromTime(duration)}
-                        </span>{" "}
-                        to now
-                      </>
-                    )}
-                  </p>
-                </div>
-              )}
-
-              {/* Between pickers — completely inline, grow the dropdown naturally */}
-              {activePreset === "between" && (
-                <div className="flex flex-col gap-3">
-                  <div className="grid grid-cols-1 gap-3">
-                    {pickerFields.map(
-                      ({
-                        label,
-                        key,
-                        date,
-                        time,
-                        setDate,
-                        setTime,
-                        dh,
-                        dm,
-                      }) => (
-                        <div key={key}>
-                          <label className="text-[9px] font-black uppercase text-gray-400 mb-1.5 block">
-                            {label}
-                          </label>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenPicker(openPicker === key ? null : key);
-                            }}
-                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${openPicker === key
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                              }`}
-                          >
-                            {fmtDtDisplay(dtFromStrings(date, time))}
-                          </button>
-
-                          {openPicker === key && (
-                            <div className="mt-2">
-                              <DateTimePicker
-                                value={dtFromStrings(date, time)}
-                                onClose={() => setOpenPicker(null)}
-                                onChange={(dt) => {
-                                  const { date: d, time: t } = dtToStrings(dt);
-                                  setDate(d);
-                                  setTime(t);
-                                  setActivePreset("between");
-                                }}
-                                defaultHour={dh}
-                                defaultMin={dm}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      ),
-                    )}
-                  </div>
-
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 text-xs text-blue-700 font-semibold">
-                    {fmtDisplay(fromDate, fromTime)} →{" "}
-                    {fmtDisplay(toDate, toTime)}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-gray-100 px-5 py-3 flex justify-end gap-2 bg-gray-50 rounded-b-2xl">
-            <button
-              onClick={() => {
-                setOpen(false);
-                setOpenPicker(null);
-              }}
-              className="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                setOpen(false);
-                setOpenPicker(null);
-                onApply();
-              }}
-              className="px-6 py-2 text-xs font-bold bg-blue-700 text-white rounded-xl hover:bg-blue-800 transition-all"
-            >
-              Apply Filter
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MetricCard
-// ─────────────────────────────────────────────────────────────────────────────
-
-const CARD_META = {
-  New: { icon: TrendingUp, accent: "#059669", bg: "#ecfdf5" },
-  Inbound: { icon: Mail, accent: "#2563eb", bg: "#eff6ff" },
-  Outbound: { icon: Send, accent: "#7c3aed", bg: "#f5f3ff" },
-  Offers: { icon: Tag, accent: "#d97706", bg: "#fffbeb" },
-  Deals: { icon: Handshake, accent: "#dc2626", bg: "#fef2f2" },
-  Orders: { icon: ShoppingCart, accent: "#0891b2", bg: "#ecfeff" },
-  "First Reply Sent": { icon: Activity, accent: "#0284c7", bg: "#e0f2fe" },
-  "No Reply Sender": { icon: Mail, accent: "#2563eb", bg: "#eff6ff" },
-  "Rejected-Duplicate": { icon: FileText, accent: "#a855f7", bg: "#faf5ff" },
-  "Rejected - NonRelvant": {
-    icon: User,
-    accent: "#c05621",
-    bg: "#fff7ed",
-  },
-  "Reminders-Sent": { icon: RefreshCw, accent: "#14b8a6", bg: "#f0fdfa" },
-  "GPC Activity": { icon: BarChart3, accent: "#7c3aed", bg: "#f5f3ff" },
-  "Total Activity": { icon: Activity, accent: "#1d4ed8", bg: "#eff6ff" },
-};
-
-function MetricCard({ label, value, onClick }) {
-  const meta = CARD_META[label] || {
-    icon: User,
-    accent: "#6b7280",
-    bg: "#f9fafb",
-  };
-  const Icon = meta.icon;
-  const isClickable = !!onClick;
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={!isClickable}
-      style={{
-        backgroundColor: meta.bg,
-        borderColor: `${meta.accent}26`,
-      }}
-      className={`group relative border rounded-2xl p-4 text-left w-full overflow-hidden transition-all duration-200
-        ${isClickable ? "hover:shadow-md hover:-translate-y-0.5 cursor-pointer" : "cursor-default"}`}
-    >
-      {/* Top accent stripe revealed on hover */}
-      <div
-        className="absolute inset-x-0 top-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ backgroundColor: meta.accent }}
-      />
-
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-white shadow-sm ring-1 ring-inset ring-black/5">
-          <Icon size={18} style={{ color: meta.accent }} />
-        </div>
-        {isClickable && (
-          <span
-            className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/70 transition-all group-hover:bg-white group-hover:shadow-sm"
-            style={{ color: meta.accent }}
-          >
-            <ArrowUpRight size={13} strokeWidth={2.5} />
-          </span>
         )}
-      </div>
-      <p
-        className="text-[10px] font-bold uppercase tracking-wider mb-1.5 leading-tight"
-        style={{ color: meta.accent, opacity: 0.85 }}
-      >
-        {label}
-      </p>
-      <p className="text-2xl font-black text-gray-900 tabular-nums tracking-tight leading-none">
-        {value}
-      </p>
-    </button>
-  );
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ViewReports — main
-// ─────────────────────────────────────────────────────────────────────────────
-
-export default function ViewReports() {
-  const navigate = useNavigate();
-  const [apiResponse, setApiResponse] = useState(null);
-  const [baseSummary, setBaseSummary] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [openExport, setOpenExport] = useState(false);
-  const [openGroups, setOpenGroups] = useState({});
-  const exportRef = useRef(null);
-  const savedFilters = (() => {
-    try {
-      return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || null;
-    } catch {
-      return null;
-    }
-  })();
-
-  const [fromDate, setFromDate] = useState(
-    savedFilters?.fromDate || todayStr(),
-  );
-
-  const [fromTime, setFromTime] = useState(
-    savedFilters?.fromTime || "00:01",
-  );
-
-  const [toDate, setToDate] = useState(
-    savedFilters?.toDate || todayStr(),
-  );
-
-  const [toTime, setToTime] = useState(
-    savedFilters?.toTime || "23:59",
-  );
-
-  const [filterActive, setFilterActive] = useState(
-    savedFilters?.filterActive ?? false,
-  );
-
-  const { crmEndpoint } = useSelector((state) => state.user);
-
-  useEffect(() => {
-    const h = (e) => {
-      if (exportRef.current && !exportRef.current.contains(e.target))
-        setOpenExport(false);
-    };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, []);
-  useEffect(() => {
-    sessionStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({
-        fromDate,
-        fromTime,
-        toDate,
-        toTime,
-        filterActive,
-      }),
-    );
-  }, [fromDate, fromTime, toDate, toTime, filterActive]);
-  // ── Derived ──────────────────────────────────────────────────────────────────
-  const rows = apiResponse?.data ?? [];
-  const grouped = groupByDescription(rows);
-  const grandTotal = rows.reduce((sum, r) => sum + (parseInt(r.total) || 0), 0);
-
-  const rawUserSummary = baseSummary?.user_summary;
-  const userSummary = Array.isArray(rawUserSummary)
-    ? rawUserSummary
-    : rawUserSummary && typeof rawUserSummary === "object"
-      ? Object.values(rawUserSummary)
-      : [];
-
-  const gpcActivity = userSummary.find((u) => u.user_id === "")?.total ?? 0;
-  const userActivities = userSummary.filter((u) => u.user_id !== "");
-  const totalActivity = userSummary.reduce(
-    (s, u) => s + (parseInt(u.total) || 0),
-    0,
-  );
-  const inboundTotal = (baseSummary?.data || [])
-    .filter((r) => r.action === "Email-Recieved")
-    .reduce((s, r) => s + (parseInt(r.total) || 0), 0);
-  const outboundTotal = (baseSummary?.data || [])
-    .filter((r) => r.action === "Email-Reply-Sent")
-    .reduce((s, r) => s + (parseInt(r.total) || 0), 0);
-  const noReplySenderTotal = sumActionTotal(
-    rows,
-    ["No-Reply-Sender", "No Reply Sender"],
-    ["Email-Rejected"],
-  );
-  const duplicateSenderTotal = sumActionTotal(
-    rows,
-    [
-      "Duplicate-Sender",
-      "Duplicate Sender",
-      "Rejected-Duplicate",
-      "Rejected Duplicate",
-    ],
-    ["Email-Rejected"],
-  );
-  const nonRelevantSenderTotal = sumActionTotal(
-    rows,
-    [
-      "Non-Relevant-Sender",
-      "Non Relevant Sender",
-      "NonRelvant-Sender",
-      "Rejected-NonRelvant",
-      "Rejected NonRelvant",
-      "Rejected-NonRelevant",
-      "Rejected NonRelevant",
-    ],
-    ["Email-Rejected"],
-  );
-  const reminderSentActionTotal = sumActionTotal(rows, [
-    "Reminders-Sent",
-    "Reminder-Sent",
-    "Reminders Sent",
-    "Reminder Sent",
-  ]);
-  const reminderEntriesTotal =
-    reminderSentActionTotal ||
-    sumDescriptionTotal(rows, ["Reminder", "Reminders"]);
-
-  // ── URL builders ─────────────────────────────────────────────────────────────
-  const buildUrl = (fd, ft, td, tt, extra = {}) =>
-    `${crmEndpoint}&${new URLSearchParams({ type: "report", from: fd, from_time: `${ft}:00`, to: td, to_time: `${tt}:59`, ...extra })}`;
-  const buildPlainUrl = (extra = {}) =>
-    `${crmEndpoint}&${new URLSearchParams({ type: "report", ...extra })}`;
-
-  // ── Fetchers ──────────────────────────────────────────────────────────────────
-  const fetchSummary = async (fd, ft, td, tt) => {
-    try {
-      const url = fd ? buildUrl(fd, ft, td, tt) : `${crmEndpoint}&type=report`;
-      const data = await apiRequest({
-        endpoint: url,
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": FETCH_GPC_X_API_KEY,
-        },
-      });
-      if (data?.success) setBaseSummary(data);
-    } catch (err) {
-      console.error("Summary fetch failed:", err);
-    }
-  };
-
-  const fetchTable = async (fd, ft, td, tt, extra = {}) => {
-    setLoading(true);
-    try {
-      const data = await apiRequest({
-        endpoint: buildUrl(fd, ft, td, tt, extra),
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": FETCH_GPC_X_API_KEY,
-        },
-      });
-      setApiResponse(data?.success ? data : null);
-    } catch {
-      setApiResponse(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchTablePlain = async (extra = {}) => {
-    setLoading(true);
-    try {
-      const data = await apiRequest({
-        endpoint: buildPlainUrl(extra),
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": FETCH_GPC_X_API_KEY,
-        },
-      });
-      setApiResponse(data?.success ? data : null);
-    } catch {
-      setApiResponse(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ── Handlers ──────────────────────────────────────────────────────────────────
-  const handleApplyFilter = () => {
-    if (new Date(`${toDate}T${toTime}`) < new Date(`${fromDate}T${fromTime}`)) {
-      alert("❌ 'To Date' cannot be earlier than 'From Date'");
-      return;
-    }
-    setFilterActive(true);
-    fetchSummary(fromDate, fromTime, toDate, toTime);
-    fetchTable(fromDate, fromTime, toDate, toTime);
-  };
-
-  const handleResetFilter = () => {
-    const today = todayStr();
-    setFromDate(today);
-    setFromTime("00:01");
-    setToDate(today);
-    setToTime("23:59");
-    setFilterActive(true);
-    fetchSummary(today, "00:01", today, "23:59");
-    fetchTable(today, "00:01", today, "23:59");
-  };
-
-  useEffect(() => {
-    handleApplyFilter();
-  }, []);
-  useEffect(() => {
-    if (filterActive) {
-      fetchSummary(fromDate, fromTime, toDate, toTime);
-      fetchTable(fromDate, fromTime, toDate, toTime);
-    } else {
-      fetchSummary();
-      fetchTablePlain();
-    }
-  }, [filterActive]);
-
-  const toggleGroup = (key) =>
-    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
-  const handleGroupClick = (desc) =>
-    navigate(`/view-reports/${encodeURIComponent(desc)}`, {
-      state: {
-        from: fromDate,
-        from_time: fromTime,
-        to: toDate,
-        to_time: toTime,
-        filterActive,
-      },
-    });
-
-  // ── Export PDF ────────────────────────────────────────────────────────────────
-  const exportToPDF = () => {
-    if (!rows.length) {
-      alert("No data to export!");
-      return;
-    }
-    const doc = new jsPDF();
-    const pw = doc.internal.pageSize.getWidth();
-    doc.setFontSize(18);
-    doc.text("GPC Report", pw / 2, 20, { align: "center" });
-    doc.setFontSize(11);
-    doc.text(
-      filterActive
-        ? `Period: ${fromDate} ${fromTime} → ${toDate} ${toTime}`
-        : "Period: Default",
-      pw / 2,
-      30,
-      { align: "center" },
-    );
-    let y = 42;
-    doc.setFontSize(13);
-    doc.text("Summary", 14, y);
-    y += 8;
-    autoTable(doc, {
-      startY: y,
-      head: [["Category", "Count"]],
-      body: [
-        ["New", baseSummary?.new ?? 0],
-        ["Inbound", inboundTotal],
-        ["Outbound", outboundTotal],
-        ["Offers", baseSummary?.offer_count ?? 0],
-        ["Deals", baseSummary?.deal_count ?? 0],
-        ["Orders", baseSummary?.order_count ?? 0],
-        ["Total Activity", totalActivity],
-      ],
-      theme: "grid",
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [29, 78, 216] },
-    });
-    y = doc.lastAutoTable.finalY + 14;
-    doc.setFontSize(13);
-    doc.text("Detailed Report", 14, y);
-    y += 8;
-    Object.entries(grouped).forEach(([desc, gRows]) => {
-      const sub = gRows.reduce((s, r) => s + (parseInt(r.total) || 0), 0);
-      doc.setFontSize(11);
-      doc.text(`${desc} (Subtotal: ${sub})`, 14, y);
-      y += 6;
-      autoTable(doc, {
-        startY: y,
-        head: [["Action", "Total"]],
-        body: gRows.map((r) => [r.action, r.total]),
-        theme: "striped",
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [51, 65, 85] },
-        margin: { left: 14 },
-      });
-      y = doc.lastAutoTable.finalY + 10;
-      if (y > 250) {
-        doc.addPage();
-        y = 20;
-      }
-    });
-    doc.setFontSize(13);
-    doc.text(`Grand Total: ${grandTotal}`, 14, y + 8);
-    doc.save(`GPC_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
-    setOpenExport(false);
-  };
-
-  // ── Export Excel ──────────────────────────────────────────────────────────────
-  const exportToExcel = async () => {
-    if (!rows.length) {
-      alert("No data to export!");
-      return;
-    }
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet("GPC Report");
-    ws.mergeCells("A1:B1");
-    Object.assign(ws.getCell("A1"), {
-      value: "GPC Report",
-      font: { size: 16, bold: true },
-      alignment: { horizontal: "center" },
-    });
-    ws.mergeCells("A2:B2");
-    ws.getCell("A2").value = filterActive
-      ? `Filter: ${fromDate} ${fromTime} → ${toDate} ${toTime}`
-      : "Filter: Default";
-    let ri = 4;
-    ws.getCell(`A${ri}`).value = "Summary";
-    ws.getCell(`A${ri}`).font = { bold: true };
-    ri++;
-    [
-      ["New", baseSummary?.new ?? 0],
-      ["Inbound", inboundTotal],
-      ["Outbound", outboundTotal],
-      ["Offers", baseSummary?.offer_count ?? 0],
-      ["Deals", baseSummary?.deal_count ?? 0],
-      ["Orders", baseSummary?.order_count ?? 0],
-      ["Total Activity", totalActivity],
-    ].forEach(([lbl, val]) => {
-      ws.getCell(`A${ri}`).value = lbl;
-      ws.getCell(`B${ri}`).value = val;
-      ri++;
-    });
-    ri += 2;
-    ws.getCell(`A${ri}`).value = "Detailed Report";
-    ws.getCell(`A${ri}`).font = { bold: true };
-    ri++;
-    Object.entries(grouped).forEach(([desc, gRows]) => {
-      const sub = gRows.reduce((s, r) => s + (parseInt(r.total) || 0), 0);
-      ws.getCell(`A${ri}`).value = `${desc} (Subtotal: ${sub})`;
-      ws.getCell(`A${ri}`).font = { bold: true };
-      ri++;
-      ws.getCell(`A${ri}`).value = "Action";
-      ws.getCell(`B${ri}`).value = "Total";
-      ws.getRow(ri).font = { bold: true };
-      ri++;
-      gRows.forEach((row) => {
-        ws.getCell(`A${ri}`).value = row.action;
-        ws.getCell(`B${ri}`).value = parseInt(row.total) || 0;
-        ri++;
-      });
-      ri++;
-    });
-    ws.getCell(`A${ri}`).value = "Grand Total";
-    ws.getCell(`B${ri}`).value = grandTotal;
-    ws.getCell(`A${ri}`).font = { bold: true };
-    ws.getCell(`B${ri}`).font = { bold: true };
-    ws.columns.forEach((col) => {
-      col.width = 28;
-    });
-    const buf = await wb.xlsx.writeBuffer();
-    saveAs(
-      new Blob([buf], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      }),
-      `GPC_Report_${new Date().toISOString().slice(0, 10)}.xlsx`,
-    );
-    setOpenExport(false);
-  };
-
-  // ── Card sections ────────────────────────────────────────────────────────────
-  const pipelineCards = [
-    { label: "New", value: baseSummary?.new ?? 0 },
-    {
-      label: "Inbound",
-      value: inboundTotal,
-      onClick: () => handleGroupClick("Email-Recieved"),
-    },
-    {
-      label: "Outbound",
-      value: outboundTotal,
-      onClick: () => handleGroupClick("Email-Reply-Sent"),
-    },
-    {
-      label: "Offers",
-      value: baseSummary?.offer_count ?? 0,
-      onClick: () => navigate("/offers"),
-    },
-    {
-      label: "Deals",
-      value: baseSummary?.deal_count ?? 0,
-      onClick: () => navigate("/deals"),
-    },
-    {
-      label: "Orders",
-      value: baseSummary?.order_count ?? 0,
-      onClick: () => navigate("/orders"),
-    },
-  ];
-
-  const outcomeCards = [
-    {
-      label: "First Reply Sent",
-      value:
-        baseSummary?.data?.find((r) => r.action === "First-Reply-Sent")
-          ?.total ?? 0,
-      onClick: () => handleGroupClick("First-Reply-Sent"),
-    },
-    {
-      label: "No Reply Sender",
-      value: noReplySenderTotal,
-      onClick: () => handleGroupClick("No-Reply-Sender"),
-    },
-    {
-      label: "Rejected-Duplicate",
-      value: duplicateSenderTotal,
-      onClick: () => handleGroupClick("Duplicate-Sender"),
-    },
-    {
-      label: "Rejected - NonRelvant",
-      value: nonRelevantSenderTotal,
-      onClick: () => handleGroupClick("Non-Relevant-Sender"),
-    },
-    {
-      label: "Reminders-Sent",
-      value: reminderEntriesTotal,
-      onClick: () => handleGroupClick("Reminders-Sent"),
-    },
-  ];
-
-  const activityCards = [
-    {
-      label: "GPC Activity",
-      value: gpcActivity,
-      onClick: () =>
-        filterActive
-          ? fetchTable(fromDate, fromTime, toDate, toTime, { user_id: "gpc" })
-          : fetchTablePlain({ user_id: "gpc" }),
-    },
-    ...userActivities.map((u) => ({
-      label: `${u.username} Activity`,
-      value: u.total,
-      onClick: () =>
-        filterActive
-          ? fetchTable(fromDate, fromTime, toDate, toTime, {
-            user_id: u.user_id,
-          })
-          : fetchTablePlain({ user_id: u.user_id }),
-    })),
-    {
-      label: "Total Activity",
-      value: totalActivity,
-      onClick: () =>
-        filterActive
-          ? fetchTable(fromDate, fromTime, toDate, toTime)
-          : fetchTablePlain(),
-    },
-  ];
-
-  const overviewCards = [...pipelineCards, ...outcomeCards, ...activityCards];
-
-  const periodLabel = filterActive
-    ? `${fmtDisplay(fromDate, fromTime)}  →  ${fmtDisplay(toDate, toTime)}`
-    : "All time";
-  const groupCount = Object.keys(grouped).length;
-
-  // ── Render ────────────────────────────────────────────────────────────────────
-  return (
-    <div
-      className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50"
-      style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
-    >
-      {/* Header */}
-      <div className="bg-white/85 backdrop-blur-md border-b border-gray-200/70 sticky top-0 z-40">
-        <div className="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all flex-shrink-0"
-              title="Back"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <div className="min-w-0">
-              <h1 className="text-xl font-black text-gray-900 tracking-tight leading-none">
-                GPC Report
-              </h1>
-              <p className="text-xs text-gray-400 mt-0.5 font-medium">
-                Activity & performance overview
-              </p>
-            </div>
+        {/* ── Error ── */}
+        {error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm font-medium text-red-700 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+            {error}
           </div>
+        )}
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={() =>
-                filterActive
-                  ? handleApplyFilter()
-                  : (fetchSummary(), fetchTablePlain())
+        {/* ── Section header ── */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <h2 className="text-[17px] font-semibold text-slate-900 tracking-tight">
+              {phaseConfig.label} breakdown
+            </h2>
+            <p className="text-sm text-slate-400 mt-0.5">
+              {stages.totalRecords > 0
+                ? `${stages.totalRecords.toLocaleString()} total records · ${stages.rows.length} stage${stages.rows.length !== 1 ? "s" : ""}`
+                : "Records grouped by stage and category"
               }
-              className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
-              title="Refresh"
-              disabled={loading}
-            >
-              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-            </button>
-
-            <div className="relative" ref={exportRef}>
-              <button
-                onClick={() => setOpenExport((v) => !v)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white text-sm font-bold rounded-xl hover:from-blue-800 hover:to-indigo-800 transition-all shadow-sm"
-              >
-                <Download size={15} />
-                <span className="hidden sm:inline">Export</span>
-                <ChevronDown
-                  size={13}
-                  className={`transition-transform duration-200 ${openExport ? "rotate-180" : ""}`}
-                />
-              </button>
-              {openExport && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 pb-1.5">
-                    Choose Format
-                  </p>
-                  {[
-                    {
-                      label: "Export as PDF",
-                      icon: FileText,
-                      cls: "text-red-500",
-                      bg: "bg-red-50",
-                      fn: exportToPDF,
-                    },
-                    {
-                      label: "Export as Excel",
-                      icon: FileSpreadsheet,
-                      cls: "text-green-600",
-                      bg: "bg-green-50",
-                      fn: exportToExcel,
-                    },
-                  ].map(({ label, icon, cls, bg, fn }) => (
-                    <button
-                      key={label}
-                      onClick={fn}
-                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 text-sm font-semibold text-gray-700 transition-all"
-                    >
-                      <div
-                        className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}
-                      >
-                        {React.createElement(icon, {
-                          size: 13,
-                          className: cls,
-                        })}
-                      </div>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            </p>
           </div>
-        </div>
-      </div>
-
-      {/* Main */}
-      <div className="max-w-screen-2xl mx-auto px-6 py-6 space-y-6">
-        <DateRangeFilter
-          fromDate={fromDate}
-          fromTime={fromTime}
-          toDate={toDate}
-          toTime={toTime}
-          setFromDate={setFromDate}
-          setFromTime={setFromTime}
-          setToDate={setToDate}
-          setToTime={setToTime}
-          filterActive={filterActive}
-          onApply={handleApplyFilter}
-          onReset={handleResetFilter}
-        />
-
-        {/* Overview — single grid of all metrics */}
-        <section className="space-y-3">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-black text-gray-900 tracking-tight">
-                Overview
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5 font-medium">
-                Key metrics across pipeline, outcomes and team activity
-              </p>
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white border border-gray-200 rounded-md px-2 py-1">
-              {overviewCards.length}{" "}
-              {overviewCards.length === 1 ? "metric" : "metrics"}
+          {!stagesLoading && stages.rows.length > 0 && (
+            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${phaseConfig.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot}`} />
+              {phaseConfig.label}
             </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3">
-            {overviewCards.map((c) => (
-              <MetricCard key={c.label} {...c} />
-            ))}
-          </div>
-        </section>
-
-        {/* Detailed Breakdown header */}
-        <div className="pt-2">
-          <div className="flex items-end justify-between gap-3 mb-3">
-            <div>
-              <h2 className="text-sm font-black text-gray-900 tracking-tight">
-                Detailed Breakdown
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5 font-medium">
-                Action-level activity grouped by category
-              </p>
-            </div>
-            {!loading && rows.length > 0 && (
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white border border-gray-200 rounded-md px-2 py-1">
-                {groupCount} {groupCount === 1 ? "category" : "categories"}
-              </span>
-            )}
-          </div>
-
-          {loading ? (
-            <div className="bg-white rounded-2xl border border-gray-200 p-14 flex flex-col items-center gap-3">
-              <div className="w-9 h-9 border-[3px] border-blue-700 border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-gray-400 font-semibold">
-                Loading report data…
-              </p>
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-14 flex flex-col items-center gap-2">
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
-                <BarChart3 size={22} className="text-gray-300" />
-              </div>
-              <p className="text-sm font-bold text-gray-500">
-                No data available for this period
-              </p>
-              <p className="text-xs text-gray-400 font-medium">
-                Try adjusting the date range above
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {Object.entries(grouped).map(([description, groupRows]) => {
-                const subtotal = groupRows.reduce(
-                  (s, r) => s + (parseInt(r.total) || 0),
-                  0,
-                );
-                const isOpen = openGroups[description];
-                const color = GROUP_COLORS[description] ?? DEFAULT_COLOR;
-                const GroupIcon =
-                  GROUP_ICONS[description] ?? DEFAULT_GROUP_ICON;
-
-                return (
-                  <div
-                    key={description}
-                    className="rounded-2xl overflow-hidden border transition-shadow hover:shadow-md"
-                    style={{
-                      backgroundColor: color.light,
-                      borderColor: color.badge,
-                    }}
-                  >
-                    {/* Header */}
-                    <div
-                      className="flex items-center justify-between px-5 py-3.5 cursor-pointer select-none border-l-4 transition-colors hover:bg-white/40"
-                      style={{ borderLeftColor: color.dot }}
-                      onClick={() => toggleGroup(description)}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-white shadow-sm ring-1 ring-inset ring-black/5">
-                          <GroupIcon
-                            size={16}
-                            style={{ color: color.dot }}
-                            strokeWidth={2.25}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p
-                            className="font-bold text-sm truncate"
-                            style={{ color: color.text }}
-                          >
-                            {description}
-                          </p>
-                          <p
-                            className="text-[11px] mt-0.5 font-medium opacity-80"
-                            style={{ color: color.text }}
-                          >
-                            {groupRows.length}{" "}
-                            {groupRows.length === 1 ? "action" : "actions"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2.5 flex-shrink-0">
-                        <div className="rounded-lg px-3 py-1.5 flex items-center gap-2 bg-white shadow-sm">
-                          <span
-                            className="text-[10px] font-bold uppercase tracking-wider"
-                            style={{ color: color.text }}
-                          >
-                            Subtotal
-                          </span>
-                          <span
-                            className="text-sm font-black tabular-nums"
-                            style={{ color: color.text }}
-                          >
-                            {subtotal}
-                          </span>
-                        </div>
-                        <div className="w-7 h-7 rounded-lg bg-white/70 flex items-center justify-center shadow-sm">
-                          {isOpen ? (
-                            <ChevronUp
-                              size={14}
-                              style={{ color: color.text }}
-                            />
-                          ) : (
-                            <ChevronDown
-                              size={14}
-                              style={{ color: color.text }}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Rows */}
-                    {isOpen && (
-                      <div
-                        className="border-t"
-                        style={{ borderColor: color.badge }}
-                      >
-                        {groupRows.map((row, i) => (
-                          <div
-                            key={i}
-                            className="px-5 py-3 last:border-0 cursor-pointer transition-colors group hover:bg-white/50"
-                            style={{
-                              borderBottom:
-                                i === groupRows.length - 1
-                                  ? "none"
-                                  : `1px solid ${color.badge}`,
-                            }}
-                            onClick={() =>
-                              navigate(
-                                `/view-reports/${encodeURIComponent(row.action)}`,
-                                {
-                                  state: {
-                                    from: fromDate,
-                                    from_time: fromTime,
-                                    to: toDate,
-                                    to_time: toTime,
-                                    filterActive,
-                                  },
-                                },
-                              )
-                            }
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <div
-                                  className="w-1.5 h-5 rounded-full flex-shrink-0 shadow-sm"
-                                  style={{
-                                    backgroundImage: `linear-gradient(180deg, ${color.dot}, ${color.text})`,
-                                  }}
-                                />
-                                <span
-                                  className="text-sm font-semibold truncate"
-                                  style={{ color: color.text }}
-                                >
-                                  {row.action}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2.5 flex-shrink-0">
-                                <span
-                                  className="text-xs font-black px-2.5 py-1 rounded-lg tabular-nums bg-white shadow-sm"
-                                  style={{ color: color.text }}
-                                >
-                                  {row.total}
-                                </span>
-                                <ArrowUpRight
-                                  size={13}
-                                  className="opacity-40 group-hover:opacity-100 transition-opacity"
-                                  style={{ color: color.text }}
-                                  strokeWidth={2.5}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Grand Total */}
-              <div className="relative overflow-hidden bg-gradient-to-r from-gray-900 via-slate-900 to-gray-900 rounded-2xl px-6 py-5 shadow-md">
-                <div
-                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-20 blur-3xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle, #6366f1 0%, transparent 70%)",
-                  }}
-                />
-                <div className="relative flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                      <BarChart3 size={20} className="text-white" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">
-                        All Activities
-                      </p>
-                      <p className="font-bold text-base text-white tracking-wide">
-                        Grand Total
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-3xl font-black tabular-nums text-white leading-none">
-                      {grandTotal}
-                    </p>
-                    <p className="text-[10px] font-medium text-gray-400 mt-1.5">
-                      across {groupCount}{" "}
-                      {groupCount === 1 ? "category" : "categories"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
           )}
         </div>
+
+        {/* ── Main table card ── */}
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          {stagesLoading ? (
+            <div className="divide-y divide-slate-100">
+              {[...Array(5)].map((_, i) => <SkeletonRow key={i} />)}
+            </div>
+          ) : stages.rows.length === 0 ? (
+            <EmptyState
+              title="No stages found"
+              subtitle="Try adjusting the date range or user filter."
+            />
+          ) : (
+            <>
+              {/* Table header */}
+              <div className="grid grid-cols-[1fr_auto] px-6 py-3 border-b border-slate-100 bg-slate-50/80">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Stage</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Count</span>
+              </div>
+
+              <div className="divide-y divide-slate-100">
+                {stages.rows.map((stageRow, idx) => {
+                  const stageName   = stageRow.stage;
+                  const isStageOpen = categories.openStage === stageName;
+                  const count       = getCount(stageRow);
+
+                  return (
+                    <div key={stageName}>
+
+                      {/* ── Stage row ── */}
+                      <div
+                        onClick={() => loadCategories(stageName, 1)}
+                        className={`group flex items-center justify-between px-6 py-4 cursor-pointer select-none transition-colors ${
+                          isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold flex items-center justify-center shrink-0 tabular-nums">
+                            {String(idx + 1).padStart(2, "0")}
+                          </span>
+                          <div>
+                            <p className="font-semibold text-slate-800 text-sm capitalize">{stageName}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} stage</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <span className={`text-xs font-semibold px-3 py-1.5 rounded-xl border ${phaseConfig.badge}`}>
+                            {count.toLocaleString()}
+                          </span>
+                          <span className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all ${
+                            isStageOpen
+                              ? "bg-slate-100 border-slate-200"
+                              : "bg-white border-slate-200 group-hover:border-slate-300"
+                          }`}>
+                            {isStageOpen
+                              ? <ChevronUp size={13} className="text-slate-500" />
+                              : <ChevronDown size={13} className="text-slate-400" />
+                            }
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* ── Category accordion ── */}
+                      {isStageOpen && (
+                        <div className="bg-[#fafafa] border-t border-slate-100">
+                          {catsLoading ? (
+                            <div className="px-6 py-4 flex items-center gap-2 text-xs text-slate-400">
+                              <Loader2 size={13} className="animate-spin" /> Loading categories…
+                            </div>
+                          ) : categories.rows.length === 0 ? (
+                            <p className="px-6 py-4 text-xs text-slate-400">No categories found for this stage.</p>
+                          ) : (
+                            <>
+                              {/* Category sub-header */}
+                              <div className="grid grid-cols-[1fr_auto] px-6 py-2.5 border-b border-slate-100">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 pl-[calc(1rem+1px)]">Category</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Count</span>
+                              </div>
+
+                              {categories.rows.map((catRow) => {
+                                const catName   = catRow.category;
+                                const isCatOpen = details.openCategory === catName;
+                                const catCount  = getCount(catRow);
+
+                                return (
+                                  <div key={catName} className="border-b border-slate-100 last:border-b-0">
+
+                                    {/* ── Category row ── */}
+                                    <div
+                                      onClick={() => loadDetails(stageName, catName, 1)}
+                                      className={`flex items-center justify-between px-6 py-3.5 cursor-pointer select-none transition-colors ${
+                                        isCatOpen ? "bg-white" : "hover:bg-white/70"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot} opacity-50`} />
+                                        <span className="text-sm font-medium text-slate-700">{catName}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2.5">
+                                        <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                          {catCount.toLocaleString()}
+                                        </span>
+                                        {isCatOpen
+                                          ? <ChevronUp size={13} className="text-slate-400" />
+                                          : <ChevronDown size={13} className="text-slate-300" />
+                                        }
+                                      </div>
+                                    </div>
+
+                                    {/* ── Detail table ── */}
+                                    {isCatOpen && (
+                                      <div className="bg-white border-t border-slate-100">
+                                        {detsLoading ? (
+                                          <div className="px-8 py-4 flex items-center gap-2 text-xs text-slate-400">
+                                            <Loader2 size={13} className="animate-spin" /> Loading records…
+                                          </div>
+                                        ) : details.rows.length === 0 ? (
+                                          <p className="px-8 py-4 text-xs text-slate-400">No records found.</p>
+                                        ) : (
+                                          <>
+                                            <div className="overflow-x-auto">
+                                              <table className="w-full text-xs">
+                                                <thead>
+                                                  <tr className="border-b border-slate-100 bg-slate-50/60">
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Sender</th>
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Action</th>
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider">Description</th>
+                                                    <th className="text-left px-6 py-2.5 font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">Date</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-50">
+                                                  {details.rows.map((record, rIdx) => (
+                                                    <tr key={record.id || record.message_id || rIdx} className="hover:bg-slate-50/60 transition-colors">
+                                                      <td className="px-6 py-3 text-slate-700 font-medium">{record.sender_email || "—"}</td>
+                                                      <td className="px-6 py-3">
+                                                        {record.action
+                                                          ? <span className="inline-flex px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 font-medium">{record.action}</span>
+                                                          : <span className="text-slate-300">—</span>
+                                                        }
+                                                      </td>
+                                                      <td className="px-6 py-3 text-slate-500 max-w-[220px] truncate">{record.description || "—"}</td>
+                                                      <td className="px-6 py-3 text-slate-400 whitespace-nowrap font-mono">{record.date_entered || "—"}</td>
+                                                    </tr>
+                                                  ))}
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                            <ReportPagination
+                                              compact
+                                              pageIndex={details.pageIndex}
+                                              pageCount={details.pageCount}
+                                              onChange={(p) => loadDetails(stageName, catName, p)}
+                                            />
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+
+                              {/* Category-level pagination */}
+                              <ReportPagination
+                                compact
+                                pageIndex={categories.pageIndex}
+                                pageCount={categories.pageCount}
+                                onChange={(p) => loadCategories(stageName, p)}
+                              />
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Stage-level pagination */}
+              <ReportPagination
+                pageIndex={stages.pageIndex}
+                pageCount={stages.pageCount}
+                onChange={(p) => loadStages(p)}
+              />
+            </>
+          )}
+        </div>
+
+        {/* ── Grand total ── */}
+        {!stagesLoading && stages.rows.length > 0 && (
+          <div className="rounded-2xl bg-slate-900 px-7 py-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                <Layers size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">Grand Total</p>
+                <p className="text-xs text-slate-400 mt-0.5">{phaseConfig.label} · all stages</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-4xl font-bold text-white tracking-tight tabular-nums leading-none">
+                {grandTotal.toLocaleString()}
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1 tabular-nums">
+                {stages.rows.length} stage{stages.rows.length !== 1 ? "s" : ""}
+                {stages.pageCount > 1 && ` · page ${stages.pageIndex}/${stages.pageCount}`}
+              </p>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
