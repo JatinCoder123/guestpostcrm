@@ -736,7 +736,7 @@ function WebCard({
   <div>
     <div className="flex items-center justify-center gap-1 text-[9px] text-emerald-600 font-bold uppercase tracking-wide">
       <TrendingDown size={9} />
-      Min
+      Final
     </div>
     <div className="text-lg font-black text-gray-900">
       {minStr !== null ? `$${minStr}` : "—"}
@@ -747,7 +747,7 @@ function WebCard({
   <div className="border-x border-gray-200 px-2">
     <div className="flex items-center justify-center gap-1 text-[9px] text-cyan-600 font-bold uppercase tracking-wide">
       <DollarSign size={9} />
-      Mid
+      Closure
     </div>
     <div className="text-lg font-black text-gray-900">
       {avgStr !== null ? `$${avgStr}` : "—"}
@@ -757,7 +757,7 @@ function WebCard({
   {/* Max */}
   <div>
     <div className="flex items-center justify-center gap-1 text-[9px] text-indigo-600 font-bold uppercase tracking-wide">
-      Max
+      Start
       <TrendingUp size={9} />
     </div>
     <div className="text-lg font-black text-gray-900">
@@ -785,7 +785,7 @@ function WebCard({
   <div>
     <div className="flex items-center justify-center gap-1 text-[9px] text-emerald-600 font-bold uppercase tracking-wide">
       <TrendingDown size={9} />
-      Min
+      Final
     </div>
     <div className="text-lg font-black text-gray-900">
       {nonBrandMinRaw !== null ? `$${formatMoney(nonBrandMinRaw)}` : "—"}
@@ -796,7 +796,7 @@ function WebCard({
   <div className="border-x border-gray-200 px-2">
     <div className="flex items-center justify-center gap-1 text-[9px] text-cyan-600 font-bold uppercase tracking-wide">
       <DollarSign size={9} />
-      Mid
+      Closure
     </div>
     <div className="text-lg font-black text-gray-900">
       {nonBrandAvgRaw !== null ? `$${formatMoney(nonBrandAvgRaw)}` : "—"}
@@ -806,7 +806,7 @@ function WebCard({
   {/* Max */}
   <div>
     <div className="flex items-center justify-center gap-1 text-[9px] text-indigo-600 font-bold uppercase tracking-wide">
-      Max
+      Start
       <TrendingUp size={9} />
     </div>
     <div className="text-lg font-black text-gray-900">
@@ -864,6 +864,16 @@ function WebCard({
                 icon={Activity}
                 label="Semrush Traffic"
                 value={item.semrush_traffic}
+              />
+              <DrawerRow
+                icon={DollarSign}
+                label="Non-Brand Min"
+                value={item.non_brand_minimum_amount}
+              />
+              <DrawerRow
+                icon={DollarSign}
+                label="Non-Brand Max"
+                value={item.non_brand_maximum_amount}
               />
             </div>
           </Motion.div>
