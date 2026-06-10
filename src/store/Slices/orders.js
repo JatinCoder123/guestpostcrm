@@ -566,7 +566,7 @@ export const deleteLink = (orderId, linkId) => {
     dispatch(ordersSlice.actions.deleteLinkRequest());
     try {
       const crmEndpoint = getState().user.crmEndpoint;
-
+      const email = getState().viewEmail?.contactInfo?.email1
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
           domain: crmEndpoint,
@@ -575,7 +575,7 @@ export const deleteLink = (orderId, linkId) => {
           method,
         });
       };
-      const { data } = await fetchGpc({
+      const data = await fetchGpc({
         method: "POST",
         params: {
           type: "delete_record",
@@ -605,7 +605,7 @@ export const deleteLink = (orderId, linkId) => {
       triggerHashtag(19, "GET");
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().ladger.email,
+        email,
         "Order Link Deleted ",
       );
     } catch (error) {
