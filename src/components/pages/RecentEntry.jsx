@@ -20,7 +20,7 @@ import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { useTablePreference } from "../../hooks/useTablePreference";
 import { useInfiniteRecentEvents } from "../../queries/recentAct.queries";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import PromptLadger from "../PromptLadger";
 
 /* 🔹 Tooltip */

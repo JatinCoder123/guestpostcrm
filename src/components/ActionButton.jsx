@@ -15,10 +15,9 @@ import {
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState, useRef, useMemo } from "react";
-import { addEvent } from "../store/Slices/eventSlice";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
-import { getTags, applyTag } from "../store/Slices/markTagSlice";
+import { applyTag, markTagAction } from "../store/Slices/markTagSlice";
 import { threadEmailAction } from "../store/Slices/threadEmail";
 import { MdOutlineHome } from "react-icons/md";
 import {
@@ -33,6 +32,10 @@ import { applyHashtag, getRighteeUsers } from "../services/utils";
 import { fetchGpc } from "../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import IconButton from "./ui/Buttons/IconButton"
+import { useMarkTags } from "../queries/markTag.queries";
+import CustomDropdown from "./ui/CustomDropdown";
+import { useTimeline } from "../context/TimelineContext";
+import { useContact } from "../queries/contact.queries";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -60,12 +63,14 @@ const ActionButton = () => {
     queryKey: ['righteeUsers'],
     queryFn: getRighteeUsers
   })
-  const addNotes = async () => {
-    const res = await fetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser.email, notes: note } })
-    return res
-  }
+  const { data: tagsData, isPending: tagLoading } = useMarkTags()
+  const tags = tagsData?.fields ?? []
+
   const { mutate, isPending: sendingNote } = useMutation({
-    mutationFn: addNotes,
+    mutationFn: async () => {
+      const res = awaitfetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser.email, notes: note } })
+      return res
+    },
     onSuccess: () => {
       toast.success(
         `Your Note Is Sent To ${selectedUser?.name} Successfully!`
@@ -111,9 +116,12 @@ const ActionButton = () => {
       );
     };
   }, [showNotes]);
-  const { contactInfo, accountInfo, threadId, editMessage, contactLoading } =
+  const { threadId, editMessage, contactLoading } =
     useSelector((s) => s.viewEmail);
+  const { currentEmail } = useTimeline()
+  const { data: contactData } = useContact(currentEmail)
   const { sending, message, error } = useSelector((s) => s.threadEmail);
+  const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
 
   const {
@@ -134,7 +142,6 @@ const ActionButton = () => {
     message: favouriteMessage,
   } = useSelector((s) => s.fav);
 
-  const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
   const navigate = useNavigate();
   const {
     loading,
@@ -142,7 +149,12 @@ const ActionButton = () => {
     error: markingError,
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
-  const markInfo = marketPlaces.find((e) => e.name === contactInfo?.email1) ?? null
+  const {
+    loading: markTagLoading,
+    error: markTagError,
+    message: markTagMessage,
+  } = useSelector((s) => s.markTag);
+  const markInfo = marketPlaces.find((e) => e.name === email) ?? null
   const isMark = Number(contactInfo?.bulk) == 1
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite == "1";
@@ -153,7 +165,7 @@ const ActionButton = () => {
   const triggerHashtag = (memo_no, method = "GET") => {
     applyHashtag({
       domain: crmEndpoint,
-      email: contactInfo?.email1,
+      email: email,
       memo_no,
       method,
     });
@@ -180,7 +192,7 @@ const ActionButton = () => {
     if (favouriteMessage) {
       toast.success(favouriteMessage);
       dispatch(favAction.clearAllMessages());
-      dispatch(getContact(contactInfo?.email1, true, false));
+      dispatch(getContact(email, true, false));
       dispatch(getFavEmails({ email: enteredEmail, loading: false }));
     }
 
@@ -192,12 +204,21 @@ const ActionButton = () => {
     if (markingMessage) {
       toast.success(markingMessage);
       dispatch(marketplaceActions.clearMessage());
-      dispatch(getContact(contactInfo?.email1, true, false));
+      dispatch(getContact(email, true, false));
+    }
+    if (markTagError) {
+      toast.error(markTagError);
+      dispatch(markTagAction.clearAllErrors());
+    }
+
+    if (markTagMessage) {
+      toast.success(markTagMessage);
+      dispatch(markTagAction.clearAllMessage());
     }
 
     if (changeMessage) {
       toast.success(changeMessage);
-      dispatch(getContact(contactInfo?.email1, true, false));
+      dispatch(getContact(email, true, false));
       dispatch(linkExchangeaction.clearAllMessages());
     }
 
@@ -218,7 +239,7 @@ const ActionButton = () => {
     if (editMessage) {
       toast.success(editMessage);
       dispatch(viewEmailAction.clearAllMessage());
-      dispatch(getContact(contactInfo?.email1, true, false));
+      dispatch(getContact(email, true, false));
     }
   }, [
     dispatch,
@@ -235,6 +256,7 @@ const ActionButton = () => {
     threadId,
     enteredEmail,
     editMessage,
+    markTagMessage, markTagError
   ]);
 
   const actionButtons = [
@@ -252,19 +274,16 @@ const ActionButton = () => {
       action: () => navigate("/ip"),
     },
     {
-      icon: (
-        <img
-          src="https://img.icons8.com/color/48/tags--v1.png"
-          className="w-6 h-6"
-          alt="tag"
-        />
-      ),
+      icon: markTagLoading ? <LoadingChase /> : <img
+        src="https://img.icons8.com/color/48/tags--v1.png"
+        className="w-6 h-6"
+        alt="tag"
+      />,
       label: "Mark Tag",
       disabled: false,
 
       action: () => {
         setShowTags((p) => !p);
-        dispatch(getTags());
       },
     },
 
@@ -385,7 +404,7 @@ const ActionButton = () => {
           );
 
           // ✅ 🔥 ADD THIS LINE HERE
-          dispatch(getContact(contactInfo?.email1, true, false));
+          dispatch(getContact(email, true, false));
 
           toast.success(
             newValue === "1"
@@ -422,7 +441,7 @@ const ActionButton = () => {
 
   /* Assign handler — hashtag always GET since assign is a one-way action */
   const handleForwardWithHashtag = (id) => {
-    dispatch(forwardEmail(contactInfo?.email1, id));
+    dispatch(forwardEmail(email, id));
     triggerHashtag(MEMO.assign, "GET");
   };
 
@@ -443,7 +462,7 @@ const ActionButton = () => {
                   currentThreadId={threadId}
                   onMoveSuccess={() =>
                     dispatch(
-                      getLadger({ email: contactInfo?.email1, loading: false }),
+                      getLadger({ email: email, loading: false }),
                     )
                   }
                 />
@@ -499,27 +518,15 @@ const ActionButton = () => {
 
                 {showTags && btn.label === "Mark Tag" && (
                   <div className="absolute top-14 right-0 w-60 z-40">
-                    <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
+                    <div className="bg-white rounded-xl border shadow-lg ">
                       {tagLoading ? (
                         <div className="py-6 flex justify-center">
                           <LoadingChase />
                         </div>
-                      ) : (
-                        tags.map((tag) => (
-                          <button
-                            key={tag.name}
-                            onClick={() => {
-                              dispatch(applyTag(tag.name));
-                              setShowTags(false);
-                            }}
-                            className="w-full text-left px-4 py-3 text-sm font-semibold
-                        text-gray-700 border-b last:border-b-0
-                        hover:bg-indigo-50 hover:text-indigo-600 transition"
-                          >
-                            {tag.name}
-                          </button>
-                        ))
-                      )}
+                      ) : <CustomDropdown defaultOpen={true} options={tags?.map(tag => ({ label: tag.label, value: tag.name }))} onChange={(tag) => {
+                        dispatch(applyTag({ email, tag }))
+                        setShowTags(false)
+                      }} outsideClickHandle={() => setShowTags(false)} />}
                     </div>
                   </div>
                 )}

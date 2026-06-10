@@ -1,5 +1,6 @@
 import { showConsole } from "../assets/assets";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
+import { store } from "../store/store";
 import { apiRequest, fetchGpc } from "./api";
 
 let CURRENT_USER = {
@@ -147,3 +148,7 @@ export const getRighteeUsers = async () => {
   console.log("CRM USER2", response)
   return response.data ?? []
 }
+export const getCRM = () =>
+  store.getState()
+    .user?.crmEndpoint
+    ?.split("?")[0];

@@ -16,12 +16,14 @@ import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllUsers } from "../store/Slices/crmUser.js";
 import { getTinyKey } from "../store/Slices/tinyKey.js";
+import { useMarketPlace } from "../queries/marketplace.queries.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
     const { enteredEmail } = useContext(PageContext);
     const dispatch = useDispatch();
     const { timeline } = useSelector((state) => state.ladger);
+    useMarketPlace()
     useEffect(() => {
         dispatch(getTinyKey())
         dispatch(getAllUsers())
@@ -30,9 +32,8 @@ function useRefresh() {
         dispatch(fetchGpcController());
     }, [])
     useEffect(() => {
-        dispatch(getMarketplace())
-        dispatch(getDetection(enteredEmail));
-        dispatch(getdefaulterEmails(enteredEmail));
+        // dispatch(getDetection(enteredEmail));
+        // dispatch(getdefaulterEmails(enteredEmail));
         dispatch(getmovedEmails(enteredEmail));
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {

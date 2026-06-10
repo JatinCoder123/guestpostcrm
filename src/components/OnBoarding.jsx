@@ -18,9 +18,6 @@ const OnBoarding = () => {
     const [loadingAction, setLoadingAction] = useState(null);
     const [showGuidedWalkthrough, setShowGuidedWalkthrough] =
         useState(false);
-    const [isOnboardingLoading, setIsOnboardingLoading] =
-        useState(false);
-
     const navigate = useNavigate();
 
     const {

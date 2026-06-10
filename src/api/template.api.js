@@ -1,10 +1,7 @@
 import { apiRequest } from "../services/api";
+import { getCRM } from "../services/utils";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
-import { store } from "../store/store";
-const getCRM = () =>
-    store.getState()
-        .user?.crmEndpoint
-        ?.split("?")[0];
+
 /**
  * Get All Templates
  */

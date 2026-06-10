@@ -1,19 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { extractEmail } from "../../assets/assets";
 import { PageContext } from "../../context/pageContext";
-import { ladgerAction } from "../../store/Slices/ladger";
-import SearchComponent from "./SearchComponent";
-import { useNavigate } from "react-router-dom";
 
 import {
   Store,
-  Gift,
-  User,
   Calendar,
-  Pencil,
-  Pen,
   LinkIcon,
   ActivityIcon,
   BarChart4Icon,
@@ -21,16 +13,19 @@ import {
 } from "lucide-react";
 import {
   deleteMarketPlace,
-  getMarketplace,
   marketplaceActions,
 } from "../../store/Slices/Marketplace"; // named import
 import { LoadingChase } from "../Loading";
+import { useMarketPlace } from "../../queries/marketplace.queries";
+import { queryClient } from "../../lib/queryClient";
 
 export function Marketplace() {
   const dispatch = useDispatch();
   const { handleDateClick } = useContext(PageContext)
-  const { items, error, loading, message, deleteMarketPlaceId } =
+  const { error, loading, message, deleteMarketPlaceId } =
     useSelector((state) => state.marketplace);
+  const { data, isPending } = useMarketPlace()
+  const items = data?.data ?? []
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -39,6 +34,8 @@ export function Marketplace() {
     if (message) {
       toast.success(message);
       dispatch(marketplaceActions.clearMessage());
+      queryClient.invalidateQueries({ queryKey: ['marketplace'] })
+      queryClient.invalidateQueries({ queryKey: ['contacts'] })
     }
   }, [error, dispatch, message]);
 
