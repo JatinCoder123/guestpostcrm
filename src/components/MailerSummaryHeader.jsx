@@ -371,7 +371,7 @@ function SummaryCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {type == "orders" && data.length > 0 && <IconButton
+            {type == "orders" && data?.length > 0 && <IconButton
               onClick={() => dispatch(createOrder())}
               disabled={type == "invoice"}
               icon={Plus}

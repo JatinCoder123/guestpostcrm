@@ -14,7 +14,6 @@ import { getOffers } from "../store/Slices/offers";
 import { getDetection } from "../store/Slices/detection";
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
-import { getOrderRem } from "../store/Slices/reminder.js";
 import { getAllUsers } from "../store/Slices/crmUser.js";
 import { getTinyKey } from "../store/Slices/tinyKey.js";
 
@@ -31,7 +30,6 @@ function useRefresh() {
         dispatch(fetchGpcController());
     }, [])
     useEffect(() => {
-        dispatch(getOrderRem({ email: enteredEmail }));
         dispatch(getMarketplace())
         dispatch(getDetection(enteredEmail));
         dispatch(getdefaulterEmails(enteredEmail));

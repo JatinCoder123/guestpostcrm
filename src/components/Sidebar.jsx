@@ -34,6 +34,7 @@ import { useOfferStats } from "../queries/offers.queries";
 import { useExchangeStats } from "../queries/exchange.queries";
 import { useInvoiceStats } from "../queries/invoice.queries";
 import { useFavoriteStats } from "../queries/favourite.queries";
+import { useReminderStats } from "../queries/reminder.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -69,7 +70,7 @@ export function Sidebar() {
   const { isPending: offerStatLoading, data: offerStats } = useOfferStats()
   const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
   const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats()
-
+  const { isPending: reminderStatLoading, data: reminderStats } = useReminderStats()
 
 
 
@@ -170,8 +171,8 @@ export function Sidebar() {
       id: "reminders",
       label: "Reminders",
       icon: BellRing,
-      loading: orderRemLoading,
-      count: orderRemCount,
+      loading: reminderStatLoading,
+      count: reminderStats?.stats?.all?.count,
       color: "text-lime-600",
       hover: "hover:bg-lime-50",
       countBg: "bg-lime-500 text-white",
