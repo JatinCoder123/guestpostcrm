@@ -795,6 +795,8 @@ const Profile = () => {
         );
       }
 
+      // clear onboarding popup flag
+sessionStorage.removeItem("onboardingShown")
       toast.success(data?.message || "Profile delete request completed");
       window.setTimeout(() => {
         window.location.reload();

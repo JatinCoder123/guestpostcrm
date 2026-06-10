@@ -43,23 +43,26 @@ const OnBoarding = () => {
         [businessEmail, crmEndpoint, db_name, id, user]
     );
 
-    const searchParams = new URLSearchParams(window.location.search);
+       const searchParams = new URLSearchParams(window.location.search);
     const email = searchParams.get("email");
-
-    // Show onboarding popup
+ 
+    const isRootEmailUrl =
+        window.location.pathname === "/" && !!email;
+ 
     useEffect(() => {
         if (!isAuthenticated) return;
-
-        if (email) {
+ 
+        if (isRootEmailUrl) {
             const alreadyShown =
                 sessionStorage.getItem("onboardingShown");
-
+ 
             if (!alreadyShown) {
                 setShowOnboardingPopup(true);
                 sessionStorage.setItem("onboardingShown", "true");
             }
         }
-    }, [email, isAuthenticated]);
+    }, [isAuthenticated, isRootEmailUrl]);
+ 
 
     // Guided walkthrough
     useEffect(() => {
