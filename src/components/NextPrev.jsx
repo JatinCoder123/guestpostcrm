@@ -6,7 +6,7 @@ import { ladgerAction } from '../store/Slices/ladger'
 import { ThreadContext } from '../context/ThreadContext'
 import { useInfiniteEmails } from '../queries/email.queries'
 import { useTablePreference } from '../hooks/useTablePreference'
-const NextPrev = () => {
+const NextPrev = ({ nextHandler, prevHandler }) => {
     const { currentIndex, setCurrentIndex, setEnteredEmail } = useContext(PageContext)
     const preferences = useTablePreference("emails");
     const { handleSetCurrent } = useContext(ThreadContext)
@@ -18,23 +18,24 @@ const NextPrev = () => {
     const dispatch = useDispatch()
     const handleNext = () => {
         if (currentIndex < emails?.length - 1) {
-            const input = emails[currentIndex + 1].email1;
-            localStorage.setItem("searchTerm", input);
-            setEnteredEmail(input);
+            const email = emails[currentIndex + 1].email1;
+            const threadId = emails[currentIndex + 1].thread_id;
+            localStorage.setItem("searchTerm", email);
+            setEnteredEmail(email);
             dispatch(ladgerAction.setTimeline(null));
-            handleSetCurrent({ email: input, thread: emails[currentIndex + 1].thread_id })
             setCurrentIndex((p) => p + 1);
+            nextHandler?.(email, threadId)
         }
     };
     const handlePrev = () => {
         if (currentIndex > 0) {
-            const input = emails[currentIndex - 1].email1
-            localStorage.setItem("searchTerm", input);
-            setEnteredEmail(input);
+            const email = emails[currentIndex - 1].email1;
+            const threadId = emails[currentIndex - 1].thread_id;
+            localStorage.setItem("searchTerm", email);
+            setEnteredEmail(email);
             dispatch(ladgerAction.setTimeline(null));
-            handleSetCurrent({ email: input, thread: emails[currentIndex - 1].thread_id })
-
             setCurrentIndex((p) => p - 1);
+            prevHandler?.(email, threadId)
         }
     };
     return (

@@ -11,6 +11,7 @@ import {
 
 import { ThreadContext } from "../../../context/ThreadContext";
 import IconButton from "../../ui/Buttons/IconButton";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 function NavigationBar({
     messageLimit,
@@ -21,9 +22,16 @@ function NavigationBar({
     const { duplicateEmail, loading } = useSelector(
         (state) => state.duplicateEmails
     );
+    const navigate = useNavigate()
+    const { threadId } = useOutletContext()
+    const setParams = (t) => {
+        const params = new URLSearchParams(location.search);
 
-    const { currentThread, setCurrentThread } =
-        useContext(ThreadContext);
+        params.set("email", params.get("email"));
+        params.set("thread", t);
+
+        navigate(`${location.pathname}?${params.toString()}`);
+    };
 
     const [showThreads, setShowThreads] = useState(false);
 
@@ -234,7 +242,7 @@ function NavigationBar({
                                 ) : topThreads.length > 0 ? (
                                     topThreads.map((thread) => {
                                         const isActive =
-                                            currentThread ===
+                                            threadId ===
                                             thread.thread_id;
 
                                         return (
@@ -243,9 +251,7 @@ function NavigationBar({
                                                 whileHover={{ y: -1 }}
                                                 whileTap={{ scale: 0.98 }}
                                                 onClick={() => {
-                                                    setCurrentThread(
-                                                        thread.thread_id
-                                                    );
+                                                    setParams(thread.thread_id)
 
                                                     setShowThreads(false);
                                                 }}

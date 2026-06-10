@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
-import Ip from "../Ip";
 import TimelineEvent from "../TimelineEvent";
 import MailerSummaryHeader from "../MailerSummaryHeader";
 import ContactHeader from "../ContactHeader";
@@ -39,7 +38,7 @@ export function TimelinePage() {
   const { viewEmail, threadId, count, contactInfo, } = useSelector(
     (state) => state.viewEmail,
   );
-  if ((Array.isArray(ladger) && ladger.length == 0 && !ledgerLoading && !emailsLoading) || (!ladger && !ledgerLoading && !emailsLoading)) {
+  if (((((Array.isArray(ladger) && ladger.length == 0) || !ladger)) && !ledgerLoading && !emailsLoading)) {
     return <NoSearchFoundPage />;
   }
 

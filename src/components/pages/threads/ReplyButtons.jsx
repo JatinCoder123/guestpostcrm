@@ -33,13 +33,14 @@ import { LoadingChase } from "../../Loading";
 import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../../store/constants";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply";
 import FirstReplyBtn from "../../FirstReplyBtn";
-import {DeepReplyBtn} from "../../DeepReplyBtn";
+import { DeepReplyBtn } from "../../DeepReplyBtn";
 import { SmallTinyEditor } from "../../TinyEditor";
 import IconButton from "../../ui/Buttons/IconButton";
 import { BiSolidMessageCheck } from "react-icons/bi";
 import { editContact, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { useNext } from "../../../hooks/useNext";
+import { useTemplateByName } from "../../../queries/template.queries";
 
 const ReplyButtons = ({ editorRef, editorReady }) => {
   const {
@@ -50,10 +51,9 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     htmlfile,
     setHtmlfile,
     pdfLoading,
+    email,
+    threadId
   } = useOutletContext();
-  const {
-    context: { currentEmail, currentThread: threadId },
-  } = useThreadContext();
   const { moveToNext } = useNext()
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
   const [aiReplyContent, setAiReplyContent] = useState("");
@@ -80,18 +80,18 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
 
   /* ── data hooks ─────────────────────────────────────────── */
   const { loading, data: buttons } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_buttons&type=regular&email=${currentEmail}`,
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_buttons&type=regular&email=${email}`,
     name: "BUTTONS",
-    dependencies: [currentEmail, favourites],
+    dependencies: [email, favourites],
   });
   const { loading: contactLoading, data: contact } = useModule({
-    url: `${crmEndpoint}&type=get_contact&email=${currentEmail}`,
+    url: `${crmEndpoint}&type=get_contact&email=${email}`,
     headers: {
       "Content-Type": "application/json",
       "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
 
     }, name: "GETTING CONTACT",
-    dependencies: [currentEmail],
+    dependencies: [email],
   });
 
   const {
@@ -112,22 +112,12 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
   });
 
   const { data: defaultTemplate } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=updateOffer&email=${currentEmail}`,
+    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=updateOffer&email=${email}`,
     name: "DEFAULT TEMPLATE",
-    dependencies: [currentEmail],
+    dependencies: [email],
   });
 
-  const { data: priceTemp } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: { module: "EmailTemplates", where: { name: "PRICE_LIST" } },
-    headers: {
-      "x-api-key": CREATE_DEAL_API_KEY,
-      "Content-Type": "application/json",
-    },
-    name: "Price Template",
-    dependencies: [currentEmail],
-  });
+  const { data: priceTemp } = useTemplateByName("PRICE_LIST");
 
   /* ── effects ─────────────────────────────────────────────── */
   useEffect(() => {
@@ -164,8 +154,8 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
   const [stopLoading, setStopLoading] = useState(false)
   const hanldeConvDone = () => {
     dispatch(editContact({ contact: { ...contact.contact, conversation_complete: "1" }, account: { ...contact.account }, }, null,));
-    dispatch(viewEmailAction.compleConv({ message: `Conversion Complete with ${currentEmail}`, sendedEmail: currentEmail }));
-    moveToNext(currentEmail)
+    dispatch(viewEmailAction.compleConv({ message: `Conversion Complete with ${email}`, sendedEmail: email }));
+    moveToNext(email)
   };
   function insertAiReply(input) {
     setOpenParent(null);
@@ -298,7 +288,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             icon={Sparkles}
             label="AI  Reply"
             onClick={() => {
-              if (aiReplyContent === "") dispatch(getAiReply(threadId, null, null, currentEmail));
+              if (aiReplyContent === "") dispatch(getAiReply(threadId, null, null, email));
               insertAiReply(aiReplyContent);
             }}
             onEdit={() => navigate("/settings/templates")}
@@ -310,7 +300,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             icon={Zap}
             label="AI Now"
             onClick={() => {
-              dispatch(getAiReply(threadId, 1, editorContent, currentEmail));
+              dispatch(getAiReply(threadId, 1, editorContent, email));
               insertAiReply(editorContent);
             }}
             onEdit={() => navigate("/settings/templates")}
@@ -474,7 +464,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
           )}
 
           {/* ── First Reply ── */}
-          <FirstReplyBtn email={currentEmail} />
+          <FirstReplyBtn email={email} />
           <DeepReplyBtn />
           <motion.button
             whileHover={{ scale: 1.15 }}
@@ -501,7 +491,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                     type: "force_stop",
                     id: contact?.contact?.id,
                     new_value: newValue,
-                    user: currentEmail,
+                    user: email,
                   },
                 });
 
@@ -511,7 +501,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                     ? "Emails stopped successfully"
                     : "Emails resumed successfully"
                 );
-                moveToNext(currentEmail)
+                moveToNext(email)
               } catch (err) {
                 console.error(err);
                 toast.error("Failed To Change Email State!");

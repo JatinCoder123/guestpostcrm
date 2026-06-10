@@ -25,16 +25,11 @@ export const buildTableRequestBody = (
         body.date_field =
             preferences.date_filter.date_field;
 
-        if (
-            preferences.date_filter.date_range ===
-            "custom"
-        ) {
-            body.date_from =
-                preferences.date_filter.date_from;
+        body.date_from =
+            preferences.date_filter.date_from;
 
-            body.date_to =
-                preferences.date_filter.date_to;
-        }
+        body.date_to =
+            preferences.date_filter.date_to;
     }
 
     // Merge default filters + user filters

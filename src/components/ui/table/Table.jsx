@@ -154,6 +154,7 @@ const TableView = ({
         value: {
           date_from,
           date_to,
+          date_field: "date_entered"
         },
       })
     );
@@ -166,8 +167,8 @@ const TableView = ({
         value: {
           date_from: "",
           date_to: "",
-          date_field: "",
           date_range: "",
+          date_field: "date_entered"
         },
       })
     );

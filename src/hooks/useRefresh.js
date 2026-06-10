@@ -4,7 +4,6 @@ import { getmovedEmails } from "../store/Slices/movedEmails";
 import { SocketContext } from "../context/SocketContext";
 import { getAllWebsites } from "../store/Slices/webSlice";
 import { fetchGpcController } from "../store/Slices/gpcControllerSlice";
-import { getMarketplace } from "../store/Slices/Marketplace";
 import { hotAction } from "../store/Slices/hotSlice";
 import { getAiCredits } from "../store/Slices/aiCredits";
 import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";

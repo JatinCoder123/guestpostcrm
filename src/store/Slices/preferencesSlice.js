@@ -19,7 +19,7 @@ export const getDefaultTablePreference = () => ({
     per_page: 20,
     date_filter: {
         date_range: "",
-        date_field: "",
+        date_field: "date_entered",
         date_from: "",
         date_to: "",
     },

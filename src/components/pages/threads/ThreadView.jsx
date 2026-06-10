@@ -1,17 +1,10 @@
 import {
-  User,
-  Globe,
   Send,
   X,
   ChevronLeft,
-  Move,
   CornerUpRight,
-  Mail,
-  Edit,
-  DollarSign,
   ArrowBigUp,
   ArrowBigDown,
-  Copy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -23,7 +16,6 @@ import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { SmallTinyEditor } from "../../TinyEditor.jsx";
-import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
 
 import {
   PanelGroup,
@@ -50,14 +42,14 @@ export default function ThreadView() {
     setEditorContent,
     handleSendClick,
     checkingThreadId,
+    email,
+    threadId
   } = useOutletContext() || [];
-  const {
-    context: { currentThread: threadId, currentEmail },
-  } = useThreadContext();
-  const { data: emailsData } = useThread(currentEmail)
+
+  const { data: emailsData } = useThread(email, threadId)
   const emails = emailsData?.emails
   const firstMessageRef = useRef(null);
-  const { data, isPending: summaryLoading } = useMailerSummary(currentEmail)
+  const { data, isPending: summaryLoading } = useMailerSummary(email)
   const mailersSummary = data?.mailers_summary
 
 
@@ -88,14 +80,6 @@ export default function ThreadView() {
   const [focusedIndex, setFocusedIndex] = useState(
     visibleMessages?.length - 1
   );
-
-  const {
-    aiReply: aiResponse,
-    error: aiError,
-    message,
-  } = useSelector((state) => state.aiReply);
-
-
   useEffect(() => {
     if (mailersSummary && !summaryLoading) {
       setEditorContent(mailersSummary?.ai_response ?? "")
@@ -178,7 +162,7 @@ export default function ThreadView() {
     <>
       <SendingOverlay
         sending={sending || checkingThreadId}
-        email={currentEmail}
+        email={email}
       />
 
       <motion.div

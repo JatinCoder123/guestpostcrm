@@ -73,20 +73,25 @@ const router = createBrowserRouter([
   {
     path: "",
     element: (
-      <ThreadContextProvider>
-        <PageContextProvider>
-          <SocketContextProvider>
-            <ErrorBoundary>
-              <RootLayout />
-            </ErrorBoundary>
-          </SocketContextProvider>
-        </PageContextProvider>
-      </ThreadContextProvider>
+      <SocketContextProvider>
+
+        <ThreadContextProvider>
+          <PageContextProvider>
+            <TimelineProvider>
+              <ErrorBoundary>
+                <RootLayout />
+              </ErrorBoundary>
+
+            </TimelineProvider>
+          </PageContextProvider>
+        </ThreadContextProvider>
+      </SocketContextProvider>
+
     ),
     children: [
       {
         index: true,
-        element: <TimelineProvider><TimelinePage /></TimelineProvider>,
+        element: <TimelinePage />,
       },
       {
         path: "unreplied-emails",

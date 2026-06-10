@@ -158,13 +158,7 @@ export function DealsPage() {
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="View"
             onClick={() =>
-              navigateTo(`/deals/view`, {
-                state: {
-                  email: row?.email,
-                  threadId: row?.thread_id,
-                  id: row?.id
-                },
-              })
+              navigateTo(`/deals/view?email=${row?.email}&id=${row?.id}`)
             }
           >
             <Eye className="w-5 h-5 text-blue-600" />

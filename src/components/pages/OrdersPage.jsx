@@ -142,7 +142,7 @@ export function OrdersPage() {
     },
     {
       label: "Contact",
-      accessor: "real_name",
+      accessor: "client_email",
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
@@ -230,13 +230,7 @@ export function OrdersPage() {
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() =>
-              navigateTo(`/orders/edit`, {
-                state: {
-                  email: extractEmail(row.real_name),
-                  threadId: row?.thread_id,
-                  id: row?.id,
-                },
-              })
+              navigateTo(`/orders/edit?email=${row?.client_email}&id=${row?.id}`)
             }
             className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
             title="Update"
@@ -245,13 +239,7 @@ export function OrdersPage() {
           </button>
           <button
             onClick={() =>
-              navigateTo(`/orders/view`, {
-                state: {
-                  email: extractEmail(row.real_name),
-                  threadId: row?.thread_id,
-                  id: row?.id,
-                },
-              })
+              navigateTo(`/orders/view?email=${row?.client_email}&id=${row?.id}`)
             }
             className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
             title="Update"

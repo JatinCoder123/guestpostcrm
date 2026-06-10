@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { toast } from "react-toastify";
 import { PageContext } from "../../../context/pageContext";
@@ -13,6 +13,9 @@ import { useNext } from "../../../hooks/useNext";
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get("email");
+  const threadId = searchParams.get("thread");
   const { state } = useLocation();
   const [pdfLoading, setPdfLoading] = useState(false);
   const { moveToNext } = useNext()
@@ -26,14 +29,12 @@ const Thread = () => {
     (s) => s.viewEmail,
   );
 
-  const {
-    context: { currentEmail, currentThread },
-  } = useThreadContext();
+
   const handleSendClick = async (forceSend = 1) => {
     try {
       setCheckingTheadId(true);
       const data = await fetchGpc({
-        params: { type: "re_check_thread", thread_id: currentThread },
+        params: { type: "re_check_thread", thread_id: threadId },
       });
       console.log("MATHED THREAD ID", data);
 
@@ -41,17 +42,17 @@ const Thread = () => {
         toast.error("Failed to verify thread!");
         return;
       }
-      if (!data?.data?.find(email => email.toLowerCase() == currentEmail.toLowerCase())) {
+      if (!data?.data?.find(ed => ed.toLowerCase() == email.toLowerCase())) {
         toast.error('Wrong Thread Id Detected! Try Again.')
         return;
       }
-      console.log("THREAD", currentThread);
+      console.log("THREAD", threadId);
 
       const contentToSend = editorContent;
       const formData = new FormData();
-      formData.append("threadId", currentThread);
+      formData.append("threadId", threadId);
       formData.append("replyBody", contentToSend);
-      formData.append("email", currentEmail);
+      formData.append("email", email);
       formData.append("current_email", user.email);
       formData.append("force_send", 1);
       files.forEach((file) => {
@@ -60,7 +61,7 @@ const Thread = () => {
 
       dispatch(sendEmail(formData));
       state?.handleAfterSuccessMailSent?.()
-      moveToNext(currentEmail)
+      moveToNext(email)
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong while checking thread!");
@@ -69,15 +70,15 @@ const Thread = () => {
     }
   };
   useEffect(() => {
-    dispatch(getDuplicateEmails(currentEmail));
-  }, [dispatch, currentEmail]);
+    dispatch(getDuplicateEmails(email));
+  }, [dispatch, email]);
   useEffect(() => {
-    if (!currentThread) {
+    if (!threadId) {
       toast.error("Thread id is missing!");
       navigate(-1);
       return;
     }
-    if (!currentEmail) {
+    if (!email) {
       toast.error("Email id is missing!");
       navigate(-1);
     }
@@ -117,6 +118,8 @@ const Thread = () => {
     setFiles,
     editorContent,
     setEditorContent,
+    email,
+    threadId,
     htmlfile,
     setHtmlfile,
     pdfLoading, // ✅ added

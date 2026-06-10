@@ -284,17 +284,7 @@ export function OffersPage() {
             title="View"
             onClick={() =>
               navigateTo(
-                "/offers/view",
-                {
-                  state: {
-                    email:
-                      row?.email,
-                    threadId:
-                      row?.thread_id,
-                    id: row?.id,
-                  },
-                }
-              )
+                `/offers/view?email=${row?.email}&id=${row?.id}`)
             }
           >
             <Eye className="w-5 h-5 text-blue-600" />
