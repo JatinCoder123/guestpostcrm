@@ -37,56 +37,88 @@ const STATUS_CONFIG = [
     label: "New",
     icon: Package,
     color: "#2563eb", // blue
+    filter: 'order_status'
   },
   {
     value: "accepted",
     label: "Accepted",
     icon: CheckCircle,
     color: "#16a34a", // green
+    filter: 'order_status'
+
   },
   {
     value: "rejected_nontechnical",
     label: "Rejected",
     icon: XCircle,
     color: "#dc2626", // red
+    filter: 'order_status'
+
   },
   {
     value: "wrong",
     label: "Wrong",
     icon: X,
     color: "#662744ff", // red
+    filter: 'order_status'
+
   },
   {
     value: "pending",
     label: "Pending",
     icon: PauseCircle,
     color: "#ca8a04", // yellow
+    filter: 'order_status'
+
   },
   {
     value: "completed",
     label: "Completed",
     icon: BadgeCheck,
     color: "#7c3aed", // purple
+    filter: 'order_status'
+
   },
   {
     value: "marketplace",
     label: "Marketplace",
     icon: StoreIcon,
     color: "#ed3ab7", // purple
+    filter: 'order_status'
+
   },
   {
     value: "listacle",
     label: "Listacle",
     icon: ListFilter,
     color: "#56cd1f", // purple
+    filter: 'order_status'
+
   },
 ];
 import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
+import { useInfiniteOrders, useOrderStats } from "../../queries/orders.queries.js";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
 
 export function OrdersPage() {
-  const { count, orders, loading, pageIndex, stats, updating, message, error } =
-    useSelector((state) => state.orders);
+  const preferences = useTablePreference("orders");
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteOrders(preferences);
+  if (!isPending) {
+    console.log("ORDERS", data)
+
+  }
+  const {
+    data: summary,
+    isPending: summaryLoading,
+  } = useOrderStats();
   const [updateOrderId, setUpdateOrderId] = useState(null);
 
   const { handleDateClick, enteredEmail } = useContext(PageContext);
@@ -100,29 +132,29 @@ export function OrdersPage() {
       icon: Calendar,
 
       onClick: (row) =>
-        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
+        handleDateClick({ email: row?.client_email, navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       ),
     },
     {
       label: "Contact",
-      accessor: "real_name",
+      accessor: "client_email",
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
         handleDateClick({
-          email: extractEmail(row?.real_name),
+          email: row?.client_email,
           navigate: "/contacts",
         }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.real_name?.split("<")[0]?.trim()}
+          {row?.name}
         </span>
       ),
     },
@@ -198,13 +230,7 @@ export function OrdersPage() {
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() =>
-              navigateTo(`/orders/edit`, {
-                state: {
-                  email: extractEmail(row.real_name),
-                  threadId: row?.thread_id,
-                  id: row?.id,
-                },
-              })
+              navigateTo(`/orders/edit?email=${row?.client_email}&id=${row?.id}`)
             }
             className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
             title="Update"
@@ -213,13 +239,7 @@ export function OrdersPage() {
           </button>
           <button
             onClick={() =>
-              navigateTo(`/orders/view`, {
-                state: {
-                  email: extractEmail(row.real_name),
-                  threadId: row?.thread_id,
-                  id: row?.id,
-                },
-              })
+              navigateTo(`/orders/view?email=${row?.client_email}&id=${row?.id}`)
             }
             className="p-2 hover:bg-blue-100  rounded-full transition-colors cursor-pointer"
             title="Update"
@@ -252,29 +272,76 @@ export function OrdersPage() {
       ),
     },
   ];
+  const filterColumns = [
+    {
+      label: "Type",
+      accessor: "type",
+
+      values: [
+        {
+          label: "Link Insertion",
+          value: "Brand",
+        },
+
+        {
+          label: "Guest Post",
+          value: "guest post",
+        },
+        {
+          label: "MarketPlace",
+          value: "Non-Brand",
+        },
+      ],
+    },
+
+    {
+      label: "Stage",
+      accessor: "stage",
+
+      values: [
+        {
+          label: "Order",
+          value: "order",
+        },
+
+        {
+          label: "Offer",
+          value: "offer",
+        },
+
+        {
+          label: "Invoice",
+          value: "invoice",
+        },
+
+        {
+          label: "Deal",
+          value: "deal",
+        },
+      ],
+    },
+  ];
+  const orders =
+    data?.pages?.flatMap(
+      (page) => page.records || page.data || []
+    ) ?? [];
+  const pages = data?.pages ?? [];
+
+  const lastPage = pages[pages.length - 1] ?? {};
+  const firstPage = pages[0] ?? {};
+
+  const pageIndex = lastPage.page ?? 1;
+  const pageCount = firstPage.total_pages ?? 0;
+  const count = firstPage.total ?? 0;
+
+  const loading = isPending || isFetchingNextPage;
   const statusList = STATUS_CONFIG.map((config) => {
-    const status = stats.find((s) => s.status == config.value);
     return {
       ...config,
-      count: status?.status_count || 0,
-      amount: status?.total_amount || 0,
-      showAmount: true,
+      count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
     };
   });
-  useEffect(() => {
-    if (message) {
-      toast.success(message);
-      setUpdateOrderId(null);
-      dispatch(orderAction.clearAllMessages());
-      dispatch(getOrders({ email: enteredEmail }));
-    }
-    if (error) {
-      setUpdateOrderId(null);
-      toast.error(error);
-      dispatch(orderAction.clearAllErrors());
-    }
-  }, [message, error]);
-
+  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
   return (
     <TableView
       tableData={orders}
@@ -284,7 +351,22 @@ export function OrdersPage() {
       defaultStatus={"new"}
       statusKey={"order_status"}
       statusList={statusList}
-      fetchNextPage={() => dispatch(getOrders({ page: pageIndex + 1 }))}
+      pageIndex={pageIndex}
+      statusCount={statusCount}
+      pageCount={pageCount}
+      count={count}
+      loading={loading}
+      preferences={preferences}
+      filterColumns={filterColumns}
+      refreshKey={["orders"]}
+      fetchNextPage={() => {
+        if (
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}
     >
       <TableTitleBar
         Icon={ShoppingCart}

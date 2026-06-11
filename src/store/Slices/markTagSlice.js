@@ -5,8 +5,8 @@ import { apiRequest } from "../../services/api";
 
 const initialState = {
   loading: false,
-  tags: [],
   error: null,
+  message: null
 };
 
 const markTagSlice = createSlice({
@@ -19,7 +19,7 @@ const markTagSlice = createSlice({
     },
     getTagsSuccess: (state, action) => {
       state.loading = false;
-      state.tags = action.payload;
+      state.message = action.payload
     },
     getTagsFail: (state, action) => {
       state.loading = false;
@@ -28,40 +28,33 @@ const markTagSlice = createSlice({
     clearAllErrors: (state) => {
       state.error = null;
     },
+    clearAllMessage: (state) => {
+      state.message = null;
+    },
   },
 });
 
-export const { getTagsRequest, getTagsSuccess, getTagsFail, clearAllErrors } =
+export const markTagAction =
   markTagSlice.actions;
 
 export default markTagSlice.reducer;
 
-// async action
-export const getTags = () => async (dispatch, getState) => {
-  try {
-    dispatch(getTagsRequest());
 
-    const data = await apiRequest({ endpoint: `${getState().user.crmEndpoint.split("?")[0]}?entryPoint=add_tag`, params: { get_tag: 1 } }
-    );
 
-    // API gives: { success, fields: [...] }
-    dispatch(getTagsSuccess(data.fields));
-  } catch (error) {
-    dispatch(getTagsFail(error.response?.data?.message || error.message));
-  }
-};
-
-export const applyTag = (selectedTag) => {
+export const applyTag = ({ email, tag }) => {
   return async (dispatch, getState) => {
+    console.log(email)
+    console.log(tag)
     try {
       dispatch(markTagSlice.actions.getTagsRequest());
 
       const domain = getState().user.crmEndpoint.split("?")[0];
 
       const data = await apiRequest({
-        endpoint: `${domain}?entryPoint=contactAction`, params: { email: getState().viewEmail.contactInfo?.email1, field: selectedTag }
+        endpoint: `${domain}?entryPoint=contactAction`, params: { email, field: tag }
       }
       )
+      console.log(data)
 
       if (!data.success) {
         throw new Error("Tag apply failed");
@@ -73,25 +66,21 @@ export const applyTag = (selectedTag) => {
           ? "Tag applied successfully"
           : "Tag removed successfully";
 
-      dispatch(markTagSlice.actions.getTagsSuccess(data.alltags || []));
+      dispatch(markTagSlice.actions.getTagsSuccess(message));
       updateActivity(getState().ladger.email, "Tag Applied ")
       await createLedgerEntry({
         domain: domain,
-        email: getState().ladger.email,
+        email: email,
         group: "Activity",
         items: [
           buildLedgerItem({
             status: "Mark-tag",
-            detail: `email: {${getState().ladger.email}} tag: {${selectedTag}}`,
+            detail: `email: {${email}} tag: {${tag}}`,
             ladgerState: getState().ladger,
             user: getState().crmUser.currentUser,
           }),
         ],
       });
-
-      // ✅ toast with dynamic text
-      toast.success(message);
-
       dispatch(markTagSlice.actions.clearAllErrors());
     } catch (error) {
       dispatch(

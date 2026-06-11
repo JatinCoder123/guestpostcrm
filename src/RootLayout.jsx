@@ -14,6 +14,7 @@ import LowCreditWarning from "./components/LowCreditWarning";
 import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import OnBoarding from "./components/OnBoarding";
+import { useTimeline } from "./context/TimelineContext";
 
 
 const RootLayout = () => {
@@ -27,6 +28,7 @@ const RootLayout = () => {
   } = useContext(PageContext);
 
   const { setCrm } = useContext(SocketContext);
+  useTimeline()
 
   useRefresh();
 

@@ -1,0 +1,79 @@
+import { http } from "../services/api";
+import { buildTableRequestBody } from "../utils/preferenceStorage";
+
+
+export const getAllInvoice = ({
+    preferences,
+    page = 1,
+    email
+}) =>
+    http({
+        method: "POST",
+        body: {
+            "action": "fetch",
+            "module": "outr_paypal_invoice_links",
+            "page": page,
+            "per_page": 20,
+            ...buildTableRequestBody(preferences)
+        }
+    });
+
+export const getInvoiceStats = ({ filters }) =>
+    http({
+        method: "POST",
+        body: {
+            action: "get_stats",
+            ...filters,
+            queries: [
+                {
+                    "key": "SENT",
+                    "module": "outr_paypal_invoice_links",
+                    "filters": {
+                        "status_c": "SENT"
+                    }
+                },
+                {
+                    "key": "PAID",
+                    "module": "outr_paypal_invoice_links",
+                    "filters": {
+                        "status_c": "PAID"
+                    }
+                },
+                {
+                    "key": "DRAFT",
+                    "module": "outr_paypal_invoice_links",
+                    "filters": {
+                        "status_c": "DRAFT"
+                    }
+                },
+                {
+                    "key": "all",
+                    "module": "outr_paypal_invoice_links",
+                },
+            ]
+        },
+    });
+
+
+export const getInvoiceById = (
+    id
+) =>
+    http({
+        method: "POST",
+        body: { id },
+    });
+export const updateInvoice = async (payload) => {
+    const response = await http({
+        method: "POST",
+        body: {
+            "action": "update",
+            "module": "outr_paypal_invoice_links",
+            "id": payload.id,  // required
+            "data": {
+                ...payload
+            }
+        },
+    });
+
+    return response;
+};

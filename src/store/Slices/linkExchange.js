@@ -19,30 +19,6 @@ const exchangeSlice = createSlice({
     marked: {}, // threadId: boolean (true if marked, false if unmarked)
   },
   reducers: {
-    getEmailRequest(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    getEmailSucess(state, action) {
-      const { count, emails, pageCount, pageIndex } = action.payload;
-      state.loading = false;
-      if (pageIndex === 1) {
-        state.emails = emails;
-      } else {
-        state.emails = [...state.emails, ...emails];
-      }
-      emails.forEach((email) => {
-        state.marked[email.thread_id || email.id] = true;
-      });
-      state.count = count;
-      state.pageCount = pageCount;
-      state.pageIndex = pageIndex;
-      state.error = null;
-    },
-    getEmailFailed(state, action) {
-      state.loading = false;
-      state.error = action.payload;
-    },
     exchangingRequest(state) {
       state.exchanging = true;
       state.error = null;
@@ -71,27 +47,7 @@ const exchangeSlice = createSlice({
   },
 });
 
-export const getLinkExchange = () => {
-  return async (dispatch, getState) => {
-    dispatch(exchangeSlice.actions.getEmailRequest());
-    try {
-      const timeline = getState().ladger.timeline
-      const data = await fetchGpc({ params: { type: "exchange", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), page: 1, page_size: 50 } });
-      showConsole && console.log(`Exchange links data`, data);
-      dispatch(
-        exchangeSlice.actions.getEmailSucess({
-          count: data.data_count ?? 0,
-          emails: data.data ?? [],
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-        })
-      );
-      dispatch(exchangeSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(exchangeSlice.actions.getEmailFailed("Fetching Bulk Emails Failed"));
-    }
-  };
-};
+
 
 export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {

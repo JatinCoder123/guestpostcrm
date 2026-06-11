@@ -18,12 +18,10 @@ import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
 import movederReducer from "./Slices/movedEmails.js";
-import backlinksReducer from "./Slices/backlinks.js";
 import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
 import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
-import quickActionBtnReducer from "./Slices/quickActionBtn";
 import DraftInvoiceReducer from "./Slices/draftInvoice.js";
 import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
 import hotReducer from "./Slices/hotSlice.js";
@@ -37,8 +35,7 @@ import crmUserReducer from "./Slices/crmUser.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
 import tinyKeyReducer from "./Slices/tinyKey.js";
-import mailerSummaryReducer from "./Slices/mailerSummary.js";
-import outBoxReducer from "./Slices/outbox.js";
+import preferenceReducer from "./Slices/preferencesSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -61,12 +58,10 @@ export const store = configureStore({
     markTag: markTagReducer,
     avatar: avatarReducer,
     defaulter: defaulterReducer,
-    backlinks: backlinksReducer,
     events: eventReducer,
     marketplace: marketplaceReducer,
     linkExchange: linkExchangeReducer,
     hot: hotReducer,
-    quickActionBtn: quickActionBtnReducer,
     contactdefaulter: contactdefaulterReducer,
     duplicateEmails: duplicateEmailReducer,
     user: userReducer,
@@ -81,7 +76,16 @@ export const store = configureStore({
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,
     tinyKey: tinyKeyReducer,
-    mailersSummary: mailerSummaryReducer,
-    outbox: outBoxReducer
+    preferences: preferenceReducer
   },
+});
+// store.js
+
+store.subscribe(() => {
+  localStorage.setItem(
+    "preferences",
+    JSON.stringify(
+      store.getState().preferences
+    )
+  );
 });

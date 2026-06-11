@@ -1,17 +1,10 @@
 import {
-  User,
-  Globe,
   Send,
   X,
   ChevronLeft,
-  Move,
   CornerUpRight,
-  Mail,
-  Edit,
-  DollarSign,
   ArrowBigUp,
   ArrowBigDown,
-  Copy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -23,7 +16,6 @@ import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { SmallTinyEditor } from "../../TinyEditor.jsx";
-import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
 
 import {
   PanelGroup,
@@ -37,26 +29,30 @@ import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import RightThreadHeader from "./RightThreadHeader.jsx";
 import NavigationBar from "./NavigationBar.jsx";
+import { useMailerSummary } from "../../../queries/mailerSummary.queries.js";
+import { useThread } from "../../../queries/threads.queries.js";
 
 export default function ThreadView() {
   const scrollRef = useRef();
 
   const {
-    emails,
     loadAiReply = true,
     superfastReply,
     editorContent,
     setEditorContent,
     handleSendClick,
     checkingThreadId,
+    email,
+    threadId
   } = useOutletContext() || [];
 
+  const { data: emailsData } = useThread(email, threadId)
+  const emails = emailsData?.emails
   const firstMessageRef = useRef(null);
-  const { mailersSummary, loading: summaryLoading } = useSelector(state => state.mailersSummary)
+  const { data, isPending: summaryLoading } = useMailerSummary(email)
+  const mailersSummary = data?.mailers_summary
 
-  const {
-    context: { currentThread: threadId, currentEmail },
-  } = useThreadContext();
+
 
   const lastMessageRef = useRef(null);
 
@@ -84,14 +80,6 @@ export default function ThreadView() {
   const [focusedIndex, setFocusedIndex] = useState(
     visibleMessages?.length - 1
   );
-
-  const {
-    aiReply: aiResponse,
-    error: aiError,
-    message,
-  } = useSelector((state) => state.aiReply);
-
-
   useEffect(() => {
     if (mailersSummary && !summaryLoading) {
       setEditorContent(mailersSummary?.ai_response ?? "")
@@ -174,7 +162,7 @@ export default function ThreadView() {
     <>
       <SendingOverlay
         sending={sending || checkingThreadId}
-        email={currentEmail}
+        email={email}
       />
 
       <motion.div

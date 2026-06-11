@@ -18,9 +18,6 @@ const OnBoarding = () => {
     const [loadingAction, setLoadingAction] = useState(null);
     const [showGuidedWalkthrough, setShowGuidedWalkthrough] =
         useState(false);
-    const [isOnboardingLoading, setIsOnboardingLoading] =
-        useState(false);
-
     const navigate = useNavigate();
 
     const {
@@ -46,13 +43,13 @@ const OnBoarding = () => {
 
        const searchParams = new URLSearchParams(window.location.search);
     const email = searchParams.get("email");
- 
+
     const isRootEmailUrl =
         window.location.pathname === "/" && !!email;
- 
+
     useEffect(() => {
         if (!isAuthenticated) return;
- 
+
         if (isRootEmailUrl) {
             const alreadyShown =
                 sessionStorage.getItem("onboardingShown");
@@ -63,7 +60,6 @@ const OnBoarding = () => {
             }
         }
     }, [isAuthenticated, isRootEmailUrl]);
- 
 
     // Guided walkthrough
     useEffect(() => {
@@ -140,35 +136,35 @@ const OnBoarding = () => {
         );
     };
 
-const handleCompleteProfile = async () => {
-    try {
-        setLoadingAction("complete");
+    const handleCompleteProfile = async () => {
+        try {
+            setLoadingAction("complete");
 
-        await hitTryNowEndpoint();
+            await hitTryNowEndpoint();
 
-        setShowOnboardingPopup(false);
+            setShowOnboardingPopup(false);
 
-        // Complete profile specific action
-        redirectToDomainWithEmail();
-    } finally {
-        setLoadingAction(null);
-    }
-};
+            // Complete profile specific action
+            redirectToDomainWithEmail();
+        } finally {
+            setLoadingAction(null);
+        }
+    };
 
-const handleSkipForNow = async () => {
-    try {
-        setLoadingAction("skip");
+    const handleSkipForNow = async () => {
+        try {
+            setLoadingAction("skip");
 
-        await hitTryNowEndpoint();
+            await hitTryNowEndpoint();
 
-        setShowOnboardingPopup(false);
+            setShowOnboardingPopup(false);
 
-        // Skip specific action
-        redirectToDomainWithEmail();
-    } finally {
-        setLoadingAction(null);
-    }
-};
+            // Skip specific action
+            redirectToDomainWithEmail();
+        } finally {
+            setLoadingAction(null);
+        }
+    };
 
     if (!isAuthenticated) return null;
 
@@ -236,10 +232,10 @@ const handleSkipForNow = async () => {
                                 </div>
                             )}
 
-  <button
-    onClick={handleCompleteProfile}
-    disabled={loadingAction !== null}
-    className="
+                            <button
+                                onClick={handleCompleteProfile}
+                                disabled={loadingAction !== null}
+                                className="
         mt-6 w-full py-3.5 rounded-2xl
         bg-gradient-to-r from-violet-600 to-fuchsia-600
         text-white font-semibold
@@ -248,43 +244,42 @@ const handleSkipForNow = async () => {
         transition-all duration-300
         disabled:opacity-80 disabled:cursor-not-allowed
     "
->
-    {loadingAction === "complete" ? (
-        <div className="flex items-center justify-center gap-2">
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Completing...
-        </div>
-    ) : (
-        "Complete Profile"
-    )}
-</button>
+                            >
+                                {loadingAction === "complete" ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Completing...
+                                    </div>
+                                ) : (
+                                    "Complete Profile"
+                                )}
+                            </button>
 
-<button
-    onClick={handleSkipForNow}
-    disabled={loadingAction !== null}
-    className={`
+                            <button
+                                onClick={handleSkipForNow}
+                                disabled={loadingAction !== null}
+                                className={`
         mt-3 w-full py-3 rounded-2xl
         border border-gray-200
         bg-gray-50
         text-gray-600
         font-medium
         transition-all duration-300
-        ${
-            loadingAction === null
-                ? "hover:bg-gray-100 hover:border-gray-300"
-                : "opacity-60 cursor-not-allowed"
-        }
+        ${loadingAction === null
+                                        ? "hover:bg-gray-100 hover:border-gray-300"
+                                        : "opacity-60 cursor-not-allowed"
+                                    }
     `}
->
-    {loadingAction === "skip" ? (
-        <div className="flex items-center justify-center gap-2">
-            <div className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-500 rounded-full animate-spin" />
-            Skipping...
-        </div>
-    ) : (
-        "Skip for now"
-    )}
-</button>
+                            >
+                                {loadingAction === "skip" ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-500 rounded-full animate-spin" />
+                                        Skipping...
+                                    </div>
+                                ) : (
+                                    "Skip for now"
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
