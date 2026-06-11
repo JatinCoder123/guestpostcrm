@@ -198,17 +198,8 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
         },
         method: "POST",
       });
-      const remRes = await fetchGpc({
-        params: { type: "set_reminder" },
-        body: {
-          websites: deals.map((deal) => deal.website_c),
-          email: email,
-          reminder_type: "deal",
-        },
-        method: "POST",
-      });
+
       showConsole && console.log(`Create Deal`, data);
-      showConsole && console.log(`Reminder Response`, remRes);
       dispatch(
         dealsSlice.actions.createDealSucess({
           message: "Deals Created Successfully",
@@ -220,23 +211,27 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
       dispatch(dealsSlice.actions.clearAllErrors());
       updateActivity(email, "Deal Created");
 
-      createLedgerEntry({
-        domain,
-        email,
-        thread_id: threadId,
-        message_id: data.id,
-        group: "Deal",
-        items: deals.map((deal) =>
-          buildLedgerItem({
-            status: "Deal-Created",
-            detail: `website: {${getDomain(deal.website_c)}} amount: {${deal.dealamount}}`,
-            ladgerState: state.ladger,
-            user: state.crmUser.currentUser,
-            parent_name: "outr_deal",
-          }),
-        ),
-        okHandler: () => dispatch(getLadger({ email, loading: false })),
-      });
+createLedgerEntry({
+  domain,
+  email,
+  thread_id: threadId,
+  message_id: data.id,
+  group: "deal",
+  reminder_type: "deal",
+  websites: deals.map((deal) => deal.website_c),
+
+  items: deals.map((deal) =>
+    buildLedgerItem({
+      status: "Deal-Created",
+      detail: `website: {${getDomain(deal.website_c)}} amount: {${deal.dealamount}}`,
+      ladgerState: state.ladger,
+      user: state.crmUser.currentUser,
+      parent_name: "outr_deal",
+    }),
+  ),
+
+  okHandler: () => dispatch(getLadger({ email, loading: false })),
+});
     } catch (error) {
       dispatch(
         dealsSlice.actions.createDealFailed(
@@ -301,16 +296,6 @@ export const updateDeal = ({ deals = [] }) => {
         });
         showConsole && console.log(`UPdate Deal`, data);
       });
-      const remRes = await fetchGpc({
-        params: { type: "set_reminder" },
-        body: {
-          websites: deals.map((deal) => deal.website_c),
-          email: email,
-          reminder_type: "deal",
-        },
-        method: "POST",
-      });
-      showConsole && console.log(`Reminder Response`, remRes);
       const updatedDeals = getState().deals.deals.map((d) => {
         const updated = deals.find((ud) => ud.id === d.id);
         return updated ? updated : d;

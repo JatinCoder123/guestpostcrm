@@ -99,12 +99,6 @@ export function PaypalCredentials() {
 
                   {/* Environment (endpoint) */}
                   <td className="p-4 text-xs">
-                    <div>
-                      <p className="text-gray-800 font-medium">Dev</p>
-                      <p className="text-gray-600">
-                        {item.dev_endpoint || "—"}
-                      </p>
-                    </div>
                     <div className="mt-2">
                       <p className="text-gray-800 font-medium">Production</p>
                       <p className="text-gray-600">
@@ -115,13 +109,12 @@ export function PaypalCredentials() {
 
                   {/* First Token */}
                   <td className="p-4 text-gray-700 max-w-[200px] truncate">
-                    {item.dev_first_token || item.production_first_token || "—"}
+                    {item.production_first_token || "—"}
                   </td>
 
                   {/* Second Token */}
                   <td className="p-4 text-gray-700 max-w-[200px] truncate">
-                    {item.dev_second_token ||
-                      item.production_second_token ||
+                    {item.production_second_token ||
                       "—"}
                   </td>
 

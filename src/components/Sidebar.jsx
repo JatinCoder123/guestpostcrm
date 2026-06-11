@@ -23,6 +23,8 @@ import {
   Plus,
   Contact2Icon,
   Cable,
+  CircleX,
+  BellElectric,
 } from "lucide-react";
 
 import { useContext, useEffect, useRef, useState } from "react";
@@ -31,7 +33,7 @@ import { useNavigate } from "react-router-dom";
 import { PageContext } from "../context/pageContext";
 import { motion, AnimatePresence, color } from "framer-motion";
 import { LoadingSpin } from "./Loading";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Cross, CrossIcon } from "lucide-react";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
@@ -195,15 +197,35 @@ export function Sidebar() {
       countBg: "bg-lime-500 text-white",
     },
     {
-      id: "backlinks",
-      label: "Backlinks",
-      icon: Cable,
-      loading: backlinkLoading,
-      count: backlinkCount,
-      color: "text-teal-600",
-      hover: "hover:bg-teal-50",
-      countBg: "bg-teal-500 text-white",
+      id: "Duplicate Rejected",
+      label: "Duplicate Rejected",
+      icon: CircleX,
+      loading: false,
+      count: null,
+      color: "text-red-600",
+      hover: "hover:bg-red-50",
+      countBg: "bg-red-500 text-white",
     },
+    {
+      id: "Listicle",
+      label: "Listicle",
+      icon: Layers,
+      loading: false,
+      count: null,
+      color: "text-blue-600",
+      hover: "hover:bg-blue-50",
+      countBg: "bg-blue-500 text-white",
+    },
+ {
+  id: "reminder-management",
+  label: "Reminder Management",
+  icon: BellElectric,
+  loading: null,
+  count: null,
+  color: "text-lime-600",
+  hover: "hover:bg-lime-50",
+  countBg: "bg-lime-500 text-white",
+ },
     {
       id: "other",
       label: "Others",
@@ -223,7 +245,7 @@ export function Sidebar() {
       color: "text-teal-600",
       hover: "hover:bg-teal-50",
       countBg: "bg-teal-500 text-white ",
-    },
+    }
   ];
 
   return (

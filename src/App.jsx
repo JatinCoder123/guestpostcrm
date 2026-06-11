@@ -60,6 +60,9 @@ import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
+import ReminderManagementPage from "./components/pages/ReminderManagement";
+import MeetingWidget from "./components/MeetingWidget";
+import TwakChat from "./components/TwakTo";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -81,7 +84,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <TimelinePage />,
+        element:(
+        <>
+          <TimelinePage />
+        </>
+        ),
       },
       {
         path: "unreplied-emails",
@@ -215,11 +222,7 @@ const router = createBrowserRouter([
         path: "moved-emails",
         element: <MovedPage />,
       },
-      {
-        path: "backlinks",
-        element: <BacklinksPage />,
-      },
-
+    
       {
         path: "other",
         element: <OtherPage />,
@@ -231,6 +234,10 @@ const router = createBrowserRouter([
       {
         path: "hot-records",
         element: <HotPage />,
+      },
+      {
+        path: "reminder-management",
+        element: <ReminderManagementPage />,
       },
       {
         path: "thread",
@@ -311,6 +318,11 @@ const router = createBrowserRouter([
             path: "recycle",
             element: <RecyclePage />,
           },
+ {
+        path: "backlinks",
+        element: <BacklinksPage />,
+      },
+
 
         ],
       },
@@ -350,7 +362,13 @@ export default function App() {
 
   return (
     <>
-      {isAuthenticated && <RouterProvider router={router} />}
+      {isAuthenticated && !loading && (
+  <>
+    <MeetingWidget />
+    <TwakChat />
+    <RouterProvider router={router} />
+  </>
+)}
 
       {!isAuthenticated && loading && <LoadingPage />}
 

@@ -11,7 +11,7 @@ import {
   BarChart4,
   ActivityIcon,
 } from "lucide-react";
-import { getGroupReport } from "../../store/Slices/reportSlice";
+// import { getGroupReport } from "../../store/Slices/reportSlice";
 import { useParams, useLocation } from "react-router-dom"; // ✅ add useLocation
 
 export default function GroupReport() {

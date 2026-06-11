@@ -15,6 +15,7 @@ const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
 const OnBoarding = () => {
     const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(null);
     const [showGuidedWalkthrough, setShowGuidedWalkthrough] =
         useState(false);
     const [isOnboardingLoading, setIsOnboardingLoading] =
@@ -139,33 +140,35 @@ const OnBoarding = () => {
         );
     };
 
-    const handleCompleteProfile = async () => {
-        try {
-            setIsOnboardingLoading(true);
+const handleCompleteProfile = async () => {
+    try {
+        setLoadingAction("complete");
 
-            await hitTryNowEndpoint();
+        await hitTryNowEndpoint();
 
-            setShowOnboardingPopup(false);
+        setShowOnboardingPopup(false);
 
-            redirectToDomainWithEmail();
-        } finally {
-            setIsOnboardingLoading(false);
-        }
-    };
+        // Complete profile specific action
+        redirectToDomainWithEmail();
+    } finally {
+        setLoadingAction(null);
+    }
+};
 
-    const handleSkipForNow = async () => {
-        try {
-            setIsOnboardingLoading(true);
+const handleSkipForNow = async () => {
+    try {
+        setLoadingAction("skip");
 
-            await hitTryNowEndpoint();
+        await hitTryNowEndpoint();
 
-            setShowOnboardingPopup(false);
+        setShowOnboardingPopup(false);
 
-            redirectToDomainWithEmail();
-        } finally {
-            setIsOnboardingLoading(false);
-        }
-    };
+        // Skip specific action
+        redirectToDomainWithEmail();
+    } finally {
+        setLoadingAction(null);
+    }
+};
 
     if (!isAuthenticated) return null;
 
@@ -233,36 +236,55 @@ const OnBoarding = () => {
                                 </div>
                             )}
 
-                            <button
-                                onClick={handleCompleteProfile}
-                                disabled={isOnboardingLoading}
-                                className="
-                  mt-6 w-full py-3 rounded-2xl
-                  bg-gradient-to-r from-violet-500 to-fuchsia-500
-                  text-white font-semibold
-                  shadow-lg hover:scale-[1.02]
-                  transition-all duration-300
-                  disabled:opacity-70 disabled:cursor-not-allowed
-                "
-                            >
-                                {isOnboardingLoading
-                                    ? "Please wait..."
-                                    : "Complete Profile"}
-                            </button>
+  <button
+    onClick={handleCompleteProfile}
+    disabled={loadingAction !== null}
+    className="
+        mt-6 w-full py-3.5 rounded-2xl
+        bg-gradient-to-r from-violet-600 to-fuchsia-600
+        text-white font-semibold
+        shadow-lg shadow-violet-200
+        hover:shadow-xl hover:scale-[1.02]
+        transition-all duration-300
+        disabled:opacity-80 disabled:cursor-not-allowed
+    "
+>
+    {loadingAction === "complete" ? (
+        <div className="flex items-center justify-center gap-2">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Completing...
+        </div>
+    ) : (
+        "Complete Profile"
+    )}
+</button>
 
-                            <button
-                                onClick={handleSkipForNow}
-                                disabled={isOnboardingLoading}
-                                className="
-                  mt-3 text-sm text-gray-500
-                  hover:text-gray-700 transition
-                  disabled:opacity-70 disabled:cursor-not-allowed
-                "
-                            >
-                                {isOnboardingLoading
-                                    ? "Loading..."
-                                    : "Skip for now"}
-                            </button>
+<button
+    onClick={handleSkipForNow}
+    disabled={loadingAction !== null}
+    className={`
+        mt-3 w-full py-3 rounded-2xl
+        border border-gray-200
+        bg-gray-50
+        text-gray-600
+        font-medium
+        transition-all duration-300
+        ${
+            loadingAction === null
+                ? "hover:bg-gray-100 hover:border-gray-300"
+                : "opacity-60 cursor-not-allowed"
+        }
+    `}
+>
+    {loadingAction === "skip" ? (
+        <div className="flex items-center justify-center gap-2">
+            <div className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-500 rounded-full animate-spin" />
+            Skipping...
+        </div>
+    ) : (
+        "Skip for now"
+    )}
+</button>
                         </div>
                     </div>
                 </div>
