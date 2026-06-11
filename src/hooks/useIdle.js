@@ -3,8 +3,7 @@ import { SocketContext } from "../context/SocketContext";
 import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../context/pageContext";
 import { getLadger } from "../store/Slices/ladger";
-import { getEmailsCount, getUnrepliedEmail } from "../store/Slices/unrepliedEmails";
-import { getContact, getViewEmail, viewEmailAction } from "../store/Slices/viewEmail";
+import {  viewEmailAction } from "../store/Slices/viewEmail";
 
 
 function useIdle({ idle }) {
@@ -18,17 +17,7 @@ function useIdle({ idle }) {
     const [firstEmail, setFirstEmail] = useState(null);
 
     const refreshLadger = () => {
-        if (enteredEmail) {
-            dispatch(getLadger({ email: enteredEmail }));
-            dispatch(getViewEmail({ email: enteredEmail }));
-            dispatch(getContact(enteredEmail));
-        } else if (firstEmail) {
-            dispatch(getLadger({ email: firstEmail }));
-            dispatch(getViewEmail({ email: firstEmail }));
-            dispatch(getContact(firstEmail));
-        }
-        dispatch(getEmailsCount({}))
-        dispatch(getUnrepliedEmail({ email: enteredEmail, loading: false }));
+      
     };
     useEffect(() => {
         if (emails?.length > 0) {

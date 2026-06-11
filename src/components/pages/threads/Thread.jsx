@@ -24,9 +24,7 @@ const Thread = () => {
   const [editorContent, setEditorContent] = useState(state?.initialContent || "");
   const [checkingThreadId, setCheckingTheadId] = useState(false);
   const { user } = useSelector((s) => s.user);
-  const { error: sendError } = useSelector(
-    (s) => s.viewEmail,
-  );
+  const { error: sendError } = useSelector((s) => s.viewEmail);
 
 
   const handleSendClick = async (forceSend = 1) => {

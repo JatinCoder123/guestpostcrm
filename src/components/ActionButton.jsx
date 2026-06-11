@@ -221,7 +221,6 @@ const ActionButton = () => {
 
     if (changeMessage) {
       toast.success(changeMessage);
-      dispatch(getContact(email, true, false));
       dispatch(linkExchangeaction.clearAllMessages());
     }
 
@@ -235,7 +234,6 @@ const ActionButton = () => {
     if (editMessage) {
       toast.success(editMessage);
       dispatch(viewEmailAction.clearAllMessage());
-      dispatch(getContact(email, true, false));
     }
   }, [
     dispatch,
@@ -398,8 +396,7 @@ const ActionButton = () => {
             }),
           );
 
-          // ✅ 🔥 ADD THIS LINE HERE
-          dispatch(getContact(email, true, false));
+
 
           toast.success(
             newValue === "1"

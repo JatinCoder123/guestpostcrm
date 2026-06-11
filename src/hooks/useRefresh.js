@@ -5,7 +5,6 @@ import { SocketContext } from "../context/SocketContext";
 import { getAllWebsites } from "../store/Slices/webSlice";
 import { fetchGpcController } from "../store/Slices/gpcControllerSlice";
 import { hotAction } from "../store/Slices/hotSlice";
-import { getAiCredits } from "../store/Slices/aiCredits";
 import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";
 import { getOrders } from "../store/Slices/orders";
 import { getInvoices } from "../store/Slices/invoices";
@@ -26,7 +25,6 @@ function useRefresh() {
     useEffect(() => {
         dispatch(getTinyKey())
         dispatch(getAllUsers())
-        dispatch(getAiCredits());
         dispatch(getAllWebsites());
         dispatch(fetchGpcController());
     }, [])
