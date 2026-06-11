@@ -94,17 +94,17 @@ const TableView = ({
   showLoading = true,
   refreshKey
 }) => {
-  const sorting = preferences.sorting
-  const dateFilter = preferences.date_filter || {};
-  const fromDate = dateFilter.date_from?.split(" ")[0] || todayStr();
+  const sorting = preferences?.sorting ?? {}
+  const dateFilter = preferences?.date_filter || {};
+  const fromDate = dateFilter?.date_from?.split(" ")[0] || todayStr();
   const fromTime = dateFilter.date_from?.split(" ")[1] || "00:01";
   const toDate = dateFilter.date_to?.split(" ")[0] || todayStr();
   const toTime = dateFilter.date_to?.split(" ")[1] || "23:59";
   const filterActive = !!dateFilter.date_from && !!dateFilter.date_to;
-  const filters = preferences.filters;
+  const filters = preferences?.filters ??{};
   const search = {
-    search: preferences.search_filter?.search || "",
-    search_fields: preferences.search_filter?.search_fields || [],
+    search: preferences?.search_filter?.search || "",
+    search_fields: preferences?.search_filter?.search_fields || [],
   };
   const [showStatus, setShowStatus] = useState(true);
   const [showFilterColumn, setShowFilterColumn] = useState(true);

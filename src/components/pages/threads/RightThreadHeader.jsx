@@ -10,7 +10,7 @@ const RightThreadHeader = () => {
         const params = new URLSearchParams(location.search);
 
         params.set("email", e);
-        params.set("thread", t);
+        // params.set("thread", t);
 
         navigate(`${location.pathname}?${params.toString()}`);
     };

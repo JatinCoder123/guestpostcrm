@@ -18,7 +18,6 @@ import { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { applyTag, markTagAction } from "../store/Slices/markTagSlice";
-import { threadEmailAction } from "../store/Slices/threadEmail";
 import { MdOutlineHome } from "react-icons/md";
 import {
   addMarketPlace,
@@ -35,7 +34,11 @@ import IconButton from "./ui/Buttons/IconButton"
 import { useMarkTags } from "../queries/markTag.queries";
 import CustomDropdown from "./ui/CustomDropdown";
 import { useTimeline } from "../context/TimelineContext";
-import { useContact } from "../queries/contact.queries";
+import { contactKeys, useContact } from "../queries/contact.queries";
+import { queryClient } from "../lib/queryClient";
+import { forwardedKeys } from "../queries/forwarded.queries";
+import { favoriteKeys } from "../queries/favourite.queries";
+import { marketPlaceKeys } from "../queries/marketplace.queries";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -120,7 +123,6 @@ const ActionButton = () => {
     useSelector((s) => s.viewEmail);
   const { currentEmail } = useTimeline()
   const { data: contactData } = useContact(currentEmail)
-  const { sending, message, error } = useSelector((s) => s.threadEmail);
   const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
 
@@ -181,7 +183,8 @@ const ActionButton = () => {
     if (forwardMessage) {
       toast.success(forwardMessage);
       dispatch(forwardedAction.clearAllMessages());
-      dispatch(getForwardedEmails({ loading: false }));
+      queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
 
     if (favouriteError) {
@@ -192,8 +195,8 @@ const ActionButton = () => {
     if (favouriteMessage) {
       toast.success(favouriteMessage);
       dispatch(favAction.clearAllMessages());
-      dispatch(getContact(email, true, false));
-      dispatch(getFavEmails({ email: enteredEmail, loading: false }));
+       queryClient.invalidateQueries({ queryKey: favouriteKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
 
     if (markingError) {
@@ -204,8 +207,8 @@ const ActionButton = () => {
     if (markingMessage) {
       toast.success(markingMessage);
       dispatch(marketplaceActions.clearMessage());
-      dispatch(getContact(email, true, false));
-    }
+ queryClient.invalidateQueries({ queryKey: marketPlaceKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })    }
     if (markTagError) {
       toast.error(markTagError);
       dispatch(markTagAction.clearAllErrors());
@@ -227,14 +230,7 @@ const ActionButton = () => {
       dispatch(linkExchangeaction.clearAllErrors());
     }
 
-    if (error) {
-      toast.error(error);
-      dispatch(threadEmailAction.clearAllErrors());
-    }
-
-    if (message) {
-      dispatch(threadEmailAction.clearAllMessage());
-    }
+   
 
     if (editMessage) {
       toast.success(editMessage);
@@ -251,7 +247,6 @@ const ActionButton = () => {
     markingMessage,
     changeError,
     changeMessage,
-    sending,
     email,
     threadId,
     enteredEmail,

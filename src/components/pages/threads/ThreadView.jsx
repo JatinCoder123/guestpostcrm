@@ -45,8 +45,7 @@ export default function ThreadView() {
     email,
     threadId
   } = useOutletContext() || [];
-
-  const { data: emailsData } = useThread(email, threadId)
+  const { data: emailsData,isPending:loading } = useThread(email, threadId)
   const emails = emailsData?.emails
   const firstMessageRef = useRef(null);
   const { data, isPending: summaryLoading } = useMailerSummary(email)
@@ -61,7 +60,6 @@ export default function ThreadView() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { loading } = useSelector((s) => s.threadEmail);
 
   const { sending } = useSelector((s) => s.viewEmail);
 

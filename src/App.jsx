@@ -184,7 +184,7 @@ const router = createBrowserRouter([
         element: <ViewReports />,
       },
       {
-        path: "view-reports/:grp",
+        path: "view-reports/:category",
         element: <GroupReport />,
       },
 

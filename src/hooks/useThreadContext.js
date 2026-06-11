@@ -6,8 +6,16 @@ export const useThreadContext = () => {
   const navigateTo = useNavigate();
   const context = useContext(ThreadContext);
   const moveToThread = (email, threadId) => {
-    navigateTo(`/thread/view?email=${email}&thread=${threadId}`);
-  };
+  const params = new URLSearchParams({
+    email,
+  });
+
+  if (threadId) {
+    params.set("thread", threadId);
+  }
+
+  navigateTo(`/thread/view?${params.toString()}`);
+};
   const moveToReply = (email, threadId, initialContent, htmlFile, handleAfterSuccessMailSent) => {
     navigateTo(`/thread/reply?email=${email}&thread=${threadId}`, {
       state: { initialContent, htmlFile, handleAfterSuccessMailSent },

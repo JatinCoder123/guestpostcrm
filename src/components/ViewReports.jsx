@@ -29,7 +29,8 @@ import {
   selectStagesLoading, selectCatsLoading, selectDetsLoading,
   selectReportError,
 } from "../store/Slices/reportSlice.js";
-
+import { preferencesAction } from "../store/Slices/preferencesSlice.js";
+import { useNavigate } from "react-router-dom";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -316,28 +317,84 @@ export default function ViewReports() {
     }
   }, [callReport, dispatch, categories.openStage, categories.pageIndex]);
 
-  const loadDetails = useCallback(async (stageName, categoryName, page = 1) => {
-    if (details.openCategory === categoryName && page === details.pageIndex) {
-      dispatch(toggleCategory(categoryName)); return;
-    }
-    dispatch(setDetailsLoading(true));
-    dispatch(clearError());
-    try {
-      const data = await callReport({
-        stage: stageName, category: categoryName,
-        page, size: String(DETAIL_PAGE_SIZE),
-      });
-      dispatch(setDetailsData({
-        categoryName, records: data?.records || [],
-        pagination: data?.pagination || {}, total_records: data?.total_records ?? 0,
-      }));
-    } catch (e) {
-      dispatch(setError("Unable to fetch records."));
-    } finally {
-      dispatch(setDetailsLoading(false));
-    }
-  }, [callReport, dispatch, details.openCategory, details.pageIndex]);
+const loadDetails = (
+    stage,
+    category
+) => {
+  
+    const range =
+        getDateRange(
+            appliedFilters.date
+        );
 
+    const reportFilter = {
+        phase:
+            activeSection,
+
+        stage,
+
+        category,
+
+        report_user_id:
+            appliedFilters.user,
+
+        ...range,
+    };
+
+    localStorage.setItem(
+        "reportFilter",
+        JSON.stringify(
+            reportFilter
+        )
+    );
+
+    navigate(
+        `/view-reports/${category}`,
+        {
+            state:
+                reportFilter,
+        }
+    );
+};
+
+
+const navigate = useNavigate();
+
+const handleCategoryRedirect = (categoryName) => {
+    const category = categoryName?.toLowerCase();
+
+    // Email Reply Sent
+    if (category === "email-reply-sent") {
+        dispatch(
+            preferencesAction.updateTablePreference({
+                table: "emails",
+                key: "filters",
+                value: { status: "replied" },
+            })
+        );
+
+        navigate("/unreplied-emails");
+        return;
+    }
+
+    // Offers
+    if (category.includes("offer")) {
+        navigate("/offers");
+        return;
+    }
+
+    // Orders
+    if (category.includes("order")) {
+        navigate("/orders");
+        return;
+    }
+
+    // Deals
+    if (category.includes("deal")) {
+        navigate("/deals");
+        return;
+    }
+};
   useEffect(() => {
     if (!users.length) dispatch(getAllUsers());
   }, [dispatch, users.length]);
@@ -578,7 +635,7 @@ export default function ViewReports() {
 
                                     {/* ── Category row ── */}
                                     <div
-                                      onClick={() => loadDetails(stageName, catName, 1)}
+                                      onClick={() =>  loadDetails(stageName, catName)}
                                       className={`flex items-center justify-between px-6 py-3.5 cursor-pointer select-none transition-colors ${
                                         isCatOpen ? "bg-white" : "hover:bg-white/70"
                                       }`}

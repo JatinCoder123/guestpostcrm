@@ -7,7 +7,6 @@ import { PageContext } from "../../../context/pageContext";
 import { sendEmail, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { generatePDF } from "../../../services/utils";
-import { getDuplicateEmails } from "../../../store/Slices/duplicateEmailSlice";
 import { useNext } from "../../../hooks/useNext";
 
 const Thread = () => {
@@ -69,9 +68,6 @@ const Thread = () => {
       setCheckingTheadId(false);
     }
   };
-  useEffect(() => {
-    dispatch(getDuplicateEmails(email));
-  }, [dispatch, email]);
   useEffect(() => {
     if (!threadId) {
       toast.error("Thread id is missing!");

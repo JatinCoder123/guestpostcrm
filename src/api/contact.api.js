@@ -146,6 +146,7 @@ export const getAllContacts = async ({
             ...buildTableRequestBody(preferences, defaults)
         }
     });
+    console.log("Fetched contacts data:", data);
     return data;
 };
 

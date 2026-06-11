@@ -82,7 +82,7 @@ const LatestMessage = ({ handleMessageClick }) => {
               <h3 className="text-blue-700 font-semibold">Latest Message</h3>
               <button
                 onClick={() =>
-                  handleMove({ email: email1, threadId, viewEmail })
+                  handleMove({ email: email1,threadId })
                 }
                 className="relative rounded-xl   shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95
