@@ -91,8 +91,6 @@ export const SocketContextProvider = ({ children }) => {
       showConsole && console.log("Mail site:", data.site_url);
       showConsole && crmRef.current == data.site_url && console.log("new mail", data);
       currentEventThreadId.current = data?.thread_id;
-      console.log("currentEventThreadId", currentEventThreadId.current);
-
       if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);

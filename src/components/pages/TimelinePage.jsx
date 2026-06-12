@@ -19,11 +19,6 @@ export function TimelinePage() {
   const { isTimelineLoading, emailsLoading, ledgerLoading } = useTimelineLoading()
   const [showMessageModal, setShowMessageModal] = useState(false);
   const { currentEmail } = useTimeline()
-  useEffect(() => {
-    console.log("CURRENT TIMELINE EMAIL", currentEmail)
-
-  }, [currentEmail])
-
   const { data } = useInfiniteLedger(currentEmail);
   const ladger =
     data?.pages?.flatMap(

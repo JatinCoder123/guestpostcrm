@@ -17,8 +17,6 @@ export const useThread = (email, threadId = "") => {
                 ? await getThreadByThreadId(email, threadId)
                 : await getThreadByEmail(email);
 
-            // If fetched by email, also cache by threadId
-            console.log("thread dta", data)
             if (!threadId && data?.thread_id) {
                 queryClient.setQueryData(
                     threadKeys.list(email, data.thread_id),

@@ -68,27 +68,7 @@ const favSlice = createSlice({
   },
 });
 
-export const getFavEmails = ({ page = 1, loading = true }) => {
-  return async (dispatch, getState) => {
-    loading && dispatch(favSlice.actions.getEmailRequest());
-    try {
-      const timeline = getState().ladger.timeline
-      const data = await fetchGpc({ params: { type: "favorite", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), page, page_size: 50 } });
-      showConsole && console.log(`favorite emails`, data);
-      dispatch(
-        favSlice.actions.getEmailSucess({
-          count: data.data_count ?? 0,
-          emails: data.data,
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-        }),
-      );
-      dispatch(favSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(favSlice.actions.getEmailFailed("Fetching Fav Emails Failed"));
-    }
-  };
-};
+
 export const favEmail = ({ threadId, email }) => {
   return async (dispatch, getState) => {
     dispatch(favSlice.actions.favouriteEmailRequest());

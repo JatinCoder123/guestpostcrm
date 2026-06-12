@@ -1,4 +1,6 @@
 import { showConsole } from "../assets/assets";
+import { queryClient } from "../lib/queryClient";
+import { contactKeys } from "../queries/contact.queries";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
 import { store } from "../store/store";
 import { apiRequest, fetchGpc } from "./api";
@@ -24,6 +26,7 @@ export const updateActivity = async (email, last_activity) => {
       },
     });
     showConsole && console.log("Activity Added", data);
+    queryClient.invalidateQueries({ queryKey: contactKeys.all })
   } catch (error) {
     showConsole && console.log(error);
   }

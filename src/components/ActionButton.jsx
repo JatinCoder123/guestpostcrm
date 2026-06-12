@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   favAction,
   favEmail,
-  getFavEmails,
 } from "../store/Slices/favEmailSlice";
 import {
   forwardEmail,
@@ -39,6 +38,7 @@ import { queryClient } from "../lib/queryClient";
 import { forwardedKeys } from "../queries/forwarded.queries";
 import { favoriteKeys } from "../queries/favourite.queries";
 import { marketPlaceKeys } from "../queries/marketplace.queries";
+import { toggleFav } from "../api/contact.api";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -195,7 +195,7 @@ const ActionButton = () => {
     if (favouriteMessage) {
       toast.success(favouriteMessage);
       dispatch(favAction.clearAllMessages());
-       queryClient.invalidateQueries({ queryKey: favouriteKeys.all })
+      queryClient.invalidateQueries({ queryKey: favouriteKeys.all })
       queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
 
@@ -207,8 +207,9 @@ const ActionButton = () => {
     if (markingMessage) {
       toast.success(markingMessage);
       dispatch(marketplaceActions.clearMessage());
- queryClient.invalidateQueries({ queryKey: marketPlaceKeys.all })
-      queryClient.invalidateQueries({ queryKey: contactKeys.all })    }
+      queryClient.invalidateQueries({ queryKey: marketPlaceKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
+    }
     if (markTagError) {
       toast.error(markTagError);
       dispatch(markTagAction.clearAllErrors());
@@ -229,7 +230,7 @@ const ActionButton = () => {
       dispatch(linkExchangeaction.clearAllErrors());
     }
 
-   
+
 
     if (editMessage) {
       toast.success(editMessage);
@@ -299,7 +300,7 @@ const ActionButton = () => {
       },
       // GET when adding favourite, DELETE when removing
       action: () => {
-        dispatch(favEmail({ threadId, email }));
+        toggleFav({ email })
         triggerHashtag(MEMO.favourite, isFavActive ? "DELETE" : "GET");
       },
     },
