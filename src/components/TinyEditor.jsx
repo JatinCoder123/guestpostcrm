@@ -1,6 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Editor } from "@tinymce/tinymce-react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
+import { queryClient } from "../lib/queryClient"
 
 const TinyEditor = ({
   editorContent,
@@ -8,7 +10,7 @@ const TinyEditor = ({
   editorRef,
   setEditorReady
 }) => {
-  const { tinyKey: TINY_EDITOR_API_KEY } = useSelector(state => state.tinyKey)
+  const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
   return (
     <div className="flex-1  overflow-hidden">
       <motion.div
@@ -148,8 +150,7 @@ export const SmallTinyEditor = ({
   editorRef,
   setEditorReady,
 }) => {
-  const { tinyKey: TINY_EDITOR_API_KEY } = useSelector(state => state.tinyKey)
-
+  const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
   return (
     <div className="overflow-hidden h-full">
       <motion.div

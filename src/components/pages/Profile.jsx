@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../store/constants";
 import { PageContext } from "../../context/pageContext";
-import {Loader2} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   ONBOARDING_STEP,
   fetchOnboardingProgress,
@@ -34,6 +34,7 @@ import {
   isOnboardingTemplate,
   normalizeTemplateRows,
 } from "./profile/profileUtils";
+import { queryClient } from "../../lib/queryClient";
 
 const Profile = () => {
   const { handleDateClick } = useContext(PageContext);
@@ -42,7 +43,7 @@ const Profile = () => {
   const { user, businessEmail, currentScore, crmEndpoint } = useSelector(
     (state) => state.user,
   );
-  const { tinyKey: TINY_EDITOR_API_KEY } = useSelector((state) => state.tinyKey);
+  const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
   const { loading: contactLoading, contacts } = useSelector(
     (state) => state.contacts,
   );
@@ -80,8 +81,8 @@ const Profile = () => {
   const [crmProgressLoading, setCrmProgressLoading] = useState(true);
   const celebratedCompleteRef = useRef(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-const [deleteReason, setDeleteReason] = useState("");
-const [otherReason, setOtherReason] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [otherReason, setOtherReason] = useState("");
 
   const profileEmail = businessEmail || user.email;
   const onboardingRecordName = getOnboardingRecordName({
@@ -90,7 +91,7 @@ const [otherReason, setOtherReason] = useState("");
   });
   const contactOnboardingDone =
     Array.isArray(contacts) && contacts.length > 0;
-    const hasWebsites = websites.length > 0;
+  const hasWebsites = websites.length > 0;
   const step3Done =
     hasWebsites || crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED;
   const templateDone =
@@ -117,13 +118,13 @@ const [otherReason, setOtherReason] = useState("");
   }).length;
 
   useEffect(() => {
-  if (
-    websites.length > 0 &&
-    crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
-  ) {
-    completeWebsiteStep();
-  }
-}, [websites.length, crmOnboardingStep]);
+    if (
+      websites.length > 0 &&
+      crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
+    ) {
+      completeWebsiteStep();
+    }
+  }, [websites.length, crmOnboardingStep]);
 
   useEffect(() => {
     celebratedCompleteRef.current =
@@ -264,10 +265,10 @@ const [otherReason, setOtherReason] = useState("");
           current.step > 0
             ? current
             : await upsertOnboardingProgress({
-                crmEndpoint,
-                name: onboardingRecordName,
-                step: ONBOARDING_STEP.PROFILE_STARTED,
-              });
+              crmEndpoint,
+              name: onboardingRecordName,
+              step: ONBOARDING_STEP.PROFILE_STARTED,
+            });
         if (ignore) return;
 
         setCrmOnboardingStep(progress.step);
@@ -489,10 +490,10 @@ const [otherReason, setOtherReason] = useState("");
     setAiName(templateName || activeTemplate?.name || "");
     setAiStage(
       templateStage ||
-        activeTemplate?.stage ||
-        activeTemplate?.stage_type ||
-        Object.keys(stages)[0] ||
-        "others",
+      activeTemplate?.stage ||
+      activeTemplate?.stage_type ||
+      Object.keys(stages)[0] ||
+      "others",
     );
     setAiMotive("");
     setAiDetails(templateDescription || activeTemplate?.description || "");
@@ -798,14 +799,14 @@ const [otherReason, setOtherReason] = useState("");
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            data?.error ||
-            text ||
-            `Delete failed with status ${response.status}`,
+          data?.error ||
+          text ||
+          `Delete failed with status ${response.status}`,
         );
       }
 
       // clear onboarding popup flag
-sessionStorage.removeItem("onboardingShown")
+      sessionStorage.removeItem("onboardingShown")
       toast.success(data?.message || "Profile delete request completed");
       window.setTimeout(() => {
         setShowDeleteModal(false);
@@ -830,7 +831,7 @@ sessionStorage.removeItem("onboardingShown")
         completion={completion}
         syncDone={syncDone}
         profileDeleting={profileDeleting}
-        onDeleteProfile= {() => setShowDeleteModal(true)}
+        onDeleteProfile={() => setShowDeleteModal(true)}
       />
 
       {onboardingLoading && <ProfileOnboardingSkeleton />}
@@ -937,98 +938,97 @@ sessionStorage.removeItem("onboardingShown")
       />
 
       {showDeleteModal && (
-  <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div className="w-full max-w-2xl rounded-3xl bg-white p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-3xl bg-white p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
 
-      <div className="mb-6">
-        <h2 className="text-2xl font-black text-slate-900">
-          Before you delete your profile
-        </h2>
+            <div className="mb-6">
+              <h2 className="text-2xl font-black text-slate-900">
+                Before you delete your profile
+              </h2>
 
-        <p className="mt-2 text-slate-500">
-          We'd appreciate your feedback before you leave.
-        </p>
-      </div>
-
-      <div className="grid gap-3">
-        {[
-          "Found a better service",
-          "Too expensive",
-          "Missing features",
-          "Difficult to use",
-          "Technical issues",
-          "No longer needed",
-          "Created another account",
-          "Other",
-        ].map((reason) => (
-          <label
-            key={reason}
-            className={`cursor-pointer rounded-xl border p-4 transition ${
-              deleteReason === reason
-                ? "border-red-300 bg-red-50"
-                : "border-slate-200 hover:border-slate-300"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                value={reason}
-                checked={deleteReason === reason}
-                onChange={(e) => setDeleteReason(e.target.value)}
-              />
-              <span className="font-medium">{reason}</span>
+              <p className="mt-2 text-slate-500">
+                We'd appreciate your feedback before you leave.
+              </p>
             </div>
-          </label>
-        ))}
-      </div>
 
-      {deleteReason === "Other" && (
-        <textarea
-          rows={4}
-          value={otherReason}
-          onChange={(e) => setOtherReason(e.target.value)}
-          className="mt-4 w-full rounded-xl border p-3"
-          placeholder="Tell us more..."
-        />
+            <div className="grid gap-3">
+              {[
+                "Found a better service",
+                "Too expensive",
+                "Missing features",
+                "Difficult to use",
+                "Technical issues",
+                "No longer needed",
+                "Created another account",
+                "Other",
+              ].map((reason) => (
+                <label
+                  key={reason}
+                  className={`cursor-pointer rounded-xl border p-4 transition ${deleteReason === reason
+                    ? "border-red-300 bg-red-50"
+                    : "border-slate-200 hover:border-slate-300"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      value={reason}
+                      checked={deleteReason === reason}
+                      onChange={(e) => setDeleteReason(e.target.value)}
+                    />
+                    <span className="font-medium">{reason}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {deleteReason === "Other" && (
+              <textarea
+                rows={4}
+                value={otherReason}
+                onChange={(e) => setOtherReason(e.target.value)}
+                className="mt-4 w-full rounded-xl border p-3"
+                placeholder="Tell us more..."
+              />
+            )}
+
+            <div className="mt-8 flex justify-end gap-3">
+              <button
+                disabled={profileDeleting}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteReason("");
+                  setOtherReason("");
+                }}
+                className="rounded-xl border px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                disabled={!deleteReason || profileDeleting}
+                onClick={() =>
+                  handleDeleteProfile(
+                    deleteReason === "Other"
+                      ? otherReason
+                      : deleteReason
+                  )
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {profileDeleting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete Profile"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-
-      <div className="mt-8 flex justify-end gap-3">
-        <button
-  disabled={profileDeleting}
-  onClick={() => {
-    setShowDeleteModal(false);
-    setDeleteReason("");
-    setOtherReason("");
-  }}
-  className="rounded-xl border px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
->
-  Cancel
-</button>
-
-        <button
-  disabled={!deleteReason || profileDeleting}
-  onClick={() =>
-    handleDeleteProfile(
-      deleteReason === "Other"
-        ? otherReason
-        : deleteReason
-    )
-  }
-  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
->
-  {profileDeleting ? (
-    <>
-      <Loader2 size={16} className="animate-spin" />
-      Deleting...
-    </>
-  ) : (
-    "Delete Profile"
-  )}
-</button>
-      </div>
-    </div>
-  </div>
-)}
     </div>
   );
 };
