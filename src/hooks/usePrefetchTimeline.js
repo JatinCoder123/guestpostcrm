@@ -40,7 +40,6 @@ export const usePrefetchTimeline = (
             emails[
                 currentIndex - 1
             ]?.email1;
-
         prefetchTimelineData(
             queryClient,
             nextEmail

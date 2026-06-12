@@ -15,19 +15,41 @@ import { getContactByEmail } from "../api/contact.api";
 import { getMailerSummary } from "../api/mailerSummary.api";
 import { getThreadByEmail } from "../api/threads.api";
 
-export const prefetchTimelineData = (queryClient, email) => {
+export const prefetchTimelineData = async (
+    queryClient,
+    email
+) => {
     if (!email) return;
+
+    const threadPromise = queryClient.prefetchQuery({
+        queryKey: threadKeys.list(email, ""),
+        queryFn: async () => {
+            const data = await getThreadByEmail(email);
+
+            const threadId =
+                data?.thread_id ||
+                data?.threadId ||
+                data?.id;
+
+            if (threadId) {
+                queryClient.setQueryData(
+                    threadKeys.list(
+                        email,
+                        threadId
+                    ),
+                    data
+                );
+            }
+
+            return data;
+        },
+    });
+
     return Promise.all([
-        queryClient.prefetchQuery({
-            queryKey:
-                threadKeys.list(email, ""),
-            queryFn: () =>
-                getThreadByEmail(email),
-        }),
+        threadPromise,
 
         queryClient.prefetchQuery({
-            queryKey:
-                dealKeys.byEmail(email),
+            queryKey: dealKeys.byEmail(email),
             queryFn: () =>
                 getDealsByEmail(email),
         }),
