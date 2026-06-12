@@ -4,13 +4,8 @@ import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  favAction,
-  favEmail,
-} from "../store/Slices/favEmailSlice";
-import {
   forwardEmail,
   forwardedAction,
-  getForwardedEmails,
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState, useRef, useMemo } from "react";
@@ -36,7 +31,6 @@ import { useTimeline } from "../context/TimelineContext";
 import { contactKeys, useContact } from "../queries/contact.queries";
 import { queryClient } from "../lib/queryClient";
 import { forwardedKeys } from "../queries/forwarded.queries";
-import { favoriteKeys } from "../queries/favourite.queries";
 import { marketPlaceKeys } from "../queries/marketplace.queries";
 import { toggleFav } from "../api/contact.api";
 /* Memo numbers from CRM */

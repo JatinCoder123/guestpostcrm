@@ -31,6 +31,7 @@ import {
 } from "../store/Slices/reportSlice.js";
 import { preferencesAction } from "../store/Slices/preferencesSlice.js";
 import { useNavigate } from "react-router-dom";
+import { DateRangeFilter } from "./DateRangeFilter.jsx";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -53,10 +54,10 @@ const PHASES = [
 ];
 
 const DATE_OPTIONS = [
-  { value: "today",     label: "Today" },
+  { value: "today", label: "Today" },
   { value: "yesterday", label: "Yesterday" },
-  { value: "7days",     label: "Last 7 Days" },
-  { value: "30days",    label: "Last 30 Days" },
+  { value: "7days", label: "Last 7 Days" },
+  { value: "30days", label: "Last 30 Days" },
 ];
 
 const PAGE_SIZE = 20;
@@ -64,10 +65,10 @@ const DETAIL_PAGE_SIZE = 50;
 
 const STAT_THEMES = [
   { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-700", label: "text-violet-500" },
-  { bg: "bg-sky-50",    border: "border-sky-200",    text: "text-sky-700",    label: "text-sky-500" },
-  { bg: "bg-amber-50",  border: "border-amber-200",  text: "text-amber-700",  label: "text-amber-500" },
-  { bg: "bg-rose-50",   border: "border-rose-200",   text: "text-rose-700",   label: "text-rose-500" },
-  { bg: "bg-teal-50",   border: "border-teal-200",   text: "text-teal-700",   label: "text-teal-500" },
+  { bg: "bg-sky-50", border: "border-sky-200", text: "text-sky-700", label: "text-sky-500" },
+  { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", label: "text-amber-500" },
+  { bg: "bg-rose-50", border: "border-rose-200", text: "text-rose-700", label: "text-rose-500" },
+  { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-700", label: "text-teal-500" },
   { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", label: "text-orange-500" },
 ];
 
@@ -85,7 +86,7 @@ const getDateRange = (preset) => {
     return { from: s, from_time: "00:00:00", to: s, to_time: "23:59:59" };
   }
   const start = new Date(now);
-  if (preset === "7days")  start.setDate(now.getDate() - 7);
+  if (preset === "7days") start.setDate(now.getDate() - 7);
   if (preset === "30days") start.setDate(now.getDate() - 30);
   return { from: fmtDate(start), from_time: "00:00:00", to: fmtDate(now), to_time: "23:59:59" };
 };
@@ -105,7 +106,7 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
 
   const pagesToShow = [];
   const start = Number(pageIndex);
-  const end   = Math.min(Number(pageIndex) + 2, pageCount);
+  const end = Math.min(Number(pageIndex) + 2, pageCount);
   for (let i = start; i <= end; i++) pagesToShow.push(i);
   if (end < pageCount - 1) { pagesToShow.push("ellipsis"); pagesToShow.push(pageCount); }
 
@@ -245,15 +246,24 @@ const EmptyState = ({ title, subtitle }) => (
 export default function ViewReports() {
   const dispatch = useDispatch();
   const { users = [], loading: usersLoading } = useSelector((s) => s.crmUser || {});
+  const [dateFilter, setDateFilter] =
+    useState({
+      filterActive: false,
 
-  const stages        = useSelector(selectStages);
-  const categories    = useSelector(selectCategories);
-  const details       = useSelector(selectDetails);
-  const stats         = useSelector(selectReportStats);
+      fromDate: "",
+      fromTime: "00:00:00",
+
+      toDate: "",
+      toTime: "23:59:59",
+    });
+  const stages = useSelector(selectStages);
+  const categories = useSelector(selectCategories);
+  const details = useSelector(selectDetails);
+  const stats = useSelector(selectReportStats);
   const stagesLoading = useSelector(selectStagesLoading);
-  const catsLoading   = useSelector(selectCatsLoading);
-  const detsLoading   = useSelector(selectDetsLoading);
-  const error         = useSelector(selectReportError);
+  const catsLoading = useSelector(selectCatsLoading);
+  const detsLoading = useSelector(selectDetsLoading);
+  const error = useSelector(selectReportError);
 
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedDate, setSelectedDate] = useState("today");
@@ -270,7 +280,22 @@ export default function ViewReports() {
       phase: activeSection, stage: "", category: "",
       report_user_id: appliedFilters.user,
       page: "", size: String(PAGE_SIZE),
-      ...getDateRange(appliedFilters.date),
+      ...(dateFilter.filterActive
+        ? {
+          from:
+            dateFilter.fromDate,
+          from_time:
+            dateFilter.fromTime,
+
+          to:
+            dateFilter.toDate,
+          to_time:
+            dateFilter.toTime,
+        }
+        : getDateRange(
+          appliedFilters.date
+        )
+      ),
       ...overrides,
     }),
     [activeSection, appliedFilters],
@@ -317,84 +342,61 @@ export default function ViewReports() {
     }
   }, [callReport, dispatch, categories.openStage, categories.pageIndex]);
 
-const loadDetails = (
+  const loadDetails = (
     stage,
     category
-) => {
-  
+  ) => {
+
     const range =
-        getDateRange(
-            appliedFilters.date
+      dateFilter.filterActive
+        ? {
+          from:
+            dateFilter.fromDate,
+          from_time:
+            dateFilter.fromTime,
+
+          to:
+            dateFilter.toDate,
+          to_time:
+            dateFilter.toTime,
+        }
+        : getDateRange(
+          appliedFilters.date
         );
 
     const reportFilter = {
-        phase:
-            activeSection,
+      phase:
+        activeSection,
 
-        stage,
+      stage,
 
-        category,
+      category,
 
-        report_user_id:
-            appliedFilters.user,
+      report_user_id:
+        appliedFilters.user,
 
-        ...range,
+      ...range,
     };
 
     localStorage.setItem(
-        "reportFilter",
-        JSON.stringify(
-            reportFilter
-        )
+      "reportFilter",
+      JSON.stringify(
+        reportFilter
+      )
     );
 
     navigate(
-        `/view-reports/${category}`,
-        {
-            state:
-                reportFilter,
-        }
+      `/view-reports/${category}`,
+      {
+        state:
+          reportFilter,
+      }
     );
-};
+  };
 
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
-const handleCategoryRedirect = (categoryName) => {
-    const category = categoryName?.toLowerCase();
-
-    // Email Reply Sent
-    if (category === "email-reply-sent") {
-        dispatch(
-            preferencesAction.updateTablePreference({
-                table: "emails",
-                key: "filters",
-                value: { status: "replied" },
-            })
-        );
-
-        navigate("/unreplied-emails");
-        return;
-    }
-
-    // Offers
-    if (category.includes("offer")) {
-        navigate("/offers");
-        return;
-    }
-
-    // Orders
-    if (category.includes("order")) {
-        navigate("/orders");
-        return;
-    }
-
-    // Deals
-    if (category.includes("deal")) {
-        navigate("/deals");
-        return;
-    }
-};
   useEffect(() => {
     if (!users.length) dispatch(getAllUsers());
   }, [dispatch, users.length]);
@@ -404,8 +406,8 @@ const handleCategoryRedirect = (categoryName) => {
     loadStages(1);
   }, [activeSection, appliedFilters]); // eslint-disable-line
 
-  const grandTotal    = stages.rows.reduce((s, r) => s + getCount(r), 0);
-  const statsEntries  = Object.entries(stats);
+  const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
+  const statsEntries = Object.entries(stats);
 
   return (
     <div className="min-h-screen bg-[#f5f5f3] font-sans">
@@ -437,19 +439,52 @@ const handleCategoryRedirect = (categoryName) => {
               </select>
             </div>
 
-            <div className="relative">
-              <Calendar size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <select
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="h-9 pl-8 pr-3 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none appearance-none min-w-[140px] cursor-pointer transition-all"
-              >
-                {DATE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
+            <DateRangeFilter
+              fromDate={
+                dateFilter.fromDate
+              }
+              fromTime={
+                dateFilter.fromTime
+              }
+              toDate={
+                dateFilter.toDate
+              }
+              toTime={
+                dateFilter.toTime
+              }
+              filterActive={
+                dateFilter.filterActive
+              }
+              onApply={({
+                fromDate,
+                fromTime,
+                toDate,
+                toTime,
+              }) => {
+                setDateFilter({
+                  filterActive: true,
 
+                  fromDate,
+                  fromTime,
+
+                  toDate,
+                  toTime,
+                });
+              }}
+              onReset={() => {
+                setDateFilter({
+                  filterActive: false,
+
+                  fromDate: "",
+                  fromTime:
+                    "00:00:00",
+
+                  toDate: "",
+                  toTime:
+                    "23:59:59",
+                });
+              }}
+            />
             <button
               onClick={() => setAppliedFilters({ user: selectedUser, date: selectedDate })}
               disabled={stagesLoading || usersLoading}
@@ -476,17 +511,15 @@ const handleCategoryRedirect = (categoryName) => {
               <button
                 key={phase.key}
                 onClick={() => { if (phase.key !== activeSection) setActiveSection(phase.key); }}
-                className={`group text-left rounded-2xl p-5 border transition-all duration-200 ${
-                  isActive
-                    ? "bg-white border-slate-200 shadow-sm ring-1 ring-slate-900/5"
-                    : "bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-sm"
-                }`}
+                className={`group text-left rounded-2xl p-5 border transition-all duration-200 ${isActive
+                  ? "bg-white border-slate-200 shadow-sm ring-1 ring-slate-900/5"
+                  : "bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-sm"
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                      isActive ? "bg-slate-900" : "bg-slate-100 group-hover:bg-slate-200"
-                    }`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${isActive ? "bg-slate-900" : "bg-slate-100 group-hover:bg-slate-200"
+                      }`}>
                       <Icon size={16} className={isActive ? "text-white" : "text-slate-500"} />
                     </div>
                     <div>
@@ -568,9 +601,9 @@ const handleCategoryRedirect = (categoryName) => {
 
               <div className="divide-y divide-slate-100">
                 {stages.rows.map((stageRow, idx) => {
-                  const stageName   = stageRow.stage;
+                  const stageName = stageRow.stage;
                   const isStageOpen = categories.openStage === stageName;
-                  const count       = getCount(stageRow);
+                  const count = getCount(stageRow);
 
                   return (
                     <div key={stageName}>
@@ -578,9 +611,8 @@ const handleCategoryRedirect = (categoryName) => {
                       {/* ── Stage row ── */}
                       <div
                         onClick={() => loadCategories(stageName, 1)}
-                        className={`group flex items-center justify-between px-6 py-4 cursor-pointer select-none transition-colors ${
-                          isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
-                        }`}
+                        className={`group flex items-center justify-between px-6 py-4 cursor-pointer select-none transition-colors ${isStageOpen ? "bg-slate-50/80" : "hover:bg-slate-50/50"
+                          }`}
                       >
                         <div className="flex items-center gap-4">
                           <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold flex items-center justify-center shrink-0 tabular-nums">
@@ -595,11 +627,10 @@ const handleCategoryRedirect = (categoryName) => {
                           <span className={`text-xs font-semibold px-3 py-1.5 rounded-xl border ${phaseConfig.badge}`}>
                             {count.toLocaleString()}
                           </span>
-                          <span className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all ${
-                            isStageOpen
-                              ? "bg-slate-100 border-slate-200"
-                              : "bg-white border-slate-200 group-hover:border-slate-300"
-                          }`}>
+                          <span className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all ${isStageOpen
+                            ? "bg-slate-100 border-slate-200"
+                            : "bg-white border-slate-200 group-hover:border-slate-300"
+                            }`}>
                             {isStageOpen
                               ? <ChevronUp size={13} className="text-slate-500" />
                               : <ChevronDown size={13} className="text-slate-400" />
@@ -626,19 +657,18 @@ const handleCategoryRedirect = (categoryName) => {
                               </div>
 
                               {categories.rows.map((catRow) => {
-                                const catName   = catRow.category;
+                                const catName = catRow.category;
                                 const isCatOpen = details.openCategory === catName;
-                                const catCount  = getCount(catRow);
+                                const catCount = getCount(catRow);
 
                                 return (
                                   <div key={catName} className="border-b border-slate-100 last:border-b-0">
 
                                     {/* ── Category row ── */}
                                     <div
-                                      onClick={() =>  loadDetails(stageName, catName)}
-                                      className={`flex items-center justify-between px-6 py-3.5 cursor-pointer select-none transition-colors ${
-                                        isCatOpen ? "bg-white" : "hover:bg-white/70"
-                                      }`}
+                                      onClick={() => loadDetails(stageName, catName)}
+                                      className={`flex items-center justify-between px-6 py-3.5 cursor-pointer select-none transition-colors ${isCatOpen ? "bg-white" : "hover:bg-white/70"
+                                        }`}
                                     >
                                       <div className="flex items-center gap-3">
                                         <div className={`w-1.5 h-1.5 rounded-full ${phaseConfig.dot} opacity-50`} />
