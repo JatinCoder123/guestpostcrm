@@ -13,6 +13,7 @@ export const setCurrentUser = (currentUser) => {
   CURRENT_USER = currentUser;
   return;
 };
+export const getCurrentUser = () => CURRENT_USER
 export const updateActivity = async (email, last_activity) => {
   try {
     const data = await fetchGpc({

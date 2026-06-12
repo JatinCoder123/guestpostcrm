@@ -26,7 +26,7 @@ import {
 import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
-import { applyHashtag, getRighteeUsers } from "../services/utils";
+import { applyHashtag, getCurrentUser, getRighteeUsers } from "../services/utils";
 import { fetchGpc } from "../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import IconButton from "./ui/Buttons/IconButton"
@@ -71,7 +71,28 @@ const ActionButton = () => {
 
   const { mutate, isPending: sendingNote } = useMutation({
     mutationFn: async () => {
-      const res = awaitfetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser.email, notes: note } })
+      const notes = `
+<b>📝 Note</b><br/><br/>
+
+${note}<br/><br/>
+
+<hr/>
+
+<b>👤 Sent By:</b><br/>
+${getCurrentUser()?.name}
+(${getCurrentUser()?.description})<br/><br/>
+
+<b>🔗 Timeline Link:</b><br/>
+<a href="https://app.guestpostcrm.com/redirect?email=${email}">
+Open Contact
+</a>
+`
+      const res = await fetchGpc({
+        method: "POST", params: { type: 'team_notes' }, body: {
+          email: selectedUser.email,
+          notes: notes
+        }
+      })
       return res
     },
     onSuccess: () => {
@@ -186,19 +207,6 @@ const ActionButton = () => {
       queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
       queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
-
-    if (favouriteError) {
-      toast.error(favouriteError);
-      dispatch(favAction.clearAllErrors());
-    }
-
-    if (favouriteMessage) {
-      toast.success(favouriteMessage);
-      dispatch(favAction.clearAllMessages());
-      queryClient.invalidateQueries({ queryKey: favouriteKeys.all })
-      queryClient.invalidateQueries({ queryKey: contactKeys.all })
-    }
-
     if (markingError) {
       toast.error(markingError);
       dispatch(marketplaceActions.clearErrors());
