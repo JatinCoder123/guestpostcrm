@@ -78,10 +78,31 @@ export const store = configureStore({
 // store.js
 
 store.subscribe(() => {
+  const preferences =
+    store.getState().preferences;
+
+  const cleanedTables =
+    Object.fromEntries(
+      Object.entries(
+        preferences.tables
+      ).map(
+        ([key, table]) => [
+          key,
+          {
+            ...table,
+            initialFiltersApplied:
+              undefined,
+          },
+        ]
+      )
+    );
+
   localStorage.setItem(
     "preferences",
-    JSON.stringify(
-      store.getState().preferences
-    )
+    JSON.stringify({
+      ...preferences,
+      tables:
+        cleanedTables,
+    })
   );
 });

@@ -1,7 +1,7 @@
 // preferenceSlice.js
 
 import { createSlice } from "@reduxjs/toolkit";
-import { getStoredPreferences } from "../../utils/preferenceStorage";
+import { getStoredPreferences, INITIAL_TABLE_FILTERS } from "../../utils/preferenceStorage";
 
 
 export const getDefaultTablePreference = () => ({
@@ -18,13 +18,47 @@ export const getDefaultTablePreference = () => ({
     hiddenColumns: [],
     per_page: 20,
     date_filter: {
-        date_range: "",
+        date_range: "custom",
         date_field: "date_entered",
         date_from: "",
         date_to: "",
     },
+    initialFiltersApplied: false,
 });
 
+
+export const initializeTable =
+    (table) =>
+        (dispatch, getState) => {
+
+            dispatch(
+                preferencesAction
+                    .ensureTableExists(table)
+            );
+
+            const prefs = getState().preferences.tables?.[table];
+            console.log("PREFCS", prefs)
+            console.log("INTIAL", INITIAL_TABLE_FILTERS[table])
+
+            if (prefs?.initialFiltersApplied) { return; }
+            console.log("INTIA L", INITIAL_TABLE_FILTERS[table])
+            dispatch(
+                preferencesAction
+                    .updateMultipleTablePreferences({
+                        table,
+
+                        data: {
+                            filters:
+                                INITIAL_TABLE_FILTERS[
+                                table
+                                ] || {},
+
+                            initialFiltersApplied:
+                                true,
+                        },
+                    })
+            );
+        };
 
 
 const storedPreferences = getStoredPreferences();

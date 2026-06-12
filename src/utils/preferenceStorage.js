@@ -72,3 +72,14 @@ export const buildTableRequestBody = (
 
     return body;
 };
+export const INITIAL_TABLE_FILTERS = {
+    emails: {
+        status: "unreplied",
+    },
+
+    deals: {
+        status: "active",
+    },
+
+
+};

@@ -101,7 +101,7 @@ const TableView = ({
   const toDate = dateFilter.date_to?.split(" ")[0] || todayStr();
   const toTime = dateFilter.date_to?.split(" ")[1] || "23:59";
   const filterActive = !!dateFilter.date_from && !!dateFilter.date_to;
-  const filters = preferences?.filters ??{};
+  const filters = preferences?.filters ?? {};
   const search = {
     search: preferences?.search_filter?.search || "",
     search_fields: preferences?.search_filter?.search_fields || [],
@@ -152,6 +152,7 @@ const TableView = ({
         table: slice,
         key: "date_filter",
         value: {
+          date_range: "custom",
           date_from,
           date_to,
           date_field: "date_entered"
@@ -167,7 +168,7 @@ const TableView = ({
         value: {
           date_from: "",
           date_to: "",
-          date_range: "",
+          date_range: "custom",
           date_field: "date_entered"
         },
       })
