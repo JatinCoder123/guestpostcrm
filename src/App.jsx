@@ -60,7 +60,9 @@ import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
+import { Toaster } from "react-hot-toast";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
+import { TimelineProvider } from "./context/TimelineContext";
 import MeetingWidget from "./components/MeetingWidget";
 import TwakChat from "./components/TwakTo";
 const router = createBrowserRouter([
@@ -71,24 +73,25 @@ const router = createBrowserRouter([
   {
     path: "",
     element: (
-      <ThreadContextProvider>
-        <PageContextProvider>
-          <SocketContextProvider>
-            <ErrorBoundary>
-              <RootLayout />
-            </ErrorBoundary>
-          </SocketContextProvider>
-        </PageContextProvider>
-      </ThreadContextProvider>
+      <SocketContextProvider>
+
+        <ThreadContextProvider>
+          <PageContextProvider>
+            <TimelineProvider>
+              <ErrorBoundary>
+                <RootLayout />
+              </ErrorBoundary>
+
+            </TimelineProvider>
+          </PageContextProvider>
+        </ThreadContextProvider>
+      </SocketContextProvider>
+
     ),
     children: [
       {
         index: true,
-        element:(
-        <>
-          <TimelinePage />
-        </>
-        ),
+        element: <TimelinePage />,
       },
       {
         path: "unreplied-emails",
@@ -181,7 +184,7 @@ const router = createBrowserRouter([
         element: <ViewReports />,
       },
       {
-        path: "view-reports/:grp",
+        path: "view-reports/:category",
         element: <GroupReport />,
       },
 
@@ -222,7 +225,7 @@ const router = createBrowserRouter([
         path: "moved-emails",
         element: <MovedPage />,
       },
-    
+
       {
         path: "other",
         element: <OtherPage />,
@@ -318,10 +321,10 @@ const router = createBrowserRouter([
             path: "recycle",
             element: <RecyclePage />,
           },
- {
-        path: "backlinks",
-        element: <BacklinksPage />,
-      },
+          {
+            path: "backlinks",
+            element: <BacklinksPage />,
+          },
 
 
         ],
@@ -331,7 +334,6 @@ const router = createBrowserRouter([
 ]);
 export default function App() {
   const dispatch = useDispatch();
-
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );
@@ -362,13 +364,14 @@ export default function App() {
 
   return (
     <>
+      <Toaster />
       {isAuthenticated && !loading && (
-  <>
-    <MeetingWidget />
-    <TwakChat />
-    <RouterProvider router={router} />
-  </>
-)}
+        <>
+          <MeetingWidget />
+          <TwakChat />
+          <RouterProvider router={router} />
+        </>
+      )}
 
       {!isAuthenticated && loading && <LoadingPage />}
 

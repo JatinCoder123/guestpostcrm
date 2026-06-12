@@ -1,11 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { PageContext } from "../../context/pageContext";
-import { excludeName, extractEmail } from "../../assets/assets";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getUnrepliedEmail } from "../../store/Slices/unrepliedEmails.js";
 import {
   Calendar,
   FileText,
@@ -24,6 +22,8 @@ import { GiGoldBar } from "react-icons/gi";
 import { MdOutlineWorkspacePremium } from "react-icons/md";
 import { FaBtc } from "react-icons/fa";
 import { IoIosMailUnread } from "react-icons/io";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { useEmailStats, useInfiniteEmails } from "../../queries/email.queries.js";
 const STATUS_CONFIG = [
   {
     value: "unread",
@@ -37,7 +37,7 @@ const STATUS_CONFIG = [
     label: "Unreplied",
     icon: Mails,
     color: "#2563eb", // blue
-    emailType: "email_inbound",
+    filter: 'status'
   },
   {
     value: "replied",
@@ -45,6 +45,8 @@ const STATUS_CONFIG = [
     icon: MessageCircleReply,
     color: "#16a34a", // green
     emailType: "email_outbound",
+    filter: 'status'
+
   },
 
   {
@@ -53,6 +55,7 @@ const STATUS_CONFIG = [
     icon: Gift,
     color: "#1a931c", // red
     emailType: "email_offer",
+    filter: 'stage'
   },
   {
     value: "deal",
@@ -60,6 +63,7 @@ const STATUS_CONFIG = [
     icon: Handshake,
     color: "#ca8a04", // yellow
     emailType: "email_deal",
+    filter: 'stage'
   },
   {
     value: "order",
@@ -67,13 +71,15 @@ const STATUS_CONFIG = [
     icon: ShoppingCart,
     color: "#7c3aed", // purple
     emailType: "email_order",
+    filter: 'stage'
   },
   {
-    value: "brand",
+    value: "Brand",
     label: "Brand",
     icon: FaBtc,
     color: "#ed3ab7", // purple
     emailType: "email_brand",
+    filter: 'type'
   },
   {
     value: "verified",
@@ -81,6 +87,7 @@ const STATUS_CONFIG = [
     icon: BadgeCheck,
     color: "#56cd1f", // purple
     emailType: "email_verified",
+    filter: 'customer_type'
   },
   {
     value: "completed",
@@ -88,6 +95,7 @@ const STATUS_CONFIG = [
     icon: MdOutlineWorkspacePremium,
     color: "#56cd1f", // purple
     emailType: "email_completed",
+    filter: 'is_complete'
   },
   {
     value: "stop",
@@ -95,47 +103,72 @@ const STATUS_CONFIG = [
     icon: GiGoldBar,
     color: "#ab9e11", // purple
     emailType: "email_stop",
+    filter: 'is_stop'
+
   },
 ];
 export function UnrepliedEmailsPage() {
-  const { count, emails, loading, pageIndex, emailsCount, emailType } =
-    useSelector((state) => state.unreplied);
+  const preferences = useTablePreference("emails");
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteEmails(preferences);
+  const {
+    data: summary,
+    isPending: summaryLoading,
+  } = useEmailStats();
   const { handleMove } = useThreadContext();
   const {
     setCurrentIndex,
     handleDateClick
   } = useContext(PageContext);
   const dispatch = useDispatch();
+  const emails =
+    data?.pages?.flatMap(
+      (page) => page.records || page.data || []
+    ) ?? [];
+  const pages = data?.pages ?? [];
+
+  const lastPage = pages[pages.length - 1] ?? {};
+  const firstPage = pages[0] ?? {};
+
+  const pageIndex = lastPage.page ?? 1;
+  const pageCount = firstPage.total_pages ?? 0;
+  const count = firstPage.total ?? 0;
+
+  const loading = isPending || isFetchingNextPage;
   const columns = [
     {
       label: "Created At",
-      accessor: "date_entered",
+      accessor: "date_entered_time_ago",
       headerClasses: "",
       icon: Calendar,
-
       onClick: (row, index) =>
-        handleDateClick({ email: extractEmail(row?.from), navigate: "/", index, nextPrev: true }),
+        handleDateClick({ email: row?.email1, navigate: "/", index, nextPrev: true }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       ),
     },
 
     {
       label: "Contact",
-      accessor: "from",
+      accessor: "email1",
       headerClasses: "",
       icon: User,
       classes: "truncate ",
       onClick: (row, index) =>
-        handleDateClick({ email: extractEmail(row?.from), navigate: "/contacts", index, nextPrev: true }),
+        handleDateClick({ email: row?.email1, navigate: "/contacts", index, nextPrev: true }),
 
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
           <span className="font-medium text-gray-800">
-            {excludeName(row?.from)}
+            {row?.first_name || ""} {row?.last_name || ""}
           </span>
 
           {row.type === "Brand" && (
@@ -154,7 +187,7 @@ export function UnrepliedEmailsPage() {
       classes: "truncate max-w-[300px]",
       onClick: (row) =>
         handleMove({
-          email: extractEmail(row.from),
+          email: row?.email1,
           threadId: row.thread_id,
         }),
       render: (row) => (
@@ -194,20 +227,58 @@ export function UnrepliedEmailsPage() {
       ),
     },
   ];
-  const status_list = STATUS_CONFIG.map((s) => ({
-    ...s,
-    handleStatusClick: () => {
-      (setCurrentIndex(0), dispatch(getUnrepliedEmail({ type: s.emailType })));
+  const filterColumns = [
+    {
+      label: "Type",
+      accessor: "type",
+
+      values: [
+        {
+          label: "Brand",
+          value: "Brand",
+        },
+
+        {
+          label: "Non-Brand",
+          value: "Non-Brand",
+        },
+      ],
     },
-    checkActive: () => emailType === s.emailType,
-    count: emailsCount[s.emailType.split("_")[1]]
-      ? emailsCount[s.emailType.split("_")[1]]
-      : 0,
-  }));
-  const statusCount = Object.values(emailsCount).reduce(
-    (acc, curr) => acc + Number(curr),
-    0,
-  );
+
+    {
+      label: "Stage",
+      accessor: "stage",
+
+      values: [
+        {
+          label: "Order",
+          value: "order",
+        },
+
+        {
+          label: "Offer",
+          value: "offer",
+        },
+
+        {
+          label: "Invoice",
+          value: "invoice",
+        },
+
+        {
+          label: "Deal",
+          value: "deal",
+        },
+      ],
+    },
+  ];
+  const statusList = STATUS_CONFIG.map((config) => {
+    return {
+      ...config,
+      count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
+    };
+  });
+  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
 
   return (
     <>
@@ -215,16 +286,28 @@ export function UnrepliedEmailsPage() {
         tableData={emails}
         tableName={"Unreplied"}
         columns={columns}
-        slice={"unreplied"}
-        statusList={status_list}
+        filterColumns={filterColumns}
+        slice={"emails"}
+        statusList={statusList}
         statusCount={statusCount}
-        fetchNextPage={() =>
-          dispatch(getUnrepliedEmail({ page: pageIndex + 1 }))
-        }
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        preferences={preferences}
+        refreshKey={["emails"]}
+        fetchNextPage={() => {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}
       >
         <TableTitleBar
           Icon={Mail}
-          title={STATUS_CONFIG.find(s => s.emailType == emailType).label + " Emails"}
+          title={" Emails"}
           titleClass={"text-rose-700"}
         />
 
@@ -237,25 +320,46 @@ export function UnrepliedEmailsPage() {
               row.type === "Brand" ? "bg-orange-50 hover:bg-orange-100" : ""
             }
           />
-
-          {/* 🔥 LOADING OVERLAY */}
-          {loading && (
-            <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] flex items-center justify-center z-50">
-              <div className="flex flex-col items-center gap-3">
-                {/* Spinner */}
-                <div className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
-
-                {/* Dynamic Text */}
-                <p className="text-gray-700 font-medium">
-                  {STATUS_CONFIG.find((s) => s.emailType === emailType)
-                    ?.label || "Emails"}{" "}
-                  Emails Loading...
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </TableView>
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  🔥 LOADING OVERLAY
+//       {loading && (
+//         <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] flex items-center justify-center z-50">
+//           <div className="flex flex-col items-center gap-3">
+//             {/* Spinner */}
+//             <div className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+
+//             {/* Dynamic Text */}
+//             <p className="text-gray-700 font-medium">
+//               {STATUS_CONFIG.find((s) => s.emailType === emailType)
+//                 ?.label || "Emails"}{" "}
+//               Emails Loading...
+//             </p>
+//           </div>
+//         </div>
+//       )}

@@ -6,9 +6,30 @@ import { useThreadContext } from './useThreadContext';
 import { extractEmail } from '../assets/assets';
 import { unrepliedAction } from '../store/Slices/unrepliedEmails';
 import { useNavigate } from 'react-router-dom';
+import { useInfiniteEmails } from '../queries/email.queries';
+import { useTablePreference } from './useTablePreference';
 
 export const useNext = () => {
-    const { emails: inboxEmails } = useSelector((state) => state.unreplied);
+    const preferences = useTablePreference("emails");
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isPending,
+    } = useInfiniteEmails(preferences);
+    const inboxEmails =
+        data?.pages?.flatMap(
+            (page) => page.records || page.data || []
+        ) ?? [];
+    const pages = data?.pages ?? [];
+
+    const lastPage = pages[pages.length - 1] ?? {};
+    const firstPage = pages[0] ?? {};
+
+    const pageIndex = lastPage.page ?? 1;
+    const pageCount = firstPage.total_pages ?? 0;
+    const count = firstPage.total ?? 0;
     const { superfastReply, setEnteredEmail,
         currentIndex,
         handleDateClick, } = useContext(PageContext);
@@ -16,44 +37,63 @@ export const useNext = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const moveToNext = (email = '') => {
-        const isLast = inboxEmails.length === currentIndex + 1;
-        const nextEmailObj = inboxEmails[currentIndex + 1];
-        if (isLast) {
-            localStorage.removeItem("email");
-            setEnteredEmail("");
-            navigate("/unreplied-emails");
-            return;
-        }
+  const moveToNext = async (currentEmail) => {
+    const currentIndex = inboxEmails.findIndex(
+        (item) => item?.email1 === currentEmail
+    );
+    console.log("CURRENT INDEX", currentIndex, currentEmail, inboxEmails);
 
-        if (!nextEmailObj) {
-            localStorage.removeItem("email");
-            setEnteredEmail("");
+    if (currentIndex === -1) {
+        navigate("/unreplied-emails");
+        return;
+    }
 
-            navigate("/unreplied-emails");
-            return;
-        }
-        console.log("SUPER FAST REPLY", superfastReply);
-        dispatch(unrepliedAction.removeUnreplied(email));
-        if (superfastReply) {
-            handleDateClick({
-                email: extractEmail(nextEmailObj?.from || ""),
-                nextPrev: true,
-            });
-            handleMove({
-                email: extractEmail(nextEmailObj?.from || ""),
-                threadId: nextEmailObj?.thread_id,
-                loadAiReply: true,
-            });
-            return;
-        }
+    // Prefetch when close to end
+    const remainingEmails = inboxEmails.length - currentIndex - 1;
+console.log("REMAINING EMAILS", remainingEmails, hasNextPage, isFetchingNextPage);
+    if (
+        remainingEmails <= 3 &&
+        hasNextPage &&
+        !isFetchingNextPage
+    ) {
+        await fetchNextPage();
+    }
+
+    const updatedEmails =
+        data?.pages?.flatMap(
+            (page) => page.records || page.data || []
+        ) ?? inboxEmails;
+
+    const nextEmailObj = updatedEmails[currentIndex + 1];
+console.log("NEXT EMAIL OBJ", nextEmailObj);
+    if (!nextEmailObj) {
+        localStorage.removeItem("email");
+        setEnteredEmail("");
+        navigate("/unreplied-emails");
+        return;
+    }
+
+
+    if (superfastReply) {
         handleDateClick({
-            email: extractEmail(nextEmailObj?.from || ""),
-            navigate: "/",
+            email: nextEmailObj?.email1,
             nextPrev: true,
+            index: currentIndex + 1,
         });
 
+        handleMove({
+            email: nextEmailObj?.email1,
+            threadId: nextEmailObj?.thread_id,
+        });
 
-    };
+        return;
+    }
+
+    handleDateClick({
+        email: nextEmailObj?.email1,
+        navigate: "/",
+        nextPrev: true,
+    });
+};
     return { moveToNext }
 }

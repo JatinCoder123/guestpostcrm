@@ -11,32 +11,45 @@ import {
     Send,
     Trash,
 } from "lucide-react";
-
-import { useDispatch, useSelector } from "react-redux";
-
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { IconBase } from "react-icons/lib";
 import IconButton from "../ui/Buttons/IconButton";
 import { useThreadContext } from "../../hooks/useThreadContext";
-import { deleteOutBoxEmail, outboxAction } from "../../store/Slices/outbox";
-import { toast } from "react-toastify";
 import { PageContext } from "../../context/pageContext";
+import { useDeleteOutboxEmail, useInfiniteOutboxEmails } from "../../queries/outbox.queries";
 
 
+import {
+    useTablePreference,
+} from "../../hooks/useTablePreference";
 const OutBox = () => {
-    const [deleteId, setDeleteId] = useState(null)
-    const dispatch = useDispatch();
     const { handleMove } = useThreadContext()
     const { handleDateClick } = useContext(PageContext)
+    const preferences =
+        useTablePreference(
+            "outbox"
+        );
+
     const {
-        emails: outbox = [],
-        loading,
-        pageIndex = 1,
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isPending,
+    } =
+        useInfiniteOutboxEmails(
+            preferences
+        );
+
+    const {
+        mutate:
+        deleteOutboxEmail,
+        isPending:
         deleting,
-        message,
-        error
-    } = useSelector((state) => state.outbox);
+        variables:
+        deleteId,
+    } =
+        useDeleteOutboxEmail();
 
     // MODAL STATES
     const [selectedReply, setSelectedReply] =
@@ -49,14 +62,14 @@ const OutBox = () => {
     // OPEN MODAL
     const handleSend = (row) => {
         handleMove({ email: row.client_email, threadId: row.threadId, reply: row.replyBody })
-        dispatch(deleteOutBoxEmail(row.id))
+        deleteOutboxEmail(row.id);
         return
 
     }
     const handelDelete = (row) => {
-        setDeleteId(row.id)
-        dispatch(deleteOutBoxEmail(row.id))
-        return
+        deleteOutboxEmail(
+            row.id
+        ); return
 
     }
     const openReplyModal = (row) => {
@@ -73,6 +86,38 @@ const OutBox = () => {
         txt.innerHTML = html;
         return txt.value;
     };
+    const outbox =
+        data?.pages?.flatMap(
+            (page) =>
+                page.records ||
+                page.data ||
+                []
+        ) ?? [];
+
+    const pages =
+        data?.pages ?? [];
+
+    const lastPage =
+        pages[
+        pages.length - 1
+        ] ?? {};
+
+    const firstPage =
+        pages[0] ?? {};
+
+    const pageIndex =
+        lastPage.page ?? 1;
+
+    const pageCount =
+        firstPage.total_pages ??
+        0;
+
+    const count =
+        firstPage.total ?? 0;
+
+    const loading =
+        isPending ||
+        isFetchingNextPage;
     const columns = [
         {
             label: "Date",
@@ -84,7 +129,7 @@ const OutBox = () => {
             render: (row) => (
                 <div className="flex flex-col cursor-pointer">
                     <span className="font-semibold text-gray-700">
-                        {row?.date_entered || "N/A"}
+                        {row?.date_entered_time_ago || "N/A"}
                     </span>
                 </div>
             ),
@@ -172,18 +217,7 @@ const OutBox = () => {
             ),
         },
     ];
-    useEffect(() => {
-        if (message) {
-            toast.success(message)
-            dispatch(outboxAction.clearAllMessage())
-            setDeleteId(null)
-        }
-        if (error) {
-            toast.error(error)
-            dispatch(outboxAction.clearAllErrors())
 
-        }
-    }, [message, error, deleting])
     return (
         <>
             {/* REPLY BODY MODAL */}
@@ -333,6 +367,19 @@ const OutBox = () => {
                     columns={columns}
                     slice={"outbox"}
                     loading={loading}
+                    pageIndex={pageIndex}
+                    pageCount={pageCount}
+                    count={count}
+                    preferences={preferences}
+                    refreshKey={["outbox"]}
+                    fetchNextPage={() => {
+                        if (
+                            hasNextPage &&
+                            !isFetchingNextPage
+                        ) {
+                            fetchNextPage();
+                        }
+                    }}
                 >
                     <TableTitleBar
                         Icon={Mail}

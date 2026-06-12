@@ -17,10 +17,6 @@ export function DateRangeFilter({
   fromTime,
   toDate,
   toTime,
-  setFromDate,
-  setFromTime,
-  setToDate,
-  setToTime,
   filterActive,
   onApply,
   onReset,
@@ -29,6 +25,10 @@ export function DateRangeFilter({
   const [activePreset, setActivePreset] = useState(null);
   const [openPicker, setOpenPicker] = useState(null);
   const [lastNMinutes, setLastNMinutes] = useState(null); // null = All Day
+  const [localFromDate, setLocalFromDate] = useState(fromDate);
+  const [localFromTime, setLocalFromTime] = useState(fromTime);
+  const [localToDate, setLocalToDate] = useState(toDate);
+  const [localToTime, setLocalToTime] = useState(toTime);
   const dropRef = useRef(null);
 
   useEffect(() => {
@@ -41,13 +41,23 @@ export function DateRangeFilter({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
+  useEffect(() => {
+    setLocalFromDate(fromDate);
+    setLocalFromTime(fromTime);
+    setLocalToDate(toDate);
+    setLocalToTime(toTime);
+  }, [
+    fromDate,
+    fromTime,
+    toDate,
+    toTime,
+  ]);
   function applyPreset(id) {
     const { from, ft, to, tt } = resolvePreset(id);
-    setFromDate(from);
-    setFromTime(ft);
-    setToDate(to);
-    setToTime(tt);
+    setLocalFromDate(from);
+    setLocalFromTime(ft);
+    setLocalToDate(to);
+    setLocalToTime(tt);
     setActivePreset(id);
     setOpenPicker(null);
     // Reset N-minutes filter when switching presets
@@ -60,35 +70,35 @@ export function DateRangeFilter({
     setLastNMinutes(value);
     const today = resolvePreset("equals");
     const { ft, tt } = resolveNMinutesRange(value);
-    setFromDate(today.from);
-    setToDate(today.to);
-    setFromTime(ft);
-    setToTime(tt);
+    setLocalFromDate(today.from);
+    setLocalToDate(today.to);
+    setLocalFromTime(ft);
+    setLocalToTime(tt);
   }
 
   const activePresetLabel = PRESETS.find((p) => p.id === activePreset)?.label;
   const rangeLabel = filterActive
-    ? `${fmtDisplay(fromDate, fromTime)}  →  ${fmtDisplay(toDate, toTime)}`
+    ? `${fmtDisplay(localFromDate, localFromTime)} → ${fmtDisplay(localToDate, localToTime)}`
     : "Select a period…";
 
   const pickerFields = [
     {
       label: "From",
       key: "from",
-      date: fromDate,
-      time: fromTime,
-      setDate: setFromDate,
-      setTime: setFromTime,
+      date: localFromDate,
+      time: localFromTime,
+      setDate: setLocalFromDate,
+      setTime: setLocalFromTime,
       dh: 0,
       dm: 1,
     },
     {
       label: "To",
       key: "to",
-      date: toDate,
-      time: toTime,
-      setDate: setToDate,
-      setTime: setToTime,
+      date: localToDate,
+      time: localToTime,
+      setDate: setLocalToDate,
+      setTime: setLocalToTime,
       dh: 23,
       dm: 59,
     },
@@ -98,16 +108,16 @@ export function DateRangeFilter({
   const nMinSummary = (() => {
     if (activePreset !== "equals") return null;
     if (!lastNMinutes) {
-      return `Showing all activity for today (${fromTime || "00:01"} → ${toTime || "23:59"})`;
+      return `Showing all activity for today (${localFromTime || "00:01"} → ${localToTime || "23:59"})`;
     }
     const found = N_MINUTE_FILTERS.find((f) => f.value === lastNMinutes);
-    return `Showing activity for the ${found?.label?.toLowerCase() ?? ""} (${fromTime} → ${toTime})`;
+    return `Showing activity for the ${found?.label?.toLowerCase() ?? ""} (${localFromTime} → ${localToTime})`;
   })();
 
   return (
     <div className="relative" ref={dropRef}>
       {/* Trigger */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-5 py-3.5 flex flex-wrap items-center gap-3">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-5 py-1 flex flex-wrap items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
           <CalendarDays size={15} className="text-blue-700" />
         </div>
@@ -146,15 +156,6 @@ export function DateRangeFilter({
               <RefreshCcw size={11} /> Reset
             </button>
           )}
-          <button
-            onClick={() => {
-              setOpen(false);
-              onApply();
-            }}
-            className="px-5 py-2 bg-blue-700 text-white text-sm font-bold rounded-xl hover:bg-blue-800 transition-all shadow-sm cursor-pointer"
-          >
-            Apply
-          </button>
         </div>
       </div>
 
@@ -177,11 +178,10 @@ export function DateRangeFilter({
                 <button
                   key={p.id}
                   onClick={() => applyPreset(p.id)}
-                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${
-                    activePreset === p.id
-                      ? "bg-blue-700 text-white"
-                      : "text-gray-600 hover:bg-white hover:text-gray-900"
-                  }`}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-all ${activePreset === p.id
+                    ? "bg-blue-700 text-white"
+                    : "text-gray-600 hover:bg-white hover:text-gray-900"
+                    }`}
                 >
                   {p.label}
                 </button>
@@ -203,8 +203,8 @@ export function DateRangeFilter({
                   </p>
                   {filterActive && (
                     <p className="text-xs text-blue-600 mt-0.5 font-medium">
-                      {fmtDisplay(fromDate, fromTime)} →{" "}
-                      {fmtDisplay(toDate, toTime)}
+                      {fmtDisplay(localFromDate, localFromTime)} →{" "}
+                      {fmtDisplay(localToDate, localToTime)}
                     </p>
                   )}
                 </div>
@@ -227,11 +227,10 @@ export function DateRangeFilter({
                         <button
                           key={String(f.value)}
                           onClick={() => applyNMinutes(f.value)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                            isActive
-                              ? "bg-blue-700 text-white border-blue-700 shadow-sm"
-                              : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
-                          }`}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${isActive
+                            ? "bg-blue-700 text-white border-blue-700 shadow-sm"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
+                            }`}
                         >
                           {f.value !== null && (
                             <Clock
@@ -278,11 +277,10 @@ export function DateRangeFilter({
                               e.stopPropagation();
                               setOpenPicker(openPicker === key ? null : key);
                             }}
-                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${
-                              openPicker === key
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
-                                : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                            }`}
+                            className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold text-left transition-all ${openPicker === key
+                              ? "border-blue-500 bg-blue-50 text-blue-700"
+                              : "border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                              }`}
                           >
                             {fmtDtDisplay(dtFromStrings(date, time))}
                           </button>
@@ -307,8 +305,8 @@ export function DateRangeFilter({
                     )}
                   </div>
                   <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 text-xs text-blue-700 font-semibold">
-                    {fmtDisplay(fromDate, fromTime)} →{" "}
-                    {fmtDisplay(toDate, toTime)}
+                    {fmtDisplay(localFromDate, localFromTime)} →{" "}
+                    {fmtDisplay(localToDate, localToTime)}
                   </div>
                 </div>
               )}
@@ -330,7 +328,12 @@ export function DateRangeFilter({
               onClick={() => {
                 setOpen(false);
                 setOpenPicker(null);
-                onApply();
+                onApply({
+                  fromDate: localFromDate,
+                  fromTime: localFromTime,
+                  toDate: localToDate,
+                  toTime: localToTime,
+                });
               }}
               className="px-6 py-2 text-xs font-bold bg-blue-700 text-white rounded-xl hover:bg-blue-800 transition-all cursor-pointer"
             >
