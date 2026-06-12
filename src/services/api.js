@@ -3,6 +3,7 @@ import { FETCH_GPC_X_API_KEY } from "../store/constants";
 import CryptoJS from "crypto-js";
 const SECRET = import.meta.env.VITE_SMARTGATEWAY_SECRET_KEY;
 import { store } from "../store/store";
+import { getCRM } from "./utils";
 
 let CRMENDPOINT = "";
 let DB_NAME = "";
@@ -84,7 +85,7 @@ export const http = async ({
   }
 
   const response = await apiClient({
-    url: `https://anshik.guestpostcrm.com/index.php?entryPoint=smart_gateway`,
+    url: `${getCRM()}?entryPoint=smart_gateway`,
     method,
     data: body,
     params: params1,
