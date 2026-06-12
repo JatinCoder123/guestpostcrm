@@ -803,9 +803,8 @@ const [otherReason, setOtherReason] = useState("");
             `Delete failed with status ${response.status}`,
         );
       }
-
       // clear onboarding popup flag
-sessionStorage.removeItem("onboardingShown")
+sessionStorage.removeItem("onboardingShown");
       toast.success(data?.message || "Profile delete request completed");
       window.setTimeout(() => {
         setShowDeleteModal(false);

@@ -190,7 +190,7 @@
 public function microsoftLogin()
 {
     try {
-        $clientId = '51c4a942-4d08-438f-880c-3befb48041f3';
+        $clientId = '4ab2137f-d7e2-47c6-bae4-f2d5fa99532b';
         $tenantId = '09e785c5-c37e-4902-aee5-9bb8fa3df376';
         $redirectUri = 'https://app.guestpostcrm.com/public/index.php?controller=auth&action=microsoftCallback';
 
@@ -226,8 +226,8 @@ public function microsoftCallback()
             exit;
         }
 
-        $clientId     = '51c4a942-4d08-438f-880c-3befb48041f3';
-        $clientSecret = 'XEe8Q~AQDibZjqdoY8l.EQZTnzAyBiKSeGaUTate';
+        $clientId     = '4ab2137f-d7e2-47c6-bae4-f2d5fa99532b';
+        $clientSecret = 'RdT8Q~lUYgpncXdtLJgD5Awse4y_q_RUcMRU1ac5';
         $tenantId     = '09e785c5-c37e-4902-aee5-9bb8fa3df376';
         $redirectUri  = 'https://app.guestpostcrm.com/public/index.php?controller=auth&action=microsoftCallback';
 
