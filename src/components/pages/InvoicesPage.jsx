@@ -16,76 +16,103 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
-import { getInvoices, invoicesAction, updateInvoice } from "../../store/Slices/invoices.js"
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
 import { extractEmail } from "../../assets/assets";
-import { ladgerAction } from "../../store/Slices/ladger";
-import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import UpdatePopup from "../UpdatePopup.jsx"
-import { LoadingChase } from "../Loading.jsx"
-import { toast } from "react-toastify";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+
+import { useInfiniteInvoices, useInvoiceStats, useUpdateInvoice } from "../../queries/invoice.queries.js";
+import toast from "react-hot-toast";
+const getPaymentMethodIcon = (method) => {
+  switch (method?.toLowerCase()) {
+    case "paypal":
+      return <Wallet className="w-4 h-4 mr-1" />;
+    case "payoneer":
+      return <Globe className="w-4 h-4 mr-1" />;
+    case "wise":
+      return <Banknote className="w-4 h-4 mr-1" />;
+    case "indian_upi":
+      return <Flag className="w-4 h-4 mr-1" />;
+    case "swift_india":
+      return <Banknote className="w-4 h-4 mr-1" />;
+    default:
+      return <Wallet className="w-4 h-4 mr-1" />;
+  }
+};
+const getPaymentMethodColor = (method) => {
+  switch (method?.toLowerCase()) {
+    case "paypal":
+      return "bg-blue-100 text-blue-700 border-blue-200";
+    case "payoneer":
+      return "bg-orange-100 text-orange-700 border-orange-200";
+    case "wise":
+      return "bg-green-100 text-green-700 border-green-200";
+    case "indian_upi":
+      return "bg-indigo-100 text-indigo-700 border-indigo-200";
+    case "swift_india":
+      return "bg-purple-100 text-purple-700 border-purple-200";
+    default:
+      return "bg-gray-100 text-gray-700 border-gray-200";
+  }
+};
 const STATUS_CONFIG = [
   {
     value: "SENT",
     label: "Sent",
     icon: SendHorizonal,
     color: "#2563eb", // orange (amber-500)
+    filter: "status_c"
   },
   {
     value: "PAID",
     label: "Paid",
     icon: DollarSign,
     color: "#10B981", // green (emerald-500)
+    filter: "status_c"
+
   },
   {
     value: "DRAFT",
     label: "Draft",
     icon: NotepadTextDashed,
     color: "#ca8a04",
+    filter: "status_c"
+
   }
 ];
 export function InvoicesPage() {
-  const { count, updating, invoices, loading, pageIndex, stats, message, error } = useSelector(
-    (state) => state.invoices
-  );
+  const preferences = useTablePreference("invoices");
+
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } =
+    useInfiniteInvoices(
+      preferences
+    );
+
+  const {
+    data: summary,
+  } =
+    useInvoiceStats();
+
+  const {
+    mutate:
+    updateInvoice,
+    isPending:
+    updating,
+  } =
+    useUpdateInvoice();
   const [currentUpdateInvoice, setCurrentUpdateInvoice] = useState(null);
 
 
-  const getPaymentMethodIcon = (method) => {
-    switch (method?.toLowerCase()) {
-      case "paypal":
-        return <Wallet className="w-4 h-4 mr-1" />;
-      case "payoneer":
-        return <Globe className="w-4 h-4 mr-1" />;
-      case "wise":
-        return <Banknote className="w-4 h-4 mr-1" />;
-      case "indian_upi":
-        return <Flag className="w-4 h-4 mr-1" />;
-      case "swift_india":
-        return <Banknote className="w-4 h-4 mr-1" />;
-      default:
-        return <Wallet className="w-4 h-4 mr-1" />;
-    }
-  };
-  const getPaymentMethodColor = (method) => {
-    switch (method?.toLowerCase()) {
-      case "paypal":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "payoneer":
-        return "bg-orange-100 text-orange-700 border-orange-200";
-      case "wise":
-        return "bg-green-100 text-green-700 border-green-200";
-      case "indian_upi":
-        return "bg-indigo-100 text-indigo-700 border-indigo-200";
-      case "swift_india":
-        return "bg-purple-100 text-purple-700 border-purple-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
+
   const { handleDateClick } =
     useContext(PageContext);
   const dispatch = useDispatch();
@@ -95,20 +122,21 @@ export function InvoicesPage() {
       ...invoice,
       ...data,
     };
-    dispatch(updateInvoice(updatedInvoice));
+    updateInvoice(
+      updatedInvoice,
+      {
+        onSuccess: () => {
+          setCurrentUpdateInvoice(null);
+          toast.success("Invoice Updated Successfully!")
+        },
+        onError: () => {
+          toast.error("Failed To Update Invoice!")
+
+        }
+      }
+    );
   };
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(invoicesAction.clearAllErrors());
-    }
-    if (message) {
-      toast.success(message);
-      setCurrentUpdateInvoice(null);
-      dispatch(invoicesAction.clearAllMessages());
-    }
-  }, [dispatch, message, error]);
   const columns = [
     {
       label: "Created At",
@@ -120,7 +148,7 @@ export function InvoicesPage() {
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       )
     },
@@ -241,16 +269,109 @@ export function InvoicesPage() {
 
 
   ]
-  const statusList = STATUS_CONFIG.map(config => {
-    const status = stats.find(s => s.status == config.value)
-    return {
-      ...config,
-      count: status?.status_count || 0,
-      amount: status?.total_amount || 0,
-      showAmount: true
-    };
+  const filterColumns = [
+    {
+      label: "Status",
+      accessor: "status_c",
+      values: [
+        {
+          label: "Sent",
+          value: "SENT",
+        },
+        {
+          label: "Paid",
+          value: "PAID",
+        },
+        {
+          label: "Draft",
+          value: "DRAFT",
+        },
+      ],
+    },
 
-  });
+    {
+      label:
+        "Payment Method",
+
+      accessor:
+        "payment_method",
+
+      values: [
+        {
+          value: "paypal",
+          label: "PayPal",
+        },
+        {
+          value:
+            "payoneer",
+          label:
+            "Payoneer",
+        },
+        {
+          value: "wise",
+          label: "Wise",
+        },
+        {
+          value:
+            "indian_upi",
+          label:
+            "Indian UPI",
+        },
+        {
+          value:
+            "swift_india",
+          label:
+            "Swift India",
+        },
+      ],
+    },
+  ];
+  const invoices =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
+
+  const pages =
+    data?.pages ?? [];
+
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
+  const statusList =
+    STATUS_CONFIG.map(
+      (config) => ({
+        ...config,
+
+        count: Number(
+          summary?.stats?.[
+            config.value
+          ]?.count || 0
+        ),
+        showAmount: true,
+      })
+    );
+  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
 
   return (
     <>
@@ -296,8 +417,35 @@ export function InvoicesPage() {
           onClose={() => setCurrentUpdateInvoice(null)}
         />
       )}
-      <TableView tableData={invoices} tableName={"Invoices"} columns={columns} slice={"invoices"} statusKey={"status_c"} statusList={statusList} fetchNextPage={() => dispatch(getInvoices({ page: pageIndex + 1 }))}   >
-        <TableTitleBar Icon={FileText} title={"Invoices"} titleClass={"text-orange-700"} />
+      <TableView
+        tableData={invoices}
+        tableName={"Invoices"}
+        columns={columns}
+        slice={"invoices"}
+        statusList={statusList}
+        statusCount={statusCount}
+        filterColumns={
+          filterColumns
+        }
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        preferences={
+          preferences
+        }
+        refreshKey={[
+          "invoices",
+        ]}
+        fetchNextPage={() => {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}
+      >        <TableTitleBar Icon={FileText} title={"Invoices"} titleClass={"text-orange-700"} />
         <Table headerStyle={"  bg-orange-600"} layoutStyle={"grid grid-cols-8"} />
       </TableView></>
 

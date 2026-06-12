@@ -1,4 +1,4 @@
-import { Globe, Mail, Heart, Link, CircleStop, NotebookPen } from "lucide-react";
+import { Globe, Mail, Heart, Link, CircleStop, NotebookPen, UserSquare, Send } from "lucide-react";
 import Loading, { LoadingChase } from "./Loading";
 import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
@@ -14,12 +14,10 @@ import {
   getForwardedEmails,
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
-import { useContext, useEffect, useState } from "react";
-import { addEvent } from "../store/Slices/eventSlice";
+import { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
-import { getTags, applyTag } from "../store/Slices/markTagSlice";
-import { threadEmailAction } from "../store/Slices/threadEmail";
+import { applyTag, markTagAction } from "../store/Slices/markTagSlice";
 import { MdOutlineHome } from "react-icons/md";
 import {
   addMarketPlace,
@@ -29,9 +27,18 @@ import {
 import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
-import { applyHashtag } from "../services/utils";
+import { applyHashtag, getRighteeUsers } from "../services/utils";
 import { fetchGpc } from "../services/api";
-
+import { useMutation, useQuery } from "@tanstack/react-query";
+import IconButton from "./ui/Buttons/IconButton"
+import { useMarkTags } from "../queries/markTag.queries";
+import CustomDropdown from "./ui/CustomDropdown";
+import { useTimeline } from "../context/TimelineContext";
+import { contactKeys, useContact } from "../queries/contact.queries";
+import { queryClient } from "../lib/queryClient";
+import { forwardedKeys } from "../queries/forwarded.queries";
+import { favoriteKeys } from "../queries/favourite.queries";
+import { marketPlaceKeys } from "../queries/marketplace.queries";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -50,13 +57,73 @@ const ActionButton = () => {
   const [showUsers, setShowUsers] = useState(false);
   const [stopLoading, setStopLoading] = useState(false);
   const [showTags, setShowTags] = useState(false);
-
+  const [note, setNote] = useState('')
+  const [selectedUser, setSelectedUser] = useState(null)
   const { enteredEmail } = useContext(PageContext);
   const { crmEndpoint } = useSelector((state) => state.user);
+  const [showNotes, setShowNotes] = useState(false);
+  const { isPending, data } = useQuery({
+    queryKey: ['righteeUsers'],
+    queryFn: getRighteeUsers
+  })
+  const { data: tagsData, isPending: tagLoading } = useMarkTags()
+  const tags = tagsData?.fields ?? []
 
-  const { contactInfo, accountInfo, threadId, editMessage, contactLoading } =
+  const { mutate, isPending: sendingNote } = useMutation({
+    mutationFn: async () => {
+      const res = awaitfetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser.email, notes: note } })
+      return res
+    },
+    onSuccess: () => {
+      toast.success(
+        `Your Note Is Sent To ${selectedUser?.name} Successfully!`
+      );
+      setShowNotes(false);
+      setNote("")
+      setSelectedUser(null)
+    },
+    onError: () => {
+      toast.error(`Failed To Sent Note`)
+
+    },
+  })
+
+  const noteRef = useRef(null);
+  const [searchUser, setSearchUser] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    if (!searchUser.trim()) return data || [];
+
+    return (data || []).filter((user) =>
+      user.name.toLowerCase().includes(searchUser.toLowerCase())
+    );
+  }, [searchUser, data]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showNotes &&
+        noteRef.current &&
+        !noteRef.current.contains(event.target)
+      ) {
+        setShowNotes(false);
+
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, [showNotes]);
+  const { threadId, editMessage, contactLoading } =
     useSelector((s) => s.viewEmail);
-  const { sending, message, error } = useSelector((s) => s.threadEmail);
+  const { currentEmail } = useTimeline()
+  const { data: contactData } = useContact(currentEmail)
+  const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
 
   const {
@@ -77,7 +144,6 @@ const ActionButton = () => {
     message: favouriteMessage,
   } = useSelector((s) => s.fav);
 
-  const { tags, loading: tagLoading } = useSelector((s) => s.markTag);
   const navigate = useNavigate();
   const {
     loading,
@@ -85,7 +151,12 @@ const ActionButton = () => {
     error: markingError,
     message: markingMessage,
   } = useSelector((s) => s.marketplace);
-  const markInfo = marketPlaces.find((e) => e.name === contactInfo?.email1) ?? null
+  const {
+    loading: markTagLoading,
+    error: markTagError,
+    message: markTagMessage,
+  } = useSelector((s) => s.markTag);
+  const markInfo = marketPlaces.find((e) => e.name === email) ?? null
   const isMark = Number(contactInfo?.bulk) == 1
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite == "1";
@@ -96,7 +167,7 @@ const ActionButton = () => {
   const triggerHashtag = (memo_no, method = "GET") => {
     applyHashtag({
       domain: crmEndpoint,
-      email: contactInfo?.email1,
+      email: email,
       memo_no,
       method,
     });
@@ -112,7 +183,8 @@ const ActionButton = () => {
     if (forwardMessage) {
       toast.success(forwardMessage);
       dispatch(forwardedAction.clearAllMessages());
-      dispatch(getForwardedEmails({ loading: false }));
+      queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
 
     if (favouriteError) {
@@ -123,8 +195,8 @@ const ActionButton = () => {
     if (favouriteMessage) {
       toast.success(favouriteMessage);
       dispatch(favAction.clearAllMessages());
-      dispatch(getContact(contactInfo?.email1, true, false));
-      dispatch(getFavEmails({ email: enteredEmail, loading: false }));
+       queryClient.invalidateQueries({ queryKey: favouriteKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
 
     if (markingError) {
@@ -135,12 +207,20 @@ const ActionButton = () => {
     if (markingMessage) {
       toast.success(markingMessage);
       dispatch(marketplaceActions.clearMessage());
-      dispatch(getContact(contactInfo?.email1, true, false));
+ queryClient.invalidateQueries({ queryKey: marketPlaceKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })    }
+    if (markTagError) {
+      toast.error(markTagError);
+      dispatch(markTagAction.clearAllErrors());
+    }
+
+    if (markTagMessage) {
+      toast.success(markTagMessage);
+      dispatch(markTagAction.clearAllMessage());
     }
 
     if (changeMessage) {
       toast.success(changeMessage);
-      dispatch(getContact(contactInfo?.email1, true, false));
       dispatch(linkExchangeaction.clearAllMessages());
     }
 
@@ -149,19 +229,11 @@ const ActionButton = () => {
       dispatch(linkExchangeaction.clearAllErrors());
     }
 
-    if (error) {
-      toast.error(error);
-      dispatch(threadEmailAction.clearAllErrors());
-    }
-
-    if (message) {
-      dispatch(threadEmailAction.clearAllMessage());
-    }
+   
 
     if (editMessage) {
       toast.success(editMessage);
       dispatch(viewEmailAction.clearAllMessage());
-      dispatch(getContact(contactInfo?.email1, true, false));
     }
   }, [
     dispatch,
@@ -173,11 +245,11 @@ const ActionButton = () => {
     markingMessage,
     changeError,
     changeMessage,
-    sending,
     email,
     threadId,
     enteredEmail,
     editMessage,
+    markTagMessage, markTagError
   ]);
 
   const actionButtons = [
@@ -195,19 +267,16 @@ const ActionButton = () => {
       action: () => navigate("/ip"),
     },
     {
-      icon: (
-        <img
-          src="https://img.icons8.com/color/48/tags--v1.png"
-          className="w-6 h-6"
-          alt="tag"
-        />
-      ),
+      icon: markTagLoading ? <LoadingChase /> : <img
+        src="https://img.icons8.com/color/48/tags--v1.png"
+        className="w-6 h-6"
+        alt="tag"
+      />,
       label: "Mark Tag",
       disabled: false,
 
       action: () => {
         setShowTags((p) => !p);
-        dispatch(getTags());
       },
     },
 
@@ -327,8 +396,7 @@ const ActionButton = () => {
             }),
           );
 
-          // ✅ 🔥 ADD THIS LINE HERE
-          dispatch(getContact(contactInfo?.email1, true, false));
+
 
           toast.success(
             newValue === "1"
@@ -349,22 +417,23 @@ const ActionButton = () => {
       },
     },
     {
-      icon: <NotebookPen
-        size={25}
-        color={contactInfo?.is_stop === "1" ? "red" : "#890993ff"}
-      />,
-      disabled: stopLoading,
-
+      icon: (
+        <NotebookPen
+          size={25}
+          color="#890993ff"
+        />
+      ),
+      disabled: false,
       label: "Add Notes",
-      action: async () => {
-
+      action: () => {
+        setShowNotes((p) => !p);
       },
     },
   ];
 
   /* Assign handler — hashtag always GET since assign is a one-way action */
   const handleForwardWithHashtag = (id) => {
-    dispatch(forwardEmail(contactInfo?.email1, id));
+    dispatch(forwardEmail(email, id));
     triggerHashtag(MEMO.assign, "GET");
   };
 
@@ -385,7 +454,7 @@ const ActionButton = () => {
                   currentThreadId={threadId}
                   onMoveSuccess={() =>
                     dispatch(
-                      getLadger({ email: contactInfo?.email1, loading: false }),
+                      getLadger({ email: email, loading: false }),
                     )
                   }
                 />
@@ -441,27 +510,125 @@ const ActionButton = () => {
 
                 {showTags && btn.label === "Mark Tag" && (
                   <div className="absolute top-14 right-0 w-60 z-40">
-                    <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
+                    <div className="bg-white rounded-xl border shadow-lg ">
                       {tagLoading ? (
                         <div className="py-6 flex justify-center">
                           <LoadingChase />
                         </div>
-                      ) : (
-                        tags.map((tag) => (
+                      ) : <CustomDropdown defaultOpen={true} options={tags?.map(tag => ({ label: tag.label, value: tag.name }))} onChange={(tag) => {
+                        dispatch(applyTag({ email, tag }))
+                        setShowTags(false)
+                      }} outsideClickHandle={() => setShowTags(false)} />}
+                    </div>
+                  </div>
+                )}
+                {showNotes && btn.label === "Add Notes" && (
+                  <div
+                    ref={noteRef}
+                    className="absolute top-14 right-0 w-96 z-50"
+                  >
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl p-4 space-y-4">
+
+                      {/* Search User */}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={searchUser}
+                          onChange={(e) => {
+                            setSearchUser(e.target.value);
+                            setSelectedUser(null);
+                          }}
+                          placeholder="Search user..."
+                          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                        />
+
+                        {searchUser && !selectedUser && (
+                          <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                            {filteredUsers.length > 0 ? (
+                              filteredUsers.map((user) => (
+                                <button
+                                  key={user.email}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setSearchUser(user.name);
+                                  }}
+                                  className="w-full px-4 py-3 text-left hover:bg-indigo-50 transition flex items-center gap-3"
+                                >
+                                  <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center font-medium text-indigo-600">
+                                    {user.name?.charAt(0)}
+                                  </div>
+
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {user.name}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {user.email}
+                                    </div>
+                                  </div>
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-4 py-3 text-sm text-gray-500">
+                                No users found
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Selected User */}
+                      {selectedUser && (
+                        <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2">
+                          <div>
+                            <div className="font-medium text-sm">
+                              {selectedUser.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {selectedUser.email}
+                            </div>
+                          </div>
+
                           <button
-                            key={tag.name}
                             onClick={() => {
-                              dispatch(applyTag(tag.name));
-                              setShowTags(false);
+                              setSelectedUser(null);
+                              setSearchUser("");
                             }}
-                            className="w-full text-left px-4 py-3 text-sm font-semibold
-                        text-gray-700 border-b last:border-b-0
-                        hover:bg-indigo-50 hover:text-indigo-600 transition"
+                            className="text-gray-500 hover:text-red-500"
                           >
-                            {tag.name}
+                            ✕
                           </button>
-                        ))
+                        </div>
                       )}
+
+                      {/* Note Box */}
+                      <textarea
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="Write your note..."
+                        rows={4}
+                        className="w-full border rounded-xl px-3 py-3 resize-none text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none"
+                      />
+
+                      {/* Actions */}
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setShowNotes(false);
+                            setSearchUser("");
+                            setSelectedUser(null);
+                            setNote("");
+                          }}
+                          className="px-4 py-2 text-sm border rounded-xl hover:bg-gray-50"
+                        >
+                          Cancel
+                        </button>
+
+
+                        <IconButton icon={Send} label="Send Note" loading={sendingNote} variant="primary" rounded="xl" disabled={isPending || !note.trim() || !selectedUser} onClick={() => mutate()}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}

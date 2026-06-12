@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Pencil, Trash2, Timer } from "lucide-react";
 import SummaryCard from "../../SummaryCard";
 import PageHeader from "../../PageHeader";
-import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { buildTable } from "../../Preview";
 import { useThreadContext } from "../../../hooks/useThreadContext";
-import { LoadingChase } from "../../Loading";
 import { toast } from "react-toastify";
 import { Save, Send, X, Loader2 } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
@@ -19,11 +16,18 @@ import {
   updateDeal,
 } from "../../../store/Slices/deals";
 import { extractEmail } from "../../../assets/assets";
+import { useTemplateByName } from "../../../queries/template.queries";
+import { useContact } from "../../../queries/contact.queries";
+import { useOffersByEmail } from "../../../queries/offers.queries";
+import { dealKeys, useDealsByEmail } from "../../../queries/deals.queries";
+import { queryClient } from "../../../lib/queryClient";
 
-export default function ThreadDeals({ threadId, email, id }) {
+export default function ThreadDeals({ email, id }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [send, setSend] = useState(false);
+  const { data } = useContact(email)
+  const threadId = data?.contact?.thread_id
   const [currentDeals, setCurrentDeals] = useState([]);
   const [selectedDeals, setSelectedDeals] = useState([]);
   const [editingIds, setEditingIds] = useState([]);
@@ -31,38 +35,19 @@ export default function ThreadDeals({ threadId, email, id }) {
   const { websites: websiteLists } = useSelector((state) => state.website);
   const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
 
-  const { deals, deleting, updating, message, error, deleteDealId } =
-    useSelector((state) => state.deals);
-  const { offers } = useSelector((state) => state.offers);
-  const { crmEndpoint } = useSelector((state) => state.user);
+  const { deleting, updating, message, error, deleteDealId } = useSelector((state) => state.deals);
+  const { data: dealsData, isPending: dealsLoading, isError: dealsError } = useDealsByEmail(email);
+  const { data: offersData, isPending: offersLoading, isError: offersError } = useOffersByEmail(email);
   const { handleMove } = useThreadContext();
 
   const [validWebsite, setValidWebsite] = useState({});
 
   // 🔥 TEMPLATE FETCH
-  const { data: templateData } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: { name: "DealORG" },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "TemplateData",
-  });
+  const { data: templateData } = useTemplateByName("DealORG");
 
   useEffect(() => {
-    const currentOffers = showBrandTimeline ? offers : offers.filter(
-      (d) => extractEmail(d.real_name ?? d.email_c) == email,
-    );
-
-    const currentDeals = showBrandTimeline ? deals : deals.filter(
-      (d) => extractEmail(d.real_name ?? d.email) == email,
-    );
-
+    const currentOffers = offersData?.data ?? [];
+    const currentDeals = dealsData?.data ?? [];
     const valid = {}
     const currentContacts = showBrandTimeline ? contacts : [{ email1: email }]
     currentContacts.forEach(contact => {
@@ -77,7 +62,7 @@ export default function ThreadDeals({ threadId, email, id }) {
     let activeDeals = id ? currentDeals.filter((o) => o.id == id) : currentDeals.filter((o) => o.status == "active");
     setValidWebsite(valid);
     setCurrentDeals(activeDeals);
-  }, [offers, deals, editingIds, email, id]);
+  }, [offersData, dealsData, editingIds, email, id]);
   const toggleSelect = (id) => {
     setSelectedDeals((prev) =>
       prev.includes(id)
@@ -132,13 +117,8 @@ export default function ThreadDeals({ threadId, email, id }) {
     dispatch(deleteDeal(deal, id));
   };
 
-  const handleCreate = (itemEmail, itemThreadId) => {
-    navigate(`/deals/create`, {
-      state: {
-        email: itemEmail,
-        threadId: itemThreadId,
-      },
-    });
+  const handleCreate = (itemEmail) => {
+    navigate(`/deals/create?email=${itemEmail}`);
   };
 
   const handlePreview = (dealsData = currentDeals) => {
@@ -161,6 +141,7 @@ export default function ThreadDeals({ threadId, email, id }) {
     }
 
     if (message) {
+      queryClient.invalidateQueries({ queryKey: dealKeys.all })
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {
@@ -191,7 +172,24 @@ export default function ThreadDeals({ threadId, email, id }) {
     <div className="w-full flex gap-6 items-start">
       {/* 🔥 TABLE */}
       <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
-        <PageHeader title={"DEALS"} onAdd={() => handleCreate(email, threadId)} />
+        <PageHeader title={"DEALS"} onAdd={() => handleCreate(email)} />
+        {dealsLoading && (
+          <div className="space-y-3 mt-4">
+            {Array.from({
+              length: 2,
+            }).map((_, i) => (
+              <div
+                key={i}
+                className="h-16 rounded-xl bg-gray-100 animate-pulse"
+              />
+            ))}
+          </div>
+        )}
+        {dealsError && (
+          <div className="py-8 text-center text-red-500">
+            Failed to load deals
+          </div>
+        )}
         {selectedDeals.length > 0 && (
           <div className="mb-4 flex justify-end gap-3">
 
@@ -432,7 +430,7 @@ export default function ThreadDeals({ threadId, email, id }) {
                       {showBrandTimeline && <IconButton
                         icon={Plus}
                         label="Create"
-                        onClick={() => handleCreate(itemEmail, itemThreadId)}
+                        onClick={() => handleCreate(itemEmail)}
                         className="bg-green-100 hover:bg-green-200 text-green-600"
 
                       />}

@@ -2,13 +2,18 @@ import axios from "axios";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
 import CryptoJS from "crypto-js";
 const SECRET = import.meta.env.VITE_SMARTGATEWAY_SECRET_KEY;
+import { store } from "../store/store";
 
 let CRMENDPOINT = "";
 let DB_NAME = "";
+let USER_EMAIL = "";
+const getCurrentUserId = () => store.getState()?.crmUser?.currentUser?.id;
 
-export function setConfig(endpoint, db_name) {
+
+export function setConfig(endpoint, db_name, dash_user_email) {
   CRMENDPOINT = endpoint;
   DB_NAME = db_name;
+  USER_EMAIL = dash_user_email;
 }
 
 const apiClient = axios.create({
@@ -34,7 +39,6 @@ export const apiRequest = async ({
     },
     withCredentials,
   });
-
   return response.data;
 };
 
@@ -95,7 +99,12 @@ export const fetchGpc = async ({
   params = {},
   headers = {},
 }) => {
-  const params1 = DB_NAME ? { ...params, db_name: DB_NAME } : params;
+  // console.log(`Current User ID: ${getCurrentUserId()}`);
+  const params1 = {
+    ...params,
+    ...(DB_NAME ? { db_name: DB_NAME } : {}),
+    ...(USER_EMAIL ? { dash_user_email: USER_EMAIL } : {}),
+  };
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const requestHeaders = {
     "X-Api-Key": FETCH_GPC_X_API_KEY,

@@ -804,6 +804,8 @@ const [otherReason, setOtherReason] = useState("");
         );
       }
 
+      // clear onboarding popup flag
+sessionStorage.removeItem("onboardingShown")
       toast.success(data?.message || "Profile delete request completed");
       window.setTimeout(() => {
         setShowDeleteModal(false);

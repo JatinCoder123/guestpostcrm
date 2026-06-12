@@ -16,6 +16,7 @@ import {
   EyeOff,
   Funnel,
   FunnelX,
+  Plus,
   RotateCcw,
 } from "lucide-react";
 import { DateRangeFilter } from "../../DateRangeFilter";
@@ -26,13 +27,9 @@ import SortDropdown from "./SortDropDown";
 import FilterColumn from "./FilterColumn";
 import { getPreference, preferencesAction } from "../../../store/Slices/preferencesSlice";
 import { queryClient } from "../../../lib/queryClient";
-import { contactKeys } from "../../../queries/contact.queries";
-
 const TableContext = createContext();
-
 export const useTableContext = () => {
   const ctx = useContext(TableContext);
-
   if (!ctx) {
     throw new Error(
       "You're using table context in wrong place",
@@ -90,22 +87,24 @@ const TableView = ({
   children,
   pageCount,
   pageIndex,
+  canAdd = false,
+  handleAddClick,
   count,
   loading,
   showLoading = true,
   refreshKey
 }) => {
-  const sorting = preferences.sorting
-  const dateFilter = preferences.date_filter || {};
-  const fromDate = dateFilter.date_from?.split(" ")[0] || todayStr();
+  const sorting = preferences?.sorting ?? {}
+  const dateFilter = preferences?.date_filter || {};
+  const fromDate = dateFilter?.date_from?.split(" ")[0] || todayStr();
   const fromTime = dateFilter.date_from?.split(" ")[1] || "00:01";
   const toDate = dateFilter.date_to?.split(" ")[0] || todayStr();
   const toTime = dateFilter.date_to?.split(" ")[1] || "23:59";
   const filterActive = !!dateFilter.date_from && !!dateFilter.date_to;
-  const filters = preferences.filters;
+  const filters = preferences?.filters ?? {};
   const search = {
-    search: preferences.search_filter?.search || "",
-    search_fields: preferences.search_filter?.search_fields || [],
+    search: preferences?.search_filter?.search || "",
+    search_fields: preferences?.search_filter?.search_fields || [],
   };
   const [showStatus, setShowStatus] = useState(true);
   const [showFilterColumn, setShowFilterColumn] = useState(true);
@@ -153,8 +152,10 @@ const TableView = ({
         table: slice,
         key: "date_filter",
         value: {
+          date_range: "custom",
           date_from,
           date_to,
+          date_field: "date_entered"
         },
       })
     );
@@ -167,8 +168,8 @@ const TableView = ({
         value: {
           date_from: "",
           date_to: "",
-          date_field: "",
-          date_range: "",
+          date_range: "custom",
+          date_field: "date_entered"
         },
       })
     );
@@ -286,7 +287,14 @@ const TableView = ({
             onReset={handleResetFilter}
           />
           <SearchBar />
-          <div className="ml-auto">
+          <div className="ml-auto flex gap-2">
+            {canAdd && <IconButton
+              onClick={handleAddClick}
+              className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"
+              icon={Plus}
+              label="Create"
+            />}
+
             <IconButton
               onClick={handleRefresh}
               className="h-10 w-10 rounded-lg border bg-white hover:bg-gray-100 transition flex items-center justify-center"

@@ -12,8 +12,8 @@ export const getStoredPreferences = () => {
 // utils/buildTableRequestBody.js
 
 export const buildTableRequestBody = (
-    preferences,
-    defaults
+    preferences = {},
+    defaultFilters = {}
 ) => {
     const body = {};
 
@@ -25,26 +25,21 @@ export const buildTableRequestBody = (
         body.date_field =
             preferences.date_filter.date_field;
 
-        if (
-            preferences.date_filter.date_range ===
-            "custom"
-        ) {
-            body.date_from =
-                preferences.date_filter.date_from;
+        body.date_from =
+            preferences.date_filter.date_from;
 
-            body.date_to =
-                preferences.date_filter.date_to;
-        }
+        body.date_to =
+            preferences.date_filter.date_to;
     }
 
-    // Merge Default Filters + User Filters
-    const mergedFilters = {
-        ...(defaults?.filters || {}),
+    // Merge default filters + user filters
+    const filters = {
+        ...defaultFilters,
         ...(preferences?.filters || {}),
     };
 
-    if (Object.keys(mergedFilters).length) {
-        body.filters = mergedFilters;
+    if (Object.keys(filters).length) {
+        body.filters = filters;
     }
 
     // Search
@@ -57,8 +52,7 @@ export const buildTableRequestBody = (
 
     // Search Fields
     if (
-        preferences?.search_filter?.search_fields
-            ?.length
+        preferences?.search_filter?.search_fields?.length
     ) {
         body.search_fields =
             preferences.search_filter.search_fields;
@@ -77,4 +71,15 @@ export const buildTableRequestBody = (
     }
 
     return body;
+};
+export const INITIAL_TABLE_FILTERS = {
+    emails: {
+        status: "unreplied",
+    },
+
+    deals: {
+        status: "active",
+    },
+
+
 };

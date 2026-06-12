@@ -137,8 +137,8 @@ export const getDeals = ({
       };
       brand
         ? (res = await fetchGpc({
-            params: { type: "brandTimeline", case: "deal", ...params },
-          }))
+          params: { type: "brandTimeline", case: "deal", ...params },
+        }))
         : (res = await fetchGpc({ params: { type: "get_deals", ...params } }));
       const data = brand ? res.data.deal : res;
       showConsole && console.log(`${brand ? "Brand" : ""} Deals`, data);
@@ -157,12 +157,11 @@ export const getDeals = ({
     }
   };
 };
-export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
+export const createDeal = ({ threadId, email, deals = [], contactId }) => {
   return async (dispatch, getState) => {
     dispatch(dealsSlice.actions.createDealRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     const crmEndpoint = getState().user.crmEndpoint;
-
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
         domain: crmEndpoint,
@@ -192,23 +191,14 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
           })),
           child_bean: {
             module: "Contacts",
-            id: state.viewEmail.contactInfo.id,
+            id: contactId,
             email: email,
           },
         },
         method: "POST",
       });
-      const remRes = await fetchGpc({
-        params: { type: "set_reminder" },
-        body: {
-          websites: deals.map((deal) => deal.website_c),
-          email: email,
-          reminder_type: "deal",
-        },
-        method: "POST",
-      });
+
       showConsole && console.log(`Create Deal`, data);
-      showConsole && console.log(`Reminder Response`, remRes);
       dispatch(
         dealsSlice.actions.createDealSucess({
           message: "Deals Created Successfully",
@@ -225,7 +215,10 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
         email,
         thread_id: threadId,
         message_id: data.id,
-        group: "Deal",
+        group: "deal",
+        reminder_type: "deal",
+        websites: deals.map((deal) => deal.website_c),
+
         items: deals.map((deal) =>
           buildLedgerItem({
             status: "Deal-Created",
@@ -235,9 +228,11 @@ export const createDeal = ({ threadId, email, deals = [], isSend = false }) => {
             parent_name: "outr_deal",
           }),
         ),
+
         okHandler: () => dispatch(getLadger({ email, loading: false })),
       });
     } catch (error) {
+      console.log(error)
       dispatch(
         dealsSlice.actions.createDealFailed(
           "Deal Creation Failed! Please Try Again",
@@ -301,16 +296,6 @@ export const updateDeal = ({ deals = [] }) => {
         });
         showConsole && console.log(`UPdate Deal`, data);
       });
-      const remRes = await fetchGpc({
-        params: { type: "set_reminder" },
-        body: {
-          websites: deals.map((deal) => deal.website_c),
-          email: email,
-          reminder_type: "deal",
-        },
-        method: "POST",
-      });
-      showConsole && console.log(`Reminder Response`, remRes);
       const updatedDeals = getState().deals.deals.map((d) => {
         const updated = deals.find((ud) => ud.id === d.id);
         return updated ? updated : d;

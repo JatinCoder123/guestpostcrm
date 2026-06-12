@@ -93,7 +93,7 @@ export const getUser = (email = null) => {
           id: data.id,
         })
       );
-      setConfig(data.crmEndpoint, data.db_name)
+      setConfig(data.crmEndpoint, data.db_name, data.businessEmail);
       dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
       console.log("Full Error:", error.response);
@@ -170,6 +170,7 @@ export const logout = () => {
 
       // Optional: set intro again after clear
       localStorage.setItem("displayIntro", "true");
+      setConfig("", "", "");
 
       dispatch(userSlice.actions.logoutSuccess(data.message));
       dispatch(userSlice.actions.clearAllErrors());

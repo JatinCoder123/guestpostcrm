@@ -1,5 +1,6 @@
 import { showConsole } from "../assets/assets";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
+import { store } from "../store/store";
 import { apiRequest, fetchGpc } from "./api";
 
 let CURRENT_USER = {
@@ -34,7 +35,10 @@ export const createLedgerEntry = async ({
   message_id,
   group = "General",
   items = [],
-  okHandler,
+  reminder_type,
+  websites = [],
+  extraPayload = {},
+  okHandler = () => { },
 }) => {
   try {
     const payload = {
@@ -43,7 +47,15 @@ export const createLedgerEntry = async ({
       message_id,
       group,
       item: items,
+
+      // optional fields
+      ...(reminder_type && { reminder_type }),
+      ...(websites?.length > 0 && { websites }),
+
+      // any future custom fields
+      ...extraPayload,
     };
+
     const data = await fetchGpc({
       method: "POST",
       body: payload,
@@ -51,9 +63,12 @@ export const createLedgerEntry = async ({
     });
 
     showConsole && console.log("Ledger Created", data);
-    okHandler();
+    okHandler(data);
+
+    return data;
   } catch (error) {
     showConsole && console.log("Ledger API Failed", error);
+    throw error;
   }
 };
 
@@ -128,3 +143,12 @@ export const generatePDF = async (html, id = "invoice") => {
   }
 };
 
+export const getRighteeUsers = async () => {
+  const response = await apiRequest({ endpoint: "https://crm.outrightsystems.org/index.php?entryPoint=trynow&team_member=1", })
+  console.log("CRM USER2", response)
+  return response.data ?? []
+}
+export const getCRM = () =>
+  store.getState()
+    .user?.crmEndpoint
+    ?.split("?")[0];

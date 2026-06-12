@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { viewEmailAction } from "../../../store/Slices/viewEmail";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import useIdle from "../../../hooks/useIdle";
-import { useThreadContext } from "../../../hooks/useThreadContext";
 import TinyEditor from "../../TinyEditor";
 import MessageModal from "../../MessageModal";
 import { SendingOverlay } from "./SendingOverlay";
@@ -22,12 +21,11 @@ const ThreadReply = () => {
     setEditorContent,
     handleSendClick,
     checkingThreadId,
+    email,
+    threadId
   } = useOutletContext() || [];
   const [showMessageModal, setShowMessageModal] = useState(false);
   const lastMessage = emails?.[emails.length - 1];
-  const {
-    context: { currentEmail, currentThread: threadId },
-  } = useThreadContext();
   useIdle({ idle: false });
   const dispatch = useDispatch();
   const {
@@ -62,12 +60,12 @@ const ThreadReply = () => {
   }, [showFailedModal]);
   return (
     <>
-      <SendingOverlay sending={sending} email={currentEmail} />
+      <SendingOverlay sending={sending} email={email} />
       <MessageModal
         showMessageModal={showMessageModal}
         closeMessageModal={() => setShowMessageModal(false)}
         messageId={lastMessage?.message_id}
-        email={currentEmail}
+        email={email}
         threadId={threadId}
         viewEmail={emails}
         count={emails?.length || 0}

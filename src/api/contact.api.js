@@ -1,4 +1,4 @@
-import { http } from "../services/api";
+import { fetchGpc, http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
 
 // contact.api.js
@@ -80,7 +80,7 @@ export const getContactStats = async (
                     }
                 },
                 {
-                    "key": "brand",
+                    "key": "Brand",
                     "module": "Contacts",
                     "filters": {
                         "type": "Brand"
@@ -101,10 +101,10 @@ export const getContactStats = async (
                     }
                 },
                 {
-                    "key": "link_exchange",
+                    "key": "forwarded",
                     "module": "Contacts",
                     "filters": {
-                        "exchange": "1"
+                        "forwarded": "1"
                     }
                 },
                 {
@@ -115,10 +115,10 @@ export const getContactStats = async (
                     }
                 },
                 {
-                    "key": "forwarded",
+                    "key": "exchange",
                     "module": "Contacts",
                     "filters": {
-                        "forwarded": "1"
+                        "exchange": "1"
                     }
                 }
 
@@ -133,7 +133,7 @@ export const getContactStats = async (
 export const getAllContacts = async ({
     page = 1,
     preferences,
-    defaults={}
+    defaults = {}
 } = {}) => {
     const data = await http({
         method: "POST",
@@ -146,6 +146,7 @@ export const getAllContacts = async ({
             ...buildTableRequestBody(preferences, defaults)
         }
     });
+    console.log("Fetched contacts data:", data);
     return data;
 };
 
@@ -156,14 +157,7 @@ export const getContactByEmail = async (email) => {
     if (!email) {
         throw new Error("Email is required");
     }
-
-    const response = await http({
-        method: "GET",
-        params: {
-            email,
-        },
-    });
-
+    const response = await fetchGpc({ params: { type: "get_contact", email } });
     return response;
 };
 
@@ -187,14 +181,15 @@ export const createContact = async (payload) => {
  * Update contact
  */
 export const updateContact = async ({
-    email,
+    id,
     payload,
 }) => {
     const response = await http({
-        method: "PUT",
+        method: "POST",
         body: {
-            email,
-            ...payload,
+            module: "Contacts",
+            id,
+            data: { ...payload }
         },
     });
 

@@ -11,6 +11,7 @@ import {
     createOrder,
     updateOrder,
     getOrderStats,
+    getOrdersByEmail,
 } from "../api/orders.api";
 
 import toast from "react-hot-toast";
@@ -38,6 +39,11 @@ export const orderKeys = {
         "orders",
         "id",
         id,
+    ],
+    byEmail: (email) => [
+        "orders",
+        "email",
+        email,
     ],
 };
 
@@ -79,12 +85,14 @@ export const useOrderStats = (
  * Infinite Orders List
  */
 export const useInfiniteOrders = (
-    preferences = {}
+    preferences = {},
+    email = ""
 ) => {
     return useInfiniteQuery({
         queryKey:
             orderKeys.lists(
-                preferences
+                preferences,
+                email
             ),
 
         queryFn: ({
@@ -93,6 +101,7 @@ export const useInfiniteOrders = (
             getAllOrders({
                 preferences,
                 page: pageParam,
+                email
             }),
 
         initialPageParam: 1,
@@ -189,3 +198,22 @@ export const useUpdateOrder = () => {
         },
     });
 };
+export const useOrdersByEmail = (
+    email = ""
+) =>
+    useQuery({
+        queryKey:
+            orderKeys.byEmail(
+                email
+            ),
+
+        queryFn: () =>
+            getOrdersByEmail(
+                email
+            ),
+
+        enabled: !!email,
+
+        staleTime:
+            5 * 60 * 1000,
+    });

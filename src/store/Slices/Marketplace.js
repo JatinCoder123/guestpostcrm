@@ -74,34 +74,7 @@ const marketplaceSlice = createSlice({
   },
 });
 
-// Named export: thunk
-export const getMarketplace = () => {
-  return async (dispatch, getState) => {
-    dispatch(marketplaceSlice.actions.getMarketplaceRequest());
 
-    try {
-      const data = await fetchGpc({ params: { type: "get_marketplace" } }
-      );
-
-      showConsole && console.log("MARKETPLACE:", data);
-
-      dispatch(
-        marketplaceSlice.actions.getMarketplaceSuccess({
-          count: data.data_count ?? 0,
-          items: data.data ?? [],
-        })
-      );
-
-      dispatch(marketplaceSlice.actions.clearErrors());
-    } catch (error) {
-      dispatch(
-        marketplaceSlice.actions.getMarketplaceFailed(
-          "Fetching Marketplace Failed"
-        )
-      );
-    }
-  };
-};
 export const addMarketPlace = (email, brand = false) => {
   return async (dispatch, getState) => {
     dispatch(marketplaceSlice.actions.addMarketplaceRequest());
@@ -113,8 +86,6 @@ export const addMarketPlace = (email, brand = false) => {
       const data = await fetchGpc({ method: "POST", params: { type: 'setMarketPlace' }, body: { email, domain } });
       showConsole && console.log("MARKETPLACE:", data);
       dispatch(marketplaceSlice.actions.addMarketplaceSuccess());
-      dispatch(getMarketplace())
-      dispatch(viewEmailAction.updateContactInfo({ key: "bulk" }))
       updateActivity(email, "Add To MarketPlace")
       await createLedgerEntry({
         domain: getState().user.crmEndpoint.split("?")[0],

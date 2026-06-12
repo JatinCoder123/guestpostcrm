@@ -25,11 +25,15 @@ import {
 import { toast } from "react-toastify";
 import AccountPage from "../components/pages/AccountPage";
 import { LoadingAll } from "./Loading";
+import { useContact } from "../queries/contact.queries";
 
 
-export default function ContactDetail() {
-    const { contactInfo, accountInfo, dealInfo, message, error, contactLoading } =
-        useSelector((state) => state.viewEmail);
+export default function ContactDetail({ email }) {
+    const { data, isPending: contactLoading } =
+        useContact(email);
+    const contactInfo = data?.contact
+    const accountInfo = data?.account
+    const dealInfo = data?.deal_fetch
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         contact: {},
@@ -140,17 +144,17 @@ export default function ContactDetail() {
         setIsEditing(false);
     };
 
-    useEffect(() => {
-        if (message) {
-            toast.success(message);
-            dispatch(getContact());
-            dispatch(viewEmailAction.clearAllMessage());
-        }
-        if (error) {
-            toast.error(error);
-            dispatch(viewEmailAction.clearAllErrors());
-        }
-    }, [message, error, dispatch]);
+    // useEffect(() => {
+    //     if (message) {
+    //         toast.success(message);
+    //         dispatch(getContact());
+    //         dispatch(viewEmailAction.clearAllMessage());
+    //     }
+    //     if (error) {
+    //         toast.error(error);
+    //         dispatch(viewEmailAction.clearAllErrors());
+    //     }
+    // }, [message, error, dispatch]);
     if (contactLoading) {
         return (
             <div className="w-full mt-10  flex items-center justify-center bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8]">

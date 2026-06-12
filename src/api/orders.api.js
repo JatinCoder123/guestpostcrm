@@ -1,12 +1,13 @@
 // orders.api.js
 
-import { http } from "../services/api";
+import { fetchGpc, http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
 
 
 export const getAllOrders = ({
     preferences,
     page = 1,
+    email = "",
 }) =>
     http({
         method: "POST",
@@ -18,6 +19,7 @@ export const getAllOrders = ({
                 preferences
             ),
         },
+        params: { email }
     });
 
 export const getOrderById = (
@@ -125,5 +127,16 @@ export const getOrderStats = (
                     "module": "outr_order_gp_li"
                 },
             ]
+        },
+    });
+export const getOrdersByEmail = (
+    email
+) =>
+    fetchGpc({
+        params: {
+            type: "get_orders",
+            email,
+            page: 1,
+            page_size: 50,
         },
     });

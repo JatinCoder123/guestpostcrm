@@ -1,17 +1,10 @@
 import {
-  User,
-  Globe,
   Send,
   X,
   ChevronLeft,
-  Move,
   CornerUpRight,
-  Mail,
-  Edit,
-  DollarSign,
   ArrowBigUp,
   ArrowBigDown,
-  Copy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -23,7 +16,6 @@ import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { SmallTinyEditor } from "../../TinyEditor.jsx";
-import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
 
 import {
   PanelGroup,
@@ -37,27 +29,29 @@ import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import RightThreadHeader from "./RightThreadHeader.jsx";
 import NavigationBar from "./NavigationBar.jsx";
+import { useMailerSummary } from "../../../queries/mailerSummary.queries.js";
+import { useThread } from "../../../queries/threads.queries.js";
 
 export default function ThreadView() {
   const scrollRef = useRef();
 
   const {
-    emails,
     loadAiReply = true,
     superfastReply,
     editorContent,
     setEditorContent,
     handleSendClick,
     checkingThreadId,
-    contentLoading,
+    email,
+    threadId
   } = useOutletContext() || [];
-
+  const { data: emailsData,isPending:loading } = useThread(email, threadId)
+  const emails = emailsData?.emails
   const firstMessageRef = useRef(null);
-  const { mailersSummary, loading: summaryLoading } = useSelector(state => state.mailersSummary)
+  const { data, isPending: summaryLoading } = useMailerSummary(email)
+  const mailersSummary = data?.mailers_summary
 
-  const {
-    context: { currentThread: threadId, currentEmail },
-  } = useThreadContext();
+
 
   const lastMessageRef = useRef(null);
 
@@ -66,7 +60,6 @@ export default function ThreadView() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { loading } = useSelector((s) => s.threadEmail);
 
   const { sending } = useSelector((s) => s.viewEmail);
 
@@ -85,25 +78,11 @@ export default function ThreadView() {
   const [focusedIndex, setFocusedIndex] = useState(
     visibleMessages?.length - 1
   );
-
-  const {
-    aiReply: aiResponse,
-    error: aiError,
-    message,
-  } = useSelector((state) => state.aiReply);
-
   useEffect(() => {
-    dispatch(getAiReply(threadId));
-    setEditorContent("");
-  }, [threadId]);
-
-  useEffect(() => {
-    if (message && aiResponse) {
-      setEditorContent(aiResponse);
-      dispatch(aiReplyAction.clearMessge());
+    if (mailersSummary && !summaryLoading) {
+      setEditorContent(mailersSummary?.ai_response ?? "")
     }
-  }, [aiResponse, aiError, message]);
-
+  }, [mailersSummary, summaryLoading])
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -181,7 +160,7 @@ export default function ThreadView() {
     <>
       <SendingOverlay
         sending={sending || checkingThreadId}
-        email={currentEmail}
+        email={email}
       />
 
       <motion.div
@@ -356,7 +335,7 @@ export default function ThreadView() {
                         </div>
 
                         {/* SUMMARY */}
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 h-[260px] overflow-hidden flex flex-col">
+                        <div className="bg-yellow-100 backdrop-blur-md rounded-2xl p-4 border border-white/10 h-[260px] overflow-hidden flex flex-col">
 
 
 
@@ -373,7 +352,7 @@ export default function ThreadView() {
                               </div>
                             ) : (
                               <div className="h-full overflow-y-auto pr-2 custom-scrollbar">
-                                <p className="text-sm text-white/90 leading-7 whitespace-pre-wrap break-words">
+                                <p className="text-sm text-black/90 leading-7 whitespace-pre-wrap break-words">
                                   {mailersSummary?.summary || (
                                     <span className="text-white/50">
                                       No summary available
@@ -393,7 +372,7 @@ export default function ThreadView() {
                       {/* RIGHT PANEL */}
                       <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
                         {/* LOADING */}
-                        {contentLoading && (
+                        {summaryLoading && (
                           <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>

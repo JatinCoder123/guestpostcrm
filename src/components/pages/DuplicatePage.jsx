@@ -1,31 +1,28 @@
 import { Mail, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  duplicateEmailActions,
-  getDuplicateEmails,
-} from "../../store/Slices/duplicateEmailSlice";
 import { toast } from "react-toastify";
 import { useThreadContext } from "../../hooks/useThreadContext";
+import { useDuplicateThreads } from "../../queries/threads.queries";
+import { useTimeline } from "../../context/TimelineContext";
 
 export const Duplicate = () => {
-  const dispatch = useDispatch();
-  const { duplicateEmail, loading, error } = useSelector(
+  const {  error } = useSelector(
     (state) => state.duplicateEmails,
   );
+  const {currentEmail} = useTimeline()
+  const {data,isPending:loading,isError} = useDuplicateThreads(currentEmail)
+  const duplicateEmail = data?.data || [];
   const { handleMove } = useThreadContext();
   const navigate = useNavigate();
-  useEffect(() => {
-    dispatch(getDuplicateEmails());
-  }, [dispatch]);
+
 
   useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(duplicateEmailActions.clearDuplicateEmailErrors());
+    if (isError) {
+      toast.error("Failed to fetch duplicate emails!");
     }
-  }, [error, dispatch]);
+  }, [isError]);
 
   // Convert object to iterable entries
   const entries = duplicateEmail ? Object.entries(duplicateEmail) : [];

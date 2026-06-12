@@ -17,37 +17,78 @@ import { excludeName, extractEmail } from "../../assets/assets.js";
 import TableView, { Table } from "../ui/table/Table.jsx";
 import TableTitleBar from "../ui/table/TableTitleBar.jsx";
 import { LoadingChase } from "../Loading.jsx"
-import { cancelReminder, getOrderRem, orderRemAction, sendReminder } from "../../store/Slices/reminder.js";
+import { cancelReminder, orderRemAction, sendReminder } from "../../store/Slices/reminder.js";
 import { toast } from "react-toastify";
+import { reminderKeys, useInfiniteReminders, useReminderStats } from "../../queries/reminder.queries.js";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { queryClient } from "../../lib/queryClient.js";
 const STATUS_CONFIG = [
   {
-    value: "sent",
+    value: "Sent",
     label: "Sent",
     icon: Send,
     color: "#056439", // orange (amber-500)
-    showAmount: true
+    filter: "status",
   },
   {
-    value: "pending",
+    value: "Pending",
     label: "Pending",
     icon: StopCircle,
     color: "#d8ef44", // red (red-500)
+    filter: "status",
+
   },
   {
     value: "cancel",
     label: "Cancelled",
     icon: Ban,
     color: "#EF4444", // red (red-500)
+    filter: "status",
+
   }
 ];
 export function ReminderPage() {
-  const { count, reminders, loading, pageIndex, summary, sending, sendReminderId, message, error } = useSelector(
+  const { sending, sendReminderId, message, error } = useSelector(
     (state) => state.reminders
   );
+  const preferences = useTablePreference("reminders");
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = useInfiniteReminders(preferences);
+  const { data: summary } = useReminderStats();
   const { handleDateClick, enteredEmail } =
     useContext(PageContext);
   const dispatch = useDispatch();
+  const reminders =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
 
+  const pages =
+    data?.pages ?? [];
+
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
   const columns = [
     {
       label: "Created At",
@@ -55,11 +96,11 @@ export function ReminderPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
+      onClick: (row) => handleDateClick({ email: row?.recipient, navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       )
     },
@@ -69,11 +110,11 @@ export function ReminderPage() {
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
-      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
+      onClick: (row) => handleDateClick({ email: row?.recipient, navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {excludeName(row?.real_name)}
+          {excludeName(row?.recipient)}
         </span>
       )
     },
@@ -100,9 +141,9 @@ export function ReminderPage() {
 
       render: (row) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs ${row.status.toLowerCase() === "pending"
+          className={`px-2 py-1 rounded-full text-xs ${row.status?.toLowerCase() === "pending"
             ? "bg-yellow-100 text-yellow-800"
-            : row.status.toLowerCase() === "sent"
+            : row.status?.toLowerCase() === "sent"
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
             }`}
@@ -154,7 +195,7 @@ export function ReminderPage() {
               <button
                 className={`px-3 py-1   rounded-lg hover:scale-110 transition-colors text-sm ${valid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                 disabled={valid}
-                onClick={() => { dispatch(cancelReminder({ email: extractEmail(row?.real_name), reminderId: row.id })) }}
+                onClick={() => { dispatch(cancelReminder({ email: row?.recipient, reminderId: row.id })) }}
 
               >
                 <CircleX color="red" />
@@ -168,19 +209,25 @@ export function ReminderPage() {
 
 
   ]
-  const statusList = STATUS_CONFIG.map(config => {
+  const statusList =
+    STATUS_CONFIG.map(
+      (config) => ({
+        ...config,
 
-    return {
-      ...config,
-      count: Number(summary?.[`${config.value}`] || 0),
-    };
+        count: Number(
+          summary?.stats?.[
+            config.value
+          ]?.count || 0
+        ),
+      })
+    );
+  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
 
-  });
   useEffect(() => {
     if (message) {
+      queryClient.invalidateQueries({ queryKey: reminderKeys.all })
       toast.success(message)
       dispatch(orderRemAction.clearAllMessage())
-      dispatch(getOrderRem({ email: enteredEmail }));
 
     }
     if (error) {
@@ -195,10 +242,25 @@ export function ReminderPage() {
         tableName={"Reminders"}
         columns={columns}
         slice={"reminders"}
+        preferences={preferences}
         statusKey={"status"}
+        statusCount={statusCount}
         statusList={statusList}
-        fetchNextPage={() => dispatch(getOrderRem({ email: enteredEmail, page: pageIndex + 1 }))}
-      >
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        refreshKey={[
+          "reminders",
+        ]}
+        fetchNextPage={() => {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}      >
         <TableTitleBar Icon={BellIcon} title={"Reminders"} titleClass={"text-lime-700"} />
 
         <Table
@@ -209,13 +271,6 @@ export function ReminderPage() {
           }
         />
       </TableView>
-
-      {/* 🔥 FULL OVERLAY LOADER */}
-      {loading && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center  backdrop-blur-sm">
-          <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
     </div>
   );
 }

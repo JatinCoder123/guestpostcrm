@@ -299,12 +299,15 @@ export const createOffer = ({
       );
 
       // 🔥 Ledger API Call
-      await createLedgerEntry({
+      await createLedgerEntry
+      ({
         domain,
         email: email,
         thread_id: threadId,
         message_id: threadId,
         group: "Offer",
+        reminder_type: "offer",
+        websites: offers.map((offer) => offer.website),
         okHandler: () => dispatch(getLadger({ email, loading: false })),
         items: offers.map((offer) =>
           buildLedgerItem({

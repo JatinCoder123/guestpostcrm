@@ -20,6 +20,10 @@ import { toast } from "react-toastify";
 import useModule from "../../../hooks/useModule";
 import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { extractEmail } from "../../../assets/assets";
+import { useDealsByEmail } from "../../../queries/deals.queries";
+import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
+import { useTemplateByName } from "../../../queries/template.queries";
+import { queryClient } from "../../../lib/queryClient";
 
 export default function CreateOffers({ threadId, email }) {
   const navigate = useNavigate();
@@ -27,25 +31,16 @@ export default function CreateOffers({ threadId, email }) {
   const { websites: websiteLists } = useSelector((state) => state.website);
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   const { crmEndpoint } = useSelector((state) => state.user);
-  const { deals } = useSelector((state) => state.deals);
-  const { offers, creating, message, error } = useSelector(
+  const { creating, message, error } = useSelector(
     (state) => state.offers,
   );
+  const { data: dealsData, isPending: dealsLoading, isError: dealsError } = useDealsByEmail(email);
+  const { data: offersData, isPending: offersLoading, isError: offersError } = useOffersByEmail(email);
+  const offers = offersData?.data ?? []
+  const deals = dealsData?.data ?? []
   const [send, setSend] = useState(false);
   const { handleMove } = useThreadContext();
-  const { data: templateData } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: { name: "OfferORG" },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "TemplateData",
-  });
+  const { data: templateData } = useTemplateByName("OfferORG");
   const [newOffers, setNewOffers] = useState([
     { website: "", client_offer_c: "", our_offer_c: "" },
   ]);
@@ -131,8 +126,8 @@ export default function CreateOffers({ threadId, email }) {
   useEffect(() => {
     if (message) {
       toast.success(message);
-      dispatch(getOffers({ email, brand: showBrandTimeline }));
-      // 🔥 only move if send was true
+      queryClient.invalidateQueries({ queryKey: offerKeys.all })
+
       if (message?.includes("Created")) {
         if (send) {
           setSend(false);
