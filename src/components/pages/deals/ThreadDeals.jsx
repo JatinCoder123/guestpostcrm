@@ -21,6 +21,7 @@ import { useContact } from "../../../queries/contact.queries";
 import { useOffersByEmail } from "../../../queries/offers.queries";
 import { dealKeys, useDealsByEmail } from "../../../queries/deals.queries";
 import { queryClient } from "../../../lib/queryClient";
+import { useWebsites } from "../../../queries/web.queries";
 
 export default function ThreadDeals({ email, id }) {
   const navigate = useNavigate();
@@ -32,7 +33,9 @@ export default function ThreadDeals({ email, id }) {
   const [selectedDeals, setSelectedDeals] = useState([]);
   const [editingIds, setEditingIds] = useState([]);
   const [editDataMap, setEditDataMap] = useState({});
-  const { websites: websiteLists } = useSelector((state) => state.website);
+
+  const { data: webSitesData } = useWebsites();
+  const websiteLists = webSitesData?.data ?? [];
   const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
 
   const { deleting, updating, message, error, deleteDealId } = useSelector((state) => state.deals);

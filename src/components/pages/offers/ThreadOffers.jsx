@@ -24,6 +24,7 @@ import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
 import { useContact } from "../../../queries/contact.queries";
 import { useTemplateByName } from "../../../queries/template.queries";
 import { queryClient } from "../../../lib/queryClient";
+import { useWebsites } from "../../../queries/web.queries";
 
 export default function ThreadOffers({ email, id }) {
   const navigate = useNavigate();
@@ -34,7 +35,9 @@ export default function ThreadOffers({ email, id }) {
 
   const [editingIds, setEditingIds] = useState([]);
   const [editDataMap, setEditDataMap] = useState({});
-  const { websites: websiteLists } = useSelector((state) => state.website);
+
+  const { data: webSitesData } = useWebsites();
+  const websiteLists = webSitesData?.data ?? [];
   const { deleteOfferId, deleting, updating, message, error } =
     useSelector((state) => state.offers);
   const { data } = useContact(email)
