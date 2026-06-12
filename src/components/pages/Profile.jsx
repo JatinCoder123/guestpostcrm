@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../store/constants";
 import { PageContext } from "../../context/pageContext";
-import {Loader2} from "lucide-react";
+import { AlertTriangle, Info, Loader2 } from "lucide-react";
 import {
   ONBOARDING_STEP,
   fetchOnboardingProgress,
@@ -34,6 +34,7 @@ import {
   isOnboardingTemplate,
   normalizeTemplateRows,
 } from "./profile/profileUtils";
+import { queryClient } from "../../lib/queryClient";
 
 const Profile = () => {
   const { handleDateClick } = useContext(PageContext);
@@ -42,7 +43,7 @@ const Profile = () => {
   const { user, businessEmail, currentScore, crmEndpoint } = useSelector(
     (state) => state.user,
   );
-  const { tinyKey: TINY_EDITOR_API_KEY } = useSelector((state) => state.tinyKey);
+  const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
   const { loading: contactLoading, contacts } = useSelector(
     (state) => state.contacts,
   );
@@ -80,8 +81,9 @@ const Profile = () => {
   const [crmProgressLoading, setCrmProgressLoading] = useState(true);
   const celebratedCompleteRef = useRef(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-const [deleteReason, setDeleteReason] = useState("");
-const [otherReason, setOtherReason] = useState("");
+  const [deleteDisclaimerAccepted, setDeleteDisclaimerAccepted] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [otherReason, setOtherReason] = useState("");
 
   const profileEmail = businessEmail || user.email;
   const onboardingRecordName = getOnboardingRecordName({
@@ -90,7 +92,7 @@ const [otherReason, setOtherReason] = useState("");
   });
   const contactOnboardingDone =
     Array.isArray(contacts) && contacts.length > 0;
-    const hasWebsites = websites.length > 0;
+  const hasWebsites = websites.length > 0;
   const step3Done =
     hasWebsites || crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED;
   const templateDone =
@@ -117,13 +119,13 @@ const [otherReason, setOtherReason] = useState("");
   }).length;
 
   useEffect(() => {
-  if (
-    websites.length > 0 &&
-    crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
-  ) {
-    completeWebsiteStep();
-  }
-}, [websites.length, crmOnboardingStep]);
+    if (
+      websites.length > 0 &&
+      crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
+    ) {
+      completeWebsiteStep();
+    }
+  }, [websites.length, crmOnboardingStep]);
 
   useEffect(() => {
     celebratedCompleteRef.current =
@@ -264,10 +266,10 @@ const [otherReason, setOtherReason] = useState("");
           current.step > 0
             ? current
             : await upsertOnboardingProgress({
-                crmEndpoint,
-                name: onboardingRecordName,
-                step: ONBOARDING_STEP.PROFILE_STARTED,
-              });
+              crmEndpoint,
+              name: onboardingRecordName,
+              step: ONBOARDING_STEP.PROFILE_STARTED,
+            });
         if (ignore) return;
 
         setCrmOnboardingStep(progress.step);
@@ -445,7 +447,7 @@ const [otherReason, setOtherReason] = useState("");
           name: item.name,
           minimum_price: item.minimum_price,
           amount: item.amount,
-          description: item.name
+          description: item.name,
         };
         const data = await saveWebsitePayload(payload);
         createdWebsites.push(data?.data || data?.website || payload);
@@ -489,10 +491,10 @@ const [otherReason, setOtherReason] = useState("");
     setAiName(templateName || activeTemplate?.name || "");
     setAiStage(
       templateStage ||
-        activeTemplate?.stage ||
-        activeTemplate?.stage_type ||
-        Object.keys(stages)[0] ||
-        "others",
+      activeTemplate?.stage ||
+      activeTemplate?.stage_type ||
+      Object.keys(stages)[0] ||
+      "others",
     );
     setAiMotive("");
     setAiDetails(templateDescription || activeTemplate?.description || "");
@@ -773,6 +775,21 @@ const [otherReason, setOtherReason] = useState("");
     handleDateClick({ email: record.email, navigate: "/" });
   };
 
+  const openDeleteModal = () => {
+    setDeleteDisclaimerAccepted(false);
+    setDeleteReason("");
+    setOtherReason("");
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    if (profileDeleting) return;
+    setShowDeleteModal(false);
+    setDeleteDisclaimerAccepted(false);
+    setDeleteReason("");
+    setOtherReason("");
+  };
+
   const handleDeleteProfile = async (reason) => {
     if (!profileEmail) {
       toast.error("Business email is required to delete profile");
@@ -798,13 +815,13 @@ const [otherReason, setOtherReason] = useState("");
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.message ||
-            data?.error ||
-            text ||
-            `Delete failed with status ${response.status}`,
+          data?.error ||
+          text ||
+          `Delete failed with status ${response.status}`,
         );
       }
-      // clear onboarding popup flag
-sessionStorage.removeItem("onboardingShown");
+
+      sessionStorage.removeItem("onboardingShown");
       toast.success(data?.message || "Profile delete request completed");
       window.setTimeout(() => {
         setShowDeleteModal(false);
@@ -829,7 +846,7 @@ sessionStorage.removeItem("onboardingShown");
         completion={completion}
         syncDone={syncDone}
         profileDeleting={profileDeleting}
-        onDeleteProfile= {() => setShowDeleteModal(true)}
+        onDeleteProfile={openDeleteModal}
       />
 
       {onboardingLoading && <ProfileOnboardingSkeleton />}
@@ -935,99 +952,149 @@ sessionStorage.removeItem("onboardingShown");
         isGenerating={aiGenerating}
       />
 
+      {/* ── Delete Profile Modal ── */}
       {showDeleteModal && (
-  <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div className="w-full max-w-2xl rounded-3xl bg-white p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-3xl bg-white p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
 
-      <div className="mb-6">
-        <h2 className="text-2xl font-black text-slate-900">
-          Before you delete your profile
-        </h2>
+            {/* STEP 1 — Disclaimer */}
+            {!deleteDisclaimerAccepted && (
+              <>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <AlertTriangle size={20} className="text-red-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-slate-900 leading-tight">
+                      Delete your profile
+                    </h2>
+                    <p className="text-sm text-slate-500">
+                      This action is permanent and cannot be undone
+                    </p>
+                  </div>
+                </div>
 
-        <p className="mt-2 text-slate-500">
-          We'd appreciate your feedback before you leave.
-        </p>
-      </div>
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 mb-4">
+                  <p className="text-sm font-semibold text-red-700 mb-2">
+                    By proceeding, the following will be permanently deleted:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1.5 text-sm text-red-700">
+                    <li>Your account and profile information</li>
+                    <li>All CRM data including contacts, deals, and activity history</li>
+                    <li>All backups and stored configurations</li>
+                    <li>Email templates and onboarding settings</li>
+                    <li>Any related content and integrations linked to your account</li>
+                  </ul>
+                </div>
 
-      <div className="grid gap-3">
-        {[
-          "Found a better service",
-          "Too expensive",
-          "Missing features",
-          "Difficult to use",
-          "Technical issues",
-          "No longer needed",
-          "Created another account",
-          "Other",
-        ].map((reason) => (
-          <label
-            key={reason}
-            className={`cursor-pointer rounded-xl border p-4 transition ${
-              deleteReason === reason
-                ? "border-red-300 bg-red-50"
-                : "border-slate-200 hover:border-slate-300"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <input
-                type="radio"
-                value={reason}
-                checked={deleteReason === reason}
-                onChange={(e) => setDeleteReason(e.target.value)}
-              />
-              <span className="font-medium">{reason}</span>
-            </div>
-          </label>
-        ))}
-      </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    disabled={profileDeleting}
+                    onClick={closeDeleteModal}
+                    className="rounded-xl border px-5 py-3 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => setDeleteDisclaimerAccepted(true)}
+                    className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700 transition-colors"
+                  >
+                    I understand, continue
+                  </button>
+                </div>
+              </>
+            )}
 
-      {deleteReason === "Other" && (
-        <textarea
-          rows={4}
-          value={otherReason}
-          onChange={(e) => setOtherReason(e.target.value)}
-          className="mt-4 w-full rounded-xl border p-3"
-          placeholder="Tell us more..."
-        />
+            {/* STEP 2 — Reason + Delete */}
+            {deleteDisclaimerAccepted && (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black text-slate-900">
+                    Why are you leaving?
+                  </h2>
+                  <p className="mt-2 text-slate-500">
+                    We'd appreciate your feedback before you go.
+                  </p>
+                </div>
+
+                <div className="grid gap-3">
+                  {[
+                    "Found a better service",
+                    "Too expensive",
+                    "Missing features",
+                    "Difficult to use",
+                    "Technical issues",
+                    "No longer needed",
+                    "Created another account",
+                    "Other",
+                  ].map((reason) => (
+                    <label
+                      key={reason}
+                      className={`cursor-pointer rounded-xl border p-4 transition ${deleteReason === reason
+                          ? "border-red-300 bg-red-50"
+                          : "border-slate-200 hover:border-slate-300"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          value={reason}
+                          checked={deleteReason === reason}
+                          onChange={(e) => setDeleteReason(e.target.value)}
+                        />
+                        <span className="font-medium">{reason}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                {deleteReason === "Other" && (
+                  <textarea
+                    rows={4}
+                    value={otherReason}
+                    onChange={(e) => setOtherReason(e.target.value)}
+                    className="mt-4 w-full rounded-xl border p-3"
+                    placeholder="Tell us more..."
+                  />
+                )}
+
+                <div className="mt-8 flex justify-end gap-3">
+                  <button
+                    disabled={profileDeleting}
+                    onClick={() => {
+                      setDeleteDisclaimerAccepted(false);
+                      setDeleteReason("");
+                      setOtherReason("");
+                    }}
+                    className="rounded-xl border px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Back
+                  </button>
+                  <button
+                    disabled={!deleteReason || profileDeleting}
+                    onClick={() =>
+                      handleDeleteProfile(
+                        deleteReason === "Other" ? otherReason : deleteReason,
+                      )
+                    }
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {profileDeleting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete Profile"
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+
+          </div>
+        </div>
       )}
-
-      <div className="mt-8 flex justify-end gap-3">
-        <button
-  disabled={profileDeleting}
-  onClick={() => {
-    setShowDeleteModal(false);
-    setDeleteReason("");
-    setOtherReason("");
-  }}
-  className="rounded-xl border px-5 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-50"
->
-  Cancel
-</button>
-
-        <button
-  disabled={!deleteReason || profileDeleting}
-  onClick={() =>
-    handleDeleteProfile(
-      deleteReason === "Other"
-        ? otherReason
-        : deleteReason
-    )
-  }
-  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
->
-  {profileDeleting ? (
-    <>
-      <Loader2 size={16} className="animate-spin" />
-      Deleting...
-    </>
-  ) : (
-    "Delete Profile"
-  )}
-</button>
-      </div>
-    </div>
-  </div>
-)}
     </div>
   );
 };
