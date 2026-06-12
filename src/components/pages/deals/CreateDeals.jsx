@@ -17,13 +17,15 @@ import { useTemplateByName } from "../../../queries/template.queries";
 import { dealKeys, useDealsByEmail } from "../../../queries/deals.queries";
 import { useContact } from "../../../queries/contact.queries";
 import { queryClient } from "../../../lib/queryClient";
+import { useWebsites } from "../../../queries/web.queries";
 
 // 🔥 renamed component also
 export default function CreateDeals({ email }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { websites: websiteLists } = useSelector((state) => state.website);
+  const { data: webSitesData } = useWebsites();
+  const websiteLists = webSitesData?.data ?? []
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   // 🔥 now using deals everywhere
   const { creating, message, error } = useSelector(

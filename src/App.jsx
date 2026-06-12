@@ -65,6 +65,7 @@ import ReminderManagementPage from "./components/pages/ReminderManagement";
 import { TimelineProvider } from "./context/TimelineContext";
 import MeetingWidget from "./components/MeetingWidget";
 import TwakChat from "./components/TwakTo";
+import BootApp from "./components/BootApp";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -79,6 +80,7 @@ const router = createBrowserRouter([
           <PageContextProvider>
             <TimelineProvider>
               <ErrorBoundary>
+                <BootApp />
                 <RootLayout />
               </ErrorBoundary>
 

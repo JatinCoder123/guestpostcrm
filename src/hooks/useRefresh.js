@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { getdefaulterEmails } from "../store/Slices/defaulterEmails";
 import { getmovedEmails } from "../store/Slices/movedEmails";
 import { SocketContext } from "../context/SocketContext";
-import { getAllWebsites } from "../store/Slices/webSlice";
 import { fetchGpcController } from "../store/Slices/gpcControllerSlice";
 import { hotAction } from "../store/Slices/hotSlice";
 import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";
@@ -25,7 +24,6 @@ function useRefresh() {
     useEffect(() => {
         dispatch(getTinyKey())
         dispatch(getAllUsers())
-        dispatch(getAllWebsites());
         dispatch(fetchGpcController());
     }, [])
     useEffect(() => {

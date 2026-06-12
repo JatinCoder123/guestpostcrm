@@ -9,7 +9,6 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 import { Trash2 } from "lucide-react";
 import { Save, Send } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
-import { FcExpired } from "react-icons/fc";
 
 import {
   createOffer,
@@ -17,20 +16,19 @@ import {
   offersAction,
 } from "../../../store/Slices/offers";
 import { toast } from "react-toastify";
-import useModule from "../../../hooks/useModule";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
 import { extractEmail } from "../../../assets/assets";
 import { useDealsByEmail } from "../../../queries/deals.queries";
 import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
 import { useTemplateByName } from "../../../queries/template.queries";
 import { queryClient } from "../../../lib/queryClient";
+import { useWebsites } from "../../../queries/web.queries";
 
 export default function CreateOffers({ threadId, email }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { websites: websiteLists } = useSelector((state) => state.website);
-  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
-  const { crmEndpoint } = useSelector((state) => state.user);
+
+  const { data: webSitesData } = useWebsites();
+  const websiteLists = webSitesData?.data ?? [];
   const { creating, message, error } = useSelector(
     (state) => state.offers,
   );

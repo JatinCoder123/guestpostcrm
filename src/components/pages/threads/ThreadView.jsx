@@ -29,7 +29,7 @@ import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import RightThreadHeader from "./RightThreadHeader.jsx";
 import NavigationBar from "./NavigationBar.jsx";
-import { useMailerSummary } from "../../../queries/mailerSummary.queries.js";
+import { useMailerSummary, useRegenMailerSummary } from "../../../queries/mailerSummary.queries.js";
 import { useThread } from "../../../queries/threads.queries.js";
 
 export default function ThreadView() {
@@ -45,10 +45,11 @@ export default function ThreadView() {
     email,
     threadId
   } = useOutletContext() || [];
-  const { data: emailsData,isPending:loading } = useThread(email, threadId)
+  const { data: emailsData, isPending: loading } = useThread(email, threadId)
   const emails = emailsData?.emails
   const firstMessageRef = useRef(null);
-  const { data, isPending: summaryLoading } = useMailerSummary(email)
+  const { data, isPending: summaryLoading } = useMailerSummary(email);
+  const regenSummary = useRegenMailerSummary();
   const mailersSummary = data?.mailers_summary
 
 
@@ -79,10 +80,44 @@ export default function ThreadView() {
     visibleMessages?.length - 1
   );
   useEffect(() => {
-    if (mailersSummary && !summaryLoading) {
-      setEditorContent(mailersSummary?.ai_response ?? "")
+    if (
+      editorContent?.trim()
+    ) {
+      return;
     }
-  }, [mailersSummary, summaryLoading])
+
+    if (
+      mailersSummary?.ai_response
+    ) {
+      setEditorContent(
+        mailersSummary.ai_response
+      );
+
+      return;
+    }
+
+    if (
+      email &&
+      !summaryLoading
+    ) {
+      regenSummary.mutate(email);
+    }
+  }, [
+    email,
+    mailersSummary,
+    summaryLoading,
+  ]);
+  useEffect(() => {
+    if (
+      mailersSummary?.ai_response
+    ) {
+      setEditorContent(
+        mailersSummary.ai_response
+      );
+    }
+  }, [
+    mailersSummary?.ai_response,
+  ]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -341,7 +376,7 @@ export default function ThreadView() {
 
                           {/* CONTENT */}
                           <div className="flex-1 overflow-hidden">
-                            {summaryLoading ? (
+                            {summaryLoading || regenSummary.isPending ? (
                               <div className="space-y-3 animate-pulse">
                                 <div className="h-4 bg-white/20 rounded w-full"></div>
                                 <div className="h-4 bg-white/20 rounded w-[90%]"></div>
