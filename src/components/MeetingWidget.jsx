@@ -69,7 +69,7 @@ const MeetingWidget = () => {
           >
             <img
               src="https://www.guestpostcrm.com/wp-content/uploads/2026/06/G-Bot-5-1.png"
-              alt="GPC Expert"
+              alt="Ask GPC"
               style={{
                 width: "100%",
                 height: "100%",
@@ -142,7 +142,7 @@ const MeetingWidget = () => {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="m-0 text-[13px] font-semibold text-white leading-tight">GPC Expert</p>
+              <p className="m-0 text-[13px] font-semibold text-white leading-tight">Ask GPC</p>
               <p className="m-0 mt-0.5 text-[11px] text-white/80 flex items-center gap-1.5">
                 <span className="gpc-dot w-1.5 h-1.5 bg-green-300 rounded-full inline-block flex-shrink-0" />
                 Online now

@@ -2,13 +2,12 @@ import {
   Calendar,
   FileText,
   User,
-  Heart,
   Link2,
   Send,
   Ban,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
+import { useSelector } from "react-redux";
 import { PageContext } from "../../context/pageContext";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
@@ -20,18 +19,18 @@ const STATUS_CONFIG = [
     value: "connected",
     label: "Connected",
     icon: Send,
-    color: "#056439ff", // orange (amber-500)
-    count: 0
+    color: "#056439ff",
+    count: 0,
   },
-
   {
     value: "removed",
     label: "Removed",
     icon: Ban,
     color: "#EF4444",
-    count: 0// red (red-500)
-  }
+    count: 0,
+  },
 ];
+
 export function LinkExchangePage() {
   const preferences =
     useTablePreference(
@@ -56,67 +55,84 @@ export function LinkExchangePage() {
   const { handleMove } = useThreadContext()
   const { handleDateClick } =
     useContext(PageContext);
-  const dispatch = useDispatch();
+
 
   const columns = [
     {
       label: "Created At",
       accessor: "date_entered",
-      headerClasses: "",
       icon: Calendar,
-
-      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/" })
-      ,
       classes: "truncate max-w-[200px]",
+
+      onClick: (row, index) =>
+        handleDateClick({
+          email: row?.email_address,
+          navigate: "/",
+          index,
+          nextPrev: true,
+        }),
+
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
           {row.date_entered_time_ago}
         </span>
-      )
+      ),
     },
-
 
     {
       label: "Contact",
       accessor: "email_address",
-      headerClasses: "",
       icon: User,
-      classes: "truncate ",
-      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/contacts" })
-      ,
+      classes: "truncate",
+
+      onClick: (row, index) =>
+        handleDateClick({
+          email: row?.email_address,
+          navigate: "/contacts",
+          index,
+          nextPrev: true,
+        }),
 
       render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row?.first_name} {row?.last_name}        </span>
-      )
+        <div className="flex items-center gap-2 cursor-pointer">
+          <span className="font-medium text-gray-800">
+            {row?.first_name || ""}{" "}
+            {row?.last_name || ""}
+          </span>
+        </div>
+      ),
     },
+
     {
       label: "Subject",
       accessor: "subject",
-      headerClasses: "",
       icon: FileText,
       classes: "truncate max-w-[300px]",
-      onClick: (row) => handleMove({
-        email: row.email_address,
-        threadId: row.thread_id,
-      }),
+
+      onClick: (row) =>
+        handleMove({
+          email: row.email_address,
+          threadId: row.thread_id,
+        }),
+
       render: (row) => (
         <span className="px-6 py-4 text-green-600 cursor-pointer">
           {row.subject}
         </span>
-      )
+      ),
     },
+
     {
       label: "Description",
       accessor: "description",
-      headerClasses: "",
       icon: FileText,
       classes: "truncate max-w-[300px]",
+
       render: (row) => (
-        <span className="px-6 py-4 text-green-600 cursor-pointer">
+        <span className="px-6 py-4 text-gray-700">
           {row.description}
         </span>
-      )
+      ),
     },
   ]
   const emails =

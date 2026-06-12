@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Sparkles, UserCircle2 } from "lucide-react";
 import GuidedWalkthrough from "./GuidedWalkthrough";
+import { apiRequest } from "../services/api";
 
 import {
     BASE_ONBOARDING_KEYS,
@@ -18,6 +19,12 @@ const OnBoarding = () => {
     const [loadingAction, setLoadingAction] = useState(null);
     const [showGuidedWalkthrough, setShowGuidedWalkthrough] =
         useState(false);
+    const [isOnboardingLoading, setIsOnboardingLoading] =
+        useState(false);
+    
+    const [isSignupChecking, setIsSignupChecking] = useState(true);
+const [isSignupIncomplete, setIsSignupIncomplete] = useState(false);
+
     const navigate = useNavigate();
 
     const {
@@ -46,7 +53,52 @@ const OnBoarding = () => {
 
     const isRootEmailUrl =
         window.location.pathname === "/" && !!email;
+ 
+    const onboardingEmail = businessEmail;
 
+    useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const checkSignupEntry = async () => {
+        if (!onboardingEmail) {
+            setIsSignupChecking(false);
+            return;
+        }
+
+        try {
+            setIsSignupChecking(true);
+
+            const response = await apiRequest({
+                endpoint:
+                    "https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=get_data",
+                method: "POST",
+                body: {
+                    module: "outr_onboarding",
+                    where: {
+                        name: onboardingEmail,
+                    },
+                },
+                headers: {
+                    "x-api-key": "FldBjAIfoBo2UTcBAezvTOQg9",
+                    "Content-Type": "application/json",
+                },
+            });
+
+           const onboardingStage = Number(response?.[0]?.onboarding_stage);
+
+setIsSignupIncomplete(onboardingStage <= 2);
+        } catch (error) {
+            console.error("Signup onboarding check failed", error);
+            setIsSignupIncomplete(true);
+        } finally {
+            setIsSignupChecking(false);
+        }
+    };
+
+    checkSignupEntry();
+}, [isAuthenticated, onboardingEmail]);
+
+    // Show onboarding popup
     useEffect(() => {
         if (!isAuthenticated) return;
 
@@ -166,7 +218,56 @@ const OnBoarding = () => {
         }
     };
 
-    if (!isAuthenticated) return null;
+   if (!isAuthenticated) return null;
+
+if (isSignupChecking) {
+    return null;
+}
+
+if (isSignupIncomplete) {
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4">
+            <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-gray-100 p-8 text-center">
+                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 text-red-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M10.29 3.86l-8 14A1 1 0 003.14 19h17.72a1 1 0 00.85-1.51l-8-14a1 1 0 00-1.72 0z"
+                        />
+                    </svg>
+                </div>
+
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                    Signup Incomplete
+                </h2>
+
+                <p className="text-gray-600 text-base leading-relaxed mb-8">
+                    Your account setup isn't finished yet. Complete your signup
+                    process to access all features of GuestPostCRM.
+                </p>
+
+                <a
+                    href="https://www.guestpostcrm.com/rightee/google.php"
+                    className="inline-flex items-center justify-center w-full rounded-xl bg-blue-600 px-6 py-3 text-white font-semibold shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
+                >
+                    Complete Signup →
+                </a>
+
+                <p className="mt-4 text-sm text-gray-400">
+                    It only takes a minute.
+                </p>
+            </div>
+        </div>
+    );
+}
 
     return (
         <>
