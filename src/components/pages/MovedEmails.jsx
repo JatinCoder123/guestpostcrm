@@ -15,60 +15,24 @@ import { useThreadContext } from "../../hooks/useThreadContext";
 
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-
-import { getmovedEmails } from "../../store/Slices/movedEmails";
-
-import { toast } from "react-toastify";
-import { fetchGpc } from "../../services/api";
+import { useTablePreference } from "../../hooks/useTablePreference";
+import { useInfiniteMovedEmails, useRestoreEmail } from "../../queries/movedEmail.queries";
 
 export function MovedPage() {
-  const dispatch = useDispatch();
+  const preferences = useTablePreference("moved-emails");
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteMovedEmails(preferences);
+  const { mutate, isPending: restoring, variables } = useRestoreEmail()
 
-  const { emails, pageIndex, loading } = useSelector((state) => state.moved);
-
-  const [restoringId, setRestoringId] = useState(null);
 
   const { handleDateClick } = useContext(PageContext);
 
   const { handleMove } = useThreadContext();
-
-  // INITIAL API CALL
-  useEffect(() => {
-    dispatch(getmovedEmails());
-  }, [dispatch]);
-
-  // RESTORE EMAIL
-  const handleRestore = async (emailItem) => {
-    try {
-      setRestoringId(emailItem.thread_id);
-
-      const res = await fetchGpc({
-        params: {
-          type: "restore_email",
-          email: emailItem.email,
-          label_id: emailItem.label_name,
-          thread_id: emailItem.thread_id,
-          subject: emailItem.subject,
-        },
-      });
-
-      console.log("RESTORE RESPONSE => ", res);
-
-      if (res?.success || res?.data || res) {
-        toast.success("Email restored successfully ✅");
-
-        // refresh moved emails
-        dispatch(getmovedEmails());
-      }
-    } catch (error) {
-      console.log("RESTORE ERROR => ", error);
-
-      toast.error("Failed to restore email ❌");
-    } finally {
-      setRestoringId(null);
-    }
-  };
-
   const columns = [
     {
       label: "Created At",
@@ -83,7 +47,7 @@ export function MovedPage() {
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row?.date_entered}
+          {row?.date_entered_time_ago}
         </span>
       ),
     },
@@ -150,12 +114,12 @@ export function MovedPage() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            handleRestore(row);
+            mutate(row)
           }}
-          disabled={restoringId === row.thread_id}
+          disabled={variables?.id == row.id}
           className="px-3 py-1 rounded-lg bg-green-500 text-white text-sm hover:bg-green-600 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer ml-auto"
         >
-          {restoringId === row.thread_id ? (
+          {restoring && variables?.id == row.id ? (
             <>
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin "></span>
               Restoring...
@@ -167,16 +131,39 @@ export function MovedPage() {
       ),
     },
   ];
+  const emails =
+    data?.pages?.flatMap(
+      (page) => page.records || page.data || []
+    ) ?? [];
+  const pages = data?.pages ?? [];
 
+  const lastPage = pages[pages.length - 1] ?? {};
+  const firstPage = pages[0] ?? {};
+
+  const pageIndex = lastPage.page ?? 1;
+  const pageCount = firstPage.total_pages ?? 0;
+  const count = firstPage.total ?? 0;
+
+  const loading = isPending || isFetchingNextPage;
   return (
     <TableView
       tableData={emails}
       tableName={"Moved Emails"}
       columns={columns}
-      slice={"moved"}
+      slice={"moved-emails"}
+      pageCount={pageCount}
+      preferences={preferences}
+      pageIndex={pageIndex}
+      count={count}
       loading={loading}
-      fetchNextPage={() => dispatch(getmovedEmails("", pageIndex + 1))}
-    >
+      fetchNextPage={() => {
+        if (
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}    >
       <TableTitleBar
         Icon={ArrowBigRightDashIcon}
         title={"Moved Emails"}

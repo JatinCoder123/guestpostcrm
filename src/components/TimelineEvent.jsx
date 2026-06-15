@@ -10,15 +10,29 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import LadgerCard from "./LadgerCard";
 import { useInfiniteLedger } from "../queries/ledger.queries";
 import { useTimeline } from "../context/TimelineContext";
+import Pagination from "./Pagination";
+import { LoadingChase } from "./Loading";
 
 const TimelineEvent = ({ handleMessageClick }) => {
   const { currentEmail } = useTimeline()
-  const { data, isLoading: loading } = useInfiniteLedger(currentEmail);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteLedger(currentEmail);
   const ladger =
     data?.pages?.flatMap(
       (page) => page.data || []
     ) ?? [];
+  const pages = data?.pages ?? [];
 
+  const lastPage = pages[pages.length - 1] ?? {};
+  const firstPage = pages[0] ?? {};
+
+
+  const loading = isPending || isFetchingNextPage;
   const { showBrandTimeline } = useSelector(
     (state) => state.brandTimeline
   );
@@ -109,7 +123,34 @@ const TimelineEvent = ({ handleMessageClick }) => {
       );
     };
   }, []);
+  useEffect(() => {
+    const scrollParent = document.querySelector(".hide-scrollbar");
 
+    if (!scrollParent || !bottomRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+
+        if (
+          entry.isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          console.log("Fetching next page");
+          fetchNextPage();
+        }
+      },
+      {
+        root: scrollParent,
+        rootMargin: "300px",
+        threshold: 0,
+      }
+    );
+
+    observer.observe(bottomRef.current);
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   useEffect(() => {
     const header = headerRef.current;
 
@@ -284,9 +325,14 @@ const TimelineEvent = ({ handleMessageClick }) => {
           timelineData={timelineData}
           handleMessageClick={handleMessageClick}
         />
+        <LadgerCard
+          timelineData={timelineData}
+          handleMessageClick={handleMessageClick}
+        />
 
-        {/* Bottom Ref */}
-        <div ref={bottomRef} />
+        {isFetchingNextPage && <TimelineSkeleton />}
+
+        <div ref={bottomRef} className="h-10 w-full" />
       </div>
 
       {/* Floating Scroll Buttons */}
@@ -346,3 +392,19 @@ const TimelineEvent = ({ handleMessageClick }) => {
 };
 
 export default TimelineEvent;
+const TimelineSkeleton = () => (
+  <div className="mt-6 space-y-6">
+    {[1, 2, 3].map((item) => (
+      <div
+        key={item}
+        className="flex gap-4 animate-pulse"
+      >
+        <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
+
+        <div className="flex-1">
+          <div className="h-14 bg-gray-200 rounded-xl" />
+        </div>
+      </div>
+    ))}
+  </div>
+);

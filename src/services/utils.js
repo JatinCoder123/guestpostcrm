@@ -1,6 +1,7 @@
 import { showConsole } from "../assets/assets";
 import { queryClient } from "../lib/queryClient";
 import { contactKeys } from "../queries/contact.queries";
+import { ledgerKeys } from "../queries/ledger.queries";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
 import { store } from "../store/store";
 import { apiRequest, fetchGpc } from "./api";
@@ -33,7 +34,6 @@ export const updateActivity = async (email, last_activity) => {
   }
 };
 export const createLedgerEntry = async ({
-  domain,
   email,
   thread_id,
   message_id,
@@ -67,7 +67,7 @@ export const createLedgerEntry = async ({
     });
 
     showConsole && console.log("Ledger Created", data);
-    okHandler(data);
+    queryClient.invalidateQueries({ queryKey: ledgerKeys.all })
 
     return data;
   } catch (error) {
@@ -79,17 +79,15 @@ export const createLedgerEntry = async ({
 export const buildLedgerItem = ({
   status,
   detail,
-  ladgerState,
-  user,
   parent_name,
 }) => ({
   status,
   detail,
-  prompt_id: ladgerState.prompt_id || "",
-  prompt_ledger_id: ladgerState.prompt_ledger_id || "",
-  parent_id: ladgerState.parent_id || "",
+  prompt_id: "",
+  prompt_ledger_id: "",
+  parent_id: "",
   parent_name,
-  template_id: ladgerState.template_id || "",
+  template_id: "",
   assigned_user_id: CURRENT_USER?.id || "",
 });
 
@@ -149,8 +147,11 @@ export const generatePDF = async (html, id = "invoice") => {
 
 export const getRighteeUsers = async () => {
   const response = await apiRequest({ endpoint: "https://crm.outrightsystems.org/index.php?entryPoint=trynow&team_member=1", })
-  console.log("CRM USER2", response)
   return response.data ?? []
+}
+export const getStages = async () => {
+  const data = await fetchGpc({ params: { type: 'machine_learning', stages: 1 } });
+  return data ?? {}
 }
 export const getCRM = () =>
   store.getState()

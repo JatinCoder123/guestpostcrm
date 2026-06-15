@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import { createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
+import { createLedgerEntry, buildLedgerItem, updateActivity, getCurrentUser } from "../../services/utils";
 import { apiRequest } from "../../services/api";
 
 const initialState = {
@@ -77,7 +77,7 @@ export const applyTag = ({ email, tag }) => {
             status: "Mark-tag",
             detail: `email: {${email}} tag: {${tag}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
           }),
         ],
       });

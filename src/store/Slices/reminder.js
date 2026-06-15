@@ -3,7 +3,7 @@ import { showConsole } from "../../assets/assets";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { getLadger } from "./ladger";
-import { buildLedgerItem, createLedgerEntry } from "../../services/utils";
+import { buildLedgerItem, createLedgerEntry, getCurrentUser } from "../../services/utils";
 
 const orderRemSlice = createSlice({
   name: "reminders",
@@ -102,7 +102,7 @@ export const cancelReminder = ({ email, reminderId }) => {
             status: "Cancel Reminder",
             detail: `Reminder Id ${reminderId}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
           }),
         ],
         okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),

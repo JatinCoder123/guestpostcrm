@@ -3,12 +3,12 @@ import { FETCH_GPC_X_API_KEY } from "../store/constants";
 import CryptoJS from "crypto-js";
 const SECRET = import.meta.env.VITE_SMARTGATEWAY_SECRET_KEY;
 import { store } from "../store/store";
-import { getCRM } from "./utils";
+import { getCRM, getCurrentUser } from "./utils";
 
 let CRMENDPOINT = "";
 let DB_NAME = "";
 let USER_EMAIL = "";
-const getCurrentUserId = () => store.getState()?.crmUser?.currentUser?.id;
+const getCurrentUserId = () => getCurrentUser()?.id;
 
 
 export function setConfig(endpoint, db_name, dash_user_email) {

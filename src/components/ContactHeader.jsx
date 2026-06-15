@@ -46,7 +46,7 @@ const ContactHeader = () => {
 
   const { data, isPending } = useContact(currentEmail);
   const contactInfo = data?.contact
-  const hashtags = data?.hashtag?.data
+  const hashtags = contactInfo?.hashtag?.data?.hashtags
   const email = contactInfo?.email1;
   const { showNextPrev, handleDateClick } = useContext(PageContext);
 

@@ -2,37 +2,22 @@ import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Header from "./settingpages/Header";
 import { PageContext } from "../../context/pageContext";
-import {
-  fetchGpcController,
-  updateGpcController,
-} from "../../store/Slices/gpcControllerSlice";
-import useModule from "../../hooks/useModule";
-import { fetchGpc } from "../../services/api";
+import { useGpcController, useToggleControl } from "../../queries/controller.queries";
+import { useQuery } from "@tanstack/react-query";
+import { getStages } from "../../services/utils";
 
 export default function GpcControllerPage() {
   const dispatch = useDispatch();
-
-  const { checkboxes, loading, updating } = useSelector(
-    (state) => state.gpcController,
-  );
-  const [stages, setStages] = useState({})
+  const { isPending: updating, mutate } = useToggleControl()
+  const { data, isPending: loading } = useGpcController()
+  const checkboxes = data?.data ?? []
   const { superfastReply, superfastToggle } = useContext(PageContext);
   const [activeStage, setActiveStage] = useState("others");
   const handleToggle = (id, value) => {
     const currentValue = value === "1" ? "0" : "1";
-    dispatch(updateGpcController(id, currentValue));
+    mutate({ id, value: currentValue });
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchGpc({
-        params: { type: 'machine_learning', stages: 1 }
-      });
-      setStages(data);
-    };
-
-    fetchData();
-  }, []);
+  const { data: stages, isPending: loadingStages } = useQuery({ queryKey: ['stages'], queryFn: getStages })
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       <Header text={"Gpc Controller"} />
@@ -60,27 +45,25 @@ export default function GpcControllerPage() {
               No settings available
             </p>
           )}
-{activeStage === "others" && (
-  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-    <span className="text-sm font-medium text-gray-700 capitalize">
-      Superfast Reply
-    </span>
+          {activeStage === "others" && (
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <span className="text-sm font-medium text-gray-700 capitalize">
+                Superfast Reply
+              </span>
 
-    <button
-      type="button"
-      onClick={superfastToggle}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-        superfastReply ? "bg-indigo-600" : "bg-gray-300"
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-          superfastReply ? "translate-x-6" : "translate-x-1"
-        }`}
-      />
-    </button>
-  </div>
-)}
+              <button
+                type="button"
+                onClick={superfastToggle}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${superfastReply ? "bg-indigo-600" : "bg-gray-300"
+                  }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${superfastReply ? "translate-x-6" : "translate-x-1"
+                    }`}
+                />
+              </button>
+            </div>
+          )}
           {checkboxes.filter(control => !activeStage || control.stage === activeStage).map((control, index) => (
             <div
               key={control.id}

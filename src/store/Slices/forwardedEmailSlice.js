@@ -1,6 +1,6 @@
 import { createSlice, current } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
+import { updateActivity, createLedgerEntry, buildLedgerItem, getCurrentUser } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { fetchGpc } from "../../services/api";
 
@@ -118,7 +118,7 @@ export const forwardEmail = (email, id) => {
             status: "Forward-To",
             detail: `email: {${getState().ladger.email}} name: {${email}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
           }),
         ],
         okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),

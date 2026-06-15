@@ -48,11 +48,11 @@ export const useInfiniteLedger = (
             lastPage
         ) => {
             if (
-                lastPage.page <
+                lastPage.current_page <
                 lastPage.total_pages
             ) {
                 return (
-                    lastPage.page +
+                    lastPage.current_page +
                     1
                 );
             }

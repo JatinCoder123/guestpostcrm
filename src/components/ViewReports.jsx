@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { memo } from "react";
-import { getAllUsers } from "../store/Slices/crmUser.js";
 import { fetchGpc } from "../services/api.js";
 import {
   setStagesLoading, setStagesData,
@@ -32,6 +31,8 @@ import {
 import { preferencesAction } from "../store/Slices/preferencesSlice.js";
 import { useNavigate } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
+import { useCrmUsers } from "../queries/users.queries.js";
+import CustomDropdown from "./ui/CustomDropdown.jsx";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -245,7 +246,7 @@ const EmptyState = ({ title, subtitle }) => (
 
 export default function ViewReports() {
   const dispatch = useDispatch();
-  const { users = [], loading: usersLoading } = useSelector((s) => s.crmUser || {});
+  const { data: users, isPending: usersLoading } = useCrmUsers();
   const [dateFilter, setDateFilter] =
     useState({
       filterActive: false,
@@ -397,9 +398,7 @@ export default function ViewReports() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!users.length) dispatch(getAllUsers());
-  }, [dispatch, users.length]);
+
 
   useEffect(() => {
     dispatch(resetReport());
@@ -425,19 +424,8 @@ export default function ViewReports() {
 
           <div className="flex items-center gap-2 flex-1 justify-end">
 
-            <div className="relative">
-              <Users size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <select
-                value={selectedUser}
-                onChange={(e) => setSelectedUser(e.target.value)}
-                className="h-9 pl-8 pr-3 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 outline-none appearance-none min-w-[150px] cursor-pointer transition-all"
-              >
-                <option value="">All Users</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>{getUserLabel(u)}</option>
-                ))}
-              </select>
-            </div>
+            <CustomDropdown options={users.map(user => ({ value: user.id, label: user.name }))} onChange={(user) => setSelectedUser(user)} placeholder="Select User" />
+
 
             <DateRangeFilter
               fromDate={

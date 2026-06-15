@@ -116,16 +116,9 @@ export function UnrepliedEmailsPage() {
     isFetchingNextPage,
     isPending,
   } = useInfiniteEmails(preferences);
-  const {
-    data: summary,
-    isPending: summaryLoading,
-  } = useEmailStats();
+  const { data: summary } = useEmailStats();
   const { handleMove } = useThreadContext();
-  const {
-    setCurrentIndex,
-    handleDateClick
-  } = useContext(PageContext);
-  const dispatch = useDispatch();
+  const { handleDateClick } = useContext(PageContext);
   const emails =
     data?.pages?.flatMap(
       (page) => page.records || page.data || []

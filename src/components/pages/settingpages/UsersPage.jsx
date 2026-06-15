@@ -8,15 +8,16 @@ import ErrorBox from "./ErrorBox";
 import EditUser from "./EditUser";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { getAllUsers } from "../../../store/Slices/crmUser";
 import { fetchGpc } from "../../../services/api";
+import { useCrmUsers, userKeys } from "../../../queries/users.queries";
+import { queryClient } from "../../../lib/queryClient";
 
 export function UsersPage() {
   const [editItem, setEditItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   const { businessEmail, crmEndpoint } = useSelector((state) => state.user);
-  const { users: crmUsers, loading } = useSelector((state) => state.crmUser);
+  const { data: crmUsers, isPending: loading } = useCrmUsers();
   const dispatch = useDispatch();
   const { error, refetch, add, update } = useModule({
     url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=get_users`,
@@ -25,6 +26,7 @@ export function UsersPage() {
       "Content-Type": "application/json",
       "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
     },
+    enabled: false
   });
 
   const users = (crmUsers || []).map((u) => ({
@@ -51,7 +53,7 @@ export function UsersPage() {
           "Content-Type": "application/json",
         },
       });
-      dispatch(getAllUsers());
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
     } catch (err) {
       toast.error("Create failed");
     }
@@ -76,7 +78,7 @@ export function UsersPage() {
           "Content-Type": "application/json",
         },
       });
-      dispatch(getAllUsers());
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
     } catch (err) {
       toast.error("Update failed");
     }
@@ -101,7 +103,7 @@ export function UsersPage() {
         toast.error("Failed to delete user");
       }
 
-      dispatch(getAllUsers());
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
     } catch (err) {
       console.error("Delete failed", err);
       toast.error("Delete failed");

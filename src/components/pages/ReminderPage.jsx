@@ -106,7 +106,7 @@ export function ReminderPage() {
     },
     {
       label: "Contact",
-      accessor: "real_name",
+      accessor: "recipient",
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
@@ -120,7 +120,7 @@ export function ReminderPage() {
     },
     {
       label: "Type",
-      accessor: "type",
+      accessor: "reminder_type",
       headerClasses: "",
       icon: Globe,
       classes: "truncate ",

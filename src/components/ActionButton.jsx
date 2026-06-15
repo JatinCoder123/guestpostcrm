@@ -13,11 +13,6 @@ import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { applyTag, markTagAction } from "../store/Slices/markTagSlice";
 import { MdOutlineHome } from "react-icons/md";
-import {
-  addMarketPlace,
-  deleteMarketPlace,
-  marketplaceActions,
-} from "../store/Slices/Marketplace";
 import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +26,7 @@ import { useTimeline } from "../context/TimelineContext";
 import { contactKeys, useContact } from "../queries/contact.queries";
 import { queryClient } from "../lib/queryClient";
 import { forwardedKeys } from "../queries/forwarded.queries";
-import { marketPlaceKeys } from "../queries/marketplace.queries";
+import { marketPlaceKeys, useAddMarketPlace, useDelMarketPlace, useMarketPlace } from "../queries/marketplace.queries";
 import { toggleFav } from "../api/contact.api";
 /* Memo numbers from CRM */
 const MEMO = {
@@ -76,7 +71,7 @@ ${note}<br/><br/>
 ${getCurrentUser()?.name}
 (${getCurrentUser()?.description})<br/><br/>
 
-<b>🔗 Timeline Link:</b><br/>
+<b>🔗 View:</b><br/>
 <a href="https://app.guestpostcrm.com/redirect?email=${email}">
 Open Contact
 </a>
@@ -141,37 +136,15 @@ Open Contact
   const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
 
-  const {
-    forward,
-    error: forwardError,
-    message: forwardMessage,
-  } = useSelector((s) => s.forwarded);
-
-  const {
-    exchanging,
-    error: changeError,
-    message: changeMessage,
-  } = useSelector((s) => s.linkExchange);
-
-  const {
-    favourite,
-    error: favouriteError,
-    message: favouriteMessage,
-  } = useSelector((s) => s.fav);
-
+  const { forward, error: forwardError, message: forwardMessage } = useSelector((s) => s.forwarded);
+  const { exchanging, error: changeError, message: changeMessage } = useSelector((s) => s.linkExchange);
+  const { favourite, error: favouriteError, message: favouriteMessage } = useSelector((s) => s.fav);
   const navigate = useNavigate();
-  const {
-    loading,
-    items: marketPlaces,
-    error: markingError,
-    message: markingMessage,
-  } = useSelector((s) => s.marketplace);
-  const {
-    loading: markTagLoading,
-    error: markTagError,
-    message: markTagMessage,
-  } = useSelector((s) => s.markTag);
-  const markInfo = marketPlaces.find((e) => e.name === email) ?? null
+  const { isPending: loading, mutate: addToMarket } = useAddMarketPlace();
+  const { isPending: removing, mutate: delMarket } = useDelMarketPlace();
+  const { isPending: marketPlaceloading, data: marketPlaces } = useMarketPlace();
+  const { loading: markTagLoading, error: markTagError, message: markTagMessage } = useSelector((s) => s.markTag);
+  const markInfo = marketPlaces?.data?.find((e) => e.name === email) ?? null
   const isMark = Number(contactInfo?.bulk) == 1
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite == "1";
@@ -199,17 +172,6 @@ Open Contact
       toast.success(forwardMessage);
       dispatch(forwardedAction.clearAllMessages());
       queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
-      queryClient.invalidateQueries({ queryKey: contactKeys.all })
-    }
-    if (markingError) {
-      toast.error(markingError);
-      dispatch(marketplaceActions.clearErrors());
-    }
-
-    if (markingMessage) {
-      toast.success(markingMessage);
-      dispatch(marketplaceActions.clearMessage());
-      queryClient.invalidateQueries({ queryKey: marketPlaceKeys.all })
       queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
     if (markTagError) {
@@ -244,13 +206,8 @@ Open Contact
     forwardMessage,
     favouriteError,
     favouriteMessage,
-    markingError,
-    markingMessage,
     changeError,
     changeMessage,
-    email,
-    threadId,
-    enteredEmail,
     editMessage,
     markTagMessage, markTagError
   ]);
@@ -347,7 +304,7 @@ Open Contact
 
     {
       icon:
-        loading ? (
+        loading || removing ? (
           <LoadingChase />
         ) : (
           <MdOutlineHome size={25} color={isMark ? "white" : "#d40d8b"} />
@@ -363,10 +320,10 @@ Open Contact
       // GET when adding to marketplace, DELETE when removing
       action: () => {
         if (markInfo) {
-          dispatch(deleteMarketPlace(markInfo?.id, true));
+          delMarket({ id: markInfo?.id, email });
           triggerHashtag(MEMO.marketplace, "DELETE");
         } else {
-          dispatch(addMarketPlace(email, contactInfo.type == "Brand"));
+          addToMarket({ email, brand: contactInfo.type == "Brand" })
           triggerHashtag(MEMO.marketplace, "GET");
         }
       },
@@ -388,30 +345,13 @@ Open Contact
       // GET when stopping emails, DELETE when resuming
       action: async () => {
         setStopLoading(true);
-        const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
+        const newValue = Number(contactInfo?.is_stop) == 1 ? "0" : "1";
         try {
-
-          const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: enteredEmail } });
+          const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: getCurrentUser().description } });
           console.log(data);
-          dispatch(
-            viewEmailAction.updateContactInfo({
-              key: "is_stop",
-            }),
-          );
-
-
-
-          toast.success(
-            newValue === "1"
-              ? "Emails stopped successfully"
-              : "Emails resumed successfully",
-          );
-
-          // GET when stopping (newValue "1"), DELETE when resuming (newValue s"0")
-          triggerHashtag(
-            MEMO.stopfutureemails,
-            newValue === "1" ? "GET" : "DELETE",
-          );
+          queryClient.invalidateQueries({ queryKey: contactKeys.all })
+          toast.success(newValue === "1" ? "Emails stopped successfully" : "Emails resumed successfully");
+          triggerHashtag(MEMO.stopfutureemails, newValue === "1" ? "GET" : "DELETE");
         } catch (err) {
           toast.error(`Failed To ${newValue === '1' ? 'Stopped' : 'Resumed'} Email `);
         } finally {

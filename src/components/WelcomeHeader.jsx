@@ -29,6 +29,7 @@ import {
   getOnboardingRecordName,
   upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
+import { useGpcController } from "../queries/controller.queries";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
@@ -94,7 +95,8 @@ const WelcomeHeader = () => {
   );
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
-  const { summary } = useSelector((state) => state.gpcController);
+  const {data,isPending} = useGpcController()
+  const summary = data?.summary ?? {}
   const { loading: contactLoading, contacts } = useSelector(
     (state) => state.contacts,
   );

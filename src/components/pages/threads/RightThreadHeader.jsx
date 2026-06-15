@@ -1,19 +1,12 @@
 import NextPrev from "../../NextPrev";
 import CopyButton from "../../CopyButton"
 import { useNavigate, useOutletContext } from "react-router-dom";
+import { useThreadContext } from "../../../hooks/useThreadContext";
 
 
 const RightThreadHeader = () => {
-    const { email, threadId } = useOutletContext()
-    const navigate = useNavigate()
-    const setParams = (e, t) => {
-        const params = new URLSearchParams(location.search);
-
-        params.set("email", e);
-        params.set("thread", t);
-
-        navigate(`${location.pathname}?${params.toString()}`);
-    };
+    const { email } = useOutletContext()
+    const { handleMove } = useThreadContext()
     return (
         <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center ">
             {/* Left Section */}
@@ -27,7 +20,7 @@ const RightThreadHeader = () => {
 
             {/* Right Section */}
             <div className="flex items-center justify-end">
-                <NextPrev prevHandler={(e, t) => setParams(e, t)} nextHandler={(e, t) => setParams(e, t)} />
+                <NextPrev prevHandler={(email, threadId) => handleMove({ email, threadId })} nextHandler={(email, threadId) => handleMove({ email, threadId })} />
             </div>
         </div>
     );

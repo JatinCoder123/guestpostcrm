@@ -11,7 +11,6 @@ import { PageContext } from "../../context/pageContext";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getAllHot } from "../../store/Slices/hotSlice.js";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { useInfiniteHotEvents } from "../../queries/hot.queries.js";
 
@@ -68,10 +67,7 @@ export function HotPage() {
   const { handleMove } = useThreadContext()
   const { handleDateClick } =
     useContext(PageContext);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getAllHot({}))
-  }, [])
+
   const columns = [
     {
       label: "Created At",
@@ -91,7 +87,7 @@ export function HotPage() {
 
     {
       label: "Contact",
-      accessor: "email",
+      accessor: "name",
       headerClasses: "",
       icon: User,
       classes: "truncate ",

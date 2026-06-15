@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { CREATE_DEAL_API_KEY } from "../constants";
 import { extractEmail, getDomain, showConsole } from "../../assets/assets";
-import { applyHashtag } from "../../services/utils";
+import { applyHashtag, getCurrentUser } from "../../services/utils";
 import {
   updateActivity,
   buildLedgerItem,
@@ -224,7 +224,7 @@ export const createDeal = ({ threadId, email, deals = [], contactId }) => {
             status: "Deal-Created",
             detail: `website: {${getDomain(deal.website_c)}} amount: {${deal.dealamount}}`,
             ladgerState: state.ladger,
-            user: state.crmUser.currentUser,
+            user: getCurrentUser(),
             parent_name: "outr_deal",
           }),
         ),
@@ -323,7 +323,7 @@ export const updateDeal = ({ deals = [] }) => {
             status: "Deal-Updated",
             detail: `website: {${getDomain1(deal.website_c)}} amount: {${deal.dealamount}}`,
             ladgerState: state.ladger,
-            user: state.crmUser.currentUser,
+            user: getCurrentUser(),
             parent_name: "outr_deal",
           }),
         ),
