@@ -16,7 +16,6 @@ import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
 import eventReducer from "./Slices/eventSlice.js";
-import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
 import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
 import DraftInvoiceReducer from "./Slices/draftInvoice.js";
@@ -50,7 +49,6 @@ export const store = configureStore({
     avatar: avatarReducer,
     defaulter: defaulterReducer,
     events: eventReducer,
-    marketplace: marketplaceReducer,
     linkExchange: linkExchangeReducer,
     hot: hotReducer,
     contactdefaulter: contactdefaulterReducer,

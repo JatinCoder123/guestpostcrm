@@ -11,19 +11,15 @@ import {
   BarChart4Icon,
   Trash,
 } from "lucide-react";
-import {
-  deleteMarketPlace,
-  marketplaceActions,
-} from "../../store/Slices/Marketplace"; // named import
 import { LoadingChase } from "../Loading";
-import { useMarketPlace } from "../../queries/marketplace.queries";
+import { useDelMarketPlace, useMarketPlace } from "../../queries/marketplace.queries";
 import { queryClient } from "../../lib/queryClient";
 
 export function Marketplace() {
   const dispatch = useDispatch();
   const { handleDateClick } = useContext(PageContext)
-  const { error, loading, message, deleteMarketPlaceId } =
-    useSelector((state) => state.marketplace);
+  const { isPending: removing, mutate: delMarket, variables } = useDelMarketPlace();
+
   const { data, isPending } = useMarketPlace()
   const items = data?.data ?? []
   useEffect(() => {
@@ -120,13 +116,13 @@ export function Marketplace() {
                 <td className="px-6 py-4">
                   <div className="flex gap-2 item-center justify-center">
                     {/* Update Button */}
-                    {loading && deleteMarketPlaceId === row.id ? (
+                    {removing && variables.id === row.id ? (
                       <LoadingChase size="20" color="red" />
                     ) : (
                       <button
                         className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                         title="Delete"
-                        onClick={() => dispatch(deleteMarketPlace(row.id))}
+                        onClick={() => delMarket({ id: row?.id, email: row?.name })}
                       >
                         <Trash className="w-5 h-5 text-red-600" />
                       </button>

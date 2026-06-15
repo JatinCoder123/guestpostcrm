@@ -27,7 +27,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
       (page) => page.data || []
     ) ?? [];
   const pages = data?.pages ?? [];
-  console.log("HAS", hasNextPage)
 
   const lastPage = pages[pages.length - 1] ?? {};
   const firstPage = pages[0] ?? {};
@@ -131,7 +130,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        console.log("Intersecting:", entry.isIntersecting);
 
         if (
           entry.isIntersecting &&
