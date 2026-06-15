@@ -1,28 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
-// All API calls use the real SugarCRM entrypoints:
-//   Module list : GET  /index.php?entryPoint=get_module_list
-//   Field list  : GET  /index.php?entryPoint=get_fields&module_name=<Module>
-//   Actions     : POST /index.php?entryPoint=smart_gateway  (body = action payload)
-// baseUrl is derived from the Redux crmEndpoint value.
-
-// ─── TOKEN GENERATION ────────────────────────────────────────────────────────
-// Mirrors the Postman pre-request script:
-//   payload = { ts, source }  →  HMAC-SHA256 sign  →  base64("json||sig")
-// Uses SubtleCrypto (built into every modern browser — no CryptoJS needed).
- 
 const TOKEN_SECRET = "MY_SUPER_SECRET_123";
- 
+
 async function generateToken() {
   const payload = {
     ts: Math.floor(Date.now() / 1000),
     source: "claude-mcp",
   };
   const json = JSON.stringify(payload);
- 
-  // Import the secret key for HMAC-SHA256
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(TOKEN_SECRET),
@@ -30,20 +16,10 @@ async function generateToken() {
     false,
     ["sign"]
   );
- 
-  // Sign
-  const sigBuf = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(json)
-  );
- 
-  // Convert ArrayBuffer → hex string (same as CryptoJS .toString(Hex))
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(json));
   const sigHex = Array.from(new Uint8Array(sigBuf))
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
- 
-  // base64(json + "||" + hexSig)
   return btoa(`${json}||${sigHex}`);
 }
 
@@ -79,18 +55,28 @@ function getPlaceholder(type, name) {
 // ─── STYLES ──────────────────────────────────────────────────────────────────
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
 
 .dm-wrap {
-  --dm-bg: #0a0e14;
-  --dm-surface: #14191f;
-  --dm-border: #1f2933;
-  --dm-text: #e4e8ed;
-  --dm-muted: #6b7784;
-  --dm-accent: #3b82f6;
-  --dm-accent2: #10b981;
-  --dm-danger: #ef4444;
-  --dm-success: #22c55e;
+  --dm-bg: #f5f7fa;
+  --dm-surface: #ffffff;
+  --dm-surface2: #f0f2f6;
+  --dm-border: #e2e6ec;
+  --dm-border2: #cdd3dd;
+  --dm-text: #1a2233;
+  --dm-muted: #6b7a99;
+  --dm-hint: #a0aab8;
+  --dm-accent: #4361ee;
+  --dm-accent-light: #eef0fd;
+  --dm-accent-dark: #2d46c7;
+  --dm-green: #0f9f6e;
+  --dm-green-light: #e6f7f1;
+  --dm-red: #e53e3e;
+  --dm-red-light: #fff0f0;
+  --dm-amber: #d97706;
+  --dm-amber-light: #fef3c7;
+  --dm-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --dm-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .dm-wrap *, .dm-wrap *::before, .dm-wrap *::after {
@@ -100,11 +86,11 @@ const CSS = `
 .dm-app {
   display: grid;
   grid-template-areas: "topbar topbar" "sidebar main";
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: 56px 1fr;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 54px 1fr;
   height: 100vh;
   overflow: hidden;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   background: var(--dm-bg);
   color: var(--dm-text);
   font-size: 13px;
@@ -116,164 +102,368 @@ const CSS = `
   grid-area: topbar;
   background: var(--dm-surface);
   border-bottom: 1px solid var(--dm-border);
-  display: flex; align-items: center;
-  padding: 0 20px; gap: 16px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+  box-shadow: var(--dm-shadow);
+  z-index: 10;
 }
-.dm-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
+.dm-logo {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dm-text);
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dm-logo-icon {
+  width: 28px; height: 28px;
+  background: var(--dm-accent);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 14px; font-weight: 700;
+}
 .dm-logo span { color: var(--dm-accent); }
-.dm-topbar-url { flex: 1; font-size: 11px; color: var(--dm-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dm-badge { font-size: 10px; padding: 4px 8px; border: 1px solid var(--dm-accent); color: var(--dm-accent); border-radius: 4px; font-weight: 600; }
-.dm-badge.green { border-color: var(--dm-accent2); color: var(--dm-accent2); }
+.dm-topbar-info {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dm-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--dm-accent-light);
+  color: var(--dm-accent);
+}
 
 /* SIDEBAR */
 .dm-sidebar {
   grid-area: sidebar;
   background: var(--dm-surface);
   border-right: 1px solid var(--dm-border);
-  padding: 20px 12px;
+  padding: 16px 10px;
   overflow-y: auto;
 }
-.dm-section { font-size: 10px; text-transform: uppercase; color: var(--dm-muted); margin: 24px 0 8px 8px; letter-spacing: 0.5px; font-weight: 600; }
+.dm-section {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--dm-hint);
+  padding: 0 10px;
+  margin: 18px 0 6px;
+}
 .dm-section:first-child { margin-top: 0; }
 
 .dm-action-btn {
-  width: 100%; background: transparent; border: 1px solid transparent; color: var(--dm-text);
-  padding: 10px 12px; text-align: left; cursor: pointer; border-radius: 6px;
-  font-family: inherit; font-size: 12px; display: flex; align-items: center; gap: 8px;
-  transition: all 0.15s; margin-bottom: 4px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--dm-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.12s;
+  margin-bottom: 1px;
+  text-align: left;
 }
-.dm-action-btn svg { flex-shrink: 0; }
-.dm-action-btn:hover { background: rgba(59,130,246,0.1); border-color: var(--dm-accent); }
-.dm-action-btn.active { background: rgba(59,130,246,0.15); border-color: var(--dm-accent); color: var(--dm-accent); }
+.dm-action-btn:hover { background: var(--dm-bg); color: var(--dm-text); }
+.dm-action-btn.active { background: var(--dm-accent-light); color: var(--dm-accent); }
 
-.dm-pill { margin-left: auto; font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: 700; letter-spacing: 0.3px; }
-.dm-pill-post { background: rgba(59,130,246,0.2); color: var(--dm-accent); }
-.dm-pill-get  { background: rgba(16,185,129,0.2); color: var(--dm-accent2); }
-.dm-pill-del  { background: rgba(239,68,68,0.2);  color: var(--dm-danger); }
+.dm-pill {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.dm-pill-post { background: #eef0fd; color: #4361ee; }
+.dm-pill-get  { background: #e6f7f1; color: #0f9f6e; }
+.dm-pill-del  { background: #fff0f0; color: #e53e3e; }
 
 /* MAIN */
-.dm-main { grid-area: main; overflow-y: auto; padding: 24px; }
-.dm-pane { max-width: 1100px; margin: 0 auto 24px; }
+.dm-main { grid-area: main; overflow-y: auto; padding: 20px 24px; background: var(--dm-bg); }
+.dm-pane { max-width: 900px; margin: 0 auto; }
 
-/* PANEL */
-.dm-panel { background: var(--dm-surface); border: 1px solid var(--dm-border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
-.dm-panel-head {
-  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.05));
-  border-bottom: 1px solid var(--dm-border);
-  padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+/* CARD */
+.dm-card {
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: var(--dm-shadow);
 }
-.dm-panel-title { font-weight: 700; font-size: 14px; }
-.dm-panel-desc  { color: var(--dm-muted); font-size: 11px; margin-left: auto; }
-.dm-panel-body  { padding: 20px; }
+.dm-card-header {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--dm-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dm-card-header-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+.dm-card-title { font-size: 13.5px; font-weight: 600; color: var(--dm-text); }
+.dm-card-desc  { font-size: 11.5px; color: var(--dm-muted); margin-left: auto; }
+.dm-card-body  { padding: 18px; }
 
 /* FORM */
-.dm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-.dm-field { display: flex; flex-direction: column; gap: 6px; }
-.dm-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--dm-muted); }
-.dm-req { color: var(--dm-danger); }
+.dm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.dm-field { display: flex; flex-direction: column; gap: 5px; }
+.dm-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--dm-muted);
+}
+.dm-req { color: var(--dm-red); }
 
 .dm-input, .dm-select, .dm-textarea {
-  background: var(--dm-bg); border: 1px solid var(--dm-border); color: var(--dm-text);
-  padding: 10px 12px; border-radius: 6px; font-family: inherit; font-size: 13px; transition: all 0.15s; width: 100%;
+  background: var(--dm-bg);
+  border: 1px solid var(--dm-border);
+  color: var(--dm-text);
+  padding: 8px 11px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  transition: all 0.12s;
+  width: 100%;
 }
 .dm-input:focus, .dm-select:focus, .dm-textarea:focus {
-  outline: none; border-color: var(--dm-accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  outline: none;
+  border-color: var(--dm-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.08);
 }
 .dm-select { cursor: pointer; }
-.dm-textarea { resize: vertical; min-height: 80px; font-size: 12px; font-family: 'JetBrains Mono', monospace; line-height: 1.5; }
-.dm-textarea.err { border-color: var(--dm-danger); }
+.dm-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.5;
+}
+.dm-textarea.err { border-color: var(--dm-red); }
 
 /* DATE PILLS */
-.dm-date-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.dm-date-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .dm-date-pill {
-  background: var(--dm-bg); border: 1px solid var(--dm-border); color: var(--dm-text);
-  padding: 7px 13px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 12px; transition: all 0.15s;
+  background: var(--dm-bg);
+  border: 1px solid var(--dm-border);
+  color: var(--dm-muted);
+  padding: 5px 11px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  transition: all 0.12s;
 }
-.dm-date-pill:hover { border-color: var(--dm-accent2); background: rgba(16,185,129,0.1); }
-.dm-date-pill.active { background: var(--dm-accent2); color: #000; border-color: var(--dm-accent2); font-weight: 600; }
-.dm-custom-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+.dm-date-pill:hover { border-color: var(--dm-accent); color: var(--dm-accent); background: var(--dm-accent-light); }
+.dm-date-pill.active { background: var(--dm-accent); color: #fff; border-color: var(--dm-accent); font-weight: 600; }
+.dm-custom-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
 
 /* FIELD CHIPS */
-.dm-fields-wrap { background: var(--dm-bg); border: 1px solid var(--dm-border); border-radius: 6px; padding: 12px; }
-.dm-chip-search { width: 100%; background: var(--dm-surface); border: 1px solid var(--dm-border); color: var(--dm-text); padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 12px; margin-bottom: 10px; }
-.dm-chip-search:focus { outline: none; border-color: var(--dm-accent); }
-.dm-chip-grid { display: flex; flex-wrap: wrap; gap: 6px; max-height: 200px; overflow-y: auto; }
-.dm-chip {
-  background: var(--dm-surface); border: 1px solid var(--dm-border); color: var(--dm-text);
-  padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px;
-  display: flex; align-items: center; gap: 5px; transition: all 0.15s; font-family: inherit;
+.dm-fields-wrap {
+  background: var(--dm-bg);
+  border: 1px solid var(--dm-border);
+  border-radius: 8px;
+  padding: 10px;
 }
-.dm-chip:hover { border-color: var(--dm-accent); background: rgba(59,130,246,0.1); }
-.dm-chip.sel { background: var(--dm-accent); color: #000; border-color: var(--dm-accent); font-weight: 600; }
-.dm-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dm-muted); flex-shrink: 0; }
-.dm-chip.sel .dm-dot { background: #000; }
-.dm-chip-type { font-size: 9px; opacity: 0.6; }
+.dm-chip-search {
+  width: 100%;
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border);
+  color: var(--dm-text);
+  padding: 7px 11px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  margin-bottom: 9px;
+}
+.dm-chip-search:focus { outline: none; border-color: var(--dm-accent); }
+.dm-chip-grid { display: flex; flex-wrap: wrap; gap: 5px; max-height: 180px; overflow-y: auto; }
+.dm-chip {
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border);
+  color: var(--dm-text);
+  padding: 4px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.dm-chip:hover { border-color: var(--dm-accent); color: var(--dm-accent); background: var(--dm-accent-light); }
+.dm-chip.sel { background: var(--dm-accent); color: #fff; border-color: var(--dm-accent); }
+.dm-chip-type { font-size: 9px; opacity: 0.65; font-family: 'JetBrains Mono', monospace; }
+.dm-chip-loading { padding: 10px; color: var(--dm-muted); font-size: 12px; }
 
 /* JSON ACTIONS */
-.dm-json-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-.dm-json-ok  { font-size: 11px; color: var(--dm-success); }
-.dm-json-err { font-size: 11px; color: var(--dm-danger); }
+.dm-json-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+.dm-json-ok  { font-size: 11px; color: var(--dm-green); font-weight: 500; }
+.dm-json-err { font-size: 11px; color: var(--dm-red); font-weight: 500; }
 
 /* BUTTONS */
 .dm-btn {
-  background: transparent; border: 1px solid var(--dm-border); color: var(--dm-muted);
-  cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 11px; padding: 4px 10px; transition: all 0.15s;
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border);
+  color: var(--dm-muted);
+  cursor: pointer;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 11px;
+  padding: 4px 9px;
+  transition: all 0.12s;
 }
 .dm-btn:hover { border-color: var(--dm-accent); color: var(--dm-accent); }
 
 .dm-send {
-  background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none;
-  padding: 11px 26px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 13px;
-  font-weight: 600; letter-spacing: 0.3px; transition: all 0.15s;
-  display: flex; align-items: center; gap: 8px;
+  background: var(--dm-accent);
+  color: #fff;
+  border: none;
+  padding: 9px 22px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: all 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
-.dm-send:hover { opacity: 0.9; transform: translateY(-1px); }
-.dm-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.dm-send.danger { background: linear-gradient(135deg,#ef4444,#c0392b); }
-.dm-send.green  { background: linear-gradient(135deg,#10b981,#20c997); }
+.dm-send:hover { background: var(--dm-accent-dark); }
+.dm-send:disabled { opacity: 0.5; cursor: not-allowed; }
+.dm-send.danger { background: var(--dm-red); }
+.dm-send.danger:hover { background: #c53030; }
+.dm-send.green  { background: var(--dm-green); }
+.dm-send.green:hover { background: #0b8a5e; }
+
+/* DIVIDER */
+.dm-divider { height: 1px; background: var(--dm-border); margin: 14px 0; }
 
 /* RESPONSE PANEL */
-.dm-resp-panel { background: var(--dm-surface); border: 1px solid var(--dm-border); border-radius: 8px; overflow: hidden; max-width: 1100px; margin: 0 auto; }
-.dm-resp-head  { background: var(--dm-surface); border-bottom: 1px solid var(--dm-border); padding: 10px 18px; display: flex; align-items: center; gap: 10px; }
-.dm-resp-status { font-size: 10px; padding: 3px 8px; border-radius: 3px; font-weight: 700; }
-.dm-resp-idle    { background: rgba(107,119,132,0.2); color: var(--dm-muted); }
-.dm-resp-ok      { background: rgba(34,197,94,0.2); color: var(--dm-success); }
-.dm-resp-err     { background: rgba(239,68,68,0.2); color: var(--dm-danger); }
-.dm-resp-time    { font-size: 11px; color: var(--dm-muted); }
+.dm-resp-panel {
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: var(--dm-shadow);
+}
+.dm-resp-head {
+  background: var(--dm-surface);
+  border-bottom: 1px solid var(--dm-border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dm-resp-title { font-size: 13px; font-weight: 600; }
+.dm-resp-status {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.dm-resp-idle { background: var(--dm-surface2); color: var(--dm-muted); }
+.dm-resp-ok   { background: var(--dm-green-light); color: var(--dm-green); }
+.dm-resp-err  { background: var(--dm-red-light); color: var(--dm-red); }
+.dm-resp-time { font-size: 11px; color: var(--dm-muted); }
 .dm-resp-body {
-  padding: 16px 20px; overflow: auto; max-height: 460px; min-height: 100px;
-  background: #0f172a; color: #e2e8f0; font-size: 13px; line-height: 1.6;
-  font-family: 'JetBrains Mono', monospace; white-space: pre-wrap; word-break: break-word;
+  padding: 14px 18px;
+  overflow: auto;
+  max-height: 400px;
+  min-height: 90px;
+  background: #1e2430;
+  color: #e2e8f0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* JSON SYNTAX */
-.dm-jk { color: #93c5fd; }
-.dm-js { color: #86efac; }
-.dm-jn { color: #fca5a5; }
-.dm-jb { color: #f9a8d4; }
+.dm-jk { color: #7eb6f6; }
+.dm-js { color: #7dd3a8; }
+.dm-jn { color: #f9a8a8; }
+.dm-jb { color: #f9b8d4; }
 
 /* SCHEMA */
-.dm-schema-tabs { display: flex; gap: 2px; background: var(--dm-bg); padding: 4px; border-radius: 6px; flex-wrap: wrap; }
+.dm-schema-tabs { display: flex; gap: 1px; background: var(--dm-bg); padding: 3px; border-radius: 7px; flex-wrap: wrap; }
 .dm-schema-tab {
-  background: transparent; border: none; color: var(--dm-muted); padding: 7px 14px; border-radius: 4px;
-  cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 600; transition: all 0.15s;
+  background: transparent;
+  border: none;
+  color: var(--dm-muted);
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: all 0.12s;
 }
 .dm-schema-tab:hover { color: var(--dm-text); background: var(--dm-surface); }
-.dm-schema-tab.active { color: var(--dm-accent); background: var(--dm-surface); }
-.dm-schema-body { padding: 20px; position: relative; }
+.dm-schema-tab.active { color: var(--dm-accent); background: var(--dm-surface); box-shadow: var(--dm-shadow); }
+.dm-schema-body { padding: 18px; position: relative; }
+.dm-schema-label {
+  color: var(--dm-muted);
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 .dm-schema-code {
-  background: var(--dm-bg); border: 1px solid var(--dm-border); border-radius: 6px;
-  padding: 16px; overflow-x: auto; font-size: 12px; line-height: 1.7; white-space: pre-wrap;
+  background: #1e2430;
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
   font-family: 'JetBrains Mono', monospace;
+  color: #e2e8f0;
 }
 .dm-copy-btn {
-  position: absolute; top: 28px; right: 28px; background: var(--dm-accent); color: #fff; border: none;
-  padding: 5px 11px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 10px; font-weight: 600;
+  position: absolute;
+  top: 26px; right: 26px;
+  background: var(--dm-accent);
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
 }
-.dm-copy-btn:hover { background: #2563eb; }
-
-/* LOADING CHIP */
-.dm-chip-loading { padding: 10px; color: var(--dm-muted); font-size: 12px; }
+.dm-copy-btn:hover { background: var(--dm-accent-dark); }
 
 @keyframes dm-spin { to { transform: rotate(360deg); } }
 .dm-spin { display: inline-block; animation: dm-spin 0.6s linear infinite; }
@@ -281,10 +471,18 @@ const CSS = `
 
 // ─── SMALL REUSABLE UI ────────────────────────────────────────────────────────
 
-const Pill = ({ type }) => {
-  const cls = { POST: "dm-pill-post", GET: "dm-pill-get", DEL: "dm-pill-del" };
-  return <span className={`dm-pill ${cls[type] || "dm-pill-post"}`}>{type}</span>;
-};
+const PILL_BG = { POST: "#eef0fd", GET: "#e6f7f1", DEL: "#fff0f0" };
+const PILL_COLOR = { POST: "#4361ee", GET: "#0f9f6e", DEL: "#e53e3e" };
+const HEADER_BG = { POST: "var(--dm-accent-light)", GET: "var(--dm-green-light)", DEL: "var(--dm-red-light)" };
+
+const Pill = ({ type }) => (
+  <span
+    className="dm-card-header-pill"
+    style={{ background: PILL_BG[type] || PILL_BG.POST, color: PILL_COLOR[type] || PILL_COLOR.POST }}
+  >
+    {type}
+  </span>
+);
 
 const SpinIcon = () => (
   <svg className="dm-spin" width="13" height="13" viewBox="0 0 14 14">
@@ -294,14 +492,24 @@ const SpinIcon = () => (
 );
 
 const SendBtn = ({ onClick, loading, variant = "" }) => (
-  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
     <button className={`dm-send ${variant}`} onClick={onClick} disabled={loading}>
       {loading ? <><SpinIcon /> Sending…</> : "▶ Send Request"}
     </button>
   </div>
 );
 
-// Module dropdown — modules is [{ key, label }]
+const CardWrap = ({ pillType, title, desc, children }) => (
+  <div className="dm-card">
+    <div className="dm-card-header" style={{ background: HEADER_BG[pillType] || "var(--dm-surface)" }}>
+      <Pill type={pillType} />
+      <span className="dm-card-title">{title}</span>
+      <span className="dm-card-desc">{desc}</span>
+    </div>
+    <div className="dm-card-body">{children}</div>
+  </div>
+);
+
 const ModSel = ({ value, onChange, modules }) => (
   <select className="dm-select" value={value} onChange={e => onChange(e.target.value)}>
     <option value="">— select module —</option>
@@ -311,7 +519,6 @@ const ModSel = ({ value, onChange, modules }) => (
   </select>
 );
 
-// Field chips with search + toggle
 const FieldChips = ({ fields, selected, onToggle, loading }) => {
   const [filter, setFilter] = useState("");
   const visible = filter
@@ -341,7 +548,6 @@ const FieldChips = ({ fields, selected, onToggle, loading }) => {
             title={`${f.label || f.name} [${f.type}]`}
             onClick={() => onToggle(f.name, f.type)}
           >
-            <span className="dm-dot" />
             {f.name}
             <span className="dm-chip-type">({f.type})</span>
           </span>
@@ -351,7 +557,6 @@ const FieldChips = ({ fields, selected, onToggle, loading }) => {
   );
 };
 
-// JSON textarea with format/clear/validation
 const JsonBox = ({ value, onChange, rows = 6, placeholder = "{}" }) => {
   const [err, setErr] = useState("");
   const handle = e => {
@@ -384,21 +589,20 @@ const JsonBox = ({ value, onChange, rows = 6, placeholder = "{}" }) => {
   );
 };
 
-// Date range pills
 const DATE_RANGES = [
   { key: "today", label: "Today" },
   { key: "yesterday", label: "Yesterday" },
-  { key: "this_week", label: "This Week" },
-  { key: "last_week", label: "Last Week" },
-  { key: "this_month", label: "This Month" },
-  { key: "last_month", label: "Last Month" },
+  { key: "this_week", label: "This week" },
+  { key: "last_week", label: "Last week" },
+  { key: "this_month", label: "This month" },
+  { key: "last_month", label: "Last month" },
   { key: "custom", label: "Custom…" },
-  { key: "", label: "All Time" },
+  { key: "", label: "All time" },
 ];
 
 const DatePills = ({ value, onChange, customFrom, customTo, onFrom, onTo }) => (
   <div style={{ marginTop: 14 }}>
-    <div className="dm-label" style={{ marginBottom: 8 }}>Date Range</div>
+    <div className="dm-label" style={{ marginBottom: 7 }}>Date Range</div>
     <div className="dm-date-pills">
       {DATE_RANGES.map(r => (
         <button
@@ -427,7 +631,6 @@ const DatePills = ({ value, onChange, customFrom, customTo, onFrom, onTo }) => (
 
 // ─── PANES ────────────────────────────────────────────────────────────────────
 
-// Create
 function PaneCreate({ modules, fieldCache, loadFields, onSend, loading }) {
   const [mod, setMod] = useState("");
   const [data, setData] = useState("{}");
@@ -471,53 +674,42 @@ function PaneCreate({ modules, fieldCache, loadFields, onSend, loading }) {
 
   return (
     <div className="dm-pane">
-      <div className="dm-panel">
-        <div className="dm-panel-head">
-          <Pill type="POST" />
-          <span className="dm-panel-title">Create Record</span>
-          <span className="dm-panel-desc">Creates a new record in any module</span>
-        </div>
-        <div className="dm-panel-body">
-          <div className="dm-grid">
-            <div className="dm-field">
-              <label className="dm-label">Module <span className="dm-req">*</span></label>
-              <ModSel value={mod} onChange={handleMod} modules={modules} />
-            </div>
+      <CardWrap pillType="POST" title="Create Record" desc="Creates a new record in any module">
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Module <span className="dm-req">*</span></label>
+            <ModSel value={mod} onChange={handleMod} modules={modules} />
           </div>
+        </div>
 
-          {mod && (
-            <div style={{ marginTop: 14 }}>
-              <div className="dm-field">
-                <label className="dm-label">Fields — click to add to JSON data</label>
-                <FieldChips
-                  fields={fields}
-                  selected={selected}
-                  onToggle={toggleChip}
-                  loading={fieldsLoading}
-                />
-              </div>
-            </div>
-          )}
-
-          <div style={{ marginTop: 14 }}>
+        {mod && (
+          <>
+            <div className="dm-divider" />
             <div className="dm-field">
               <label className="dm-label">
-                data <span className="dm-req">*</span>{" "}
-                <span style={{ color: "var(--dm-muted)", fontSize: 10, textTransform: "none" }}>
-                  — click fields above to populate
-                </span>
+                Fields — click to add to JSON data
               </label>
-              <JsonBox value={data} onChange={setData} rows={8} />
+              <FieldChips fields={fields} selected={selected} onToggle={toggleChip} loading={fieldsLoading} />
             </div>
-          </div>
+          </>
+        )}
+
+        <div className="dm-divider" />
+        <div className="dm-field">
+          <label className="dm-label">
+            Data <span className="dm-req">*</span>{" "}
+            <span style={{ color: "var(--dm-hint)", fontSize: 10, textTransform: "none", fontWeight: 400 }}>
+              — select fields above to populate
+            </span>
+          </label>
+          <JsonBox value={data} onChange={setData} rows={7} />
         </div>
-      </div>
+      </CardWrap>
       <SendBtn onClick={send} loading={loading} />
     </div>
   );
 }
 
-// Update
 function PaneUpdate({ modules, fieldCache, loadFields, onSend, loading }) {
   const [mod, setMod] = useState("");
   const [id, setId] = useState("");
@@ -562,48 +754,40 @@ function PaneUpdate({ modules, fieldCache, loadFields, onSend, loading }) {
 
   return (
     <div className="dm-pane">
-      <div className="dm-panel">
-        <div className="dm-panel-head">
-          <Pill type="POST" />
-          <span className="dm-panel-title">Update Record</span>
-          <span className="dm-panel-desc">Update fields on an existing record</span>
-        </div>
-        <div className="dm-panel-body">
-          <div className="dm-grid">
-            <div className="dm-field">
-              <label className="dm-label">Module <span className="dm-req">*</span></label>
-              <ModSel value={mod} onChange={handleMod} modules={modules} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Record ID <span className="dm-req">*</span></label>
-              <input className="dm-input" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                value={id} onChange={e => setId(e.target.value)} />
-            </div>
+      <CardWrap pillType="POST" title="Update Record" desc="Update fields on an existing record">
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Module <span className="dm-req">*</span></label>
+            <ModSel value={mod} onChange={handleMod} modules={modules} />
           </div>
-
-          {mod && (
-            <div style={{ marginTop: 14 }}>
-              <div className="dm-field">
-                <label className="dm-label">Fields — click to add to data JSON</label>
-                <FieldChips fields={fields} selected={selected} onToggle={toggleChip} loading={fieldsLoading} />
-              </div>
-            </div>
-          )}
-
-          <div style={{ marginTop: 14 }}>
-            <div className="dm-field">
-              <label className="dm-label">data <span className="dm-req">*</span></label>
-              <JsonBox value={data} onChange={setData} rows={8} />
-            </div>
+          <div className="dm-field">
+            <label className="dm-label">Record ID <span className="dm-req">*</span></label>
+            <input className="dm-input" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              value={id} onChange={e => setId(e.target.value)} />
           </div>
         </div>
-      </div>
+
+        {mod && (
+          <>
+            <div className="dm-divider" />
+            <div className="dm-field">
+              <label className="dm-label">Fields — click to add to data JSON</label>
+              <FieldChips fields={fields} selected={selected} onToggle={toggleChip} loading={fieldsLoading} />
+            </div>
+          </>
+        )}
+
+        <div className="dm-divider" />
+        <div className="dm-field">
+          <label className="dm-label">Data <span className="dm-req">*</span></label>
+          <JsonBox value={data} onChange={setData} rows={7} />
+        </div>
+      </CardWrap>
       <SendBtn onClick={send} loading={loading} />
     </div>
   );
 }
 
-// Delete
 function PaneDelete({ modules, onSend, loading }) {
   const [mod, setMod] = useState("");
   const [id, setId] = useState("");
@@ -615,32 +799,24 @@ function PaneDelete({ modules, onSend, loading }) {
 
   return (
     <div className="dm-pane">
-      <div className="dm-panel">
-        <div className="dm-panel-head">
-          <Pill type="DEL" />
-          <span className="dm-panel-title">Delete Record</span>
-          <span className="dm-panel-desc">Soft-delete (sets deleted=1)</span>
-        </div>
-        <div className="dm-panel-body">
-          <div className="dm-grid">
-            <div className="dm-field">
-              <label className="dm-label">Module <span className="dm-req">*</span></label>
-              <ModSel value={mod} onChange={setMod} modules={modules} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Record ID <span className="dm-req">*</span></label>
-              <input className="dm-input" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                value={id} onChange={e => setId(e.target.value)} />
-            </div>
+      <CardWrap pillType="DEL" title="Delete Record" desc="Soft-delete (sets deleted=1)">
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Module <span className="dm-req">*</span></label>
+            <ModSel value={mod} onChange={setMod} modules={modules} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Record ID <span className="dm-req">*</span></label>
+            <input className="dm-input" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              value={id} onChange={e => setId(e.target.value)} />
           </div>
         </div>
-      </div>
+      </CardWrap>
       <SendBtn onClick={send} loading={loading} variant="danger" />
     </div>
   );
 }
 
-// Fetch / Search
 function PaneFetch({ modules, fieldCache, loadFields, onSend, loading }) {
   const [mod, setMod] = useState("");
   const [dateField, setDateField] = useState("date_entered");
@@ -695,90 +871,84 @@ function PaneFetch({ modules, fieldCache, loadFields, onSend, loading }) {
 
   return (
     <div className="dm-pane">
-      <div className="dm-panel">
-        <div className="dm-panel-head">
-          <Pill type="GET" />
-          <span className="dm-panel-title">Fetch / Search Records</span>
-          <span className="dm-panel-desc">Filter, paginate, date-range, free-text</span>
+      <CardWrap pillType="GET" title="Fetch / Search Records" desc="Filter, paginate, date-range, free-text">
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Module <span className="dm-req">*</span></label>
+            <ModSel value={mod} onChange={handleMod} modules={modules} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Date Field</label>
+            <input className="dm-input" value={dateField} onChange={e => setDateField(e.target.value)} placeholder="date_entered" />
+          </div>
         </div>
-        <div className="dm-panel-body">
-          <div className="dm-grid">
+
+        <DatePills value={dateRange} onChange={setDateRange}
+          customFrom={customFrom} customTo={customTo} onFrom={setCustomFrom} onTo={setCustomTo} />
+
+        {mod && (
+          <>
+            <div className="dm-divider" />
             <div className="dm-field">
-              <label className="dm-label">Module <span className="dm-req">*</span></label>
-              <ModSel value={mod} onChange={handleMod} modules={modules} />
+              <label className="dm-label">
+                Return Fields{" "}
+                <span style={{ color: "var(--dm-hint)", fontSize: 10, textTransform: "none", fontWeight: 400 }}>
+                  — click to select (empty = all)
+                </span>
+              </label>
+              <FieldChips fields={fields} selected={selected} onToggle={toggleChip} loading={fieldsLoading} />
             </div>
-            <div className="dm-field">
-              <label className="dm-label">Date Field</label>
-              <input className="dm-input" value={dateField} onChange={e => setDateField(e.target.value)} placeholder="date_entered" />
-            </div>
+          </>
+        )}
+
+        <div className="dm-divider" />
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Free-text Search</label>
+            <input className="dm-input" placeholder="search term…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-
-          <DatePills value={dateRange} onChange={setDateRange}
-            customFrom={customFrom} customTo={customTo} onFrom={setCustomFrom} onTo={setCustomTo} />
-
-          {mod && (
-            <div style={{ marginTop: 14 }}>
-              <div className="dm-field">
-                <label className="dm-label">
-                  Return Fields{" "}
-                  <span style={{ color: "var(--dm-muted)", fontSize: 10, textTransform: "none" }}>
-                    — click to select (empty = all)
-                  </span>
-                </label>
-                <FieldChips fields={fields} selected={selected} onToggle={toggleChip} loading={fieldsLoading} />
-              </div>
-            </div>
-          )}
-
-          <div className="dm-grid" style={{ marginTop: 14 }}>
-            <div className="dm-field">
-              <label className="dm-label">Free-text Search</label>
-              <input className="dm-input" placeholder="search term…" value={search} onChange={e => setSearch(e.target.value)} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Search Fields <span style={{ color: "var(--dm-muted)", fontSize: 10 }}>(comma-sep)</span></label>
-              <input className="dm-input" placeholder="name,email1,description" value={searchFields} onChange={e => setSearchFields(e.target.value)} />
-            </div>
+          <div className="dm-field">
+            <label className="dm-label">Search Fields <span style={{ color: "var(--dm-hint)", fontSize: 10 }}>(comma-sep)</span></label>
+            <input className="dm-input" placeholder="name,email1,description" value={searchFields} onChange={e => setSearchFields(e.target.value)} />
           </div>
+        </div>
 
-          <div className="dm-grid" style={{ marginTop: 14 }}>
-            <div className="dm-field">
-              <label className="dm-label">Filters <span style={{ color: "var(--dm-muted)", fontSize: 10 }}>field=value pairs</span></label>
-              <JsonBox value={filters} onChange={setFilters} rows={3} placeholder='{"status":"New"}' />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div className="dm-field">
-                <label className="dm-label">Order By</label>
-                <input className="dm-input" value={orderBy} onChange={e => setOrderBy(e.target.value)} />
-              </div>
-              <div className="dm-field">
-                <label className="dm-label">Order Dir</label>
-                <select className="dm-select" value={orderDir} onChange={e => setOrderDir(e.target.value)}>
-                  <option value="DESC">DESC</option>
-                  <option value="ASC">ASC</option>
-                </select>
-              </div>
-            </div>
+        <div className="dm-grid" style={{ marginTop: 12 }}>
+          <div className="dm-field">
+            <label className="dm-label">Filters <span style={{ color: "var(--dm-hint)", fontSize: 10 }}>field=value pairs</span></label>
+            <JsonBox value={filters} onChange={setFilters} rows={3} placeholder='{"status":"New"}' />
           </div>
-
-          <div className="dm-grid" style={{ marginTop: 14 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div className="dm-field">
-              <label className="dm-label">Page</label>
-              <input className="dm-input" type="number" min={1} value={page} onChange={e => setPage(e.target.value)} />
+              <label className="dm-label">Order By</label>
+              <input className="dm-input" value={orderBy} onChange={e => setOrderBy(e.target.value)} />
             </div>
             <div className="dm-field">
-              <label className="dm-label">Per Page</label>
-              <input className="dm-input" type="number" min={1} max={200} value={perPage} onChange={e => setPerPage(e.target.value)} />
+              <label className="dm-label">Order Dir</label>
+              <select className="dm-select" value={orderDir} onChange={e => setOrderDir(e.target.value)}>
+                <option value="DESC">DESC</option>
+                <option value="ASC">ASC</option>
+              </select>
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="dm-grid" style={{ marginTop: 12 }}>
+          <div className="dm-field">
+            <label className="dm-label">Page</label>
+            <input className="dm-input" type="number" min={1} value={page} onChange={e => setPage(e.target.value)} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Per Page</label>
+            <input className="dm-input" type="number" min={1} max={200} value={perPage} onChange={e => setPerPage(e.target.value)} />
+          </div>
+        </div>
+      </CardWrap>
       <SendBtn onClick={send} loading={loading} variant="green" />
     </div>
   );
 }
 
-// Fetch Related
 function PaneFetchRelated({ modules, fieldCache, loadFields, onSend, loading }) {
   const [mod, setMod] = useState("");
   const [id, setId] = useState("");
@@ -835,99 +1005,93 @@ function PaneFetchRelated({ modules, fieldCache, loadFields, onSend, loading }) 
 
   return (
     <div className="dm-pane">
-      <div className="dm-panel">
-        <div className="dm-panel-head">
-          <Pill type="GET" />
-          <span className="dm-panel-title">Fetch Related Records</span>
-          <span className="dm-panel-desc">Get child/related records from a parent record</span>
+      <CardWrap pillType="GET" title="Fetch Related Records" desc="Get child/related records from a parent record">
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Parent Module <span className="dm-req">*</span></label>
+            <ModSel value={mod} onChange={setMod} modules={modules} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Parent Record ID <span className="dm-req">*</span></label>
+            <input className="dm-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              value={id} onChange={e => setId(e.target.value)} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Related Module <span className="dm-req">*</span></label>
+            <ModSel value={relMod} onChange={handleRelMod} modules={modules} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Date Field</label>
+            <input className="dm-input" value={dateField} onChange={e => setDateField(e.target.value)} />
+          </div>
         </div>
-        <div className="dm-panel-body">
-          <div className="dm-grid">
+
+        <DatePills value={dateRange} onChange={setDateRange}
+          customFrom={customFrom} customTo={customTo} onFrom={setCustomFrom} onTo={setCustomTo} />
+
+        {relMod && (
+          <>
+            <div className="dm-divider" />
             <div className="dm-field">
-              <label className="dm-label">Parent Module <span className="dm-req">*</span></label>
-              <ModSel value={mod} onChange={setMod} modules={modules} />
+              <label className="dm-label">
+                Return Fields{" "}
+                <span style={{ color: "var(--dm-hint)", fontSize: 10, textTransform: "none", fontWeight: 400 }}>
+                  — click to select (empty = all)
+                </span>
+              </label>
+              <FieldChips fields={fields} selected={selected} onToggle={toggleChip} loading={fieldsLoading} />
             </div>
-            <div className="dm-field">
-              <label className="dm-label">Parent Record ID <span className="dm-req">*</span></label>
-              <input className="dm-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                value={id} onChange={e => setId(e.target.value)} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Related Module <span className="dm-req">*</span></label>
-              <ModSel value={relMod} onChange={handleRelMod} modules={modules} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Date Field</label>
-              <input className="dm-input" value={dateField} onChange={e => setDateField(e.target.value)} />
-            </div>
+          </>
+        )}
+
+        <div className="dm-divider" />
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Free-text Search</label>
+            <input className="dm-input" placeholder="search term…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-
-          <DatePills value={dateRange} onChange={setDateRange}
-            customFrom={customFrom} customTo={customTo} onFrom={setCustomFrom} onTo={setCustomTo} />
-
-          {relMod && (
-            <div style={{ marginTop: 14 }}>
-              <div className="dm-field">
-                <label className="dm-label">
-                  Return Fields{" "}
-                  <span style={{ color: "var(--dm-muted)", fontSize: 10, textTransform: "none" }}>
-                    — click to select (empty = all)
-                  </span>
-                </label>
-                <FieldChips fields={fields} selected={selected} onToggle={toggleChip} loading={fieldsLoading} />
-              </div>
-            </div>
-          )}
-
-          <div className="dm-grid" style={{ marginTop: 14 }}>
-            <div className="dm-field">
-              <label className="dm-label">Free-text Search</label>
-              <input className="dm-input" placeholder="search term…" value={search} onChange={e => setSearch(e.target.value)} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Search Fields <span style={{ color: "var(--dm-muted)", fontSize: 10 }}>(comma-sep)</span></label>
-              <input className="dm-input" placeholder="name,email1" value={searchFields} onChange={e => setSearchFields(e.target.value)} />
-            </div>
+          <div className="dm-field">
+            <label className="dm-label">Search Fields <span style={{ color: "var(--dm-hint)", fontSize: 10 }}>(comma-sep)</span></label>
+            <input className="dm-input" placeholder="name,email1" value={searchFields} onChange={e => setSearchFields(e.target.value)} />
           </div>
+        </div>
 
-          <div className="dm-grid" style={{ marginTop: 14 }}>
-            <div className="dm-field">
-              <label className="dm-label">Filters</label>
-              <JsonBox value={filters} onChange={setFilters} rows={3} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div className="dm-field">
-                <label className="dm-label">Order By</label>
-                <input className="dm-input" value={orderBy} onChange={e => setOrderBy(e.target.value)} />
-              </div>
-              <div className="dm-field">
-                <label className="dm-label">Order Dir</label>
-                <select className="dm-select" value={orderDir} onChange={e => setOrderDir(e.target.value)}>
-                  <option value="DESC">DESC</option>
-                  <option value="ASC">ASC</option>
-                </select>
-              </div>
-            </div>
+        <div className="dm-grid" style={{ marginTop: 12 }}>
+          <div className="dm-field">
+            <label className="dm-label">Filters</label>
+            <JsonBox value={filters} onChange={setFilters} rows={3} />
           </div>
-
-          <div className="dm-grid" style={{ marginTop: 14 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div className="dm-field">
-              <label className="dm-label">Page</label>
-              <input className="dm-input" type="number" min={1} value={page} onChange={e => setPage(e.target.value)} />
+              <label className="dm-label">Order By</label>
+              <input className="dm-input" value={orderBy} onChange={e => setOrderBy(e.target.value)} />
             </div>
             <div className="dm-field">
-              <label className="dm-label">Per Page</label>
-              <input className="dm-input" type="number" min={1} max={200} value={perPage} onChange={e => setPerPage(e.target.value)} />
+              <label className="dm-label">Order Dir</label>
+              <select className="dm-select" value={orderDir} onChange={e => setOrderDir(e.target.value)}>
+                <option value="DESC">DESC</option>
+                <option value="ASC">ASC</option>
+              </select>
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="dm-grid" style={{ marginTop: 12 }}>
+          <div className="dm-field">
+            <label className="dm-label">Page</label>
+            <input className="dm-input" type="number" min={1} value={page} onChange={e => setPage(e.target.value)} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Per Page</label>
+            <input className="dm-input" type="number" min={1} max={200} value={perPage} onChange={e => setPerPage(e.target.value)} />
+          </div>
+        </div>
+      </CardWrap>
       <SendBtn onClick={send} loading={loading} variant="green" />
     </div>
   );
 }
 
-// Add / Remove Relationship
 function PaneRelationship({ action, modules, onSend, loading }) {
   const [mod, setMod] = useState("");
   const [id, setId] = useState("");
@@ -947,43 +1111,44 @@ function PaneRelationship({ action, modules, onSend, loading }) {
 
   return (
     <div className="dm-pane">
-      <div className="dm-panel">
-        <div className="dm-panel-head">
-          <Pill type={isRemove ? "DEL" : "POST"} />
-          <span className="dm-panel-title">{isRemove ? "Remove Relationship" : "Add Relationship"}</span>
-          <span className="dm-panel-desc">{isRemove ? "Unlink two records" : "Link two records via a named relationship"}</span>
-        </div>
-        <div className="dm-panel-body">
-          <div className="dm-grid">
-            <div className="dm-field">
-              <label className="dm-label">Parent Module <span className="dm-req">*</span></label>
-              <ModSel value={mod} onChange={setMod} modules={modules} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Parent Record ID <span className="dm-req">*</span></label>
-              <input className="dm-input" placeholder="parent record UUID" value={id} onChange={e => setId(e.target.value)} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Related Module <span className="dm-req">*</span></label>
-              <ModSel value={relMod} onChange={setRelMod} modules={modules} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Related Record ID <span className="dm-req">*</span></label>
-              <input className="dm-input" placeholder="related record UUID" value={relId} onChange={e => setRelId(e.target.value)} />
-            </div>
-            <div className="dm-field">
-              <label className="dm-label">Relationship Name <span style={{ color: "var(--dm-muted)", fontSize: 10 }}>(optional)</span></label>
-              <input className="dm-input" placeholder="accounts_contacts" value={relName} onChange={e => setRelName(e.target.value)} />
-            </div>
+      <CardWrap
+        pillType={isRemove ? "DEL" : "POST"}
+        title={isRemove ? "Remove Relationship" : "Add Relationship"}
+        desc={isRemove ? "Unlink two records" : "Link two records via a named relationship"}
+      >
+        <div className="dm-grid">
+          <div className="dm-field">
+            <label className="dm-label">Parent Module <span className="dm-req">*</span></label>
+            <ModSel value={mod} onChange={setMod} modules={modules} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Parent Record ID <span className="dm-req">*</span></label>
+            <input className="dm-input" placeholder="parent record UUID" value={id} onChange={e => setId(e.target.value)} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Related Module <span className="dm-req">*</span></label>
+            <ModSel value={relMod} onChange={setRelMod} modules={modules} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">Related Record ID <span className="dm-req">*</span></label>
+            <input className="dm-input" placeholder="related record UUID" value={relId} onChange={e => setRelId(e.target.value)} />
+          </div>
+          <div className="dm-field">
+            <label className="dm-label">
+              Relationship Name{" "}
+              <span style={{ color: "var(--dm-hint)", fontSize: 10 }}>(optional)</span>
+            </label>
+            <input className="dm-input" placeholder="accounts_contacts" value={relName} onChange={e => setRelName(e.target.value)} />
           </div>
         </div>
-      </div>
+      </CardWrap>
       <SendBtn onClick={send} loading={loading} variant={isRemove ? "danger" : ""} />
     </div>
   );
 }
 
-// JSON Schema Reference
+// ─── SCHEMA ───────────────────────────────────────────────────────────────────
+
 const SCHEMA_TABS = [
   { key: "create", label: "create" },
   { key: "update", label: "update" },
@@ -1029,9 +1194,14 @@ function PaneSchema() {
   const s = SCHEMAS[active];
   return (
     <div className="dm-pane">
-      <div className="dm-panel" style={{ background: "var(--dm-surface)" }}>
-        <div className="dm-panel-head" style={{ padding: 0 }}>
-          <div className="dm-schema-tabs" style={{ width: "100%" }}>
+      <div className="dm-card">
+        <div className="dm-card-header">
+          <span style={{ fontSize: 16 }}>📄</span>
+          <span className="dm-card-title">JSON Schema Reference</span>
+          <span className="dm-card-desc">Request and response shapes for each action</span>
+        </div>
+        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--dm-border)" }}>
+          <div className="dm-schema-tabs">
             {SCHEMA_TABS.map(t => (
               <button key={t.key} className={`dm-schema-tab${active === t.key ? " active" : ""}`}
                 onClick={() => setActive(t.key)}>{t.label}</button>
@@ -1039,6 +1209,7 @@ function PaneSchema() {
           </div>
         </div>
         <div className="dm-schema-body">
+          <div className="dm-schema-label">Request</div>
           <div style={{ position: "relative" }}>
             <button className="dm-copy-btn"
               onClick={() => navigator.clipboard.writeText(s.req).catch(() => {})}>Copy</button>
@@ -1046,9 +1217,8 @@ function PaneSchema() {
           </div>
           {s.res && (
             <>
-              <div style={{ marginTop: 14, fontSize: 12, color: "var(--dm-muted)" }}>Response:</div>
-              <pre className="dm-schema-code" style={{ marginTop: 6 }}
-                dangerouslySetInnerHTML={{ __html: syntaxHighlight(s.res) }} />
+              <div className="dm-schema-label" style={{ marginTop: 14 }}>Response</div>
+              <pre className="dm-schema-code" dangerouslySetInnerHTML={{ __html: syntaxHighlight(s.res) }} />
             </>
           )}
         </div>
@@ -1057,65 +1227,42 @@ function PaneSchema() {
   );
 }
 
-// ─── SIDEBAR ITEMS ────────────────────────────────────────────────────────────
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 
 const SIDEBAR = [
   { section: "Actions" },
-  { key: "create",            label: "Create Record",      pill: "POST", icon: "plus-circle" },
-  { key: "update",            label: "Update Record",      pill: "POST", icon: "edit" },
-  { key: "delete",            label: "Delete Record",      pill: "DEL",  icon: "trash" },
-  { key: "fetch",             label: "Fetch / Search",     pill: "GET",  icon: "search" },
-  { key: "fetch_related",     label: "Fetch Related",      pill: "GET",  icon: "layers" },
+  { key: "create",              label: "Create Record",       pill: "POST", icon: "➕" },
+  { key: "update",              label: "Update Record",       pill: "POST", icon: "✏️" },
+  { key: "delete",              label: "Delete Record",       pill: "DEL",  icon: "🗑" },
+  { key: "fetch",               label: "Fetch / Search",      pill: "GET",  icon: "🔍" },
+  { key: "fetch_related",       label: "Fetch Related",       pill: "GET",  icon: "🔗" },
   { section: "Relationships" },
-  { key: "add_relationship",  label: "Add Relationship",   pill: "POST", icon: "link" },
-  { key: "remove_relationship", label: "Remove Relationship", pill: "DEL", icon: "unlink" },
+  { key: "add_relationship",    label: "Add Relationship",    pill: "POST", icon: "＋" },
+  { key: "remove_relationship", label: "Remove Relationship", pill: "DEL",  icon: "✖" },
   { section: "Reference" },
-  { key: "schema",            label: "JSON Schemas",       pill: null,   icon: "file-text" },
+  { key: "schema",              label: "JSON Schemas",        pill: null,   icon: "📄" },
 ];
-
-const ICON_PATHS = {
-  "plus-circle": <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></>,
-  "edit": <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
-  "trash": <><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></>,
-  "search": <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
-  "layers": <><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></>,
-  "link": <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>,
-  "unlink": <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></>,
-  "file-text": <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>,
-};
-const Icon = ({ name }) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-    {ICON_PATHS[name]}
-  </svg>
-);
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 
 export default function DataModellingPage() {
   const { crmEndpoint } = useSelector(s => s.user);
 
-  const [active, setActive]       = useState("create");
-  const [modules, setModules]     = useState([]);
+  const [active, setActive]         = useState("create");
+  const [modules, setModules]       = useState([]);
   const [fieldCache, setFieldCache] = useState({});
-  const [sending, setSending]     = useState(false);
-  const [resp, setResp]           = useState({ html: "", status: "IDLE", ms: "" });
+  const [sending, setSending]       = useState(false);
+  const [resp, setResp]             = useState({ html: "", status: "IDLE", ms: "" });
 
-  // Derive base URL from crmEndpoint
-  // crmEndpoint looks like: https://your-crm.com/index.php?token=xxx&...
   const baseUrl = crmEndpoint ? crmEndpoint.split("index.php")[0] : "";
   const apiUrl  = baseUrl ? `${baseUrl}index.php?entryPoint=smart_gateway` : "";
 
-  // ── Load module list from real endpoint ───────────────────────────────────
-  // GET https://your-crm.com/index.php?entryPoint=get_module_list
-  // Returns: { "Accounts": "Accounts", "Leads": "Leads", ... }
   useEffect(() => {
     if (!baseUrl) return;
     const url = `${baseUrl}index.php?entryPoint=get_module_list`;
     fetch(url, { credentials: "same-origin" })
       .then(r => r.json())
       .then(data => {
-        // data is an object like { "Accounts": "Accounts", "Leads": "Leads" }
-        // We store as array of { key (module name), label }
         if (data && typeof data === "object") {
           const list = Object.entries(data).map(([key, label]) => ({ key, label }));
           setModules(list);
@@ -1124,27 +1271,21 @@ export default function DataModellingPage() {
       .catch(console.error);
   }, [baseUrl]);
 
-  // ── Load fields for a module from real endpoint ───────────────────────────
-  // GET https://your-crm.com/index.php?entryPoint=get_fields&module_name=Accounts
   const loadFields = useCallback(async (moduleName) => {
-    if (fieldCache[moduleName] !== undefined) return; // already cached
-    // optimistically set empty so concurrent calls don't double-fetch
+    if (fieldCache[moduleName] !== undefined) return;
     setFieldCache(prev => ({ ...prev, [moduleName]: [] }));
     try {
       const url = `${baseUrl}index.php?entryPoint=get_fields&module_name=${encodeURIComponent(moduleName)}`;
       const r = await fetch(url, { credentials: "same-origin" });
       const data = await r.json();
-      // Normalise whatever shape the endpoint returns into [{name, type, label}]
       let fields = [];
       if (Array.isArray(data)) {
-        // already an array
         fields = data.map(f => ({
           name:  f.name  || f.field_name || String(f),
           type:  f.type  || "varchar",
           label: f.label || f.name || "",
         }));
       } else if (data && typeof data === "object") {
-        // object keyed by field name: { "name": { type, label }, ... }
         fields = Object.entries(data).map(([name, meta]) => ({
           name,
           type:  (meta && meta.type)  || "varchar",
@@ -1157,12 +1298,10 @@ export default function DataModellingPage() {
     }
   }, [baseUrl, fieldCache]);
 
-  // ── Send action (POST to smart_gateway) ───────────────────────────────────
   const handleSend = async (payload) => {
     setSending(true);
-    setResp({ html: '<span style="color:var(--dm-muted)">Sending request…</span>', status: "...", ms: "" });
+    setResp({ html: '<span style="color:#7eb6f6">Sending request…</span>', status: "...", ms: "" });
     const t0 = Date.now();
-
     try {
       const token = await generateToken();
       const res = await fetch(apiUrl, {
@@ -1174,23 +1313,21 @@ export default function DataModellingPage() {
         },
         body: JSON.stringify(payload),
       });
-
       const ms = Date.now() - t0;
       const text = await res.text();
       let data;
       try { data = JSON.parse(text); }
       catch { data = { success: false, error: "Invalid JSON response", raw: text }; }
-
       const ok = res.ok && data?.success !== false;
       setResp({
-        html: syntaxHighlight(JSON.stringify(data, null, 3)),
+        html: syntaxHighlight(JSON.stringify(data, null, 2)),
         status: ok ? "SUCCESS" : "ERROR",
         ms: `${ms} ms`,
       });
     } catch (err) {
       const ms = Date.now() - t0;
       setResp({
-        html: syntaxHighlight(JSON.stringify({ success: false, error: err.message }, null, 3)),
+        html: syntaxHighlight(JSON.stringify({ success: false, error: err.message }, null, 2)),
         status: "ERROR",
         ms: `${ms} ms`,
       });
@@ -1203,9 +1340,17 @@ export default function DataModellingPage() {
     const el = document.getElementById("dm-resp-body");
     if (el) navigator.clipboard.writeText(el.innerText).catch(() => {});
   };
-  const clearResp = () => setResp({ html: '<span style="color:var(--dm-muted);font-style:italic">Cleared.</span>', status: "IDLE", ms: "" });
+  const clearResp = () => setResp({
+    html: '<span style="color:#7eb6f6;opacity:0.5;font-style:italic">Cleared.</span>',
+    status: "IDLE",
+    ms: "",
+  });
 
   const sharedProps = { modules, fieldCache, loadFields, onSend: handleSend, loading: sending };
+
+  const respStatusClass =
+    resp.status === "SUCCESS" ? "dm-resp-ok" :
+    resp.status === "ERROR"   ? "dm-resp-err" : "dm-resp-idle";
 
   return (
     <div className="dm-wrap">
@@ -1214,7 +1359,13 @@ export default function DataModellingPage() {
 
         {/* TOPBAR */}
         <header className="dm-topbar">
-          <div className="dm-logo">ORC<span>Data</span> Modelling</div>
+          <div className="dm-logo">
+            <div className="dm-logo-icon">ORC</div>
+            <span>Data</span> Modelling
+          </div>
+          <div className="dm-topbar-info">
+            <span className="dm-badge">CRM API</span>
+          </div>
         </header>
 
         {/* SIDEBAR */}
@@ -1223,14 +1374,23 @@ export default function DataModellingPage() {
             item.section
               ? <div key={i} className="dm-section">{item.section}</div>
               : (
-                <button key={item.key}
+                <button
+                  key={item.key}
                   className={`dm-action-btn${active === item.key ? " active" : ""}`}
                   onClick={() => setActive(item.key)}
                 >
-                  <Icon name={item.icon} />
+                  <span style={{ fontSize: 14 }}>{item.icon}</span>
                   {item.label}
                   {item.pill && (
-                    <span className={`dm-pill dm-pill-${item.pill.toLowerCase()}`}>{item.pill}</span>
+                    <span
+                      className="dm-pill"
+                      style={{
+                        background: PILL_BG[item.pill],
+                        color: PILL_COLOR[item.pill],
+                      }}
+                    >
+                      {item.pill}
+                    </span>
                   )}
                 </button>
               )
@@ -1248,27 +1408,24 @@ export default function DataModellingPage() {
           {active === "remove_relationship" && <PaneRelationship    action="remove_relationship" {...sharedProps} />}
           {active === "schema"              && <PaneSchema />}
 
-          {/* RESPONSE PANEL – always visible except schema */}
+          {/* RESPONSE PANEL */}
           {active !== "schema" && (
-            <div className="dm-resp-panel">
+            <div className="dm-resp-panel" style={{ marginTop: 0 }}>
               <div className="dm-resp-head">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
-                </svg>
-                <span style={{ fontWeight: 700, fontSize: 13 }}>Response</span>
-                <span className={`dm-resp-status ${
-                  resp.status === "SUCCESS" ? "dm-resp-ok" :
-                  resp.status === "ERROR"   ? "dm-resp-err" : "dm-resp-idle"
-                }`}>{resp.status}</span>
+                <span style={{ fontSize: 14 }}>⌨</span>
+                <span className="dm-resp-title">Response</span>
+                <span className={`dm-resp-status ${respStatusClass}`}>{resp.status}</span>
                 {resp.ms && <span className="dm-resp-time">{resp.ms}</span>}
-                <button className="dm-btn" style={{ marginLeft: "auto" }} onClick={copyResp}>Copy</button>
-                <button className="dm-btn" onClick={clearResp}>Clear</button>
+                <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+                  <button className="dm-btn" onClick={copyResp}>Copy</button>
+                  <button className="dm-btn" onClick={clearResp}>Clear</button>
+                </div>
               </div>
               <pre
                 id="dm-resp-body"
                 className="dm-resp-body"
                 dangerouslySetInnerHTML={{
-                  __html: resp.html || '<span style="color:var(--dm-muted);font-style:italic">Waiting for request…</span>',
+                  __html: resp.html || '<span style="color:#7eb6f6;opacity:0.5;font-style:italic">Waiting for request…</span>',
                 }}
               />
             </div>
