@@ -29,14 +29,17 @@ export const apiRequest = async ({
   params = {},
   withCredentials = false,
 }) => {
+  const params1 = {
+    ...params,
+    ...(DB_NAME ? { db_name: DB_NAME } : {}),
+    ...(USER_EMAIL ? { dash_user_email: USER_EMAIL } : {}),}
   const response = await apiClient({
     url: endpoint,
     method,
     data: body,
     headers,
     params: {
-      db_name: DB_NAME,
-      ...params,
+     ...params1
     },
     withCredentials,
   });

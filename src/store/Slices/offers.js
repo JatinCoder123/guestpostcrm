@@ -183,17 +183,6 @@ export const updateOffer = ({ offers = [] }) => {
         showConsole && console.log(`Update Offer`, data);
       });
 
-      const remRes = await fetchGpc({
-        method: "POST", params: { type: "set_reminder" }, body: {
-          websites: offers.map((deal) => deal.website),
-          email: email,
-          reminder_type: "offer",
-        },
-      }
-
-      );
-      showConsole && console.log(`Reminder Response`, remRes);
-
       const updatedOffers = getState().offers.offers.map((o) => {
         const updated = offers.find((uo) => uo.id === o.id);
         return updated ? updated : o;
@@ -220,6 +209,8 @@ export const updateOffer = ({ offers = [] }) => {
         thread_id: offers[0].thread_id,
         message_id: offers[0].thread_id,
         group: "Offer",
+        reminder_type: "offer",
+        websites: offers.map((offer) => offer.website),
         okHandler: () => dispatch(getLadger({ email, loading: false })),
         items: offers.map((offer) =>
           buildLedgerItem({
@@ -292,12 +283,6 @@ export const createOffer = ({
       triggerHashtag(8, "GET");
 
       dispatch(offersSlice.actions.clearAllErrors());
-      updateActivity(
-        getState().ladger.email,
-
-        "Offer Created ",
-      );
-
       // 🔥 Ledger API Call
       await createLedgerEntry
       ({
