@@ -1,31 +1,21 @@
 import { useContext, useEffect, useState } from "react";
 import { SocketContext } from "../context/SocketContext";
-import { fetchGpcController } from "../store/Slices/gpcControllerSlice";
 import { hotAction } from "../store/Slices/hotSlice";
 import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";
 import { getOrders } from "../store/Slices/orders";
 import { getInvoices } from "../store/Slices/invoices";
 import { getOffers } from "../store/Slices/offers";
-import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
-import { useMarketPlace } from "../queries/marketplace.queries.js";
 
 function useRefresh() {
     const { notificationCount, setNotificationCount, currentEventThreadId } = useContext(SocketContext);
-    const { enteredEmail } = useContext(PageContext);
     const dispatch = useDispatch();
-    const { timeline } = useSelector((state) => state.ladger);
-    useMarketPlace()
-    useEffect(() => {
-        dispatch(fetchGpcController());
-    }, [])
     useEffect(() => {
         if (notificationCount.unreplied_email) {
             // refreshLadger();
             dispatch(checkForDuplicates());
             setNotificationCount((prev) => ({
                 ...prev,
-                unreplied_email: null,
             }));
         }
         if (notificationCount.outr_el_process_audit) {

@@ -147,8 +147,11 @@ export const generatePDF = async (html, id = "invoice") => {
 
 export const getRighteeUsers = async () => {
   const response = await apiRequest({ endpoint: "https://crm.outrightsystems.org/index.php?entryPoint=trynow&team_member=1", })
-  console.log("CRM USER2", response)
   return response.data ?? []
+}
+export const getStages = async () => {
+  const data = await fetchGpc({ params: { type: 'machine_learning', stages: 1 } });
+  return data ?? {}
 }
 export const getCRM = () =>
   store.getState()

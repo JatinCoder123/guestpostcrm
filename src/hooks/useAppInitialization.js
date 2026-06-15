@@ -5,6 +5,9 @@ import { webKeys } from "../queries/web.queries";
 import { getTinyKey } from "../api/tiny.api";
 import { getAllUsers } from "../api/users.api";
 import { userKeys } from "../queries/users.queries";
+import { getControllers } from "../api/controller.api";
+import { contactKeys } from "../queries/contact.queries";
+import { controllersKeys } from "../queries/controller.queries";
 
 export const useAppInitialization =
     () => {
@@ -18,6 +21,10 @@ export const useAppInitialization =
                 queryClient.prefetchQuery({
                     queryKey: webKeys.lists,
                     queryFn: getWebsites,
+                }),
+                queryClient.prefetchQuery({
+                    queryKey: controllersKeys.lists,
+                    queryFn: getControllers,
                 }),
                 queryClient.prefetchQuery({
                     queryKey: userKeys.lists,
