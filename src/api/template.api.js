@@ -33,11 +33,18 @@ export const getTemplatesByStage =
  */
 export const getTemplateById =
     async (id) => {
-        const { data } =
-            await api.get(
-                `/templates/${id}`
-            );
-
+        const data = await apiRequest({
+            endpoint: `${getCRM()}?entryPoint=get_post_all&action_type=get_data`,
+            method: "POST",
+            headers: {
+                "x-api-key": CREATE_DEAL_API_KEY,
+                "Content-Type": "application/json",
+            },
+            body: {
+                module: "EmailTemplates",
+                where: { id: id },
+            },
+        });
         return data;
     };
 
@@ -57,6 +64,13 @@ export const getTemplateByName =
                 module: "EmailTemplates",
                 where: { name: name },
             },
+        });
+        return data;
+    };
+export const getTemplateByEmail =
+    async (email) => {
+        const data = await apiRequest({
+            endpoint: `${getCRM()}/index.php?entryPoint=get_buttons&type=regular&email=${email}`,
         });
         return data;
     };

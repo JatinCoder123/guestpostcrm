@@ -3,6 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getWebsites } from "../api/web.api";
 import { webKeys } from "../queries/web.queries";
 import { getTinyKey } from "../api/tiny.api";
+import { getAllUsers } from "../api/users.api";
+import { userKeys } from "../queries/users.queries";
 
 export const useAppInitialization =
     () => {
@@ -16,6 +18,10 @@ export const useAppInitialization =
                 queryClient.prefetchQuery({
                     queryKey: webKeys.lists,
                     queryFn: getWebsites,
+                }),
+                queryClient.prefetchQuery({
+                    queryKey: userKeys.lists,
+                    queryFn: getAllUsers,
                 }),
                 queryClient.prefetchQuery({
                     queryKey: ['tiny-key'],

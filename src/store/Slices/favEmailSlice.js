@@ -5,6 +5,7 @@ import {
   createLedgerEntry,
   buildLedgerItem,
   applyHashtag,
+  getCurrentUser,
 } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
@@ -102,7 +103,7 @@ export const favEmail = ({ threadId, email }) => {
               data.new_value === 1 ? "Mark-Favourite" : "Mark-Unfavourite",
             detail: `email: {${email}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
           }),
         ],
         okHandler: () => dispatch(getLadger({ email }))

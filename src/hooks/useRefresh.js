@@ -1,6 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import { getdefaulterEmails } from "../store/Slices/defaulterEmails";
-import { getmovedEmails } from "../store/Slices/movedEmails";
 import { SocketContext } from "../context/SocketContext";
 import { fetchGpcController } from "../store/Slices/gpcControllerSlice";
 import { hotAction } from "../store/Slices/hotSlice";
@@ -10,7 +8,6 @@ import { getInvoices } from "../store/Slices/invoices";
 import { getOffers } from "../store/Slices/offers";
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllUsers } from "../store/Slices/crmUser.js";
 import { useMarketPlace } from "../queries/marketplace.queries.js";
 
 function useRefresh() {
@@ -20,12 +17,8 @@ function useRefresh() {
     const { timeline } = useSelector((state) => state.ladger);
     useMarketPlace()
     useEffect(() => {
-        dispatch(getAllUsers())
         dispatch(fetchGpcController());
     }, [])
-    useEffect(() => {
-        dispatch(getmovedEmails(enteredEmail));
-    }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {
         if (notificationCount.unreplied_email) {
             // refreshLadger();

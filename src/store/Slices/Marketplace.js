@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { createLedgerEntry, buildLedgerItem, updateActivity } from "../../services/utils";
+import { createLedgerEntry, buildLedgerItem, updateActivity, getCurrentUser } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { getContact, viewEmailAction } from "./viewEmail";
 import { fetchGpc } from "../../services/api";
@@ -98,7 +98,7 @@ export const addMarketPlace = (email, brand = false) => {
             status: "Marketplace-Added",
             detail: `email: {${email}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
           }),
         ],
       });
@@ -144,7 +144,7 @@ export const deleteMarketPlace = (id, action = false) => {
             status: "Marketplace-Removed",
             detail: `email: {${getState().ladger.email}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
           }),
         ],
       });

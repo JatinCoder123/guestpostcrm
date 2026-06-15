@@ -28,6 +28,7 @@ import GPCContentPopup from "./GPCContentPopup";
 import { apiRequest, fetchGpc } from "../services/api";
 import { toast } from "react-toastify";
 import PromptLadger from "./PromptLadger";
+import { getCurrentUser } from "../services/utils";
 
 function ValidTick() {
   return (
@@ -72,7 +73,7 @@ function LIInsertPopup({ link, orderId, onClose, onInserted }) {
   const dispatch = useDispatch();
   const orders = useSelector((state) => state.orders.orders);
   const { user, businessEmail } = useSelector((state) => state.user);
-  const { currentUser } = useSelector((state) => state.crmUser);
+  const currentUser = getCurrentUser()
   const gpcUserEmail = user?.email || currentUser?.description || businessEmail || "";
 
   // Stages: "fetching" | "selecting" | "inserting" | "success" | "error"

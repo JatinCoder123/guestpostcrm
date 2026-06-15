@@ -5,19 +5,11 @@ import { useNavigate } from "react-router-dom";
 export const useThreadContext = () => {
   const navigateTo = useNavigate();
   const context = useContext(ThreadContext);
-  const moveToThread = (email, threadId) => {
-  const params = new URLSearchParams({
-    email,
-  });
-
-  if (threadId) {
-    params.set("thread", threadId);
-  }
-
-  navigateTo(`/thread/view?${params.toString()}`);
-};
-  const moveToReply = (email, threadId, initialContent, htmlFile, handleAfterSuccessMailSent) => {
-    navigateTo(`/thread/reply?email=${email}&thread=${threadId}`, {
+  const moveToThread = () => {
+    navigateTo(`/thread/view`);
+  };
+  const moveToReply = (initialContent, htmlFile, handleAfterSuccessMailSent) => {
+    navigateTo(`/thread/reply`, {
       state: { initialContent, htmlFile, handleAfterSuccessMailSent },
     });
   };
@@ -38,8 +30,8 @@ export const useThreadContext = () => {
   }) => {
     context.handleSetCurrent({ email, thread: threadId });
     reply !== false
-      ? moveToReply(email, threadId, reply, htmlFile, handleAfterSuccessMailSent)
-      : moveToThread(email, threadId, viewEmail, loadAiReply);
+      ? moveToReply(reply, htmlFile, handleAfterSuccessMailSent)
+      : moveToThread();
     (addActivity || !reply) && localStorage.setItem("addActivity", true);
   };
   return { context, handleMove };

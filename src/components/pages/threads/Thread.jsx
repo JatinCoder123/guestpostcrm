@@ -13,8 +13,7 @@ const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const email = searchParams.get("email");
-  const threadId = searchParams.get("thread");
+  const { context: { currentEmail: email, currentThread: threadId } } = useThreadContext()
   const { state } = useLocation();
   const [pdfLoading, setPdfLoading] = useState(false);
   const { moveToNext } = useNext()

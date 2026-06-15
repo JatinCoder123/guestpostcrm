@@ -3,6 +3,7 @@ import { apiRequest } from "../services/api";
 import { updateSeoLink } from "../store/Slices/orders";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { getCurrentUser } from "../services/utils";
 
 const escapeRegExp = (value) =>
   String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -100,7 +101,7 @@ export default function GPCContentPopup({
   const anchorPickerRef = useRef(null);
   const dispatch = useDispatch();
   const { user, businessEmail } = useSelector((state) => state.user);
-  const { currentUser } = useSelector((state) => state.crmUser);
+  const currentUser = getCurrentUser();
   const gpcUserEmail =
     user?.email || currentUser?.description || businessEmail || "";
   // Dynamic publishing domain based on passed website
@@ -683,10 +684,9 @@ export default function GPCContentPopup({
       onClick={() => undoKey(keyName)}
       title="Undo"
       className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 text-xs
-        ${
-          canUndo(keyName)
-            ? "bg-amber-100 text-amber-600 hover:bg-amber-200 cursor-pointer shadow-sm"
-            : "opacity-0 pointer-events-none"
+        ${canUndo(keyName)
+          ? "bg-amber-100 text-amber-600 hover:bg-amber-200 cursor-pointer shadow-sm"
+          : "opacity-0 pointer-events-none"
         }`}
     >
       ↩
@@ -1210,9 +1210,9 @@ export default function GPCContentPopup({
             const top = showAbove
               ? Math.max(12, anchorPicker.top - PICKER_HEIGHT_GUESS - 10)
               : Math.min(
-                  vh - PICKER_HEIGHT_GUESS - 12,
-                  anchorPicker.bottom + 10,
-                );
+                vh - PICKER_HEIGHT_GUESS - 12,
+                anchorPicker.bottom + 10,
+              );
 
             return (
               <div

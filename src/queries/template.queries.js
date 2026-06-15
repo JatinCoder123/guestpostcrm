@@ -8,6 +8,7 @@ import {
     getTemplatesByStage,
     getTemplateById,
     getTemplateByName,
+    getTemplateByEmail,
 } from "../api/template.api";
 export const templateKeys = {
     all: ["templates"],
@@ -34,42 +35,27 @@ export const templateKeys = {
         "name",
         name,
     ],
+    email: (email) => [
+        "templates",
+        "email",
+        email,
+    ],
 };
 export const useTemplates =
     () => {
         return useQuery({
-            queryKey:
-                templateKeys.lists(),
-
-            queryFn:
-                getTemplates,
-
-            staleTime:
-                10 *
-                60 *
-                1000,
+            queryKey: templateKeys.lists(),
+            queryFn: getTemplates,
+            staleTime: 10 * 60 * 1000,
         });
     };
 export const useTemplatesByStage =
     (stage) => {
         return useQuery({
-            queryKey:
-                templateKeys.stage(
-                    stage
-                ),
-
-            queryFn: () =>
-                getTemplatesByStage(
-                    stage
-                ),
-
-            enabled:
-                !!stage,
-
-            staleTime:
-                10 *
-                60 *
-                1000,
+            queryKey: templateKeys.stage(stage),
+            queryFn: () => getTemplatesByStage(stage),
+            enabled: !!stage,
+            staleTime: 10 * 60 * 1000,
         });
 
     };
@@ -77,22 +63,10 @@ export const useTemplatesByStage =
 export const useTemplate =
     (id) => {
         return useQuery({
-            queryKey:
-                templateKeys.id(
-                    id
-                ),
-
-            queryFn: () =>
-                getTemplateById(
-                    id
-                ),
-
+            queryKey: templateKeys.id(id),
+            queryFn: () => getTemplateById(id),
             enabled: !!id,
-
-            staleTime:
-                10 *
-                60 *
-                1000,
+            staleTime: 10 * 60 * 1000,
         });
     };
 export const useTemplateByName =
@@ -101,10 +75,15 @@ export const useTemplateByName =
             queryKey: templateKeys.name(name),
             queryFn: () => getTemplateByName(name),
             enabled: !!name,
-
-            staleTime:
-                10 *
-                60 *
-                1000,
+            staleTime: 10 * 60 * 1000,
+        });
+    };
+export const useTemplateByEmail =
+    (email) => {
+        return useQuery({
+            queryKey: templateKeys.email(email),
+            queryFn: () => getTemplateByEmail(email),
+            enabled: !!email,
+            staleTime: 10 * 60 * 1000,
         });
     };

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
-import { applyHashtag } from "../../services/utils";
+import { applyHashtag, getCurrentUser } from "../../services/utils";
 import {
   updateActivity,
   createLedgerEntry,
@@ -257,7 +257,7 @@ export const createOrder = () => {
         endpoint: `${domain}?entryPoint=manual_order`,
         params: {
           email,
-          assigned_user_id: getState().crmUser.currentUser?.id,
+          assigned_user_id: getCurrentUser().id,
         },
         headers: {
           "X-Api-Key": FETCH_GPC_X_API_KEY,
@@ -333,7 +333,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
         body: {
           email: email,
           thread_id: threadId,
-          assigned_user_id: getState().crmUser.currentUser?.id,
+          assigned_user_id: getCurrentUser()?.id,
 
           orders,
         },
@@ -495,7 +495,7 @@ export const updateOrder = ({ order }) => {
             status: ledgerStatus,
             detail: `order_id: {${order.order_id}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
             parent_name: "outr_order_gp_li",
           }),
         ],

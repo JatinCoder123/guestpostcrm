@@ -76,7 +76,7 @@ ${note}<br/><br/>
 ${getCurrentUser()?.name}
 (${getCurrentUser()?.description})<br/><br/>
 
-<b>🔗 Timeline Link:</b><br/>
+<b>🔗 View:</b><br/>
 <a href="https://app.guestpostcrm.com/redirect?email=${email}">
 Open Contact
 </a>
@@ -248,9 +248,6 @@ Open Contact
     markingMessage,
     changeError,
     changeMessage,
-    email,
-    threadId,
-    enteredEmail,
     editMessage,
     markTagMessage, markTagError
   ]);
@@ -388,30 +385,13 @@ Open Contact
       // GET when stopping emails, DELETE when resuming
       action: async () => {
         setStopLoading(true);
-        const newValue = contactInfo?.is_stop === "1" ? "0" : "1";
+        const newValue = Number(contactInfo?.is_stop) == 1 ? "0" : "1";
         try {
-
-          const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: enteredEmail } });
+          const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: getCurrentUser().description } });
           console.log(data);
-          dispatch(
-            viewEmailAction.updateContactInfo({
-              key: "is_stop",
-            }),
-          );
-
-
-
-          toast.success(
-            newValue === "1"
-              ? "Emails stopped successfully"
-              : "Emails resumed successfully",
-          );
-
-          // GET when stopping (newValue "1"), DELETE when resuming (newValue s"0")
-          triggerHashtag(
-            MEMO.stopfutureemails,
-            newValue === "1" ? "GET" : "DELETE",
-          );
+          queryClient.invalidateQueries({ queryKey: contactKeys.all })
+          toast.success(newValue === "1" ? "Emails stopped successfully" : "Emails resumed successfully");
+          triggerHashtag(MEMO.stopfutureemails, newValue === "1" ? "GET" : "DELETE");
         } catch (err) {
           toast.error(`Failed To ${newValue === '1' ? 'Stopped' : 'Resumed'} Email `);
         } finally {

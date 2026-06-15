@@ -6,31 +6,22 @@ import { useDispatch, useSelector } from "react-redux";
 import useModule from "../../../hooks/useModule";
 import { base64ToUtf8, getDomain } from "../../../assets/assets";
 import { useEffect, useRef, useState } from "react";
-import { useThreadContext } from "../../../hooks/useThreadContext";
 import {
-  Brain,
-  CircleDollarSign,
   CreditCard,
   Edit,
   Edit2,
-  Heart,
-  HandMetal,
   LayoutTemplateIcon,
   Sparkles,
   Trash2,
   X,
   Zap,
-  FileText,
-  Settings,
   PenLine,
   Check,
   StopCircle,
-  CircleStop,
 } from "lucide-react";
 import Attachment from "../../Attachment";
 import MicInput from "../../MicInput";
 import { LoadingChase } from "../../Loading";
-import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../../../store/constants";
 import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply";
 import FirstReplyBtn from "../../FirstReplyBtn";
 import { DeepReplyBtn } from "../../DeepReplyBtn";
@@ -40,7 +31,8 @@ import { BiSolidMessageCheck } from "react-icons/bi";
 import { editContact, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { useNext } from "../../../hooks/useNext";
-import { useTemplateByName } from "../../../queries/template.queries";
+import { useTemplate, useTemplateByEmail, useTemplateByName } from "../../../queries/template.queries";
+import { useContact } from "../../../queries/contact.queries";
 
 const ReplyButtons = ({ editorRef, editorReady }) => {
   const {
@@ -79,37 +71,10 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
   const dispatch = useDispatch();
 
   /* ── data hooks ─────────────────────────────────────────── */
-  const { loading, data: buttons } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_buttons&type=regular&email=${email}`,
-    name: "BUTTONS",
-    dependencies: [email, favourites],
-  });
-  const { loading: contactLoading, data: contact } = useModule({
-    url: `${crmEndpoint}&type=get_contact&email=${email}`,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
+  const { isPending: loading, data: buttons } = useTemplateByEmail(email);
+  const { isPending: contactLoading, data: contact } = useContact(email);
 
-    }, name: "GETTING CONTACT",
-    dependencies: [email],
-  });
-
-  const {
-    loading: templateLoading,
-    data: template,
-    refetch,
-  } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: { module: "EmailTemplates", where: { id: templateId } },
-    headers: {
-      "x-api-key": CREATE_DEAL_API_KEY,
-      "Content-Type": "application/json",
-    },
-    name: `TEMPLATE WITH ID ${templateId}`,
-    dependencies: [templateId],
-    enabled: templateId,
-  });
+  const { data: template } = useTemplate(templateId);
 
   const { data: defaultTemplate } = useModule({
     url: `${getDomain(crmEndpoint)}/index.php?entryPoint=updateOffer&email=${email}`,

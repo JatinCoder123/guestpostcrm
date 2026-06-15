@@ -17,6 +17,7 @@ import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
 import { apiRequest, fetchGpc } from "../../../services/api";
 import { queryClient } from "../../../lib/queryClient";
+import { useCrmUsers } from "../../../queries/users.queries";
 
 // ─── Utility ────────────────────────────────────────────────────────────────
 const decodeHtmlEntities = (str) => {
@@ -308,7 +309,7 @@ export default function TemplatesPage() {
   const [stagesLoading, setStagesLoading] = useState(false);
 
   const { crmEndpoint } = useSelector((state) => state.user);
-  const { users } = useSelector((state) => state.crmUser);
+  const { data: users } = useCrmUsers();
   const { showConsole } = useContext(PageContext);
   const { state } = useLocation();
   const navigate = useNavigate();

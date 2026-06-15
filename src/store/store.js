@@ -15,7 +15,6 @@ import orderRemReducer from "./Slices/reminder.js";
 import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
-import movederReducer from "./Slices/movedEmails.js";
 import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
@@ -28,7 +27,6 @@ import gpcControllerReducer from "./Slices/gpcControllerSlice";
 import syncReducer from "./Slices/syncSlice.js";
 import contactReducer from "./Slices/contacts.js";
 import reportReducer from "./Slices/reportSlice.js";
-import crmUserReducer from "./Slices/crmUser.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
 import preferenceReducer from "./Slices/preferencesSlice.js";
@@ -38,7 +36,6 @@ export const store = configureStore({
     ladger: ladgerReducer,
     unreplied: unrepliedReducer,
     fav: favReducer,
-    moved: movederReducer,
     forwarded: forwarededReducer,
     deals: dealsReducer,
     orders: orderReducer,
@@ -65,7 +62,6 @@ export const store = configureStore({
     sync: syncReducer,
     contacts: contactReducer,
     report: reportReducer,
-    crmUser: crmUserReducer,
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,
     preferences: preferenceReducer

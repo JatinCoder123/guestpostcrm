@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
+import { updateActivity, createLedgerEntry, buildLedgerItem, getCurrentUser } from "../../services/utils";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { viewEmailAction } from "./viewEmail";
 import { getLadger } from "./ladger";
@@ -77,7 +77,7 @@ export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the 
             status: data.new_value === 1 ? "Mark-Link-Exchange" : "Unmark-Link-Exchange",
             detail: `email: {${email}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
           }),
         ],
         okHandler: getLadger({ email, loading: false, force: true })
