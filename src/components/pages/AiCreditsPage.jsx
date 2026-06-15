@@ -11,10 +11,8 @@ import {
 import { useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import Pagination from "../Pagination";
-import { getAiCredits } from "../../store/Slices/aiCredits";
 
 export function AiCreditsPage() {
-  const { aiCredits, balance, count } = useSelector((state) => state.aiCredits);
   const [openPeriod, setOpenPeriod] = useState(false);
   const [type, setType] = useState("Credit");
   const periodOptions = ["Credit", "Debit", "Both"];
@@ -44,33 +42,6 @@ export function AiCreditsPage() {
 
   return (
     <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Total Balance</p>
-              <p className="text-2xl text-gray-900 mt-1">{balance}</p>
-            </div>
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <Flame className="w-6 h-6 text-indigo-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Total Count</p>
-              <p className="text-2xl text-gray-900 mt-1">{count}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <User2Icon className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Orders Section */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
@@ -139,38 +110,13 @@ export function AiCreditsPage() {
             </thead>
 
             <tbody>
-              {aiCredits.map((credit) => (
-                <tr
-                  key={credit.id}
-                  className="border-b border-gray-100 hover:bg-indigo-50 transition-colors cursor-pointer"
-                >
-                  <td className="px-6 py-4 text-gray-900">{credit.email}</td>
-
-                  {(type === "Credit" || type === "Both") && (
-                    <td className="px-6 py-4 text-indigo-600">
-                      {credit.credit}
-                    </td>
-                  )}
-
-                  {(type === "Debit" || type === "Both") && (
-                    <td className="px-6 py-4 text-indigo-600">
-                      {credit.debit}
-                    </td>
-                  )}
-
-                  <td className="px-6 py-4 text-indigo-600">
-                    {credit.balance}
-                  </td>
-                </tr>
-              ))}
+            
             </tbody>
           </table>
         </div>
-        {aiCredits.length > 0 && (
-          <Pagination slice={"aiCredits"} fn={getAiCredits} />
-        )}
+     
 
-        {aiCredits.length === 0 && (
+        {[].length === 0 && (
           <div className="p-12 text-center">
             <Sparkle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No Credits yet.</p>

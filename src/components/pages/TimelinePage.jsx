@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../Avatar";
 import LoadingSkeleton from "../LoadingSkeleton";
-import Ip from "../Ip";
 import TimelineEvent from "../TimelineEvent";
 import MailerSummaryHeader from "../MailerSummaryHeader";
 import ContactHeader from "../ContactHeader";
@@ -11,24 +10,35 @@ import { NoSearchFoundPage } from "../NoSearchFoundPage";
 
 import MessageModal from "../MessageModal";
 import LatestMessage from "../LatestMessage";
+import { useTimeline } from "../../context/TimelineContext";
+import { useTimelineLoading } from "../../hooks/useTimelineLoading";
+import { useInfiniteLedger } from "../../queries/ledger.queries";
 export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const { isTimelineLoading, emailsLoading, ledgerLoading } = useTimelineLoading()
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const { currentEmail } = useTimeline()
+  useEffect(() => {
+    console.log("CURRENT TIMELINE EMAIL", currentEmail)
 
+  }, [currentEmail])
 
-  const { loading: ladgerLoading, ladger } = useSelector((state) => state.ladger);
+  const { data } = useInfiniteLedger(currentEmail);
+  const ladger =
+    data?.pages?.flatMap(
+      (page) => page.data || []
+    ) ?? [];
 
   const handleMessageClick = (id) => {
     console.log("Message clicked:", id);
     setSelectedMessage(id);
     setShowMessageModal(true);
   };
-  const { viewEmail, threadId, count, contactInfo, contactLoading, loading } = useSelector(
+  const { viewEmail, threadId, count, contactInfo, } = useSelector(
     (state) => state.viewEmail,
   );
-  const { loading: unrepliedLoading } = useSelector((state) => state.unreplied);
-  if ((Array.isArray(ladger) && ladger.length == 0 && !ladgerLoading && !unrepliedLoading) || (!ladger && !ladgerLoading && !unrepliedLoading)) {
+  if (((((Array.isArray(ladger) && ladger.length == 0) || !ladger)) && !ledgerLoading && !emailsLoading)) {
     return <NoSearchFoundPage />;
   }
 
@@ -46,7 +56,7 @@ export function TimelinePage() {
       />
 
       <div className="bg-white rounded-2xl shadow-sm min-h-[400px]">
-        {(unrepliedLoading || contactLoading || loading || ladgerLoading) ? <LoadingSkeleton /> : <>
+        {(isTimelineLoading) ? <LoadingSkeleton /> : <>
           <div className="flex flex-col  border-b border-gray-200">
             <ContactHeader />
 

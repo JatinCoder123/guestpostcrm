@@ -10,26 +10,21 @@ import invoiceReducer from "./Slices/invoices.js";
 import detectionReducer from "./Slices/detection.js";
 import orderReducer from "./Slices/orders.js";
 import viewEmailReducer from "./Slices/viewEmail.js";
-import threadEmailReducer from "./Slices/threadEmail.js";
-import aiCreditsReducer from "./Slices/aiCredits.js";
 import aiReplyReducer from "./Slices/aiReply.js";
 import orderRemReducer from "./Slices/reminder.js";
 import userReducer from "./Slices/userSlice.js";
 import avatarReducer from "./Slices/avatarSlice.js";
 import defaulterReducer from "./Slices/defaulterEmails.js";
 import movederReducer from "./Slices/movedEmails.js";
-import backlinksReducer from "./Slices/backlinks.js";
 import eventReducer from "./Slices/eventSlice.js";
 import marketplaceReducer from "./Slices/Marketplace.js";
 import linkExchangeReducer from "./Slices/linkExchange.js";
 import contactdefaulterReducer from "./Slices/contactdefaulterSlice";
-import quickActionBtnReducer from "./Slices/quickActionBtn";
 import DraftInvoiceReducer from "./Slices/draftInvoice.js";
 import duplicateEmailReducer from "./Slices/duplicateEmailSlice";
 import hotReducer from "./Slices/hotSlice.js";
 import tagReducer from "./Slices/tag.js";
 import gpcControllerReducer from "./Slices/gpcControllerSlice";
-import websiteReducer from "./Slices/webSlice";
 import syncReducer from "./Slices/syncSlice.js";
 import contactReducer from "./Slices/contacts.js";
 import reportReducer from "./Slices/reportSlice.js";
@@ -37,8 +32,7 @@ import crmUserReducer from "./Slices/crmUser.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
 import tinyKeyReducer from "./Slices/tinyKey.js";
-import mailerSummaryReducer from "./Slices/mailerSummary.js";
-import outBoxReducer from "./Slices/outbox.js";
+import preferenceReducer from "./Slices/preferencesSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -53,27 +47,22 @@ export const store = configureStore({
     invoices: invoiceReducer,
     offers: offersReducer,
     viewEmail: viewEmailReducer,
-    threadEmail: threadEmailReducer,
-    aiCredits: aiCreditsReducer,
     aiReply: aiReplyReducer,
     reminders: orderRemReducer,
     user: userReducer,
     markTag: markTagReducer,
     avatar: avatarReducer,
     defaulter: defaulterReducer,
-    backlinks: backlinksReducer,
     events: eventReducer,
     marketplace: marketplaceReducer,
     linkExchange: linkExchangeReducer,
     hot: hotReducer,
-    quickActionBtn: quickActionBtnReducer,
     contactdefaulter: contactdefaulterReducer,
     duplicateEmails: duplicateEmailReducer,
     user: userReducer,
     DraftInvoice: DraftInvoiceReducer,
     tag: tagReducer,
     gpcController: gpcControllerReducer,
-    website: websiteReducer,
     sync: syncReducer,
     contacts: contactReducer,
     report: reportReducer,
@@ -81,7 +70,37 @@ export const store = configureStore({
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,
     tinyKey: tinyKeyReducer,
-    mailersSummary: mailerSummaryReducer,
-    outbox: outBoxReducer
+    preferences: preferenceReducer
   },
+});
+// store.js
+
+store.subscribe(() => {
+  const preferences =
+    store.getState().preferences;
+
+  const cleanedTables =
+    Object.fromEntries(
+      Object.entries(
+        preferences.tables
+      ).map(
+        ([key, table]) => [
+          key,
+          {
+            ...table,
+            initialFiltersApplied:
+              undefined,
+          },
+        ]
+      )
+    );
+
+  localStorage.setItem(
+    "preferences",
+    JSON.stringify({
+      ...preferences,
+      tables:
+        cleanedTables,
+    })
+  );
 });

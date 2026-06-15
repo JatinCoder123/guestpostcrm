@@ -1030,10 +1030,11 @@ const Profile = () => {
                   ].map((reason) => (
                     <label
                       key={reason}
-                      className={`cursor-pointer rounded-xl border p-4 transition ${deleteReason === reason
+                      className={`cursor-pointer rounded-xl border p-4 transition ${
+                        deleteReason === reason
                           ? "border-red-300 bg-red-50"
                           : "border-slate-200 hover:border-slate-300"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         <input

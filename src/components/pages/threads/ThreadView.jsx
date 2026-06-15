@@ -1,17 +1,10 @@
 import {
-  User,
-  Globe,
   Send,
   X,
   ChevronLeft,
-  Move,
   CornerUpRight,
-  Mail,
-  Edit,
-  DollarSign,
   ArrowBigUp,
   ArrowBigDown,
-  Copy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -23,7 +16,6 @@ import useIdle from "../../../hooks/useIdle";
 import { ThreadSkeleton } from "./ThreadSkeleton.jsx";
 import { useThreadContext } from "../../../hooks/useThreadContext.js";
 import { SmallTinyEditor } from "../../TinyEditor.jsx";
-import { aiReplyAction, getAiReply } from "../../../store/Slices/aiReply.js";
 
 import {
   PanelGroup,
@@ -37,26 +29,30 @@ import Inbox from "./Inbox.jsx";
 import { fetchGpc } from "../../../services/api.js";
 import RightThreadHeader from "./RightThreadHeader.jsx";
 import NavigationBar from "./NavigationBar.jsx";
+import { useMailerSummary, useRegenMailerSummary } from "../../../queries/mailerSummary.queries.js";
+import { useThread } from "../../../queries/threads.queries.js";
 
 export default function ThreadView() {
   const scrollRef = useRef();
 
   const {
-    emails,
     loadAiReply = true,
     superfastReply,
     editorContent,
     setEditorContent,
     handleSendClick,
     checkingThreadId,
+    email,
+    threadId
   } = useOutletContext() || [];
-
+  const { data: emailsData, isPending: loading } = useThread(email, threadId)
+  const emails = emailsData?.emails
   const firstMessageRef = useRef(null);
-  const { mailersSummary, loading: summaryLoading } = useSelector(state => state.mailersSummary)
+  const { data, isPending: summaryLoading } = useMailerSummary(email);
+  const regenSummary = useRegenMailerSummary();
+  const mailersSummary = data?.mailers_summary
 
-  const {
-    context: { currentThread: threadId, currentEmail },
-  } = useThreadContext();
+
 
   const lastMessageRef = useRef(null);
 
@@ -65,7 +61,6 @@ export default function ThreadView() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { loading } = useSelector((s) => s.threadEmail);
 
   const { sending } = useSelector((s) => s.viewEmail);
 
@@ -84,19 +79,45 @@ export default function ThreadView() {
   const [focusedIndex, setFocusedIndex] = useState(
     visibleMessages?.length - 1
   );
-
-  const {
-    aiReply: aiResponse,
-    error: aiError,
-    message,
-  } = useSelector((state) => state.aiReply);
-
-
   useEffect(() => {
-    if (mailersSummary && !summaryLoading) {
-      setEditorContent(mailersSummary?.ai_response ?? "")
+    if (
+      editorContent?.trim()
+    ) {
+      return;
     }
-  }, [mailersSummary, summaryLoading])
+
+    if (
+      mailersSummary?.ai_response
+    ) {
+      setEditorContent(
+        mailersSummary.ai_response
+      );
+
+      return;
+    }
+
+    if (
+      email &&
+      !summaryLoading
+    ) {
+      regenSummary.mutate(email);
+    }
+  }, [
+    email,
+    mailersSummary,
+    summaryLoading,
+  ]);
+  useEffect(() => {
+    if (
+      mailersSummary?.ai_response
+    ) {
+      setEditorContent(
+        mailersSummary.ai_response
+      );
+    }
+  }, [
+    mailersSummary?.ai_response,
+  ]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -174,7 +195,7 @@ export default function ThreadView() {
     <>
       <SendingOverlay
         sending={sending || checkingThreadId}
-        email={currentEmail}
+        email={email}
       />
 
       <motion.div
@@ -355,7 +376,7 @@ export default function ThreadView() {
 
                           {/* CONTENT */}
                           <div className="flex-1 overflow-hidden">
-                            {summaryLoading ? (
+                            {summaryLoading || regenSummary.isPending ? (
                               <div className="space-y-3 animate-pulse">
                                 <div className="h-4 bg-white/20 rounded w-full"></div>
                                 <div className="h-4 bg-white/20 rounded w-[90%]"></div>

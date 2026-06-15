@@ -12,172 +12,299 @@ import {
   ShieldAlert,
   Eye,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+
 import { useContext } from "react";
-import { deleteOffer, getOffers } from "../../store/Slices/offers.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../assets/assets";
-import TableView, { Table } from "../ui/table/Table";
+
+import TableView, {
+  Table,
+} from "../ui/table/Table";
+
 import TableTitleBar from "../ui/table/TableTitleBar";
+
 import { LoadingChase } from "../Loading.jsx";
+
+import { useTablePreference } from "../../hooks/useTablePreference";
+
+import {
+  useInfiniteOffers,
+  useOfferStats,
+  useDeleteOffer,
+} from "../../queries/offers.queries";
+
 const STATUS_CONFIG = [
   {
     value: "active",
     label: "Active",
     icon: ShieldCheckIcon,
-    color: "#F59E0B", // orange (amber-500)
+    color: "#F59E0B",
+    filter: "offer_status",
   },
   {
     value: "accepted",
     label: "Accepted",
     icon: HandCoins,
-    color: "#10B981", // green (emerald-500)
+    color: "#10B981",
+    filter: "offer_status",
   },
   {
     value: "expired",
     label: "Expired",
     icon: ShieldAlert,
-    color: "#EF4444", // red (red-500)
+    color: "#EF4444",
+    filter: "offer_status",
   },
 ];
-export function OffersPage() {
-  const {
-    count,
-    offers,
-    loading,
-    pageIndex,
-    deleting,
-    deleteOfferId,
-    summary,
-  } = useSelector((state) => state.offers);
 
-  const { handleDateClick } = useContext(PageContext);
-  const navigateTo = useNavigate();
-  const dispatch = useDispatch();
+export function OffersPage() {
+  const preferences =
+    useTablePreference(
+      "offers"
+    );
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteOffers(
+    preferences
+  );
+
+  const {
+    data: summary,
+  } = useOfferStats();
+
+  const {
+    mutate: deleteOffer,
+    isPending: deleting,
+    variables:
+    deleteOfferId,
+  } = useDeleteOffer();
+
+  const {
+    handleDateClick,
+  } = useContext(
+    PageContext
+  );
+
+  const navigateTo =
+    useNavigate();
+
+  const offers =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
+
+  const pages =
+    data?.pages ?? [];
+
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
+
   const columns = [
     {
       label: "Created At",
-      accessor: "date_entered",
-      headerClasses: "",
+      accessor:
+        "date_entered",
       icon: Calendar,
 
       onClick: (row) =>
-        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
-      classes: "truncate max-w-[200px]",
+        handleDateClick({
+          email:
+            row?.email,
+          navigate: "/",
+        }),
+
+      classes:
+        "truncate max-w-[200px]",
+
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {
+            row.date_entered_time_ago
+          }
         </span>
       ),
     },
+
     {
       label: "Contact",
-      accessor: "real_name",
-      headerClasses: "",
+      accessor: "email",
       icon: User2,
-      classes: "truncate max-w-[200px]",
+
+      classes:
+        "truncate max-w-[200px]",
+
       onClick: (row) =>
         handleDateClick({
-          email: extractEmail(row?.real_name),
-          navigate: "/contacts",
+          email:
+            row?.email,
+          navigate:
+            "/contacts",
         }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.real_name?.split("<")[0]?.trim()}
+          {
+            row?.first_name
+          }{" "}
+          {
+            row?.last_name
+          }
         </span>
       ),
     },
+
     {
       label: "Website",
-      accessor: "website",
-      headerClasses: "",
+      accessor:
+        "website",
       icon: Globe,
-      classes: "truncate ",
+      classes: "truncate max-w-[300px]",
+
       render: (row) => (
-        <span className="font-medium text-blue-700 ">{row?.website}</span>
+        <span className="font-medium text-blue-700 truncate min-w-[100px]">
+          {
+            row?.website
+          }
+        </span>
       ),
     },
+
     {
-      label: "Client Offer",
-      accessor: "client_offer_c",
-      headerClasses: "",
-      icon: BadgeDollarSign,
-      classes: "truncate max-w-[300px]",
+      label:
+        "Client Offer",
+      accessor:
+        "client_offer_c",
+      icon:
+        BadgeDollarSign,
+      classes: "text-center",
 
       render: (row) => (
         <span className="font-medium text-green-700 ">
-          {row?.client_offer_c}
+          ${
+            row?.client_offer_c
+          }
         </span>
       ),
     },
+
     {
-      label: "Our OFfer",
-      accessor: "our_offer_c",
-      headerClasses: "",
-      icon: BadgeDollarSign,
-      classes: "truncate max-w-[300px]",
+      label:
+        "Our Offer",
+      accessor:
+        "our_offer_c",
+      icon:
+        BadgeDollarSign,
+      classes: "text-center",
 
       render: (row) => (
-        <span className="font-medium text-gray-700 ">{row?.our_offer_c}</span>
+        <span className="font-medium text-gray-700">
+          ${
+            row?.our_offer_c
+          }
+        </span>
       ),
     },
+
     {
       label: "Status",
-      accessor: "offer_status",
-      headerClasses: "",
-      icon: ChartNoAxesColumn,
-      classes: "truncate max-w-[300px]",
+      accessor:
+        "offer_status",
+      icon:
+        ChartNoAxesColumn,
+
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-          {row?.offer_status}
+          {
+            row?.offer_status
+          }
         </span>
       ),
     },
+
     {
-      label: "Expiry Date",
-      accessor: "expiry_date",
-      headerClasses: "",
+      label:
+        "Expiry Date",
+      accessor:
+        "expiry_date",
       icon: Calendar,
-      classes: "truncate max-w-[300px]",
 
       render: (row) => (
-        <span className="font-medium text-gray-700 ">{row?.expiry_date}</span>
+        <span className="font-medium text-gray-700">
+          {
+            row?.expiry_date
+          }
+        </span>
       ),
     },
+
     {
       label: "Action",
-      accessor: "action",
-      headerClasses: "ml-auto",
-      icon: Clapperboard,
-      classes: "truncate max-w-[300px] ml-auto",
+      accessor:
+        "action",
+      icon:
+        Clapperboard,
+
+      headerClasses:
+        "ml-auto",
+
+      classes:
+        "truncate max-w-[300px] ml-auto",
+
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
-          {/* Update Button */}
           <button
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="View"
             onClick={() =>
-              navigateTo(`/offers/view`, {
-                state: {
-                  email: extractEmail(row.real_name),
-                  threadId: row?.thread_id,
-                  id: row?.id,
-                },
-              })
+              navigateTo(
+                `/offers/view?email=${row?.email}&id=${row?.id}`)
             }
           >
             <Eye className="w-5 h-5 text-blue-600" />
           </button>
-          {deleting && deleteOfferId === row.id ? (
-            <LoadingChase size="20" color="red" />
+
+          {deleting &&
+            deleteOfferId ===
+            row.id ? (
+            <LoadingChase
+              size="20"
+              color="red"
+            />
           ) : (
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
               onClick={() =>
-                dispatch(deleteOffer(row.id, row))
+                deleteOffer(
+                  row.id
+                )
               }
             >
               <Trash className="w-5 h-5 text-red-600" />
@@ -187,31 +314,74 @@ export function OffersPage() {
       ),
     },
   ];
-  const statusList = STATUS_CONFIG.map((config) => {
-    return {
-      ...config,
-      count: Number(summary?.[`${config.value}_offers`] || 0),
-    };
-  });
+
+  const statusList =
+    STATUS_CONFIG.map(
+      (config) => ({
+        ...config,
+
+        count: Number(
+          summary?.stats?.[
+            config.value
+          ]?.count || 0
+        ),
+      })
+    );
+  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
 
   return (
     <TableView
       tableData={offers}
-      tableName={"Offers"}
+      tableName={
+        "Offers"
+      }
       columns={columns}
       slice={"offers"}
-      statusKey={"offer_status"}
-      statusList={statusList}
-      fetchNextPage={() => dispatch(getOffers({ page: pageIndex + 1 }))}
+      statusKey={
+        "offer_status"
+      }
+      statusList={
+        statusList
+      }
+      statusCount={statusCount}
+      pageIndex={
+        pageIndex
+      }
+      pageCount={
+        pageCount
+      }
+      count={count}
+      loading={loading}
+      preferences={
+        preferences
+      }
+      refreshKey={[
+        "offers",
+      ]}
+      fetchNextPage={() => {
+        if (
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}
     >
       <TableTitleBar
         Icon={Gift}
         title={"Offers"}
-        titleClass={"text-green-700"}
+        titleClass={
+          "text-green-700"
+        }
       />
+
       <Table
-        headerStyle={"  bg-green-600"}
-        layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_1fr_1fr_1fr_1fr]"}
+        headerStyle={
+          "bg-green-600"
+        }
+        layoutStyle={
+          "grid grid-cols-8"
+        }
       />
     </TableView>
   );

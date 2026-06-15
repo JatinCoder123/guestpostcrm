@@ -19,8 +19,14 @@ import { toast } from "react-toastify";
 import { Save, Send, X, Loader2 } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
 import { extractEmail } from "../../../assets/assets";
+import { useDealsByEmail } from "../../../queries/deals.queries";
+import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
+import { useContact } from "../../../queries/contact.queries";
+import { useTemplateByName } from "../../../queries/template.queries";
+import { queryClient } from "../../../lib/queryClient";
+import { useWebsites } from "../../../queries/web.queries";
 
-export default function ThreadOffers({ threadId, email, id }) {
+export default function ThreadOffers({ email, id }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [send, setSend] = useState(false);
@@ -29,30 +35,24 @@ export default function ThreadOffers({ threadId, email, id }) {
 
   const [editingIds, setEditingIds] = useState([]);
   const [editDataMap, setEditDataMap] = useState({});
-  const { websites: websiteLists } = useSelector((state) => state.website);
-  const { offers, deleteOfferId, deleting, updating, message, error } =
+
+  const { data: webSitesData } = useWebsites();
+  const websiteLists = webSitesData?.data ?? [];
+  const { deleteOfferId, deleting, updating, message, error } =
     useSelector((state) => state.offers);
-  const { deals } = useSelector((state) => state.deals);
+  const { data } = useContact(email)
+  const threadId = data?.contact?.thread_id
+  const { data: dealsData, isPending: dealsLoading, isError: dealsError } = useDealsByEmail(email);
+  const { data: offersData, isPending: offersLoading, isError: offersError } = useOffersByEmail(email);
+  const offers = offersData?.data ?? []
+  const deals = dealsData?.data ?? []
   const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
-  const { crmEndpoint } = useSelector((state) => state.user);
   const { handleMove } = useThreadContext();
 
   const [validWebsite, setValidWebsite] = useState({});
 
   // 🔥 TEMPLATE FETCH
-  const { data: templateData } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: { name: "OfferORG" },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "TemplateData",
-  });
+  const { data: templateData } = useTemplateByName("OfferORG");
   const toggleSelect = (id) => {
     setSelectedOffers((prev) =>
       prev.includes(id)
@@ -86,13 +86,8 @@ export default function ThreadOffers({ threadId, email, id }) {
     }
   };
   useEffect(() => {
-    const currentOffers = showBrandTimeline ? offers : offers.filter(
-      (d) => extractEmail(d.real_name ?? d.email_c) == email,
-    );
-
-    const currentDeals = showBrandTimeline ? deals : deals.filter(
-      (d) => extractEmail(d.real_name ?? d.email) == email,
-    );
+    const currentOffers = offers
+    const currentDeals = deals
     const valid = {}
     const currentContacts = showBrandTimeline ? contacts : [{ email1: email }]
     currentContacts.forEach(contact => {
@@ -131,14 +126,7 @@ export default function ThreadOffers({ threadId, email, id }) {
     dispatch(deleteOffer(id, offer));
   };
 
-  const handleCreate = (itemEmail, itemThread) => {
-    navigate(`/offers/create`, {
-      state: {
-        email: itemEmail,
-        threadId: itemThread,
-      },
-    });
-  };
+  const handleCreate = (itemEmail) => { navigate(`/offers/create?email=${itemEmail}`) };
 
   const handlePreview = (offersData = currentOffers) => {
     let html = templateData?.[0]?.body_html || "";
@@ -166,6 +154,8 @@ export default function ThreadOffers({ threadId, email, id }) {
     }
 
     if (message) {
+      queryClient.invalidateQueries({ queryKey: offerKeys.all })
+
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {
@@ -193,7 +183,24 @@ export default function ThreadOffers({ threadId, email, id }) {
   return (
     <div className="w-full flex gap-6 items-start">
       <div className="flex-1 relative border rounded-2xl p-6 bg-white shadow-sm">
-        <PageHeader title={"OFFERS"} onAdd={() => handleCreate(email, threadId)} />
+        <PageHeader title={"OFFERS"} onAdd={() => handleCreate(email)} />
+        {offersLoading && (
+          <div className="space-y-3 mt-4">
+            {Array.from({
+              length: 2,
+            }).map((_, i) => (
+              <div
+                key={i}
+                className="h-16 rounded-xl bg-gray-100 animate-pulse"
+              />
+            ))}
+          </div>
+        )}
+        {offersError && (
+          <div className="py-8 text-center text-red-500">
+            Failed to load Offers
+          </div>
+        )}
         {selectedOffers.length > 0 && (
           <div className="mb-4 flex items-center justify-end rounded-xl">
             <div className="flex gap-3">
@@ -416,7 +423,7 @@ export default function ThreadOffers({ threadId, email, id }) {
                       {showBrandTimeline && <IconButton
                         icon={Plus}
                         label="Create"
-                        onClick={() => handleCreate(itemEmail, itemThreadId)}
+                        onClick={() => handleCreate(itemEmail)}
                         className="bg-green-100 hover:bg-green-200 text-green-600"
 
                       />}

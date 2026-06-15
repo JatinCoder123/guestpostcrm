@@ -6,61 +6,56 @@ import {
   MemoryStick,
   Edit,
   BadgeDollarSign,
-  Plus,
-  X,
 } from "lucide-react";
-
-import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";
-
-import { getTags, deleteTag } from "../../store/Slices/tag.js";
-
-import CreateTag from "./CreateTag";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { useCreateTag, useDeleteTag, useInfiniteTags, useUpdateTag } from "../../queries/tag.queries.js";
+import UpdatePopup from "../UpdatePopup.jsx";
 
 export function TagManagerpage() {
-  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false)
 
-  const { tags, pageIndex, deleting, deleteTagId, creating } = useSelector(
-    (state) => state.tag,
-  );
+  const preferences =
+    useTablePreference(
+      "tag"
+    );
 
-  // ✅ Popup states
-  const [showPopup, setShowPopup] = useState(false);
-  const [editingTag, setEditingTag] = useState(null);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } =
+    useInfiniteTags(
+      preferences
+    );
 
-  useEffect(() => {
-    dispatch(getTags());
-  }, [dispatch]);
+  const {
+    mutate: deleteTag,
+    isPending: deleting,
+    variables: deleteId
+  } =
+    useDeleteTag();
+  const {
+    mutate: updateTag,
+    isPending: updating, } =
+    useUpdateTag();
+  const {
+    mutate: createTag,
+    isPending: creating } =
+    useCreateTag();
 
-  // ✅ OPEN CREATE
-  const handleCreate = () => {
-    setEditingTag(null);
-    setShowPopup(true);
-  };
-
-  // ✅ OPEN EDIT
-  const handleEdit = (row) => {
-    setEditingTag(row);
-    setShowPopup(true);
-  };
-
-  // ✅ AFTER SUCCESS
-  const handleSuccess = () => {
-    setShowPopup(false);
-    setEditingTag(null);
-    dispatch(getTags());
-  };
 
   const columns = [
     {
       label: "Created At",
       accessor: "date_entered",
       icon: Calendar,
-      render: (row) => <span>{row.date_entered}</span>,
+      render: (row) => <span>{row.date_entered_time_ago}</span>,
     },
     {
       label: "Tag Name",
@@ -84,7 +79,7 @@ export function TagManagerpage() {
       label: "Modified At",
       accessor: "date_modified",
       icon: Calendar,
-      render: (row) => <span>{row?.date_modified}</span>,
+      render: (row) => <span>{row?.date_modified_time_ago}</span>,
     },
     {
       label: "Action",
@@ -96,18 +91,18 @@ export function TagManagerpage() {
         <div className="flex gap-2 ">
           {/* ✅ EDIT */}
           <button
-            onClick={() => handleEdit(row)}
+            onClick={() => setOpen(row)}
             className="p-2 bg-blue-100 rounded"
           >
             <Edit className="w-4 h-4 text-blue-600" />
           </button>
 
           {/* ✅ DELETE */}
-          {deleting && deleteTagId === row.id ? (
+          {deleting && deleteId === row.id ? (
             <LoadingChase size="20" color="red" />
           ) : (
             <button
-              onClick={() => dispatch(deleteTag(row.id))}
+              onClick={() => deleteTag(row.id)}
               className="p-2 bg-red-100 rounded"
             >
               <Trash className="w-4 h-4 text-red-600" />
@@ -117,16 +112,86 @@ export function TagManagerpage() {
       ),
     },
   ];
+  const tags =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
 
+  const pages =
+    data?.pages ?? [];
+
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
   return (
     <>
-      {/* ✅ TABLE */}
+      {open && <UpdatePopup
+        open={open}
+        loading={updating || creating}
+        onClose={() => setOpen(false)}
+        title="Create Tag"
+        fields={[
+          {
+            label: "Tag Name",
+            name: "name",
+            type: "text",
+            value: open?.name,
+            required: true,
+          },
+          {
+            label: "Tag Type",
+            name: "type",
+            type: "select",
+            options: [{ label: "Static", value: "static" }, { label: "Dynamic", value: "dynamic" }],
+            value: open?.type ?? "static",
+            required: true
+          },
+        ]}
+        onUpdate={(data) => open?.name ? updateTag({ ...open, ...data }, { onSuccess: setOpen(false) }) : createTag({ ...data }, { onSuccess: setOpen(false) })}
+        buttonLabel={open?.name ? "Update" : "Create"}
+      />}
       <TableView
         tableData={tags}
         tableName={"Tag Manager"}
         columns={columns}
         slice={"tag"}
-        fetchNextPage={() => dispatch(getTags({ page: pageIndex + 1 }))}
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        preferences={preferences}
+        refreshKey={["tags"]}
+        canAdd={true}
+        handleAddClick={() => setOpen({ type: "", name: "" })}
+        fetchNextPage={() => {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}
       >
         <TableTitleBar
           Icon={Tag}
@@ -134,54 +199,15 @@ export function TagManagerpage() {
           titleClass={"text-orange-500"}
         />
 
-        {
-          <div className="absolute -top-1 right-0">
-            <button className="cursor-pointer" onClick={handleCreate}>
-              <img
-                width="30"
-                height="30"
-                src="https://img.icons8.com/arcade/64/plus.png"
-                alt="plus"
-              />
-            </button>
-          </div>
-        }
 
-        <Table headerStyle={"bg-orange-500"} layoutStyle={"grid grid-cols-6"} />
-      </TableView>
+        <Table
+          headerStyle={"bg-orange-500"}
+          layoutStyle={
+            "grid grid-cols-6"
+          }
+        />      </TableView>
 
-      {/* ✅ POPUP */}
-      {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* BACKDROP */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowPopup(false)}
-          />
 
-          {/* MODAL */}
-          <div className="relative bg-white rounded-xl w-full max-w-md shadow-lg">
-            {/* HEADER */}
-            <div className="flex justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">
-                {editingTag ? "Edit Tag" : "Create Tag"}
-              </h2>
-
-              <button onClick={() => setShowPopup(false)}>
-                <X />
-              </button>
-            </div>
-
-            {/* FORM */}
-            <CreateTag
-              onSubmit={handleSuccess}
-              onCancel={() => setShowPopup(false)}
-              initialData={editingTag}
-              isEditing={!!editingTag}
-            />
-          </div>
-        </div>
-      )}
     </>
   );
 }
