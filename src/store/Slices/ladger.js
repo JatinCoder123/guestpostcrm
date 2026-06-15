@@ -86,23 +86,7 @@ const ladgerSlice = createSlice({
 
 
 
-    getNoSearchResultDataRequest(state) {
-      state.noSearchFoundLoading = true;
-      state.noSearchResultData = null;
-      state.error = null;
-    },
 
-    getNoSearchResultDataSuccess(state, action) {
-      state.noSearchFoundLoading = false;
-      state.noSearchResultData = action.payload.noSearchResultData || null;
-      state.error = null;
-    },
-
-    getNoSearchResultDataFailed(state, action) {
-      state.noSearchFoundLoading = false;
-      state.noSearchResultData = null;
-      state.error = action.payload
-    },
     manualScanRequest(state) {
       state.manualScanLoading = true;
       state.manualScanResponse = null;
@@ -297,29 +281,6 @@ export const getLadgerChild = ({
 
 
 
-export const getNoSearchResultData = (search) => {
-  return async (dispatch, getState) => {
-    dispatch(ladgerSlice.actions.getNoSearchResultDataRequest());
-
-    try {
-      const data = await fetchGpc({ params: { type: 'live_search', query: search } });
-
-      showConsole && console.log("NoSearchResultData", data);
-
-      dispatch(
-        ladgerSlice.actions.getNoSearchResultDataSuccess({
-          noSearchResultData: data.data,
-        }),
-      );
-
-      dispatch(ladgerSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        ladgerSlice.actions.getNoSearchResultDataFailed(),
-      );
-    }
-  };
-};
 export const manualEmailScan = (messageId, email, threadId) => {
   return async (dispatch, getState) => {
     dispatch(ladgerSlice.actions.manualScanRequest());

@@ -1,4 +1,6 @@
 import { showConsole } from "../assets/assets";
+import { queryClient } from "../lib/queryClient";
+import { contactKeys } from "../queries/contact.queries";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
 import { store } from "../store/store";
 import { apiRequest, fetchGpc } from "./api";
@@ -11,6 +13,7 @@ export const setCurrentUser = (currentUser) => {
   CURRENT_USER = currentUser;
   return;
 };
+export const getCurrentUser = () => CURRENT_USER
 export const updateActivity = async (email, last_activity) => {
   try {
     const data = await fetchGpc({
@@ -24,6 +27,7 @@ export const updateActivity = async (email, last_activity) => {
       },
     });
     showConsole && console.log("Activity Added", data);
+    queryClient.invalidateQueries({ queryKey: contactKeys.all })
   } catch (error) {
     showConsole && console.log(error);
   }

@@ -37,11 +37,7 @@ export const initializeTable =
             );
 
             const prefs = getState().preferences.tables?.[table];
-            console.log("PREFCS", prefs)
-            console.log("INTIAL", INITIAL_TABLE_FILTERS[table])
-
             if (prefs?.initialFiltersApplied) { return; }
-            console.log("INTIA L", INITIAL_TABLE_FILTERS[table])
             dispatch(
                 preferencesAction
                     .updateMultipleTablePreferences({

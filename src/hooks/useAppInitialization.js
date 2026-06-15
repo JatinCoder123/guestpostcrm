@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getWebsites } from "../api/web.api";
 import { webKeys } from "../queries/web.queries";
+import { getTinyKey } from "../api/tiny.api";
 
 export const useAppInitialization =
     () => {
@@ -15,6 +16,15 @@ export const useAppInitialization =
                 queryClient.prefetchQuery({
                     queryKey: webKeys.lists,
                     queryFn: getWebsites,
+                }),
+                queryClient.prefetchQuery({
+                    queryKey: ['tiny-key'],
+                    queryFn: async () => {
+                        const data = await getTinyKey()
+                        localStorage.setItem("tinyKey", data);
+                        return data
+
+                    },
                 }),
             ]);
 

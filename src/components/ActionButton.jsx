@@ -4,14 +4,8 @@ import UserDropdown from "./UserDropDown";
 import MoveToDropdown from "./MoveToDropdown";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  favAction,
-  favEmail,
-  getFavEmails,
-} from "../store/Slices/favEmailSlice";
-import {
   forwardEmail,
   forwardedAction,
-  getForwardedEmails,
 } from "../store/Slices/forwardedEmailSlice";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState, useRef, useMemo } from "react";
@@ -27,7 +21,7 @@ import {
 import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
-import { applyHashtag, getRighteeUsers } from "../services/utils";
+import { applyHashtag, getCurrentUser, getRighteeUsers } from "../services/utils";
 import { fetchGpc } from "../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import IconButton from "./ui/Buttons/IconButton"
@@ -37,8 +31,8 @@ import { useTimeline } from "../context/TimelineContext";
 import { contactKeys, useContact } from "../queries/contact.queries";
 import { queryClient } from "../lib/queryClient";
 import { forwardedKeys } from "../queries/forwarded.queries";
-import { favoriteKeys } from "../queries/favourite.queries";
 import { marketPlaceKeys } from "../queries/marketplace.queries";
+import { toggleFav } from "../api/contact.api";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -71,7 +65,28 @@ const ActionButton = () => {
 
   const { mutate, isPending: sendingNote } = useMutation({
     mutationFn: async () => {
-      const res = awaitfetchGpc({ method: "POST", params: { type: 'team_notes' }, body: { email: selectedUser.email, notes: note } })
+      const notes = `
+<b>📝 Note</b><br/><br/>
+
+${note}<br/><br/>
+
+<hr/>
+
+<b>👤 Sent By:</b><br/>
+${getCurrentUser()?.name}
+(${getCurrentUser()?.description})<br/><br/>
+
+<b>🔗 Timeline Link:</b><br/>
+<a href="https://app.guestpostcrm.com/redirect?email=${email}">
+Open Contact
+</a>
+`
+      const res = await fetchGpc({
+        method: "POST", params: { type: 'team_notes' }, body: {
+          email: selectedUser.email,
+          notes: notes
+        }
+      })
       return res
     },
     onSuccess: () => {
@@ -186,19 +201,6 @@ const ActionButton = () => {
       queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
       queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
-
-    if (favouriteError) {
-      toast.error(favouriteError);
-      dispatch(favAction.clearAllErrors());
-    }
-
-    if (favouriteMessage) {
-      toast.success(favouriteMessage);
-      dispatch(favAction.clearAllMessages());
-       queryClient.invalidateQueries({ queryKey: favouriteKeys.all })
-      queryClient.invalidateQueries({ queryKey: contactKeys.all })
-    }
-
     if (markingError) {
       toast.error(markingError);
       dispatch(marketplaceActions.clearErrors());
@@ -207,8 +209,9 @@ const ActionButton = () => {
     if (markingMessage) {
       toast.success(markingMessage);
       dispatch(marketplaceActions.clearMessage());
- queryClient.invalidateQueries({ queryKey: marketPlaceKeys.all })
-      queryClient.invalidateQueries({ queryKey: contactKeys.all })    }
+      queryClient.invalidateQueries({ queryKey: marketPlaceKeys.all })
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
+    }
     if (markTagError) {
       toast.error(markTagError);
       dispatch(markTagAction.clearAllErrors());
@@ -229,7 +232,7 @@ const ActionButton = () => {
       dispatch(linkExchangeaction.clearAllErrors());
     }
 
-   
+
 
     if (editMessage) {
       toast.success(editMessage);
@@ -299,7 +302,7 @@ const ActionButton = () => {
       },
       // GET when adding favourite, DELETE when removing
       action: () => {
-        dispatch(favEmail({ threadId, email }));
+        toggleFav({ email })
         triggerHashtag(MEMO.favourite, isFavActive ? "DELETE" : "GET");
       },
     },

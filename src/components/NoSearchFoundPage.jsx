@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-  getNoSearchResultData,
   ladgerAction,
   manualEmailScan,
 } from "../store/Slices/ladger";
@@ -11,11 +10,11 @@ import { LoadingChase } from "./Loading";
 import { Calendar, Eye, ScanSearch } from "lucide-react";
 import { useThreadContext } from "../hooks/useThreadContext";
 import { extractEmail } from "../assets/assets";
+import { useQuery } from "@tanstack/react-query";
+import { getLiveSearchData } from "../api/liveSearch.api";
 
 export const NoSearchFoundPage = () => {
   const {
-    noSearchResultData,
-    noSearchFoundLoading,
     manualScanLoading,
     error,
     manualScanResponse,
@@ -25,12 +24,12 @@ export const NoSearchFoundPage = () => {
 
   const { enteredEmail, setEnteredEmail } = useContext(PageContext);
   const { handleMove } = useThreadContext();
+  const { data, isPending: noSearchFoundLoading, isError } = useQuery({ queryKey: ['live-search', enteredEmail], queryFn: getLiveSearchData })
+  const noSearchResultData = data?.data
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(getNoSearchResultData(enteredEmail));
-  }, []);
+
 
   useEffect(() => {
     if (error) {

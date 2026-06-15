@@ -8,11 +8,9 @@ import { checkForDuplicates } from "../store/Slices/duplicateEmailSlice";
 import { getOrders } from "../store/Slices/orders";
 import { getInvoices } from "../store/Slices/invoices";
 import { getOffers } from "../store/Slices/offers";
-import { getDetection } from "../store/Slices/detection";
 import { PageContext } from "../context/pageContext";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllUsers } from "../store/Slices/crmUser.js";
-import { getTinyKey } from "../store/Slices/tinyKey.js";
 import { useMarketPlace } from "../queries/marketplace.queries.js";
 
 function useRefresh() {
@@ -22,13 +20,10 @@ function useRefresh() {
     const { timeline } = useSelector((state) => state.ladger);
     useMarketPlace()
     useEffect(() => {
-        dispatch(getTinyKey())
         dispatch(getAllUsers())
         dispatch(fetchGpcController());
     }, [])
     useEffect(() => {
-        // dispatch(getDetection(enteredEmail));
-        // dispatch(getdefaulterEmails(enteredEmail));
         dispatch(getmovedEmails(enteredEmail));
     }, [enteredEmail, timeline, dispatch]); // ✅ Added dependencies
     useEffect(() => {

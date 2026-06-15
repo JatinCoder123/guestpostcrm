@@ -1,11 +1,17 @@
 import { apiRequest } from "../services/api";
-import { getCRM } from "../services/utils";
 
-/**
- * Get all tags
- */
-export const getMarkTags = async () => {
-    const data = await apiRequest({ endpoint: `${getCRM()}?entryPoint=add_tag`, params: { get_tag: 1 } })
 
-    return data;
+export const getTinyKey = async () => {
+    const existingKey = localStorage.getItem("tinyKey");
+
+    if (existingKey) { return existingKey }
+    const data = await apiRequest({
+        endpoint: "https://crm.outrightsystems.org/index.php",
+        params: { entryPoint: "get_tiny" },
+        headers: { "X-Api-Key": import.meta.env.VITE_TINY_MCE_KEY_X_API_KEY },
+    });
+
+
+
+    return data?.token;
 };

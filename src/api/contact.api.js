@@ -1,5 +1,10 @@
-import { fetchGpc, http } from "../services/api";
+import toast from "react-hot-toast";
+import { apiRequest, fetchGpc, http } from "../services/api";
 import { buildTableRequestBody } from "../utils/preferenceStorage";
+import { queryClient } from "../lib/queryClient";
+import { contactKeys } from "../queries/contact.queries";
+import { favoriteKeys } from "../queries/favourite.queries";
+import { getCRM, updateActivity } from "../services/utils";
 
 // contact.api.js
 
@@ -195,3 +200,18 @@ export const updateContact = async ({
 
     return response;
 };
+export const toggleFav = async ({ threadId, email }) => {
+    const data = await apiRequest({ endpoint: `${getCRM()}?entryPoint=contactAction`, params: { field: 'favorite', email } });
+    console.log(`Favourite Toggle data`, data)
+    const isFavorite = Number(data?.new_value) === 1;
+    toast.success(
+        isFavorite
+            ? "❤️ Email Favorited Successfully"
+            : "🤍 Email Unfavorited Successfully"
+    );
+    updateActivity(email, isFavorite ? "Email Favorited " : "Email Unfavorited ");
+    queryClient.invalidateQueries({ queryKey: contactKeys.all })
+    queryClient.invalidateQueries({ queryKey: favoriteKeys.all })
+    //LADGER ENTRY
+
+}

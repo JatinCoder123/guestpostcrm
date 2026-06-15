@@ -2,13 +2,19 @@
 
 import {
     useInfiniteQuery,
+    useMutation,
     useQuery,
 } from "@tanstack/react-query";
 
 import {
     getAllContacts,
     getContactStats,
+    toggleFav,
 } from "../api/contact.api";
+import { queryClient } from "../lib/queryClient";
+import { contactKeys } from "./contact.queries";
+import { updateActivity } from "../services/utils";
+import toast from "react-hot-toast";
 
 /**
  * Query Keys
@@ -83,3 +89,20 @@ export const useInfiniteFavorite = (
         staleTime: 5 * 60 * 1000,
     });
 };
+export const useToggleFav = (email) => {
+    return useMutation({
+        mutationFn: toggleFav,
+        onSuccess: async (data) => {
+            console.log("dat", data)
+            const isFavorite = Number(data?.new_value) === 1;
+            toast.success(
+                isFavorite
+                    ? "❤️ Email Favorited Successfully"
+                    : "🤍 Email Unfavorited Successfully"
+            );
+            updateActivity(email, isFavorite ? "Email Favorited " : "Email Unfavorited ");
+            queryClient.invalidateQueries({ queryKey: contactKeys.all })
+            queryClient.invalidateQueries({ queryKey: favoriteKeys.all })
+        }
+    })
+}
