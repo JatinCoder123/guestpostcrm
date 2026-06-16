@@ -225,17 +225,10 @@ const Profile = () => {
           crmEndpoint,
           name: onboardingRecordName,
         });
-        const progress =
-          current.step > 0
-            ? current
-            : await upsertOnboardingProgress({
-              crmEndpoint,
-              name: onboardingRecordName,
-              step: ONBOARDING_STEP.PROFILE_STARTED,
-            });
+        const progress = current;
         if (ignore) return;
 
-        setCrmOnboardingStep((step) => Math.max(step, progress.step));
+        setCrmOnboardingStep(progress.step);
         if (progress.step >= ONBOARDING_STEP.WEBSITE_ADDED) {
           broadcastSyncState({
             websiteDone: true,

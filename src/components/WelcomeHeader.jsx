@@ -27,7 +27,6 @@ import {
   ONBOARDING_STEP,
   fetchOnboardingProgress,
   getOnboardingRecordName,
-  upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
 import { useGpcController } from "../queries/controller.queries";
 import { useTimeline } from "../context/TimelineContext";
@@ -219,14 +218,7 @@ const WelcomeHeader = () => {
           crmEndpoint,
           name: onboardingRecordName,
         });
-        const progress =
-          current.step > 0
-            ? current
-            : await upsertOnboardingProgress({
-              crmEndpoint,
-              name: onboardingRecordName,
-              step: ONBOARDING_STEP.PROFILE_STARTED,
-            });
+        const progress = current;
         if (ignore) return;
 
         setCrmOnboardingStep(progress.step);

@@ -24,28 +24,27 @@ const getRows = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.data)) return data.data;
   if (Array.isArray(data?.data?.data)) return data.data.data;
+  if (data?.data && typeof data.data === "object") return [data.data];
   return [];
 };
 
 export const getOnboardingRecordName = ({ user, businessEmail } = {}) =>
-  businessEmail ||
-  user?.email ||
-  user?.email1 ||
-  user?.email_address ||
-  user?.name ||
-  "";
+  businessEmail
 
 export const getStepFromUiManage = (uiManage) => {
   const step = Number.parseInt(String(uiManage ?? "").trim(), 10);
   return Number.isFinite(step) ? step : 0;
 };
 
+const getRecordUiManage = (record) =>
+  record?.ui_manage ?? record?.ui_mange ?? record?.manage_ui;
+
 export const isSignupIncompleteRecord = (record) => {
   const onboardingStage = Number.parseInt(
     String(record?.onboarding_stage ?? "").trim(),
     10,
   );
-  const uiManage = record?.ui_manage;
+  const uiManage = getRecordUiManage(record);
 
   return (
     Number.isFinite(onboardingStage) &&
@@ -69,7 +68,7 @@ export const fetchOnboardingStatus = async (email) => {
 
   return {
     record,
-    step: getStepFromUiManage(record?.ui_manage),
+    step: getStepFromUiManage(getRecordUiManage(record)),
     signupIncomplete: isSignupIncompleteRecord(record),
   };
 };
