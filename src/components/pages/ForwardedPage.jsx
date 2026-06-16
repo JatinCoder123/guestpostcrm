@@ -67,23 +67,23 @@ export function ForwardedPage() {
 
     {
       label: "Contact",
-      accessor: "email_c",
+      accessor: "first_name",
       headerClasses: "",
       icon: User,
       classes: "truncate ",
-      onClick: (row) => handleDateClick({ email: row?.email1, navigate: "/contacts" })
-      ,
-
+      searchable: true,
+      onClick: (row) => handleDateClick({ email: row?.email1, navigate: "/contacts" }),
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row?.first_name} {row?.last_name}        </span>
-      )
+          {row?.first_name} {row?.last_name}        </span>)
     },
     {
       label: "Subject",
       accessor: "subject",
       headerClasses: "",
       icon: FileText,
+      searchable: true,
+
       classes: "truncate max-w-[300px]",
       onClick: (row) => handleMove({
         email: row.email_address,

@@ -141,6 +141,7 @@ export default function AllContacts() {
             label: "Name",
             accessor: "first_name",
             headerClasses: "",
+            searchable: true,
             icon: User2,
             classes: "truncate max-w-[200px]",
             onClick: (row) =>

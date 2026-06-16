@@ -18,97 +18,97 @@ export default function GroupReport() {
   const { category } =
     useParams();
 
-const location =
+  const location =
     useLocation();
 
-const stateFilters =
+  const stateFilters =
     location.state || {};
-console.log(stateFilters);  
-const reportFilter =
+  console.log(stateFilters);
+  const reportFilter =
     JSON.parse(
-        localStorage.getItem(
-            "reportFilter"
-        ) || "{}"
+      localStorage.getItem(
+        "reportFilter"
+      ) || "{}"
     );
 
-const filters = {
+  const filters = {
     category,
 
     phase:
-        stateFilters.phase ??
-        reportFilter.phase ??
-        "conversation",
+      stateFilters.phase ??
+      reportFilter.phase ??
+      "conversation",
 
     stage:
-        stateFilters.stage ??
-        reportFilter.stage ??
-        "new",
+      stateFilters.stage ??
+      reportFilter.stage ??
+      "new",
 
     report_user_id:
-        stateFilters.report_user_id ??
-        reportFilter.report_user_id ??
-        "",
+      stateFilters.report_user_id ??
+      reportFilter.report_user_id ??
+      "",
 
     from:
-        stateFilters.from ??
-        reportFilter.from ??
-        "",
+      stateFilters.from ??
+      reportFilter.from ??
+      "",
 
     from_time:
-        stateFilters.from_time ??
-        reportFilter.from_time ??
-        "00:00:00",
+      stateFilters.from_time ??
+      reportFilter.from_time ??
+      "00:00:00",
 
     to:
-        stateFilters.to ??
-        reportFilter.to ??
-        "",
+      stateFilters.to ??
+      reportFilter.to ??
+      "",
 
     to_time:
-        stateFilters.to_time ??
-        reportFilter.to_time ??
-        "23:59:59",
-};
-const {
+      stateFilters.to_time ??
+      reportFilter.to_time ??
+      "23:59:59",
+  };
+  const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } = useInfiniteReports(filters); 
-   const { handleDateClick } = useContext(PageContext);
-   const reports =
+  } = useInfiniteReports(filters);
+  const { handleDateClick } = useContext(PageContext);
+  const reports =
     data?.pages?.flatMap(
-        page =>
-            page.records || []
+      page =>
+        page.records || []
     ) ?? [];
 
-const pages =
+  const pages =
     data?.pages ?? [];
 
-const firstPage =
+  const firstPage =
     pages[0] ?? {};
 
-const lastPage =
+  const lastPage =
     pages[pages.length - 1] ??
     {};
 
-const pageIndex =
+  const pageIndex =
     lastPage?.pagination?.page ??
     1;
 
-const pageCount =
+  const pageCount =
     firstPage?.pagination
-        ?.totalPages ?? 0;
+      ?.totalPages ?? 0;
 
-const count =
+  const count =
     firstPage?.total_records ??
     0;
 
-const stats =
+  const stats =
     firstPage?.stats ?? {};
 
-const loading =isPending ||isFetchingNextPage;
+  const loading = isPending || isFetchingNextPage;
   const columns = [
     {
       label: "Created At",
@@ -128,6 +128,8 @@ const loading =isPending ||isFetchingNextPage;
       label: "Contact",
       accessor: "sender_email",
       headerClasses: "",
+      searchable: true,
+
       icon: User,
       onClick: (row, index) =>
         handleDateClick({ email: row?.sender_email, navigate: "/contacts" }),
@@ -142,6 +144,8 @@ const loading =isPending ||isFetchingNextPage;
       accessor: "action",
       headerClasses: "",
       icon: User,
+      searchable: true,
+
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
@@ -152,6 +156,8 @@ const loading =isPending ||isFetchingNextPage;
     {
       label: "Description",
       accessor: "description",
+      searchable: true,
+
       headerClasses: "",
       icon: User,
       render: (row) => (
@@ -162,29 +168,29 @@ const loading =isPending ||isFetchingNextPage;
     },
 
 
-  
+
   ];
 
   return (
     <>
       <TableView
-    tableData={reports}
-    tableName={`${category} Group Report`}
-    columns={columns}
-    slice={"report"}
-    pageIndex={pageIndex}
-    pageCount={pageCount}
-    count={count}
-    loading={loading}
-    fetchNextPage={() => {
-        if (
+        tableData={reports}
+        tableName={`${category} Group Report`}
+        columns={columns}
+        slice={"report"}
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        fetchNextPage={() => {
+          if (
             hasNextPage &&
             !isFetchingNextPage
-        ) {
+          ) {
             fetchNextPage();
-        }
-    }}
->
+          }
+        }}
+      >
         <TableTitleBar
           Icon={Mail}
           title={`${category} Group Report`}

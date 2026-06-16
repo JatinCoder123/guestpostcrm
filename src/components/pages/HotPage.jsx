@@ -93,6 +93,7 @@ export function HotPage() {
       classes: "truncate ",
       onClick: (row) => handleDateClick({ email: row?.name, navigate: "/contacts" })
       ,
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -103,6 +104,8 @@ export function HotPage() {
       label: "Description",
       accessor: "description",
       headerClasses: "",
+      searchable: true,
+
       icon: FileText,
       classes: "truncate max-w-[300px]",
       onClick: (row) => handleMove({

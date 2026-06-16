@@ -152,8 +152,9 @@ export function OffersPage() {
 
     {
       label: "Contact",
-      accessor: "email",
+      accessor: "first_name",
       icon: User2,
+      searchable: true,
 
       classes:
         "truncate max-w-[200px]",
@@ -184,6 +185,7 @@ export function OffersPage() {
         "website",
       icon: Globe,
       classes: "truncate max-w-[300px]",
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-blue-700 truncate min-w-[100px]">
@@ -202,6 +204,7 @@ export function OffersPage() {
       icon:
         BadgeDollarSign,
       classes: "text-center",
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-green-700 ">
@@ -220,6 +223,7 @@ export function OffersPage() {
       icon:
         BadgeDollarSign,
       classes: "text-center",
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-gray-700">

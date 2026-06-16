@@ -109,6 +109,8 @@ export function ReminderPage() {
       label: "Contact",
       accessor: "recipient",
       headerClasses: "",
+      searchable: true,
+
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) => handleDateClick({ email: row?.recipient, navigate: "/contacts" }),

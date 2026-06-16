@@ -151,9 +151,10 @@ export function UnrepliedEmailsPage() {
 
     {
       label: "Contact",
-      accessor: "email1",
+      accessor: "first_name",
       headerClasses: "",
       icon: User,
+      searchable: true,
       classes: "truncate ",
       onClick: (row, index) =>
         handleDateClick({ email: row?.email1, navigate: "/contacts", index, nextPrev: true }),
@@ -177,6 +178,8 @@ export function UnrepliedEmailsPage() {
       accessor: "subject",
       headerClasses: "",
       icon: FileText,
+      searchable: true,
+
       classes: "truncate max-w-[300px]",
       onClick: (row) =>
         handleMove({

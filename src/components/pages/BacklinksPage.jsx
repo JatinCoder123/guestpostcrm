@@ -208,7 +208,7 @@ export function BacklinksPage() {
         "post_author_email_c",
 
       icon: User2,
-
+      searchable: true,
       classes:
         "truncate max-w-[200px]",
 
@@ -241,7 +241,7 @@ export function BacklinksPage() {
     {
       label:
         "Target URL",
-
+      searchable: true,
       accessor:
         "target_url_c",
 
@@ -271,7 +271,7 @@ export function BacklinksPage() {
     {
       label:
         "Anchor Text",
-
+      searchable: true,
       accessor:
         "anchor_text_c",
       classes:

@@ -84,7 +84,7 @@ const STATUS_CONFIG = [
     label: "Marketplace",
     icon: StoreIcon,
     color: "#ed3ab7", // purple
-    filter: 'order_status'
+    filter: 'type'
 
   },
   {
@@ -92,7 +92,7 @@ const STATUS_CONFIG = [
     label: "Listacle",
     icon: ListFilter,
     color: "#56cd1f", // purple
-    filter: 'order_status'
+    filter: 'type'
 
   },
 ];
@@ -153,6 +153,7 @@ export function OrdersPage() {
           email: row?.client_email,
           navigate: "/contacts",
         }),
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -171,6 +172,8 @@ export function OrdersPage() {
           ${row.total_amount_c || "0.00"}{" "}
         </span>
       ),
+      searchable: true,
+
     },
     {
       label: "Status",
@@ -215,6 +218,7 @@ export function OrdersPage() {
       headerClasses: "",
       icon: IdCardIcon,
       classes: "truncate max-w-[200px]",
+      searchable: true,
 
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
@@ -282,46 +286,20 @@ export function OrdersPage() {
       values: [
         {
           label: "Link Insertion",
-          value: "Brand",
+          value: "link_insertion",
         },
 
         {
           label: "Guest Post",
-          value: "guest post",
+          value: "guest_post",
         },
         {
           label: "MarketPlace",
-          value: "Non-Brand",
+          value: "marketplace",
         },
       ],
     },
 
-    {
-      label: "Stage",
-      accessor: "stage",
-
-      values: [
-        {
-          label: "Order",
-          value: "order",
-        },
-
-        {
-          label: "Offer",
-          value: "offer",
-        },
-
-        {
-          label: "Invoice",
-          value: "invoice",
-        },
-
-        {
-          label: "Deal",
-          value: "deal",
-        },
-      ],
-    },
   ];
   const orders =
     data?.pages?.flatMap(
