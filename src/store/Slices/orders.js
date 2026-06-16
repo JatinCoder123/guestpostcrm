@@ -238,12 +238,11 @@ export const getOrders = ({
   };
 };
 
-export const createOrder = () => {
+export const createOrder = (email) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     const crmEndpoint = getState().user.crmEndpoint;
-    const email = getState().viewEmail.contactInfo?.email1;
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
         domain: crmEndpoint,

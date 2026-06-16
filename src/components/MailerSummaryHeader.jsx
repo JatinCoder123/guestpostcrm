@@ -304,7 +304,7 @@ function SummaryCard({
     setSidebarCollapsed(true);
 
     if (type === "orders" && data?.length === 0) {
-      dispatch(createOrder());
+      dispatch(createOrder(email));
       return;
     }
 
@@ -338,12 +338,7 @@ function SummaryCard({
               <button
                 className="cursor-pointer"
                 onClick={() =>
-                  navigateTo(`/orders/create`, {
-                    state: {
-                      email,
-                      threadId,
-                    },
-                  })
+                  navigateTo(`/orders/create?email=${email}`)
                 }
               >
                 <img
