@@ -9,6 +9,8 @@ import {
 } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { orderKeys } from "../../queries/orders.queries";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -238,12 +240,11 @@ export const getOrders = ({
   };
 };
 
-export const createOrder = () => {
+export const createOrder = (email) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     const crmEndpoint = getState().user.crmEndpoint;
-    const email = getState().viewEmail.contactInfo?.email1;
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
         domain: crmEndpoint,
@@ -274,6 +275,7 @@ export const createOrder = () => {
       );
       // ✅ Trigger hashtag for Order Creation (memo_no = 13)
       triggerHashtag(17, "GET");
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(

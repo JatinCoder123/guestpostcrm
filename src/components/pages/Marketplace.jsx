@@ -13,27 +13,13 @@ import {
 } from "lucide-react";
 import { LoadingChase } from "../Loading";
 import { useDelMarketPlace, useMarketPlace } from "../../queries/marketplace.queries";
-import { queryClient } from "../../lib/queryClient";
 
 export function Marketplace() {
-  const dispatch = useDispatch();
   const { handleDateClick } = useContext(PageContext)
   const { isPending: removing, mutate: delMarket, variables } = useDelMarketPlace();
 
   const { data, isPending } = useMarketPlace()
   const items = data?.data ?? []
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      dispatch(marketplaceActions.clearErrors());
-    }
-    if (message) {
-      toast.success(message);
-      dispatch(marketplaceActions.clearMessage());
-      queryClient.invalidateQueries({ queryKey: ['marketplace'] })
-      queryClient.invalidateQueries({ queryKey: ['contacts'] })
-    }
-  }, [error, dispatch, message]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -135,7 +121,7 @@ export function Marketplace() {
         </table>
       </div>
 
-      {!loading && items.length === 0 && (
+      {!isPending && items.length === 0 && (
         <div className="p-12 text-center">
           <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">No marketplace data found.</p>

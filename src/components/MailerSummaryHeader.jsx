@@ -27,12 +27,11 @@ import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail } from "../queries/deals.queries";
 import { useOrdersByEmail } from "../queries/orders.queries";
 import { useOffersByEmail } from "../queries/offers.queries";
-import { useTime } from "framer-motion";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
-  const { contactInfo } = useSelector((state) => state.viewEmail);
-  const email = contactInfo?.email1;
+  const { currentEmail } = useTimeline()
+  const email = currentEmail;
   const {
     syncType,
     syncData,
@@ -43,7 +42,6 @@ const MailerSummaryHeader = () => {
   } = useSelector((state) => state.sync);
   const [showSyncData, setShowSyncData] = useState(false);
   const dispatch = useDispatch();
-  const { currentEmail } = useTimeline()
   const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(currentEmail);
   const { data: offersData, isLoading: offersLoading } = useOffersByEmail(currentEmail);
   const { data: dealsData, isLoading: dealsLoading } = useDealsByEmail(currentEmail);
@@ -260,8 +258,6 @@ function SummaryCard({
   const { setSidebarCollapsed } = useContext(PageContext);
   const { syncType, loading: syncing } = useSelector((state) => state.sync);
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
-
-  const { threadId, contactInfo } = useSelector((state) => state.viewEmail);
   const { creating, message, error } = useSelector((state) => state.orders);
   const { currentEmail: email } = useTimeline();
 
@@ -274,7 +270,6 @@ function SummaryCard({
     if (type !== "orders") return;
     if (message) {
       toast.success(message);
-      dispatch(getOrders({ loading: false }));
       dispatch(orderAction.clearAllMessages());
     }
 
@@ -304,7 +299,8 @@ function SummaryCard({
     setSidebarCollapsed(true);
 
     if (type === "orders" && data?.length === 0) {
-      dispatch(createOrder());
+      console.log("EMAIL", email)
+      dispatch(createOrder(email));
       return;
     }
 
@@ -338,12 +334,7 @@ function SummaryCard({
               <button
                 className="cursor-pointer"
                 onClick={() =>
-                  navigateTo(`/orders/create`, {
-                    state: {
-                      email,
-                      threadId,
-                    },
-                  })
+                  navigateTo(`/orders/create?email=${email}`)
                 }
               >
                 <img
@@ -372,7 +363,7 @@ function SummaryCard({
           </div>
           <div className="flex items-center gap-2">
             {type == "orders" && data?.length > 0 && <IconButton
-              onClick={() => dispatch(createOrder())}
+              onClick={() => dispatch(createOrder(email))}
               disabled={type == "invoice"}
               icon={Plus}
               label="Fetch Order"
