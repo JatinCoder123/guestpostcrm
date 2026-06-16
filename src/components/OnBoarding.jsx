@@ -1,16 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Sparkles, UserCircle2 } from "lucide-react";
 import GuidedWalkthrough from "./GuidedWalkthrough";
-import { apiRequest } from "../services/api";
-
-import {
-    BASE_ONBOARDING_KEYS,
-    getOnboardingKeys,
-    readOnboardingFlag,
-    writeOnboardingFlag,
-} from "../utils/onboardingStorage";
+import { fetchOnboardingStatus } from "../utils/onboardingCompletion";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
@@ -19,34 +12,17 @@ const OnBoarding = () => {
     const [loadingAction, setLoadingAction] = useState(null);
     const [showGuidedWalkthrough, setShowGuidedWalkthrough] =
         useState(false);
-    const [isOnboardingLoading, setIsOnboardingLoading] =
-        useState(false);
-    
     const [isSignupChecking, setIsSignupChecking] = useState(true);
 const [isSignupIncomplete, setIsSignupIncomplete] = useState(false);
+    const guidedWalkthroughShownRef = useRef(false);
 
     const navigate = useNavigate();
 
     const {
-        crmEndpoint,
         user,
         businessEmail,
-        db_name,
-        id,
         isAuthenticated,
     } = useSelector((state) => state.user);
-
-    const onboardingKeys = useMemo(
-        () =>
-            getOnboardingKeys({
-                user,
-                businessEmail,
-                crmEndpoint,
-                dbName: db_name,
-                id,
-            }),
-        [businessEmail, crmEndpoint, db_name, id, user]
-    );
 
        const searchParams = new URLSearchParams(window.location.search);
     const email = searchParams.get("email");
@@ -54,7 +30,12 @@ const [isSignupIncomplete, setIsSignupIncomplete] = useState(false);
     const isRootEmailUrl =
         window.location.pathname === "/" && !!email;
  
-    const onboardingEmail = businessEmail;
+    const onboardingEmail =
+        businessEmail ||
+        user?.email ||
+        user?.email1 ||
+        user?.email_address ||
+        email;
 
     useEffect(() => {
     if (!isAuthenticated) return;
@@ -68,25 +49,17 @@ const [isSignupIncomplete, setIsSignupIncomplete] = useState(false);
         try {
             setIsSignupChecking(true);
 
-            const response = await apiRequest({
-                endpoint:
-                    "https://crm.outrightsystems.org/index.php?entryPoint=get_post_all&action_type=get_data",
-                method: "POST",
-                body: {
-                    module: "outr_onboarding",
-                    where: {
-                        name: onboardingEmail,
+            const progress = await fetchOnboardingStatus(onboardingEmail);
+
+            setIsSignupIncomplete(progress.signupIncomplete);
+            window.dispatchEvent(
+                new CustomEvent(FIRST_SYNC_EVENT, {
+                    detail: {
+                        onboardingStep: progress.step,
+                        websiteDone: progress.step >= 1,
                     },
-                },
-                headers: {
-                    "x-api-key": "FldBjAIfoBo2UTcBAezvTOQg9",
-                    "Content-Type": "application/json",
-                },
-            });
-
-           const onboardingStage = Number(response?.[0]?.onboarding_stage);
-
-setIsSignupIncomplete(onboardingStage <= 2);
+                }),
+            );
         } catch (error) {
             console.error("Signup onboarding check failed", error);
             setIsSignupIncomplete(true);
@@ -117,51 +90,27 @@ setIsSignupIncomplete(onboardingStage <= 2);
     useEffect(() => {
         if (!isAuthenticated) return;
 
-        const maybeStartWalkthrough = () => {
-            const syncDone = readOnboardingFlag(
-                onboardingKeys.syncDone,
-                BASE_ONBOARDING_KEYS.syncDone
-            );
-
-            const walkthroughSeen = readOnboardingFlag(
-                onboardingKeys.guidedWalkthroughSeen,
-                BASE_ONBOARDING_KEYS.guidedWalkthroughSeen
-            );
-
-            if (syncDone && !walkthroughSeen) {
+        const syncHandler = (event) => {
+            if (
+                event.detail?.status === "completed" &&
+                !guidedWalkthroughShownRef.current
+            ) {
+                guidedWalkthroughShownRef.current = true;
                 setShowGuidedWalkthrough(true);
             }
         };
 
-        maybeStartWalkthrough();
-
-        const syncHandler = (event) => {
-            if (event.detail?.status === "completed") {
-                maybeStartWalkthrough();
-            }
-        };
-
         window.addEventListener(FIRST_SYNC_EVENT, syncHandler);
-        window.addEventListener("storage", maybeStartWalkthrough);
 
         return () => {
             window.removeEventListener(
                 FIRST_SYNC_EVENT,
                 syncHandler
             );
-            window.removeEventListener(
-                "storage",
-                maybeStartWalkthrough
-            );
         };
-    }, [onboardingKeys, isAuthenticated]);
+    }, [isAuthenticated]);
 
     const closeGuidedWalkthrough = () => {
-        writeOnboardingFlag(
-            onboardingKeys.guidedWalkthroughSeen,
-            true
-        );
-
         setShowGuidedWalkthrough(false);
     };
 

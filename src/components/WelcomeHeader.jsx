@@ -27,7 +27,6 @@ import {
   ONBOARDING_STEP,
   fetchOnboardingProgress,
   getOnboardingRecordName,
-  upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
 import { useGpcController } from "../queries/controller.queries";
 import { useTimeline } from "../context/TimelineContext";
@@ -100,12 +99,6 @@ const WelcomeHeader = () => {
   const { count } = useSelector((state) => state.events);
   const { data } = useGpcController();
   const summary = data?.summary ?? {}
-  const preferences = useTablePreference("contacts");
-  const { data: contactData, isPending: contactLoading } = useInfiniteContacts(preferences);
-  const contacts =
-    contactData?.pages?.flatMap(
-      (page) => page.records || page.data || []
-    ) ?? [];
   const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail,
@@ -226,14 +219,7 @@ const WelcomeHeader = () => {
           crmEndpoint,
           name: onboardingRecordName,
         });
-        const progress =
-          current.step > 0
-            ? current
-            : await upsertOnboardingProgress({
-              crmEndpoint,
-              name: onboardingRecordName,
-              step: ONBOARDING_STEP.PROFILE_STARTED,
-            });
+        const progress = current;
         if (ignore) return;
 
         setCrmOnboardingStep(progress.step);
@@ -260,17 +246,11 @@ const WelcomeHeader = () => {
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
-  const contactOnboardingDone =
-    Array.isArray(contacts) && contacts.length > 0;
-  const syncDone =
-    contactOnboardingDone ||
-    crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
-  const contactCheckLoading =
-    crmProgressLoading || (contactLoading && !contactOnboardingDone);
+  const syncDone = crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
+  const contactCheckLoading = crmProgressLoading;
   const firstSyncLoading = firstSyncState.status === "loading";
   const firstSyncCompleted = syncDone;
-  const templateDone =
-    contactOnboardingDone || crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
+  const templateDone = crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
   const firstSyncRecords = Array.isArray(firstSyncState.result?.records)
     ? firstSyncState.result.records
     : [];

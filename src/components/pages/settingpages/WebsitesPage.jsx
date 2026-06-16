@@ -41,9 +41,10 @@ import {
 import { toast } from "react-toastify";
 import { fetchGpc } from "../../../services/api";
 import {
-  getOnboardingKeys,
-  writeOnboardingFlag,
-} from "../../../utils/onboardingStorage.js";
+  ONBOARDING_STEP,
+  getOnboardingRecordName,
+  upsertOnboardingProgress,
+} from "../../../utils/onboardingCompletion.js";
 
 /* ─── helpers ───────────────────────────────────────────────── */
 const getDomain = (raw) => {
@@ -947,15 +948,12 @@ export default function WebsitesPage() {
     deleting,
     deleteWebsiteId,
   } = useSelector((state) => state.webManager);
-  const { user, businessEmail, crmEndpoint, db_name, id } = useSelector(
+  const { user, businessEmail, crmEndpoint } = useSelector(
     (state) => state.user,
   );
-  const onboardingKeys = getOnboardingKeys({
+  const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail,
-    crmEndpoint,
-    dbName: db_name,
-    id,
   });
   const dispatch = useDispatch();
 
@@ -1010,16 +1008,31 @@ export default function WebsitesPage() {
     toast.success(message);
     if (onboardingCreateSubmitted.current) {
       onboardingCreateSubmitted.current = false;
-      writeOnboardingFlag(onboardingKeys.websiteDone, true);
+      upsertOnboardingProgress({
+        crmEndpoint,
+        name: onboardingRecordName,
+        step: ONBOARDING_STEP.WEBSITE_ADDED,
+      }).catch((err) => {
+        console.error("Failed to update onboarding website step:", err);
+      });
       window.dispatchEvent(
         new CustomEvent("guestpostcrm:first-sync", {
-          detail: { websiteDone: true },
+          detail: {
+            websiteDone: true,
+            onboardingStep: ONBOARDING_STEP.WEBSITE_ADDED,
+          },
         }),
       );
       navigate("/profile?step=5");
     }
     dispatch(webManagerAction.clearAllMessages());
-  }, [dispatch, message, navigate, onboardingKeys.websiteDone]);
+  }, [
+    crmEndpoint,
+    dispatch,
+    message,
+    navigate,
+    onboardingRecordName,
+  ]);
 
   useEffect(() => {
     if (!error) return;
