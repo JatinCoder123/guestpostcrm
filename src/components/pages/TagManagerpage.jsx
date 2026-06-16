@@ -61,12 +61,16 @@ export function TagManagerpage() {
       label: "Tag Name",
       accessor: "name",
       icon: Tag,
+      searchable: true,
+
       render: (row) => <span>{row.name}</span>,
     },
     {
       label: "Memo No.",
       accessor: "memo_c",
       icon: MemoryStick,
+      searchable: true,
+
       render: (row) => <span>{row?.memo_c}</span>,
     },
     {

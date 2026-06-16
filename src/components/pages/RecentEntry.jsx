@@ -126,7 +126,8 @@ export function RecentEntry() {
 
     {
       label: "Contact",
-      accessor: "real_name",
+      accessor: "name",
+      searchable: true,
 
       render: (event) => {
         const contactName = event.name ?? "—";
@@ -149,37 +150,13 @@ export function RecentEntry() {
       },
     },
 
-    {
-      label: "Email",
-      accessor: "email",
-      icon: Mail,
 
-      render: (event) => {
-        const emailValue =
-          event?.name
-
-        return (
-          <Tooltip content={emailValue}>
-            <div
-              className="flex items-center gap-2 text-blue-600 underline cursor-pointer truncate"
-              onClick={() =>
-                handleMove({
-                  email: event.name,
-                  threadId: event.thread_id,
-                })
-              }
-            >
-              {emailValue}
-            </div>
-          </Tooltip>
-        );
-      },
-    },
 
     {
       label: "Recent Activity",
       accessor: "recent_activity",
       icon: Activity,
+      searchable: true,
 
       render: (event) => (
         <Tooltip content={event.recent_activity}>
@@ -192,6 +169,7 @@ export function RecentEntry() {
       label: "User",
       accessor: "user",
       icon: UserCircle,
+      searchable: true,
 
       render: (event) => (
         <div className="flex items-center gap-2">
@@ -238,7 +216,7 @@ export function RecentEntry() {
         }}
       >
         <TableTitleBar Icon={Activity} title={"Recent Entries"} titleClass={"text-green-600"} />
-        <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-5"} />
+        <Table headerStyle={"bg-green-600"} layoutStyle={"grid grid-cols-4"} />
       </TableView>
     </>
 

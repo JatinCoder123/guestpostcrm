@@ -86,7 +86,7 @@ export function DealsPage() {
     },
     {
       label: "Contact",
-      accessor: "real_name",
+      accessor: "first_name",
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
@@ -102,6 +102,8 @@ export function DealsPage() {
     {
       label: "Website",
       accessor: "website_c",
+      searchable: true,
+
       headerClasses: "",
       icon: Globe,
       classes: "truncate ",
@@ -112,6 +114,8 @@ export function DealsPage() {
     {
       label: "Amount",
       accessor: "dealamount",
+      searchable: true,
+
       headerClasses: "",
       icon: BadgeDollarSign,
       classes: "text-center",

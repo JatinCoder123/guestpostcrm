@@ -179,6 +179,7 @@ export function InvoicesPage() {
       icon: Globe,
       classes: "truncate ",
       onClick: (row) => handleDateClick({ email: extractEmail(row?.email_c), navigate: "/contacts" }),
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -192,6 +193,7 @@ export function InvoicesPage() {
       headerClasses: "",
       icon: BadgeDollarSign,
       classes: "truncate max-w-[300px]",
+      searchable: true,
 
       render: (row) => (
         <span className="px-6 py-4 text-green-600">

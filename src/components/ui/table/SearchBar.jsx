@@ -47,7 +47,8 @@ function SearchBar() {
             return (
                 visibleColumns?.filter(
                     (column) =>
-                        column?.accessor
+                        column?.accessor &&
+                        column?.searchable === true
                 ) || []
             );
         }, [visibleColumns]);

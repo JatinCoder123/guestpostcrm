@@ -50,10 +50,12 @@ export function FavouritePage() {
     },
     {
       label: "Contact",
-      accessor: "email1",
+      accessor: "first_name",
       headerClasses: "",
       icon: User,
       classes: "truncate ",
+      searchable: true,
+
       onClick: (row) => handleDateClick({ email: row?.email1, navigate: "/contacts" })
       ,
 
@@ -66,10 +68,12 @@ export function FavouritePage() {
       label: "Subject",
       accessor: "subject",
       headerClasses: "",
+      searchable: true,
+
       icon: FileText,
       classes: "truncate max-w-[300px]",
       onClick: (row) => handleMove({
-        email: row.email_address,
+        email: row?.email1,
         threadId: row.thread_id,
       }),
       render: (row) => (
@@ -82,6 +86,8 @@ export function FavouritePage() {
       label: "Description",
       accessor: "description",
       headerClasses: "",
+      searchable: true,
+
       icon: FileText,
       classes: "truncate max-w-[300px]",
       render: (row) => (

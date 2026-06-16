@@ -66,7 +66,7 @@ export function LinkExchangePage() {
 
       onClick: (row, index) =>
         handleDateClick({
-          email: row?.email_address,
+          email: row?.email1,
           navigate: "/",
           index,
           nextPrev: true,
@@ -81,13 +81,14 @@ export function LinkExchangePage() {
 
     {
       label: "Contact",
-      accessor: "email_address",
+      accessor: "first_name",
       icon: User,
       classes: "truncate",
+      searchable: true,
 
       onClick: (row, index) =>
         handleDateClick({
-          email: row?.email_address,
+          email: row?.email1,
           navigate: "/contacts",
           index,
           nextPrev: true,
@@ -108,6 +109,7 @@ export function LinkExchangePage() {
       accessor: "subject",
       icon: FileText,
       classes: "truncate max-w-[300px]",
+      searchable: true,
 
       onClick: (row) =>
         handleMove({
@@ -127,6 +129,7 @@ export function LinkExchangePage() {
       accessor: "description",
       icon: FileText,
       classes: "truncate max-w-[300px]",
+      searchable: true,
 
       render: (row) => (
         <span className="px-6 py-4 text-gray-700">

@@ -139,6 +139,8 @@ const OutBox = () => {
             label: "Client Email",
             accessor: "client_email",
             icon: User,
+            searchable: true,
+
             classes: "truncate max-w-[250px]",
             onClick: (row, index) =>
                 handleDateClick({ email: row.client_email, navigate: "/contacts", index, nextPrev: true }),
@@ -157,6 +159,8 @@ const OutBox = () => {
             label: "Description",
             accessor: "description",
             icon: FileText,
+            searchable: true,
+
             classes: "truncate max-w-[350px]",
 
             render: (row) => (
@@ -173,6 +177,8 @@ const OutBox = () => {
             label: "Reply Body",
             accessor: "replyBody",
             icon: MessageSquareText,
+            searchable: true,
+
             classes: "truncate max-w-[400px]",
 
             render: (row) => (

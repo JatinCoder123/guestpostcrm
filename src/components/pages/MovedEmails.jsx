@@ -57,6 +57,7 @@ export function MovedPage() {
       accessor: "email",
       icon: User2,
       classes: "truncate max-w-[200px]",
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-gray-700">{row?.email}</span>
@@ -68,6 +69,7 @@ export function MovedPage() {
       accessor: "subject",
       icon: Globe,
       classes: "truncate max-w-[200px]",
+      searchable: true,
 
       onClick: (row) =>
         handleMove({
@@ -86,6 +88,7 @@ export function MovedPage() {
       label: "Label",
       accessor: "label_name",
       icon: BadgeDollarSign,
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-green-700 ">{row?.label_name}</span>
@@ -97,6 +100,7 @@ export function MovedPage() {
       accessor: "reason",
       icon: ChartNoAxesColumn,
       classes: "truncate max-w-[200px]",
+      searchable: true,
 
       render: (row) => (
         <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm truncate max-w-[200px]">
