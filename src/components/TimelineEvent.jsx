@@ -325,10 +325,7 @@ const TimelineEvent = ({ handleMessageClick }) => {
           timelineData={timelineData}
           handleMessageClick={handleMessageClick}
         />
-        <LadgerCard
-          timelineData={timelineData}
-          handleMessageClick={handleMessageClick}
-        />
+
 
         {isFetchingNextPage && <TimelineSkeleton />}
 
