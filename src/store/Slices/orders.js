@@ -9,6 +9,8 @@ import {
 } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { orderKeys } from "../../queries/orders.queries";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -273,6 +275,7 @@ export const createOrder = (email) => {
       );
       // ✅ Trigger hashtag for Order Creation (memo_no = 13)
       triggerHashtag(17, "GET");
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
