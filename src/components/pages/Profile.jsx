@@ -118,14 +118,16 @@ const Profile = () => {
     return savedTemplateIds.has(key) || skippedTemplateIds.has(key);
   }).length;
 
-  useEffect(() => {
-    if (
-      websites.length > 0 &&
-      crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
-    ) {
-      completeWebsiteStep();
-    }
-  }, [websites.length, crmOnboardingStep]);
+useEffect(() => {
+  if (
+    !crmProgressLoading &&
+    websites.length > 0 &&
+    crmOnboardingStep > 0 &&
+    crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
+  ) {
+    completeWebsiteStep();
+  }
+}, [websites.length, crmOnboardingStep, crmProgressLoading]);
 
   useEffect(() => {
     celebratedCompleteRef.current =
@@ -272,7 +274,7 @@ const Profile = () => {
             });
         if (ignore) return;
 
-        setCrmOnboardingStep(progress.step);
+        setCrmOnboardingStep((step) => Math.max(step, progress.step));
         if (progress.step >= ONBOARDING_STEP.WEBSITE_ADDED) {
           broadcastSyncState({
             websiteDone: true,
@@ -317,7 +319,9 @@ const Profile = () => {
       name: onboardingRecordName,
       step: ONBOARDING_STEP.WEBSITE_ADDED,
     });
-    setCrmOnboardingStep(ONBOARDING_STEP.WEBSITE_ADDED);
+    setCrmOnboardingStep((step) =>
+  Math.max(step, ONBOARDING_STEP.WEBSITE_ADDED),
+);
     broadcastSyncState({
       websiteDone: true,
       onboardingStep: ONBOARDING_STEP.WEBSITE_ADDED,
@@ -330,7 +334,9 @@ const Profile = () => {
       name: onboardingRecordName,
       step: ONBOARDING_STEP.TEMPLATE_READY,
     });
-    setCrmOnboardingStep(ONBOARDING_STEP.TEMPLATE_READY);
+    setCrmOnboardingStep((step) =>
+  Math.max(step, ONBOARDING_STEP.TEMPLATE_READY),
+);
     broadcastSyncState({
       onboardingStep: ONBOARDING_STEP.TEMPLATE_READY,
     });
@@ -740,7 +746,9 @@ const Profile = () => {
         name: onboardingRecordName,
         step: ONBOARDING_STEP.FIRST_SYNC_DONE,
       });
-      setCrmOnboardingStep(ONBOARDING_STEP.FIRST_SYNC_DONE);
+      setCrmOnboardingStep((step) =>
+  Math.max(step, ONBOARDING_STEP.FIRST_SYNC_DONE),
+);
       setSyncResult(result);
       setFirstSyncRecordsSeen(false);
       broadcastSyncState({
