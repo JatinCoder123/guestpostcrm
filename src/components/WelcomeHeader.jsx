@@ -32,6 +32,8 @@ import {
 import { useGpcController } from "../queries/controller.queries";
 import { useTimeline } from "../context/TimelineContext";
 import NextPrev from "./NextPrev";
+import { useInfiniteContacts } from "../queries/contact.queries";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
@@ -98,10 +100,12 @@ const WelcomeHeader = () => {
   const { count } = useSelector((state) => state.events);
   const { data } = useGpcController();
   const summary = data?.summary ?? {}
-  const { loading: contactLoading, contacts } = useSelector(
-    (state) => state.contacts,
-  );
-
+  const preferences = useTablePreference("contacts");
+  const { data: contactData, isPending: contactLoading } = useInfiniteContacts(preferences);
+  const contacts =
+    contactData?.pages?.flatMap(
+      (page) => page.records || page.data || []
+    ) ?? [];
   const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail,

@@ -24,7 +24,6 @@ import hotReducer from "./Slices/hotSlice.js";
 import tagReducer from "./Slices/tag.js";
 import gpcControllerReducer from "./Slices/gpcControllerSlice";
 import syncReducer from "./Slices/syncSlice.js";
-import contactReducer from "./Slices/contacts.js";
 import reportReducer from "./Slices/reportSlice.js";
 import brandTimelineReducer from "./Slices/brandTimeline.js";
 import webManagerReducer from "./Slices/webManager.js";
@@ -58,7 +57,6 @@ export const store = configureStore({
     tag: tagReducer,
     gpcController: gpcControllerReducer,
     sync: syncReducer,
-    contacts: contactReducer,
     report: reportReducer,
     brandTimeline: brandTimelineReducer,
     webManager: webManagerReducer,

@@ -5,6 +5,8 @@ import { updateActivity } from "../../services/utils";
 import { getCache, setCache } from "../../services/cache";
 import { brandTimelineAction } from "./brandTimeline";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { contactKeys } from "../../queries/contact.queries";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -259,7 +261,7 @@ export const editContact = (contactData, message = "") => {
       showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess({ message }));
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      dispatch(getContact(contactData?.contact.email1));
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed"),
