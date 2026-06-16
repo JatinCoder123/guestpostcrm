@@ -44,9 +44,6 @@ const Profile = () => {
     (state) => state.user,
   );
   const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
-  const { loading: contactLoading, contacts } = useSelector(
-    (state) => state.contacts,
-  );
   const [websites, setWebsites] = useState([]);
   const [websitesLoading, setWebsitesLoading] = useState(false);
   const [websiteSaving, setWebsiteSaving] = useState(false);
@@ -90,18 +87,10 @@ const Profile = () => {
     user,
     businessEmail: profileEmail,
   });
-  const contactOnboardingDone =
-    Array.isArray(contacts) && contacts.length > 0;
-  const hasWebsites = websites.length > 0;
-  const step3Done =
-    hasWebsites || crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED;
-  const templateDone =
-    contactOnboardingDone || crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
-  const syncDone =
-    contactOnboardingDone ||
-    crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
-  const onboardingLoading =
-    crmProgressLoading || (contactLoading && !contactOnboardingDone);
+  const step3Done = crmOnboardingStep >= ONBOARDING_STEP.WEBSITE_ADDED;
+  const templateDone = crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
+  const syncDone = crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
+  const onboardingLoading = crmProgressLoading;
   const completion = syncDone ? 100 : templateDone ? 85 : step3Done ? 70 : 50;
   const syncRecords = Array.isArray(syncResult?.records)
     ? syncResult.records
@@ -118,38 +107,10 @@ const Profile = () => {
     return savedTemplateIds.has(key) || skippedTemplateIds.has(key);
   }).length;
 
-useEffect(() => {
-  if (
-    !crmProgressLoading &&
-    websites.length > 0 &&
-    crmOnboardingStep > 0 &&
-    crmOnboardingStep < ONBOARDING_STEP.WEBSITE_ADDED
-  ) {
-    completeWebsiteStep();
-  }
-}, [websites.length, crmOnboardingStep, crmProgressLoading]);
-
   useEffect(() => {
     celebratedCompleteRef.current =
-      contactOnboardingDone ||
       crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
-  }, [contactOnboardingDone, crmOnboardingStep]);
-
-  useEffect(() => {
-    if (!contactOnboardingDone) return;
-
-    setCrmOnboardingStep((step) =>
-      Math.max(step, ONBOARDING_STEP.FIRST_SYNC_DONE),
-    );
-    setSyncing(false);
-    setFirstSyncRecordsSeen(true);
-    celebratedCompleteRef.current = true;
-    broadcastSyncState({
-      status: "completed",
-      result: syncResult,
-      onboardingStep: ONBOARDING_STEP.FIRST_SYNC_DONE,
-    });
-  }, [contactOnboardingDone, syncResult]);
+  }, [crmOnboardingStep]);
 
   const loadWebsites = useCallback(async () => {
     if (!crmEndpoint) return [];
@@ -286,7 +247,6 @@ useEffect(() => {
           setFirstSyncRecordsSeen(true);
           celebratedCompleteRef.current = true;
           broadcastSyncState({
-            status: "completed",
             onboardingStep: progress.step,
           });
         }

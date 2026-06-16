@@ -1,18 +1,19 @@
 import { apiRequest, fetchGpc } from "../services/api";
 import { CREATE_DEAL_API_KEY } from "../store/constants";
-import { writeOnboardingFlag } from "./onboardingStorage";
 
 export const ONBOARDING_STEP = {
-  PROFILE_STARTED: 1,
-  WEBSITE_ADDED: 2,
-  TEMPLATE_READY: 3,
-  FIRST_SYNC_DONE: 4,
+  PROFILE_STARTED: 0,
+  WEBSITE_ADDED: 1,
+  TEMPLATE_READY: 2,
+  FIRST_SYNC_DONE: 3,
 };
 
-export const SELF_TEST_BOT_MODULE = "outr_self_test_bot";
+export const ONBOARDING_MODULE = "outr_onboarding";
+export const ONBOARDING_STATUS_ENDPOINT =
+  "https://crm.outrightsystems.org/index.php?entryPoint=trynow";
 
 const getPostAllEndpoint = (crmEndpoint) =>
-  `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all`;
+  `https://crm.outrightsystems.org/index.php?entryPoint=get_post_all`;
 
 const getPostAllHeaders = () => ({
   "x-api-key": CREATE_DEAL_API_KEY,
@@ -32,36 +33,49 @@ export const getOnboardingRecordName = ({ user, businessEmail } = {}) =>
   user?.email1 ||
   user?.email_address ||
   user?.name ||
-  "GuestPostCRM onboarding";
+  "";
 
-export const getStepFromSubject = (subject) => {
-  const step = Number.parseInt(String(subject ?? "").trim(), 10);
+export const getStepFromUiManage = (uiManage) => {
+  const step = Number.parseInt(String(uiManage ?? "").trim(), 10);
   return Number.isFinite(step) ? step : 0;
 };
 
-export const fetchOnboardingProgress = async ({ crmEndpoint, name }) => {
-  if (!crmEndpoint || !name) return { record: null, step: 0 };
+export const isSignupIncompleteRecord = (record) => {
+  const onboardingStage = Number.parseInt(
+    String(record?.onboarding_stage ?? "").trim(),
+    10,
+  );
+  const uiManage = record?.ui_manage;
+
+  return (
+    Number.isFinite(onboardingStage) &&
+    onboardingStage <= 2 &&
+    (uiManage === null || uiManage === undefined || uiManage === "")
+  );
+};
+
+export const fetchOnboardingStatus = async (email) => {
+  if (!email) return { record: null, step: 0, signupIncomplete: false };
 
   const data = await apiRequest({
-    endpoint: getPostAllEndpoint(crmEndpoint),
-    method: "POST",
-    params: { action_type: "get_data" },
-    body: {
-      module: SELF_TEST_BOT_MODULE,
-      where: { name },
-      order_by: "date_entered",
-      direction: "DESC",
-      limit_from: 0,
-      limit_to: 1,
+    endpoint: ONBOARDING_STATUS_ENDPOINT,
+    params: {
+      email,
+      check_status: 1,
     },
-    headers: getPostAllHeaders(),
   });
 
   const record = getRows(data)[0] ?? null;
+
   return {
     record,
-    step: getStepFromSubject(record?.subject),
+    step: getStepFromUiManage(record?.ui_manage),
+    signupIncomplete: isSignupIncompleteRecord(record),
   };
+};
+
+export const fetchOnboardingProgress = async ({ name }) => {
+  return fetchOnboardingStatus(name);
 };
 
 export const upsertOnboardingProgress = async ({
@@ -71,17 +85,10 @@ export const upsertOnboardingProgress = async ({
 }) => {
   if (!crmEndpoint || !name || !step) return { record: null, step: 0 };
 
-  const current = await fetchOnboardingProgress({ crmEndpoint, name });
+  const current = await fetchOnboardingStatus(name);
   if (current.record && current.step >= step) return current;
-
-  const payload = {
-    module: SELF_TEST_BOT_MODULE,
-    name,
-    subject: String(step),
-  };
-
-  if (current.record?.id) {
-    payload.id = current.record.id;
+  if (!current.record?.id) {
+    throw new Error("Unable to find onboarding record for this email");
   }
 
   const data = await apiRequest({
@@ -89,7 +96,12 @@ export const upsertOnboardingProgress = async ({
     method: "POST",
     params: { action_type: "post_data" },
     body: {
-      parent_bean: payload,
+      parent_bean: {
+        module: ONBOARDING_MODULE,
+        id: current.record.id,
+        name,
+        ui_manage: String(step),
+      },
     },
     headers: getPostAllHeaders(),
   });
@@ -99,7 +111,7 @@ export const upsertOnboardingProgress = async ({
   }
 
   return {
-    record: { ...current.record, ...payload },
+    record: { ...current.record, ui_manage: String(step) },
     step,
   };
 };
@@ -113,41 +125,4 @@ export const hasContactInfoRecord = async () => {
   const count = Number(data?.data_count ?? data?.count ?? records.length ?? 0);
 
   return count > 0 || records.length > 0;
-};
-
-export const syncLocalOnboardingFromCrmStep = (onboardingKeys, step) => {
-  if (step >= ONBOARDING_STEP.WEBSITE_ADDED) {
-    writeOnboardingFlag(onboardingKeys.websiteDone, true);
-  }
-
-  if (step >= ONBOARDING_STEP.FIRST_SYNC_DONE) {
-    const result = {
-      count: 1,
-      records: [],
-      message: "CRM onboarding step shows first sync is complete.",
-    };
-
-    localStorage.setItem(onboardingKeys.firstSyncStatus, "completed");
-    localStorage.setItem(onboardingKeys.firstSyncResult, JSON.stringify(result));
-    writeOnboardingFlag(onboardingKeys.syncDone, true);
-    writeOnboardingFlag(onboardingKeys.firstSyncRecordsSeen, true);
-    return result;
-  }
-
-  return null;
-};
-
-export const markSyncDoneFromExistingContact = (onboardingKeys) => {
-  const result = {
-    count: 1,
-    records: [],
-    message: "Contact record found. First sync is already complete.",
-  };
-
-  localStorage.setItem(onboardingKeys.firstSyncStatus, "completed");
-  localStorage.setItem(onboardingKeys.firstSyncResult, JSON.stringify(result));
-  writeOnboardingFlag(onboardingKeys.syncDone, true);
-  writeOnboardingFlag(onboardingKeys.firstSyncRecordsSeen, true);
-
-  return result;
 };
