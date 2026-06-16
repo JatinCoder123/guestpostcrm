@@ -1422,12 +1422,14 @@ export default function DataModellingPage() {
                 </div>
               </div>
               <pre
-                id="dm-resp-body"
-                className="dm-resp-body"
-                dangerouslySetInnerHTML={{
-                  __html: resp.html || '<span style="color:#7eb6f6;opacity:0.5;font-style:italic">Waiting for request…</span>',
-                }}
-              />
+  id="dm-resp-body"
+  className="dm-resp-body h-[300px] min-h-[120px] max-h-[80vh] resize-y overflow-auto box-border p-3 border border-gray-700"
+  dangerouslySetInnerHTML={{
+    __html:
+      resp.html ||
+      '<span style="color:#7eb6f6;opacity:0.5;font-style:italic">Waiting for request…</span>',
+  }}
+/>
             </div>
           )}
         </main>

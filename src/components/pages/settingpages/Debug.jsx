@@ -1,8 +1,6 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants.js";
-import useModule from "../../../hooks/useModule.js";
-import { useSelector } from "react-redux";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { http } from "../../../services/api.js";
 import {
   AlertCircle,
   CalendarDays,
@@ -81,7 +79,7 @@ const TABS = [
 ];
 
 const IMPORTANT_COLUMNS = {
-  error: ["date_entered", "file_path", "description"],
+  error: ["name", "log_level", "description", "error_status"],
   api: ["date_entered", "request", "response"],
   gpc: ["date_entered", "request", "response"],
   prompt: ["date_entered", "response", "full_prompt"],
@@ -158,18 +156,100 @@ const Debug = () => {
 
   const modalRef = useRef(null);
 
-  const { crmEndpoint } = useSelector((state) => state.user);
-
-  const { loading, data, error, refetch } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: { module: activeTab.module },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: activeTab.label,
+  const [loading, setLoading] = useState(false);
+  const [updatingStatusId, setUpdatingStatusId] = useState(null);
+  const [data, setData] = useState([]);
+  const [dropdownLists, setDropdownLists] = useState({});
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    perPage: 200,
+    totalPages: 1,
   });
+
+  const columns = useMemo(() => {
+    return IMPORTANT_COLUMNS[activeTab.key] || [];
+  }, [activeTab]);
+
+  const refetch = useCallback(async () => {
+    if (!activeTab.module) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await http({
+        method: "POST",
+        body: {
+          action: "fetch",
+          module: activeTab.module,
+          search: emailSearch.trim() || undefined,
+          search_fields: columns,
+          order_by: "date_entered",
+          order_dir: "DESC",
+          page: 1,
+          per_page: 200,
+        },
+      });
+
+      setData(Array.isArray(response?.records) ? response.records : []);
+      setDropdownLists(response?.dropdown_lists || {});
+      setPagination({
+        total: response?.total || 0,
+        page: response?.page || 1,
+        perPage: response?.per_page || 200,
+        totalPages: response?.total_pages || 1,
+      });
+    } catch (err) {
+      setError(err);
+      setData([]);
+      setDropdownLists({});
+      setPagination((prev) => ({ ...prev, total: 0, totalPages: 1 }));
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab.module, columns, emailSearch]);
+
+  const updateErrorStatus = async (row, nextStatus) => {
+    if (!row?.id || !nextStatus || nextStatus === row.error_status) return;
+
+    const previousData = data;
+    const previousSelectedRecord = selectedRecord;
+
+    setUpdatingStatusId(row.id);
+    setError(null);
+    setData((prev) =>
+      prev.map((item) =>
+        item.id === row.id ? { ...item, error_status: nextStatus } : item,
+      ),
+    );
+    if (selectedRecord?.id === row.id) {
+      setSelectedRecord((prev) =>
+        prev ? { ...prev, error_status: nextStatus } : prev,
+      );
+    }
+
+    try {
+      await http({
+        method: "POST",
+        body: {
+          action: "update",
+          module: "outr_error_logs",
+          id: row.id,
+          data: {
+            error_status: nextStatus,
+          },
+        },
+      });
+    } catch (err) {
+      setError(err);
+      setData(previousData);
+      setSelectedRecord(previousSelectedRecord);
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
 
   useEffect(() => {
     if (activeTab.key !== "prompt") return;
@@ -179,7 +259,7 @@ const Debug = () => {
 
   useEffect(() => {
     refetch();
-  }, [activeTab]);
+  }, [refetch]);
 
   /* CLICK OUTSIDE MODAL */
   useEffect(() => {
@@ -212,10 +292,6 @@ const Debug = () => {
 
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
-
-  const columns = useMemo(() => {
-    return IMPORTANT_COLUMNS[activeTab.key] || [];
-  }, [activeTab]);
 
   const truncate = (text, limit = 80) => {
     if (!text) return "-";
@@ -252,10 +328,17 @@ const Debug = () => {
     if (!data) return [];
 
     return data?.filter((row) => {
-      const email = (row.email || "").toLowerCase();
+      const searchTerm = emailSearch.trim().toLowerCase();
 
-      /* EMAIL SEARCH */
-      if (emailSearch && !email.includes(emailSearch.toLowerCase())) {
+      /* SEARCH */
+      if (
+        searchTerm &&
+        !columns.some((column) =>
+          String(row[column] ?? "")
+            .toLowerCase()
+            .includes(searchTerm),
+        )
+      ) {
         return false;
       }
 
@@ -289,7 +372,7 @@ const Debug = () => {
 
       return true;
     });
-  }, [data, timeline, selectedDate, emailSearch]);
+  }, [data, timeline, selectedDate, emailSearch, columns]);
 
   const parseAndDecode = (val) => {
     let parsed = val;
@@ -356,7 +439,15 @@ const Debug = () => {
   const controlClass =
     "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
 
-  const totalRecords = data?.length || 0;
+  const totalRecords = pagination.total || data?.length || 0;
+  const errorStatusOptions =
+    dropdownLists?.error_status || {
+      none: "--None--",
+      not_fixed: "Not Fixed",
+      in_progress: "In Progress",
+      resolved: "Resolved",
+      ignored: "Ignored",
+    };
 
   return (
     <>
@@ -381,7 +472,7 @@ const Debug = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[1.2fr_0.7fr_0.7fr]">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[1.2fr_0.7fr_0.7fr_1fr]">
               <div className="space-y-1">
                 <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <FileText className="h-3.5 w-3.5" />
@@ -480,6 +571,20 @@ const Debug = () => {
                 />
               </div>
 
+              <div className="space-y-1">
+                <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <Search className="h-3.5 w-3.5" />
+                  Search
+                </span>
+
+                <input
+                  type="search"
+                  value={emailSearch}
+                  onChange={(e) => setEmailSearch(e.target.value)}
+                  placeholder="Search records..."
+                  className={controlClass}
+                />
+              </div>
             </div>
           </div>
 
@@ -553,9 +658,31 @@ const Debug = () => {
                             }}
                           >
                             <div className="flex items-center gap-2 truncate">
-                              <span className="truncate">
-                                {truncate(row[col])}
-                              </span>
+                              {activeTab.module === "outr_error_logs" &&
+                              col === "error_status" ? (
+                                <select
+                                  value={row.error_status || "none"}
+                                  disabled={updatingStatusId === row.id}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    updateErrorStatus(row, e.target.value);
+                                  }}
+                                  className="h-9 min-w-36 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {Object.entries(errorStatusOptions).map(
+                                    ([value, label]) => (
+                                      <option key={value} value={value}>
+                                        {label}
+                                      </option>
+                                    ),
+                                  )}
+                                </select>
+                              ) : (
+                                <span className="truncate">
+                                  {truncate(row[col])}
+                                </span>
+                              )}
                               {activeTab.key === "process_audit" &&
                                 col === "message_id" && (
                                   <ExternalLink className="h-3.5 w-3.5 shrink-0" />
