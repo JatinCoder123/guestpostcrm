@@ -39,6 +39,7 @@ import { useReminderStats } from "../queries/reminder.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
+  const { enteredEmail: email } = useContext(PageContext)
 
   const { activePage, setActivePage, collapsed, setSidebarCollapsed } =
     useContext(PageContext);
@@ -64,14 +65,14 @@ export function Sidebar() {
 
   const { isPending: contactStatLoading, data: contactStats } = useContactStats()
   const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
-  const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats()
+  const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats({ email })
   const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats()
   const { isPending: favStatLoading, data: favStats } = useFavoriteStats()
-  const { isPending: dealStatLoading, data: dealStats } = useDealStats()
-  const { isPending: offerStatLoading, data: offerStats } = useOfferStats()
+  const { isPending: dealStatLoading, data: dealStats } = useDealStats({ email })
+  const { isPending: offerStatLoading, data: offerStats } = useOfferStats({ email })
   const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
-  const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats()
-  const { isPending: reminderStatLoading, data: reminderStats } = useReminderStats()
+  const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats({ email })
+  const { isPending: reminderStatLoading, data: reminderStats } = useReminderStats({ email })
 
 
 

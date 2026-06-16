@@ -247,7 +247,6 @@ export const createOrder = (email) => {
     const crmEndpoint = getState().user.crmEndpoint;
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
-        domain: crmEndpoint,
         email,
         memo_no,
         method,
@@ -300,7 +299,6 @@ export const createOrder2 = ({ email, order, threadId }) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -373,7 +371,6 @@ export const createOrder3 = (email, orders = [], send) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -430,7 +427,6 @@ export const updateOrder = ({ order }) => {
       const crmEndpoint = getState().user.crmEndpoint;
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -571,7 +567,6 @@ export const deleteLink = (orderId, linkId) => {
       const email = getState().viewEmail?.contactInfo?.email1
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -624,7 +619,6 @@ export const createLink = (orderId, link) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,

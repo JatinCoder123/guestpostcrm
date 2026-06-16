@@ -4,7 +4,6 @@ import {
   updateActivity,
   createLedgerEntry,
   buildLedgerItem,
-  applyHashtag,
   getCurrentUser,
 } from "../../services/utils";
 import { getLadger } from "./ladger";

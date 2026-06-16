@@ -105,14 +105,14 @@ import { queryClient } from "../../lib/queryClient.js";
 export function OrdersPage() {
   const preferences = useTablePreference("orders");
   const { updating, message, error } = useSelector(state => state.orders);
-
+  const { enteredEmail: email } = useContext(PageContext)
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } = useInfiniteOrders(preferences);
+  } = useInfiniteOrders({ preferences, email });
   if (!isPending) {
     console.log("ORDERS", data)
 
@@ -120,7 +120,7 @@ export function OrdersPage() {
   const {
     data: summary,
     isPending: summaryLoading,
-  } = useOrderStats();
+  } = useOrderStats({ email });
   const [updateOrderId, setUpdateOrderId] = useState(null);
 
   const { handleDateClick, enteredEmail } = useContext(PageContext);

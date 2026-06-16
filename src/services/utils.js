@@ -23,8 +23,8 @@ export const updateActivity = async (email, last_activity) => {
       body: {
         email,
         last_activity,
-        last_user: CURRENT_USER.name,
-        last_user_email: CURRENT_USER.description,
+        last_user: CURRENT_USER?.name ?? "GPC",
+        last_user_email: CURRENT_USER?.description ?? "GPC",
       },
     });
     showConsole && console.log("Activity Added", data);
@@ -92,7 +92,7 @@ export const buildLedgerItem = ({
 });
 
 export const applyHashtag = async ({
-  domain,
+  domain = false,
   email,
   memo_no,
   method = "GET",
@@ -100,7 +100,7 @@ export const applyHashtag = async ({
   try {
     const { data } = await fetchGpc({
       method,
-      params: { type: "hashtag", email, memo_no: memo_no },
+      params: { type: "hashtag", email, memo_no: memo_no, domain },
     });
 
     showConsole && console.log("Hashtag Applied", data);

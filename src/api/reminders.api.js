@@ -23,10 +23,13 @@ export const getAllReminders = ({
 
 
 export const getReminderStats = (
-    filters = {}
-) =>
-    http({
+    { filters = {}, email }
+) => {
+    const params = email ? { email } : {}
+
+    return http({
         method: "POST",
+        params: { ...params },
         body: {
             action: "get_stats",
             ...filters,
@@ -71,4 +74,6 @@ export const getReminderStats = (
             ],
         },
     });
+
+}
 

@@ -21,10 +21,11 @@ export const reminderKeys = {
             filters,
         ],
 
-    stats: (filters = {}) => [
+    stats: (filters = {}, email = '') => [
         "reminders",
         "stats",
         filters,
+        email
     ],
 
 
@@ -34,12 +35,12 @@ export const reminderKeys = {
  * Offer Stats
  */
 export const useReminderStats = (
-    filters = {}
+    { filters = {}, email = '' }
 ) =>
     useQuery({
-        queryKey: reminderKeys.stats(filters),
+        queryKey: reminderKeys.stats(filters, email),
 
-        queryFn: () => getReminderStats(filters),
+        queryFn: () => getReminderStats({ filters, email }),
 
 
     });
@@ -48,8 +49,8 @@ export const useReminderStats = (
  * Infinite Offers
  */
 export const useInfiniteReminders = (
-    preferences = {},
-    email = ""
+    { preferences = {},
+        email = "" }
 ) =>
     useInfiniteQuery({
         queryKey:

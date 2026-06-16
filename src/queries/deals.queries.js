@@ -27,9 +27,10 @@ export const dealKeys = {
             filters,
         ],
 
-    stats: () => [
+    stats: (email = '') => [
         "deals",
         "stats",
+        email
     ],
 
     byId: (id) => [
@@ -45,17 +46,14 @@ export const dealKeys = {
 };
 
 export const useDealStats =
-    () =>
-        useQuery({
-            queryKey:
-                dealKeys.stats(),
+    (email) => useQuery({
+        queryKey: dealKeys.stats(email),
 
-            queryFn: (filters = {}) =>
-                getDealStats(filters),
+        queryFn: ({ filters = {}, email }) => getDealStats(filters, email),
 
-            staleTime:
-                5 * 60 * 1000,
-        });
+        staleTime:
+            5 * 60 * 1000,
+    });
 
 export const useInfiniteDeals =
     (

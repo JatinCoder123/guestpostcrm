@@ -108,7 +108,7 @@ export function Marketplace() {
                       <button
                         className="p-2 hover:bg-red-100 rounded-lg transition-colors"
                         title="Delete"
-                        onClick={() => delMarket({ id: row?.id, email: row?.name })}
+                        onClick={() => delMarket({ email: row?.name, domain: row.description?.toLowerCase() === 'brand' ? row?.name.split('@')[1] : '' })}
                       >
                         <Trash className="w-5 h-5 text-red-600" />
                       </button>

@@ -6,9 +6,11 @@ export const getAllInvoice = ({
     preferences,
     page = 1,
     email
-}) =>
-    http({
+}) => {
+    const params = email ? { email } : {}
+    return http({
         method: "POST",
+        params: { ...params },
         body: {
             "action": "fetch",
             "module": "outr_paypal_invoice_links",
@@ -17,10 +19,16 @@ export const getAllInvoice = ({
             ...buildTableRequestBody(preferences)
         }
     });
+}
 
-export const getInvoiceStats = ({ filters }) =>
-    http({
+
+export const getInvoiceStats = ({ filters, email }) => {
+
+    const params = email ? { email } : {}
+
+    return http({
         method: "POST",
+        params: { ...params },
         body: {
             action: "get_stats",
             ...filters,
@@ -53,6 +61,8 @@ export const getInvoiceStats = ({ filters }) =>
             ]
         },
     });
+
+}
 
 
 export const getInvoiceById = (

@@ -62,20 +62,18 @@ export function OffersPage() {
     useTablePreference(
       "offers"
     );
-
+  const { enteredEmail: email } = useContext(PageContext)
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } = useInfiniteOffers(
-    preferences
-  );
+  } = useInfiniteOffers({ preferences, email });
 
   const {
     data: summary,
-  } = useOfferStats();
+  } = useOfferStats({ email });
 
   const {
     mutate: deleteOffer,

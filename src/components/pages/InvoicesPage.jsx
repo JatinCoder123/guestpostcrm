@@ -84,6 +84,7 @@ const STATUS_CONFIG = [
 ];
 export function InvoicesPage() {
   const preferences = useTablePreference("invoices");
+  const { enteredEmail: email } = useContext(PageContext)
 
 
   const {
@@ -94,13 +95,13 @@ export function InvoicesPage() {
     isPending,
   } =
     useInfiniteInvoices(
-      preferences
+      { preferences, email }
     );
 
   const {
     data: summary,
   } =
-    useInvoiceStats();
+    useInvoiceStats({ email });
 
   const {
     mutate:

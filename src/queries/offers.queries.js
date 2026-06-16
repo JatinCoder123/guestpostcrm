@@ -28,10 +28,11 @@ export const offerKeys = {
             filters,
         ],
 
-    stats: (filters = {}) => [
+    stats: ({ filters = {}, email = '' }) => [
         "offers",
         "stats",
         filters,
+        email,
     ],
 
     byId: (id) => [
@@ -50,29 +51,19 @@ export const offerKeys = {
  * Offer Stats
  */
 export const useOfferStats = (
-    filters = {}
+    { filters = {}, email = '' }
 ) =>
     useQuery({
-        queryKey:
-            offerKeys.stats(
-                filters
-            ),
-
-        queryFn: () =>
-            getOfferStats(
-                filters
-            ),
-
-        staleTime:
-            5 * 60 * 1000,
+        queryKey: offerKeys.stats({ filters, email }),
+        queryFn: () => getOfferStats({ filters, email }),
     });
 
 /**
  * Infinite Offers
  */
 export const useInfiniteOffers = (
-    preferences = {},
-    email = ""
+    { preferences = {},
+        email = "" }
 ) =>
     useInfiniteQuery({
         queryKey:
@@ -157,22 +148,9 @@ export const useDeleteOffer =
             },
         });
     };
-export const useOffersByEmail = (
-    email = ""
-) =>
+export const useOffersByEmail = (email = "") =>
     useQuery({
-        queryKey:
-            offerKeys.byEmail(
-                email
-            ),
-
-        queryFn: () =>
-            getOffersByEmail(
-                email
-            ),
-
+        queryKey: offerKeys.byEmail(email),
+        queryFn: () => getOffersByEmail(email),
         enabled: !!email,
-
-        staleTime:
-            5 * 60 * 1000,
     });

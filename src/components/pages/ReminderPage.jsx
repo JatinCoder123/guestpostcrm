@@ -51,9 +51,10 @@ export function ReminderPage() {
   const { sending, sendReminderId, message, error } = useSelector(
     (state) => state.reminders
   );
+  const { enteredEmail: email } = useContext(PageContext)
   const preferences = useTablePreference("reminders");
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = useInfiniteReminders(preferences);
-  const { data: summary } = useReminderStats();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = useInfiniteReminders({ preferences, email });
+  const { data: summary } = useReminderStats({ email });
   const { handleDateClick, enteredEmail } =
     useContext(PageContext);
   const dispatch = useDispatch();

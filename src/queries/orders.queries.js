@@ -29,10 +29,11 @@ export const orderKeys = {
         filters,
     ],
 
-    stats: (filters = {}) => [
+    stats: ({ filters = {}, email = '' }) => [
         "orders",
         "stats",
         filters,
+        email,
     ],
 
     byId: (id) => [
@@ -67,14 +68,14 @@ export const useOrder = (id) => {
  * Order Stats
  */
 export const useOrderStats = (
-    filters = {}
+    { filters = {}, email = '' }
 ) => {
     return useQuery({
         queryKey:
-            orderKeys.stats(filters),
+            orderKeys.stats({ filters, email }),
 
         queryFn: () =>
-            getOrderStats(filters),
+            getOrderStats({ filters, email }),
 
         staleTime:
             5 * 60 * 1000,
@@ -85,9 +86,10 @@ export const useOrderStats = (
  * Infinite Orders List
  */
 export const useInfiniteOrders = (
-    preferences = {},
-    email = ""
+    { preferences = {},
+        email = "" }
 ) => {
+
     return useInfiniteQuery({
         queryKey:
             orderKeys.lists(

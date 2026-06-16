@@ -23,9 +23,12 @@ export const getAllDeals = ({
 }
 
 
-export const getDealStats = ({ filters }) =>
-    http({
+export const getDealStats = ({ filters, email }) => {
+    const params = email ? { email } : {}
+
+    return http({
         method: "POST",
+        params: { ...params },
         body: {
             action: "get_stats",
             ...filters,
@@ -47,6 +50,8 @@ export const getDealStats = ({ filters }) =>
             ]
         },
     });
+
+}
 
 export const deleteDeal = (
     id

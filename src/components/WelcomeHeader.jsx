@@ -30,6 +30,8 @@ import {
   upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
 import { useGpcController } from "../queries/controller.queries";
+import { useTimeline } from "../context/TimelineContext";
+import NextPrev from "./NextPrev";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
@@ -88,8 +90,7 @@ const WelcomeHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
-
-  const { contactInfo } = useSelector((state) => state.viewEmail);
+  const { currentEmail: email } = useTimeline()
   const { crmEndpoint, businessEmail, user } = useSelector(
     (state) => state.user,
   );
@@ -101,7 +102,6 @@ const WelcomeHeader = () => {
     (state) => state.contacts,
   );
 
-  const email = contactInfo?.email1;
   const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail,
@@ -124,6 +124,7 @@ const WelcomeHeader = () => {
   const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
   const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(false);
   const [crmProgressLoading, setCrmProgressLoading] = useState(true);
+  const { handleDateClick } = useContext(PageContext)
 
   useEffect(() => {
     const loadStats = async () => {
@@ -153,10 +154,7 @@ const WelcomeHeader = () => {
       return (
         <span
           className="text-blue-600 hover:underline cursor-pointer"
-          onClick={() => {
-            localStorage.setItem("searchTerm", email);
-            setEnteredEmail(email);
-          }}
+          onClick={() => handleDateClick({ email: email, navigate: '/', nextPrev: true })}
         >
           {email}
         </span>

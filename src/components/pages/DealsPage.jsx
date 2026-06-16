@@ -44,7 +44,7 @@ export function DealsPage() {
     useTablePreference(
       "deals"
     );
-
+  const { enteredEmail: email } = useContext(PageContext)
   const {
     data,
     fetchNextPage,
@@ -52,12 +52,12 @@ export function DealsPage() {
     isFetchingNextPage,
     isPending,
   } = useInfiniteDeals(
-    { preferences }
+    { preferences, email }
   );
 
   const {
     data: summary,
-  } = useDealStats();
+  } = useDealStats({ email });
 
   const {
     mutate: deleteDeal,

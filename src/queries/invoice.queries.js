@@ -18,9 +18,11 @@ export const invoiceKeys = {
             filters,
         ],
 
-    stats: () => [
+    stats: (filters = {}, email = '') => [
         "invoices",
         "stats",
+        filters,
+        email
     ],
 
     byId: (id) => [
@@ -37,22 +39,18 @@ export const invoiceKeys = {
 };
 
 export const useInvoiceStats =
-    () =>
+    ({ email = '', filters = {} }) =>
         useQuery({
             queryKey:
-                invoiceKeys.stats(),
+                invoiceKeys.stats(filters, email),
 
-            queryFn: (filters = {}) =>
-                getInvoiceStats(filters),
-
-            staleTime:
-                5 * 60 * 1000,
+            queryFn: () => getInvoiceStats({ filters, email }),
         });
 
 export const useInfiniteInvoices =
     (
-        preferences = {},
-        email = ''
+        { preferences = {},
+            email = '' }
     ) =>
         useInfiniteQuery({
             queryKey: invoiceKeys.lists(preferences, email),
@@ -77,8 +75,6 @@ export const useInfiniteInvoices =
                     1
                     : undefined,
 
-            staleTime:
-                5 * 60 * 1000,
         });
 export const useEmailInvoices =
     (
@@ -106,8 +102,6 @@ export const useEmailInvoices =
                     1
                     : undefined,
 
-            staleTime:
-                5 * 60 * 1000,
         });
 export const useUpdateInvoice = () => {
     const queryClient =

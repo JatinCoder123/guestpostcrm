@@ -155,7 +155,6 @@ export const updateOffer = ({ offers = [] }) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -242,7 +241,6 @@ export const createOffer = ({
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -285,25 +283,25 @@ export const createOffer = ({
       dispatch(offersSlice.actions.clearAllErrors());
       // 🔥 Ledger API Call
       await createLedgerEntry
-      ({
-        domain,
-        email: email,
-        thread_id: threadId,
-        message_id: threadId,
-        group: "Offer",
-        reminder_type: "offer",
-        websites: offers.map((offer) => offer.website),
-        okHandler: () => dispatch(getLadger({ email, loading: false })),
-        items: offers.map((offer) =>
-          buildLedgerItem({
-            status: "Our-Offer-Created",
-            detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
-            ladgerState: state.ladger,
-            user: state.user.user,
-            parent_name: "outr_offer",
-          }),
-        ),
-      });
+        ({
+          domain,
+          email: email,
+          thread_id: threadId,
+          message_id: threadId,
+          group: "Offer",
+          reminder_type: "offer",
+          websites: offers.map((offer) => offer.website),
+          okHandler: () => dispatch(getLadger({ email, loading: false })),
+          items: offers.map((offer) =>
+            buildLedgerItem({
+              status: "Our-Offer-Created",
+              detail: `website: {${getDomain(offer.website)}} amount: {${offer.our_offer_c}}`,
+              ladgerState: state.ladger,
+              user: state.user.user,
+              parent_name: "outr_offer",
+            }),
+          ),
+        });
       updateActivity(
         email,
 
@@ -323,7 +321,6 @@ export const deleteOffer = (id, offer) => {
 
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
-        domain: crmEndpoint,
         email,
         memo_no,
         method,

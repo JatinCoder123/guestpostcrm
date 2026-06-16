@@ -164,7 +164,6 @@ export const createDeal = ({ threadId, email, deals = [], contactId }) => {
     const crmEndpoint = getState().user.crmEndpoint;
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
-        domain: crmEndpoint,
         email,
         memo_no,
         method,
@@ -260,7 +259,6 @@ export const updateDeal = ({ deals = [] }) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -351,7 +349,6 @@ export const deleteDeal = (deal, id) => {
 
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
-        domain: crmEndpoint,
         email,
         memo_no,
         method,

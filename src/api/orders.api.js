@@ -8,8 +8,10 @@ export const getAllOrders = ({
     preferences,
     page = 1,
     email = "",
-}) =>
-    http({
+}) => {
+    const params = email ? { email } : {}
+
+    return http({
         method: "POST",
         body: {
             "action": "fetch",
@@ -19,8 +21,10 @@ export const getAllOrders = ({
                 preferences
             ),
         },
-        params: { email }
+        params: { ...params }
     });
+
+}
 
 export const getOrderById = (
     id
@@ -58,10 +62,13 @@ export const updateOrder = ({
     });
 
 export const getOrderStats = (
-    filters = {}
-) =>
-    http({
+    { filters = {}, email = '' }
+) => {
+    const params = email ? { email } : {}
+
+    return http({
         method: "POST",
+        params: { ...params },
         body: {
             action: "get_stats",
             ...filters,
@@ -129,6 +136,8 @@ export const getOrderStats = (
             ]
         },
     });
+}
+
 export const getOrdersByEmail = (
     email
 ) =>

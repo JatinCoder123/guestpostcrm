@@ -154,7 +154,6 @@ Open Contact
   /* Helper to call applyHashtag util */
   const triggerHashtag = (memo_no, method = "GET") => {
     applyHashtag({
-      domain: crmEndpoint,
       email: email,
       memo_no,
       method,
@@ -320,11 +319,9 @@ Open Contact
       // GET when adding to marketplace, DELETE when removing
       action: () => {
         if (markInfo) {
-          delMarket({ id: markInfo?.id, email });
-          triggerHashtag(MEMO.marketplace, "DELETE");
+          delMarket({ email, domain: contactInfo.type?.toLowerCase() === 'brand' ? email.split('@')[1] : '' });
         } else {
           addToMarket({ email, brand: contactInfo.type == "Brand" })
-          triggerHashtag(MEMO.marketplace, "GET");
         }
       },
     },
