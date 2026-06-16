@@ -95,7 +95,7 @@ const WelcomeHeader = () => {
   );
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
-  const {data,isPending} = useGpcController()
+  const { data } = useGpcController();
   const summary = data?.summary ?? {}
   const { loading: contactLoading, contacts } = useSelector(
     (state) => state.contacts,
@@ -228,10 +228,10 @@ const WelcomeHeader = () => {
           current.step > 0
             ? current
             : await upsertOnboardingProgress({
-                crmEndpoint,
-                name: onboardingRecordName,
-                step: ONBOARDING_STEP.PROFILE_STARTED,
-              });
+              crmEndpoint,
+              name: onboardingRecordName,
+              step: ONBOARDING_STEP.PROFILE_STARTED,
+            });
         if (ignore) return;
 
         setCrmOnboardingStep(progress.step);
@@ -274,8 +274,8 @@ const WelcomeHeader = () => {
     : [];
   const profileCompletion = firstSyncCompleted ? 100 : templateDone ? 85 : websiteDone ? 70 : 50;
   const showProfilePrompt =
-  path !== "/profile" &&
-  (profileCompletion < 100 || firstSyncLoading || contactCheckLoading);
+    path !== "/profile" &&
+    (profileCompletion < 100 || firstSyncLoading || contactCheckLoading);
   const showFirstSyncRecordsPrompt =
     path !== "/profile" &&
     firstSyncCompleted &&
@@ -285,13 +285,13 @@ const WelcomeHeader = () => {
     ? "First sync is running..."
     : contactCheckLoading
       ? "Loading onboarding status..."
-    : firstSyncCompleted
-      ? `Sync completed${firstSyncState.result?.count ? `: ${firstSyncState.result.count} records` : ""}`
-      : websiteDone
-    ? templateDone
-      ? "Run first sync to unlock full setup"
-      : "Save one template to continue setup"
-    : "Complete your profile setup";
+      : firstSyncCompleted
+        ? `Sync completed${firstSyncState.result?.count ? `: ${firstSyncState.result.count} records` : ""}`
+        : websiteDone
+          ? templateDone
+            ? "Run first sync to unlock full setup"
+            : "Save one template to continue setup"
+          : "Complete your profile setup";
   const ProfileIcon = firstSyncLoading || contactCheckLoading
     ? Loader2
     : firstSyncCompleted
@@ -447,11 +447,10 @@ const WelcomeHeader = () => {
             >
               <span className="absolute inset-x-0 bottom-0 h-1 bg-slate-100">
                 <span
-                  className={`block h-full rounded-full transition-all duration-700 ${
-                    contactCheckLoading
-                      ? "animate-pulse bg-slate-300"
-                      : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500"
-                  }`}
+                  className={`block h-full rounded-full transition-all duration-700 ${contactCheckLoading
+                    ? "animate-pulse bg-slate-300"
+                    : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500"
+                    }`}
                   style={{
                     width: contactCheckLoading
                       ? "35%"
@@ -462,8 +461,8 @@ const WelcomeHeader = () => {
 
               <span
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md ${firstSyncCompleted
-                    ? "bg-emerald-500 shadow-emerald-500/25"
-                    : "bg-gradient-to-br from-indigo-600 to-cyan-500 shadow-indigo-500/25"
+                  ? "bg-emerald-500 shadow-emerald-500/25"
+                  : "bg-gradient-to-br from-indigo-600 to-cyan-500 shadow-indigo-500/25"
                   }`}
               >
                 <ProfileIcon
@@ -529,7 +528,7 @@ const WelcomeHeader = () => {
                   First Sync
                 </span>
                 <span className="block truncate text-sm font-bold text-slate-900">
-                 Completed
+                  Completed
                 </span>
               </span>
 
@@ -660,8 +659,8 @@ const WelcomeHeader = () => {
 
             </div>
           </div>
-            {/* Vertical Divider */}
-<div className="mx-2 w-0.5 h-10 bg-gray-300"></div>
+          {/* Vertical Divider */}
+          <div className="mx-2 w-0.5 h-10 bg-gray-300"></div>
           <StatBadge
             icon={MailOpen}
             label="Received"

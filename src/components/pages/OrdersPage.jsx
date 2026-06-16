@@ -98,11 +98,13 @@ const STATUS_CONFIG = [
 ];
 import { IoCheckmarkDoneCircleOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
-import { useInfiniteOrders, useOrderStats } from "../../queries/orders.queries.js";
+import { orderKeys, useInfiniteOrders, useOrderStats } from "../../queries/orders.queries.js";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { queryClient } from "../../lib/queryClient.js";
 
 export function OrdersPage() {
   const preferences = useTablePreference("orders");
+  const { updating, message, error } = useSelector(state => state.orders);
 
   const {
     data,
@@ -342,6 +344,19 @@ export function OrdersPage() {
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
+  useEffect(() => {
+    if (message) {
+      toast.success(message);
+      setUpdateOrderId(null);
+      dispatch(orderAction.clearAllMessages());
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+    }
+    if (error) {
+      setUpdateOrderId(null);
+      toast.error(error);
+      dispatch(orderAction.clearAllErrors());
+    }
+  }, [message, error]);
   return (
     <TableView
       tableData={orders}
