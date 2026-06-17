@@ -62,6 +62,7 @@ export function LinkExchangePage() {
       label: "Created At",
       accessor: "date_entered",
       icon: Calendar,
+      sortable:true,
       classes: "truncate max-w-[200px]",
 
       onClick: (row, index) =>

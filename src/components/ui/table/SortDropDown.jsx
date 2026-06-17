@@ -82,7 +82,8 @@ function SortDropdown() {
             return (
                 visibleColumns?.filter(
                     (column) =>
-                        column?.accessor
+                        column?.accessor &&
+                    column?.sortable
                 ) || []
             );
         }, [visibleColumns]);

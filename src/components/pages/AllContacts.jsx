@@ -128,6 +128,7 @@ export default function AllContacts() {
             accessor: "date_entered_time_ago",
             headerClasses: "",
             icon: Calendar,
+            sortable:true,
 
             onClick: (row) => handleDateClick({ email: row?.email1 ?? `${row?.first_name} ${row?.last_name} `, navigate: "/" }),
             classes: "truncate max-w-[200px]",

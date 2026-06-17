@@ -47,6 +47,28 @@ const STATUS_CONFIG = [
 
   }
 ];
+
+function getLeftTime(scheduledTime) {
+  if (!scheduledTime) return "N/A";
+
+  // Parse "MM/DD/YYYY HH:mm" format
+  const [datePart, timePart] = scheduledTime.replace(/\\/g, "").split(" ");
+  const [month, day, year] = datePart.split("/");
+  const scheduled = new Date(`${year}-${month}-${day}T${timePart}:00`);
+  const now = new Date();
+  const diffMs = scheduled - now;
+
+  if (diffMs <= 0) return "Overdue";
+
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) return `${diffDays}d ${diffHours % 24}h left`;
+  if (diffHours > 0) return `${diffHours}h ${diffMins % 60}m left`;
+  return `${diffMins}m left`;
+}
+
 export function ReminderPage() {
   const { sending, sendReminderId, message, error } = useSelector(
     (state) => state.reminders
@@ -94,6 +116,7 @@ export function ReminderPage() {
     {
       label: "Created At",
       accessor: "date_entered",
+      sortable:true,
       headerClasses: "",
       icon: Calendar,
 
@@ -162,11 +185,11 @@ export function ReminderPage() {
       icon: BadgeDollarSign,
       classes: "truncate max-w-[300px] ",
 
-      render: (row) => (
-        <span className="font-medium text-gray-700 cursor-pointer">
-          {row.remaining_time}
-        </span>
-      )
+     render: (row) => (
+  <span className="font-medium text-gray-700 cursor-pointer">
+    {getLeftTime(row.scheduled_time)}
+  </span>
+)
     },
 
     {

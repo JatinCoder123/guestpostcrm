@@ -138,6 +138,8 @@ export function UnrepliedEmailsPage() {
       label: "Created At",
       accessor: "date_entered_time_ago",
       headerClasses: "",
+            sortable:true,
+
       icon: Calendar,
       onClick: (row, index) =>
         handleDateClick({ email: row?.email1, navigate: "/", index, nextPrev: true }),
