@@ -1,6 +1,4 @@
 import { useState, useEffect, useContext } from "react";
-import { toast } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
 import { PageContext } from "../../context/pageContext";
 
 import {

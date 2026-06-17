@@ -428,7 +428,6 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             })
           )}
 
-          {/* ── First Reply ── */}
           <FirstReplyBtn email={email} />
           <DeepReplyBtn />
           <motion.button

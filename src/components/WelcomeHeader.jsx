@@ -18,7 +18,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { createElement, useEffect, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import {
-  getUnrepliedEmail,
   unrepliedAction,
 } from "../store/Slices/unrepliedEmails";
 import { motion as Motion, AnimatePresence } from "framer-motion";
@@ -30,9 +29,8 @@ import {
 } from "../utils/onboardingCompletion";
 import { useGpcController } from "../queries/controller.queries";
 import { useTimeline } from "../context/TimelineContext";
-import NextPrev from "./NextPrev";
-import { useInfiniteContacts } from "../queries/contact.queries";
-import { useTablePreference } from "../hooks/useTablePreference";
+import { preferencesAction } from "../store/Slices/preferencesSlice";
+import { showNewEmailToast } from "./showNewEmailToast";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
@@ -104,7 +102,7 @@ const WelcomeHeader = () => {
     businessEmail,
   });
 
-  const { setEnteredEmail, handleClear } = useContext(PageContext);
+  const { handleClear } = useContext(PageContext);
 
   const [animate, setAnimate] = useState(false);
 
@@ -171,13 +169,15 @@ const WelcomeHeader = () => {
 
   useEffect(() => {
     if (showNewEmailBanner) {
-      const timer = setTimeout(() => {
-        dispatch(unrepliedAction.setShowNewEmailBanner(false));
-      }, 7000);
-
-      return () => clearTimeout(timer);
+      showNewEmailToast({
+        dispatch,
+        navigate,
+        handleClear,
+        preferencesAction,
+        unrepliedAction,
+      });
     }
-  }, [showNewEmailBanner, dispatch]);
+  }, [showNewEmailBanner]);
 
   useEffect(() => {
     const syncHandler = (event) => {
@@ -294,64 +294,7 @@ const WelcomeHeader = () => {
       <div className="absolute top-0 left-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-30" />
       <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-30" />
 
-      {/* Notification */}
-      <AnimatePresence>
-        {showNewEmailBanner && (
-          <Motion.div
-            initial={{ opacity: 0, y: -30, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 320, damping: 22 }}
-            className="absolute top-3 right-50 z-50"
-          >
-            <Motion.button
-              animate={{
-                boxShadow: [
-                  "0 0 0 rgba(59,130,246,0)",
-                  "0 0 18px rgba(99,102,241,0.45)",
-                  "0 0 0 rgba(59,130,246,0)",
-                ],
-              }}
-              onClick={() => {
-                dispatch(unrepliedAction.setShowNewEmailBanner(false));
-                handleClear();
-                navigate("/");
 
-                dispatch(
-                  getUnrepliedEmail({
-                    loading: true,
-                    type: "email_inbound",
-                  }),
-                );
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="flex items-center gap-3 px-4 py-2 rounded-2xl
-              bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
-              text-white shadow-xl"
-            >
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-white opacity-60 animate-ping" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
-              </span>
-
-              <p className="text-sm font-semibold tracking-wide">
-                New email received
-              </p>
-
-              <Motion.span
-                animate={{ rotate: [0, -10, 10, -10, 0] }}
-                transition={{
-                  duration: 0.6,
-                  repeat: Infinity,
-                  repeatDelay: 2,
-                }}
-              >
-                <MailCheck />
-              </Motion.span>
-            </Motion.button>
-          </Motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
         {/* LEFT */}
