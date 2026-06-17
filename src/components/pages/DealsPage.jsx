@@ -73,6 +73,7 @@ export function DealsPage() {
     {
       label: "Created At",
       accessor: "date_entered",
+      sortable:true,
       headerClasses: "",
       icon: Calendar,
 
@@ -115,6 +116,7 @@ export function DealsPage() {
       label: "Amount",
       accessor: "dealamount",
       searchable: true,
+      sortable:true,
 
       headerClasses: "",
       icon: BadgeDollarSign,
@@ -138,17 +140,17 @@ export function DealsPage() {
         </span>
       ),
     },
-    {
-      label: "Expiry Date",
-      accessor: "expiry_date",
-      headerClasses: "",
-      icon: Calendar,
-      classes: "truncate max-w-[300px]",
+    // {
+    //   label: "Expiry Date",
+    //   accessor: "expiry_date",
+    //   headerClasses: "",
+    //   icon: Calendar,
+    //   classes: "truncate max-w-[300px]",
 
-      render: (row) => (
-        <span className="font-medium text-green-700 ">{row?.expiry_date}</span>
-      ),
-    },
+    //   render: (row) => (
+    //     <span className="font-medium text-green-700 ">{row?.expiry_date}</span>
+    //   ),
+    // },
     {
       label: "Action",
       accessor: "action",

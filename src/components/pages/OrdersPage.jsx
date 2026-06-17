@@ -132,6 +132,7 @@ export function OrdersPage() {
       accessor: "date_entered",
       headerClasses: "",
       icon: Calendar,
+      sortable:true,
 
       onClick: (row) =>
         handleDateClick({ email: row?.client_email, navigate: "/" }),
@@ -166,6 +167,7 @@ export function OrdersPage() {
       accessor: "website",
       headerClasses: "",
       icon: DollarSign,
+      sortable:true,
       classes: "truncate  max-w-[100px]",
       render: (row) => (
         <span className="font-medium text-blue-700 ">

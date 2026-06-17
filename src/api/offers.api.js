@@ -12,6 +12,7 @@ export const getAllOffers = ({
         body: {
             action: "fetch",
             module: "outr_offer",
+            contact_information:"name",
             fields: [
                 "name",
                 "email_c",

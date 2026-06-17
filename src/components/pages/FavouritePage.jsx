@@ -38,6 +38,7 @@ export function FavouritePage() {
       accessor: "date_entered",
       headerClasses: "",
       icon: Calendar,
+      sortable:true,
 
       onClick: (row) => handleDateClick({ email: row?.email1, navigate: "/" })
       ,
