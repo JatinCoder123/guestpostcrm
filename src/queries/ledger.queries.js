@@ -5,6 +5,7 @@ import {
 import {
     getLedger,
     getBrandLedger,
+    getChildLedger,
 } from "../api/ledger.api";
 export const ledgerKeys = {
     all: ["ledger"],
@@ -15,6 +16,14 @@ export const ledgerKeys = {
             "ledger",
             "list",
             email,
+        ],
+    childLists: (
+        parentId,
+    ) => [
+            "ledger",
+            "list",
+            "child",
+            parentId,
         ],
 
     brandLists: (
@@ -61,6 +70,16 @@ export const useInfiniteLedger = (
         },
     });
 };
+export const useInfiniteChildLedger = (parentId) => useInfiniteQuery({
+    queryKey: ledgerKeys.childLists(parentId),
+    queryFn: ({ pageParam = 1 }) => getChildLedger({ parentId, page: pageParam }),
+    enabled: !!parentId,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+        if (lastPage.current_page < lastPage.total_pages) { return (lastPage.current_page + 1) }
+        return undefined;
+    },
+});
 export const useInfiniteBrandLedger =
     (
         email,

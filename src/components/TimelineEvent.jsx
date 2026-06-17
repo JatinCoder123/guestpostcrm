@@ -10,8 +10,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import LadgerCard from "./LadgerCard";
 import { useInfiniteLedger } from "../queries/ledger.queries";
 import { useTimeline } from "../context/TimelineContext";
-import Pagination from "./Pagination";
-import { LoadingChase } from "./Loading";
 
 const TimelineEvent = ({ handleMessageClick }) => {
   const { currentEmail } = useTimeline()

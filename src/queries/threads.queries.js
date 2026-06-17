@@ -1,10 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getDuplicateThreads, getThreadByEmail, getThreadByThreadId } from "../api/threads.api";
+import { getDuplicateThreads, getMessageById, getThreadByEmail, getThreadByThreadId } from "../api/threads.api";
 export const threadKeys =
 {
     all: ["threads",],
     list: (email, threadId) => ["threads", email, threadId],
     duplicate: (email) => ["threads", "duplicate", email],
+    messageKey: (id) => ['message', id]
 };
 
 export const useThread = (email, threadId = "") => {
@@ -27,6 +28,13 @@ export const useThread = (email, threadId = "") => {
             return data;
         },
         enabled: Boolean(email),
+    });
+};
+export const useMessage = (id) => {
+    return useQuery({
+        queryKey: threadKeys.messageKey(id),
+        queryFn: getMessageById,
+        enabled: Boolean(id),
     });
 };
 export const useDuplicateThreads = (email) =>
