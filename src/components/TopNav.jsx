@@ -29,6 +29,7 @@ import GlobalSearch from "./GlobalSearch";
 import { Camera } from "lucide-react";
 import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
+
 export function TopNav() {
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
@@ -177,10 +178,31 @@ export function TopNav() {
       : (p[0][0] + p[p.length - 1][0]).toUpperCase();
   };
 
+  /* Whether a search/email is active */
+  const isSearchActive = Boolean(enteredEmail?.trim());
+
   return (
     <div
       data-tour="top-nav"
-      className="bg-white border-b p-1 py-2 flex items-center justify-between sticky top-0 z-50"
+      style={{
+  background: "linear-gradient(180deg, #ffffff 0%, #e8eaf0 100%)",
+  borderRadius: "32px",
+  boxShadow: `
+    /* top-left inner highlight */
+    inset 2px 3px 6px rgba(255,255,255,0.95),
+    /* bottom-right inner shadow */
+    inset -1px -2px 4px rgba(99,102,241,0.15),
+    /* base lift shadow */
+    0 6px 0 0 #c5c7e0,
+    /* ground shadow blur */
+    0 8px 16px 0 rgba(60,63,120,0.22),
+    0 2px 4px 0 rgba(0,0,0,0.10)
+  `,
+  border: "1px solid rgba(99,102,241,0.18)",
+  borderBottom: "1px solid rgba(99,102,241,0.30)",
+  height: "60px"
+}}
+      className="p-1 py-2 flex items-center justify-between sticky top-0 z-50"
     >
       {/* LEFT */}
       <div className="flex items-center gap-4">
@@ -204,32 +226,78 @@ export function TopNav() {
 
       {/* RIGHT */}
       <div className="flex items-center gap-3">
-        <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
+        <AnimatePresence mode="wait">
+          {isSearchActive ? (
+            /* ── Active-search info banner ── */
+            <motion.div
+              key="search-active-banner"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.22 }}
+              className="flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium"
+              style={{
+                background: "linear-gradient(90deg, #eef2ff 0%, #e0f2fe 100%)",
+                border: "1px solid rgba(99,102,241,0.20)",
+                boxShadow: "0 2px 8px 0 rgba(99,102,241,0.10)",
+                color: "#4338ca",
+                maxWidth: "420px",
+              }}
+            >
+              {/* pulsing dot */}
+              <span
+                className="inline-block h-2 w-2 shrink-0 rounded-full bg-indigo-500 animate-pulse"
+              />
+              <span className="truncate">
+                You are currently 
+                viewing the record for{" "}
+                <span
+                  className="font-semibold text-cyan-700 underline underline-offset-2 cursor-pointer"
+                  title={enteredEmail}
+                >
+                  {enteredEmail}
+                </span>
+              </span>
+            </motion.div>
+          ) : (
+            /* ── Normal icon buttons ── */
+            <motion.div
+              key="icon-buttons"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.22 }}
+              className="flex items-center gap-3"
+            >
+              <IconButton tooltipPosition="bottom" label="Payment Reminders" icon={BellIcon} variant="primary" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700" rounded="full" iconColor="white" count={3} />
 
-        {data?.stats?.all?.count > 0 && !isPending && (
-          <IconButton tooltipPosition="bottom" label="OutBox Emails" onClick={() => navigateTo('/outbox')} icon={MailWarning} variant="primary" className="p-2 rounded-full" rounded="full" iconColor="white" count={data?.stats?.all.count} />
-        )}
-        <IconButton tooltipPosition="bottom" label="Hot Notification" onClick={() => navigateTo("hot-records")}
-          icon={Flame} variant="primary" className="p-2 rounded-full bg-orange-500 hover:bg-orange-600" rounded="full" iconColor="white" count={count} />
+              {data?.stats?.all?.count > 0 && !isPending && (
+                <IconButton tooltipPosition="bottom" label="OutBox Emails" onClick={() => navigateTo('/outbox')} icon={MailWarning} variant="primary" className="p-2 rounded-full" rounded="full" iconColor="white" count={data?.stats?.all.count} />
+              )}
+              <IconButton tooltipPosition="bottom" label="Hot Notification" onClick={() => navigateTo("hot-records")}
+                icon={Flame} variant="primary" className="p-2 rounded-full bg-orange-500 hover:bg-orange-600" rounded="full" iconColor="white" count={count} />
 
 
-        {notificationCount.error_log_created && (
-          <IconButton
-            onClick={() => navigateTo("/settings/debugging")}
-            icon={CircleAlert}
-            count={errorLogCount}
-            variant="danger"
-            rounded="full"
-            label="Error Logs"
-            tooltipPosition="bottom"
-          />)
-        }
+              {notificationCount.error_log_created && (
+                <IconButton
+                  onClick={() => navigateTo("/settings/debugging")}
+                  icon={CircleAlert}
+                  count={errorLogCount}
+                  variant="danger"
+                  rounded="full"
+                  label="Error Logs"
+                  tooltipPosition="bottom"
+                />)
+              }
 
-        <IconButton onClick={() => navigateTo("ai-credits")}
-          tooltipPosition="bottom" label="AI Credits" icon={Sparkles} variant="primary" className="p-2  bg-indigo-600 hover:bg-indigo-700" rounded="full" iconColor="white" />
+              <IconButton onClick={() => navigateTo("ai-credits")}
+                tooltipPosition="bottom" label="AI Credits" icon={Sparkles} variant="primary" className="p-2  bg-indigo-600 hover:bg-indigo-700" rounded="full" iconColor="white" />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* PROFILE */}
-        <div ref={profileMenuRef} className="relative">
+        {/* PROFILE — always visible */}
+        <div ref={profileMenuRef} className="relative mr-10">
           <button
             type="button"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
