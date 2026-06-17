@@ -12,6 +12,8 @@ import { useDispatch } from "react-redux";
 import { eventActions } from "../store/Slices/eventSlice.js";
 import { unrepliedAction } from "../store/Slices/unrepliedEmails.js";
 import { apiRequest } from "../services/api.js";
+import { queryClient } from "../lib/queryClient.js";
+import { recentKeys } from "../queries/recentAct.queries.js";
 
 const socket = io("https://socket.guestpostcrm.com");
 export const SocketContext = createContext();
@@ -98,6 +100,7 @@ export const SocketContextProvider = ({ children }) => {
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);
         } else if (data.name === "outr_recent_activity") {
+          queryClient.invalidateQueries({ queryKey: recentKeys.all })
           dispatch(eventActions.updateCount(1));
         } else {
           if (data.name === "unreplied_email") {

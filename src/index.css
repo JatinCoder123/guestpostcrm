@@ -276,3 +276,41 @@ html {
     box-shadow: 0 0 28px rgba(59, 130, 246, 0.6);
   }
 }
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-enter {
+  animation: toast-enter 0.35s ease forwards;
+}
+
+.animate-leave {
+  animation: toast-leave 0.25s ease forwards;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toast-leave {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}

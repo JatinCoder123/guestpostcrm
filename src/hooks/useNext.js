@@ -1,10 +1,7 @@
-import { useCommandState } from 'cmdk';
 import React, { useContext } from 'react'
 import { PageContext } from '../context/pageContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { useThreadContext } from './useThreadContext';
-import { extractEmail } from '../assets/assets';
-import { unrepliedAction } from '../store/Slices/unrepliedEmails';
 import { useNavigate } from 'react-router-dom';
 import { useInfiniteEmails } from '../queries/email.queries';
 import { useTablePreference } from './useTablePreference';
@@ -37,63 +34,65 @@ export const useNext = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-  const moveToNext = async (currentEmail) => {
-    const currentIndex = inboxEmails.findIndex(
-        (item) => item?.email1 === currentEmail
-    );
-    console.log("CURRENT INDEX", currentIndex, currentEmail, inboxEmails);
+    const moveToNext = async (currentEmail) => {
+        const currentIndex = inboxEmails.findIndex(
+            (item) => item?.email1 === currentEmail
+        );
+        console.log("CURRENT INDEX", currentIndex, currentEmail, inboxEmails);
 
-    if (currentIndex === -1) {
-        navigate("/unreplied-emails");
-        return;
-    }
+        if (currentIndex === -1) {
+            navigate("/unreplied-emails");
+            return;
+        }
 
-    // Prefetch when close to end
-    const remainingEmails = inboxEmails.length - currentIndex - 1;
-console.log("REMAINING EMAILS", remainingEmails, hasNextPage, isFetchingNextPage);
-    if (
-        remainingEmails <= 3 &&
-        hasNextPage &&
-        !isFetchingNextPage
-    ) {
-        await fetchNextPage();
-    }
+        // Prefetch when close to end
+        const remainingEmails = inboxEmails.length - currentIndex - 1;
+        console.log("REMAINING EMAILS", remainingEmails, hasNextPage, isFetchingNextPage);
+        if (
+            remainingEmails <= 3 &&
+            hasNextPage &&
+            !isFetchingNextPage
+        ) {
+            await fetchNextPage();
+        }
 
-    const updatedEmails =
-        data?.pages?.flatMap(
-            (page) => page.records || page.data || []
-        ) ?? inboxEmails;
+        const updatedEmails =
+            data?.pages?.flatMap(
+                (page) => page.records || page.data || []
+            ) ?? inboxEmails;
 
-    const nextEmailObj = updatedEmails[currentIndex + 1];
-console.log("NEXT EMAIL OBJ", nextEmailObj);
-    if (!nextEmailObj) {
-        localStorage.removeItem("email");
-        setEnteredEmail("");
-        navigate("/unreplied-emails");
-        return;
-    }
+        const nextEmailObj = updatedEmails[currentIndex + 1];
+        console.log("NEXT EMAIL OBJ", nextEmailObj);
+        if (!nextEmailObj) {
+            localStorage.removeItem("email");
+            setEnteredEmail("");
+            navigate("/unreplied-emails");
+            return;
+        }
 
 
-    if (superfastReply) {
+        if (superfastReply) {
+            handleDateClick({
+                email: nextEmailObj?.email1,
+                nextPrev: true,
+                index: currentIndex + 1,
+            });
+
+            if (location.pathname.startsWith("/thread")) {
+                handleMove({
+                    email: nextEmailObj?.email1,
+                    threadId: nextEmailObj?.thread_id,
+                });
+            }
+
+            return;
+        }
+
         handleDateClick({
             email: nextEmailObj?.email1,
+            navigate: "/",
             nextPrev: true,
-            index: currentIndex + 1,
         });
-
-        handleMove({
-            email: nextEmailObj?.email1,
-            threadId: nextEmailObj?.thread_id,
-        });
-
-        return;
-    }
-
-    handleDateClick({
-        email: nextEmailObj?.email1,
-        navigate: "/",
-        nextPrev: true,
-    });
-};
+    };
     return { moveToNext }
 }

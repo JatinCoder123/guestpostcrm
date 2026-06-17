@@ -9,6 +9,7 @@ import {
 
 import toast from "react-hot-toast";
 import { getAllMovedEmails, getMovedEmailStats, restoreMovedEmail } from "../api/movedEmails.api";
+import { updateActivity } from "../services/utils";
 
 export const movedEmailsKeys = {
     all: ["moved-emails"],
@@ -57,10 +58,12 @@ export const useRestoreEmail =
         return useMutation({
             mutationFn: restoreMovedEmail,
 
-            onSuccess: () => {
+            onSuccess: (_, item) => {
                 queryClient.invalidateQueries({ queryKey: movedEmailsKeys.all, });
                 toast.success("Email Restored Successfully!")
+                updateActivity(item.email, 'Email Restore')
             },
+
 
             onError: () => { toast.error("Failed To Restore Email") },
         });

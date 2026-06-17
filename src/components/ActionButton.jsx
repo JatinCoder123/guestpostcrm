@@ -16,7 +16,7 @@ import { MdOutlineHome } from "react-icons/md";
 import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
-import { applyHashtag, getCurrentUser, getRighteeUsers } from "../services/utils";
+import { applyHashtag, getCurrentUser, getRighteeUsers, updateActivity } from "../services/utils";
 import { fetchGpc } from "../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import IconButton from "./ui/Buttons/IconButton"
@@ -28,6 +28,7 @@ import { queryClient } from "../lib/queryClient";
 import { forwardedKeys } from "../queries/forwarded.queries";
 import { marketPlaceKeys, useAddMarketPlace, useDelMarketPlace, useMarketPlace } from "../queries/marketplace.queries";
 import { toggleFav } from "../api/contact.api";
+import { movedEmailsKeys } from "../queries/movedEmail.queries";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -48,8 +49,6 @@ const ActionButton = () => {
   const [showTags, setShowTags] = useState(false);
   const [note, setNote] = useState('')
   const [selectedUser, setSelectedUser] = useState(null)
-  const { enteredEmail } = useContext(PageContext);
-  const { crmEndpoint } = useSelector((state) => state.user);
   const [showNotes, setShowNotes] = useState(false);
   const { isPending, data } = useQuery({
     queryKey: ['righteeUsers'],
@@ -129,12 +128,13 @@ Open Contact
       );
     };
   }, [showNotes]);
-  const { threadId, editMessage, contactLoading } =
+  const { editMessage, contactLoading } =
     useSelector((s) => s.viewEmail);
   const { currentEmail } = useTimeline()
   const { data: contactData } = useContact(currentEmail)
   const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
+  const threadId = contactInfo?.thread_id;
 
   const { forward, error: forwardError, message: forwardMessage } = useSelector((s) => s.forwarded);
   const { exchanging, error: changeError, message: changeMessage } = useSelector((s) => s.linkExchange);
@@ -171,7 +171,6 @@ Open Contact
       toast.success(forwardMessage);
       dispatch(forwardedAction.clearAllMessages());
       queryClient.invalidateQueries({ queryKey: forwardedKeys.all })
-      queryClient.invalidateQueries({ queryKey: contactKeys.all })
     }
     if (markTagError) {
       toast.error(markTagError);
@@ -346,9 +345,10 @@ Open Contact
         try {
           const data = await fetchGpc({ params: { type: 'force_stop', id: contactInfo?.id, new_value: newValue, user: getCurrentUser().description } });
           console.log(data);
-          queryClient.invalidateQueries({ queryKey: contactKeys.all })
-          toast.success(newValue === "1" ? "Emails stopped successfully" : "Emails resumed successfully");
+          updateActivity(email, Number(newValue) ? "Email Stopped  " : "Email Resumed ")
           triggerHashtag(MEMO.stopfutureemails, newValue === "1" ? "GET" : "DELETE");
+          queryClient.invalidateQueries({ queryKey: movedEmailsKeys.all })
+          toast.success(newValue === "1" ? "Emails stopped successfully" : "Emails resumed successfully");
         } catch (err) {
           toast.error(`Failed To ${newValue === '1' ? 'Stopped' : 'Resumed'} Email `);
         } finally {
@@ -390,14 +390,7 @@ Open Contact
           <div key={i} className="flex items-center gap-8 relative">
             {i == 2 ? (
               <>
-                <MoveToDropdown
-                  currentThreadId={threadId}
-                  onMoveSuccess={() =>
-                    dispatch(
-                      getLadger({ email: email, loading: false }),
-                    )
-                  }
-                />
+                <MoveToDropdown currentThreadId={threadId} />
                 <Separator />
               </>
             ) : (
