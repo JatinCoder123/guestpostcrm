@@ -42,7 +42,6 @@ export const createLedgerEntry = async ({
   reminder_type,
   websites = [],
   extraPayload = {},
-  okHandler = () => { },
 }) => {
   try {
     const payload = {
@@ -104,6 +103,7 @@ export const applyHashtag = async ({
     });
 
     showConsole && console.log("Hashtag Applied", data);
+    queryClient.invalidateQueries({ queryKey: contactKeys.all })
     return data;
   } catch (error) {
     showConsole && console.log("Hashtag API Failed", error);

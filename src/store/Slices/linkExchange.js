@@ -49,7 +49,7 @@ const exchangeSlice = createSlice({
 
 
 
-export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the email/contact identifier for the endpoint
+export const linkExchange = ({ email }) => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.exchangingRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
@@ -64,23 +64,18 @@ export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the 
       dispatch(
         exchangeSlice.actions.exchangingSucess(message)
       );
-      dispatch(viewEmailAction.updateContactInfo({ key: "exchange" }))
 
       dispatch(exchangeSlice.actions.clearAllErrors());
       updateActivity(email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
       await createLedgerEntry({
-        domain: domain,
         email: email,
         group: "Activity",
         items: [
           buildLedgerItem({
             status: data.new_value === 1 ? "Mark-Link-Exchange" : "Unmark-Link-Exchange",
             detail: `email: {${email}}`,
-            ladgerState: getState().ladger,
-            user: getCurrentUser(),
           }),
         ],
-        okHandler: getLadger({ email, loading: false, force: true })
       });
 
     } catch (error) {

@@ -89,7 +89,6 @@ export const forwardEmail = (email, id) => {
     showConsole && console.log("CLIENT ID", id)
 
     try {
-      const domain = getState().user.crmEndpoint.split("?")[0];
       const data = await fetchGpc({
         params: { type: 'assigned_task' }, body: {
           "client_email": email,
@@ -100,28 +99,19 @@ export const forwardEmail = (email, id) => {
       }
       );
       showConsole && console.log("Assiging  ", data);
-      dispatch(
-        forwardedSlice.actions.forwardEmailSucess(
-          "Email Forwarded Successfully"
-        )
-      );
+      dispatch(forwardedSlice.actions.forwardEmailSucess("Email Forwarded Successfully"));
       dispatch(forwardedSlice.actions.clearAllErrors());
-
-      updateActivity(getState().ladger.email, "Email Assign")
+      updateActivity(email, "Email Assign")
 
       await createLedgerEntry({
-        domain: domain,
-        email: getState().ladger.email,
+        email: email,
         group: "Activity",
         items: [
           buildLedgerItem({
             status: "Forward-To",
-            detail: `email: {${getState().ladger.email}} name: {${email}}`,
-            ladgerState: getState().ladger,
-            user: getCurrentUser(),
+            detail: `email: {${email}} name: {${email}}`,
           }),
         ],
-        okHandler: () => dispatch(getLadger({ email: getState().ladger.email })),
       });
 
     } catch (error) {

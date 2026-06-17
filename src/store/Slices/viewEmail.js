@@ -244,13 +244,13 @@ export const editContact = (contactData, message = "") => {
           module: "Contacts",
           ...contactData.contact,
         },
+        ...(contactData?.account && {
+          child_bean: {
+            module: "Contacts",
+            ...contactData.account,
+          },
+        }),
       };
-
-      payload.child_bean = {
-        module: "Contacts",
-        ...contactData.account,
-      };
-
       const data = await apiRequest({
         method: "POST", body: payload, endpoint: getState().user.crmEndpoint.split('?')[0], params: { entryPoint: 'get_post_all', action_type: 'post_data' }, headers: {
           "X-Api-Key": CREATE_DEAL_API_KEY,

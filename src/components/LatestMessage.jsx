@@ -43,28 +43,16 @@ const LatestMessage = ({ handleMessageClick }) => {
   const { sending } = useSelector((state) => state.viewEmail);
   const { data, isPending } = useThread(currentEmail)
   const viewEmail = data?.emails
-  const hanldeConvDone = () => {
-    dispatch(
-      editContact(
-        {
-          contact: { ...contactInfo, conversation_complete: "1" },
-          account: accountInfo,
-        },
-        null,
-      ),
-    );
-    dispatch(
-      viewEmailAction.compleConv({
-        message: `Conversion Complete with ${contactInfo?.email1}`,
-        sendedEmail: contactInfo?.email1,
-      }),
-    );
-    moveToNext(contactInfo?.email1)
-  };
   const email1 = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;
-  const { isPending: askBudgetTempLoading, data: askBudgetTemp } = useTemplateByName("Ask Budget");
-  const { isPending: sorryTempLoading, data: sorryTemp } = useTemplateByName("Sorry");
+  const hanldeConvDone = () => {
+    dispatch(editContact({ contact: { ...contactInfo, conversation_complete: "1" }, account: accountInfo }, null));
+    toast.success(`Conversion Complete with ${email1}`)
+    moveToNext(email1)
+  };
+
+  const { data: askBudgetTemp } = useTemplateByName("Ask Budget");
+  const { data: sorryTemp } = useTemplateByName("Sorry");
 
   useEffect(() => {
     if (buttonsError) {
@@ -82,7 +70,7 @@ const LatestMessage = ({ handleMessageClick }) => {
               <h3 className="text-blue-700 font-semibold">Latest Message</h3>
               <button
                 onClick={() =>
-                  handleMove({ email: email1,threadId })
+                  handleMove({ email: email1, threadId })
                 }
                 className="relative rounded-xl   shadow-md
                hover:shadow-lg hover:-translate-y-1 active:scale-95

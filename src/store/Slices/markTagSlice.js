@@ -43,8 +43,6 @@ export default markTagSlice.reducer;
 
 export const applyTag = ({ email, tag }) => {
   return async (dispatch, getState) => {
-    console.log(email)
-    console.log(tag)
     try {
       dispatch(markTagSlice.actions.getTagsRequest());
 
@@ -67,17 +65,14 @@ export const applyTag = ({ email, tag }) => {
           : "Tag removed successfully";
 
       dispatch(markTagSlice.actions.getTagsSuccess(message));
-      updateActivity(getState().ladger.email, "Tag Applied ")
+      updateActivity(email, "Tag Applied ")
       await createLedgerEntry({
-        domain: domain,
         email: email,
         group: "Activity",
         items: [
           buildLedgerItem({
             status: "Mark-tag",
             detail: `email: {${email}} tag: {${tag}}`,
-            ladgerState: getState().ladger,
-            user: getCurrentUser(),
           }),
         ],
       });
