@@ -55,6 +55,7 @@ export default function ThreadView() {
 
 
   const lastMessageRef = useRef(null);
+  const hasMutatedRef = useRef({});
 
   useIdle({ idle: false });
 
@@ -80,6 +81,8 @@ export default function ThreadView() {
     visibleMessages?.length - 1
   );
   useEffect(() => {
+    if (!email) return;
+
     if (
       editorContent?.trim()
     ) {
@@ -98,14 +101,19 @@ export default function ThreadView() {
 
     if (
       email &&
-      !summaryLoading
+      !summaryLoading &&
+      !regenSummary.isPending &&
+      !hasMutatedRef.current[email]
     ) {
+      hasMutatedRef.current[email] = true;
       regenSummary.mutate(email);
     }
   }, [
     email,
     mailersSummary,
     summaryLoading,
+    editorContent,
+    regenSummary.isPending,
   ]);
   useEffect(() => {
     if (
