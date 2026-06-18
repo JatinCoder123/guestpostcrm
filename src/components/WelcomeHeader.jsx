@@ -102,8 +102,8 @@ const WelcomeHeader = () => {
     businessEmail,
   });
 
-  const { handleClear } = useContext(PageContext);
-
+  const { handleClear, enteredEmail } = useContext(PageContext);
+const isSearchActive = Boolean(enteredEmail?.trim());
   const [animate, setAnimate] = useState(false);
 
   const [stats, setStats] = useState({
@@ -299,10 +299,12 @@ const WelcomeHeader = () => {
       <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
         {/* LEFT */}
         <div className="flex items-center gap-5">
-          <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
-            <span className="font-bold text-gray-900">Results for </span>
-            <span className="font-bold text-gray-900">{resultTitle}</span>
-          </p>
+          {!isSearchActive && (
+  <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
+    <span className="font-bold text-gray-900">Results for </span>
+    <span className="font-bold text-gray-900">{resultTitle}</span>
+  </p>
+)}
 
           {/* BADGES */}
           <div className="flex items-center gap-3">
