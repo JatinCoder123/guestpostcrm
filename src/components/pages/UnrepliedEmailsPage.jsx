@@ -90,15 +90,17 @@ const STATUS_CONFIG = [
     filter: 'customer_type'
   },
   {
-    value: "completed",
+    value: "1",
+    key: "completed",
     label: "Completed",
     icon: MdOutlineWorkspacePremium,
     color: "#56cd1f", // purple
     emailType: "email_completed",
-    filter: 'is_complete'
+    filter: 'conversation_complete'
   },
   {
-    value: "stop",
+    value: "1",
+    key: "is_stop",
     label: "Stop",
     icon: GiGoldBar,
     color: "#ab9e11", // purple
@@ -138,7 +140,7 @@ export function UnrepliedEmailsPage() {
       label: "Created At",
       accessor: "date_entered_time_ago",
       headerClasses: "",
-            sortable:true,
+      sortable: true,
 
       icon: Calendar,
       onClick: (row, index) =>
@@ -273,7 +275,7 @@ export function UnrepliedEmailsPage() {
   const statusList = STATUS_CONFIG.map((config) => {
     return {
       ...config,
-      count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
+      count: Number(summary?.stats?.[`${config?.key ?? config?.value}`]?.count || 0),
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
