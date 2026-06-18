@@ -31,11 +31,11 @@ export default function CreateDeals({ email }) {
   const { creating, message, error } = useSelector(
     (state) => state.deals,
   );
-  const { data: dealsData } = useDealsByEmail(email)
+  const { data: dealsData } = useDealsByEmail(email, showBrandTimeline)
   const { data: contactData } = useContact(email)
   const threadId = contactData?.contact?.thread_id
   const deals = dealsData?.data ?? []
-  const { data: offerData } = useOffersByEmail(email);
+  const { data: offerData } = useOffersByEmail(email, showBrandTimeline);
   const offers = offerData?.data ?? []
 
   const [send, setSend] = useState(false);

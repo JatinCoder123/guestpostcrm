@@ -42,11 +42,11 @@ export default function ThreadOffers({ email, id }) {
     useSelector((state) => state.offers);
   const { data } = useContact(email)
   const threadId = data?.contact?.thread_id
-  const { data: dealsData, isPending: dealsLoading, isError: dealsError } = useDealsByEmail(email);
-  const { data: offersData, isPending: offersLoading, isError: offersError } = useOffersByEmail(email);
+  const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
+  const { data: dealsData, isPending: dealsLoading, isError: dealsError } = useDealsByEmail(email, showBrandTimeline);
+  const { data: offersData, isPending: offersLoading, isError: offersError } = useOffersByEmail(email, showBrandTimeline);
   const offers = offersData?.data ?? []
   const deals = dealsData?.data ?? []
-  const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
   const { handleMove } = useThreadContext();
 
   const [validWebsite, setValidWebsite] = useState({});

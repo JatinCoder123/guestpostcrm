@@ -13,7 +13,8 @@ export const OrderView = ({ data, setSend, email }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
   const { creatingLinkMessage, updating, updateLinkMessage } = useSelector((state) => state.orders);
-  const { data: ordersData } = useOrdersByEmail(email);
+  const { showBrandTimeline } = useSelector(state => state.brandTimeline)
+  const { data: ordersData } = useOrdersByEmail(email, showBrandTimeline);
   const statusLists = ordersData?.order_status_list ?? {}
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showConsent, setShowConsent] = useState(false);

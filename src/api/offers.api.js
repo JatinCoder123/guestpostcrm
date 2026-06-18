@@ -12,7 +12,7 @@ export const getAllOffers = ({
         body: {
             action: "fetch",
             module: "outr_offer",
-            contact_information:"name",
+            contact_information: "name",
             fields: [
                 "name",
                 "email_c",
@@ -109,12 +109,14 @@ export const getOfferById = (
             id,
         },
     });
-export const getOffersByEmail = (
-    email
+export const getOffersByEmail = async (
+    email,
+    brandTimeline = false
 ) =>
     fetchGpc({
         params: {
-            type: "get_offers",
+            type: brandTimeline ? "brandTimeline" : "get_offers",
+            case: brandTimeline ? "offers" : undefined,
             email,
             page: 1,
             page_size: 50,

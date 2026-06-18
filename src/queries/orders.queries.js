@@ -41,10 +41,11 @@ export const orderKeys = {
         "id",
         id,
     ],
-    byEmail: (email) => [
+    byEmail: (email, brandTimeline) => [
         "orders",
         "email",
         email,
+        brandTimeline
     ],
 };
 
@@ -201,17 +202,17 @@ export const useUpdateOrder = () => {
     });
 };
 export const useOrdersByEmail = (
-    email = ""
+    email = "", brandTimeline
 ) =>
     useQuery({
         queryKey:
             orderKeys.byEmail(
-                email
+                email, brandTimeline
             ),
 
         queryFn: () =>
             getOrdersByEmail(
-                email
+                email, brandTimeline
             ),
 
         enabled: !!email,

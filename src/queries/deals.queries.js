@@ -38,10 +38,11 @@ export const dealKeys = {
         "id",
         id,
     ],
-    byEmail: (email) => [
+    byEmail: (email, brandTimeline = false) => [
         "deals",
         "email",
         email,
+        brandTimeline,
     ],
 };
 
@@ -90,10 +91,10 @@ export const useInfiniteDeals =
             staleTime:
                 5 * 60 * 1000,
         });
-export const useDealsByEmail = (email = "") =>
+export const useDealsByEmail = (email = "", brandTimeline) =>
     useQuery({
-        queryKey: dealKeys.byEmail(email),
-        queryFn: () => getDealsByEmail(email),
+        queryKey: dealKeys.byEmail(email, brandTimeline),
+        queryFn: () => getDealsByEmail(email, brandTimeline),
     });
 
 export const useDeleteDeal =

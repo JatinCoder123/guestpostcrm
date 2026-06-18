@@ -74,4 +74,12 @@ export const getDealById = (
         },
         body: { id },
     });
-export const getDealsByEmail = (email) => fetchGpc({ params: { type: "get_deals", email, page: 1, page_size: 50 } })
+export const getDealsByEmail = async (email, brandTimeline) => fetchGpc({
+    params: {
+        type: brandTimeline ? "brandTimeline" : "get_deals",
+        case: brandTimeline ? "deal" : undefined,
+        email,
+        page: 1,
+        page_size: 50,
+    },
+});

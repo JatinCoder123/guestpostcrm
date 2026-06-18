@@ -18,16 +18,17 @@ import { queryClient } from "../../../lib/queryClient";
 export default function ThreadOrders({ email, id }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { showBrandTimeline, contacts } = useSelector(
+    (state) => state.brandTimeline,
+  );
   const [currentOrders, setCurrentOrders] = useState([]);
   const [send, setSend] = useState();
   const { data } = useContact(email)
   const threadId = data?.contact?.thread_id
   const { message, error } = useSelector((state) => state.orders);
-  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(email);
+  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(email, showBrandTimeline);
   const orders = ordersData?.data ?? []
-  const { showBrandTimeline, contacts } = useSelector(
-    (state) => state.brandTimeline,
-  );
+
   const { handleMove } = useThreadContext();
   useEffect(() => {
     let activeOrders = [];

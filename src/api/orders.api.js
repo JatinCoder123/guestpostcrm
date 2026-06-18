@@ -139,11 +139,12 @@ export const getOrderStats = (
 }
 
 export const getOrdersByEmail = (
-    email
+    email, brandTimeline
 ) =>
     fetchGpc({
         params: {
-            type: "get_orders",
+            type: brandTimeline ? "brandTimeline" : "get_orders",
+            case: brandTimeline ? "orders" : undefined,
             email,
             page: 1,
             page_size: 50,

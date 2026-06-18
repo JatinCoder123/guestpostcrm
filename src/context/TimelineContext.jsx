@@ -23,6 +23,7 @@ export const TimelineProvider = ({ children }) => {
     const [currentEmail, setCurrentEmail] = useState("");
 
     const [showBrandTimeline, setShowBrandTimeline] = useState(false);
+
     usePrefetchTimeline(
         emails,
         currentEmail

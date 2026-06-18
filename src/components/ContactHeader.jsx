@@ -26,6 +26,8 @@ import { PageContext } from "../context/pageContext";
 import { useContact } from "../queries/contact.queries";
 import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
+import IconButton from "./ui/Buttons/IconButton";
+import { brandTimelineAction } from "../store/Slices/brandTimeline";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -43,6 +45,9 @@ const ContactHeader = () => {
   const { currentEmail } = useTimeline()
   const navigate = useNavigate();
   const dispatch = useDispatch()
+  const { showBrandTimeline, contacts = [] } = useSelector(
+    (state) => state.brandTimeline,
+  );
 
   const { data, isPending } = useContact(currentEmail);
   const contactInfo = data?.contact
@@ -50,12 +55,10 @@ const ContactHeader = () => {
   const email = contactInfo?.email1;
   const { showNextPrev, handleDateClick } = useContext(PageContext);
 
-  const { data: dealsData } = useDealsByEmail(currentEmail);
+  const { data: dealsData } = useDealsByEmail(currentEmail, showBrandTimeline);
   const emailDeals = dealsData?.data ?? []
 
-  const { showBrandTimeline, contacts = [] } = useSelector(
-    (state) => state.brandTimeline,
-  );
+
 
 
   const [showSidebar, setShowSidebar] = useState(false);
@@ -246,7 +249,7 @@ const ContactHeader = () => {
                         ? "Hide Brand Timeline"
                         : "Show Brand Timeline"
                     }
-                    onClick={handleBrandTimeline}
+                    onClick={() => dispatch(brandTimelineAction.setShowBrandTimeline(!showBrandTimeline))}
                   />
                 )} */}
               </div>

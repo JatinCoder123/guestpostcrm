@@ -7,7 +7,6 @@ import MailerSummaryHeader from "../MailerSummaryHeader";
 import ContactHeader from "../ContactHeader";
 import ActionButton from "../ActionButton";
 import { NoSearchFoundPage } from "../NoSearchFoundPage";
-
 import MessageModal from "../MessageModal";
 import LatestMessage from "../LatestMessage";
 import { useTimeline } from "../../context/TimelineContext";
@@ -15,11 +14,13 @@ import { useTimelineLoading } from "../../hooks/useTimelineLoading";
 import { useInfiniteLedger } from "../../queries/ledger.queries";
 export function TimelinePage() {
   const [showAvatar, setShowAvatar] = useState(false);
+  const { showBrandTimeline } = useSelector(state => state.brandTimeline)
+
   const [selectedMessage, setSelectedMessage] = useState(null);
   const { isTimelineLoading, emailsLoading, ledgerLoading } = useTimelineLoading()
   const [showMessageModal, setShowMessageModal] = useState(false);
   const { currentEmail } = useTimeline()
-  const { data } = useInfiniteLedger(currentEmail);
+  const { data } = useInfiniteLedger(currentEmail, showBrandTimeline);
   const ladger =
     data?.pages?.flatMap(
       (page) => page.data || []

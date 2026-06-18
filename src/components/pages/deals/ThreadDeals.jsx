@@ -39,8 +39,8 @@ export default function ThreadDeals({ email, id }) {
   const { showBrandTimeline, contacts } = useSelector((state) => state.brandTimeline);
 
   const { deleting, updating, message, error, deleteDealId } = useSelector((state) => state.deals);
-  const { data: dealsData, isPending: dealsLoading, isError: dealsError } = useDealsByEmail(email);
-  const { data: offersData, isPending: offersLoading, isError: offersError } = useOffersByEmail(email);
+  const { data: dealsData, isPending: dealsLoading, isError: dealsError } = useDealsByEmail(email, showBrandTimeline);
+  const { data: offersData, isPending: offersLoading, isError: offersError } = useOffersByEmail(email, showBrandTimeline);
   const { handleMove } = useThreadContext();
 
   const [validWebsite, setValidWebsite] = useState({});

@@ -1,3 +1,4 @@
+import { useSelector } from "react-redux";
 import { useTimeline } from "../context/TimelineContext";
 import { useContact } from "../queries/contact.queries";
 import { useDealsByEmail } from "../queries/deals.queries";
@@ -11,15 +12,16 @@ import { useTablePreference } from "./useTablePreference";
 
 export const useTimelineLoading = () => {
     const { currentEmail } = useTimeline();
+    const { showBrandTimeline } = useSelector(state => state.brandTimeline)
     const preferences = useTablePreference("emails");
     const emailQuery = useInfiniteEmails(preferences)
     const contactQuery = useContact(currentEmail);
     const mailerSummaryQuery = useMailerSummary(currentEmail);
     const threadQuery = useThread(currentEmail);
-    const ledgerQuery = useInfiniteLedger(currentEmail);
-    const dealsQuery = useDealsByEmail(currentEmail);
-    const offersQuery = useOffersByEmail(currentEmail);
-    const ordersQuery = useOrdersByEmail(currentEmail);
+    const ledgerQuery = useInfiniteLedger(currentEmail, showBrandTimeline);
+    const dealsQuery = useDealsByEmail(currentEmail, showBrandTimeline);
+    const offersQuery = useOffersByEmail(currentEmail, showBrandTimeline);
+    const ordersQuery = useOrdersByEmail(currentEmail, showBrandTimeline);
     const isTimelineLoading =
         contactQuery.isLoading ||
         mailerSummaryQuery.isLoading ||

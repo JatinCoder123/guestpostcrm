@@ -29,15 +29,15 @@ export default function EditOrder({ id, email }) {
   const [order, setOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { showBrandTimeline } = useSelector((s) => s.brandTimeline);
   const { updating, message, error } =
     useSelector((s) => s.orders);
   const { data } = useContact(email)
   const threadId = data?.contact?.thread_id
-  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(email);
+  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(email, showBrandTimeline);
   const orders = ordersData?.data ?? []
   const statusLists = ordersData?.order_status_list ?? {}
   const paymentTypes = ordersData?.invoice_type_list ?? {}
-  const { showBrandTimeline } = useSelector((s) => s.brandTimeline);
   const { handleMove } = useThreadContext();
   const [send, setSend] = useState(false);
   const { data: liTemplate } = useTemplateByName("LI_ORDER_TEMPLATE");

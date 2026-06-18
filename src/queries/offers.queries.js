@@ -40,10 +40,11 @@ export const offerKeys = {
         "id",
         id,
     ],
-    byEmail: (email) => [
+    byEmail: (email, showBrandTimeline) => [
         "offers",
         "email",
         email,
+        showBrandTimeline,
     ],
 };
 
@@ -148,9 +149,9 @@ export const useDeleteOffer =
             },
         });
     };
-export const useOffersByEmail = (email = "") =>
+export const useOffersByEmail = (email = "", showBrandTimeline = false) =>
     useQuery({
-        queryKey: offerKeys.byEmail(email),
-        queryFn: () => getOffersByEmail(email),
+        queryKey: offerKeys.byEmail(email, showBrandTimeline),
+        queryFn: () => getOffersByEmail(email, showBrandTimeline),
         enabled: !!email,
     });

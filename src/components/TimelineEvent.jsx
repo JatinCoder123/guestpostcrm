@@ -13,13 +13,15 @@ import { useTimeline } from "../context/TimelineContext";
 
 const TimelineEvent = ({ handleMessageClick }) => {
   const { currentEmail } = useTimeline()
+  const { showBrandTimeline } = useSelector(state => state.brandTimeline)
+
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } = useInfiniteLedger(currentEmail);
+  } = useInfiniteLedger(currentEmail, showBrandTimeline);
   const ladger =
     data?.pages?.flatMap(
       (page) => page.data || []
@@ -31,9 +33,6 @@ const TimelineEvent = ({ handleMessageClick }) => {
 
 
   const loading = isPending || isFetchingNextPage;
-  const { showBrandTimeline } = useSelector(
-    (state) => state.brandTimeline
-  );
 
   const [selectedView, setSelectedView] =
     useState("important");

@@ -42,13 +42,14 @@ const MailerSummaryHeader = () => {
   } = useSelector((state) => state.sync);
   const [showSyncData, setShowSyncData] = useState(false);
   const dispatch = useDispatch();
-  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(currentEmail);
-  const { data: offersData, isLoading: offersLoading } = useOffersByEmail(currentEmail);
-  const { data: dealsData, isLoading: dealsLoading } = useDealsByEmail(currentEmail);
+  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
+  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(currentEmail, showBrandTimeline);
+  const { data: offersData, isLoading: offersLoading } = useOffersByEmail(currentEmail, showBrandTimeline);
+  const { data: dealsData, isLoading: dealsLoading } = useDealsByEmail(currentEmail, showBrandTimeline);
   const orders = ordersData?.data
   const offers = offersData?.data
   const deals = dealsData?.data
-  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
+
 
   const [emailData, setEmailData] = useState({
     orders: [],

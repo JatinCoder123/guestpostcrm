@@ -4,7 +4,6 @@ import {
 
 import {
     getLedger,
-    getBrandLedger,
     getChildLedger,
 } from "../api/ledger.api";
 export const ledgerKeys = {
@@ -12,10 +11,12 @@ export const ledgerKeys = {
 
     lists: (
         email,
+        brandTimeline
     ) => [
             "ledger",
             "list",
             email,
+            brandTimeline
         ],
     childLists: (
         parentId,
@@ -34,12 +35,10 @@ export const ledgerKeys = {
             email,
         ],
 };
-export const useInfiniteLedger = (
-    email,
-) => {
+export const useInfiniteLedger = (email, brandTimeline) => {
     return useInfiniteQuery({
         queryKey:
-            ledgerKeys.lists(email),
+            ledgerKeys.lists(email, brandTimeline),
 
         queryFn: ({
             pageParam = 1,
@@ -47,6 +46,7 @@ export const useInfiniteLedger = (
             getLedger({
                 email,
                 page: pageParam,
+                brandTimeline
             }),
 
         enabled: !!email,
@@ -80,34 +80,3 @@ export const useInfiniteChildLedger = (parentId) => useInfiniteQuery({
         return undefined;
     },
 });
-export const useInfiniteBrandLedger =
-    (
-        email,
-    ) => {
-        return useInfiniteQuery({
-            queryKey:
-                ledgerKeys.brandLists(email),
-
-            queryFn: ({
-                pageParam = 1,
-            }) =>
-                getBrandLedger({ email, page: pageParam, }),
-
-            enabled: !!email,
-
-            initialPageParam: 1,
-
-            getNextPageParam: (
-                lastPage
-            ) => {
-                if (
-                    lastPage.page <
-                    lastPage.total_pages
-                ) {
-                    return (lastPage.page + 1)
-                }
-
-                return undefined;
-            },
-        });
-    };
