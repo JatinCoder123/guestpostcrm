@@ -197,7 +197,7 @@ export function TopNav() {
       data-tour="top-nav"
       className="sticky top-0 z-50 flex h-[70px] items-center px-3 gap-3"
       style={{
-        background:   "linear-gradient(180deg,#ffffff 0%,#edeef6 100%)",
+        background: "linear-gradient(135deg, #ddeaff 100%)",
         borderRadius: "26px",
         border:       "1px solid rgba(99,102,241,0.16)",
         borderBottom: "1.5px solid rgba(99,102,241,0.26)",
@@ -227,9 +227,8 @@ export function TopNav() {
           CENTER — Search OR Active banner
       ══════════════════════════════════════ */}
       <div
-  className={`flex flex-1 items-center gap-2 min-w-0 ml-5 ${
-    isSearchActive ? "justify-center" : "justify-start"
-  }`}
+  className="flex flex-1 items-center gap-2 min-w-0 ml-5 justify-center" 
+  
   data-tour="top-nav-search"
 >
         <AnimatePresence mode="wait">
@@ -282,21 +281,9 @@ export function TopNav() {
             </motion.div>
           ) : (
             /* ── Search + Period ── */
-            <motion.div
-              key="search-controls"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{   opacity: 0, y: 6 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              className="flex items-center gap-2"
-            >
+            
               <GlobalSearch />
-              <DropDown
-                options={periodOptions}
-                handleSelectOption={handleSelectPeriod}
-                timeline={timeline}
-              />
-            </motion.div>
+           
           )}
         </AnimatePresence>
       </div>
