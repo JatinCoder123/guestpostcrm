@@ -54,8 +54,7 @@ export const useContact = (email) => {
             getContactByEmail(email),
 
         enabled: Boolean(email),
-
-        staleTime: 5 * 60 * 1000, // 5 min
+        // 5 min
     });
 };
 /**
@@ -75,8 +74,6 @@ export const useContactStats = (
                 filters
             ),
 
-        staleTime:
-            5 * 60 * 1000,
     });
 };
 /**
@@ -112,7 +109,6 @@ export const useInfiniteContacts = (
             return undefined;
         },
 
-        staleTime: 5 * 60 * 1000,
     });
 };
 
