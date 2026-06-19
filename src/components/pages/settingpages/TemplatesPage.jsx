@@ -16,6 +16,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getDomain } from "../../../assets/assets";
 import TinyEditor from "../../TinyEditor";
 import { apiRequest, fetchGpc } from "../../../services/api";
+import "../../../lib/tinymce"
 
 // ─── Utility ────────────────────────────────────────────────────────────────
 const decodeHtmlEntities = (str) => {
@@ -31,6 +32,7 @@ const TINY_INIT = {
   menubar: "file edit view insert format tools table help",
   branding: false,
   statusbar: true,
+  license_key: 'gpl',
   plugins: `
     advlist autolink directionality
     visualblocks visualchars wordcount
@@ -850,7 +852,6 @@ export default function TemplatesPage() {
                 </div>
               )}
               <Editor
-                apiKey={TINY_EDITOR_API_KEY}
                 value={newTemplateContent}
                 onEditorChange={setNewTemplateContent}
                 init={TINY_INIT}
@@ -1001,7 +1002,6 @@ export default function TemplatesPage() {
 
             <div className="flex-1 overflow-hidden">
               <Editor
-                apiKey={TINY_EDITOR_API_KEY}
                 value={editorContent}
                 onEditorChange={setEditorContent}
                 initialValue={viewItem.body_html}
