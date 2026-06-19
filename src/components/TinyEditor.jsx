@@ -30,7 +30,6 @@ const TinyEditor = ({
           init={{
             license_key: 'gpl',
             height: "100%",
-            menubar: true,
             branding: false,
             statusbar: true,
 

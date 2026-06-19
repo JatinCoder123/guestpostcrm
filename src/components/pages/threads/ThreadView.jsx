@@ -51,11 +51,9 @@ export default function ThreadView() {
   const { data, isPending: summaryLoading } = useMailerSummary(email);
   const regenSummary = useRegenMailerSummary();
   const mailersSummary = data?.mailers_summary
-  console.log("MAI", mailersSummary)
-
-
   const lastMessageRef = useRef(null);
   const hasMutatedRef = useRef({});
+  const lastLoadedRef = useRef({ email: "", aiResponse: "" });
 
   useIdle({ idle: false });
 
@@ -80,35 +78,45 @@ export default function ThreadView() {
   const [focusedIndex, setFocusedIndex] = useState(
     visibleMessages?.length - 1
   );
+  // Clear editor content when email changes to prevent showing old thread's content
+  useEffect(() => {
+    if (email) {
+      setEditorContent("");
+    }
+  }, [email, setEditorContent]);
+
   useEffect(() => {
     if (!email) return;
 
+    // If it's currently loading or regenerating, don't update/mutate yet.
+    if (summaryLoading || regenSummary.isPending) return;
 
+    const aiResponse = mailersSummary?.ai_response;
 
-    setEditorContent(
-      mailersSummary.ai_response
-    );
+    // If the AI response is not present, regenerate summary.
+    if (!aiResponse) {
+      if (!hasMutatedRef.current[email]) {
+        hasMutatedRef.current[email] = true;
+        regenSummary.mutate(email);
+      }
+      return;
+    }
 
+    // If AI response is present and hasn't been set for the current email, set it.
     if (
-      email &&
-      !summaryLoading &&
-      !regenSummary.isPending &&
-      !hasMutatedRef.current[email]
+      lastLoadedRef.current.email !== email ||
+      lastLoadedRef.current.aiResponse !== aiResponse
     ) {
-      hasMutatedRef.current[email] = true;
-      regenSummary.mutate(email);
+      setEditorContent(aiResponse);
+      lastLoadedRef.current = { email, aiResponse };
     }
   }, [
     email,
     mailersSummary,
     summaryLoading,
-    editorContent,
     regenSummary.isPending,
+    setEditorContent,
   ]);
-  useEffect(() => {
-    if (summaryLoading) return;
-    setEditorContent(mailersSummary?.ai_response ?? "");
-  }, [mailersSummary?.ai_response, summaryLoading]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
@@ -398,7 +406,7 @@ export default function ThreadView() {
                       {/* RIGHT PANEL */}
                       <div className="w-[60%] bg-white p-2 rounded-lg h-full relative">
                         {/* LOADING */}
-                        {summaryLoading && (
+                        {(summaryLoading || regenSummary.isPending) && (
                           <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-lg">
                             <div className="flex flex-col items-center gap-3">
                               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
