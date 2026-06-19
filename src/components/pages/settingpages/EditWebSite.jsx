@@ -61,37 +61,37 @@ const fieldConfig = [
   },
   {
     key: "minimum_price",
-    label: "Brand Minimum Amount",
+    label: "Final (Brand)",
     type: "number",
     icon: DollarSign,
   },
   {
   key: "average_amount",
-  label: "Average Amount (Brand)",
+  label: "Closure (Brand)",
   type: "number",
   icon: DollarSign,
 },
   {
   key: "non_brand_average_amount",
-  label: "Average Amount (Non-Brand)",
+  label: "Closure (Non-Brand)",
   type: "number",
   icon: DollarSign,
 },
   {
     key: "amount",
-    label: "Brand Maximum Amount",
+    label: "Start (Brand)",
     type: "number",
     icon: DollarSign,
   },
   {
     key: "non_brand_minimum_amount",
-    label: "Non-Brand Minimum Amount",
+    label: "Final (Non-Brand)",
     type: "number",
     icon: DollarSign,
   },
   {
     key: "non_brand_maximum_amount",
-    label: "Non-Brand Maximum Amount",
+    label: "Start (Non-Brand)",
     type: "number",
     icon: DollarSign,
   },
@@ -122,11 +122,11 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
       setForm({
         id: item.id || "",
         name: item.name || "",
-        description: item.name || "",
         slug: item.slug || "",
         da: item.da || "",
         pa: item.pa || "",
         dr: item.dr || "",
+        description: item.name || "",
         spam_score: item.spam_score || "",
         google_traffic: item.google_traffic || "",
         traffic: item.traffic || "",
@@ -160,7 +160,11 @@ const updateField = (key, value) => {
     }
     console.log(form);
 
-    const updated = { ...item, ...form };
+    const updated = {
+  ...item,
+  ...form,
+  description: form.name,
+};
 
     if (item.type === "new") {
       props.handleCreate(updated);
