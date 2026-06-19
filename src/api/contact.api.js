@@ -152,6 +152,18 @@ export const getAllContacts = async ({
     });
     return data;
 };
+export const getAllUnreadEmails = async ({
+    page = 1,
+    per_page = 20
+} = {}) => {
+    const data = await fetchGpc({ params: { type: 'email_unread', page, per_page } })
+    return data;
+};
+export const getUnreadCount = async () => {
+    const data = await fetchGpc({ params: { type: "email_stats" } });
+    console.log("UNREAD COUNT", data?.data?.unread)
+    return data?.data?.unread;
+};
 
 /**
  * Get single contact by email

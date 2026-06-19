@@ -23,7 +23,7 @@ import { MdOutlineWorkspacePremium } from "react-icons/md";
 import { FaBtc } from "react-icons/fa";
 import { IoIosMailUnread } from "react-icons/io";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
-import { useEmailStats, useInfiniteEmails } from "../../queries/email.queries.js";
+import { useEmailStats, useInfiniteEmails, useUnreadCount } from "../../queries/email.queries.js";
 const STATUS_CONFIG = [
   {
     value: "unread",
@@ -111,13 +111,15 @@ const STATUS_CONFIG = [
 ];
 export function UnrepliedEmailsPage() {
   const preferences = useTablePreference("emails");
+  const { data: unreadCount, isPending: unreadLoading } = useUnreadCount()
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } = useInfiniteEmails(preferences);
+  } = useInfiniteEmails(preferences)
+
   const { data: summary } = useEmailStats();
   const { handleMove } = useThreadContext();
   const { handleDateClick } = useContext(PageContext);
@@ -148,7 +150,7 @@ export function UnrepliedEmailsPage() {
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered_time_ago}
+          {unread ? row?.date_entered : row.date_entered_time_ago}
         </span>
       ),
     },
@@ -275,10 +277,11 @@ export function UnrepliedEmailsPage() {
   const statusList = STATUS_CONFIG.map((config) => {
     return {
       ...config,
-      count: Number(summary?.stats?.[`${config?.key ?? config?.value}`]?.count || 0),
+      count: config.value == 'unread' ? (unreadLoading ? 0 : Number(unreadCount)) : Number(summary?.stats?.[`${config?.key ?? config?.value}`]?.count || 0),
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
+  const unread = preferences.filters?.status == 'unread'
 
   return (
     <>
@@ -286,7 +289,10 @@ export function UnrepliedEmailsPage() {
         tableData={emails}
         tableName={"Unreplied"}
         columns={columns}
-        filterColumns={filterColumns}
+        filterColumns={!unread && filterColumns}
+        searching={!unread}
+        sortingFilter={!unread}
+        timefilter={!unread}
         slice={"emails"}
         statusList={statusList}
         statusCount={statusCount}

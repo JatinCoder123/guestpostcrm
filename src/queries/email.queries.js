@@ -7,7 +7,9 @@ import {
 
 import {
     getAllContacts,
+    getAllUnreadEmails,
     getContactStats,
+    getUnreadCount,
 } from "../api/contact.api";
 
 
@@ -17,10 +19,11 @@ import {
 export const emailKeys = {
     all: ["emails"],
 
-    lists: (filters = {}) => [
+    lists: (filters = {}, unread = false) => [
         "emails",
         "list",
         filters,
+        unread
     ],
 
     stats: () => [
@@ -43,16 +46,27 @@ export const useEmailStats = (
             5 * 60 * 1000,
     });
 };
+export const useUnreadCount = (
+) => {
+    return useQuery({
+        queryKey: ["emails", "unread", "count"],
+        queryFn: () => getUnreadCount(),
+    });
+};
 export const useInfiniteEmails = (
     preferences = {}
 ) => {
+    const unread = preferences?.filters.status == 'unread';
+    const effectivePreferences = unread ? {} : preferences;
     return useInfiniteQuery({
         queryKey:
-            emailKeys.lists(preferences),
+            emailKeys.lists(effectivePreferences, unread),
 
         queryFn: ({ pageParam = 1 }) =>
-            getAllContacts({
-                preferences,
+            unread ? getAllUnreadEmails({
+                page: pageParam,
+            }) : getAllContacts({
+                preferences: effectivePreferences,
                 page: pageParam,
             }),
 

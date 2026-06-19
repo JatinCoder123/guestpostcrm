@@ -83,6 +83,9 @@ const TableView = ({
   filterColumns = [],
   preferences,
   defaultStatus,
+  searching = true,
+  sortingFilter = true,
+  timefilter = true,
   fetchNextPage,
   children,
   pageCount,
@@ -195,6 +198,9 @@ const TableView = ({
     slice,
     sorting,
     fetchNextPage,
+    searching,
+    sortingFilter,
+    timefilter,
     filterColumns,
     loading,
     selectedRows,
@@ -264,10 +270,10 @@ const TableView = ({
               label={showStatus ? "Hide Stats" : "Show Stats"}
             />}
 
-            <SortDropdown />
+            {sortingFilter && <SortDropdown />}
 
           </div>
-          <DateRangeFilter
+          {timefilter && <DateRangeFilter
             fromDate={fromDate}
             fromTime={fromTime}
             toDate={toDate}
@@ -285,8 +291,8 @@ const TableView = ({
               )
             }
             onReset={handleResetFilter}
-          />
-          <SearchBar />
+          />}
+          {searching && <SearchBar />}
           <div className="ml-auto flex gap-2">
             {canAdd && <IconButton
               onClick={handleAddClick}

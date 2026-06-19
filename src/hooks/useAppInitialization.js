@@ -7,6 +7,7 @@ import { getAllUsers } from "../api/users.api";
 import { userKeys } from "../queries/users.queries";
 import { getControllers } from "../api/controller.api";
 import { controllersKeys } from "../queries/controller.queries";
+import { getUnreadCount } from "../api/contact.api";
 
 export const useAppInitialization =
     () => {
@@ -20,6 +21,10 @@ export const useAppInitialization =
                 queryClient.prefetchQuery({
                     queryKey: webKeys.lists,
                     queryFn: getWebsites,
+                }),
+                queryClient.prefetchQuery({
+                    queryKey: ["emails", "unread", "count"],
+                    queryFn: getUnreadCount,
                 }),
                 queryClient.prefetchQuery({
                     queryKey: controllersKeys.lists,
