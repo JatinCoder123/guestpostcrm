@@ -83,3 +83,9 @@ export const INITIAL_TABLE_FILTERS = {
 
 
 };
+export const INITIAL_TABLE_SORTING = {
+    emails: {
+        order_by: "date_modified",
+        order_dir: "DESC",
+    },
+};

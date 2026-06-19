@@ -1,7 +1,7 @@
 // preferenceSlice.js
 
 import { createSlice } from "@reduxjs/toolkit";
-import { getStoredPreferences, INITIAL_TABLE_FILTERS } from "../../utils/preferenceStorage";
+import { getStoredPreferences, INITIAL_TABLE_FILTERS, INITIAL_TABLE_SORTING } from "../../utils/preferenceStorage";
 
 
 export const getDefaultTablePreference = () => ({
@@ -48,6 +48,7 @@ export const initializeTable =
                                 INITIAL_TABLE_FILTERS[
                                 table
                                 ] || {},
+                            ...(INITIAL_TABLE_SORTING[table] || {}),
 
                             initialFiltersApplied:
                                 true,

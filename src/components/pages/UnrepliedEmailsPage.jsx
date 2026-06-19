@@ -293,6 +293,7 @@ export function UnrepliedEmailsPage() {
         searching={!unread}
         sortingFilter={!unread}
         timefilter={!unread}
+        timefilterField="date_modified"
         slice={"emails"}
         statusList={statusList}
         statusCount={statusCount}
