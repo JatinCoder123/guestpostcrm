@@ -29,6 +29,8 @@ const decodeHtmlEntities = (str) => {
 
 // ─── Shared TinyMCE init config ─────────────────────────────────────────────
 const TINY_INIT = {
+  license_key: 'gpl',
+
   height: "100%",
   menubar: "file edit view insert format tools table help",
   branding: false,
@@ -915,7 +917,6 @@ export default function TemplatesPage() {
                 </div>
               )}
               <Editor
-                apiKey={TINY_EDITOR_API_KEY}
                 value={newTemplateContent}
                 onEditorChange={setNewTemplateContent}
                 init={TINY_INIT}
@@ -1066,7 +1067,6 @@ export default function TemplatesPage() {
 
             <div className="flex-1 overflow-hidden">
               <Editor
-                apiKey={TINY_EDITOR_API_KEY}
                 value={editorContent}
                 onEditorChange={setEditorContent}
                 initialValue={viewItem.body_html}

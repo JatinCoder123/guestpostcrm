@@ -88,35 +88,35 @@ function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
    Main TopNav
 ───────────────────────────────────────────────────────────── */
 export function TopNav() {
-  const dispatch   = useDispatch();
+  const dispatch = useDispatch();
   const navigateTo = useNavigate();
 
   /* ── Data ── */
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { enteredEmail, handleDateClick }               = useContext(PageContext);
-  const { notificationCount }                           = useContext(SocketContext);
-  const { user, error }                                 = useSelector((s) => s.user);
-  const { timeline }                                    = useSelector((s) => s.ladger);
-  const { count: hotCount }                             = useSelector((s) => s.hot);
+  const { enteredEmail, handleClear } = useContext(PageContext);
+  const { notificationCount } = useContext(SocketContext);
+  const { user, error } = useSelector((s) => s.user);
+  const { timeline } = useSelector((s) => s.ladger);
+  const { count: hotCount } = useSelector((s) => s.hot);
 
   /* ── Local state ── */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [animate,         setAnimate]         = useState(false);
-  const [errorLogCount,   setErrorLogCount]   = useState(0);
-  const [profilePreview,  setProfilePreview]  = useState(
+  const [animate, setAnimate] = useState(false);
+  const [errorLogCount, setErrorLogCount] = useState(0);
+  const [profilePreview, setProfilePreview] = useState(
     () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
   );
   const [showCropper, setShowCropper] = useState(false);
-  const [cropImage,   setCropImage]   = useState(null);
+  const [cropImage, setCropImage] = useState(null);
 
   const profileMenuRef = useRef(null);
-  const prevCountRef   = useRef(0);
+  const prevCountRef = useRef(0);
 
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
-  const outboxCount    = outboxData?.stats?.all?.count ?? 0;
-  const showOutbox     = outboxCount > 0 && !outboxPending;
-  const showErrorLog   = Boolean(notificationCount?.error_log_created);
+  const outboxCount = outboxData?.stats?.all?.count ?? 0;
+  const showOutbox = outboxCount > 0 && !outboxPending;
+  const showErrorLog = Boolean(notificationCount?.error_log_created);
 
   /* ── Effects ── */
   useEffect(() => {
@@ -164,9 +164,7 @@ export function TopNav() {
     setShowProfileMenu(false);
   };
 
-  const handleClearSearch = () => {
-    handleDateClick({ email: "", navigate: "/" });
-  };
+
 
   const handleProfileUpload = (e) => {
     const file = e.target.files?.[0];
@@ -199,7 +197,7 @@ export function TopNav() {
       style={{
         background: "linear-gradient(135deg, #ddeaff 100%)",
         borderRadius: "26px",
-        border:       "1px solid rgba(99,102,241,0.16)",
+        border: "1px solid rgba(99,102,241,0.16)",
         borderBottom: "1.5px solid rgba(99,102,241,0.26)",
         boxShadow: [
           "inset 2px 3px 6px rgba(255,255,255,0.95)",
@@ -227,26 +225,26 @@ export function TopNav() {
           CENTER — Search OR Active banner
       ══════════════════════════════════════ */}
       <div
-  className="flex flex-1 items-center gap-2 min-w-0 ml-5 justify-center" 
-  
-  data-tour="top-nav-search"
->
+        className="flex flex-1 items-center gap-2 min-w-0 ml-5 justify-center"
+
+        data-tour="top-nav-search"
+      >
         <AnimatePresence mode="wait">
           {isSearchActive ? (
             /* ── Active record banner ── */
             <motion.div
               key="banner"
               initial={{ opacity: 0, y: -6, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0,  scale: 1    }}
-              exit={{   opacity: 0, y: -6, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.97 }}
               transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
               role="status"
               aria-live="polite"
               className="flex items-center gap-2.5 rounded-2xl border px-4 py-2 max-w-[440px]"
               style={{
-                background:  "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
-                border:      "1px solid rgba(99,102,241,0.22)",
-                boxShadow:   "0 2px 12px rgba(99,102,241,0.12)",
+                background: "linear-gradient(100deg,#eef2ff 0%,#e0f2fe 100%)",
+                border: "1px solid rgba(99,102,241,0.22)",
+                boxShadow: "0 2px 12px rgba(99,102,241,0.12)",
               }}
             >
               {/* Pulsing live dot */}
@@ -273,7 +271,7 @@ export function TopNav() {
               <button
                 type="button"
                 aria-label="Clear current record"
-                onClick={handleClearSearch}
+                onClick={() => handleClear()}
                 className="ml-1 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
               >
                 <X size={11} strokeWidth={2.5} />
@@ -281,9 +279,9 @@ export function TopNav() {
             </motion.div>
           ) : (
             /* ── Search + Period ── */
-            
-              <GlobalSearch />
-           
+
+            <GlobalSearch />
+
           )}
         </AnimatePresence>
       </div>
@@ -307,7 +305,7 @@ export function TopNav() {
           label="Payment Reminders"
           color="purple"
           count={3}
-          onClick={() => {}}
+          onClick={() => { }}
         />
 
         {/* Outbox — conditional */}
@@ -380,8 +378,8 @@ export function TopNav() {
             {showProfileMenu && (
               <motion.div
                 initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0,  scale: 1    }}
-                exit={{   opacity: 0, y: -8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.96 }}
                 transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
                 className="absolute right-0 mt-2.5 w-72 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10"
               >
