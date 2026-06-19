@@ -51,7 +51,7 @@ export default function ThreadView() {
   const { data, isPending: summaryLoading } = useMailerSummary(email);
   const regenSummary = useRegenMailerSummary();
   const mailersSummary = data?.mailers_summary
-
+  console.log("MAI", mailersSummary)
 
 
   const lastMessageRef = useRef(null);
@@ -83,21 +83,11 @@ export default function ThreadView() {
   useEffect(() => {
     if (!email) return;
 
-    if (
-      editorContent?.trim()
-    ) {
-      return;
-    }
 
-    if (
-      mailersSummary?.ai_response
-    ) {
-      setEditorContent(
-        mailersSummary.ai_response
-      );
 
-      return;
-    }
+    setEditorContent(
+      mailersSummary.ai_response
+    );
 
     if (
       email &&
@@ -116,16 +106,9 @@ export default function ThreadView() {
     regenSummary.isPending,
   ]);
   useEffect(() => {
-    if (
-      mailersSummary?.ai_response
-    ) {
-      setEditorContent(
-        mailersSummary.ai_response
-      );
-    }
-  }, [
-    mailersSummary?.ai_response,
-  ]);
+    if (summaryLoading) return;
+    setEditorContent(mailersSummary?.ai_response ?? "");
+  }, [mailersSummary?.ai_response, summaryLoading]);
   const fetchFullMessage = async (messageId) => {
     try {
       setFullMessage(null);
