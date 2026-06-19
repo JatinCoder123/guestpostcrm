@@ -3,6 +3,7 @@ import { Editor } from "@tinymce/tinymce-react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { queryClient } from "../lib/queryClient"
+import "../lib/tinymce.js";
 
 const TinyEditor = ({
   editorContent,
@@ -20,7 +21,7 @@ const TinyEditor = ({
         className="h-full w-full"
       >
         <Editor
-          apiKey={TINY_EDITOR_API_KEY}
+          // apiKey={TINY_EDITOR_API_KEY}
           value={editorContent}
           onEditorChange={setEditorContent}
           onInit={(e, editor) => {
@@ -28,6 +29,7 @@ const TinyEditor = ({
             setEditorReady(true);
           }}
           init={{
+            license_key: 'gpl',
             height: "100%",
             menubar: true,
             branding: false,
@@ -40,8 +42,8 @@ const TinyEditor = ({
           fullscreen preview searchreplace
           insertdatetime lists link image media
           table charmap pagebreak nonbreaking
-          anchor code codesample help
-          emoticons quickbars
+          anchor code codesample emoticons 
+           quickbars
         `,
 
             /* ================= TOOLBAR ================= */
@@ -51,20 +53,20 @@ const TinyEditor = ({
           alignleft aligncenter alignright alignjustify |
           bullist numlist outdent indent |
           link image media table |
-          emoticons charmap insertdatetime |
+           charmap insertdatetime |
           preview fullscreen |
-          code help
+          code emoticons 
         `,
 
             toolbar_mode: "sliding",
 
             /* ================= MENUBAR ================= */
-            menubar: "file edit view insert format tools table help",
+            menubar: "file edit view insert format tools table ",
 
             /* ================= QUICKBARS ================= */
             quickbars_selection_toolbar:
-              "bold italic underline | quicklink h2 h3 blockquote",
-            quickbars_insert_toolbar: "image media table",
+              "bold emoticons italic underline | quicklink h2 h3 blockquote",
+            quickbars_insert_toolbar: "image media table emoticons",
 
 
 
@@ -158,7 +160,7 @@ export const SmallTinyEditor = ({
         animate={{ opacity: 1, y: 0 }}
       >
         <Editor
-          apiKey={TINY_EDITOR_API_KEY}
+          // apiKey={TINY_EDITOR_API_KEY}
           value={editorContent}
           onEditorChange={setEditorContent}
           onInit={(e, editor) => {
@@ -166,6 +168,7 @@ export const SmallTinyEditor = ({
             setEditorReady(true);
           }}
           init={{
+            license_key: 'gpl',
             height: "100vh",
             menubar: false,
             branding: false,
@@ -176,7 +179,7 @@ export const SmallTinyEditor = ({
 
             // ✅ Add emoji button in toolbar
             toolbar: `
-             emoticons bold italic underline link |
+              bold italic underline link | emoticons
    
     bullist numlist |
     
