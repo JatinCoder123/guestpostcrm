@@ -1,14 +1,13 @@
 import {
   createContext,
-  useContext,
   useEffect,
-  useId,
   useRef,
   useState,
 } from "react";
 import { io } from "socket.io-client";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { showConsole } from "../assets/assets.js";
-import { useDispatch } from "react-redux";
 import { eventActions } from "../store/Slices/eventSlice.js";
 import { unrepliedAction } from "../store/Slices/unrepliedEmails.js";
 import { apiRequest } from "../services/api.js";
@@ -16,24 +15,30 @@ import { queryClient } from "../lib/queryClient.js";
 import { recentKeys } from "../queries/recentAct.queries.js";
 
 const socket = io("https://socket.guestpostcrm.com");
+
 export const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
   const [currentAvatar, setCurrentAvatar] = useState();
   const [crm, setCrm] = useState("");
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
-  const dispatch = useDispatch();
   const [userIdle, setUserIdle] = useState(true);
   const [eventQueue, setEventQueue] = useState({});
+  const [activeUsers, setActiveUsers] = useState([]);
+
+  const dispatch = useDispatch();
+  const location = useLocation();
+
+  const {
+    user,
+    id,
+    isAuthenticated,
+  } = useSelector((state) => state.user);
+
   const eventQueueRef = useRef({});
   const currentEventThreadId = useRef(null);
-
-  useEffect(() => {
-    eventQueueRef.current = eventQueue;
-  }, [eventQueue]);
-
-  const crmRef = useRef(""); // ✅ IMPORTANT
-  const userRef = useRef(userIdle); // ✅ IMPORTANT
+  const crmRef = useRef("");
+  const userRef = useRef(userIdle);
 
   const [notificationCount, setNotificationCount] = useState({
     outr_offer: null,
@@ -46,34 +51,73 @@ export const SocketContextProvider = ({ children }) => {
     outr_paypal_invoice_links: null,
     error_log_created: null,
   });
-  const getMoveOptions = async () => {
-    try {
-      const data = await apiRequest({ endpoint: `${crm}/index.php?entryPoint=move` });
-      return data;
-    } catch (error) {
-      console.error("Error fetching move options:", error);
-      throw error;
-    }
-  };
 
-  const moveData = async (threadId, labelId) => {
-    try {
-      const data = await apiRequest({ endpoint: `${crm}/index.php?entryPoint=move`, params: { threadid: threadId, lblid: labelId } }
-      );
-      return data;
-    } catch (error) {
-      console.error("Error moving data:", error);
-      throw error;
-    }
-  };
-  // ✅ Keep ref always updated
+  useEffect(() => {
+    eventQueueRef.current = eventQueue;
+  }, [eventQueue]);
+
   useEffect(() => {
     crmRef.current = crm;
     userRef.current = userIdle;
   }, [crm, userIdle]);
+
   useEffect(() => {
     console.log(eventQueue);
   }, [eventQueue]);
+
+  useEffect(() => {
+    const presenceListHandler = (users) => {
+      setActiveUsers(Array.isArray(users) ? users : []);
+    };
+
+    socket.on("presence:list", presenceListHandler);
+
+    return () => {
+      socket.off("presence:list", presenceListHandler);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email || !crm) return;
+
+    const emitJoin = () => {
+      socket.emit("presence:join", {
+        userId: id || user.id || user.email,
+        name: user.name,
+        email: user.email,
+        crm,
+        page: location.pathname,
+      });
+    };
+
+    const handleVisibility = () => {
+      socket.emit("presence:update", {
+        page: location.pathname,
+        status: document.hidden ? "away" : "online",
+      });
+    };
+
+    emitJoin();
+
+    socket.on("connect", emitJoin);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      socket.emit("presence:leave");
+      socket.off("connect", emitJoin);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [isAuthenticated, user?.email, user?.name, user?.id, id, crm]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email || !crm) return;
+
+    socket.emit("presence:update", {
+      page: location.pathname,
+      status: document.hidden ? "away" : "online",
+    });
+  }, [location.pathname, isAuthenticated, user?.email, crm]);
+
   useEffect(() => {
     const newAvatarHandler = (data) => {
       setCurrentAvatar({
@@ -90,22 +134,27 @@ export const SocketContextProvider = ({ children }) => {
     };
 
     const newMailHandler = (data) => {
-      showConsole && crmRef.current == data.site_url && console.log("Mail site:", data.site_url);
-      showConsole && crmRef.current == data.site_url && console.log("new mail", data);
+      showConsole &&
+        crmRef.current == data.site_url &&
+        console.log("Mail site:", data.site_url);
+
+      showConsole &&
+        crmRef.current == data.site_url &&
+        console.log("new mail", data);
+
       currentEventThreadId.current = data?.thread_id;
+
       if (data?.site_url == crmRef.current) {
         if (data.name === "paypal_status_sent") {
           setInvoiceOrderId(data.order_id);
-        }
-        if (data.name === "paypal_status_sent") {
-          setInvoiceOrderId(data.order_id);
         } else if (data.name === "outr_recent_activity") {
-          queryClient.invalidateQueries({ queryKey: recentKeys.all })
+          queryClient.invalidateQueries({ queryKey: recentKeys.all });
           dispatch(eventActions.updateCount(1));
         } else {
           if (data.name === "unreplied_email") {
             dispatch(unrepliedAction.setShowNewEmailBanner(true));
           }
+
           if (userRef.current) {
             setNotificationCount((prev) => ({
               ...prev,
@@ -113,6 +162,7 @@ export const SocketContextProvider = ({ children }) => {
             }));
           } else {
             console.log("ADDING TO QUEUE");
+
             setEventQueue((prev) => ({
               ...prev,
               [data.name]: prev[data.name] ? prev[data.name] + 1 : 1,
@@ -131,7 +181,37 @@ export const SocketContextProvider = ({ children }) => {
       socket.off("latest_avatar", latestAvatarHandler);
       socket.off("new-mail", newMailHandler);
     };
-  }, []);
+  }, [dispatch]);
+
+  const getMoveOptions = async () => {
+    try {
+      const data = await apiRequest({
+        endpoint: `${crm}/index.php?entryPoint=move`,
+      });
+
+      return data;
+    } catch (error) {
+      console.error("Error fetching move options:", error);
+      throw error;
+    }
+  };
+
+  const moveData = async (threadId, labelId) => {
+    try {
+      const data = await apiRequest({
+        endpoint: `${crm}/index.php?entryPoint=move`,
+        params: {
+          threadid: threadId,
+          lblid: labelId,
+        },
+      });
+
+      return data;
+    } catch (error) {
+      console.error("Error moving data:", error);
+      throw error;
+    }
+  };
 
   return (
     <SocketContext.Provider
@@ -139,19 +219,20 @@ export const SocketContextProvider = ({ children }) => {
         currentAvatar,
         setCurrentAvatar,
         crm,
+        setCrm,
         setUserIdle,
         userIdle,
         eventQueue,
         currentEventThreadId,
         setEventQueue,
         eventQueueRef,
-        setCrm,
         invoiceOrderId,
         setInvoiceOrderId,
         getMoveOptions,
         moveData,
         notificationCount,
         setNotificationCount,
+        activeUsers,
       }}
     >
       {children}
