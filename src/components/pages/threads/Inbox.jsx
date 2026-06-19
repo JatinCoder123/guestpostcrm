@@ -131,11 +131,11 @@ const Inbox = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+            className={`flex justify-end`}
           >
             <div
               className={`relative
-w-full sm:w-[85%] md:w-[70%] lg:w-[55%] xl:w-[40%]
+w-full sm:w-[85%] md:w-[70%] lg:w-[65%] xl:w-[50%]
 min-h-[220px] sm:min-h-[240px] md:min-h-[260px]
 p-5 rounded-2xl transition-all duration-300
 flex flex-col justify-between

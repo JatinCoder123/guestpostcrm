@@ -12,7 +12,6 @@ import { useNext } from "../../../hooks/useNext";
 const Thread = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { context: { currentEmail: email, currentThread: threadId } } = useThreadContext()
   const { state } = useLocation();
   const [pdfLoading, setPdfLoading] = useState(false);

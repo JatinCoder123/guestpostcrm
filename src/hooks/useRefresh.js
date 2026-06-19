@@ -18,7 +18,7 @@ function useRefresh() {
     useEffect(() => {
         if (notificationCount.unreplied_email) {
             queryClient.invalidateQueries({ queryKey: emailKeys.all })
-            setNotificationCount((prev) => ({ ...prev }));
+            setNotificationCount((prev) => ({ ...prev, unreplied_email: null }));
         }
         if (notificationCount.outr_el_process_audit) {
             queryClient.invalidateQueries({ queryKey: hotKeys.all })

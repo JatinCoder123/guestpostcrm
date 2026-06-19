@@ -447,6 +447,7 @@ export function TopNav() {
       className="sticky top-0 z-50 flex h-[70px] items-center px-3 gap-3"
       style={{
         background: "linear-gradient(135deg, #ddeaff 100%)",
+        background: "linear-gradient(135deg, #ddeaff 100%)",
         borderRadius: "26px",
         border:       "1px solid rgba(99,102,241,0.16)",
         borderBottom: "1.5px solid rgba(99,102,241,0.26)",

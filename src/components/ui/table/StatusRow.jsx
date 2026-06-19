@@ -100,7 +100,7 @@ function StatusRow({ statusCount }) {
                                 return (
                                     <StatusDonut
                                         key={
-                                            status.value
+                                            status.key || status.value
                                         }
                                         label={
                                             status.label

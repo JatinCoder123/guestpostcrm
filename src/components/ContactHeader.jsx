@@ -10,9 +10,6 @@ import {
   Signature,
   CircleUser,
   ArrowBigDown,
-  Eye,
-  EyeOff,
-  ChevronLeft,
   Users,
   ChevronRight,
 } from "lucide-react";
@@ -42,26 +39,15 @@ const ContactHeader = () => {
   const sidebarRef = useRef(null);
   const { currentEmail } = useTimeline()
   const navigate = useNavigate();
-  const dispatch = useDispatch()
-
   const { data, isPending } = useContact(currentEmail);
   const contactInfo = data?.contact
   const hashtags = contactInfo?.hashtag?.data?.hashtags
   const email = contactInfo?.email1;
   const { showNextPrev, handleDateClick } = useContext(PageContext);
-
   const { data: dealsData } = useDealsByEmail(currentEmail);
   const emailDeals = dealsData?.data ?? []
-
-  const { showBrandTimeline, contacts = [] } = useSelector(
-    (state) => state.brandTimeline,
-  );
-
-
+  const { showBrandTimeline, contacts = [] } = useSelector((state) => state.brandTimeline);
   const [showSidebar, setShowSidebar] = useState(false);
-
-
-
 
   const CountUpWithBlast = ({ value, email }) => {
     const storageKey = `maxDealAnimated_${email}`;
@@ -129,31 +115,11 @@ const ContactHeader = () => {
     { Icon: Rocket, label: "Stage", value: data?.stage },
     { Icon: Hourglass, label: "Status", value: data?.status },
     { Icon: Lock, label: "Category", value: data?.customer_type },
-    {
-      Icon: ArrowBigDown,
-      label: "Direction",
-      value: contactInfo?.direction ?? "-",
-    },
-    {
-      Icon: Flame,
-      label: "Assign To",
-      value: contactInfo?.gpc_assigned_to ?? "-",
-    },
-    {
-      Icon: Signature,
-      label: "Last Activity",
-      value: contactInfo?.last_activity ?? "-",
-    },
-    {
-      Icon: CircleUser,
-      label: "Last Activity By",
-      value: contactInfo?.last_user ?? "-",
-    },
-    {
-      Icon: Clock,
-      label: "Last Updated At",
-      value: contactInfo?.last_activity_date ?? "-",
-    },
+    { Icon: ArrowBigDown, label: "Direction", value: contactInfo?.direction ?? "-" },
+    { Icon: Flame, label: "Assign To", value: contactInfo?.gpc_assigned_to ?? "-" },
+    { Icon: Signature, label: "Last Activity", value: contactInfo?.last_activity ?? "-" },
+    { Icon: CircleUser, label: "Last Activity By", value: contactInfo?.last_user ?? "-" },
+    { Icon: Clock, label: "Last Updated At", value: contactInfo?.last_activity_date ?? "-" },
   ];
   useEffect(() => {
     const handleClickOutside = (event) => {
