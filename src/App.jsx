@@ -339,7 +339,11 @@ export default function App() {
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );
-
+  useEffect(() => {
+    if (isAuthenticated) {
+      import("./lib/tinymce");
+    }
+  }, [isAuthenticated]);
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
 

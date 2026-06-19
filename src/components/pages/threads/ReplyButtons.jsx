@@ -31,7 +31,7 @@ import { BiSolidMessageCheck } from "react-icons/bi";
 import { editContact, viewEmailAction } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { useNext } from "../../../hooks/useNext";
-import { useTemplate, useTemplateByEmail, useTemplateByName } from "../../../queries/template.queries";
+import { useDefaultTemplate, useTemplate, useTemplateByEmail, useTemplateByName } from "../../../queries/template.queries";
 import { useContact } from "../../../queries/contact.queries";
 
 const ReplyButtons = ({ editorRef, editorReady }) => {
@@ -76,11 +76,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
 
   const { data: template } = useTemplate(templateId);
 
-  const { data: defaultTemplate } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=updateOffer&email=${email}`,
-    name: "DEFAULT TEMPLATE",
-    dependencies: [email],
-  });
+  const { data: defaultTemplate } = useDefaultTemplate(email)
 
   const { data: priceTemp } = useTemplateByName("PRICE_LIST");
 
@@ -119,7 +115,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
   const [stopLoading, setStopLoading] = useState(false)
   const hanldeConvDone = () => {
     dispatch(editContact({ contact: { ...contact.contact, conversation_complete: "1" }, account: { ...contact.account }, }, null,));
-    dispatch(viewEmailAction.compleConv({ message: `Conversion Complete with ${email}`, sendedEmail: email }));
+    toast.success(`Conversion Complete with ${email}`)
     moveToNext(email)
   };
   function insertAiReply(input) {
@@ -296,7 +292,6 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                 setOpenParent(null);
               }
               setShowTemplatePopup(true);
-              refetch();
             }}
             onEdit={() =>
               navigate("/settings/templates", { state: { templateId } })

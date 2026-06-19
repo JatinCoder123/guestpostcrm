@@ -3,12 +3,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Edit, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import useModule from "../hooks/useModule";
-import { LoadingChase } from "./Loading";
-import { useSelector } from "react-redux";
 import { createPortal } from "react-dom";
-import { apiRequest, fetchGpc } from "../services/api";
-import { FETCH_GPC_X_API_KEY } from "../store/constants";
+import { apiRequest } from "../services/api";
+import { getCurrentUser } from "../services/utils";
+import { useTemplatesByStage, useTemplateStages } from "../queries/template.queries";
 
 export default function TemplateSelectorModal({
   isOpen,
@@ -19,73 +17,17 @@ export default function TemplateSelectorModal({
   setFavourites,
 }) {
   const navigate = useNavigate();
-
-  const [stages, setStages] = useState({});
-  const [assignUserId, setAssignUserId] = useState(null);
-  const [stageType, setStageType] = useState("");
+  const { data: stages, isLoading: stagesLoading, refetch: refetchStages } = useTemplateStages();
+  const [stageType, setStageType] = useState(!stagesLoading && stages ? Object.keys(stages ?? {})[0] : "");
+  const { isLoading: templateListLoading, data: templateList = [], refetch: refetchTemplates } = useTemplatesByStage(stageType);
+  const assignUserId = useState(getCurrentUser()?.id ?? null);
   const [sortOption, setSortOption] = useState("newest");
-  const [stagesLoading, setStagesLoading] = useState(false);
-  const { user } = useSelector((s) => s.user);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    if (!user?.email) return;
-    const fetchUser = async () => {
-      try {
-        const result = await fetchGpc({ params: { type: 'get_user', email: user.email } });
-        if (result?.id) {
-          setAssignUserId(result.id);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user id", err);
-      }
-    };
 
-    fetchUser();
-  }, [user]);
 
-  // Fetch stages once
-  useEffect(() => {
-    if (!crmEndpoint || !isOpen) return;
-    const fetchStages = async () => {
-      setStagesLoading(true);
-      try {
-        const data = await fetchGpc({
-          params: { type: "templates" }, body: { assigned_user_id: assignUserId, stages: 2 }, method: "POST",
-        }
-        );
-        if (data && typeof data === "object") {
-          setStages(data);
-          setStageType(Object.keys(data)[0]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch stages", err);
-      } finally {
-        setStagesLoading(false);
-      }
-    };
-    fetchStages();
-  }, [crmEndpoint, isOpen]);
 
   // Template list per stage
-  const {
-    loading: templateListLoading,
-    data: templateList = [],
-    refetch: refetchTemplates,
-  } = useModule({
-    url: stageType
-      ? `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`
-      : null,
-    method: "POST",
-    body: { stage_type: stageType, assigned_user_id: assignUserId },
-    headers: {
-      "Content-Type": "application/json",
-      "X-Api-Key": FETCH_GPC_X_API_KEY, // 🔥 replace with env variable
-    },
-    name: "TEMPLATE LIST IN MODAL",
-    dependencies: [crmEndpoint, stageType],
-    enabled: !!stageType && isOpen,
-  });
 
   const filteredTemplates = useMemo(() => {
     if (!templateList?.length) return [];
@@ -195,7 +137,7 @@ export default function TemplateSelectorModal({
               <div className="text-gray-500">Loading stages…</div>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {Object.entries(stages).map(([key, label]) => (
+                {Object.entries(stages ?? {}).map(([key, label]) => (
                   <button
                     key={key}
                     onClick={() => setStageType(key)}

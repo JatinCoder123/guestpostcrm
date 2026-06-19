@@ -3,7 +3,6 @@ import { Editor } from "@tinymce/tinymce-react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { queryClient } from "../lib/queryClient"
-import "../lib/tinymce.js";
 
 const TinyEditor = ({
   editorContent,
@@ -42,7 +41,7 @@ const TinyEditor = ({
           fullscreen preview searchreplace
           insertdatetime lists link image media
           table charmap pagebreak nonbreaking
-          anchor code codesample emoticons 
+          anchor code codesample  
            quickbars
         `,
 
@@ -55,7 +54,7 @@ const TinyEditor = ({
           link image media table |
            charmap insertdatetime |
           preview fullscreen |
-          code emoticons 
+          code  
         `,
 
             toolbar_mode: "sliding",
@@ -65,8 +64,8 @@ const TinyEditor = ({
 
             /* ================= QUICKBARS ================= */
             quickbars_selection_toolbar:
-              "bold emoticons italic underline | quicklink h2 h3 blockquote",
-            quickbars_insert_toolbar: "image media table emoticons",
+              "bold  italic underline | quicklink h2 h3 blockquote",
+            quickbars_insert_toolbar: "image media table ",
 
 
 
@@ -175,11 +174,11 @@ export const SmallTinyEditor = ({
             statusbar: false,
 
             // ✅ Add emoticons plugin
-            plugins: `link lists emoticons`,
+            plugins: `link lists `,
 
             // ✅ Add emoji button in toolbar
             toolbar: `
-              bold italic underline link | emoticons
+              bold italic underline link | 
    
     bullist numlist |
     
