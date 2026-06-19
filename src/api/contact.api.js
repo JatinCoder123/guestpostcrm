@@ -71,17 +71,17 @@ export const getContactStats = async (
                     }
                 },
                 {
-                    "key": "replied",
+                    "key": "inbound",
                     "module": "Contacts",
                     "filters": {
-                        "status": "replied"
+                        "direction": "inbound"
                     }
                 },
                 {
-                    "key": "unreplied",
+                    "key": "outbound",
                     "module": "Contacts",
                     "filters": {
-                        "status": "unreplied"
+                        "direction": "outbound"
                     }
                 },
                 {
