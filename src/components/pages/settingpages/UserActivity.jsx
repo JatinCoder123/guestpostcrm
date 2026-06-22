@@ -37,7 +37,7 @@ const UserActivity = () => {
                     {user.status}
                   </span>
                 </td>
-                <td className="p-3">{user.page}</td>
+                <td className="p-3">{user.page == "/" ? "/timeline" : user.page}</td>
                 <td className="p-3">
                   {new Date(user.lastActiveAt).toLocaleString()}
                 </td>
