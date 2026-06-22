@@ -114,7 +114,7 @@ function ChildCard({ parentId, handleMessageClick }) {
     );
     return (
         <div className="mt-5 ml-2 space-y-4 relative">
-            {childLoading ? (
+            {childLoading &&
                 [...Array(2)].map((_, index) => (
                     <div
                         key={index}
@@ -139,68 +139,63 @@ function ChildCard({ parentId, handleMessageClick }) {
                         </div>
                     </div>
                 ))
-            ) : (
-                <>
+            }
+            {ladgerChild?.map((child, index) => {
+                const tabs = [];
 
+                if (child?.message_id_c) {
+                    tabs.push({
+                        key: "message",
+                        label: "Message",
+                    });
+                }
 
-                    {ladgerChild?.map((child, index) => {
-                        const tabs = [];
+                if (child?.prompt_ledger_id) {
+                    tabs.push({
+                        key: "prompt",
+                        label: "Prompt",
+                    });
+                }
 
-                        if (child?.message_id_c) {
-                            tabs.push({
-                                key: "message",
-                                label: "Message",
-                            });
-                        }
+                if (child?.stage_ledger_id) {
+                    tabs.push({
+                        key: "visualization",
+                        label: "Visualization",
+                    });
+                }
 
-                        if (child?.prompt_ledger_id) {
-                            tabs.push({
-                                key: "prompt",
-                                label: "Prompt",
-                            });
-                        }
+                if (child?.template_id) {
+                    tabs.push({
+                        key: "template",
+                        label: "Template",
+                    });
+                }
 
-                        if (child?.stage_ledger_id) {
-                            tabs.push({
-                                key: "visualization",
-                                label: "Visualization",
-                            });
-                        }
-
-                        if (child?.template_id) {
-                            tabs.push({
-                                key: "template",
-                                label: "Template",
-                            });
-                        }
-
-                        const defaultTab = tabs?.[0]?.key;
-                        const isLast = index === ladgerChild.length - 1;
-                        return (
-                            <div
-                                key={child.id}
-                                ref={isLast ? lastChildRef : null}
-                            >
-                                <ChildItem
-                                    child={child}
-                                    Icon={child.icon}
-                                    isHovered={hoveredChild === child.id}
-                                    hoveredChild={hoveredChild}
-                                    setHoveredChild={setHoveredChild}
-                                    tabs={tabs}
-                                    defaultTab={defaultTab}
-                                    navigateTo={navigateTo}
-                                    handleMessageClick={handleMessageClick}
-                                    setActivePromptId={setActivePromptId}
-                                    setActiveVisualizationId={setActiveVisualizationId}
-                                    openChildId={openChildId}
-                                    setOpenChildId={setOpenChildId}
-                                />
-                            </div>
-                        );
-                    })}
-                </>
-            )}
+                const defaultTab = tabs?.[0]?.key;
+                const isLast = index === ladgerChild.length - 1;
+                return (
+                    <div
+                        key={child.id}
+                        ref={isLast ? lastChildRef : null}
+                    >
+                        <ChildItem
+                            child={child}
+                            Icon={child.icon}
+                            isHovered={hoveredChild === child.id}
+                            hoveredChild={hoveredChild}
+                            setHoveredChild={setHoveredChild}
+                            tabs={tabs}
+                            defaultTab={defaultTab}
+                            navigateTo={navigateTo}
+                            handleMessageClick={handleMessageClick}
+                            setActivePromptId={setActivePromptId}
+                            setActiveVisualizationId={setActiveVisualizationId}
+                            openChildId={openChildId}
+                            setOpenChildId={setOpenChildId}
+                        />
+                    </div>
+                );
+            })}
         </div>
     );
 }
