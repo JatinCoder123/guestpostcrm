@@ -23,7 +23,7 @@ const UserActivity = () => {
 
           <tbody>
             {activeUsers.map((user) => (
-              <tr key={user.email} className="border-t">
+              <tr key={user.email} className="border-t hover:bg-gray-50 transition-colors">
                 <td className="p-3">{user.name || "Unknown"}</td>
                 <td className="p-3">{user.email}</td>
                 <td className="p-3">
@@ -37,10 +37,12 @@ const UserActivity = () => {
                     {user.status}
                   </span>
                 </td>
-                <td className="p-3">{user.page}</td>
+                <td className="p-3">{user.page === "/" ? "/timeline" : user.page}</td>
                 <td className="p-3">
-                  {new Date(user.lastActiveAt).toLocaleString()}
-                </td>
+  {user.lastActiveAt
+    ? new Date(user.lastActiveAt).toLocaleString()
+    : "-"}
+</td>
               </tr>
             ))}
 
