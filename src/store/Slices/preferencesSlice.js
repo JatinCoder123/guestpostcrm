@@ -38,6 +38,7 @@ export const initializeTable =
 
             const prefs = getState().preferences.tables?.[table];
             if (prefs?.initialFiltersApplied) { return; }
+
             dispatch(
                 preferencesAction
                     .updateMultipleTablePreferences({
@@ -48,7 +49,7 @@ export const initializeTable =
                                 INITIAL_TABLE_FILTERS[
                                 table
                                 ] || {},
-                            ...(INITIAL_TABLE_SORTING[table] || {}),
+                            sorting: (INITIAL_TABLE_SORTING[table] || {}),
 
                             initialFiltersApplied:
                                 true,
