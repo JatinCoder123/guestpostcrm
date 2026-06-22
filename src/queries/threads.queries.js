@@ -33,7 +33,7 @@ export const useThread = (email, threadId = "") => {
 export const useMessage = (id) => {
     return useQuery({
         queryKey: threadKeys.messageKey(id),
-        queryFn: getMessageById,
+        queryFn: () => getMessageById(id),
         enabled: Boolean(id),
     });
 };
