@@ -341,7 +341,7 @@ export function TopNav() {
 
   /* ── Data ── */
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { enteredEmail, handleDateClick }               = useContext(PageContext);
+  const { enteredEmail, handleDateClick, handleClear }               = useContext(PageContext);
   // ↓ activeUsers added alongside existing notificationCount
   const { notificationCount, activeUsers = [] }         = useContext(SocketContext);
   const { user, error }                                 = useSelector((s) => s.user);
