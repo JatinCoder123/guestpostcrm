@@ -187,7 +187,6 @@ export default function GroupReport() {
           reportKeys.all
         }
         fetchNextPage={() => {
-          console.log("fetchNextPage");
 
           if (
             hasNextPage &&
