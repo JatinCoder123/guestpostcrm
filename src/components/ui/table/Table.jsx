@@ -79,13 +79,12 @@ const TableView = ({
   statusList = [],
   statusKey = "status",
   statusCount = null,
-  searchType = "date_entered",
   filterColumns = [],
   preferences,
-  defaultStatus,
   searching = true,
   sortingFilter = true,
   timefilter = true,
+  timefilterField = "date_entered",
   fetchNextPage,
   children,
   pageCount,
@@ -158,7 +157,7 @@ const TableView = ({
           date_range: "custom",
           date_from,
           date_to,
-          date_field: "date_entered"
+          date_field: timefilterField
         },
       })
     );

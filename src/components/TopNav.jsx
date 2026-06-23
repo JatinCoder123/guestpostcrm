@@ -88,14 +88,14 @@ function NavBtn({ icon: Icon, label, onClick, count, color = "indigo" }) {
    Avatar colour palette — cycles through 8 distinct combos
 ───────────────────────────────────────────────────────────── */
 const AVATAR_COLORS = [
-  { bg: "bg-violet-100",  text: "text-violet-700",  ring: "ring-violet-400",  dot: "bg-violet-400"  },
+  { bg: "bg-violet-100", text: "text-violet-700", ring: "ring-violet-400", dot: "bg-violet-400" },
   { bg: "bg-emerald-100", text: "text-emerald-700", ring: "ring-emerald-400", dot: "bg-emerald-400" },
-  { bg: "bg-sky-100",     text: "text-sky-700",     ring: "ring-sky-400",     dot: "bg-sky-400"     },
-  { bg: "bg-amber-100",   text: "text-amber-700",   ring: "ring-amber-400",   dot: "bg-amber-400"   },
-  { bg: "bg-rose-100",    text: "text-rose-700",    ring: "ring-rose-400",    dot: "bg-rose-400"    },
-  { bg: "bg-teal-100",    text: "text-teal-700",    ring: "ring-teal-400",    dot: "bg-teal-400"    },
+  { bg: "bg-sky-100", text: "text-sky-700", ring: "ring-sky-400", dot: "bg-sky-400" },
+  { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-400", dot: "bg-amber-400" },
+  { bg: "bg-rose-100", text: "text-rose-700", ring: "ring-rose-400", dot: "bg-rose-400" },
+  { bg: "bg-teal-100", text: "text-teal-700", ring: "ring-teal-400", dot: "bg-teal-400" },
   { bg: "bg-fuchsia-100", text: "text-fuchsia-700", ring: "ring-fuchsia-400", dot: "bg-fuchsia-400" },
-  { bg: "bg-orange-100",  text: "text-orange-700",  ring: "ring-orange-400",  dot: "bg-orange-400"  },
+  { bg: "bg-orange-100", text: "text-orange-700", ring: "ring-orange-400", dot: "bg-orange-400" },
 ];
 
 function getColorForUser(email = "") {
@@ -117,8 +117,8 @@ function getInitials(name = "", email = "") {
 function formatLastActive(ts) {
   if (!ts) return "";
   const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
-  if (diff < 10)  return "just now";
-  if (diff < 60)  return `${diff}s ago`;
+  if (diff < 10) return "just now";
+  if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   return `${Math.floor(diff / 3600)}h ago`;
 }
@@ -128,8 +128,8 @@ function formatLastActive(ts) {
 ───────────────────────────────────────────────────────────── */
 function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const [open, setOpen] = useState(false);
-  const ref             = useRef(null);
-  const navigateTo      = useNavigate();
+  const ref = useRef(null);
+  const navigateTo = useNavigate();
 
   /* Close on outside click */
   useEffect(() => {
@@ -141,11 +141,11 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   }, []);
 
   /* Split: show current user first, then others (max 3 avatars in stack) */
-  const me      = activeUsers.find((u) => u.email === currentUserEmail);
-  const others  = activeUsers.filter((u) => u.email !== currentUserEmail);
+  const me = activeUsers.find((u) => u.email === currentUserEmail);
+  const others = activeUsers.filter((u) => u.email !== currentUserEmail);
   const ordered = me ? [me, ...others] : others;
   const stackVisible = ordered.slice(0, 4);   // max 4 in the pill
-  const overflow     = Math.max(0, ordered.length - 4);
+  const overflow = Math.max(0, ordered.length - 4);
 
   const onlineCount = activeUsers.filter((u) => u.status === "online").length;
 
@@ -170,9 +170,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         {/* Stacked avatars */}
         <div className="flex items-center w-full h-2">
           {stackVisible.map((u, i) => {
-            const c       = getColorForUser(u.email);
+            const c = getColorForUser(u.email);
             const initials = getInitials(u.name, u.email);
-            const isMe    = u.email === currentUserEmail;
+            const isMe = u.email === currentUserEmail;
             return (
               <span
                 key={u.email}
@@ -212,8 +212,8 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         {open && (
           <motion.div
             initial={{ opacity: 0, y: -8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0,  scale: 1    }}
-            exit={{   opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
             className="absolute right-0 top-full mt-2.5 w-[340px] overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl shadow-slate-900/10 z-50"
           >
@@ -245,9 +245,9 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                 </p>
               ) : (
                 ordered.map((u) => {
-                  const c       = getColorForUser(u.email);
+                  const c = getColorForUser(u.email);
                   const initials = getInitials(u.name, u.email);
-                  const isMe    = u.email === currentUserEmail;
+                  const isMe = u.email === currentUserEmail;
                   const isOnline = u.status === "online";
 
                   return (
@@ -287,7 +287,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                         <div className="mt-0.5 flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-slate-300" />
                           <p className="truncate text-[11px] text-slate-500">
-                           
+
                             {u.page == "/" ? "Timeline" : u.page}
                           </p>
                         </div>
@@ -341,12 +341,12 @@ export function TopNav() {
 
   /* ── Data ── */
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
-  const { enteredEmail, handleDateClick, handleClear }               = useContext(PageContext);
+  const { enteredEmail, handleClear } = useContext(PageContext);
   // ↓ activeUsers added alongside existing notificationCount
-  const { notificationCount, activeUsers = [] }         = useContext(SocketContext);
-  const { user, error }                                 = useSelector((s) => s.user);
-  const { timeline }                                    = useSelector((s) => s.ladger);
-  const { count: hotCount }                             = useSelector((s) => s.hot);
+  const { notificationCount, activeUsers = [] } = useContext(SocketContext);
+  const { user, error } = useSelector((s) => s.user);
+  const { timeline } = useSelector((s) => s.ladger);
+  const { count: hotCount } = useSelector((s) => s.hot);
 
   /* ── Local state ── */
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -444,7 +444,6 @@ export function TopNav() {
       data-tour="top-nav"
       className="sticky top-0 z-50 flex h-[70px] items-center px-3 gap-3"
       style={{
-        background: "linear-gradient(135deg, #ddeaff 100%)",
         background: "linear-gradient(135deg, #ddeaff 100%)",
         borderRadius: "26px",
         border: "1px solid rgba(99,102,241,0.16)",

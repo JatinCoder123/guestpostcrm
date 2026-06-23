@@ -195,7 +195,7 @@ const ReportPagination = memo(({ pageIndex, pageCount, onChange, compact = false
           <ChevronLeft size={14} /> Prev
         </button>
         <div className="flex items-center gap-1">
-          {pagesToShow.map((p, idx) =>
+          {pagesToShow?.map((p, idx) =>
             p === "ellipsis" ? (
               <span key={idx} className="w-9 text-center text-sm text-slate-400">…</span>
             ) : (
@@ -509,7 +509,7 @@ export default function ViewReports() {
 
         {/* ── Phase switcher ── */}
         <div className="grid grid-cols-2 gap-3">
-          {PHASES.map((phase) => {
+          {PHASES?.map((phase) => {
             const Icon = phase.icon;
             const isActive = activeSection === phase.key;
             return (
@@ -540,9 +540,9 @@ export default function ViewReports() {
         </div>
 
         {/* ── Stats strip ── */}
-        {statsEntries.length > 0 && (
+        {statsEntries?.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {statsEntries.map(([key, value], i) => {
+            {statsEntries?.map(([key, value], i) => {
               const t = STAT_THEMES[i % STAT_THEMES.length];
               return (
                 <div key={key} className={`${t.bg} border ${t.border} rounded-2xl p-4`}>

@@ -18,6 +18,7 @@ import TinyEditor from "../../TinyEditor";
 import { apiRequest, fetchGpc } from "../../../services/api";
 import { queryClient } from "../../../lib/queryClient";
 import { useCrmUsers } from "../../../queries/users.queries";
+import { useTemplate, useTemplatesByStage, useTemplateStages } from "../../../queries/template.queries";
 
 // ─── Utility ────────────────────────────────────────────────────────────────
 const decodeHtmlEntities = (str) => {
@@ -27,71 +28,57 @@ const decodeHtmlEntities = (str) => {
   return txt.value;
 };
 
-// ─── Shared TinyMCE init config ─────────────────────────────────────────────
 const TINY_INIT = {
-  license_key: 'gpl',
+  license_key: "gpl",
 
   height: "100%",
-  menubar: "file edit view insert format tools table help",
+  menubar: false,
   branding: false,
-  statusbar: true,
+  statusbar: false,
+
   plugins: `
-    advlist autolink directionality
-    visualblocks visualchars wordcount
-    fullscreen preview searchreplace
-    insertdatetime lists link image media
-    table charmap pagebreak nonbreaking
-    anchor code codesample help
-    emoticons quickbars accordion
+    lists
+    link
+    image
+    table
+    quickbars
+    code
   `,
+
   toolbar: `
-    undo redo | blocks fontfamily fontsize |
-    bold italic underline strikethrough forecolor backcolor |
-    alignleft aligncenter alignright alignjustify |
-    bullist numlist outdent indent |
-    link image media table codesample |
-    emoticons charmap insertdatetime |
-    ltr rtl | preview fullscreen | code help
+    undo redo |
+    bold italic underline |
+    alignleft aligncenter alignright |
+    bullist numlist |
+    link image table |
+    emoticons |
+    code
   `,
+
   toolbar_mode: "sliding",
+
   quickbars_selection_toolbar:
-    "bold italic underline | quicklink h2 h3 blockquote",
-  quickbars_insert_toolbar: "image media table",
+    "bold italic underline | quicklink",
+
   image_advtab: true,
   image_caption: true,
-  image_title: true,
-  automatic_uploads: true,
-  table_advtab: true,
-  table_cell_advtab: true,
-  table_row_advtab: true,
-  table_resize_bars: true,
+
   link_assume_external_targets: true,
   link_context_toolbar: true,
-  codesample_languages: [
-    { text: "HTML/XML", value: "markup" },
-    { text: "JavaScript", value: "javascript" },
-    { text: "CSS", value: "css" },
-    { text: "Java", value: "java" },
-    { text: "Python", value: "python" },
-    { text: "PHP", value: "php" },
-  ],
-  a11y_advanced_options: true,
-  browser_spellcheck: true,
-  contextmenu: "link image table spellchecker",
-  spellchecker_ignore_list: [],
+
   resize: true,
+
+  browser_spellcheck: true,
+
   content_style: `
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      font-size: 15px; line-height: 1.6; color: #333;
+      font-family: -apple-system, BlinkMacSystemFont,
+      'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #333;
     }
-    img { max-width: 100%; height: auto; }
-    table { border-collapse: collapse; width: 100%; }
-    table, th, td { border: 1px solid #ccc; }
-    th, td { padding: 8px; }
   `,
-  preview_styles:
-    "font-family font-size font-weight font-style text-decoration color background-color border padding margin line-height",
 };
 
 // ─── AI Generate Modal — defined OUTSIDE main component to prevent remount ──
@@ -304,11 +291,10 @@ export default function TemplatesPage() {
   const [originalContent, setOriginalContent] = useState("");
   const [isChanged, setIsChanged] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [stages, setStages] = useState({});
-  const [stageType, setStageType] = useState("");
+  const { isLoading: stagesLoading, data: stages } = useTemplateStages();
+  const [stageType, setStageType] = useState(Object.keys(stages ?? {})[0] ?? '');
   const [editingStage, setEditingStage] = useState(false);
   const [selectedStage, setSelectedStage] = useState("");
-  const [stagesLoading, setStagesLoading] = useState(false);
 
   const { crmEndpoint } = useSelector((state) => state.user);
   const { data: users } = useCrmUsers();
@@ -340,61 +326,17 @@ export default function TemplatesPage() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   // ── useModule hooks ──────────────────────────────────────────────────────
-  const { loading, data, error, refetch } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=fetch_gpc&type=templates`,
-    method: "POST",
-    body: { stage_type: stageType },
-    headers: {
-      "Content-Type": "application/json",
-      "X-Api-Key": FETCH_GPC_X_API_KEY,
-    },
-    enabled: false,
-    name: "emailTemplates",
-  });
+  const { isLoading: loading, data, isError: error, refetch } = useTemplatesByStage(stageType);
 
-  const {
-    loading: tempLoading,
-    data: temp,
-    error: getTempError,
-  } = useModule({
-    url: `${getDomain(crmEndpoint)}/index.php?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: { module: "EmailTemplates", where: { id: templateId } },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: `TEMPLATE WITH ID ${templateId}`,
-    dependencies: [templateId],
-    enabled: templateId,
-  });
+  const { isLoading: tempLoading, data: temp, isError: getTempError } = useTemplate(templateId);
+
 
   // ── Effects ──────────────────────────────────────────────────────────────
   useEffect(() => {
     setIsChanged(editorContent !== originalContent);
   }, [editorContent, originalContent]);
 
-  useEffect(() => {
-    const fetchStages = async () => {
-      setStagesLoading(true);
-      try {
-        const result = await fetchGpc({
-          method: "POST",
-          params: { type: "templates" },
-          body: { stages: 1 },
-        });
-        if (result && typeof result === "object") {
-          setStages(result);
-          setStageType(Object.keys(result)[0]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch stages", err);
-      } finally {
-        setStagesLoading(false);
-      }
-    };
-    fetchStages();
-  }, []);
+
 
   useEffect(() => {
     const fetchMotives = async () => {

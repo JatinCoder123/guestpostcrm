@@ -71,7 +71,7 @@ const MicInput = ({ editorRef }) => {
 
         try {
           recognitionRef.current.stop();
-        } catch {}
+        } catch { }
       }
     };
 
@@ -86,7 +86,7 @@ const MicInput = ({ editorRef }) => {
         recognitionRef.current.onend = null;
         try {
           recognitionRef.current.stop();
-        } catch {}
+        } catch { }
       }
 
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -105,7 +105,7 @@ const MicInput = ({ editorRef }) => {
 
       try {
         recognition.stop();
-      } catch {}
+      } catch { }
     } else {
       // 🟢 Start
       listeningRef.current = true;
@@ -125,9 +125,8 @@ const MicInput = ({ editorRef }) => {
       onClick={toggleMic}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className={`relative w-12 h-12 rounded-full shadow-lg flex items-center justify-center overflow-hidden ${
-        listening ? "bg-gradient-to-r from-red-500 to-pink-600" : "bg-blue-600"
-      }`}
+      className={`relative w-10 h-10 rounded-full shadow-lg flex items-center justify-center overflow-hidden ${listening ? "bg-gradient-to-r from-red-500 to-pink-600" : "bg-blue-600"
+        }`}
     >
       {!listening ? (
         <Mic size={24} className="text-white" />

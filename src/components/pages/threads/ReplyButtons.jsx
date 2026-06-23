@@ -3,21 +3,22 @@ import TemplateSelectorModal from "../../TemplateSelectorModal";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import useModule from "../../../hooks/useModule";
-import { base64ToUtf8, getDomain } from "../../../assets/assets";
+import { base64ToUtf8 } from "../../../assets/assets";
 import { useEffect, useRef, useState } from "react";
 import {
+  Check,
+  ChevronDown,
   CreditCard,
   Edit,
   Edit2,
   LayoutTemplateIcon,
+  PenLine,
+  Send,
   Sparkles,
+  StopCircle,
   Trash2,
   X,
   Zap,
-  PenLine,
-  Check,
-  StopCircle,
 } from "lucide-react";
 import Attachment from "../../Attachment";
 import MicInput from "../../MicInput";
@@ -28,11 +29,33 @@ import { DeepReplyBtn } from "../../DeepReplyBtn";
 import { SmallTinyEditor } from "../../TinyEditor";
 import IconButton from "../../ui/Buttons/IconButton";
 import { BiSolidMessageCheck } from "react-icons/bi";
-import { editContact, viewEmailAction } from "../../../store/Slices/viewEmail";
+import { editContact } from "../../../store/Slices/viewEmail";
 import { fetchGpc } from "../../../services/api";
 import { useNext } from "../../../hooks/useNext";
-import { useDefaultTemplate, useTemplate, useTemplateByEmail, useTemplateByName } from "../../../queries/template.queries";
+import {
+  useDefaultTemplate,
+  useTemplate,
+  useTemplateByEmail,
+  useTemplateByName,
+} from "../../../queries/template.queries";
 import { useContact } from "../../../queries/contact.queries";
+import { applyHashtag, updateActivity } from "../../../services/utils";
+import { queryClient } from "../../../lib/queryClient";
+import { movedEmailsKeys } from "../../../queries/movedEmail.queries";
+
+const TOOLBAR_BTN =
+  "inline-flex items-center gap-2 h-9 px-4 rounded-xl border text-[13px] font-medium whitespace-nowrap transition-all duration-200";
+const TOOLBAR_BTN_DEFAULT =
+  "bg-[#F6F7FB] border-[#E7EAF3] text-[#2A2F3A] hover:bg-[#EEF1F7]";
+const TOOLBAR_BTN_ACTIVE =
+  "bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100";
+const TOOLBAR_BTN_WARNING =
+  "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100";
+const TOOLBAR_BTN_DANGER =
+  "bg-red-50 border-red-200 text-red-600 hover:bg-red-100";
+
+const ICON_BTN =
+  "flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition-all duration-200 hover:bg-gray-100";
 
 const ReplyButtons = ({ editorRef, editorReady }) => {
   const {
@@ -44,17 +67,24 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     setHtmlfile,
     pdfLoading,
     email,
-    threadId
+    threadId,
+    handleSendClick,
+    checkingThreadId
   } = useOutletContext();
-  const { moveToNext } = useNext()
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { moveToNext } = useNext();
+  const { sending } = useSelector((s) => s.viewEmail);
+
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
   const [aiReplyContent, setAiReplyContent] = useState("");
   const [openParent, setOpenParent] = useState(null);
   const [favourites, setFavourites] = useState([]);
   const [templateId, setTemplateId] = useState(null);
-  const [editMode, setEditMode] = useState(false); // ← dedicated edit toggle
+  const [editMode, setEditMode] = useState(false);
+  const [stopLoading, setStopLoading] = useState(false);
 
-  const navigate = useNavigate();
   const [showHtmlEditor, setShowHtmlEditor] = useState(false);
   const [tempHtml, setTempHtml] = useState(htmlfile || "");
   const [editorReadyLocal, setEditorReadyLocal] = useState(false);
@@ -62,22 +92,18 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
   const editorRefLocal = useRef(null);
 
   const {
-    loading: aiLoading,
     aiReply: aiResponse,
     error: aiError,
     message,
   } = useSelector((s) => s.aiReply);
+
   const { crmEndpoint } = useSelector((s) => s.user);
-  const dispatch = useDispatch();
 
   /* ── data hooks ─────────────────────────────────────────── */
   const { isPending: loading, data: buttons } = useTemplateByEmail(email);
   const { isPending: contactLoading, data: contact } = useContact(email);
-
   const { data: template } = useTemplate(templateId);
-
-  const { data: defaultTemplate } = useDefaultTemplate(email)
-
+  const { data: defaultTemplate } = useDefaultTemplate(email);
   const { data: priceTemp } = useTemplateByName("PRICE_LIST");
 
   /* ── effects ─────────────────────────────────────────────── */
@@ -101,73 +127,117 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
     }
   }, [message, aiResponse, dispatch]);
 
-
-
   /* ── helpers ─────────────────────────────────────────────── */
   const insertTextAtCursor = () => {
     if (editorRef.current) {
       editorRef.current.focus();
       editorRef.current.insertContent(
-        priceTemp?.[0]?.body_html ?? "No Content Available",
+        priceTemp?.[0]?.body_html ?? "No Content Available"
       );
     }
   };
-  const [stopLoading, setStopLoading] = useState(false)
-  const hanldeConvDone = () => {
-    dispatch(editContact({ contact: { ...contact.contact, conversation_complete: "1" }, account: { ...contact.account }, }, null,));
-    toast.success(`Conversion Complete with ${email}`)
-    moveToNext(email)
+
+  const handleConvDone = () => {
+    dispatch(
+      editContact(
+        {
+          contact: {
+            ...contact.contact,
+            conversation_complete: "1",
+          },
+          account: { ...contact.account },
+        },
+        null
+      )
+    );
+    toast.success(`Conversion Complete with ${email}`);
+    moveToNext(email);
   };
-  function insertAiReply(input) {
+
+  const insertAiReply = (input) => {
     setOpenParent(null);
     setTemplateId(null);
     setEditorContent(input);
-  }
+  };
 
-  const Btn = ({
+  const handleToggleStopEmails = async () => {
+    setStopLoading(true);
+    try {
+      const newValue = contact?.contact?.is_stop === "1" ? "0" : "1";
+
+      await fetchGpc({
+        params: {
+          type: "force_stop",
+          id: contact?.contact?.id,
+          new_value: newValue,
+          user: email,
+        },
+      });
+      updateActivity(email, Number(newValue) ? "Email Stopped  " : "Email Resumed ")
+      applyHashtag({ email, memo_no: 7, method: newValue === "1" ? "GET" : "DELETE" });
+      queryClient.invalidateQueries({ queryKey: movedEmailsKeys.all })
+      toast.success(newValue === "1" ? "Emails stopped successfully" : "Emails resumed successfully");
+      moveToNext(email);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed To Change Email State!");
+    } finally {
+      setStopLoading(false);
+    }
+  };
+
+  const ActionBtn = ({
     onClick,
     onEdit,
-    gradient = "bg-gray-600",
     icon: Icon,
     label,
-  }) => (
-    <div className="relative inline-flex">
-      <motion.button
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.96 }}
-        onClick={onClick}
-        title={label}
-        className={`flex items-center gap-1 ${gradient} text-white text-[10.5px] font-medium
-                    px-4 py-2 rounded-md shadow-sm hover:shadow-md transition-all duration-150
-                    whitespace-nowrap`}
-      >
-        {Icon && <Icon className="w-3 h-3 shrink-0" />}
-        {label}
-      </motion.button>
+    active = false,
+    variant = "default",
+    className = "",
+  }) => {
+    const variantClass =
+      variant === "danger"
+        ? TOOLBAR_BTN_DANGER
+        : variant === "warning"
+          ? TOOLBAR_BTN_WARNING
+          : active
+            ? TOOLBAR_BTN_ACTIVE
+            : TOOLBAR_BTN_DEFAULT;
 
-      {/* Edit badge — visible only in editMode */}
-      <AnimatePresence>
-        {editMode && onEdit && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 0.12 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            className="absolute -top-2 -right-2 bg-amber-400 hover:bg-amber-500
-                       border-2 border-white rounded-full p-[3px] shadow-lg"
-            style={{ zIndex: 9999 }}
-            title="Edit template"
-          >
-            <Edit2 className="w-2 h-2 text-white" />
-          </motion.button>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+    return (
+      <div className="relative inline-flex">
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          whileHover={{ y: -1 }}
+          onClick={onClick}
+          title={label}
+          className={`${TOOLBAR_BTN} ${variantClass} ${className}`}
+        >
+          {Icon && <Icon className="h-4 w-4 shrink-0" />}
+          <span>{label}</span>
+        </motion.button>
+
+        <AnimatePresence>
+          {editMode && onEdit && (
+            <motion.button
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="absolute -right-2 -top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-amber-400 text-white shadow"
+              title="Edit template"
+            >
+              <Edit2 className="h-3 w-3" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -175,24 +245,24 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
       <AnimatePresence>
         {showHtmlEditor && (
           <motion.div
-            className="fixed inset-0 bg-black/40 flex items-center justify-center"
-            style={{ zIndex: 9999 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white w-[900px] max-w-[95%] h-[80vh] rounded-2xl shadow-xl flex flex-col"
+              className="flex h-[80vh] w-[900px] max-w-[95%] flex-col rounded-2xl bg-white shadow-xl"
               initial={{ scale: 0.85, y: 30 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.85, y: 30 }}
             >
-              <div className="flex justify-between items-center p-3 border-b">
-                <h2 className="font-semibold text-lg">Edit File</h2>
+              <div className="flex items-center justify-between border-b p-3">
+                <h2 className="text-lg font-semibold">Edit File</h2>
                 <button onClick={() => setShowHtmlEditor(false)}>
                   <X />
                 </button>
               </div>
+
               <div className="flex-1 overflow-hidden">
                 <SmallTinyEditor
                   editorContent={tempHtml}
@@ -201,10 +271,11 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                   setEditorReady={setEditorReadyLocal}
                 />
               </div>
-              <div className="flex justify-end gap-2 p-3 border-t">
+
+              <div className="flex justify-end gap-2 border-t p-3">
                 <button
                   onClick={() => setShowHtmlEditor(false)}
-                  className="px-4 py-2 bg-gray-200 rounded-lg text-sm"
+                  className="rounded-lg bg-gray-200 px-4 py-2 text-sm"
                 >
                   Cancel
                 </button>
@@ -213,7 +284,7 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                     setHtmlfile(tempHtml);
                     setShowHtmlEditor(false);
                   }}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm"
+                  className="rounded-lg bg-green-500 px-4 py-2 text-sm text-white"
                 >
                   Save
                 </button>
@@ -237,27 +308,25 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
         setFavourites={setFavourites}
       />
 
-      <div className="flex flex-col w-full" style={{ overflow: "visible" }}>
-        {/* ═══ SECTION A — all action buttons, always visible ═══ */}
-        <div
-          className="flex flex-wrap items-center gap-1.5 px-1 py-1.5"
-          style={{ overflow: "visible" }}
-        >
-          {/* ── AI Smart Reply ── */}
-          <Btn
-            gradient="bg-gradient-to-r from-indigo-500 to-purple-600"
+      <div className="w-full overflow-visible rounded-2xl border border-[#E8ECF3] bg-white">
+        {/* ═══ TOP ACTION BAR ═══ */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-[#E8ECF3] px-3 py-3">
+          {/* AI Reply */}
+          <ActionBtn
+            active
             icon={Sparkles}
-            label="AI  Reply"
+            label="AI Reply"
             onClick={() => {
-              if (aiReplyContent === "") dispatch(getAiReply(threadId, null, null, email));
+              if (aiReplyContent === "") {
+                dispatch(getAiReply(threadId, null, null, email));
+              }
               insertAiReply(aiReplyContent);
             }}
             onEdit={() => navigate("/settings/templates")}
           />
 
-          {/* ── AI Now ── */}
-          <Btn
-            gradient="bg-gradient-to-r from-yellow-400 to-orange-500"
+          {/* AI Now */}
+          <ActionBtn
             icon={Zap}
             label="AI Now"
             onClick={() => {
@@ -267,9 +336,8 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             onEdit={() => navigate("/settings/templates")}
           />
 
-          {/* ── Pricing ── */}
-          <Btn
-            gradient="bg-gradient-to-r from-blue-500 to-cyan-600"
+          {/* Pricing */}
+          <ActionBtn
             icon={CreditCard}
             label="Pricing"
             onClick={insertTextAtCursor}
@@ -280,9 +348,8 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             }
           />
 
-          {/* ── Template picker ── */}
-          <Btn
-            gradient="bg-gradient-to-r from-gray-500 to-gray-700"
+          {/* Template */}
+          <ActionBtn
             icon={LayoutTemplateIcon}
             label="Template"
             onClick={() => {
@@ -298,9 +365,11 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
             }
           />
 
-          {/* ── Dynamic API buttons ── */}
+          {/* Dynamic API buttons */}
           {loading ? (
-            <LoadingChase className="p-1" />
+            <div className="px-2">
+              <LoadingChase className="p-1" />
+            </div>
           ) : (
             buttons?.map((btnGroup, i) => {
               const parent = btnGroup.parent_btn;
@@ -313,23 +382,20 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                   className="relative inline-flex"
                   style={{ overflow: "visible" }}
                 >
-                  {/* Parent button */}
                   <div className="relative inline-flex">
                     <motion.button
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
+                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ y: -1 }}
                       onClick={() => {
                         setTemplateId(parent.email_template_id);
                         setOpenParent(isOpen ? null : parent.id);
                       }}
-                      className="flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-600
-                                 text-white text-[10.5px] font-medium px-4 py-2 rounded-md
-                                 shadow-sm hover:shadow-md transition-all whitespace-nowrap"
+                      className={`${TOOLBAR_BTN} ${isOpen ? TOOLBAR_BTN_ACTIVE : TOOLBAR_BTN_DEFAULT
+                        }`}
                     >
-                      {parent.button_label}
+                      <span>{parent.button_label}</span>
                     </motion.button>
 
-                    {/* Edit badge */}
                     <AnimatePresence>
                       {editMode && (
                         <motion.button
@@ -343,53 +409,43 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                               state: { templateId: parent.email_template_id },
                             });
                           }}
-                          className="absolute -top-2 -right-2 bg-amber-400 hover:bg-amber-500
-                                     border-2 border-white rounded-full p-[3px] shadow-lg"
-                          style={{ zIndex: 9999 }}
+                          className="absolute -right-2 -top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-amber-400 text-white shadow"
                           title="Edit template"
                         >
-                          <Edit2 className="w-2 h-2 text-white" />
+                          <Edit2 className="h-3 w-3" />
                         </motion.button>
                       )}
                     </AnimatePresence>
                   </div>
 
-                  {/* Children dropdown */}
                   <AnimatePresence>
                     {isOpen && children?.length > 0 && (
                       <motion.div
-                        initial={{ y: 4, opacity: 0, scale: 0.95 }}
+                        initial={{ y: 6, opacity: 0, scale: 0.96 }}
                         animate={{ y: 0, opacity: 1, scale: 1 }}
-                        exit={{ y: 4, opacity: 0, scale: 0.95 }}
+                        exit={{ y: 6, opacity: 0, scale: 0.96 }}
                         transition={{
                           duration: 0.14,
                           type: "spring",
                           stiffness: 420,
                           damping: 32,
                         }}
-                        className="absolute bottom-full left-0 mb-2 flex flex-col gap-1
-                                   bg-white p-1.5 rounded-xl border border-gray-200 min-w-[140px]"
-                        style={{
-                          zIndex: 9999,
-                          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                        }}
+                        className="absolute left-0 top-full z-[9999] mt-2 flex min-w-[180px] flex-col gap-1 rounded-2xl border border-[#E8ECF3] bg-white p-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]"
                       >
                         {children.map((child, j) => (
                           <div key={j} className="relative inline-flex">
                             <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.97 }}
+                              whileTap={{ scale: 0.98 }}
+                              whileHover={{ x: 1 }}
                               onClick={() => {
                                 setTemplateId(child.email_template_id);
                                 setOpenParent(null);
                               }}
-                              className="w-full text-left bg-gray-900 hover:bg-gray-800 text-white
-                                         text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                              className="flex h-9 w-full items-center rounded-xl px-3 text-left text-[13px] font-medium text-[#2A2F3A] transition hover:bg-[#F6F7FB]"
                             >
                               {child.button_label}
                             </motion.button>
 
-                            {/* Child edit badge */}
                             <AnimatePresence>
                               {editMode && (
                                 <motion.button
@@ -404,12 +460,10 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
                                       },
                                     });
                                   }}
-                                  className="absolute -top-2 -right-2 bg-amber-400 hover:bg-amber-500
-                                             border-2 border-white rounded-full p-[3px] shadow-lg"
-                                  style={{ zIndex: 9999 }}
+                                  className="absolute -right-2 -top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-amber-400 text-white shadow"
                                   title="Edit"
                                 >
-                                  <Edit2 className="w-2 h-2 text-white" />
+                                  <Edit2 className="h-3 w-3" />
                                 </motion.button>
                               )}
                             </AnimatePresence>
@@ -422,136 +476,112 @@ const ReplyButtons = ({ editorRef, editorReady }) => {
               );
             })
           )}
-
           <FirstReplyBtn email={email} />
           <DeepReplyBtn />
+
           <motion.button
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             transition={{ type: "spring", stiffness: 400 }}
-            className="flex items-center justify-center bg-slate-600 hover:bg-green-700 cursor-pointer text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={hanldeConvDone}
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={handleConvDone}
             disabled={contactLoading}
+            title="Conversation complete"
           >
-            <BiSolidMessageCheck className="w-6 h-6" />
+            <BiSolidMessageCheck className="h-4 w-4" />
           </motion.button>
+
           <IconButton
             disabled={stopLoading || contactLoading}
             loading={stopLoading}
-            onClick={async () => {
-              setStopLoading(true);
-
-              try {
-                const newValue =
-                  contact?.contact?.is_stop === "1" ? "0" : "1";
-
-                const data = await fetchGpc({
-                  params: {
-                    type: "force_stop",
-                    id: contact?.contact?.id,
-                    new_value: newValue,
-                    user: email,
-                  },
-                });
-
-                console.log(data);
-                toast.success(
-                  newValue === "1"
-                    ? "Emails stopped successfully"
-                    : "Emails resumed successfully"
-                );
-                moveToNext(email)
-              } catch (err) {
-                console.error(err);
-                toast.error("Failed To Change Email State!");
-              } finally {
-                setStopLoading(false);
-              }
-            }}
-            label={contact?.contact?.is_stop === "1"
-              ? "Resume Emails"
-              : "Stop Future Emails"}
+            onClick={handleToggleStopEmails}
+            label={
+              contact?.contact?.is_stop === "1"
+                ? "Resume Emails"
+                : "Stop Future Emails"
+            }
             icon={StopCircle}
-            className={`flex items-center gap-2 text-white text-[10.5px] font-medium
-    p-2 rounded-full shadow-sm hover:shadow-md transition-all duration-150
-    whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed
-    ${contact?.contact?.is_stop === "1"
-                ? "bg-gradient-to-r from-red-500 to-red-700"
-                : "bg-gradient-to-r from-yellow-400 to-orange-500"
+            className={`w-9 h-9 rounded-xl px-4 text-[13px] font-medium shadow-none ${contact?.contact?.is_stop === "1"
+              ? "border border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+              : "border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
               }`}
           />
-
-
-
-          {/* ── Edit Invoice (only if htmlfile exists) ── */}
           {htmlfile && (
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
+            <ActionBtn
+              icon={Edit}
+              label="Edit Invoice"
               onClick={() => {
                 setTempHtml(htmlfile);
                 setShowHtmlEditor(true);
               }}
-              className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white
-                         text-[10.5px] font-medium px-2 py-[4px] rounded-md shadow-sm
-                         hover:shadow-md transition-all whitespace-nowrap"
-            >
-              <Edit className="w-5 h-5 shrink-0" />
-              Edit Invoice
-            </motion.button>
+            />
           )}
         </div>
 
-        {/* ═══ SECTION B — utility footer ═══ */}
-        <div className="flex  items-center justify-between gap-3 px-1 py-1 border-t border-gray-100">
-          {/* Left: utility icons */}
+        {/* ═══ BOTTOM ACTION BAR ═══ */}
+        <div className="flex items-center justify-between gap-3 px-3 py-3">
+          {/* Left utility icons */}
           <div className="flex items-center gap-2">
-            {/* Clear editor */}
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.93 }}
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ y: -1 }}
               onClick={() => setEditorContent("")}
-              className="p-1.5 bg-red-50 rounded-lg transition-colors text-red-500 "
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition hover:bg-red-50 hover:text-red-500"
               title="Clear editor"
             >
-              <Trash2 className="w-6 h-6" />
+              <Trash2 className="h-5 w-5" />
             </motion.button>
 
-            {/* Attachment */}
             {pdfLoading ? (
-              <div className="px-2 py-1 bg-gray-100 rounded-lg text-[10px] text-gray-400">
+              <div className="rounded-xl border border-[#E7EAF3] bg-[#F6F7FB] px-3 py-2 text-[12px] text-gray-400">
                 Preparing…
               </div>
             ) : (
               <Attachment data={files} onChange={setFiles} />
             )}
 
-            {/* Mic */}
             <MicInput editorRef={editorRef} />
+
+            {/* Edit mode toggle */}
+            <motion.button
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setEditMode((v) => !v)}
+              className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-[13px] font-medium transition-all ${editMode
+                ? "border-amber-300 bg-amber-50 text-amber-700"
+                : "border-[#E7EAF3] bg-[#F6F7FB] text-[#2A2F3A] hover:bg-[#EEF1F7]"
+                }`}
+              title="Toggle edit mode"
+            >
+              {editMode ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Done
+                </>
+              ) : (
+                <>
+                  <PenLine className="h-4 w-4" />
+                </>
+              )}
+            </motion.button>
           </div>
 
-          {/* Right: ✏️ Edit mode toggle — dedicated button */}
-          <motion.button
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
-            onClick={() => setEditMode((v) => !v)}
-            className={`flex items-center gap-1 text-[10.5px] font-semibold px-2 py-1 rounded-lg
-                        border transition-all duration-150 ${editMode
-                ? "bg-amber-400 border-amber-400 text-white shadow-md"
-                : "bg-white border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-500"
-              }`}
-            title="Toggle edit mode"
-          >
-            {editMode ? (
-              <>
-                <Check className="w-6 h-6" /> Done
-              </>
-            ) : (
-              <>
-                <PenLine className="w-4 h-4" />
-              </>
-            )}
-          </motion.button>
+          {/* Right CTA */}
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex overflow-hidden rounded-xl bg-blue-600 text-white shadow-sm">
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-2 px-5 text-[13px] font-semibold hover:bg-blue-700"
+                onClick={handleSendClick}
+                disabled={
+                  checkingThreadId || sending
+                }
+              >
+                <Send className="h-4 w-4" />
+                Send reply
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>

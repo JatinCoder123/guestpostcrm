@@ -30,7 +30,6 @@ const TinyEditor = ({
           init={{
             license_key: 'gpl',
             height: "100%",
-            menubar: true,
             branding: false,
             statusbar: true,
 
@@ -189,7 +188,7 @@ export const SmallTinyEditor = ({
 
             content_style: `
     html, body {
-      height: 100%;
+      height: 100vh;
       margin: 0;
       padding: 0;
     }
@@ -197,7 +196,7 @@ export const SmallTinyEditor = ({
     body {
       font-family: -apple-system, BlinkMacSystemFont,
         'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      font-size: 14px;
+      font-size: 12px;
       line-height: 1.5;
       color: #18181cff;
 

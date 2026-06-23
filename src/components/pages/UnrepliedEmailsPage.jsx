@@ -33,19 +33,19 @@ const STATUS_CONFIG = [
     emailType: "email_unread",
   },
   {
-    value: "unreplied",
+    value: "inbound",
     label: "Unreplied",
     icon: Mails,
     color: "#2563eb", // blue
-    filter: 'status'
+    filter: 'direction'
   },
   {
-    value: "replied",
+    value: "outbound",
     label: "Replied",
     icon: MessageCircleReply,
     color: "#16a34a", // green
     emailType: "email_outbound",
-    filter: 'status'
+    filter: 'direction'
 
   },
 
@@ -140,7 +140,7 @@ export function UnrepliedEmailsPage() {
   const columns = [
     {
       label: "Created At",
-      accessor: "date_entered_time_ago",
+      accessor: "date_modified",
       headerClasses: "",
       sortable: true,
 
@@ -150,7 +150,7 @@ export function UnrepliedEmailsPage() {
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {unread ? row?.date_entered : row.date_entered_time_ago}
+          {unread ? row?.date_entered : row.date_modified_time_ago}
         </span>
       ),
     },
@@ -293,6 +293,7 @@ export function UnrepliedEmailsPage() {
         searching={!unread}
         sortingFilter={!unread}
         timefilter={!unread}
+        timefilterField="date_modified"
         slice={"emails"}
         statusList={statusList}
         statusCount={statusCount}

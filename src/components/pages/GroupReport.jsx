@@ -12,7 +12,7 @@ import {
   ActivityIcon,
 } from "lucide-react";
 import { useParams, useLocation } from "react-router-dom"; // ✅ add useLocation
-import { useInfiniteReports } from "../../queries/report.queries";
+import { reportKeys, useInfiniteReports } from "../../queries/report.queries";
 
 export default function GroupReport() {
   const { category } =
@@ -178,11 +178,16 @@ export default function GroupReport() {
         tableName={`${category} Group Report`}
         columns={columns}
         slice={"report"}
+
         pageIndex={pageIndex}
         pageCount={pageCount}
         count={count}
         loading={loading}
+        refreshKey={
+          reportKeys.all
+        }
         fetchNextPage={() => {
+
           if (
             hasNextPage &&
             !isFetchingNextPage
