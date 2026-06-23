@@ -9,8 +9,6 @@ import {
   Filter,
   Loader2,
   MessageSquare,
-  Search,
-  Users,
   Activity,
   Layers,
 } from "lucide-react";
@@ -19,16 +17,14 @@ import { memo } from "react";
 import { fetchGpc } from "../services/api.js";
 import {
   setStagesLoading, setStagesData,
-  setCategoriesLoading, setCategoriesData, setCategoriesPage,
-  setDetailsLoading, setDetailsData, setDetailsPage,
-  toggleStage, toggleCategory,
+  setCategoriesLoading, setCategoriesData,
+  toggleStage,
   setError, clearError, resetReport,
   selectStages, selectCategories, selectDetails,
   selectReportStats,
   selectStagesLoading, selectCatsLoading, selectDetsLoading,
   selectReportError,
 } from "../store/Slices/reportSlice.js";
-import { preferencesAction } from "../store/Slices/preferencesSlice.js";
 import { useNavigate } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
@@ -93,8 +89,35 @@ const getDateRange = (preset) => {
 };
 
 const getCount = (row) => Number(row?.total_count ?? row?.total ?? row?.count ?? 0);
-const getUserLabel = (u) =>
-  u?.name || u?.user_name || u?.username || u?.first_name || u?.description || u?.email || u?.id || "Unnamed";
+
+const getStoredReportFilter = () => {
+  try {
+    return JSON.parse(localStorage.getItem("reportFilter") || "{}");
+  } catch {
+    return {};
+  }
+};
+
+const getInitialDateFilter = () => {
+  const storedFilter = getStoredReportFilter();
+  const hasStoredRange = storedFilter.from || storedFilter.to;
+
+  return {
+    filterActive: Boolean(hasStoredRange),
+    fromDate: storedFilter.from || "",
+    fromTime: storedFilter.from_time || "00:00:00",
+    toDate: storedFilter.to || "",
+    toTime: storedFilter.to_time || "23:59:59",
+  };
+};
+
+const getUserOptions = (users = []) => [
+  { value: "", label: "All users" },
+  ...users.map((user) => ({
+    value: user.id,
+    label: user.name,
+  })),
+];
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
 
@@ -246,17 +269,10 @@ const EmptyState = ({ title, subtitle }) => (
 
 export default function ViewReports() {
   const dispatch = useDispatch();
-  const { data: users, isPending: usersLoading } = useCrmUsers();
+  const { data: users } = useCrmUsers();
+  const storedReportFilter = useMemo(() => getStoredReportFilter(), []);
   const [dateFilter, setDateFilter] =
-    useState({
-      filterActive: false,
-
-      fromDate: "",
-      fromTime: "00:00:00",
-
-      toDate: "",
-      toTime: "23:59:59",
-    });
+    useState(() => getInitialDateFilter());
   const stages = useSelector(selectStages);
   const categories = useSelector(selectCategories);
   const details = useSelector(selectDetails);
@@ -266,10 +282,12 @@ export default function ViewReports() {
   const detsLoading = useSelector(selectDetsLoading);
   const error = useSelector(selectReportError);
 
-  const [selectedUser, setSelectedUser] = useState("");
-  const [selectedDate, setSelectedDate] = useState("today");
-  const [appliedFilters, setAppliedFilters] = useState({ user: "", date: "today" });
-  const [activeSection, setActiveSection] = useState("filtration");
+  const [selectedUser, setSelectedUser] = useState(storedReportFilter.report_user_id || "");
+  const [appliedFilters, setAppliedFilters] = useState({
+    user: storedReportFilter.report_user_id || "",
+    date: "today",
+  });
+  const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "filtration");
 
   const phaseConfig = useMemo(
     () => PHASES.find((p) => p.key === activeSection) || PHASES[0],
@@ -279,8 +297,8 @@ export default function ViewReports() {
   const buildBody = useCallback(
     (overrides = {}) => ({
       phase: activeSection, stage: "", category: "",
-      report_user_id: appliedFilters.user,
       page: "", size: String(PAGE_SIZE),
+      ...(appliedFilters.user ? { report_user_id: appliedFilters.user } : {}),
       ...(dateFilter.filterActive
         ? {
           from:
@@ -299,7 +317,7 @@ export default function ViewReports() {
       ),
       ...overrides,
     }),
-    [activeSection, appliedFilters],
+    [activeSection, appliedFilters, dateFilter],
   );
 
   const callReport = useCallback(
@@ -317,7 +335,7 @@ export default function ViewReports() {
         records: data?.records || [], pagination: data?.pagination || {},
         stats: data?.stats || {}, total_records: data?.total_records ?? 0,
       }));
-    } catch (e) {
+    } catch {
       dispatch(setError("Unable to fetch report stages."));
     } finally {
       dispatch(setStagesLoading(false));
@@ -336,7 +354,7 @@ export default function ViewReports() {
         stageName, records: data?.records || [],
         pagination: data?.pagination || {}, total_records: data?.total_records ?? 0,
       }));
-    } catch (e) {
+    } catch {
       dispatch(setError("Unable to fetch categories."));
     } finally {
       dispatch(setCategoriesLoading(false));
@@ -373,11 +391,12 @@ export default function ViewReports() {
 
       category,
 
-      report_user_id:
-        appliedFilters.user,
-
       ...range,
     };
+
+    if (appliedFilters.user) {
+      reportFilter.report_user_id = appliedFilters.user;
+    }
 
     localStorage.setItem(
       "reportFilter",
@@ -403,7 +422,7 @@ export default function ViewReports() {
   useEffect(() => {
     dispatch(resetReport());
     loadStages(1);
-  }, [activeSection, appliedFilters]); // eslint-disable-line
+  }, [activeSection, appliedFilters, dateFilter]); // eslint-disable-line
 
   const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
   const statsEntries = Object.entries(stats);
@@ -422,11 +441,7 @@ export default function ViewReports() {
             <span className="font-semibold text-slate-900 tracking-tight text-[15px]">Reports</span>
           </div>
 
-          <div className="flex items-center gap-2 flex-1 justify-end">
-
-            <CustomDropdown options={users.map(user => ({ value: user.id, label: user.name }))} onChange={(user) => setSelectedUser(user)} placeholder="Select User" />
-
-
+          <div className="flex items-center gap-2 flex-1 justify-end mr-30">
             <DateRangeFilter
               fromDate={
                 dateFilter.fromDate
@@ -471,19 +486,21 @@ export default function ViewReports() {
                   toTime:
                     "23:59:59",
                 });
+                setSelectedUser("");
+                setAppliedFilters((prev) => ({ ...prev, user: "" }));
+                localStorage.removeItem("reportFilter");
               }}
             />
-            <button
-              onClick={() => setAppliedFilters({ user: selectedUser, date: selectedDate })}
-              disabled={stagesLoading || usersLoading}
-              className="h-9 px-5 bg-slate-900 hover:bg-slate-700 active:scale-95 disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm"
-            >
-              {(stagesLoading || usersLoading)
-                ? <Loader2 size={13} className="animate-spin" />
-                : <Search size={13} />
-              }
-              Apply
-            </button>
+
+            <CustomDropdown
+              value={selectedUser}
+              options={getUserOptions(users ?? [])}
+              onChange={(user) => {
+                setSelectedUser(user);
+                setAppliedFilters((prev) => ({ ...prev, user }));
+              }}
+              placeholder="Select User"
+            />
           </div>
         </div>
       </div>

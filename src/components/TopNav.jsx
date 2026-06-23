@@ -177,7 +177,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               <span
                 key={u.email}
                 title={isMe ? "You" : u.name || u.email}
-                className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white
+                className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white
                   ${c.bg} ${c.text}
                   ${i > 0 ? "-ml-1.5" : ""}
                   ${isMe ? "ring-indigo-300" : ""}
