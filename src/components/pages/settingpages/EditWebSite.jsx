@@ -29,6 +29,42 @@ const fieldConfig = [
     label: "DR",
     type: "text",
   },
+   {
+    key: "minimum_price",
+    label: "Final (Brand)",
+    type: "number",
+    icon: DollarSign,
+  },
+  {
+  key: "average_amount",
+  label: "Closure (Brand)",
+  type: "number",
+  icon: DollarSign,
+},
+ {
+    key: "amount",
+    label: "Start (Brand)",
+    type: "number",
+    icon: DollarSign,
+  },
+  {
+    key: "non_brand_minimum_amount",
+    label: "Final (Non-Brand)",
+    type: "number",
+    icon: DollarSign,
+  },
+  {
+  key: "non_brand_average_amount",
+  label: "Closure (Non-Brand)",
+  type: "number",
+  icon: DollarSign,
+}, 
+  {
+    key: "non_brand_maximum_amount",
+    label: "Start (Non-Brand)",
+    type: "number",
+    icon: DollarSign,
+  },
   {
     key: "spam_score",
     label: "Spam Score",
@@ -58,42 +94,6 @@ const fieldConfig = [
     label: "Ahref Traffic",
     type: "number",
     icon: Activity,
-  },
-  {
-    key: "minimum_price",
-    label: "Final (Brand)",
-    type: "number",
-    icon: DollarSign,
-  },
-  {
-  key: "average_amount",
-  label: "Closure (Brand)",
-  type: "number",
-  icon: DollarSign,
-},
-  {
-  key: "non_brand_average_amount",
-  label: "Closure (Non-Brand)",
-  type: "number",
-  icon: DollarSign,
-},
-  {
-    key: "amount",
-    label: "Start (Brand)",
-    type: "number",
-    icon: DollarSign,
-  },
-  {
-    key: "non_brand_minimum_amount",
-    label: "Final (Non-Brand)",
-    type: "number",
-    icon: DollarSign,
-  },
-  {
-    key: "non_brand_maximum_amount",
-    label: "Start (Non-Brand)",
-    type: "number",
-    icon: DollarSign,
   },
   {
     key: "premium",
@@ -137,7 +137,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
         minimum_price: item.minimum_price ?? "",
         non_brand_minimum_amount: item.non_brand_minimum_amount ?? "",
         non_brand_maximum_amount: item.non_brand_maximum_amount ?? "",
-        premium: item.premium ?? false,
+        premium: Number(item.premium) === 1 ? 1 : 0,
         category: item.category || "",
         country: item.country || "",
       });
@@ -237,8 +237,8 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
                           type={field.type}
                           value={form[field.key] || ""}
                           onChange={(e) =>
-                            updateField(field.key, e.target.value)
-                          }
+  updateField(field.key, e.target.checked ? 1 : 0)
+}
                           placeholder={`Enter ${field.label}`}
                           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                         />
@@ -246,21 +246,21 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
 
                       {/* CHECKBOX */}
                       {field.type === "checkbox" && (
-                        <label className="flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={!!form[field.key]}
-                            onChange={(e) =>
-                              updateField(field.key, e.target.checked)
-                            }
-                            className="w-5 h-5"
-                          />
+  <label className="flex items-center gap-3">
+    <input
+      type="checkbox"
+      checked={Number(form[field.key]) === 1}
+      onChange={(e) =>
+        updateField(field.key, e.target.checked ? 1 : 0)
+      }
+      className="w-5 h-5"
+    />
 
-                          <span className="text-gray-700 font-medium">
-                            Enable {field.label}
-                          </span>
-                        </label>
-                      )}
+    <span className="text-gray-700 font-medium">
+      Enable {field.label}
+    </span>
+  </label>
+)}
 
                       {/* DROPDOWN */}
                       {field.type === "dropdown" && (
