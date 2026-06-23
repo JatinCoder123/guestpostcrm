@@ -1,15 +1,15 @@
-import {useInfiniteQuery} from "@tanstack/react-query";
-import {getReports} from "../api/report.api";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { getReports } from "../api/report.api";
 export const reportKeys = {
     all: ["reports"],
 
     lists: (
         filters = {}
     ) => [
-        "reports",
-        "list",
-        filters,
-    ],
+            "reports",
+            "list",
+            filters,
+        ],
 };
 export const useInfiniteReports =
     (filters = {}) =>
@@ -33,11 +33,11 @@ export const useInfiniteReports =
                 lastPage
             ) => {
                 if (
-                    lastPage.page <
-                    lastPage.totalPages
+                    lastPage.pagination.page <
+                    lastPage.pagination.totalPages
                 ) {
                     return (
-                        lastPage.page +
+                        lastPage.pagination.page +
                         1
                     );
                 }
