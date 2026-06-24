@@ -39,10 +39,10 @@ const UserActivity = () => {
                 </td>
                 <td className="p-3">{user.page === "/" ? "/timeline" : user.page}</td>
                 <td className="p-3">
-  {user.lastActiveAt
-    ? new Date(user.lastActiveAt).toLocaleString()
-    : "-"}
-</td>
+                  {user.lastActiveAt
+                    ? new Date(user.lastActiveAt).toLocaleString()
+                    : "-"}
+                </td>
               </tr>
             ))}
 
