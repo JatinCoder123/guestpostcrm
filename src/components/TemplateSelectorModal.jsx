@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { apiRequest } from "../services/api";
 import { getCurrentUser } from "../services/utils";
 import { useTemplatesByStage, useTemplateStages } from "../queries/template.queries";
+import { LoadingChase } from "./Loading";
 
 export default function TemplateSelectorModal({
   isOpen,
@@ -18,12 +19,16 @@ export default function TemplateSelectorModal({
 }) {
   const navigate = useNavigate();
   const { data: stages, isLoading: stagesLoading, refetch: refetchStages } = useTemplateStages();
-  const [stageType, setStageType] = useState(!stagesLoading && stages ? Object.keys(stages ?? {})[0] : "");
+  const [stageType, setStageType] = useState("");
   const { isLoading: templateListLoading, data: templateList = [], refetch: refetchTemplates } = useTemplatesByStage(stageType);
   const assignUserId = useState(getCurrentUser()?.id ?? null);
   const [sortOption, setSortOption] = useState("newest");
   const [searchTerm, setSearchTerm] = useState("");
-
+  useEffect(() => {
+    if (!stagesLoading && stages && Object.keys(stages).length > 0) {
+      setStageType(Object.keys(stages)[0]);
+    }
+  }, [stagesLoading, stages])
 
 
 
