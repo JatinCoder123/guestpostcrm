@@ -1,23 +1,18 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import {
   Calendar,
-  FileText,
   Mail,
   User,
-  BarChart4,
-  ActivityIcon,
 } from "lucide-react";
-import { useParams, useLocation } from "react-router-dom"; // ✅ add useLocation
 import { reportKeys, useInfiniteReports } from "../../queries/report.queries";
 import { useTablePreference } from "../../hooks/useTablePreference";
 
 export default function GroupReport() {
   const preferences = useTablePreference('report');
-  console.log("Report Prefercne c", preferences)
+  // console.log("Report Prefercne c", preferences)
 
   const {
     data,

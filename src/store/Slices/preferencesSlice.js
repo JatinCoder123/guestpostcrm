@@ -48,8 +48,8 @@ export const initializeTable =
                             filters:
                                 INITIAL_TABLE_FILTERS[
                                 table
-                                ] || {},
-                            sorting: (INITIAL_TABLE_SORTING[table] || {}),
+                                ] || prefs.filters,
+                            sorting: (INITIAL_TABLE_SORTING[table] || prefs.sorting),
 
                             initialFiltersApplied:
                                 true,
