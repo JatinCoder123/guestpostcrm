@@ -21,6 +21,23 @@ export const getAllReminders = ({
     });
 }
 
+export const getTodayPaymentReminderStats = () =>
+  http({
+    method: "POST",
+    body: {
+      action: "fetch",
+      module: "outr_snts",
+      date_range: "today",
+      date_field: "scheduled_time",
+      filters: {
+        ui_name: "payment",
+        status: "Pending",
+      },
+      fields: ["id", "ui_name", "scheduled_time", "status"],
+      page: 1,
+      per_page: 1,
+    },
+  });
 
 export const getReminderStats = (
     { filters = {}, email }

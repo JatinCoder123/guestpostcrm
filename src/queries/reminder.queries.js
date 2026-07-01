@@ -4,7 +4,7 @@ import {
     useQuery,
     useQueryClient,
 } from "@tanstack/react-query";
-import { getAllReminders, getReminderStats } from "../api/reminders.api";
+import { getAllReminders, getReminderStats, getTodayPaymentReminderStats } from "../api/reminders.api";
 
 
 
@@ -27,6 +27,8 @@ export const reminderKeys = {
         filters,
         email
     ],
+
+    todayPaymentStats: () => ["reminders", "today-payment-stats"],
 
 
 };
@@ -82,4 +84,11 @@ export const useInfiniteReminders = (
         staleTime:
             5 * 60 * 1000,
     });
+
+    export const useTodayPaymentReminderStats = () =>
+  useQuery({
+    queryKey: reminderKeys.todayPaymentStats(),
+    queryFn: getTodayPaymentReminderStats,
+    staleTime: 2 * 60 * 1000,
+  });
 

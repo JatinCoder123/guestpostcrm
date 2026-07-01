@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import { reminderKeys, useInfiniteReminders, useReminderStats } from "../../queries/reminder.queries.js";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { queryClient } from "../../lib/queryClient.js";
+import { useLocation } from "react-router-dom";
 const STATUS_CONFIG = [
   {
     value: "Sent",
@@ -75,7 +76,27 @@ export function ReminderPage() {
   );
   const { enteredEmail: email } = useContext(PageContext)
   const preferences = useTablePreference("reminders");
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } = useInfiniteReminders({ preferences, email });
+  const location = useLocation();
+
+const effectivePreferences =
+  location.state?.reminderFilter === "today-payment"
+    ? {
+        ...preferences,
+        date_filter: {
+          date_range: "today",
+          date_field: "scheduled_time",
+          date_from: "",
+          date_to: "",
+        },
+        filters: {
+          ...preferences.filters,
+          ui_name: "payment",
+          status: "Pending",
+        },
+      }
+    : preferences;
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
+  useInfiniteReminders({ preferences: effectivePreferences, email });
   const { data: summary } = useReminderStats({ email });
   const { handleDateClick, enteredEmail } =
     useContext(PageContext);
@@ -268,7 +289,7 @@ export function ReminderPage() {
         tableName={"Reminders"}
         columns={columns}
         slice={"reminders"}
-        preferences={preferences}
+        preferences={effectivePreferences}
         statusKey={"status"}
         statusCount={statusCount}
         statusList={statusList}
