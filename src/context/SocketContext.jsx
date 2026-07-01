@@ -67,8 +67,30 @@ export const SocketContextProvider = ({ children }) => {
 
   useEffect(() => {
     const presenceListHandler = (users) => {
-      setActiveUsers(Array.isArray(users) ? users : []);
-    };
+  const list = Array.isArray(users) ? users : [];
+
+  const uniqueUsers = Array.from(
+    list.reduce((map, user) => {
+      const key = user.email?.toLowerCase();
+
+      if (!key) return map;
+
+      const existing = map.get(key);
+
+      if (
+        !existing ||
+        user.status === "online" ||
+        new Date(user.lastActiveAt || 0) > new Date(existing.lastActiveAt || 0)
+      ) {
+        map.set(key, user);
+      }
+
+      return map;
+    }, new Map()).values()
+  );
+
+  setActiveUsers(uniqueUsers);
+};
 
     socket.on("presence:list", presenceListHandler);
 
