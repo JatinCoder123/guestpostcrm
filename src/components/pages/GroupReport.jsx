@@ -9,7 +9,19 @@ import {
 } from "lucide-react";
 import { reportKeys, useInfiniteReports } from "../../queries/report.queries";
 import { useTablePreference } from "../../hooks/useTablePreference";
-
+import { useNavigate } from "react-router-dom";
+const getSection = (sectionName) => {
+  if (sectionName == 'outr_offer') {
+    return 'offers'
+  }
+  if (sectionName == 'outr_deal') {
+    return 'deals'
+  }
+  if (sectionName == 'outr_order_gp_li') {
+    return 'orders'
+  }
+  return '';
+}
 export default function GroupReport() {
   const preferences = useTablePreference('report');
   // console.log("Report Prefercne c", preferences)
@@ -22,6 +34,7 @@ export default function GroupReport() {
     isPending,
   } = useInfiniteReports(preferences);
   const { handleDateClick } = useContext(PageContext);
+  const navigate = useNavigate()
   const reports =
     data?.pages?.flatMap(
       page =>
@@ -90,7 +103,7 @@ export default function GroupReport() {
 
       classes: "truncate max-w-[200px]",
       render: (row) => (
-        <div className="flex items-center gap-2 cursor-pointer">
+        <div onClick={() => getSection(row?.parent_name) ? navigate(`/${getSection(row?.parent_name)}/view?email=${row?.sender_email}${row?.parent_id ? `&id=${row?.parent_id}` : ''}`) : ''} className="flex items-center gap-2 cursor-pointer">
           <span className="font-medium text-gray-800">{row?.action}</span>
         </div>
       ),
