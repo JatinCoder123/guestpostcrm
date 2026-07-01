@@ -12,18 +12,18 @@ export const reportKeys = {
         ],
 };
 export const useInfiniteReports =
-    (filters = {}) =>
+    (preference = {}) =>
         useInfiniteQuery({
             queryKey:
                 reportKeys.lists(
-                    filters
+                    preference
                 ),
 
             queryFn: ({
                 pageParam = 1,
             }) =>
                 getReports({
-                    filters,
+                    preference,
                     page: pageParam,
                 }),
 

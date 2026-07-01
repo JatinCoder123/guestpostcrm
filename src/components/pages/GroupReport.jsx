@@ -1,81 +1,26 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import {
   Calendar,
-  FileText,
   Mail,
   User,
-  BarChart4,
-  ActivityIcon,
 } from "lucide-react";
-import { useParams, useLocation } from "react-router-dom"; // ✅ add useLocation
 import { reportKeys, useInfiniteReports } from "../../queries/report.queries";
+import { useTablePreference } from "../../hooks/useTablePreference";
 
 export default function GroupReport() {
-  const { category } =
-    useParams();
+  const preferences = useTablePreference('report');
+  // console.log("Report Prefercne c", preferences)
 
-  const location =
-    useLocation();
-
-  const stateFilters =
-    location.state || {};
-  console.log(stateFilters);
-  const reportFilter =
-    JSON.parse(
-      localStorage.getItem(
-        "reportFilter"
-      ) || "{}"
-    );
-
-  const filters = {
-    category,
-
-    phase:
-      stateFilters.phase ??
-      reportFilter.phase ??
-      "conversation",
-
-    stage:
-      stateFilters.stage ??
-      reportFilter.stage ??
-      "new",
-
-    report_user_id:
-      stateFilters.report_user_id ??
-      reportFilter.report_user_id ??
-      "",
-
-    from:
-      stateFilters.from ??
-      reportFilter.from ??
-      "",
-
-    from_time:
-      stateFilters.from_time ??
-      reportFilter.from_time ??
-      "00:00:00",
-
-    to:
-      stateFilters.to ??
-      reportFilter.to ??
-      "",
-
-    to_time:
-      stateFilters.to_time ??
-      reportFilter.to_time ??
-      "23:59:59",
-  };
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isPending,
-  } = useInfiniteReports(filters);
+  } = useInfiniteReports(preferences);
   const { handleDateClick } = useContext(PageContext);
   const reports =
     data?.pages?.flatMap(
@@ -104,9 +49,6 @@ export default function GroupReport() {
   const count =
     firstPage?.total_records ??
     0;
-
-  const stats =
-    firstPage?.stats ?? {};
 
   const loading = isPending || isFetchingNextPage;
   const columns = [
@@ -175,10 +117,10 @@ export default function GroupReport() {
     <>
       <TableView
         tableData={reports}
-        tableName={`${category} Group Report`}
+        tableName={`${preferences?.filters?.category ?? ''} Group Report`}
         columns={columns}
         slice={"report"}
-
+        preferences={preferences}
         pageIndex={pageIndex}
         pageCount={pageCount}
         count={count}
@@ -198,7 +140,7 @@ export default function GroupReport() {
       >
         <TableTitleBar
           Icon={Mail}
-          title={`${category} Group Report`}
+          title={`${preferences?.filters?.category ?? ''} Group Report`}
           titleClass={"text-teal-700"}
         />
 

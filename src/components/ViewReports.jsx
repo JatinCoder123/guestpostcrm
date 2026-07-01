@@ -29,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
+import { preferencesAction } from "../store/Slices/preferencesSlice.js";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const PHASES = [
@@ -384,34 +385,34 @@ export default function ViewReports() {
         );
 
     const reportFilter = {
-      phase:
-        activeSection,
+      filters: {
+        phase:
+          activeSection,
 
-      stage,
+        stage,
 
-      category,
+        category,
 
-      ...range,
+
+      },
+      date_filter: {
+        date_range: 'custom',
+        date_from: `${dateFilter.fromDate} ${dateFilter.fromTime}`,
+        date_to: `${dateFilter.toDate} ${dateFilter.toTime}`,
+        date_field: 'date_entered'
+      }
     };
 
     if (appliedFilters.user) {
-      reportFilter.report_user_id = appliedFilters.user;
+      reportFilter.filters.report_user_id = appliedFilters.user;
     }
 
-    localStorage.setItem(
-      "reportFilter",
-      JSON.stringify(
-        reportFilter
-      )
-    );
+    dispatch(preferencesAction.updateMultipleTablePreferences({
+      table: 'report',
+      data: reportFilter
+    }))
 
-    navigate(
-      `/view-reports/${category}`,
-      {
-        state:
-          reportFilter,
-      }
-    );
+    navigate(`/view-reports/${category}`);
   };
 
 

@@ -1,7 +1,7 @@
 import { fetchGpc } from "../services/api";
 
 export const getReports = ({
-    filters = {},
+    preference = {},
     page = 1,
 }) => {
     const body = {
@@ -9,31 +9,31 @@ export const getReports = ({
         size: 50,
 
         category:
-            filters.category || "",
+            preference?.filters?.category || "",
 
         phase:
-            filters.phase || "",
+            preference?.filters?.phase || "",
 
         stage:
-            filters.stage || "",
+            preference?.filters?.stage || "",
 
         from:
-            filters.from || "",
+            preference?.date_filter?.date_from?.split(" ")[0] || "",
 
         from_time:
-            filters.from_time ||
+            preference?.date_filter?.date_from?.split(" ")[1] ||
             "00:00:00",
 
         to:
-            filters.to || "",
+            preference?.date_filter?.date_to?.split(" ")[0] || "",
 
         to_time:
-            filters.to_time ||
+            preference?.date_filter?.date_to?.split(" ")[1] ||
             "23:59:59",
     };
 
-    if (filters.report_user_id) {
-        body.report_user_id = filters.report_user_id;
+    if (preference?.filters?.report_user_id) {
+        body.report_user_id = preference?.filters?.report_user_id;
     }
 
     return fetchGpc({
