@@ -26,6 +26,7 @@ import { SocketContext } from "../context/SocketContext";
 import GlobalSearch from "./GlobalSearch";
 import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
+import {useTodayPaymentReminderStats} from "../queries/reminder.queries";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
@@ -349,6 +350,10 @@ export function TopNav() {
 
   /* ── Data ── */
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
+  const {
+  data: paymentReminderData,
+  isPending: paymentReminderPending,
+} = useTodayPaymentReminderStats();
   const { enteredEmail, handleClear } = useContext(PageContext);
   // ↓ activeUsers added alongside existing notificationCount
   const { notificationCount, activeUsers = [] } = useContext(SocketContext);
@@ -373,6 +378,15 @@ export function TopNav() {
   /* ── Derived ── */
   const isSearchActive = Boolean(enteredEmail?.trim());
   const outboxCount = outboxData?.stats?.all?.count ?? 0;
+  const paymentReminderCount =
+  paymentReminderData?.total ??
+  paymentReminderData?.total_records ??
+  paymentReminderData?.count ??
+  paymentReminderData?.records?.length ??
+  0;
+
+const showPaymentReminders =
+  paymentReminderCount > 0 && !paymentReminderPending;
   const showOutbox = outboxCount > 0 && !outboxPending;
   const showErrorLog = Boolean(notificationCount?.error_log_created);
 
@@ -576,8 +590,9 @@ export function TopNav() {
         />
 
         {/* Thin divider between activity panel and icon buttons */}
-        <div className="mx-1 h-6 w-px bg-slate-200" aria-hidden="true" />
+        <div className="mx-1 h-6 w-px bg-blue-500" aria-hidden="true" />
 
+        
         {/* AI Credits */}
         <NavBtn
           icon={Sparkles}
@@ -587,13 +602,21 @@ export function TopNav() {
         />
 
         {/* Payment Reminders */}
-        <NavBtn
-          icon={BellIcon}
-          label="Payment Reminders"
-          color="purple"
-          count={3}
-          onClick={() => { }}
-        />
+       {showPaymentReminders && (
+  <NavBtn
+    icon={BellIcon}
+    label="Payment Reminders"
+    color="purple"
+    count={paymentReminderCount}
+    onClick={() =>
+  navigateTo("/reminders", {
+    state: {
+      reminderFilter: "today-payment",
+    },
+  })
+}
+  />
+)}
 
         {/* Outbox — conditional */}
         {showOutbox && (
