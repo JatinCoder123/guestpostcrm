@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { viewEmailAction } from "../store/Slices/viewEmail";
 import { fetchGpc } from "../services/api";
@@ -7,14 +7,30 @@ import { showConsole } from "../assets/assets";
 import { LoadingChase } from "./Loading";
 import { useNext } from "../hooks/useNext";
 
-const FirstReplyBtn = ({ email }) => {
+const FirstReplyBtn = ({ email, threadEmails = [] }) => {
   const dispatch = useDispatch();
+  const { businessEmail } = useSelector((s) => s.user);
   const [showFirstReplyBtn, setShowFirstReplyBtn] = useState(false);
   const [reminderId, setReminderId] = useState(null);
   const { moveToNext } = useNext()
   const [frLoading, setFrLoading] = useState(false);
   const handleSendFirstReply = async () => {
     if (!reminderId) return;
+
+    const alreadyFirstReplySent = threadEmails.some((mail) => {
+  const fromEmail = mail?.from_email?.toLowerCase?.() || "";
+  const userEmail = businessEmail?.toLowerCase?.() || "";
+
+  return userEmail && (fromEmail === userEmail || fromEmail.includes(userEmail));
+});
+
+if (alreadyFirstReplySent) {
+  const confirmSend = window.confirm(
+    "First reply is already sent in this thread. Do you want to send it again?"
+  );
+
+  if (!confirmSend) return;
+}
 
     try {
       setFrLoading(true);

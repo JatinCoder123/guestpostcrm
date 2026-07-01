@@ -9,6 +9,8 @@ import {
   MailWarning,
   Camera,
   Users,
+  Copy,
+  Check
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { ladgerAction } from "../store/Slices/ladger";
@@ -141,13 +143,19 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   }, []);
 
   /* Split: show current user first, then others (max 3 avatars in stack) */
-  const me = activeUsers.find((u) => u.email === currentUserEmail);
-  const others = activeUsers.filter((u) => u.email !== currentUserEmail);
-  const ordered = me ? [me, ...others] : others;
-  const stackVisible = ordered.slice(0, 4);   // max 4 in the pill
-  const overflow = Math.max(0, ordered.length - 4);
+const onlineUsers = activeUsers.filter((u) => u.status === "online");
+const idleUsers = activeUsers.filter((u) => u.status !== "online");
 
-  const onlineCount = activeUsers.filter((u) => u.status === "online").length;
+const meOnline = onlineUsers.find((u) => u.email === currentUserEmail);
+const otherOnlineUsers = onlineUsers.filter((u) => u.email !== currentUserEmail);
+
+const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
+const ordered = [...orderedOnline, ...idleUsers];
+
+const stackVisible = orderedOnline.slice(0, 4);
+const overflow = Math.max(0, orderedOnline.length - 4);
+
+const onlineCount = onlineUsers.length;
 
   return (
     <div ref={ref} className="relative flex items-center">
@@ -156,7 +164,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={`${activeUsers.length} active users`}
+        aria-label={`${onlineCount} online users`}
         aria-expanded={open}
         aria-haspopup="true"
         className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 transition hover:bg-indigo-100 active:scale-95"
@@ -225,7 +233,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                   Active users
                 </span>
                 <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600">
-                  {activeUsers.length}
+                  {onlineCount}
                 </span>
               </div>
               <button
@@ -352,6 +360,7 @@ export function TopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [animate, setAnimate] = useState(false);
   const [errorLogCount, setErrorLogCount] = useState(0);
+  const [copied, setCopied] = useState(false);
   const [profilePreview, setProfilePreview] = useState(
     () => sessionStorage.getItem("userProfileImage") || user?.profileImage || ""
   );
@@ -413,6 +422,20 @@ export function TopNav() {
     setShowProfileMenu(false);
   };
 
+  const handleCopyEmail = async () => {
+  try {
+    await navigator.clipboard.writeText(enteredEmail);
+
+    setCopied(true);
+    toast.success("Email copied");
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 1500);
+  } catch (err) {
+    toast.error("Failed to copy email");
+  }
+};
 
 
   const handleProfileUpload = (e) => {
@@ -510,14 +533,30 @@ export function TopNav() {
                   {enteredEmail}
                 </span>
               </span>
-              <button
-                type="button"
-                aria-label="Clear current record"
-                onClick={() => handleClear()}
-                className="ml-1 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
-              >
-                <X size={11} strokeWidth={2.5} />
-              </button>
+              <div className="ml-1 flex items-center gap-1 shrink-0">
+  <button
+    type="button"
+    aria-label="Copy email"
+    title={copied ? "Copied!" : "Copy email"}
+    onClick={handleCopyEmail}
+    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 transition hover:bg-cyan-200 hover:text-cyan-700 active:scale-90"
+  >
+    {copied ? (
+      <Check size={11} strokeWidth={2.5} />
+    ) : (
+      <Copy size={11} strokeWidth={2.5} />
+    )}
+  </button>
+
+  <button
+    type="button"
+    aria-label="Clear current record"
+    onClick={handleClear}
+    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
+  >
+    <X size={11} strokeWidth={2.5} />
+  </button>
+</div>
             </motion.div>
           ) : (
             <GlobalSearch />
