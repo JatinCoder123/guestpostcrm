@@ -143,13 +143,19 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   }, []);
 
   /* Split: show current user first, then others (max 3 avatars in stack) */
-  const me = activeUsers.find((u) => u.email === currentUserEmail);
-  const others = activeUsers.filter((u) => u.email !== currentUserEmail);
-  const ordered = me ? [me, ...others] : others;
-  const stackVisible = ordered.slice(0, 4);   // max 4 in the pill
-  const overflow = Math.max(0, ordered.length - 4);
+const onlineUsers = activeUsers.filter((u) => u.status === "online");
+const idleUsers = activeUsers.filter((u) => u.status !== "online");
 
-  const onlineCount = activeUsers.filter((u) => u.status === "online").length;
+const meOnline = onlineUsers.find((u) => u.email === currentUserEmail);
+const otherOnlineUsers = onlineUsers.filter((u) => u.email !== currentUserEmail);
+
+const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
+const ordered = [...orderedOnline, ...idleUsers];
+
+const stackVisible = orderedOnline.slice(0, 4);
+const overflow = Math.max(0, orderedOnline.length - 4);
+
+const onlineCount = onlineUsers.length;
 
   return (
     <div ref={ref} className="relative flex items-center">
@@ -158,7 +164,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={`${activeUsers.length} active users`}
+        aria-label={`${onlineCount} online users`}
         aria-expanded={open}
         aria-haspopup="true"
         className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 transition hover:bg-indigo-100 active:scale-95"
@@ -227,7 +233,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                   Active users
                 </span>
                 <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600">
-                  {activeUsers.length}
+                  {onlineCount}
                 </span>
               </div>
               <button

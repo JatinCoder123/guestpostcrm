@@ -5,6 +5,12 @@ import { SocketContext } from "../../../context/SocketContext";
 const UserActivity = () => {
   const { activeUsers } = useContext(SocketContext);
 
+  const sortedUsers = [...activeUsers].sort((a, b) => {
+  if (a.status === "online" && b.status !== "online") return -1;
+  if (a.status !== "online" && b.status === "online") return 1;
+  return 0;
+});
+
   return (
     <div className="p-8">
       <Header text={"User Activity"} />
@@ -22,7 +28,7 @@ const UserActivity = () => {
           </thead>
 
           <tbody>
-            {activeUsers.map((user) => (
+            {sortedUsers.map((user) => (
               <tr key={user.email} className="border-t hover:bg-gray-50 transition-colors">
                 <td className="p-3">{user.name || "Unknown"}</td>
                 <td className="p-3">{user.email}</td>
@@ -34,7 +40,7 @@ const UserActivity = () => {
                         : "text-yellow-600 font-medium"
                     }
                   >
-                    {user.status}
+                    {user.status === "online" ? "online" : "idle"}
                   </span>
                 </td>
                 <td className="p-3">{user.page === "/" ? "/timeline" : user.page}</td>
@@ -46,7 +52,7 @@ const UserActivity = () => {
               </tr>
             ))}
 
-            {activeUsers.length === 0 && (
+            {sortedUsers.length === 0 && (
               <tr>
                 <td className="p-4 text-gray-500" colSpan="5">
                   No active users right now.

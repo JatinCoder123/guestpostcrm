@@ -298,7 +298,7 @@ export default function ThreadView() {
 
                   {/* Reply Buttons */}
                   <div className="flex-shrink-0 border-t border-gray-200 bg-slate-50 p-3">
-                    <ReplyButtons editorReady={editorReady} editorRef={editorRef} />
+                    <ReplyButtons editorReady={editorReady} editorRef={editorRef} threadEmails={emails} />
                   </div>
                 </Panel>
 

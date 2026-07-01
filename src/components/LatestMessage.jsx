@@ -215,7 +215,7 @@ const LatestMessage = ({ handleMessageClick }) => {
                 />
               ))
             )}
-            <FirstReplyBtn email={contactInfo?.email1} />
+            <FirstReplyBtn email={contactInfo?.email1} threadEmails={viewEmail} />
             <EmojiInput />
           </div>
           {contactInfo?.conversation_complete == "0" && (
