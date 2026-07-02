@@ -14,6 +14,7 @@ import {
   Recycle,
   User,
   Users,
+  Wallet,
 } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import Header from "./Header"
@@ -112,11 +113,18 @@ export function SettingsPage() {
       link: "recycle",
     },
     {
-      title: "backlinks",
+      title: "Backlinks",
       subtitle: "Manage Backlinks",
       icon: <Cable className="w-8 h-8 text-red-600" />,
       bg: "bg-red-50",
       link: "backlinks",
+    },
+    {
+      title: "Payments",
+      subtitle: "Manage Payments",
+      icon: <Wallet className="w-8 h-8 text-blue-600" />,
+      bg: "bg-blue-50",
+      link: "billing",
     }
   ];
 
@@ -129,7 +137,7 @@ export function SettingsPage() {
           <Link
             to={item.link}
             key={index}
-            className={`${item.bg} p-6 rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition block`}
+            className={`bg-gray-200/60 p-6 rounded-2xl shadow-sm cursor-pointer hover:shadow-lg hover:-translate-y-1 transition block`}
           >
             <div>{item.icon}</div>
 

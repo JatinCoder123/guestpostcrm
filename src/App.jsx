@@ -67,6 +67,8 @@ import MeetingWidget from "./components/MeetingWidget";
 import TwakChat from "./components/TwakTo";
 import BootApp from "./components/BootApp";
 import Recharge from "./components/pages/Recharge";
+import PlansPage from "./components/pages/PlansPage";
+import BillingSettings from "./components/pages/BillingSettings";
 
 const router = createBrowserRouter([
   {
@@ -112,6 +114,10 @@ const router = createBrowserRouter([
       {
         path: "recharge",
         element: <Recharge />,
+      },
+      {
+        path: "plans",
+        element: <PlansPage />,
       },
 
       {
@@ -293,6 +299,10 @@ const router = createBrowserRouter([
           {
             path: "users",
             element: <UsersPage />,
+          },
+          {
+            path: "billing",
+            element: <BillingSettings />,
           },
           {
             path: "buttons",
