@@ -76,6 +76,9 @@ export const INITIAL_TABLE_FILTERS = {
     emails: {
         direction: "inbound",
     },
+    orders: {
+        order_status: 'new'
+    },
 
     deals: {
         status: "active",

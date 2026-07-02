@@ -51,7 +51,7 @@ export default function ThreadView() {
   const [showReplyPanel, setShowReplyPanel] = useState(
     loadAiReply || superfastReply
   );
-
+  const [showSummary, setShowSummary] = useState(false);
   const firstMessageRef = useRef(null);
   const lastMessageRef = useRef(null);
 
@@ -252,26 +252,40 @@ export default function ThreadView() {
                 >
                   {/* AI Summary */}
                   <div className="flex-shrink-0 border-b border-gray-200 bg-white p-3">
-                    <div className="overflow-hidden">
-                      <div className="flex flex-col gap-2 rounded-lg bg-slate-100 px-4 py-3">
+                    <div className="overflow-hidden rounded-lg bg-slate-100">
+
+                      <button
+                        type="button"
+                        onClick={() => setShowSummary((prev) => !prev)}
+                        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-slate-200 transition"
+                      >
                         <h2 className="text-sm font-medium tracking-wide text-purple-600">
                           ✦ AI Summary
                         </h2>
 
-                        <div className="max-h-[180px] overflow-y-auto">
-                          {summaryLoading || regenSummary.isPending ? (
-                            <div className="space-y-3 animate-pulse">
-                              <div className="h-3 w-full rounded bg-slate-200" />
-                              <div className="h-3 w-[92%] rounded bg-slate-200" />
-                              <div className="h-3 w-[80%] rounded bg-slate-200" />
-                            </div>
-                          ) : (
-                            <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                              {mailersSummary?.summary || "No summary available"}
-                            </p>
-                          )}
+                        <ChevronRight
+                          className={`h-4 w-4 text-slate-600 transition-transform duration-200 ${showSummary ? "rotate-90" : ""
+                            }`}
+                        />
+                      </button>
+
+                      {showSummary && (
+                        <div className="border-t border-slate-200 px-4 py-3">
+                          <div className="max-h-[180px] overflow-y-auto">
+                            {summaryLoading || regenSummary.isPending ? (
+                              <div className="space-y-3 animate-pulse">
+                                <div className="h-3 w-full rounded bg-slate-200" />
+                                <div className="h-3 w-[92%] rounded bg-slate-200" />
+                                <div className="h-3 w-[80%] rounded bg-slate-200" />
+                              </div>
+                            ) : (
+                              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                                {mailersSummary?.summary || "No summary available"}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
