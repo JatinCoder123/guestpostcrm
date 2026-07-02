@@ -24,7 +24,7 @@ export const NoSearchFoundPage = () => {
 
   const { enteredEmail, setEnteredEmail } = useContext(PageContext);
   const { handleMove } = useThreadContext();
-  const { data, isPending: noSearchFoundLoading, isError } = useQuery({ queryKey: ['live-search', enteredEmail], queryFn: getLiveSearchData })
+  const { data, isPending: noSearchFoundLoading, isError } = useQuery({ queryKey: ['live-search', enteredEmail], queryFn: getLiveSearchData(enteredEmail) })
   const noSearchResultData = data?.data
 
   const dispatch = useDispatch();
