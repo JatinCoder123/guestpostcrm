@@ -142,9 +142,7 @@ Open Contact
   const navigate = useNavigate();
   const { isPending: loading, mutate: addToMarket } = useAddMarketPlace();
   const { isPending: removing, mutate: delMarket } = useDelMarketPlace();
-  const { isPending: marketPlaceloading, data: marketPlaces } = useMarketPlace();
   const { loading: markTagLoading, error: markTagError, message: markTagMessage } = useSelector((s) => s.markTag);
-  const markInfo = marketPlaces?.data?.find((e) => e.name === email) ?? null
   const isMark = Number(contactInfo?.bulk) == 1
   /* highlight states from contactInfo */
   const isFavActive = contactInfo?.favorite == "1";
@@ -317,7 +315,7 @@ Open Contact
       },
       // GET when adding to marketplace, DELETE when removing
       action: () => {
-        if (markInfo) {
+        if (isMark) {
           delMarket({ email, domain: contactInfo.type?.toLowerCase() === 'brand' ? email.split('@')[1] : '' });
         } else {
           addToMarket({ email, brand: contactInfo.type == "Brand" })
