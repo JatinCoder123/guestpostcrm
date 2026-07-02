@@ -301,7 +301,7 @@ const router = createBrowserRouter([
             element: <UsersPage />,
           },
           {
-            path: "billing",
+            path: "billing/:tab?",
             element: <BillingSettings />,
           },
           {

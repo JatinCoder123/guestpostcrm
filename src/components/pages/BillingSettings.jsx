@@ -7,12 +7,16 @@ import {
 } from "lucide-react";
 
 import PlansPage from "./PlansPage";
-// import BillingHistory from "./BillingHistory";
-// import PaymentMethods from "./PaymentMethods";
-// import CreditUsage from "./CreditUsage";
+import { useNavigate, useParams } from "react-router-dom";
+import { BillingHistory } from "./BillingHistory";
+import { AiCreditsPage } from "./AiCreditsPage";
+
 
 export default function BillingSettings() {
-    const [activeTab, setActiveTab] = useState("plans");
+    const { tab } = useParams();
+    const navigate = useNavigate();
+
+    const activeTab = tab || "plans";
 
     const tabs = [
         {
@@ -24,11 +28,6 @@ export default function BillingSettings() {
             id: "history",
             label: "Billing History",
             icon: History,
-        },
-        {
-            id: "payments",
-            label: "Payment Methods",
-            icon: Wallet,
         },
         {
             id: "usage",
@@ -55,24 +54,20 @@ export default function BillingSettings() {
 
                 <div className="flex border-b">
 
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon;
+                    {tabs.map((item) => {
+                        const Icon = item.icon;
 
                         return (
                             <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-6 py-4 font-medium transition
-
-                ${activeTab === tab.id
-                                        ? "border-b-2 border-blue-600 text-blue-600"
-                                        : "text-gray-500 hover:text-black"
-                                    }
-                `}
+                                key={item.id}
+                                onClick={() => navigate(`/settings/billing/${item.id}`)}
+                                className={`flex items-center gap-2 px-6 py-4 font-medium transition ${activeTab === item.id
+                                    ? "border-b-2 border-blue-600 text-blue-600"
+                                    : "text-gray-500 hover:text-black"
+                                    }`}
                             >
                                 <Icon size={18} />
-
-                                {tab.label}
+                                {item.label}
                             </button>
                         );
                     })}
@@ -88,12 +83,9 @@ export default function BillingSettings() {
                         <BillingHistory />
                     )}
 
-                    {activeTab === "payments" && (
-                        <PaymentMethods />
-                    )}
 
                     {activeTab === "usage" && (
-                        <CreditUsage />
+                        <AiCreditsPage />
                     )}
 
                 </div>
