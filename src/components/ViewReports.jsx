@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import {
   BarChart3,
   Calendar,
@@ -93,7 +93,18 @@ const getCount = (row) => Number(row?.total_count ?? row?.total ?? row?.count ??
 
 const getStoredReportFilter = () => {
   try {
-    return JSON.parse(localStorage.getItem("reportFilter") || "{}");
+    const preferences = JSON.parse(localStorage.getItem("preferences") || "{}");
+    const reportPreference = preferences?.tables?.report || {};
+    const filters = reportPreference?.filters || {};
+    const dateFilter = reportPreference?.date_filter || {};
+
+    return {
+      ...filters,
+      from: dateFilter.date_from?.split(" ")[0] || "",
+      from_time: dateFilter.date_from?.split(" ")[1] || "00:00:00",
+      to: dateFilter.date_to?.split(" ")[0] || "",
+      to_time: dateFilter.date_to?.split(" ")[1] || "23:59:59",
+    };
   } catch {
     return {};
   }
@@ -418,12 +429,22 @@ export default function ViewReports() {
 
   const navigate = useNavigate();
 
+const restoredStageRef = useRef(false);
 
+useEffect(() => {
+  dispatch(resetReport());
 
-  useEffect(() => {
-    dispatch(resetReport());
-    loadStages(1);
-  }, [activeSection, appliedFilters, dateFilter]); // eslint-disable-line
+  loadStages(1).then(() => {
+    if (
+      !restoredStageRef.current &&
+      storedReportFilter.stage &&
+      storedReportFilter.phase === activeSection
+    ) {
+      restoredStageRef.current = true;
+      loadCategories(storedReportFilter.stage, 1);
+    }
+  });
+}, [activeSection, appliedFilters, dateFilter]);
 
   const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
   const statsEntries = Object.entries(stats);
