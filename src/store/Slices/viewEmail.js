@@ -5,6 +5,8 @@ import { updateActivity } from "../../services/utils";
 import { getCache, setCache } from "../../services/cache";
 import { brandTimelineAction } from "./brandTimeline";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { contactKeys } from "../../queries/contact.queries";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -154,87 +156,7 @@ const viewEmailSlice = createSlice({
   },
 });
 
-export const getViewEmail = ({ email = null, force = false }) => {
-  return async (dispatch, getState) => {
-    dispatch(viewEmailSlice.actions.getViewEmailRequest());
 
-    try {
-      const trimmedEmail = email?.trim();
-
-      if (!force) {
-        const cachedData = getCache("viewMails", trimmedEmail);
-
-        if (cachedData) {
-          dispatch(
-            viewEmailSlice.actions.getViewEmailSucess({
-              viewEmail: cachedData.emails,
-              threadId: cachedData.threadId,
-              count: cachedData.count,
-            }),
-          );
-        }
-      }
-      const data = await fetchGpc({ params: { type: "view_email", email: trimmedEmail } });
-      console.log("VIEW EMAIL", data);
-      const freshData = {
-        emails: data.emails,
-        threadId: data.thread_id,
-        count: data.total_emails,
-      };
-
-      setCache("viewMails", trimmedEmail, freshData);
-
-      dispatch(
-        viewEmailSlice.actions.getViewEmailSucess({
-          viewEmail: freshData.emails,
-          threadId: freshData.threadId,
-          count: freshData.count,
-        }),
-      );
-
-      // PREFETCH NEXT / PREV
-      const index =
-        localStorage.getItem("currentIndex") &&
-        Number(localStorage.getItem("currentIndex"));
-      if (index !== null) {
-        const unreplied = getState().unreplied;
-
-        const nextEmail =
-          index + 1 < unreplied.count
-            ? unreplied.emails[index + 1]?.email1
-            : null;
-
-        const prevEmail =
-          index > 0 ? unreplied.emails[index - 1]?.email1 : null;
-
-        [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
-          if (prefetchEmail && !getCache("viewMails", prefetchEmail.trim())) {
-            try {
-              const data = await fetchGpc({ method: "GET", params: { type: "view_email", email: prefetchEmail.trim() } });
-
-
-              setCache("viewMails", prefetchEmail.trim(), {
-                emails: data.emails,
-                threadId: data.thread_id,
-                count: data.total_emails,
-              });
-            } catch (err) {
-              console.error("Prefetch ViewEmail Failed", err);
-            }
-          }
-        });
-      }
-
-      dispatch(viewEmailSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        viewEmailSlice.actions.getViewEmailFailed(
-          "Fetching View Emails Failed",
-        ),
-      );
-    }
-  };
-};
 export const getContact = (email = null, force = false, loading = true) => {
   return async (dispatch, getState) => {
     loading && dispatch(viewEmailSlice.actions.getContactRequest());
@@ -322,13 +244,13 @@ export const editContact = (contactData, message = "") => {
           module: "Contacts",
           ...contactData.contact,
         },
+        ...(contactData?.account && {
+          child_bean: {
+            module: "Contacts",
+            ...contactData.account,
+          },
+        }),
       };
-
-      payload.child_bean = {
-        module: "Contacts",
-        ...contactData.account,
-      };
-
       const data = await apiRequest({
         method: "POST", body: payload, endpoint: getState().user.crmEndpoint.split('?')[0], params: { entryPoint: 'get_post_all', action_type: 'post_data' }, headers: {
           "X-Api-Key": CREATE_DEAL_API_KEY,
@@ -339,7 +261,7 @@ export const editContact = (contactData, message = "") => {
       showConsole && console.log("contact", data);
       dispatch(viewEmailSlice.actions.editContactSucess({ message }));
       dispatch(viewEmailSlice.actions.clearAllErrors());
-      dispatch(getContact(contactData?.contact.email1));
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed"),

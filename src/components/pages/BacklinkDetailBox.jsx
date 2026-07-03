@@ -12,20 +12,18 @@ import {
   FileText,
   AlertCircle
 } from "lucide-react";
+import { useBacklink } from "../../queries/backlinks.queries";
 
 export default function BacklinkDetailBox({ onClose, backlinkId }) {
   const dispatch = useDispatch();
 
-  const { backlinks, backlinkDetail } = useSelector(
-    (state) => state.backlinks
-  );
+  const { data: currentBacklink, isPending, error } = useBacklink(backlinkId);
 
   const [isEditing, setIsEditing] = useState(false);
 
   const [editData, setEditData] = useState({});
 
-  const currentBacklink =
-    backlinkDetail || backlinks.find((bl) => bl.id === backlinkId);
+
 
   useEffect(() => {
     if (currentBacklink) {
@@ -69,8 +67,49 @@ export default function BacklinkDetailBox({ onClose, backlinkId }) {
       day: "numeric",
     });
   };
+  if (isPending) {
+    return (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 z-50">
+        <div className="bg-white dark:bg-[#111827] rounded-3xl shadow-2xl w-full max-w-5xl p-8">
 
-  if (!currentBacklink) {
+          <div className="animate-pulse">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <div className="h-8 w-64 bg-gray-300 dark:bg-gray-700 rounded mb-2"></div>
+                <div className="h-4 w-40 bg-gray-200 dark:bg-gray-800 rounded"></div>
+              </div>
+
+              <div className="h-10 w-10 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+            </div>
+
+            {/* Content */}
+            <div className="grid grid-cols-2 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-100 dark:bg-[#1f2937] rounded-2xl p-5"
+                >
+                  <div className="h-4 w-24 bg-gray-300 dark:bg-gray-700 rounded mb-3"></div>
+
+                  <div className="h-6 w-full bg-gray-200 dark:bg-gray-800 rounded"></div>
+                </div>
+              ))}
+            </div>
+
+            {/* URL Sections */}
+            <div className="mt-6 space-y-4">
+              <div className="h-20 bg-gray-100 dark:bg-[#1f2937] rounded-2xl"></div>
+
+              <div className="h-20 bg-gray-100 dark:bg-[#1f2937] rounded-2xl"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+  if (error) {
     return (
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 z-50">
         <div className="bg-white dark:bg-[#111827] rounded-3xl p-8 max-w-md w-full shadow-2xl border border-gray-200 dark:border-gray-700">

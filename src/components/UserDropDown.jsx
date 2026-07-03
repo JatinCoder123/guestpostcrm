@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import useModule from "../hooks/useModule";
 import Loading, { LoadingChase } from "./Loading";
-import { useSelector } from "react-redux";
 import { X } from "lucide-react";
+import { useCrmUsers } from "../queries/users.queries";
 
 const UserDropdown = ({ forwardHandler, onClose }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const dropdownRef = useRef(null);
-  const { crmEndpoint } = useSelector((state) => state.user);
-  const domain = crmEndpoint.split("?")[0];
-  const { loading, users } = useSelector((state) => state.crmUser);
+  const { data: users, isPending: loading } = useCrmUsers();
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

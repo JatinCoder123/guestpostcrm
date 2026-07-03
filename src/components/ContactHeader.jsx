@@ -10,9 +10,6 @@ import {
   Signature,
   CircleUser,
   ArrowBigDown,
-  Eye,
-  EyeOff,
-  ChevronLeft,
   Users,
   ChevronRight,
 } from "lucide-react";
@@ -23,15 +20,9 @@ import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import NextPrev from "./NextPrev";
 import { PageContext } from "../context/pageContext";
-import {
-  brandTimelineAction,
-  getBrandTimeline,
-} from "../store/Slices/brandTimeline";
-import IconButton from "./ui/Buttons/IconButton";
-import { getLadger } from "../store/Slices/ladger";
-import { getOffers } from "../store/Slices/offers";
-import { getDeals } from "../store/Slices/deals";
-import { getOrders } from "../store/Slices/orders";
+import { useContact } from "../queries/contact.queries";
+import { useTimeline } from "../context/TimelineContext";
+import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -46,43 +37,17 @@ function HashTag({ text, color }) {
 
 const ContactHeader = () => {
   const sidebarRef = useRef(null);
+  const { currentEmail } = useTimeline()
   const navigate = useNavigate();
-  const dispatch = useDispatch()
-  const goToDeal = () => {
-    navigate("/deals");
-  };
-  const {
-    contactInfo,
-    contactLoading,
-    stage,
-    status,
-    customer_type,
-    hashtags,
-  } = useSelector((state) => state.viewEmail);
+  const { data, isPending } = useContact(currentEmail);
+  const contactInfo = data?.contact
+  const hashtags = contactInfo?.hashtag?.data?.hashtags
   const email = contactInfo?.email1;
   const { showNextPrev, handleDateClick } = useContext(PageContext);
-
-  const { deals } = useSelector((state) => state.deals);
-
-  const { showBrandTimeline, contacts = [] } = useSelector(
-    (state) => state.brandTimeline,
-  );
-
-
+  const { data: dealsData } = useDealsByEmail(currentEmail);
+  const emailDeals = dealsData?.data ?? []
+  const { showBrandTimeline, contacts = [] } = useSelector((state) => state.brandTimeline);
   const [showSidebar, setShowSidebar] = useState(false);
-
-
-  const handleBrandTimeline = () => {
-    dispatch(getLadger({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    dispatch(getOffers({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    dispatch(getDeals({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    dispatch(getOrders({ email: contactInfo?.email1, brand: !showBrandTimeline }))
-    if (showBrandTimeline) {
-      dispatch(brandTimelineAction.setShowBrandTimeline(false));
-    } else {
-      dispatch(getBrandTimeline({ email }));
-    }
-  };
 
   const CountUpWithBlast = ({ value, email }) => {
     const storageKey = `maxDealAnimated_${email}`;
@@ -132,16 +97,7 @@ const ContactHeader = () => {
     return <span ref={amountRef}>{count.toLocaleString()}</span>;
   };
 
-  const emailDeals = deals?.filter((d) => {
-    const dealEmail = (
-      d.email ||
-      d.contact_email ||
-      d.email1 ||
-      ""
-    ).toLowerCase();
 
-    return email && dealEmail === email;
-  });
 
   const maxDeal =
     emailDeals?.length > 0
@@ -156,34 +112,14 @@ const ContactHeader = () => {
 
   const statusItems = [
     { Icon: Tag, label: "Type", value: contactInfo?.type },
-    { Icon: Rocket, label: "Stage", value: stage },
-    { Icon: Hourglass, label: "Status", value: status },
-    { Icon: Lock, label: "Category", value: customer_type },
-    {
-      Icon: ArrowBigDown,
-      label: "Direction",
-      value: contactInfo?.direction ?? "-",
-    },
-    {
-      Icon: Flame,
-      label: "Assign To",
-      value: contactInfo?.gpc_assigned_to ?? "-",
-    },
-    {
-      Icon: Signature,
-      label: "Last Activity",
-      value: contactInfo?.last_activity ?? "-",
-    },
-    {
-      Icon: CircleUser,
-      label: "Last Activity By",
-      value: contactInfo?.last_user ?? "-",
-    },
-    {
-      Icon: Clock,
-      label: "Last Updated At",
-      value: contactInfo?.last_activity_date ?? "-",
-    },
+    { Icon: Rocket, label: "Stage", value: data?.stage },
+    { Icon: Hourglass, label: "Status", value: data?.status },
+    { Icon: Lock, label: "Category", value: data?.customer_type },
+    { Icon: ArrowBigDown, label: "Direction", value: contactInfo?.direction ?? "-" },
+    { Icon: Flame, label: "Assign To", value: contactInfo?.gpc_assigned_to ?? "-" },
+    { Icon: Signature, label: "Last Activity", value: contactInfo?.last_activity ?? "-" },
+    { Icon: CircleUser, label: "Last Activity By", value: contactInfo?.last_user ?? "-" },
+    { Icon: Clock, label: "Last Updated At", value: contactInfo?.last_activity_date ?? "-" },
   ];
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -258,16 +194,16 @@ const ContactHeader = () => {
       <div className="flex items-center justify-between w-full py-4 px-4 rounded-t-xl bg-gradient-to-r from-sky-600 via-cyan-500 to-cyan-400 text-white shadow-lg">
         {/* LEFT */}
         <div className="flex items-center gap-4">
-          {!contactLoading && (
+          {!isPending && (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <Link to={"/contacts/id"} className="text-lg font-extrabold">
+                <Link to={`/contacts?email=${currentEmail}`} className="text-lg font-extrabold">
                   {contactInfo?.full_name?.trim()
-                    ? contactInfo.full_name
+                    ? contactInfo?.full_name
                     : email}
                 </Link>
 
-                {isBrand && (
+                {/* {isBrand && (
                   <IconButton
                     icon={showBrandTimeline ? Eye : EyeOff}
                     variant="glass"
@@ -278,12 +214,12 @@ const ContactHeader = () => {
                     }
                     onClick={handleBrandTimeline}
                   />
-                )}
+                )} */}
               </div>
             </div>
           )}
 
-          <SocialButtons />
+          <SocialButtons displayCount={contactInfo?.duplicate_threads ?? 0} trust_score={contactInfo?.trust_score} />
         </div>
 
         {/* RIGHT */}
@@ -304,7 +240,7 @@ const ContactHeader = () => {
 
           {emailDeals?.length > 0 && (
             <div
-              onClick={goToDeal}
+              onClick={() => navigate("/deals")}
               className="flex items-center gap-4 p-1 rounded-4xl bg-cyan-300 shadow-sm cursor-pointer hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-center w-8 h-8 rounded-4xl bg-blue-500">
@@ -324,7 +260,7 @@ const ContactHeader = () => {
       </div>
 
       {/* STATUS */}
-      {!contactLoading && (
+      {!isPending && (
         <div className="gap-3 p-2 flex flex-wrap items-center">
           {statusItems.map((item, index) => (
             <StatusCard

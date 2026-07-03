@@ -18,7 +18,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { createElement, useEffect, useState, useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import {
-  getUnrepliedEmail,
   unrepliedAction,
 } from "../store/Slices/unrepliedEmails";
 import { motion as Motion, AnimatePresence } from "framer-motion";
@@ -27,8 +26,11 @@ import {
   ONBOARDING_STEP,
   fetchOnboardingProgress,
   getOnboardingRecordName,
-  upsertOnboardingProgress,
 } from "../utils/onboardingCompletion";
+import { useGpcController } from "../queries/controller.queries";
+import { useTimeline } from "../context/TimelineContext";
+import { preferencesAction } from "../store/Slices/preferencesSlice";
+import { showNewEmailToast } from "./showNewEmailToast";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
@@ -87,26 +89,21 @@ const WelcomeHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
-
-  const { contactInfo } = useSelector((state) => state.viewEmail);
+  const { currentEmail: email } = useTimeline()
   const { crmEndpoint, businessEmail, user } = useSelector(
     (state) => state.user,
   );
   const { showNewEmailBanner } = useSelector((state) => state.unreplied);
   const { count } = useSelector((state) => state.events);
-  const { summary } = useSelector((state) => state.gpcController);
-  const { loading: contactLoading, contacts } = useSelector(
-    (state) => state.contacts,
-  );
-
-  const email = contactInfo?.email1;
+  const { data } = useGpcController();
+  const summary = data?.summary ?? {}
   const onboardingRecordName = getOnboardingRecordName({
     user,
     businessEmail,
   });
 
-  const { setEnteredEmail, handleClear } = useContext(PageContext);
-
+  const { handleClear, enteredEmail } = useContext(PageContext);
+  const isSearchActive = Boolean(enteredEmail?.trim());
   const [animate, setAnimate] = useState(false);
 
   const [stats, setStats] = useState({
@@ -122,6 +119,7 @@ const WelcomeHeader = () => {
   const [crmOnboardingStep, setCrmOnboardingStep] = useState(0);
   const [firstSyncRecordsSeen, setFirstSyncRecordsSeen] = useState(false);
   const [crmProgressLoading, setCrmProgressLoading] = useState(true);
+  const { handleDateClick } = useContext(PageContext)
 
   useEffect(() => {
     const loadStats = async () => {
@@ -151,10 +149,7 @@ const WelcomeHeader = () => {
       return (
         <span
           className="text-blue-600 hover:underline cursor-pointer"
-          onClick={() => {
-            localStorage.setItem("searchTerm", email);
-            setEnteredEmail(email);
-          }}
+          onClick={() => handleDateClick({ email: email, navigate: '/', nextPrev: true })}
         >
           {email}
         </span>
@@ -174,13 +169,15 @@ const WelcomeHeader = () => {
 
   useEffect(() => {
     if (showNewEmailBanner) {
-      const timer = setTimeout(() => {
-        dispatch(unrepliedAction.setShowNewEmailBanner(false));
-      }, 7000);
-
-      return () => clearTimeout(timer);
+      showNewEmailToast({
+        dispatch,
+        navigate,
+        handleClear,
+        preferencesAction,
+        unrepliedAction,
+      });
     }
-  }, [showNewEmailBanner, dispatch]);
+  }, [showNewEmailBanner]);
 
   useEffect(() => {
     const syncHandler = (event) => {
@@ -222,14 +219,7 @@ const WelcomeHeader = () => {
           crmEndpoint,
           name: onboardingRecordName,
         });
-        const progress =
-          current.step > 0
-            ? current
-            : await upsertOnboardingProgress({
-                crmEndpoint,
-                name: onboardingRecordName,
-                step: ONBOARDING_STEP.PROFILE_STARTED,
-              });
+        const progress = current;
         if (ignore) return;
 
         setCrmOnboardingStep(progress.step);
@@ -256,24 +246,18 @@ const WelcomeHeader = () => {
     ?.replace("https://", "")
     ?.replace("http://", "")
     ?.split("/")[0];
-  const contactOnboardingDone =
-    Array.isArray(contacts) && contacts.length > 0;
-  const syncDone =
-    contactOnboardingDone ||
-    crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
-  const contactCheckLoading =
-    crmProgressLoading || (contactLoading && !contactOnboardingDone);
+  const syncDone = crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
+  const contactCheckLoading = crmProgressLoading;
   const firstSyncLoading = firstSyncState.status === "loading";
   const firstSyncCompleted = syncDone;
-  const templateDone =
-    contactOnboardingDone || crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
+  const templateDone = crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
   const firstSyncRecords = Array.isArray(firstSyncState.result?.records)
     ? firstSyncState.result.records
     : [];
   const profileCompletion = firstSyncCompleted ? 100 : templateDone ? 85 : websiteDone ? 70 : 50;
   const showProfilePrompt =
-  path !== "/profile" &&
-  (profileCompletion < 100 || firstSyncLoading || contactCheckLoading);
+    path !== "/profile" &&
+    (profileCompletion < 100 || firstSyncLoading || contactCheckLoading);
   const showFirstSyncRecordsPrompt =
     path !== "/profile" &&
     firstSyncCompleted &&
@@ -283,13 +267,13 @@ const WelcomeHeader = () => {
     ? "First sync is running..."
     : contactCheckLoading
       ? "Loading onboarding status..."
-    : firstSyncCompleted
-      ? `Sync completed${firstSyncState.result?.count ? `: ${firstSyncState.result.count} records` : ""}`
-      : websiteDone
-    ? templateDone
-      ? "Run first sync to unlock full setup"
-      : "Save one template to continue setup"
-    : "Complete your profile setup";
+      : firstSyncCompleted
+        ? `Sync completed${firstSyncState.result?.count ? `: ${firstSyncState.result.count} records` : ""}`
+        : websiteDone
+          ? templateDone
+            ? "Run first sync to unlock full setup"
+            : "Save one template to continue setup"
+          : "Complete your profile setup";
   const ProfileIcon = firstSyncLoading || contactCheckLoading
     ? Loader2
     : firstSyncCompleted
@@ -310,72 +294,17 @@ const WelcomeHeader = () => {
       <div className="absolute top-0 left-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-30" />
       <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-30" />
 
-      {/* Notification */}
-      <AnimatePresence>
-        {showNewEmailBanner && (
-          <Motion.div
-            initial={{ opacity: 0, y: -30, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 320, damping: 22 }}
-            className="absolute top-3 right-50 z-50"
-          >
-            <Motion.button
-              animate={{
-                boxShadow: [
-                  "0 0 0 rgba(59,130,246,0)",
-                  "0 0 18px rgba(99,102,241,0.45)",
-                  "0 0 0 rgba(59,130,246,0)",
-                ],
-              }}
-              onClick={() => {
-                dispatch(unrepliedAction.setShowNewEmailBanner(false));
-                handleClear();
-                navigate("/");
 
-                dispatch(
-                  getUnrepliedEmail({
-                    loading: true,
-                    type: "email_inbound",
-                  }),
-                );
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="flex items-center gap-3 px-4 py-2 rounded-2xl
-              bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
-              text-white shadow-xl"
-            >
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-white opacity-60 animate-ping" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
-              </span>
-
-              <p className="text-sm font-semibold tracking-wide">
-                New email received
-              </p>
-
-              <Motion.span
-                animate={{ rotate: [0, -10, 10, -10, 0] }}
-                transition={{
-                  duration: 0.6,
-                  repeat: Infinity,
-                  repeatDelay: 2,
-                }}
-              >
-                <MailCheck />
-              </Motion.span>
-            </Motion.button>
-          </Motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="relative z-10 w-full px-4 flex items-center justify-between gap-4">
         {/* LEFT */}
         <div className="flex items-center gap-5">
-          <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
-            <span className="font-bold text-gray-900">Results for </span>
-            <span className="font-bold text-gray-900">{resultTitle}</span>
-          </p>
+          {!isSearchActive && (
+            <p className="text-xs font-medium text-gray-700 whitespace-nowrap">
+              <span className="font-bold text-gray-900">Results for </span>
+              <span className="font-bold text-gray-900">{resultTitle}</span>
+            </p>
+          )}
 
           {/* BADGES */}
           <div className="flex items-center gap-3">
@@ -445,11 +374,10 @@ const WelcomeHeader = () => {
             >
               <span className="absolute inset-x-0 bottom-0 h-1 bg-slate-100">
                 <span
-                  className={`block h-full rounded-full transition-all duration-700 ${
-                    contactCheckLoading
-                      ? "animate-pulse bg-slate-300"
-                      : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500"
-                  }`}
+                  className={`block h-full rounded-full transition-all duration-700 ${contactCheckLoading
+                    ? "animate-pulse bg-slate-300"
+                    : "bg-gradient-to-r from-emerald-500 via-indigo-500 to-cyan-500"
+                    }`}
                   style={{
                     width: contactCheckLoading
                       ? "35%"
@@ -460,8 +388,8 @@ const WelcomeHeader = () => {
 
               <span
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md ${firstSyncCompleted
-                    ? "bg-emerald-500 shadow-emerald-500/25"
-                    : "bg-gradient-to-br from-indigo-600 to-cyan-500 shadow-indigo-500/25"
+                  ? "bg-emerald-500 shadow-emerald-500/25"
+                  : "bg-gradient-to-br from-indigo-600 to-cyan-500 shadow-indigo-500/25"
                   }`}
               >
                 <ProfileIcon
@@ -527,7 +455,7 @@ const WelcomeHeader = () => {
                   First Sync
                 </span>
                 <span className="block truncate text-sm font-bold text-slate-900">
-                 Completed
+                  Completed
                 </span>
               </span>
 
@@ -658,6 +586,8 @@ const WelcomeHeader = () => {
 
             </div>
           </div>
+          {/* Vertical Divider */}
+          <div className="mx-2 w-0.5 h-10 bg-gray-300"></div>
           <StatBadge
             icon={MailOpen}
             label="Received"

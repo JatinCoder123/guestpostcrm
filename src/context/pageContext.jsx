@@ -19,7 +19,7 @@ export const PageContextProvider = (props) => {
   const [showNextPrev, setShowNextPrev] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [enteredEmail, setEnteredEmail] = useState(
-    localStorage.getItem("searchTerm") || null,
+    localStorage.getItem("searchTerm") || '',
   );
 
   const [superfastReply, setSuperfastReply] = useState(() => {

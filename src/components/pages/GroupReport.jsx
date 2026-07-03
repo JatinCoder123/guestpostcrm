@@ -1,38 +1,69 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import {
   Calendar,
-  FileText,
   Mail,
   User,
-  BarChart4,
-  ActivityIcon,
 } from "lucide-react";
-import { getGroupReport } from "../../store/Slices/reportSlice";
-import { useParams, useLocation } from "react-router-dom"; // ✅ add useLocation
-
+import { reportKeys, useInfiniteReports } from "../../queries/report.queries";
+import { useTablePreference } from "../../hooks/useTablePreference";
+import { useNavigate } from "react-router-dom";
+const getSection = (sectionName) => {
+  if (sectionName == 'outr_offer') {
+    return 'offers'
+  }
+  if (sectionName == 'outr_deal') {
+    return 'deals'
+  }
+  if (sectionName == 'outr_order_gp_li') {
+    return 'orders'
+  }
+  return '';
+}
 export default function GroupReport() {
-  const { count, data, loading, pageIndex } = useSelector(
-    (state) => state.report,
-  );
+  const preferences = useTablePreference('report');
+  // console.log("Report Prefercne c", preferences)
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteReports(preferences);
   const { handleDateClick } = useContext(PageContext);
-  const { grp } = useParams();
-  const location = useLocation(); // ✅ read navigation state
-  const dispatch = useDispatch();
+  const navigate = useNavigate()
+  const reports =
+    data?.pages?.flatMap(
+      page =>
+        page.records || []
+    ) ?? [];
 
-  const filterState = location.state ?? null;
-  const from = filterState?.filterActive ? filterState.from : null;
-  const from_time = filterState?.filterActive ? filterState.from_time : null;
-  const to = filterState?.filterActive ? filterState.to : null;
-  const to_time = filterState?.filterActive ? filterState.to_time : null;
+  const pages =
+    data?.pages ?? [];
 
-  useEffect(() => {
-    dispatch(getGroupReport({ grp, from, from_time, to, to_time }));
-  }, [grp]);
+  const firstPage =
+    pages[0] ?? {};
 
+  const lastPage =
+    pages[pages.length - 1] ??
+    {};
+
+  const pageIndex =
+    lastPage?.pagination?.page ??
+    1;
+
+  const pageCount =
+    firstPage?.pagination
+      ?.totalPages ?? 0;
+
+  const count =
+    firstPage?.total_records ??
+    0;
+
+  const loading = isPending || isFetchingNextPage;
   const columns = [
     {
       label: "Created At",
@@ -40,11 +71,11 @@ export default function GroupReport() {
       headerClasses: "",
       icon: Calendar,
       onClick: (row, index) =>
-        handleDateClick({ email: row.sender_email, navigate: "/" }),
+        handleDateClick({ email: row?.sender_email, navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row?.date_entered}
         </span>
       ),
     },
@@ -52,10 +83,11 @@ export default function GroupReport() {
       label: "Contact",
       accessor: "sender_email",
       headerClasses: "",
+      searchable: true,
+
       icon: User,
-      classes: "truncate ",
       onClick: (row, index) =>
-        handleDateClick({ email: row.sender_email, navigate: "/contacts" }),
+        handleDateClick({ email: row?.sender_email, navigate: "/contacts" }),
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
           <span className="font-medium text-gray-800">{row.sender_email}</span>
@@ -66,71 +98,70 @@ export default function GroupReport() {
       label: "Action",
       accessor: "action",
       headerClasses: "",
-      icon: ActivityIcon,
-      classes: "truncate max-w-[600px]",
-      render: (row) => (
-        <span className="px-6 py-4 text-green-600 cursor-pointer">
-          {row.action}
-        </span>
-      ),
-    },
-
-    {
-      label: "User",
-      accessor: "user_details",
-      headerClasses: "",
       icon: User,
-      classes: "truncate max-w-[300px]",
+      searchable: true,
+
+      classes: "truncate max-w-[200px]",
       render: (row) => (
-        <div className="flex items-center">
-          <span className="px-3 py-1.5 rounded-full text-sm border flex items-center">
-            {row.user_details == false ? "GPC" : row.user_details.name}
-          </span>
+        <div onClick={() => getSection(row?.parent_name) ? navigate(`/${getSection(row?.parent_name)}/view?email=${row?.sender_email}${row?.parent_id ? `&id=${row?.parent_id}` : ''}`) : ''} className="flex items-center gap-2 cursor-pointer">
+          <span className="font-medium text-gray-800">{row?.action}</span>
         </div>
       ),
     },
+    {
+      label: "Description",
+      accessor: "description",
+      searchable: true,
+
+      headerClasses: "",
+      icon: User,
+      render: (row) => (
+        <div className="flex items-center gap-2 cursor-pointer">
+          <span className="font-medium text-gray-800">{row?.description}</span>
+        </div>
+      ),
+    },
+
+
+
   ];
 
   return (
     <>
       <TableView
-        tableData={data}
-        tableName={`${grp} Group Report`}
+        tableData={reports}
+        tableName={`${preferences?.filters?.category ?? ''} Group Report`}
         columns={columns}
         slice={"report"}
-        fetchNextPage={() =>
-          dispatch(
-            getGroupReport({
-              grp,
-              page: pageIndex + 1,
-              from,
-              from_time,
-              to,
-              to_time,
-            }), // ✅ pass filters on pagination too
-          )
+        preferences={preferences}
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        refreshKey={
+          reportKeys.all
         }
+        fetchNextPage={() => {
+
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}
       >
         <TableTitleBar
           Icon={Mail}
-          title={`${grp.toUpperCase()} Group Report`}
+          title={`${preferences?.filters?.category ?? ''} Group Report`}
           titleClass={"text-teal-700"}
         />
 
         <div className="relative">
           <Table
             headerStyle={"bg-teal-600"}
-            layoutStyle={"grid grid-cols-[1fr_1fr_1fr_1fr]"}
+            layoutStyle={"grid grid-cols-4"}
           />
-
-          {loading && (
-            <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] flex items-center justify-center z-50">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-700 font-medium">Report Loading...</p>
-              </div>
-            </div>
-          )}
         </div>
       </TableView>
     </>

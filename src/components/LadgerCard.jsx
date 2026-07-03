@@ -1,19 +1,11 @@
-import { useEffect, useState } from "react";
-import {
-    MailCheck,
-    MessageSquare,
-    FileText,
-    SparkleIcon,
-    Workflow,
-    X,
-} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MailCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Visualization from "./Visualization";
 import PromptLadger from "./PromptLadger";
-import { useDispatch, useSelector } from "react-redux";
-import { getLadgerChild } from "../store/Slices/ladger";
-import Pagination from "./Pagination";
+import { useSelector } from "react-redux";
 import MessageModal from "./MessageModal";
+import { useInfiniteChildLedger } from "../queries/ledger.queries";
 
 const LadgerCard = ({ timelineData, handleMessageClick }) => {
     const [activeParent, setActiveParent] = useState(null);
@@ -42,18 +34,8 @@ const LadgerCard = ({ timelineData, handleMessageClick }) => {
                         {/* RIGHT */}
                         <div className="flex-1 relative">
                             <div className="absolute -left-[38px] top-[36px] w-10 h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-
-                            <ParentCard
-                                parent={parent}
-                                toggleParent={toggleParent}
-                            />
-
-                            {isOpen && (
-                                <ChildCard
-                                    parentId={parent.id}
-                                    handleMessageClick={handleMessageClick}
-                                />
-                            )}
+                            <ParentCard parent={parent} toggleParent={toggleParent} />
+                            {isOpen && <ChildCard parentId={parent.id} handleMessageClick={handleMessageClick} />}
                         </div>
                     </div>
                 );
@@ -88,28 +70,51 @@ function ParentCard({ parent, toggleParent }) {
 
 function ChildCard({ parentId, handleMessageClick }) {
     const [hoveredChild, setHoveredChild] = useState(null);
-
+    const { data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isPending, } = useInfiniteChildLedger(parentId)
+    const ladgerChild = data?.pages?.flatMap((page) => page.data || []) ?? [];
+    const childLoading = isPending || isFetchingNextPage;
     const navigateTo = useNavigate();
-    const dispatch = useDispatch();
 
-    const [activeVisualizationId, setActiveVisualizationId] =
-        useState(null);
-
+    const [activeVisualizationId, setActiveVisualizationId] = useState(null);
     const [activePromptId, setActivePromptId] = useState(null);
     const [openChildId, setOpenChildId] = useState(null);
-    const {
-        ladgerChild,
-        childLoading,
-        pageCount,
-    } = useSelector((state) => state.ladger);
+    const observer = useRef();
+    const lastChildRef = useCallback(
+        (node) => {
+            if (isFetchingNextPage) return;
 
-    useEffect(() => {
-        dispatch(getLadgerChild({ parentId }));
-    }, [parentId]);
+            if (observer.current) {
+                observer.current.disconnect();
+            }
 
+            observer.current = new IntersectionObserver(
+                (entries) => {
+                    if (
+                        entries[0].isIntersecting &&
+                        hasNextPage &&
+                        !isFetchingNextPage
+                    ) {
+                        fetchNextPage();
+                    }
+                },
+                {
+                    rootMargin: "300px",
+                }
+            );
+
+            if (node) {
+                observer.current.observe(node);
+            }
+        },
+        [fetchNextPage, hasNextPage, isFetchingNextPage]
+    );
     return (
         <div className="mt-5 ml-2 space-y-4 relative">
-            {childLoading ? (
+            {childLoading &&
                 [...Array(2)].map((_, index) => (
                     <div
                         key={index}
@@ -134,84 +139,63 @@ function ChildCard({ parentId, handleMessageClick }) {
                         </div>
                     </div>
                 ))
-            ) : (
-                <>
+            }
+            {ladgerChild?.map((child, index) => {
+                const tabs = [];
 
+                if (child?.message_id_c) {
+                    tabs.push({
+                        key: "message",
+                        label: "Message",
+                    });
+                }
 
-                    {ladgerChild?.map((child) => {
-                        const Icon = child.icon;
+                if (child?.prompt_ledger_id) {
+                    tabs.push({
+                        key: "prompt",
+                        label: "Prompt",
+                    });
+                }
 
-                        const isHovered = hoveredChild === child.id;
+                if (child?.stage_ledger_id) {
+                    tabs.push({
+                        key: "visualization",
+                        label: "Visualization",
+                    });
+                }
 
-                        const tabs = [];
+                if (child?.template_id) {
+                    tabs.push({
+                        key: "template",
+                        label: "Template",
+                    });
+                }
 
-                        if (child?.message_id_c) {
-                            tabs.push({
-                                key: "message",
-                                label: "Message",
-                            });
-                        }
-
-                        if (child?.prompt_ledger_id) {
-                            tabs.push({
-                                key: "prompt",
-                                label: "Prompt",
-                            });
-                        }
-
-                        if (child?.stage_ledger_id) {
-                            tabs.push({
-                                key: "visualization",
-                                label: "Visualization",
-                            });
-                        }
-
-                        if (child?.template_id) {
-                            tabs.push({
-                                key: "template",
-                                label: "Template",
-                            });
-                        }
-
-                        const defaultTab = tabs?.[0]?.key;
-
-                        return (
-                            <ChildItem
-                                key={child.id}
-                                child={child}
-                                Icon={Icon}
-                                isHovered={isHovered}
-                                hoveredChild={hoveredChild}
-                                setHoveredChild={setHoveredChild}
-                                tabs={tabs}
-                                defaultTab={defaultTab}
-                                navigateTo={navigateTo}
-                                handleMessageClick={handleMessageClick}
-                                setActivePromptId={setActivePromptId}
-                                setActiveVisualizationId={setActiveVisualizationId}
-                                openChildId={openChildId}
-                                setOpenChildId={setOpenChildId}
-                            />
-                        );
-                    })}
-                </>
-            )}
-
-            {ladgerChild?.length > 0 && pageCount > 1 && (
-                <Pagination
-                    slice={"ladger"}
-                    fn={(page) =>
-                        dispatch(
-                            getLadgerChild({
-                                parentId,
-                                loading: true,
-                                force: true,
-                                page,
-                            })
-                        )
-                    }
-                />
-            )}
+                const defaultTab = tabs?.[0]?.key;
+                const isLast = index === ladgerChild.length - 1;
+                return (
+                    <div
+                        key={child.id}
+                        ref={isLast ? lastChildRef : null}
+                    >
+                        <ChildItem
+                            child={child}
+                            Icon={child.icon}
+                            isHovered={hoveredChild === child.id}
+                            hoveredChild={hoveredChild}
+                            setHoveredChild={setHoveredChild}
+                            tabs={tabs}
+                            defaultTab={defaultTab}
+                            navigateTo={navigateTo}
+                            handleMessageClick={handleMessageClick}
+                            setActivePromptId={setActivePromptId}
+                            setActiveVisualizationId={setActiveVisualizationId}
+                            openChildId={openChildId}
+                            setOpenChildId={setOpenChildId}
+                        />
+                    </div>
+                );
+            })}
         </div>
     );
 }

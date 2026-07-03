@@ -1,19 +1,16 @@
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import AllContacts from "./AllContacts";
 import ContactDetail from "../ContactDetail";
 import { useContext } from "react";
 import { PageContext } from "../../context/pageContext";
-
 export default function Contactpage() {
 
-  const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const { enteredEmail } = useContext(PageContext)
-
-
-
-  if (id || enteredEmail) {
-    return <ContactDetail />
+  const email = searchParams.get("email")
+  if (email || enteredEmail) {
+    return <ContactDetail email={email ? email : enteredEmail} />
   }
   return (
     <AllContacts />

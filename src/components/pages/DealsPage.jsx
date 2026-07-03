@@ -13,13 +13,14 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext } from "react";
-import { deleteDeal, getDeals } from "../../store/Slices/deals.js";
+import { deleteDeal } from "../../store/Slices/deals.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../assets/assets";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingChase } from "../Loading.jsx";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { useDealStats, useDeleteDeal, useInfiniteDeals } from "../../queries/deals.queries.js";
 const STATUS_CONFIG = [
   {
     value: "active",
@@ -27,17 +28,43 @@ const STATUS_CONFIG = [
     icon: ShieldCheckIcon,
     color: "#F59E0B", // orange (amber-500)
     showAmount: true,
+    filter: 'status'
   },
   {
     value: "expiry",
     label: "Expiry",
     icon: ShieldAlert,
     color: "#EF4444", // red (red-500)
+    filter: 'status'
+
   },
 ];
 export function DealsPage() {
-  const { count, deals, loading, pageIndex, deleting, deleteDealId, summary } =
-    useSelector((state) => state.deals);
+  const preferences =
+    useTablePreference(
+      "deals"
+    );
+  const { enteredEmail: email } = useContext(PageContext)
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteDeals(
+    { preferences, email }
+  );
+
+  const {
+    data: summary,
+  } = useDealStats({ email });
+
+  const {
+    mutate: deleteDeal,
+    isPending: deleting,
+    variables:
+    deleteDealId,
+  } = useDeleteDeal();
   const { handleDateClick } =
     useContext(PageContext);
   const navigateTo = useNavigate();
@@ -46,35 +73,38 @@ export function DealsPage() {
     {
       label: "Created At",
       accessor: "date_entered",
+      sortable:true,
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: extractEmail(row?.real_name), navigate: "/" }),
+      onClick: (row) => handleDateClick({ email: row?.email, navigate: "/" }),
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       ),
     },
     {
       label: "Contact",
-      accessor: "real_name",
+      accessor: "first_name",
       headerClasses: "",
       icon: User2,
       classes: "truncate max-w-[200px]",
       onClick: (row) =>
-        handleDateClick({ email: extractEmail(row?.real_name), navigate: "/contacts" }),
+        handleDateClick({ email: row?.email, navigate: "/contacts" }),
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.real_name?.split("<")[0]?.trim()}
+          {row?.first_name || ""} {row?.last_name || ""} {(!row?.first_name || !row?.last_name) ? row?.email : ""}
         </span>
       ),
     },
     {
       label: "Website",
       accessor: "website_c",
+      searchable: true,
+
       headerClasses: "",
       icon: Globe,
       classes: "truncate ",
@@ -83,14 +113,17 @@ export function DealsPage() {
       ),
     },
     {
-      label: "Client Offer",
-      accessor: "client_offer_c",
+      label: "Amount",
+      accessor: "dealamount",
+      searchable: true,
+      sortable:true,
+
       headerClasses: "",
       icon: BadgeDollarSign,
-      classes: "truncate max-w-[300px]",
+      classes: "text-center",
 
       render: (row) => (
-        <span className="font-medium text-green-700 ">{row?.dealamount}</span>
+        <span className="font-medium text-green-700 ">${row?.dealamount}</span>
       ),
     },
 
@@ -107,17 +140,17 @@ export function DealsPage() {
         </span>
       ),
     },
-    {
-      label: "Expiry Date",
-      accessor: "expiry_date",
-      headerClasses: "",
-      icon: Calendar,
-      classes: "truncate max-w-[300px]",
+    // {
+    //   label: "Expiry Date",
+    //   accessor: "expiry_date",
+    //   headerClasses: "",
+    //   icon: Calendar,
+    //   classes: "truncate max-w-[300px]",
 
-      render: (row) => (
-        <span className="font-medium text-green-700 ">{row?.expiry_date}</span>
-      ),
-    },
+    //   render: (row) => (
+    //     <span className="font-medium text-green-700 ">{row?.expiry_date}</span>
+    //   ),
+    // },
     {
       label: "Action",
       accessor: "action",
@@ -131,26 +164,21 @@ export function DealsPage() {
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="View"
             onClick={() =>
-              navigateTo(`/deals/view`, {
-                state: {
-                  email: extractEmail(row.real_name),
-                  threadId: row?.thread_id,
-                  id: row?.id
-                },
-              })
+              navigateTo(`/deals/view?email=${row?.email}&id=${row?.id}`)
             }
           >
             <Eye className="w-5 h-5 text-blue-600" />
           </button>
           {/* Delete Button */}
-          {deleting && deleteDealId === row.id ? (
+          {deleting &&
+            deleteDealId === row.id ? (
             <LoadingChase size="20" color="red" />
           ) : (
             <button
               className="p-2 hover:bg-red-100 rounded-lg transition-colors"
               title="Delete"
               onClick={() =>
-                dispatch(deleteDeal(row, row.id))
+                deleteDeal(row.id)
               }
             >
               <Trash className="w-5 h-5 text-red-600" />
@@ -160,13 +188,45 @@ export function DealsPage() {
       ),
     },
   ];
+  const deals =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
+
+  const pages =
+    data?.pages ?? [];
+
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
   const statusList = STATUS_CONFIG.map((config) => {
     return {
       ...config,
-      count: Number(summary?.[`${config.value}_deals`] || 0),
-      amount: config.showAmount && Number(summary?.[`active_deal_amount`] || 0),
+      count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
     };
   });
+  const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
 
   return (
     <TableView
@@ -176,8 +236,21 @@ export function DealsPage() {
       slice={"deals"}
       statusKey={"status"}
       statusList={statusList}
-      fetchNextPage={() => dispatch(
-        getDeals({ page: pageIndex + 1 }))}
+      pageIndex={pageIndex}
+      statusCount={statusCount}
+      pageCount={pageCount}
+      count={count}
+      loading={loading}
+      preferences={preferences}
+      refreshKey={["deals"]}
+      fetchNextPage={() => {
+        if (
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}
     >
       <TableTitleBar
         Icon={Handshake}
@@ -186,7 +259,7 @@ export function DealsPage() {
       />
       <Table
         headerStyle={"  bg-blue-600"}
-        layoutStyle={"grid grid-cols-[200px_200px_1fr_200px_200px_1fr_1fr]"}
+        layoutStyle={"grid grid-cols-7"}
       />
     </TableView>
   );

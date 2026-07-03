@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { showConsole } from "../../assets/assets";
-import { updateActivity, createLedgerEntry, buildLedgerItem } from "../../services/utils";
+import { updateActivity, createLedgerEntry, buildLedgerItem, getCurrentUser } from "../../services/utils";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { viewEmailAction } from "./viewEmail";
 import { getLadger } from "./ladger";
@@ -19,30 +19,6 @@ const exchangeSlice = createSlice({
     marked: {}, // threadId: boolean (true if marked, false if unmarked)
   },
   reducers: {
-    getEmailRequest(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    getEmailSucess(state, action) {
-      const { count, emails, pageCount, pageIndex } = action.payload;
-      state.loading = false;
-      if (pageIndex === 1) {
-        state.emails = emails;
-      } else {
-        state.emails = [...state.emails, ...emails];
-      }
-      emails.forEach((email) => {
-        state.marked[email.thread_id || email.id] = true;
-      });
-      state.count = count;
-      state.pageCount = pageCount;
-      state.pageIndex = pageIndex;
-      state.error = null;
-    },
-    getEmailFailed(state, action) {
-      state.loading = false;
-      state.error = action.payload;
-    },
     exchangingRequest(state) {
       state.exchanging = true;
       state.error = null;
@@ -71,29 +47,9 @@ const exchangeSlice = createSlice({
   },
 });
 
-export const getLinkExchange = () => {
-  return async (dispatch, getState) => {
-    dispatch(exchangeSlice.actions.getEmailRequest());
-    try {
-      const timeline = getState().ladger.timeline
-      const data = await fetchGpc({ params: { type: "exchange", ...(timeline && timeline !== "null" ? { filter: timeline } : {}), page: 1, page_size: 50 } });
-      showConsole && console.log(`Exchange links data`, data);
-      dispatch(
-        exchangeSlice.actions.getEmailSucess({
-          count: data.data_count ?? 0,
-          emails: data.data ?? [],
-          pageCount: data.total_pages,
-          pageIndex: data.current_page,
-        })
-      );
-      dispatch(exchangeSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(exchangeSlice.actions.getEmailFailed("Fetching Bulk Emails Failed"));
-    }
-  };
-};
 
-export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the email/contact identifier for the endpoint
+
+export const linkExchange = ({ email }) => {  // Assuming 'id' is the email/contact identifier for the endpoint
   return async (dispatch, getState) => {
     dispatch(exchangeSlice.actions.exchangingRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
@@ -108,23 +64,18 @@ export const linkExchange = ({ threadId, email }) => {  // Assuming 'id' is the 
       dispatch(
         exchangeSlice.actions.exchangingSucess(message)
       );
-      dispatch(viewEmailAction.updateContactInfo({ key: "exchange" }))
 
       dispatch(exchangeSlice.actions.clearAllErrors());
       updateActivity(email, data.new_value === 1 ? "Email link exchange " : "Email unlink ")
       await createLedgerEntry({
-        domain: domain,
         email: email,
         group: "Activity",
         items: [
           buildLedgerItem({
             status: data.new_value === 1 ? "Mark-Link-Exchange" : "Unmark-Link-Exchange",
             detail: `email: {${email}}`,
-            ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
           }),
         ],
-        okHandler: getLadger({ email, loading: false, force: true })
       });
 
     } catch (error) {

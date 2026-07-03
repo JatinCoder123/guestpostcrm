@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { CREATE_DEAL_API_KEY, FETCH_GPC_X_API_KEY } from "../constants";
 import { extractEmail, showConsole } from "../../assets/assets";
-import { applyHashtag } from "../../services/utils";
+import { applyHashtag, getCurrentUser } from "../../services/utils";
 import {
   updateActivity,
   createLedgerEntry,
@@ -9,6 +9,8 @@ import {
 } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { orderKeys } from "../../queries/orders.queries";
 
 const ordersSlice = createSlice({
   name: "orders",
@@ -238,15 +240,13 @@ export const getOrders = ({
   };
 };
 
-export const createOrder = () => {
+export const createOrder = (email) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
     const crmEndpoint = getState().user.crmEndpoint;
-    const email = getState().viewEmail.contactInfo?.email1;
     const triggerHashtag = (memo_no, method = "GET") => {
       applyHashtag({
-        domain: crmEndpoint,
         email,
         memo_no,
         method,
@@ -257,7 +257,7 @@ export const createOrder = () => {
         endpoint: `${domain}?entryPoint=manual_order`,
         params: {
           email,
-          assigned_user_id: getState().crmUser.currentUser?.id,
+          assigned_user_id: getCurrentUser().id,
         },
         headers: {
           "X-Api-Key": FETCH_GPC_X_API_KEY,
@@ -274,6 +274,7 @@ export const createOrder = () => {
       );
       // ✅ Trigger hashtag for Order Creation (memo_no = 13)
       triggerHashtag(17, "GET");
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
 
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
@@ -298,7 +299,6 @@ export const createOrder2 = ({ email, order, threadId }) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -333,7 +333,7 @@ export const createOrder2 = ({ email, order, threadId }) => {
         body: {
           email: email,
           thread_id: threadId,
-          assigned_user_id: getState().crmUser.currentUser?.id,
+          assigned_user_id: getCurrentUser()?.id,
 
           orders,
         },
@@ -371,7 +371,6 @@ export const createOrder3 = (email, orders = [], send) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -428,7 +427,6 @@ export const updateOrder = ({ order }) => {
       const crmEndpoint = getState().user.crmEndpoint;
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -495,7 +493,7 @@ export const updateOrder = ({ order }) => {
             status: ledgerStatus,
             detail: `order_id: {${order.order_id}}`,
             ladgerState: getState().ladger,
-            user: getState().crmUser.currentUser,
+            user: getCurrentUser(),
             parent_name: "outr_order_gp_li",
           }),
         ],
@@ -569,7 +567,6 @@ export const deleteLink = (orderId, linkId) => {
       const email = getState().viewEmail?.contactInfo?.email1
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,
@@ -622,7 +619,6 @@ export const createLink = (orderId, link) => {
 
       const triggerHashtag = (memo_no, method = "GET") => {
         applyHashtag({
-          domain: crmEndpoint,
           email,
           memo_no,
           method,

@@ -1,12 +1,9 @@
 import { images } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 
-const SocialButtons = () => {
+
+const SocialButtons = ({ displayCount, trust_score }) => {
   const navigate = useNavigate();
-  const { contactInfo } = useSelector((state) => state.viewEmail);
-  const displayCount = contactInfo?.duplicate_threads ?? 0;
-
   return (
     <div className="flex gap-3 ml-1">
 
@@ -57,9 +54,9 @@ const SocialButtons = () => {
         <span className="text-sm font-semibold tracking-wide">Trust Score</span>
 
         <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm font-bold backdrop-blur-sm">
-          {contactInfo?.trust_score == "unverified"
+          {trust_score == "unverified"
             ? "50%"
-            : contactInfo?.trust_score}
+            : trust_score}
         </span>
       </button>
     </div>

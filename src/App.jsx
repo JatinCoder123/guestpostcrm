@@ -60,6 +60,12 @@ import RecyclePage from "./components/pages/settingpages/Recycle";
 import Profile from "./components/pages/Profile"
 import OutBox from "./components/pages/OutBox";
 import RedirectHandler from "./components/pages/RedirectHandler";
+import { Toaster } from "react-hot-toast";
+import ReminderManagementPage from "./components/pages/ReminderManagement";
+import { TimelineProvider } from "./context/TimelineContext";
+import MeetingWidget from "./components/MeetingWidget";
+import TwakChat from "./components/TwakTo";
+import BootApp from "./components/BootApp";
 const router = createBrowserRouter([
   {
     path: "*",
@@ -68,15 +74,21 @@ const router = createBrowserRouter([
   {
     path: "",
     element: (
-      <ThreadContextProvider>
-        <PageContextProvider>
-          <SocketContextProvider>
-            <ErrorBoundary>
-              <RootLayout />
-            </ErrorBoundary>
-          </SocketContextProvider>
-        </PageContextProvider>
-      </ThreadContextProvider>
+      <SocketContextProvider>
+
+        <ThreadContextProvider>
+          <PageContextProvider>
+            <TimelineProvider>
+              <ErrorBoundary>
+                <BootApp />
+                <RootLayout />
+              </ErrorBoundary>
+
+            </TimelineProvider>
+          </PageContextProvider>
+        </ThreadContextProvider>
+      </SocketContextProvider>
+
     ),
     children: [
       {
@@ -174,7 +186,7 @@ const router = createBrowserRouter([
         element: <ViewReports />,
       },
       {
-        path: "view-reports/:grp",
+        path: "view-reports/:category",
         element: <GroupReport />,
       },
 
@@ -215,10 +227,6 @@ const router = createBrowserRouter([
         path: "moved-emails",
         element: <MovedPage />,
       },
-      {
-        path: "backlinks",
-        element: <BacklinksPage />,
-      },
 
       {
         path: "other",
@@ -231,6 +239,10 @@ const router = createBrowserRouter([
       {
         path: "hot-records",
         element: <HotPage />,
+      },
+      {
+        path: "reminder-management",
+        element: <ReminderManagementPage />,
       },
       {
         path: "thread",
@@ -311,6 +323,11 @@ const router = createBrowserRouter([
             path: "recycle",
             element: <RecyclePage />,
           },
+          {
+            path: "backlinks",
+            element: <BacklinksPage />,
+          },
+
 
         ],
       },
@@ -319,11 +336,14 @@ const router = createBrowserRouter([
 ]);
 export default function App() {
   const dispatch = useDispatch();
-
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.user,
   );
-
+  useEffect(() => {
+    if (isAuthenticated) {
+      import("./lib/tinymce");
+    }
+  }, [isAuthenticated]);
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
 
@@ -350,7 +370,14 @@ export default function App() {
 
   return (
     <>
-      {isAuthenticated && <RouterProvider router={router} />}
+      <Toaster />
+      {isAuthenticated && !loading && (
+        <>
+          <MeetingWidget />
+          <TwakChat />
+          <RouterProvider router={router} />
+        </>
+      )}
 
       {!isAuthenticated && loading && <LoadingPage />}
 

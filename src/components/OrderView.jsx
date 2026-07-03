@@ -8,12 +8,13 @@ import { useSelector } from "react-redux";
 import { LoadingChase } from "./Loading";
 import { SocketContext } from "../context/SocketContext";
 import { extractEmail } from "../assets/assets";
-import { toast } from "react-toastify";
-export const OrderView = ({ data, setSend }) => {
+import { useOrdersByEmail } from "../queries/orders.queries";
+export const OrderView = ({ data, setSend, email }) => {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState(null);
-  const { creatingLinkMessage, statusLists, updating, updateLinkMessage } =
-    useSelector((state) => state.orders);
+  const { creatingLinkMessage, updating, updateLinkMessage } = useSelector((state) => state.orders);
+  const { data: ordersData } = useOrdersByEmail(email);
+  const statusLists = ordersData?.order_status_list ?? {}
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showConsent, setShowConsent] = useState(false);
   const { invoiceOrderId } = useContext(SocketContext);

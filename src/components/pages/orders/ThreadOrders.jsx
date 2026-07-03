@@ -7,32 +7,35 @@ import { useThreadContext } from "../../../hooks/useThreadContext";
 import { Save, Send, X, Loader2 } from "lucide-react";
 import { extractEmail } from "../../../assets/assets";
 import { OrderView } from "../../OrderView";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
-import useModule from "../../../hooks/useModule";
 import { createPreviewOrder } from "../../PreviewOrder";
 import { getOrders, orderAction } from "../../../store/Slices/orders";
 import { toast } from "react-toastify";
+import { useTemplateByName } from "../../../queries/template.queries";
+import { orderKeys, useOrdersByEmail } from "../../../queries/orders.queries";
+import { useContact } from "../../../queries/contact.queries";
+import { queryClient } from "../../../lib/queryClient";
 
-export default function ThreadOrders({ threadId, email, id }) {
+export default function ThreadOrders({ email, id }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [currentOrders, setCurrentOrders] = useState([]);
   const [send, setSend] = useState();
-  const { orders, message, error } = useSelector((state) => state.orders);
+  const { data } = useContact(email)
+  const threadId = data?.contact?.thread_id
+  const { message, error } = useSelector((state) => state.orders);
+  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(email);
+  const orders = ordersData?.data ?? []
   const { showBrandTimeline, contacts } = useSelector(
     (state) => state.brandTimeline,
   );
-  const { crmEndpoint } = useSelector((state) => state.user);
   const { handleMove } = useThreadContext();
   useEffect(() => {
     let activeOrders = [];
     if (id) {
       activeOrders = orders.filter((o) => o.id == id);
     } else {
-      const threadOrders = showBrandTimeline
-        ? orders
-        : orders.filter((d) => extractEmail(d.real_name ?? d.email) == email);
-      activeOrders = threadOrders.filter(
+
+      activeOrders = orders.filter(
         (d) =>
           d.order_status !== "wrong" &&
           d.order_status !== "rejected_nontechnical" &&
@@ -43,43 +46,11 @@ export default function ThreadOrders({ threadId, email, id }) {
   }, [orders, email, id]);
 
   const handleCreate = () => {
-    navigate(`/orders/create`, {
-      state: {
-        email,
-        threadId,
-      },
-    });
+    navigate(`/orders/create?email=${email}`);
   };
-  const { data: gpTemplate } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: {
-        name: "OrderORG",
-      },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "GP TEMPLATE",
-  });
-  const { data: liTemplate } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: {
-        name: "LI_ORDER_TEMPLATE",
-      },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "LI TEMPLATE",
-  });
+
+  const { data: liTemplate } = useTemplateByName("LI_ORDER_TEMPLATE");
+  const { data: gpTemplate } = useTemplateByName("OrderORG");
 
   const handlePreview = (order, itemEmail, itemThreadId) => {
     const html = createPreviewOrder({
@@ -97,7 +68,7 @@ export default function ThreadOrders({ threadId, email, id }) {
   };
   useEffect(() => {
     if (message) {
-      dispatch(getOrders({ email, brand: showBrandTimeline }));
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {
@@ -120,9 +91,20 @@ export default function ThreadOrders({ threadId, email, id }) {
       <div className="flex-1 min-w-0 relative border rounded-2xl p-6 bg-white shadow-sm overflow-hidden">
         <PageHeader
           title={"ORDERS"}
-          onAdd={() => handleCreate(email, threadId)}
+          onAdd={() => handleCreate(email)}
         />
-
+        {ordersLoading && (
+          <div className="space-y-3 mt-4">
+            {Array.from({
+              length: 2,
+            }).map((_, i) => (
+              <div
+                key={i}
+                className="h-30 rounded-xl bg-gray-100 animate-pulse"
+              />
+            ))}
+          </div>
+        )}
         {currentOrders.map((item) => {
           const itemEmail = showBrandTimeline
             ? extractEmail(item.real_name ?? item.email)
@@ -140,9 +122,7 @@ export default function ThreadOrders({ threadId, email, id }) {
                 {showBrandTimeline && (
                   <button
                     onClick={() =>
-                      navigate(`/orders/create`, {
-                        state: { email: itemEmail, threadId: itemThreadId },
-                      })
+                      navigate(`/orders/create?email=${itemEmail}`)
                     }
                     className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
                     title="Edit this item"
@@ -152,13 +132,7 @@ export default function ThreadOrders({ threadId, email, id }) {
                 )}
                 <button
                   onClick={() =>
-                    navigate(`/orders/edit`, {
-                      state: {
-                        email: itemEmail,
-                        threadId: itemThreadId,
-                        id: item.id,
-                      },
-                    })
+                    navigate(`/orders/edit?email=${itemEmail}&id=${item.id}`)
                   }
                   className="p-2.5 rounded-lg bg-white shadow hover:bg-blue-50 text-blue-600 transition-all hover:shadow-md active:scale-95"
                   title="Edit this item"
@@ -179,6 +153,7 @@ export default function ThreadOrders({ threadId, email, id }) {
               <OrderView
                 setSend={(item) => setSend({ item, itemEmail, itemThreadId })}
                 data={item}
+                email={email}
               />
             </div>
           );

@@ -1,6 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Editor } from "@tinymce/tinymce-react";
 import { motion } from "framer-motion";
-import "../lib/tinymce.js";
+import { useSelector } from "react-redux";
+import { queryClient } from "../lib/queryClient"
 
 const TinyEditor = ({
   editorContent,
@@ -8,6 +10,7 @@ const TinyEditor = ({
   editorRef,
   setEditorReady
 }) => {
+  const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
   return (
     <div className="flex-1  overflow-hidden">
       <motion.div
@@ -27,7 +30,6 @@ const TinyEditor = ({
           init={{
             license_key: 'gpl',
             height: "100%",
-            menubar: true,
             branding: false,
             statusbar: true,
 
@@ -38,7 +40,7 @@ const TinyEditor = ({
           fullscreen preview searchreplace
           insertdatetime lists link image media
           table charmap pagebreak nonbreaking
-          anchor code codesample emoticons 
+          anchor code codesample  
            quickbars
         `,
 
@@ -51,7 +53,7 @@ const TinyEditor = ({
           link image media table |
            charmap insertdatetime |
           preview fullscreen |
-          code emoticons 
+          code  
         `,
 
             toolbar_mode: "sliding",
@@ -61,8 +63,8 @@ const TinyEditor = ({
 
             /* ================= QUICKBARS ================= */
             quickbars_selection_toolbar:
-              "bold emoticons italic underline | quicklink h2 h3 blockquote",
-            quickbars_insert_toolbar: "image media table emoticons",
+              "bold  italic underline | quicklink h2 h3 blockquote",
+            quickbars_insert_toolbar: "image media table ",
 
 
 
@@ -148,6 +150,7 @@ export const SmallTinyEditor = ({
   editorRef,
   setEditorReady,
 }) => {
+  const TINY_EDITOR_API_KEY = queryClient.getQueryData(['tiny-key'])
   return (
     <div className="overflow-hidden h-full">
       <motion.div
@@ -170,11 +173,11 @@ export const SmallTinyEditor = ({
             statusbar: false,
 
             // ✅ Add emoticons plugin
-            plugins: `link lists emoticons`,
+            plugins: `link lists `,
 
             // ✅ Add emoji button in toolbar
             toolbar: `
-              bold italic underline link | emoticons
+              bold italic underline link | 
    
     bullist numlist |
     
@@ -185,7 +188,7 @@ export const SmallTinyEditor = ({
 
             content_style: `
     html, body {
-      height: 100%;
+      height: 100vh;
       margin: 0;
       padding: 0;
     }
@@ -193,7 +196,7 @@ export const SmallTinyEditor = ({
     body {
       font-family: -apple-system, BlinkMacSystemFont,
         'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      font-size: 14px;
+      font-size: 12px;
       line-height: 1.5;
       color: #18181cff;
 

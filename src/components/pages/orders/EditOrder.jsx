@@ -17,53 +17,31 @@ import {
   updateOrder,
 } from "../../../store/Slices/orders";
 import { toast } from "react-toastify";
-import { CREATE_DEAL_API_KEY } from "../../../store/constants";
-import useModule from "../../../hooks/useModule";
 import { useThreadContext } from "../../../hooks/useThreadContext";
 import { createPreviewOrder } from "../../PreviewOrder";
 import { useNavigate } from "react-router-dom";
+import { useTemplateByName } from "../../../queries/template.queries";
+import { orderKeys, useOrdersByEmail } from "../../../queries/orders.queries";
+import { queryClient } from "../../../lib/queryClient";
+import { useContact } from "../../../queries/contact.queries";
 
-export default function EditOrder({ threadId, id, email }) {
+export default function EditOrder({ id, email }) {
   const [order, setOrder] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { orders, updating, statusLists, paymentTypes, message, error } =
+  const { updating, message, error } =
     useSelector((s) => s.orders);
-  const { showBrandTimeline } =
-    useSelector((s) => s.brandTimeline);
-  const { crmEndpoint } = useSelector((s) => s.user);
+  const { data } = useContact(email)
+  const threadId = data?.contact?.thread_id
+  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(email);
+  const orders = ordersData?.data ?? []
+  const statusLists = ordersData?.order_status_list ?? {}
+  const paymentTypes = ordersData?.invoice_type_list ?? {}
+  const { showBrandTimeline } = useSelector((s) => s.brandTimeline);
   const { handleMove } = useThreadContext();
   const [send, setSend] = useState(false);
-  const { data: gpTemplate } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: {
-        name: "OrderORG",
-      },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "GP TEMPLATE",
-  });
-  const { data: liTemplate } = useModule({
-    url: `${crmEndpoint.split("?")[0]}?entryPoint=get_post_all&action_type=get_data`,
-    method: "POST",
-    body: {
-      module: "EmailTemplates",
-      where: {
-        name: "LI_ORDER_TEMPLATE",
-      },
-    },
-    headers: {
-      "x-api-key": `${CREATE_DEAL_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    name: "LI TEMPLATE",
-  });
+  const { data: liTemplate } = useTemplateByName("LI_ORDER_TEMPLATE");
+  const { data: gpTemplate } = useTemplateByName("OrderORG");
 
   const handleChange = (key, value) => {
     setOrder((prev) => ({ ...prev, [key]: value }));
@@ -73,6 +51,7 @@ export default function EditOrder({ threadId, id, email }) {
     dispatch(updateOrder({ order }));
   };
   useEffect(() => {
+    if (ordersLoading) return
     const order = orders.find(
       (o) => o.id == id,
     );
@@ -81,7 +60,7 @@ export default function EditOrder({ threadId, id, email }) {
       return;
     }
     setOrder(order);
-  }, [orders, threadId, id]);
+  }, [orders, threadId, id, ordersLoading]);
   const handlePreview = () => {
     const html = createPreviewOrder({
       templateData: order.order_type == "GUEST POST" ? gpTemplate : liTemplate,
@@ -92,7 +71,7 @@ export default function EditOrder({ threadId, id, email }) {
   };
   useEffect(() => {
     if (message) {
-      dispatch(getOrders({ email, brand: showBrandTimeline }));
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
       toast.success(message);
       if (message?.includes("Updated")) {
         if (send) {

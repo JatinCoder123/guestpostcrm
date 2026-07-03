@@ -11,20 +11,63 @@ import { PageContext } from "../../context/pageContext";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getAllHot } from "../../store/Slices/hotSlice.js";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { useInfiniteHotEvents } from "../../queries/hot.queries.js";
 
 export function HotPage() {
-  const { count, hots, loading, pageIndex, } = useSelector(
-    (state) => state.hot
-  );
+  const preferences =
+    useTablePreference(
+      "hot"
+    );
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } =
+    useInfiniteHotEvents(
+      preferences
+    );
+
+  const hots =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
+
+  const pages =
+    data?.pages ?? [];
+
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
 
   const { handleMove } = useThreadContext()
   const { handleDateClick } =
     useContext(PageContext);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getAllHot({}))
-  }, [])
+
   const columns = [
     {
       label: "Created At",
@@ -32,24 +75,25 @@ export function HotPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: row?.email, navigate: "/" })
+      onClick: (row) => handleDateClick({ email: row?.name, navigate: "/" })
       ,
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       )
     },
 
     {
       label: "Contact",
-      accessor: "email",
+      accessor: "name",
       headerClasses: "",
       icon: User,
       classes: "truncate ",
-      onClick: (row) => handleDateClick({ email: row?.email, navigate: "/contacts" })
+      onClick: (row) => handleDateClick({ email: row?.name, navigate: "/contacts" })
       ,
+      searchable: true,
 
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
@@ -60,6 +104,8 @@ export function HotPage() {
       label: "Description",
       accessor: "description",
       headerClasses: "",
+      searchable: true,
+
       icon: FileText,
       classes: "truncate max-w-[300px]",
       onClick: (row) => handleMove({
@@ -75,9 +121,9 @@ export function HotPage() {
     {
       label: "Type",
       accessor: "type",
-      headerClasses: "",
+      headerClasses: "ml-auto",
       icon: FileText,
-      classes: "truncate max-w-[300px]",
+      classes: "truncate max-w-[300px] ml-auto",
       onClick: (row) => handleMove({
         email: row.email_address,
         threadId: row.thread_id,
@@ -92,12 +138,43 @@ export function HotPage() {
 
 
   return (
-    <>
+    <TableView
+      tableData={hots}
+      tableName={"Hot Events"}
+      columns={columns}
+      slice={"hot"}
+      pageIndex={pageIndex}
+      pageCount={pageCount}
+      count={count}
+      loading={loading}
+      preferences={preferences}
+      refreshKey={["hot"]}
+      fetchNextPage={() => {
+        if (
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}
+    >
+      <TableTitleBar
+        Icon={Flame}
+        title={"Hot Events"}
+        titleClass={
+          "text-orange-700"
+        }
+      />
 
-      <TableView tableData={hots} tableName={"Hot Events"} columns={columns} slice={"hot"} fetchNextPage={() => dispatch(getAllHot({ page: pageIndex + 1 }))}    >
-        <TableTitleBar Icon={Flame} title={"Hot Events"} titleClass={"text-orange-700"} />
-        <Table headerStyle={"  bg-orange-600"} body layoutStyle={"grid grid-cols-4"} />
-      </TableView></>
+      <Table
+        headerStyle={
+          "bg-orange-600"
+        }
+        layoutStyle={
+          "grid grid-cols-4"
+        }
+      />
+    </TableView>
 
   );
 }

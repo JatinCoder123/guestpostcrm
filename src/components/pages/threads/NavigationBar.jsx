@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     ArrowBigDownDash,
     ArrowBigUpDash,
+    ChevronDown,
+    ChevronsUpDown,
     Link2,
     ListRestart,
     ListStart,
@@ -11,19 +13,24 @@ import {
 
 import { ThreadContext } from "../../../context/ThreadContext";
 import IconButton from "../../ui/Buttons/IconButton";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useDuplicateThreads } from "../../../queries/threads.queries";
+import { useThreadContext } from "../../../hooks/useThreadContext";
 
 function NavigationBar({
     messageLimit,
     setMessageLimit,
     emails,
     scrollRef,
-}) {
-    const { duplicateEmail, loading } = useSelector(
-        (state) => state.duplicateEmails
-    );
+    showReplyPanel,
+    setShowReplyPanel,
 
-    const { currentThread, setCurrentThread } =
-        useContext(ThreadContext);
+}) {
+    const { email, threadId } = useOutletContext()
+    const { handleMove } = useThreadContext()
+    const { data, isPending: loading } = useDuplicateThreads(email)
+    const duplicateEmail = data?.data || [];
+
 
     const [showThreads, setShowThreads] = useState(false);
 
@@ -40,7 +47,7 @@ function NavigationBar({
           shadow-sm
         "
             >
-                <div className="flex flex-wrap items-center  gap-3 px-4 py-3">
+                <div className="flex flex-wrap justify-between items-center  gap-3 px-4 py-3">
                     {/* LEFT ACTIONS */}
                     <div className="flex flex-wrap items-center gap-3">
                         {messageLimit < emails?.length && (
@@ -48,6 +55,7 @@ function NavigationBar({
                                 {/* LOAD MORE */}
                                 <IconButton
                                     icon={ListStart}
+                                    tooltipPosition="bottom"
                                     onClick={() =>
                                         setMessageLimit((p) => p + 3)
                                     }
@@ -67,9 +75,10 @@ function NavigationBar({
                                 {/* SHOW ALL */}
                                 <IconButton
                                     icon={ListRestart}
-                                    onClick={() =>
+                                    tooltipPosition="bottom"
+                                    onClick={() => {
                                         setMessageLimit(emails.length)
-                                    }
+                                    }}
                                     className="
                     px-5 py-2
                     rounded-xl
@@ -96,6 +105,7 @@ function NavigationBar({
                                 });
                             }, 50);
                         }}
+                            tooltipPosition="bottom"
                             icon={ArrowBigUpDash}
                             label={'First Email'}
                             className="
@@ -120,19 +130,17 @@ function NavigationBar({
                     shadow-md hover:shadow-lg
                     transition-all duration-300
                   "
+                            tooltipPosition="bottom"
                             icon={ArrowBigDownDash}
                             label={"Last Email"} />
-                    </div>
-
-
-                    <IconButton
-                        onClick={() => {
-                            // Don't open sidebar while loading
-                            if (!loading) {
-                                setShowThreads(true);
-                            }
-                        }}
-                        className="
+                        <IconButton
+                            onClick={() => {
+                                // Don't open sidebar while loading
+                                if (!loading) {
+                                    setShowThreads(true);
+                                }
+                            }}
+                            className="
         px-5 py-2
         rounded-xl
         bg-gradient-to-r from-purple-500 to-indigo-500
@@ -141,15 +149,32 @@ function NavigationBar({
         transition-all duration-300
         relative
     "
-                        text={`(${duplicateEmail?.length || 0})`}
-                        icon={Link2}
-                        loading={loading}
-                        label={
-                            loading
-                                ? "Loading Threads..."
-                                : `Threads (${duplicateEmail?.length || 0})`
-                        }
+                            tooltipPosition="bottom"
+                            text={`(${duplicateEmail?.length || 0})`}
+                            icon={Link2}
+                            loading={loading}
+                            label={
+                                loading
+                                    ? "Loading Threads..."
+                                    : `Threads (${duplicateEmail?.length || 0})`
+                            }
+                        />
+                    </div>
+
+                    <IconButton
+                        className="
+        px-5 py-2
+        rounded-xl
+        bg-gradient-to-r from-purple-500 to-indigo-500
+        text-white text-sm font-semibold
+        shadow-md hover:shadow-lg
+        transition-all duration-300
+    "
+                        text={showReplyPanel ? "Hide Reply" : "Show Reply"}
+                        icon={ChevronsUpDown}
+                        onClick={() => setShowReplyPanel((p) => !p)}
                     />
+
                 </div>
             </div>
 
@@ -234,7 +259,7 @@ function NavigationBar({
                                 ) : topThreads.length > 0 ? (
                                     topThreads.map((thread) => {
                                         const isActive =
-                                            currentThread ===
+                                            threadId ===
                                             thread.thread_id;
 
                                         return (
@@ -243,10 +268,7 @@ function NavigationBar({
                                                 whileHover={{ y: -1 }}
                                                 whileTap={{ scale: 0.98 }}
                                                 onClick={() => {
-                                                    setCurrentThread(
-                                                        thread.thread_id
-                                                    );
-
+                                                    handleMove({ email, threadId: thread?.thread_id });
                                                     setShowThreads(false);
                                                 }}
                                                 className={`

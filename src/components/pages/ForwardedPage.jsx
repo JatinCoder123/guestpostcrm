@@ -7,17 +7,28 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { PageContext } from "../../context/pageContext";
-import { useNavigate } from "react-router-dom";
-import { ladgerAction } from "../../store/Slices/ladger";
 import { useThreadContext } from "../../hooks/useThreadContext";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
-import { getForwardedEmails } from "../../store/Slices/forwardedEmailSlice.js";
+import { useTablePreference } from "../../hooks/useTablePreference.js";
+import { useInfiniteForwarded } from "../../queries/forwarded.queries.js";
 
 export function ForwardedPage() {
-  const { count, emails, loading, pageIndex, } = useSelector(
-    (state) => state.forwarded
-  );
+  const preferences =
+    useTablePreference(
+      "forwarded"
+    );
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } =
+    useInfiniteForwarded(
+      preferences
+    );
   const { handleMove } = useThreadContext()
   const { handleDateClick } =
     useContext(PageContext);
@@ -28,13 +39,14 @@ export function ForwardedPage() {
       accessor: "date_entered",
       headerClasses: "",
       icon: Calendar,
+      sortable:true,
 
-      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/" })
+      onClick: (row) => handleDateClick({ email: row?.email1, navigate: "/" })
       ,
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_entered}
+          {row.date_entered_time_ago}
         </span>
       )
     },
@@ -44,35 +56,35 @@ export function ForwardedPage() {
       headerClasses: "",
       icon: Calendar,
 
-      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/" })
+      onClick: (row) => handleDateClick({ email: row?.email1, navigate: "/" })
       ,
       classes: "truncate max-w-[200px]",
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row.date_modified}
+          {row.date_modified_time_ago}
         </span>
       )
     },
 
     {
       label: "Contact",
-      accessor: "email_c",
+      accessor: "first_name",
       headerClasses: "",
       icon: User,
       classes: "truncate ",
-      onClick: (row) => handleDateClick({ email: row?.email_address, navigate: "/contacts" })
-      ,
-
+      searchable: true,
+      onClick: (row) => handleDateClick({ email: row?.email1, navigate: "/contacts" }),
       render: (row) => (
         <span className="font-medium text-gray-700 cursor-pointer">
-          {row?.first_name} {row?.last_name}        </span>
-      )
+          {row?.first_name} {row?.last_name}        </span>)
     },
     {
       label: "Subject",
       accessor: "subject",
       headerClasses: "",
       icon: FileText,
+      searchable: true,
+
       classes: "truncate max-w-[300px]",
       onClick: (row) => handleMove({
         email: row.email_address,
@@ -85,13 +97,69 @@ export function ForwardedPage() {
       )
     },
   ]
+  const emails =
+    data?.pages?.flatMap(
+      (page) =>
+        page.records ||
+        page.data ||
+        []
+    ) ?? [];
 
+  const pages =
+    data?.pages ?? [];
+
+  const lastPage =
+    pages[
+    pages.length - 1
+    ] ?? {};
+
+  const firstPage =
+    pages[0] ?? {};
+
+  const pageIndex =
+    lastPage.page ?? 1;
+
+  const pageCount =
+    firstPage.total_pages ??
+    0;
+
+  const count =
+    firstPage.total ?? 0;
+
+  const loading =
+    isPending ||
+    isFetchingNextPage;
 
   return (
     <>
 
-      <TableView tableData={emails} tableName={"Assign Emails"} columns={columns} slice={"forwarded"} fetchNextPage={() => dispatch(getForwardedEmails({ page: pageIndex + 1 }))}   >
-        <TableTitleBar Icon={MoveRight} title={"Assign Emails"} titleClass={"text-sky-700"} />
+      <TableView
+        tableData={emails}
+        tableName={
+          "Assign Emails"
+        }
+        columns={columns}
+        slice={"forwarded"}
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        count={count}
+        loading={loading}
+        preferences={
+          preferences
+        }
+
+        refreshKey={[
+          "forwarded",
+        ]}
+        fetchNextPage={() => {
+          if (
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage();
+          }
+        }}
+      >        <TableTitleBar Icon={MoveRight} title={"Assign Emails"} titleClass={"text-sky-700"} />
         <Table headerStyle={"  bg-sky-600"} body layoutStyle={"grid grid-cols-[200px_200px_1fr_1fr]"} />
       </TableView></>
 

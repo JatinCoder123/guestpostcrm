@@ -11,9 +11,11 @@ import Footer from "./components/Footer";
 import { SocketContext } from "./context/SocketContext";
 import { getDomain } from "./assets/assets";
 import LowCreditWarning from "./components/LowCreditWarning";
-import { toast } from "react-toastify";
 import useRefresh from "./hooks/useRefresh";
 import OnBoarding from "./components/OnBoarding";
+import { useTimeline } from "./context/TimelineContext";
+import toast from "react-hot-toast";
+import { queryClient } from "./lib/queryClient"
 
 
 const RootLayout = () => {
@@ -27,6 +29,7 @@ const RootLayout = () => {
   } = useContext(PageContext);
 
   const { setCrm } = useContext(SocketContext);
+  useTimeline()
 
   useRefresh();
 
@@ -57,12 +60,22 @@ const RootLayout = () => {
   useEffect(() => {
     if (message) {
       dispatch(viewEmailAction.clearAllMessage());
-      toast.success(message);
+      toast.success(message,{ style: {
+      borderRadius: '10px',
+      background: '#333',
+      color: '#fff',
+    },});
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["threads"] });
     }
 
     if (error) {
       dispatch(viewEmailAction.clearAllErrors());
-      toast.error(error);
+      toast.error(error,{ style: {
+      borderRadius: '10px',
+      background: '#333',
+      color: '#fff',
+    },});
     }
   }, [message, error]);
 

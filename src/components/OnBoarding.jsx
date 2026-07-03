@@ -1,57 +1,80 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Sparkles, UserCircle2 } from "lucide-react";
 import GuidedWalkthrough from "./GuidedWalkthrough";
-
-import {
-    BASE_ONBOARDING_KEYS,
-    getOnboardingKeys,
-    readOnboardingFlag,
-    writeOnboardingFlag,
-} from "../utils/onboardingStorage";
+import { fetchOnboardingStatus } from "../utils/onboardingCompletion";
 
 const FIRST_SYNC_EVENT = "guestpostcrm:first-sync";
 
 const OnBoarding = () => {
     const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(null);
     const [showGuidedWalkthrough, setShowGuidedWalkthrough] =
         useState(false);
-    const [isOnboardingLoading, setIsOnboardingLoading] =
-        useState(false);
+    const [isSignupChecking, setIsSignupChecking] = useState(true);
+const [isSignupIncomplete, setIsSignupIncomplete] = useState(false);
+    const guidedWalkthroughShownRef = useRef(false);
 
     const navigate = useNavigate();
 
     const {
-        crmEndpoint,
         user,
         businessEmail,
-        db_name,
-        id,
         isAuthenticated,
     } = useSelector((state) => state.user);
 
-    const onboardingKeys = useMemo(
-        () =>
-            getOnboardingKeys({
-                user,
-                businessEmail,
-                crmEndpoint,
-                dbName: db_name,
-                id,
-            }),
-        [businessEmail, crmEndpoint, db_name, id, user]
-    );
-
        const searchParams = new URLSearchParams(window.location.search);
     const email = searchParams.get("email");
- 
+
     const isRootEmailUrl =
         window.location.pathname === "/" && !!email;
  
+    const onboardingEmail =
+        businessEmail ||
+        user?.email ||
+        user?.email1 ||
+        user?.email_address ||
+        email;
+
+    useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const checkSignupEntry = async () => {
+        if (!onboardingEmail) {
+            setIsSignupChecking(false);
+            return;
+        }
+
+        try {
+            setIsSignupChecking(true);
+
+            const progress = await fetchOnboardingStatus(onboardingEmail);
+
+            setIsSignupIncomplete(progress.signupIncomplete);
+            window.dispatchEvent(
+                new CustomEvent(FIRST_SYNC_EVENT, {
+                    detail: {
+                        onboardingStep: progress.step,
+                        websiteDone: progress.step >= 1,
+                    },
+                }),
+            );
+        } catch (error) {
+            console.error("Signup onboarding check failed", error);
+            setIsSignupIncomplete(true);
+        } finally {
+            setIsSignupChecking(false);
+        }
+    };
+
+    checkSignupEntry();
+}, [isAuthenticated, onboardingEmail]);
+
+    // Show onboarding popup
     useEffect(() => {
         if (!isAuthenticated) return;
- 
+
         if (isRootEmailUrl) {
             const alreadyShown =
                 sessionStorage.getItem("onboardingShown");
@@ -62,57 +85,32 @@ const OnBoarding = () => {
             }
         }
     }, [isAuthenticated, isRootEmailUrl]);
- 
 
     // Guided walkthrough
     useEffect(() => {
         if (!isAuthenticated) return;
 
-        const maybeStartWalkthrough = () => {
-            const syncDone = readOnboardingFlag(
-                onboardingKeys.syncDone,
-                BASE_ONBOARDING_KEYS.syncDone
-            );
-
-            const walkthroughSeen = readOnboardingFlag(
-                onboardingKeys.guidedWalkthroughSeen,
-                BASE_ONBOARDING_KEYS.guidedWalkthroughSeen
-            );
-
-            if (syncDone && !walkthroughSeen) {
+        const syncHandler = (event) => {
+            if (
+                event.detail?.status === "completed" &&
+                !guidedWalkthroughShownRef.current
+            ) {
+                guidedWalkthroughShownRef.current = true;
                 setShowGuidedWalkthrough(true);
             }
         };
 
-        maybeStartWalkthrough();
-
-        const syncHandler = (event) => {
-            if (event.detail?.status === "completed") {
-                maybeStartWalkthrough();
-            }
-        };
-
         window.addEventListener(FIRST_SYNC_EVENT, syncHandler);
-        window.addEventListener("storage", maybeStartWalkthrough);
 
         return () => {
             window.removeEventListener(
                 FIRST_SYNC_EVENT,
                 syncHandler
             );
-            window.removeEventListener(
-                "storage",
-                maybeStartWalkthrough
-            );
         };
-    }, [onboardingKeys, isAuthenticated]);
+    }, [isAuthenticated]);
 
     const closeGuidedWalkthrough = () => {
-        writeOnboardingFlag(
-            onboardingKeys.guidedWalkthroughSeen,
-            true
-        );
-
         setShowGuidedWalkthrough(false);
     };
 
@@ -141,33 +139,84 @@ const OnBoarding = () => {
 
     const handleCompleteProfile = async () => {
         try {
-            setIsOnboardingLoading(true);
+            setLoadingAction("complete");
 
             await hitTryNowEndpoint();
 
             setShowOnboardingPopup(false);
 
+            // Complete profile specific action
             redirectToDomainWithEmail();
         } finally {
-            setIsOnboardingLoading(false);
+            setLoadingAction(null);
         }
     };
 
     const handleSkipForNow = async () => {
         try {
-            setIsOnboardingLoading(true);
+            setLoadingAction("skip");
 
             await hitTryNowEndpoint();
 
             setShowOnboardingPopup(false);
 
+            // Skip specific action
             redirectToDomainWithEmail();
         } finally {
-            setIsOnboardingLoading(false);
+            setLoadingAction(null);
         }
     };
 
-    if (!isAuthenticated) return null;
+   if (!isAuthenticated) return null;
+
+if (isSignupChecking) {
+    return null;
+}
+
+if (isSignupIncomplete) {
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4">
+            <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-gray-100 p-8 text-center">
+                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 text-red-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M10.29 3.86l-8 14A1 1 0 003.14 19h17.72a1 1 0 00.85-1.51l-8-14a1 1 0 00-1.72 0z"
+                        />
+                    </svg>
+                </div>
+
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                    Signup Incomplete
+                </h2>
+
+                <p className="text-gray-600 text-base leading-relaxed mb-8">
+                    Your account setup isn't finished yet. Complete your signup
+                    process to access all features of GuestPostCRM.
+                </p>
+
+                <a
+                    href="https://www.guestpostcrm.com/rightee/google.php"
+                    className="inline-flex items-center justify-center w-full rounded-xl bg-blue-600 px-6 py-3 text-white font-semibold shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
+                >
+                    Complete Signup →
+                </a>
+
+                <p className="mt-4 text-sm text-gray-400">
+                    It only takes a minute.
+                </p>
+            </div>
+        </div>
+    );
+}
 
     return (
         <>
@@ -235,33 +284,51 @@ const OnBoarding = () => {
 
                             <button
                                 onClick={handleCompleteProfile}
-                                disabled={isOnboardingLoading}
+                                disabled={loadingAction !== null}
                                 className="
-                  mt-6 w-full py-3 rounded-2xl
-                  bg-gradient-to-r from-violet-500 to-fuchsia-500
-                  text-white font-semibold
-                  shadow-lg hover:scale-[1.02]
-                  transition-all duration-300
-                  disabled:opacity-70 disabled:cursor-not-allowed
-                "
+        mt-6 w-full py-3.5 rounded-2xl
+        bg-gradient-to-r from-violet-600 to-fuchsia-600
+        text-white font-semibold
+        shadow-lg shadow-violet-200
+        hover:shadow-xl hover:scale-[1.02]
+        transition-all duration-300
+        disabled:opacity-80 disabled:cursor-not-allowed
+    "
                             >
-                                {isOnboardingLoading
-                                    ? "Please wait..."
-                                    : "Complete Profile"}
+                                {loadingAction === "complete" ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Completing...
+                                    </div>
+                                ) : (
+                                    "Complete Profile"
+                                )}
                             </button>
 
                             <button
                                 onClick={handleSkipForNow}
-                                disabled={isOnboardingLoading}
-                                className="
-                  mt-3 text-sm text-gray-500
-                  hover:text-gray-700 transition
-                  disabled:opacity-70 disabled:cursor-not-allowed
-                "
+                                disabled={loadingAction !== null}
+                                className={`
+        mt-3 w-full py-3 rounded-2xl
+        border border-gray-200
+        bg-gray-50
+        text-gray-600
+        font-medium
+        transition-all duration-300
+        ${loadingAction === null
+                                        ? "hover:bg-gray-100 hover:border-gray-300"
+                                        : "opacity-60 cursor-not-allowed"
+                                    }
+    `}
                             >
-                                {isOnboardingLoading
-                                    ? "Loading..."
-                                    : "Skip for now"}
+                                {loadingAction === "skip" ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-500 rounded-full animate-spin" />
+                                        Skipping...
+                                    </div>
+                                ) : (
+                                    "Skip for now"
+                                )}
                             </button>
                         </div>
                     </div>

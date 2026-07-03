@@ -1,5 +1,9 @@
 import { showConsole } from "../assets/assets";
+import { queryClient } from "../lib/queryClient";
+import { contactKeys } from "../queries/contact.queries";
+import { ledgerKeys } from "../queries/ledger.queries";
 import { FETCH_GPC_X_API_KEY } from "../store/constants";
+import { store } from "../store/store";
 import { apiRequest, fetchGpc } from "./api";
 
 let CURRENT_USER = {
@@ -10,6 +14,7 @@ export const setCurrentUser = (currentUser) => {
   CURRENT_USER = currentUser;
   return;
 };
+export const getCurrentUser = () => CURRENT_USER
 export const updateActivity = async (email, last_activity) => {
   try {
     const data = await fetchGpc({
@@ -18,23 +23,25 @@ export const updateActivity = async (email, last_activity) => {
       body: {
         email,
         last_activity,
-        last_user: CURRENT_USER.name,
-        last_user_email: CURRENT_USER.description,
+        last_user: CURRENT_USER?.name ?? "GPC",
+        last_user_email: CURRENT_USER?.description ?? "GPC",
       },
     });
     showConsole && console.log("Activity Added", data);
+    queryClient.invalidateQueries({ queryKey: contactKeys.all })
   } catch (error) {
     showConsole && console.log(error);
   }
 };
 export const createLedgerEntry = async ({
-  domain,
   email,
   thread_id,
   message_id,
   group = "General",
   items = [],
-  okHandler,
+  reminder_type,
+  websites = [],
+  extraPayload = {},
 }) => {
   try {
     const payload = {
@@ -43,7 +50,15 @@ export const createLedgerEntry = async ({
       message_id,
       group,
       item: items,
+
+      // optional fields
+      ...(reminder_type && { reminder_type }),
+      ...(websites?.length > 0 && { websites }),
+
+      // any future custom fields
+      ...extraPayload,
     };
+
     const data = await fetchGpc({
       method: "POST",
       body: payload,
@@ -51,31 +66,32 @@ export const createLedgerEntry = async ({
     });
 
     showConsole && console.log("Ledger Created", data);
-    okHandler();
+    queryClient.invalidateQueries({ queryKey: ledgerKeys.all })
+
+    return data;
   } catch (error) {
     showConsole && console.log("Ledger API Failed", error);
+    throw error;
   }
 };
 
 export const buildLedgerItem = ({
   status,
   detail,
-  ladgerState,
-  user,
   parent_name,
 }) => ({
   status,
   detail,
-  prompt_id: ladgerState.prompt_id || "",
-  prompt_ledger_id: ladgerState.prompt_ledger_id || "",
-  parent_id: ladgerState.parent_id || "",
+  prompt_id: "",
+  prompt_ledger_id: "",
+  parent_id: "",
   parent_name,
-  template_id: ladgerState.template_id || "",
+  template_id: "",
   assigned_user_id: CURRENT_USER?.id || "",
 });
 
 export const applyHashtag = async ({
-  domain,
+  domain = false,
   email,
   memo_no,
   method = "GET",
@@ -83,10 +99,11 @@ export const applyHashtag = async ({
   try {
     const { data } = await fetchGpc({
       method,
-      params: { type: "hashtag", email, memo_no: memo_no },
+      params: { type: "hashtag", email, memo_no: memo_no, domain },
     });
 
     showConsole && console.log("Hashtag Applied", data);
+    queryClient.invalidateQueries({ queryKey: contactKeys.all })
     return data;
   } catch (error) {
     showConsole && console.log("Hashtag API Failed", error);
@@ -128,3 +145,15 @@ export const generatePDF = async (html, id = "invoice") => {
   }
 };
 
+export const getRighteeUsers = async () => {
+  const response = await apiRequest({ endpoint: "https://crm.outrightsystems.org/index.php?entryPoint=trynow&team_member=1", })
+  return response.data ?? []
+}
+export const getStages = async () => {
+  const data = await fetchGpc({ params: { type: 'machine_learning', stages: 1 } });
+  return data ?? {}
+}
+export const getCRM = () =>
+  store.getState()
+    .user?.crmEndpoint
+    ?.split("?")[0];

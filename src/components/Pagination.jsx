@@ -3,8 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-function Pagination({ slice, fn }) {
-  let { pageCount, pageIndex } = useSelector((state) => state[slice]);
+function Pagination({ slice, fn, pageCount, pageIndex }) {
   const [gotoValue, setGotoValue] = useState("");
   useEffect(() => {
     window.scrollTo({

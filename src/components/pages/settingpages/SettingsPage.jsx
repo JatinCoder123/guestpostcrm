@@ -1,6 +1,7 @@
 import {
   Bot,
   Bug,
+  Cable,
   ChartBarStackedIcon,
   Cpu,
   CreditCard,
@@ -110,6 +111,13 @@ export function SettingsPage() {
       bg: "bg-red-50",
       link: "recycle",
     },
+    {
+      title: "backlinks",
+      subtitle: "Manage Backlinks",
+      icon: <Cable className="w-8 h-8 text-red-600" />,
+      bg: "bg-red-50",
+      link: "backlinks",
+    }
   ];
 
   return (

@@ -21,13 +21,17 @@ import {
 } from "lucide-react";
 import { getSync, syncAction } from "../store/Slices/syncSlice";
 import SyncSelectionModal from "./SyncSelectionModal";
-import { getMailerSummary } from "../store/Slices/mailerSummary";
 import IconButton from "../components/ui/Buttons/IconButton"
+import { useMailerSummary } from "../queries/mailerSummary.queries";
+import { useTimeline } from "../context/TimelineContext";
+import { useDealsByEmail } from "../queries/deals.queries";
+import { useOrdersByEmail } from "../queries/orders.queries";
+import { useOffersByEmail } from "../queries/offers.queries";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
-  const { contactInfo } = useSelector((state) => state.viewEmail);
-  const email = contactInfo?.email1;
+  const { currentEmail } = useTimeline()
+  const email = currentEmail;
   const {
     syncType,
     syncData,
@@ -38,13 +42,12 @@ const MailerSummaryHeader = () => {
   } = useSelector((state) => state.sync);
   const [showSyncData, setShowSyncData] = useState(false);
   const dispatch = useDispatch();
-  const { orders, loading: ordersLoading } = useSelector(
-    (state) => state.orders,
-  );
-  const { offers, loading: offersLoading } = useSelector(
-    (state) => state.offers,
-  );
-  const { deals, loading: dealsLoading } = useSelector((state) => state.deals);
+  const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(currentEmail);
+  const { data: offersData, isLoading: offersLoading } = useOffersByEmail(currentEmail);
+  const { data: dealsData, isLoading: dealsLoading } = useDealsByEmail(currentEmail);
+  const orders = ordersData?.data
+  const offers = offersData?.data
+  const deals = dealsData?.data
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
 
   const [emailData, setEmailData] = useState({
@@ -71,8 +74,7 @@ const MailerSummaryHeader = () => {
 
   /* ---------------- DEALS ---------------- */
   useEffect(() => {
-    const actualOrders = showBrandTimeline ? orders : orders?.filter((o) => extractEmail(o.real_name ?? o.email) === email)
-    const filtered = actualOrders.filter(
+    const filtered = orders?.filter(
       (d) =>
         !["wrong", "rejected_nontechnical", "completed"].includes(
           d.order_status
@@ -82,15 +84,13 @@ const MailerSummaryHeader = () => {
     setEmailData((prev) => ({ ...prev, orders: filtered }));
   }, [email, orders, showBrandTimeline]);
   useEffect(() => {
-    const actualDeals = showBrandTimeline ? deals : deals?.filter((o) => extractEmail(o.real_name ?? o.email) === email)
-    const deal = actualDeals?.filter((d) => d.status === "active");
+    const deal = deals?.filter((d) => d.status === "active");
     setEmailData((prev) => ({ ...prev, deals: deal }));
   }, [email, deals, showBrandTimeline]);
 
   /* ---------------- OFFERS ---------------- */
   useEffect(() => {
-    const actualOffers = showBrandTimeline ? offers : offers?.filter((o) => extractEmail(o.real_name ?? o.email_c) === email)
-    const offer = actualOffers?.filter((d) => d.offer_status === "active");
+    const offer = offers?.filter((d) => d.offer_status === "active");
     setEmailData((prev) => ({ ...prev, offers: offer }));
   }, [email, offers, showBrandTimeline]);
   /* ---------------- UI ---------------- */
@@ -166,15 +166,12 @@ export default MailerSummaryHeader;
 
 
 function MailerSummary() {
-  const { mailersSummary, loading } = useSelector(
-    (state) => state.mailersSummary
-  );
-  const { contactInfo } = useSelector((state) => state.viewEmail);
-  const dispatch = useDispatch();
-
+  const { currentEmail } = useTimeline()
+  const { data, isPending, refetch } = useMailerSummary(currentEmail);
+  const mailersSummary = data?.mailers_summary
   return (
     <>
-      {loading ? (
+      {isPending ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {[1, 2, 3].map((item) => (
             <div
@@ -236,13 +233,7 @@ function MailerSummary() {
           </p>
 
           <button
-            onClick={() =>
-              dispatch(
-                getMailerSummary({
-                  email: contactInfo?.email,
-                })
-              )
-            }
+            onClick={() => refetch()}
             className="px-6 flex gap-2 items-center py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-700 transition"
           >
             <RefreshCcwIcon className="w-4 h-4" />
@@ -267,10 +258,8 @@ function SummaryCard({
   const { setSidebarCollapsed } = useContext(PageContext);
   const { syncType, loading: syncing } = useSelector((state) => state.sync);
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
-
-  const { threadId, contactInfo } = useSelector((state) => state.viewEmail);
   const { creating, message, error } = useSelector((state) => state.orders);
-  const { email } = useSelector((state) => state.ladger);
+  const { currentEmail: email } = useTimeline();
 
   const dispatch = useDispatch();
   const navigateTo = useNavigate();
@@ -281,7 +270,6 @@ function SummaryCard({
     if (type !== "orders") return;
     if (message) {
       toast.success(message);
-      dispatch(getOrders({ loading: false }));
       dispatch(orderAction.clearAllMessages());
     }
 
@@ -311,17 +299,14 @@ function SummaryCard({
     setSidebarCollapsed(true);
 
     if (type === "orders" && data?.length === 0) {
-      dispatch(createOrder());
+      console.log("EMAIL", email)
+      dispatch(createOrder(email));
       return;
     }
 
     data?.length > 0
-      ? navigateTo(`/${type}/view`, {
-        state: { email, threadId },
-      })
-      : navigateTo(`/${type}/create`, {
-        state: { email, threadId },
-      });
+      ? navigateTo(`/${type}/view?email=${email}`)
+      : navigateTo(`/${type}/create?email=${email}`);
   };
 
   const colorMap = {
@@ -349,12 +334,7 @@ function SummaryCard({
               <button
                 className="cursor-pointer"
                 onClick={() =>
-                  navigateTo(`/orders/create`, {
-                    state: {
-                      email,
-                      threadId,
-                    },
-                  })
+                  navigateTo(`/orders/create?email=${email}`)
                 }
               >
                 <img
@@ -382,8 +362,8 @@ function SummaryCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {type == "orders" && data.length > 0 && <IconButton
-              onClick={() => dispatch(createOrder())}
+            {type == "orders" && data?.length > 0 && <IconButton
+              onClick={() => dispatch(createOrder(email))}
               disabled={type == "invoice"}
               icon={Plus}
               label="Fetch Order"

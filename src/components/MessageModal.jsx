@@ -3,6 +3,7 @@ import { X, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useThreadContext } from "../hooks/useThreadContext";
 import { fetchGpc } from "../services/api";
+import { useMessage } from "../queries/threads.queries";
 
 const MessageModal = ({
   showMessageModal,
@@ -15,7 +16,7 @@ const MessageModal = ({
   isModal = true,
 }) => {
   const [messageContent, setMessageContent] = useState("");
-  const [isMessageLoading, setIsMessageLoading] = useState(false);
+  const { data, isPending: isMessageLoading, isError } = useMessage(messageId)
 
   const { handleMove } = useThreadContext();
 
@@ -38,80 +39,59 @@ const MessageModal = ({
   };
 
   useEffect(() => {
-    if ((isModal && !showMessageModal) || !messageId)
-      return;
+    if ((isModal && !showMessageModal) || !messageId || isMessageLoading) return;
+    console.log("MESSAGE", data)
+    if (isError) {
+      setMessageContent("No Content Available")
+    }
 
-    const fetchMessage = async () => {
-      setIsMessageLoading(true);
+    const htmlBody =
+      data.email?.body_html ||
+      data.email?.body ||
+      data.email?.content ||
+      "";
 
-      try {
-        const data = await fetchGpc({
-          params: {
-            type: "view_msg",
-            message_id: messageId,
-          },
+    const subject =
+      data.email?.subject || "No Subject";
+
+    const from = data.email?.from_name || "Unknown Sender";
+
+    const fromEmail =
+      data.email?.from_addr || "";
+
+    const createdDate =
+      data.email?.date_created || "";
+
+    let formattedDate = "";
+    let formattedTime = "";
+
+    if (createdDate) {
+      const d = new Date(createdDate);
+
+      formattedDate =
+        d.toLocaleDateString();
+
+      formattedTime =
+        d.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
         });
-        console.log("MESSAGE", data)
+    }
 
-        const htmlBody =
-          data.email?.body_html ||
-          data.email?.body ||
-          data.email?.content ||
-          "";
+    setMessageMeta({
+      subject,
+      from,
+      fromEmail,
+      date: formattedDate,
+      time: formattedTime,
+    });
 
-        const subject =
-          data.email?.subject || "No Subject";
-
-        const from =
-          data.email?.from_name ||
-          "Unknown Sender";
-
-        const fromEmail =
-          data.email?.from_addr || "";
-
-        const createdDate =
-          data.email?.date_created || "";
-
-        let formattedDate = "";
-        let formattedTime = "";
-
-        if (createdDate) {
-          const d = new Date(createdDate);
-
-          formattedDate =
-            d.toLocaleDateString();
-
-          formattedTime =
-            d.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-        }
-
-        setMessageMeta({
-          subject,
-          from,
-          fromEmail,
-          date: formattedDate,
-          time: formattedTime,
-        });
-
-        setMessageContent(
-          htmlBody
-            ? cleanHtmlContent(htmlBody)
-            : "No content available"
-        );
-      } catch (err) {
-        setMessageContent(
-          "No content available"
-        );
-      } finally {
-        setIsMessageLoading(false);
-      }
-    };
-
-    fetchMessage();
-  }, [showMessageModal, messageId, isModal]);
+    setMessageContent(
+      htmlBody
+        ? cleanHtmlContent(htmlBody)
+        : "No content available"
+    );
+  }, [showMessageModal, messageId, isModal, data, isError, isMessageLoading]);
 
   if (isModal && !showMessageModal)
     return null;

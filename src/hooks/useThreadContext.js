@@ -5,13 +5,8 @@ import { useNavigate } from "react-router-dom";
 export const useThreadContext = () => {
   const navigateTo = useNavigate();
   const context = useContext(ThreadContext);
-  const moveToThread = (viewEmails, loadAiReply) => {
-    navigateTo(`/thread/view`, {
-      state: {
-        viewEmails: loadAiReply ? undefined : viewEmails,
-        loadAiReply,
-      },
-    });
+  const moveToThread = () => {
+    navigateTo(`/thread/view`);
   };
   const moveToReply = (initialContent, htmlFile, handleAfterSuccessMailSent) => {
     navigateTo(`/thread/reply`, {
@@ -36,7 +31,7 @@ export const useThreadContext = () => {
     context.handleSetCurrent({ email, thread: threadId });
     reply !== false
       ? moveToReply(reply, htmlFile, handleAfterSuccessMailSent)
-      : moveToThread(viewEmail, loadAiReply);
+      : moveToThread();
     (addActivity || !reply) && localStorage.setItem("addActivity", true);
   };
   return { context, handleMove };
