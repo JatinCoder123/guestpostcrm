@@ -5,7 +5,7 @@ import { queryClient } from "../lib/queryClient";
 import { contactKeys } from "../queries/contact.queries";
 import { favoriteKeys } from "../queries/favourite.queries";
 import { getCRM, updateActivity } from "../services/utils";
-
+import {getCurrentUser} from "../services/utils"
 // contact.api.js
 
 export const getContactStats = async (
@@ -109,7 +109,7 @@ export const getContactStats = async (
                     "key": "forwarded",
                     "module": "Contacts",
                     "filters": {
-                        "forwarded": "1"
+                        "gpc_assigned_to": getCurrentUser()?.id || ""
                     }
                 },
                 {
