@@ -336,17 +336,6 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
             onEdit={() => navigate("/settings/templates")}
           />
 
-          {/* Pricing */}
-          <ActionBtn
-            icon={CreditCard}
-            label="Pricing"
-            onClick={insertTextAtCursor}
-            onEdit={() =>
-              navigate("/settings/templates", {
-                state: { templateId: priceTemp?.[0]?.id },
-              })
-            }
-          />
 
           {/* Template */}
           <ActionBtn
@@ -476,7 +465,7 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
               );
             })
           )}
-         <FirstReplyBtn email={email} threadEmails={threadEmails} />
+          <FirstReplyBtn email={email} threadEmails={threadEmails} />
           <DeepReplyBtn />
 
           <motion.button

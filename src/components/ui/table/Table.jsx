@@ -109,7 +109,7 @@ const TableView = ({
     search_fields: preferences?.search_filter?.search_fields || [],
   };
   const [showStatus, setShowStatus] = useState(true);
-  const [showFilterColumn, setShowFilterColumn] = useState(true);
+  const [showFilterColumn, setShowFilterColumn] = useState(false);
   const dispatch = useDispatch();
 
 
