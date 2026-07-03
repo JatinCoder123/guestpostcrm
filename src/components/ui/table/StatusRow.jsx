@@ -130,6 +130,7 @@ function StatusRow({ statusCount }) {
                                                 ? status.amount
                                                 : null
                                         }
+                                        showAmount={status.showAmount}
                                         onClick={() => {
                                             if (
                                                 status?.handleStatusClick

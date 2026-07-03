@@ -372,6 +372,12 @@ export function InvoicesPage() {
           ]?.count || 0
         ),
         showAmount: true,
+        amount: Number(
+          summary?.stats?.[
+            config.value
+          ]?.sum_of?.amount_c || 0
+        ),
+
       })
     );
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)

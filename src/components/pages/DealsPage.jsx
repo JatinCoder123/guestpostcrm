@@ -34,6 +34,8 @@ const STATUS_CONFIG = [
     value: "expiry",
     label: "Expiry",
     icon: ShieldAlert,
+    showAmount: true,
+
     color: "#EF4444", // red (red-500)
     filter: 'status'
 
@@ -73,7 +75,7 @@ export function DealsPage() {
     {
       label: "Created At",
       accessor: "date_entered",
-      sortable:true,
+      sortable: true,
       headerClasses: "",
       icon: Calendar,
 
@@ -116,7 +118,7 @@ export function DealsPage() {
       label: "Amount",
       accessor: "dealamount",
       searchable: true,
-      sortable:true,
+      sortable: true,
 
       headerClasses: "",
       icon: BadgeDollarSign,
@@ -140,17 +142,6 @@ export function DealsPage() {
         </span>
       ),
     },
-    // {
-    //   label: "Expiry Date",
-    //   accessor: "expiry_date",
-    //   headerClasses: "",
-    //   icon: Calendar,
-    //   classes: "truncate max-w-[300px]",
-
-    //   render: (row) => (
-    //     <span className="font-medium text-green-700 ">{row?.expiry_date}</span>
-    //   ),
-    // },
     {
       label: "Action",
       accessor: "action",
@@ -224,6 +215,7 @@ export function DealsPage() {
     return {
       ...config,
       count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
+      amount: Number(summary?.stats?.[`${config.value}`]?.sum_of?.dealamount || 0),
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)

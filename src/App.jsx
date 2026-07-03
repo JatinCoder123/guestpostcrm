@@ -66,6 +66,10 @@ import { TimelineProvider } from "./context/TimelineContext";
 import MeetingWidget from "./components/MeetingWidget";
 import TwakChat from "./components/TwakTo";
 import BootApp from "./components/BootApp";
+import Recharge from "./components/pages/Recharge";
+import PlansPage from "./components/pages/PlansPage";
+import BillingSettings from "./components/pages/BillingSettings";
+
 const router = createBrowserRouter([
   {
     path: "*",
@@ -107,6 +111,15 @@ const router = createBrowserRouter([
         path: "ai-credits",
         element: <AiCreditsPage />,
       },
+      {
+        path: "recharge",
+        element: <Recharge />,
+      },
+      {
+        path: "plans",
+        element: <PlansPage />,
+      },
+
       {
         path: "spam-detection",
         element: <SpamDetectionPage />,
@@ -286,6 +299,10 @@ const router = createBrowserRouter([
           {
             path: "users",
             element: <UsersPage />,
+          },
+          {
+            path: "billing/:tab?",
+            element: <BillingSettings />,
           },
           {
             path: "buttons",

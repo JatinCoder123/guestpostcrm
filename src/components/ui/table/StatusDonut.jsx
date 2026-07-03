@@ -8,6 +8,7 @@ function StatusDonut({
     icon: Icon,
     active,
     amount,
+    showAmount,
     onClick,
 }) {
     // ✅ Handle edge cases
@@ -31,7 +32,7 @@ function StatusDonut({
       ${active ? "shadow-md" : "hover:bg-gray-50"}`}
         >
             {/* Amount */}
-            {amount && (
+            {showAmount && (
                 <div className="flex items-center justify-center gap-2">
                     <p className="text-sm font-medium text-gray-700">${amount}</p>
                 </div>
