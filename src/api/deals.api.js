@@ -36,6 +36,7 @@ export const getDealStats = ({ filters, email }) => {
                 {
                     "key": "active",
                     "module": "outr_deal_fetch",
+                    sum_of: ['dealamount'],
                     "filters": {
                         "status": "active"
                     }
@@ -43,6 +44,7 @@ export const getDealStats = ({ filters, email }) => {
                 {
                     "key": "expiry",
                     "module": "outr_deal_fetch",
+                    sum_of: ['dealamount'],
                     "filters": {
                         "status": "expiry"
                     }

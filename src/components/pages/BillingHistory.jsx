@@ -70,8 +70,6 @@ export function BillingHistory() {
         isFetchingNextPage;
 
     const { handleMove } = useThreadContext()
-    const { handleDateClick } =
-        useContext(PageContext);
 
     const columns = [
         {
@@ -80,8 +78,6 @@ export function BillingHistory() {
             headerClasses: "",
             icon: Calendar,
 
-            onClick: (row) => handleDateClick({ email: row?.name, navigate: "/" })
-            ,
             classes: "truncate max-w-[200px]",
             render: (row) => (
                 <span className="font-medium text-gray-700 cursor-pointer">
@@ -108,8 +104,6 @@ export function BillingHistory() {
             headerClasses: "",
             icon: DollarSign,
             classes: "truncate ",
-            onClick: (row) => handleDateClick({ email: row?.name, navigate: "/contacts" })
-            ,
             searchable: true,
 
             render: (row) => (

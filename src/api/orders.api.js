@@ -76,6 +76,7 @@ export const getOrderStats = (
                 {
                     "key": "new",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
                     "filters": {
                         "order_status": "new"
                     }
@@ -83,6 +84,8 @@ export const getOrderStats = (
                 {
                     "key": "accepted",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
+
                     "filters": {
                         "order_status": "accepted"
                     }
@@ -90,6 +93,8 @@ export const getOrderStats = (
                 {
                     "key": "pending",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
+
                     "filters": {
                         "order_status": "pending"
                     }
@@ -97,6 +102,8 @@ export const getOrderStats = (
                 {
                     "key": "wrong",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
+
                     "filters": {
                         "order_status": "wrong"
                     }
@@ -104,6 +111,8 @@ export const getOrderStats = (
                 {
                     "key": "completed",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
+
                     "filters": {
                         "order_status": "completed"
                     }
@@ -111,6 +120,8 @@ export const getOrderStats = (
                 {
                     "key": "rejected_nontechnical",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
+
                     "filters": {
                         "order_status": "rejected_nontechnical"
                     }
@@ -118,6 +129,8 @@ export const getOrderStats = (
                 {
                     "key": "marketplace",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
+
                     "filters": {
                         "order_status": "marketplace"
                     }
@@ -125,6 +138,8 @@ export const getOrderStats = (
                 {
                     "key": "listacle",
                     "module": "outr_order_gp_li",
+                    sum_of: ['total_amount_c'],
+
                     "filters": {
                         "order_status": "listacle"
                     }

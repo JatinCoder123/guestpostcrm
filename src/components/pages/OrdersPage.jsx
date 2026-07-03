@@ -37,14 +37,16 @@ const STATUS_CONFIG = [
     label: "New",
     icon: Package,
     color: "#2563eb", // blue
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
   },
   {
     value: "accepted",
     label: "Accepted",
     icon: CheckCircle,
     color: "#16a34a", // green
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -52,7 +54,8 @@ const STATUS_CONFIG = [
     label: "Rejected",
     icon: XCircle,
     color: "#dc2626", // red
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -60,7 +63,8 @@ const STATUS_CONFIG = [
     label: "Wrong",
     icon: X,
     color: "#662744ff", // red
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -68,7 +72,8 @@ const STATUS_CONFIG = [
     label: "Pending",
     icon: PauseCircle,
     color: "#ca8a04", // yellow
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -76,7 +81,8 @@ const STATUS_CONFIG = [
     label: "Completed",
     icon: BadgeCheck,
     color: "#7c3aed", // purple
-    filter: 'order_status'
+    filter: 'order_status',
+    showAmount: true
 
   },
   {
@@ -84,7 +90,8 @@ const STATUS_CONFIG = [
     label: "Marketplace",
     icon: StoreIcon,
     color: "#ed3ab7", // purple
-    filter: 'type'
+    filter: 'type',
+    showAmount: true
 
   },
   {
@@ -92,7 +99,9 @@ const STATUS_CONFIG = [
     label: "Listacle",
     icon: ListFilter,
     color: "#56cd1f", // purple
-    filter: 'type'
+    filter: 'type',
+    showAmount: true
+
 
   },
 ];
@@ -132,7 +141,7 @@ export function OrdersPage() {
       accessor: "date_entered",
       headerClasses: "",
       icon: Calendar,
-      sortable:true,
+      sortable: true,
 
       onClick: (row) =>
         handleDateClick({ email: row?.client_email, navigate: "/" }),
@@ -164,10 +173,10 @@ export function OrdersPage() {
     },
     {
       label: "Amount",
-      accessor: "website",
+      accessor: "total_amount_c",
       headerClasses: "",
       icon: DollarSign,
-      sortable:true,
+      sortable: true,
       classes: "truncate  max-w-[100px]",
       render: (row) => (
         <span className="font-medium text-blue-700 ">
@@ -321,6 +330,7 @@ export function OrdersPage() {
     return {
       ...config,
       count: Number(summary?.stats?.[`${config.value}`]?.count || 0),
+      amount: Number(summary?.stats?.[`${config.value}`]?.sum_of?.total_amount_c || 0)
     };
   });
   const statusCount = Object.values(summary?.stats ?? {}).reduce((acc, curr) => acc + curr?.count, 0)
