@@ -36,10 +36,19 @@ import { useExchangeStats } from "../queries/exchange.queries";
 import { useInvoiceStats } from "../queries/invoice.queries";
 import { useFavoriteStats } from "../queries/favourite.queries";
 import { useReminderStats } from "../queries/reminder.queries";
+import { useQuery } from "@tanstack/react-query";
+import { userKeys } from "../queries/users.queries";
+import { getAllUsers } from "../api/users.api";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
   const { enteredEmail: email } = useContext(PageContext)
+  const { user } = useSelector(s => s.user)
+  const { data: usersData, isPending: usersPending } = useQuery({ queryKey: userKeys.lists, queryFn: getAllUsers })
+
+  const currentUser = usersData?.find((u) => u.description === user.email);
+  const currentUserId = currentUser?.id;
+
 
   const { activePage, setActivePage, collapsed, setSidebarCollapsed } =
     useContext(PageContext);
@@ -66,7 +75,7 @@ export function Sidebar() {
   const { isPending: contactStatLoading, data: contactStats } = useContactStats()
   const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
   const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats({ email })
-  const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats()
+  const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats({}, currentUserId)
   const { isPending: favStatLoading, data: favStats } = useFavoriteStats()
   const { isPending: dealStatLoading, data: dealStats } = useDealStats({ email })
   const { isPending: offerStatLoading, data: offerStats } = useOfferStats({ email })
@@ -102,7 +111,7 @@ export function Sidebar() {
       id: "forwarded-emails",
       label: "Assigned",
       icon: Forward,
-      loading: forwardStatLoading,
+      loading: forwardStatLoading || usersPending,
       count: forwardStats?.stats?.forwarded?.count,
       color: "text-sky-600",
       hover: "hover:bg-sky-50",

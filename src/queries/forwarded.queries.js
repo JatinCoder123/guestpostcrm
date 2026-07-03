@@ -9,6 +9,7 @@ import {
     getAllContacts,
     getContactStats,
 } from "../api/contact.api";
+import { getForwardStats } from "../api/forward.api";
 
 /**
  * Query Keys
@@ -22,26 +23,27 @@ export const forwardedKeys = {
         filters,
     ],
 
-    stats: (filters = {}) => [
+    stats: (filters = {}, userId) => [
         "forwarded",
         "stats",
         filters,
+        userId
     ],
 };
 
 
 export const useForwardedStats = (
-    filters = {}
+    filters = {}, userId
 ) => {
     return useQuery({
         queryKey:
             forwardedKeys.stats(
-                filters
+                filters, userId
             ),
 
         queryFn: () =>
-            getContactStats(
-                filters
+            getForwardStats(
+                filters, userId
             ),
 
         staleTime:
