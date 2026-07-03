@@ -11,6 +11,9 @@ import {
 } from "../api/contact.api";
 import { getForwardStats } from "../api/forward.api";
 
+import {useCrmUsers} from "./users.queries";
+import {store} from "../store/store";
+
 /**
  * Query Keys
  */
@@ -54,16 +57,37 @@ export const useForwardedStats = (
 export const useInfiniteForwarded = (
     preferences = {}
 ) => {
+    const { data: users = [] } = useCrmUsers();
+
+    const currentEmail =
+        store.getState().user.user.email;
+
+    const currentGpcUser =
+        users.find(
+            (user) =>
+                user.description === currentEmail
+        );
+
+    const assignedUserId =
+        currentGpcUser?.id;
+
     return useInfiniteQuery({
         queryKey:
-            forwardedKeys.lists(preferences),
+            forwardedKeys.lists({
+                preferences,
+                assignedUserId,
+            }),
 
         queryFn: ({ pageParam = 1 }) =>
             getAllContacts({
                 preferences,
                 page: pageParam,
-                defaults: { forwarded: "1" }
+                defaults: {
+                    gpc_assigned_to: assignedUserId,
+                }
             }),
+
+        enabled: Boolean(assignedUserId),
 
         initialPageParam: 1,
 
