@@ -5,6 +5,9 @@ import {
     MoveRight,
     Flame,
     Wallet,
+    DollarSign,
+    Waypoints,
+    ChartArea,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
@@ -88,10 +91,22 @@ export function BillingHistory() {
         },
 
         {
-            label: "Contact",
-            accessor: "name",
+            label: "Customer Name",
+            accessor: "customer_name",
             headerClasses: "",
             icon: User,
+            searchable: true,
+
+            render: (row) => (
+                <span className="font-medium text-gray-700 cursor-pointer">
+                    {row?.customer_name}      </span>
+            )
+        },
+        {
+            label: "Amount",
+            accessor: "amount",
+            headerClasses: "",
+            icon: DollarSign,
             classes: "truncate ",
             onClick: (row) => handleDateClick({ email: row?.name, navigate: "/contacts" })
             ,
@@ -99,40 +114,40 @@ export function BillingHistory() {
 
             render: (row) => (
                 <span className="font-medium text-gray-700 cursor-pointer">
-                    {row?.name}      </span>
+                    ${row?.amount}      </span>
             )
         },
         {
-            label: "Description",
-            accessor: "description",
+            label: "provider",
+            accessor: "payment_provider",
             headerClasses: "",
             searchable: true,
 
-            icon: FileText,
-            classes: "truncate max-w-[300px]",
+            icon: Waypoints,
+            classes: "",
             onClick: (row) => handleMove({
                 email: row.email_address,
                 threadId: row.thread_id,
             }),
             render: (row) => (
                 <span className="px-6 py-4 text-green-600 cursor-pointer">
-                    {row.description}
+                    {row.payment_provider}
                 </span>
             )
         },
         {
-            label: "Type",
-            accessor: "type",
-            headerClasses: "ml-auto",
-            icon: FileText,
-            classes: "truncate max-w-[300px] ml-auto",
+            label: "status",
+            accessor: "payment_status",
+            headerClasses: "",
+            icon: ChartArea,
+            classes: "",
             onClick: (row) => handleMove({
                 email: row.email_address,
                 threadId: row.thread_id,
             }),
             render: (row) => (
                 <span className="px-6 py-4 text-purple-600 cursor-pointer">
-                    {row.type}
+                    {row.payment_status}
                 </span>
             )
         },
@@ -173,7 +188,7 @@ export function BillingHistory() {
                     "bg-gray-600"
                 }
                 layoutStyle={
-                    "grid grid-cols-4"
+                    "grid grid-cols-5"
                 }
             />
         </TableView>

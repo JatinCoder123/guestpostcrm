@@ -1,5 +1,6 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { getBillingHistory } from "../api/billings.api";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { getBillingHistory, getPlans } from "../api/billings.api";
+import { store } from "../store/store";
 
 export const billingKeys = {
     all: ["billing"],
@@ -30,7 +31,7 @@ export const useBillingHistory = (
             pageParam = 1,
         }) =>
             getBillingHistory({
-                preferences,
+                preferences: { ...preferences, filters: { bussiness_email: store.getState()?.user?.businessEmail } },
                 page: pageParam,
             }),
 
@@ -49,3 +50,10 @@ export const useBillingHistory = (
             5 * 60 * 1000,
     });
 
+export const usePlans = () => {
+    return useQuery({
+        queryKey: ["plans"],
+        queryFn: getPlans,
+        staleTime: 5 * 60 * 1000,
+    });
+}
