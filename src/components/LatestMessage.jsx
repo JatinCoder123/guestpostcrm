@@ -132,7 +132,7 @@ const LatestMessage = ({ handleMessageClick }) => {
                     viewEmail[viewEmail.length - 1]?.body ||
                     "",
                   )
-                  : "No Message Found!",
+                  : data?.message ?? "No Message Found",
             }}
           />
           {/* View Message Button */}

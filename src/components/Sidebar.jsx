@@ -67,19 +67,14 @@ export function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
-  const { count: orderRemCount, loading: orderRemLoading } = useSelector(
-    (s) => s.reminders,
-  );
-
   const { isPending: contactStatLoading, data: contactStats } = useContactStats()
   const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
-  const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats({ email })
   const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats({}, currentUserId)
   const { isPending: favStatLoading, data: favStats } = useFavoriteStats()
-  const { isPending: dealStatLoading, data: dealStats } = useDealStats({ email })
-  const { isPending: offerStatLoading, data: offerStats } = useOfferStats({ email })
   const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
+  const { isPending: offerStatLoading, data: offerStats } = useOfferStats({ email })
+  const { isPending: dealStatLoading, data: dealStats } = useDealStats({ email })
+  const { isPending: orderStatsLoading, data: ordersStats } = useOrderStats({ email })
   const { isPending: invoiceStatLoading, data: invoiceStats } = useInvoiceStats({ email })
   const { isPending: reminderStatLoading, data: reminderStats } = useReminderStats({ email })
 
@@ -222,7 +217,6 @@ export function Sidebar() {
       id: "other",
       label: "Others",
       icon: RectangleEllipsis,
-      loading: orderRemLoading,
       count: null,
       color: "text-red-600",
       hover: "hover:bg-red-50",
