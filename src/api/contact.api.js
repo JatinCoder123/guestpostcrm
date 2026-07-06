@@ -74,14 +74,17 @@ export const getContactStats = async (
                     "key": "inbound",
                     "module": "Contacts",
                     "filters": {
-                        "direction": "inbound"
+                        "direction": "inbound",
+                        "conversation_complete": {
+                            "neq": "1"
+                        }
                     }
                 },
                 {
                     "key": "outbound",
                     "module": "Contacts",
                     "filters": {
-                        "direction": "outbound"
+                        "direction": "outbound",
                     }
                 },
                 {

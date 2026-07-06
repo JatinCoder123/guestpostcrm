@@ -89,7 +89,7 @@ const MessageModal = ({
     setMessageContent(
       htmlBody
         ? cleanHtmlContent(htmlBody)
-        : "No content available"
+        : "Thread Is Either Missing Or Deleted."
     );
   }, [showMessageModal, messageId, isModal, data, isError, isMessageLoading]);
 

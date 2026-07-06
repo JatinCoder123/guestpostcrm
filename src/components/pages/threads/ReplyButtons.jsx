@@ -127,15 +127,15 @@ const ReplyButtons = ({ editorRef, editorReady, threadEmails = [] }) => {
     }
   }, [message, aiResponse, dispatch]);
 
-  /* ── helpers ─────────────────────────────────────────────── */
-  const insertTextAtCursor = () => {
-    if (editorRef.current) {
-      editorRef.current.focus();
-      editorRef.current.insertContent(
-        priceTemp?.[0]?.body_html ?? "No Content Available"
-      );
-    }
-  };
+  // /* ── helpers ─────────────────────────────────────────────── */
+  // const insertTextAtCursor = () => {
+  //   if (editorRef.current) {
+  //     editorRef.current.focus();
+  //     editorRef.current.insertContent(
+  //       priceTemp?.[0]?.body_html ?? "Thread Is Either Missing Or Deleted."
+  //     );
+  //   }
+  // };
 
   const handleConvDone = () => {
     dispatch(

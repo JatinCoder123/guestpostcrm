@@ -7,6 +7,7 @@ import { brandTimelineAction } from "./brandTimeline";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { queryClient } from "../../lib/queryClient";
 import { contactKeys } from "../../queries/contact.queries";
+import { emailKeys } from "../../queries/email.queries";
 
 const viewEmailSlice = createSlice({
   name: "viewEmail",
@@ -262,6 +263,7 @@ export const editContact = (contactData, message = "") => {
       dispatch(viewEmailSlice.actions.editContactSucess({ message }));
       dispatch(viewEmailSlice.actions.clearAllErrors());
       queryClient.invalidateQueries({ queryKey: contactKeys.all })
+      queryClient.invalidateQueries({ queryKey: emailKeys.all })
     } catch (error) {
       dispatch(
         viewEmailSlice.actions.editContactFailed("Update Contact failed"),

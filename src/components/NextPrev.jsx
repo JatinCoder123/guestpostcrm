@@ -6,6 +6,8 @@ import { ladgerAction } from '../store/Slices/ladger'
 import { ThreadContext } from '../context/ThreadContext'
 import { useInfiniteEmails } from '../queries/email.queries'
 import { useTablePreference } from '../hooks/useTablePreference'
+import he from "he";
+
 const NextPrev = ({ nextHandler, prevHandler }) => {
     const { currentIndex, setCurrentIndex, setEnteredEmail } = useContext(PageContext)
     const preferences = useTablePreference("emails");
@@ -66,7 +68,7 @@ function NextPrevButton({ onClick, disabled, label, Icon, ...props }) {
         {props.first && <Icon className="w-5 h-5 text-gray-700" />}
         <p className=' relative text-sm font-bold
          text-cyan-900 truncate max-w-[150px]
-      '>              {label}
+      '>           {label ? he.decode(label) : ""}
         </p>
         {!props.first && <Icon className="w-5 h-5 text-gray-700" />}
 

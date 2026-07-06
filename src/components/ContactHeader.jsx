@@ -23,6 +23,7 @@ import { PageContext } from "../context/pageContext";
 import { useContact } from "../queries/contact.queries";
 import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail, useInfiniteDeals } from "../queries/deals.queries";
+import he from "he"
 
 /* 🔥 Modern Hashtag Badge */
 function HashTag({ text, color }) {
@@ -199,8 +200,8 @@ const ContactHeader = () => {
               <div className="flex items-center gap-2">
                 <Link to={`/contacts?email=${currentEmail}`} className="text-lg font-extrabold">
                   {contactInfo?.full_name?.trim()
-                    ? contactInfo?.full_name
-                    : email}
+                    ? he.decode(contactInfo?.full_name)
+                    : he.decode(email)}
                 </Link>
 
                 {/* {isBrand && (

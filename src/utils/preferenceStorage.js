@@ -75,6 +75,7 @@ export const buildTableRequestBody = (
 export const INITIAL_TABLE_FILTERS = {
     emails: {
         direction: "inbound",
+        conversation_complete: { 'neq': '1' }
     },
     orders: {
         order_status: 'new'

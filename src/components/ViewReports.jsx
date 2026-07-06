@@ -25,7 +25,7 @@ import {
   selectStagesLoading, selectCatsLoading, selectDetsLoading,
   selectReportError,
 } from "../store/Slices/reportSlice.js";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { DateRangeFilter } from "./DateRangeFilter.jsx";
 import { useCrmUsers } from "../queries/users.queries.js";
 import CustomDropdown from "./ui/CustomDropdown.jsx";
@@ -281,10 +281,13 @@ const EmptyState = ({ title, subtitle }) => (
 
 export default function ViewReports() {
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
+  const email = searchParams.get("email");
+  console.log(email)
   const { data: users } = useCrmUsers();
   const storedReportFilter = useMemo(() => getStoredReportFilter(), []);
-  const [dateFilter, setDateFilter] =
-    useState(() => getInitialDateFilter());
+  const [dateFilter, setDateFilter] = useState(() => getInitialDateFilter());
   const stages = useSelector(selectStages);
   const categories = useSelector(selectCategories);
   const details = useSelector(selectDetails);
@@ -294,12 +297,25 @@ export default function ViewReports() {
   const detsLoading = useSelector(selectDetsLoading);
   const error = useSelector(selectReportError);
 
-  const [selectedUser, setSelectedUser] = useState(storedReportFilter.report_user_id || "");
+  const [selectedUser, setSelectedUser] = useState("");
   const [appliedFilters, setAppliedFilters] = useState({
-    user: storedReportFilter.report_user_id || "",
+    user: selectedUser,
     date: "today",
   });
-  const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "filtration");
+  useEffect(() => {
+    if (!users?.length) return;
+
+    if (email) {
+      const user = users.find(
+        (u) => u.description?.toLowerCase() === email.toLowerCase()
+      );
+
+      setSelectedUser(user?.id || "");
+    } else {
+      setSelectedUser(users[0]?.id || "");
+    }
+  }, [email, users]);
+  const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "conversations");
 
   const phaseConfig = useMemo(
     () => PHASES.find((p) => p.key === activeSection) || PHASES[0],
@@ -429,22 +445,22 @@ export default function ViewReports() {
 
   const navigate = useNavigate();
 
-const restoredStageRef = useRef(false);
+  const restoredStageRef = useRef(false);
 
-useEffect(() => {
-  dispatch(resetReport());
+  useEffect(() => {
+    dispatch(resetReport());
 
-  loadStages(1).then(() => {
-    if (
-      !restoredStageRef.current &&
-      storedReportFilter.stage &&
-      storedReportFilter.phase === activeSection
-    ) {
-      restoredStageRef.current = true;
-      loadCategories(storedReportFilter.stage, 1);
-    }
-  });
-}, [activeSection, appliedFilters, dateFilter]);
+    loadStages(1).then(() => {
+      if (
+        !restoredStageRef.current &&
+        storedReportFilter.stage &&
+        storedReportFilter.phase === activeSection
+      ) {
+        restoredStageRef.current = true;
+        loadCategories(storedReportFilter.stage, 1);
+      }
+    });
+  }, [activeSection, appliedFilters, dateFilter]);
 
   const grandTotal = stages.rows.reduce((s, r) => s + getCount(r), 0);
   const statsEntries = Object.entries(stats);
