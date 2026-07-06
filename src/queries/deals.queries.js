@@ -46,10 +46,10 @@ export const dealKeys = {
 };
 
 export const useDealStats =
-    (email) => useQuery({
+    ({ email }) => useQuery({
         queryKey: dealKeys.stats(email),
 
-        queryFn: ({ filters = {}, email }) => getDealStats(filters, email),
+        queryFn: () => getDealStats({ email }),
 
         staleTime:
             5 * 60 * 1000,
