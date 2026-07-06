@@ -6,6 +6,7 @@ import { fetchGpc } from "../services/api";
 import { showConsole } from "../assets/assets";
 import { LoadingChase } from "./Loading";
 import { useNext } from "../hooks/useNext";
+import { updateActivity } from "../services/utils";
 
 const FirstReplyBtn = ({ email, threadEmails = [] }) => {
   const dispatch = useDispatch();
@@ -44,6 +45,7 @@ if (alreadyFirstReplySent) {
           sendedEmail: email,
         }),
       );
+      updateActivity(email, "first reply sent");
       moveToNext(email)
       setShowFirstReplyBtn(false);
     } catch (err) {
