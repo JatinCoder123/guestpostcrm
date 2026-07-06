@@ -24,6 +24,7 @@ import { FaBtc } from "react-icons/fa";
 import { IoIosMailUnread } from "react-icons/io";
 import { useTablePreference } from "../../hooks/useTablePreference.js";
 import { useEmailStats, useInfiniteEmails, useUnreadCount } from "../../queries/email.queries.js";
+import he from "he";
 const STATUS_CONFIG = [
   {
     value: "unread",
@@ -103,7 +104,7 @@ const STATUS_CONFIG = [
   },
   {
     value: "1",
-    key: "is_stop",
+    key: "stop",
     label: "Stop",
     icon: GiGoldBar,
     color: "#ab9e11", // purple
@@ -171,8 +172,7 @@ export function UnrepliedEmailsPage() {
       render: (row) => (
         <div className="flex items-center gap-2 cursor-pointer">
           <span className="font-medium text-gray-800">
-            {row?.first_name || ""} {row?.last_name || ""}
-          </span>
+            {he.decode(`${row?.first_name || ""} ${row?.last_name || ""}`)}          </span>
 
           {row.type === "Brand" && (
             <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
@@ -197,7 +197,7 @@ export function UnrepliedEmailsPage() {
         }),
       render: (row) => (
         <span className="px-6 py-4 text-green-600 cursor-pointer">
-          {row.subject}
+          {he.decode(row.subject)}
         </span>
       ),
     },
