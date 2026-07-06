@@ -37,7 +37,10 @@ const STATUS_CONFIG = [
     label: "Unreplied",
     icon: Mails,
     color: "#2563eb", // blue
-    filter: 'direction'
+    filter: 'direction',
+    neqFilter: {
+      conversation_complete: '1'
+    }
   },
   {
     value: "outbound",
@@ -45,7 +48,7 @@ const STATUS_CONFIG = [
     icon: MessageCircleReply,
     color: "#16a34a", // green
     emailType: "email_outbound",
-    filter: 'direction'
+    filter: 'direction',
 
   },
 
