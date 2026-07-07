@@ -197,7 +197,7 @@ export function UnrepliedEmailsPage() {
         }),
       render: (row) => (
         <span className="px-6 py-4 text-green-600 cursor-pointer">
-          {he.decode(row.subject)}
+          {he.decode(row?.subject ?? "")}
         </span>
       ),
     },

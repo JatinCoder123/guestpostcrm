@@ -16,13 +16,8 @@ import {
     Globe,
     Calendar,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-    editContact,
-    getContact,
-    viewEmailAction,
-} from "../store/Slices/viewEmail";
-import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { editContact } from "../store/Slices/viewEmail";
 import AccountPage from "../components/pages/AccountPage";
 import { LoadingAll } from "./Loading";
 import { useContact } from "../queries/contact.queries";
@@ -143,18 +138,6 @@ export default function ContactDetail({ email }) {
     const handleCancel = () => {
         setIsEditing(false);
     };
-
-    // useEffect(() => {
-    //     if (message) {
-    //         toast.success(message);
-    //         dispatch(getContact());
-    //         dispatch(viewEmailAction.clearAllMessage());
-    //     }
-    //     if (error) {
-    //         toast.error(error);
-    //         dispatch(viewEmailAction.clearAllErrors());
-    //     }
-    // }, [message, error, dispatch]);
     if (contactLoading) {
         return (
             <div className="w-full mt-10  flex items-center justify-center bg-gradient-to-br from-[#faf5ff] via-[#f0f9ff] to-[#fdf2f8]">

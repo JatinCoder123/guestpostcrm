@@ -198,10 +198,15 @@ const ContactHeader = () => {
           {!isPending && (
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <Link to={`/contacts?email=${currentEmail}`} className="text-lg font-extrabold">
-                  {contactInfo?.full_name?.trim()
-                    ? he.decode(contactInfo?.full_name)
-                    : he.decode(email)}
+                <Link
+                  to={`/contacts?email=${currentEmail ?? ""}`}
+                  className="text-lg font-extrabold"
+                >
+                  {he.decode(
+                    contactInfo?.full_name?.trim()
+                      ? contactInfo.full_name
+                      : email ?? ""
+                  )}
                 </Link>
 
                 {/* {isBrand && (
