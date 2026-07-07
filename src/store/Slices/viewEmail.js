@@ -245,7 +245,7 @@ export const editContact = (contactData, message = "") => {
           module: "Contacts",
           ...contactData.contact,
         },
-        ...(contactData?.account && {
+        ...(Object.keys(contactData?.account).length > 0 && {
           child_bean: {
             module: "Contacts",
             ...contactData.account,
