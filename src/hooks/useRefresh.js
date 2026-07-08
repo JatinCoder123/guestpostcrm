@@ -36,8 +36,7 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_order_gp_li) {
-            dispatch(getOrders({ loading: false }));
-            dispatch(getInvoices({ loading: false }));
+
             queryClient.invalidateQueries({ queryKey: hotKeys.all })
 
             dispatch(hotAction.updateCount(1));
@@ -47,7 +46,6 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_self_test) {
-            dispatch(getInvoices({ loading: false }));
             queryClient.invalidateQueries({ queryKey: hotKeys.all })
 
             dispatch(hotAction.updateCount(1));
@@ -57,7 +55,6 @@ function useRefresh() {
             }));
         }
         if (notificationCount.outr_offer) {
-            dispatch(getOffers({ loading: false }));
             queryClient.invalidateQueries({ queryKey: hotKeys.all })
             queryClient.invalidateQueries({ queryKey: offerKeys.all })
             queryClient.invalidateQueries({ queryKey: dealKeys.all })

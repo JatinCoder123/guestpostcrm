@@ -27,6 +27,8 @@ import { useTimeline } from "../context/TimelineContext";
 import { useDealsByEmail } from "../queries/deals.queries";
 import { useOrdersByEmail } from "../queries/orders.queries";
 import { useOffersByEmail } from "../queries/offers.queries";
+import { useInfiniteEmails } from "../queries/email.queries";
+import { useEmailInvoices } from "../queries/invoice.queries";
 
 /* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
@@ -45,15 +47,18 @@ const MailerSummaryHeader = () => {
   const { data: ordersData, isLoading: ordersLoading } = useOrdersByEmail(currentEmail);
   const { data: offersData, isLoading: offersLoading } = useOffersByEmail(currentEmail);
   const { data: dealsData, isLoading: dealsLoading } = useDealsByEmail(currentEmail);
-  const orders = ordersData?.data
-  const offers = offersData?.data
-  const deals = dealsData?.data
+  const { data: invoiceData, isLoading: invoiceLoading } = useEmailInvoices(currentEmail);
+  const orders = ordersData?.data ?? []
+  const offers = offersData?.data ?? []
+  const deals = dealsData?.data ?? []
+  const invoices = invoiceData?.records ?? []
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
 
   const [emailData, setEmailData] = useState({
     orders: [],
     offers: [],
     deals: [],
+    invoices: [],
   });
   const handleSync = (type) => {
     setShowSyncData(true);
@@ -87,6 +92,10 @@ const MailerSummaryHeader = () => {
     const deal = deals?.filter((d) => d?.status === "active");
     setEmailData((prev) => ({ ...prev, deals: deal }));
   }, [email, deals, showBrandTimeline]);
+  useEffect(() => {
+    const invoice = invoices?.filter((d) => d?.status_c === "SENT");
+    setEmailData((prev) => ({ ...prev, invoices: invoice }));
+  }, [email, invoices, showBrandTimeline]);
 
   /* ---------------- OFFERS ---------------- */
   useEffect(() => {
@@ -145,14 +154,14 @@ const MailerSummaryHeader = () => {
             />
 
             <SummaryCard
-              type="invoice"
-              title="NO INVOICE"
+              type="invoices"
+              title="NO INVOICES"
               Icon={FileText}
               bg={"bg-orange-500"}
               color="orange"
-              data={emailData.invoice}
-              handleSync={() => handleSync("invoice")}
-              loading={syncType === "invoice"}
+              data={emailData.invoices}
+              handleSync={() => handleSync("invoices")}
+              loading={invoiceLoading}
             />
           </div>
         </div>
@@ -255,7 +264,7 @@ function SummaryCard({
   data,
   loading,
 }) {
-  const { setSidebarCollapsed } = useContext(PageContext);
+  const { setSidebarCollapsed, handleDateClick } = useContext(PageContext);
   const { syncType, loading: syncing } = useSelector((state) => state.sync);
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   const { creating, message, error } = useSelector((state) => state.orders);
@@ -297,7 +306,14 @@ function SummaryCard({
 
   const handleClick = () => {
     setSidebarCollapsed(true);
+    if (type == 'invoices') {
+      handleDateClick({
+        email: email,
+        navigate: '/invoices'
+      })
+      return;
 
+    }
     if (type === "orders" && data?.length === 0) {
       console.log("EMAIL", email)
       dispatch(createOrder(email));
@@ -364,7 +380,7 @@ function SummaryCard({
           <div className="flex items-center gap-2">
             {type == "orders" && data?.length > 0 && <IconButton
               onClick={() => dispatch(createOrder(email))}
-              disabled={type == "invoice"}
+              disabled={type == "invoices"}
               icon={Plus}
               label="Fetch Order"
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
@@ -372,7 +388,7 @@ function SummaryCard({
             }
             <IconButton
               onClick={handleClick}
-              disabled={type == "invoice"}
+              disabled={type == "invoices" && data?.length == 0}
               icon={data?.length > 0 ? Eye : Plus}
               label={data?.length > 0 ? `View ${type}` : `${type == "orders" ? "Fetch" : "Create"} ${type}`}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
@@ -381,7 +397,7 @@ function SummaryCard({
               onClick={handleSync}
               icon={RefreshCcw}
               label={`Fetch ${type} from threads`}
-              disabled={syncing || type == "invoice"}
+              disabled={syncing || type == "invoices"}
               className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-lg font-bold hover:scale-110 transition"
             />
 

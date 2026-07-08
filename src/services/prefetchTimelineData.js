@@ -14,6 +14,8 @@ import { getLedger } from "../api/ledger.api";
 import { getContactByEmail } from "../api/contact.api";
 import { getMailerSummary } from "../api/mailerSummary.api";
 import { getThreadByEmail } from "../api/threads.api";
+import { invoiceKeys } from "../queries/invoice.queries";
+import { getAllInvoice } from "../api/invoice.api";
 
 export const prefetchTimelineData = async (
     queryClient,
@@ -59,6 +61,12 @@ export const prefetchTimelineData = async (
                 offerKeys.byEmail(email),
             queryFn: () =>
                 getOffersByEmail(email),
+        }),
+        queryClient.prefetchQuery({
+            queryKey:
+                invoiceKeys.byEmail(email),
+            queryFn: () =>
+                getAllInvoice({ preferences: {}, email }),
         }),
 
         queryClient.prefetchQuery({
