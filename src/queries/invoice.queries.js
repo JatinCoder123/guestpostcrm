@@ -5,6 +5,7 @@ import {
     useQueryClient,
 } from "@tanstack/react-query";
 import { getAllInvoice, getInvoiceStats, updateInvoice } from "../api/invoice.api";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 export const invoiceKeys = {
     all: ["invoices"],
@@ -39,13 +40,16 @@ export const invoiceKeys = {
 };
 
 export const useInvoiceStats =
-    ({ email = '', filters = {} }) =>
-        useQuery({
+    ({ email = '' }) => {
+        const preferences = useTablePreference("invoices");
+        return useQuery({
             queryKey:
-                invoiceKeys.stats(filters, email),
+                invoiceKeys.stats(preferences, email),
 
-            queryFn: () => getInvoiceStats({ filters, email }),
+            queryFn: () => getInvoiceStats({ filters: preferences, email }),
         });
+    }
+
 
 export const useInfiniteInvoices =
     (

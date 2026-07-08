@@ -981,7 +981,7 @@ function getStatusTheme(s) {
   if (s.loading) return STATUS_THEME.loading;
   if (s.error) return STATUS_THEME.unknown;
   if (s.exists === false) return STATUS_THEME.notfound;
-  return STATUS_THEME[s.status] || STATUS_THEME.unknown;
+  return STATUS_THEME[s?.status] || STATUS_THEME.unknown;
 }
 
 function PostStatusBadge({ state, url, size = "md" }) {
@@ -1023,7 +1023,7 @@ function getLinkInsertionTheme(state) {
   if (state.exists === false) return STATUS_THEME.notfound;
   if (state.linkLive) return STATUS_THEME.publish;
   if (state.linkFound === false) return STATUS_THEME.trash;
-  return STATUS_THEME[state.status] || STATUS_THEME.unknown;
+  return STATUS_THEME[state?.status] || STATUS_THEME.unknown;
 }
 
 function LinkInsertionStatusBadge({ state, postRef, size = "md" }) {

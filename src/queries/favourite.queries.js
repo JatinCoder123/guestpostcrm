@@ -15,6 +15,7 @@ import { queryClient } from "../lib/queryClient";
 import { contactKeys } from "./contact.queries";
 import { updateActivity } from "../services/utils";
 import toast from "react-hot-toast";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 /**
  * Query Keys
@@ -36,18 +37,20 @@ export const favoriteKeys = {
 };
 
 
-export const useFavoriteStats = (
-    filters = {}
-) => {
+export const useFavoriteStats = () => {
+    const preferences =
+        useTablePreference(
+            "favorite"
+        );
     return useQuery({
         queryKey:
             favoriteKeys.stats(
-                filters
+                preferences
             ),
 
         queryFn: () =>
             getContactStats(
-                filters
+                preferences
             ),
 
         staleTime:

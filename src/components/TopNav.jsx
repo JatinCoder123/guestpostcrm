@@ -144,11 +144,11 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   }, []);
 
   /* Split: show current user first, then others (max 3 avatars in stack) */
-  const onlineUsers = activeUsers.filter((u) => u.status === "online");
-  const idleUsers = activeUsers.filter((u) => u.status !== "online");
+  const onlineUsers = activeUsers.filter((u) => u?.status === "online");
+  const idleUsers = activeUsers.filter((u) => u?.status !== "online");
 
-  const meOnline = onlineUsers.find((u) => u.email === currentUserEmail);
-  const otherOnlineUsers = onlineUsers.filter((u) => u.email !== currentUserEmail);
+  const meOnline = onlineUsers.find((u) => u?.email === currentUserEmail);
+  const otherOnlineUsers = onlineUsers.filter((u) => u?.email !== currentUserEmail);
 
   const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
   const ordered = [...orderedOnline, ...idleUsers];
@@ -196,7 +196,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                 {/* Online / idle dot */}
                 <span
                   className={`absolute bottom-0 right-0 h-1.5 w-1.5 rounded-full border border-white
-                    ${u.status === "online" ? "bg-emerald-500" : "bg-amber-400"}`}
+                    ${u?.status === "online" ? "bg-emerald-500" : "bg-amber-400"}`}
                 />
               </span>
             );
@@ -257,7 +257,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                   const c = getColorForUser(u.email);
                   const initials = getInitials(u.name, u.email);
                   const isMe = u.email === currentUserEmail;
-                  const isOnline = u.status === "online";
+                  const isOnline = u?.status === "online";
 
                   return (
                     <div

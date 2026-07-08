@@ -20,14 +20,9 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useContext, useEffect, useState } from "react";
-import {
-  getOrders,
-  orderAction,
-  updateOrder,
-} from "../../store/Slices/orders.js";
+import { orderAction, updateOrder } from "../../store/Slices/orders.js";
 import { PageContext } from "../../context/pageContext";
 import { useNavigate } from "react-router-dom";
-import { extractEmail } from "../../assets/assets";
 import TableView, { Table } from "../ui/table/Table";
 import TableTitleBar from "../ui/table/TableTitleBar";
 import { LoadingAll } from "../Loading.jsx";
@@ -62,7 +57,7 @@ const STATUS_CONFIG = [
     value: "wrong",
     label: "Wrong",
     icon: X,
-    color: "#662744ff", // red
+    color: "#662744", // red
     filter: 'order_status',
     showAmount: true
 

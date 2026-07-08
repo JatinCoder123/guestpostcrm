@@ -71,7 +71,7 @@ export const getOrderStats = (
         params: { ...params },
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "new",

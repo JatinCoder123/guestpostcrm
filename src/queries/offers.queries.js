@@ -14,6 +14,7 @@ import {
 } from "../api/offers.api";
 
 import toast from "react-hot-toast";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 export const offerKeys = {
     all: ["offers"],
@@ -51,12 +52,18 @@ export const offerKeys = {
  * Offer Stats
  */
 export const useOfferStats = (
-    { filters = {}, email = '' }
-) =>
-    useQuery({
+    { email = '' }
+) => {
+    const filters =
+        useTablePreference(
+            "offers"
+        );
+    return useQuery({
         queryKey: offerKeys.stats({ filters, email }),
         queryFn: () => getOfferStats({ filters, email }),
     });
+}
+
 
 /**
  * Infinite Offers

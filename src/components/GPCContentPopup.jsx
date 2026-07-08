@@ -1369,9 +1369,9 @@ export default function GPCContentPopup({
 
               <div className="max-h-[58vh] overflow-y-auto p-5 space-y-4">
                 {backlinkStatuses.map((backlink, index) => {
-                  const missing = backlink.status === "missing";
-                  const invalid = backlink.status === "invalid";
-                  const ready = backlink.status === "ready";
+                  const missing = backlink?.status === "missing";
+                  const invalid = backlink?.status === "invalid";
+                  const ready = backlink?.status === "ready";
 
                   return (
                     <div

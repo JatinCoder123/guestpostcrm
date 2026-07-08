@@ -58,7 +58,7 @@ export default function CreateDeals({ email }) {
   // 🔥 FILTER VALID WEBSITES
   useEffect(() => {
     const valid = websiteLists.filter((w) => {
-      const usedInDeals = deals.some((d) => d.website_c === w && d.status !== "expire");
+      const usedInDeals = deals.some((d) => d.website_c === w && d?.status !== "expire");
 
       return !usedInDeals;
     });

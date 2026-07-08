@@ -248,7 +248,7 @@ const WelcomeHeader = () => {
     ?.split("/")[0];
   const syncDone = crmOnboardingStep >= ONBOARDING_STEP.FIRST_SYNC_DONE;
   const contactCheckLoading = crmProgressLoading;
-  const firstSyncLoading = firstSyncState.status === "loading";
+  const firstSyncLoading = firstSyncState?.status === "loading";
   const firstSyncCompleted = syncDone;
   const templateDone = crmOnboardingStep >= ONBOARDING_STEP.TEMPLATE_READY;
   const firstSyncRecords = Array.isArray(firstSyncState.result?.records)

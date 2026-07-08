@@ -1,4 +1,5 @@
 import { http } from "../services/api";
+import { buildTableRequestBody } from "../utils/preferenceStorage";
 
 
 export const getForwardStats = async (
@@ -8,7 +9,7 @@ export const getForwardStats = async (
         method: "POST",
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "forwarded",

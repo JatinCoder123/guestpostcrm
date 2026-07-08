@@ -17,6 +17,7 @@ import {
 import toast from "react-hot-toast";
 import { useContext } from "react";
 import { PageContext } from "../context/pageContext";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 /**
  * Query Keys
@@ -60,18 +61,18 @@ export const useContact = (email) => {
 /**
  * Contact Stats
  */
-export const useContactStats = (
-    filters = {}
-) => {
+export const useContactStats = () => {
+    const preferences = useTablePreference("contacts");
+
     return useQuery({
         queryKey:
             contactKeys.stats(
-                filters
+                preferences
             ),
 
         queryFn: () =>
             getContactStats(
-                filters
+                preferences
             ),
 
     });

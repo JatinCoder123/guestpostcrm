@@ -13,7 +13,7 @@ import { PageContext } from "../context/pageContext";
 import { linkExchange, linkExchangeaction } from "../store/Slices/linkExchange";
 import { applyTag, markTagAction } from "../store/Slices/markTagSlice";
 import { MdOutlineHome } from "react-icons/md";
-import { getContact, viewEmailAction } from "../store/Slices/viewEmail";
+import { viewEmailAction } from "../store/Slices/viewEmail";
 import { getLadger } from "../store/Slices/ladger";
 import { useNavigate } from "react-router-dom";
 import { applyHashtag, getCurrentUser, getRighteeUsers, updateActivity } from "../services/utils";

@@ -31,7 +31,7 @@ export const getDealStats = ({ filters, email }) => {
         params: { ...params },
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "active",

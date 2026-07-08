@@ -6,10 +6,10 @@ const UserActivity = () => {
   const { activeUsers } = useContext(SocketContext);
 
   const sortedUsers = [...activeUsers].sort((a, b) => {
-  if (a.status === "online" && b.status !== "online") return -1;
-  if (a.status !== "online" && b.status === "online") return 1;
-  return 0;
-});
+    if (a?.status === "online" && b?.status !== "online") return -1;
+    if (a?.status !== "online" && b?.status === "online") return 1;
+    return 0;
+  });
 
   return (
     <div className="p-8">
@@ -35,12 +35,12 @@ const UserActivity = () => {
                 <td className="p-3">
                   <span
                     className={
-                      user.status === "online"
+                      user?.status === "online"
                         ? "text-green-600 font-medium"
                         : "text-yellow-600 font-medium"
                     }
                   >
-                    {user.status === "online" ? "online" : "idle"}
+                    {user?.status === "online" ? "online" : "idle"}
                   </span>
                 </td>
                 <td className="p-3">{user.page === "/" ? "/timeline" : user.page}</td>

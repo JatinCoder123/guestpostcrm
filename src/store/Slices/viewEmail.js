@@ -51,45 +51,6 @@ const viewEmailSlice = createSlice({
       state.viewEmail = [];
       state.error = action.payload;
     },
-    getContactRequest(state) {
-      state.contactLoading = true;
-      state.stage = null;
-      state.status = null;
-      state.contactInfo = null;
-      state.hashtags = [];
-      state.accountInfo = null;
-      state.dealInfo = null;
-      state.error = null;
-    },
-    getContactSucess(state, action) {
-      const {
-        contactInfo,
-        accountInfo,
-        dealInfo,
-        hashtags,
-        stage,
-        status,
-        customer_type,
-      } = action.payload;
-      state.contactLoading = false;
-      state.stage = stage;
-      state.status = status;
-      state.customer_type = customer_type;
-      state.hashtags = hashtags;
-      state.contactInfo = contactInfo ? { ...contactInfo } : null;
-      state.accountInfo = accountInfo ? { ...accountInfo } : null;
-      state.dealInfo = dealInfo ? { ...dealInfo } : null;
-      state.error = null;
-    },
-    getContactFailed(state, action) {
-      state.contactLoading = false;
-      state.stage = null;
-      state.status = null;
-      state.contactInfo = null;
-      state.accountInfo = null;
-      state.dealInfo = null;
-      state.error = action.payload;
-    },
     editContactRequest(state) {
       state.contactLoading = true;
       state.editMessage = null;
@@ -158,81 +119,7 @@ const viewEmailSlice = createSlice({
 });
 
 
-export const getContact = (email = null, force = false, loading = true) => {
-  return async (dispatch, getState) => {
-    loading && dispatch(viewEmailSlice.actions.getContactRequest());
-    dispatch(brandTimelineAction.setShowBrandTimeline(false))
 
-    try {
-      const trimmedEmail = email?.trim();
-
-      if (!force) {
-        const cachedData = getCache("contacts", trimmedEmail);
-
-        if (cachedData) {
-          dispatch(viewEmailSlice.actions.getContactSucess(cachedData));
-        }
-      }
-
-      const data = await fetchGpc({ method: "GET", params: { type: "get_contact", email: trimmedEmail } });
-
-      console.log("CONTACT", data);
-
-      const freshData = {
-        stage: data.stage,
-        status: data.status,
-        contactInfo: data.contact ?? null,
-        hashtags: data?.contact?.hashtag?.data?.hashtags ?? [],
-        accountInfo: data.account ?? null,
-        customer_type: data.customer_type ?? null,
-        dealInfo: data.deal_fetch ?? null,
-      };
-
-      setCache("contacts", trimmedEmail, freshData);
-
-      dispatch(viewEmailSlice.actions.getContactSucess(freshData));
-      const index =
-        localStorage.getItem("currentIndex") &&
-        Number(localStorage.getItem("currentIndex"));
-
-      if (index !== null) {
-        const unreplied = getState().unreplied;
-
-        const nextEmail =
-          index + 1 < unreplied.count
-            ? unreplied.emails[index + 1]?.email1
-            : null;
-
-        const prevEmail =
-          index > 0 ? unreplied.emails[index - 1]?.email1 : null;
-
-        [nextEmail, prevEmail].forEach(async (prefetchEmail) => {
-          if (prefetchEmail && !getCache("contacts", prefetchEmail.trim())) {
-            try {
-              const data = await fetchGpc({ method: "GET", params: { type: "get_contact", email: prefetchEmail.trim() } });
-              setCache("contacts", prefetchEmail.trim(), {
-                stage: data.stage,
-                status: data.status,
-                contactInfo: data.contact ?? null,
-                accountInfo: data.account ?? null,
-                customer_type: data.customer_type ?? null,
-                dealInfo: data.deal_fetch ?? null,
-              });
-            } catch (err) {
-              console.error("Prefetch Contact Failed", err);
-            }
-          }
-        });
-      }
-
-      dispatch(viewEmailSlice.actions.clearAllErrors());
-    } catch (error) {
-      dispatch(
-        viewEmailSlice.actions.getContactFailed("Fetching View Details failed"),
-      );
-    }
-  };
-};
 export const editContact = (contactData, message = "") => {
   return async (dispatch, getState) => {
     dispatch(viewEmailSlice.actions.editContactRequest());
@@ -243,12 +130,12 @@ export const editContact = (contactData, message = "") => {
       const payload = {
         parent_bean: {
           module: "Contacts",
-          ...contactData.contact,
+          ...contactData?.contact,
         },
-        ...(Object.keys(contactData?.account).length > 0 && {
+        ...(Object.keys(contactData?.account ?? {}).length > 0 && {
           child_bean: {
             module: "Contacts",
-            ...contactData.account,
+            ...contactData?.account,
           },
         }),
       };

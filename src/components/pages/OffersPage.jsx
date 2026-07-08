@@ -130,7 +130,7 @@ export function OffersPage() {
       accessor:
         "date_entered",
       icon: Calendar,
-      sortable:true,
+      sortable: true,
 
       onClick: (row) =>
         handleDateClick({
@@ -202,7 +202,7 @@ export function OffersPage() {
         "Client Offer",
       accessor:
         "client_offer_c",
-        sortable:true,
+      sortable: true,
       icon:
         BadgeDollarSign,
       classes: "text-center",
@@ -222,7 +222,7 @@ export function OffersPage() {
         "Our Offer",
       accessor:
         "our_offer_c",
-        sortable:true,
+      sortable: true,
       icon:
         BadgeDollarSign,
       classes: "text-center",
@@ -253,22 +253,6 @@ export function OffersPage() {
       ),
     },
 
-    // {
-    //   label:
-    //     "Expiry Date",
-    //   accessor:
-    //     "expiry_date",
-    //   icon: Calendar,
-    //   sortable:true,
-
-    //   render: (row) => (
-    //     <span className="font-medium text-gray-700">
-    //       {
-    //         row?.expiry_date
-    //       }
-    //     </span>
-    //   ),
-    // },
 
     {
       label: "Action",

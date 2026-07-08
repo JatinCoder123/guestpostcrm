@@ -84,7 +84,7 @@ const MailerSummaryHeader = () => {
     setEmailData((prev) => ({ ...prev, orders: filtered }));
   }, [email, orders, showBrandTimeline]);
   useEffect(() => {
-    const deal = deals?.filter((d) => d.status === "active");
+    const deal = deals?.filter((d) => d?.status === "active");
     setEmailData((prev) => ({ ...prev, deals: deal }));
   }, [email, deals, showBrandTimeline]);
 

@@ -15,7 +15,7 @@ export const getContactStats = async (
         method: "POST",
         body: {
             action: "get_stats",
-            ...filters,
+            ...buildTableRequestBody(filters),
             queries: [
                 {
                     "key": "new",

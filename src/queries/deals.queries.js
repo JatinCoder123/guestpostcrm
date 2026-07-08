@@ -14,6 +14,7 @@ import {
 } from "../api/deals.api";
 
 import toast from "react-hot-toast";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 export const dealKeys = {
     all: ["deals"],
@@ -27,10 +28,11 @@ export const dealKeys = {
             filters,
         ],
 
-    stats: (email = '') => [
+    stats: (email = '', filters = {}) => [
         "deals",
         "stats",
-        email
+        email,
+        filters
     ],
 
     byId: (id) => [
@@ -46,15 +48,19 @@ export const dealKeys = {
 };
 
 export const useDealStats =
-    ({ email }) => useQuery({
-        queryKey: dealKeys.stats(email),
+    ({ email }) => {
+        const preferences =
+            useTablePreference(
+                "deals"
+            ); return useQuery({
+                queryKey: dealKeys.stats(email, preferences),
 
-        queryFn: () => getDealStats({ email }),
+                queryFn: () => getDealStats({ email, filters: preferences }),
 
-        staleTime:
-            5 * 60 * 1000,
-    });
-
+                staleTime:
+                    5 * 60 * 1000,
+            });
+    }
 export const useInfiniteDeals =
     (
         { preferences = {},

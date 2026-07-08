@@ -69,7 +69,7 @@ export function Sidebar() {
 
   const { isPending: contactStatLoading, data: contactStats } = useContactStats()
   const { isPending: emailStatsLoading, data: emailsStats } = useEmailStats()
-  const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats({}, currentUserId)
+  const { isPending: forwardStatLoading, data: forwardStats } = useForwardedStats(currentUserId)
   const { isPending: favStatLoading, data: favStats } = useFavoriteStats()
   const { isPending: exchangeStatLoading, data: exchangeStats } = useExchangeStats()
   const { isPending: offerStatLoading, data: offerStats } = useOfferStats({ email })

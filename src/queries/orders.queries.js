@@ -15,6 +15,7 @@ import {
 } from "../api/orders.api";
 
 import toast from "react-hot-toast";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 /**
  * Query Keys
@@ -68,14 +69,16 @@ export const useOrder = (id) => {
  * Order Stats
  */
 export const useOrderStats = (
-    { filters = {}, email = '' }
+    { email = '' }
 ) => {
+    const preferences = useTablePreference("orders");
+
     return useQuery({
         queryKey:
-            orderKeys.stats({ filters, email }),
+            orderKeys.stats({ filters: preferences, email }),
 
         queryFn: () =>
-            getOrderStats({ filters, email }),
+            getOrderStats({ filters: preferences, email }),
 
         staleTime:
             5 * 60 * 1000,

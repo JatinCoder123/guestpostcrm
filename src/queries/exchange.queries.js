@@ -9,6 +9,7 @@ import {
     getAllContacts,
     getContactStats,
 } from "../api/contact.api";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 /**
  * Query Keys
@@ -30,18 +31,20 @@ export const exchangeKeys = {
 };
 
 
-export const useExchangeStats = (
-    filters = {}
-) => {
+export const useExchangeStats = () => {
+    const preferences =
+        useTablePreference(
+            "exchange"
+        );
     return useQuery({
         queryKey:
             exchangeKeys.stats(
-                filters
+                preferences
             ),
 
         queryFn: () =>
             getContactStats(
-                filters
+                preferences
             ),
 
         staleTime:

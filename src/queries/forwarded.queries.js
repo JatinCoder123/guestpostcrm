@@ -11,8 +11,9 @@ import {
 } from "../api/contact.api";
 import { getForwardStats } from "../api/forward.api";
 
-import {useCrmUsers} from "./users.queries";
-import {store} from "../store/store";
+import { useCrmUsers } from "./users.queries";
+import { store } from "../store/store";
+import { useTablePreference } from "../hooks/useTablePreference";
 
 /**
  * Query Keys
@@ -35,18 +36,20 @@ export const forwardedKeys = {
 };
 
 
-export const useForwardedStats = (
-    filters = {}, userId
-) => {
+export const useForwardedStats = (userId) => {
+    const preferences =
+        useTablePreference(
+            "forwarded"
+        );
     return useQuery({
         queryKey:
             forwardedKeys.stats(
-                filters, userId
+                preferences, userId
             ),
 
         queryFn: () =>
             getForwardStats(
-                filters, userId
+                preferences, userId
             ),
 
         staleTime:
