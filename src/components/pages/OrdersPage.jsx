@@ -62,7 +62,7 @@ const STATUS_CONFIG = [
     value: "wrong",
     label: "Wrong",
     icon: X,
-    color: "#662744ff", // red
+    color: "#662744", // red
     filter: 'order_status',
     showAmount: true
 
