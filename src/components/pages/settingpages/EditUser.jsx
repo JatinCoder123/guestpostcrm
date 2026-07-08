@@ -25,23 +25,26 @@ export default function EditUser({ item, onClose, handleUpdate, ...props }) {
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
-  const handleSave = () => {
-    if (!form.name.trim()) {
-      toast.error("Name cannot be empty");
-      return;
-    }
+const handleSave = async () => {
+  if (!form.name.trim()) {
+    toast.error("Name cannot be empty");
+    return;
+  }
 
-    const updated = { ...item, ...form };
-    if (item.type == "new") {
-      props.handleCreate(updated);
-      toast.success("Created successfully!");
-      onClose();
-    } else {
-      handleUpdate(updated);
-      toast.success("Updated successfully!");
-      onClose();
-    }
-  };
+  const updated = { ...item, ...form };
+
+  if (item.type == "new") {
+    const created = await props.handleCreate(updated);
+    if (!created) return;
+
+    toast.success("Created successfully!");
+    onClose();
+  } else {
+    await handleUpdate(updated);
+    toast.success("Updated successfully!");
+    onClose();
+  }
+};
 
   return (
     <AnimatePresence>
