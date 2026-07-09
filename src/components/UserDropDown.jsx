@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Loading, { LoadingChase } from "./Loading";
 import { X } from "lucide-react";
 import { useCrmUsers } from "../queries/users.queries";
+import { getCurrentUser } from "../services/utils";
 
 const UserDropdown = ({ forwardHandler, onClose }) => {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -40,7 +41,7 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
                 No users available
               </p>
             ) : (
-              users?.map((user, index) => (
+              users?.filter((user) => user.id !== getCurrentUser()?.id).map((user, index) => (
                 <div
                   key={index}
                   onClick={() => setSelectedUser(user)}
