@@ -55,7 +55,6 @@ export const prefetchTimelineData = async (
             queryFn: () =>
                 getDealsByEmail(email),
         }),
-
         queryClient.prefetchQuery({
             queryKey:
                 offerKeys.byEmail(email),
