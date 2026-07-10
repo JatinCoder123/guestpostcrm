@@ -504,7 +504,7 @@ export const updateOrder = ({ order }) => {
     }
   };
 };
-export const updateSeoLink = (orderId, link) => {
+export const updateSeoLink = (orderId, link,email) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateLinkRequest());
     showConsole && console.log("Update Seo Link", link);
@@ -544,10 +544,10 @@ export const updateSeoLink = (orderId, link) => {
           message: "Order Link Updated Successfully",
         }),
       );
-
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().ladger.email,
+        email,
         " Order Link Updated ",
       );
     } catch (error) {

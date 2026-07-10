@@ -135,6 +135,7 @@ Open Contact
   const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
   const threadId = contactInfo?.thread_id;
+  const assignedId = contactInfo?.gpc_assigned_to;
 
   const { forward, error: forwardError, message: forwardMessage } = useSelector((s) => s.forwarded);
   const { exchanging, error: changeError, message: changeMessage } = useSelector((s) => s.linkExchange);
@@ -434,6 +435,7 @@ Open Contact
 
                 {showUsers && btn.label === "Assign" && (
                   <UserDropdown
+                  assignedId={assignedId}
                     forwardHandler={handleForwardWithHashtag}
                     onClose={() => setShowUsers(false)}
                   />
