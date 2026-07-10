@@ -9,25 +9,19 @@ export default function LoadingPage() {
         <motion.img
           src={logo}
           alt="logo"
-          className="w-24 h-24 object-contain"
-          animate={{ rotateY: 360 }}
+          className="w-40 h-40 object-contain"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0 }}
           transition={{
-            duration: 1,
-            repeat: Infinity,
-            ease: "linear",
+            duration: 0.5,
+            ease: "easeOut",
           }}
         />
 
         {/* Text Content */}
         <div className="flex flex-col items-center gap-4">
-          <motion.h2
-            className="text-2xl font-semibold text-gray-800"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            Please wait...
-          </motion.h2>
+
           {/* Animated Dots */}
           <div className="flex gap-2 mt-2">
             {[0, 1, 2].map((i) => (
@@ -48,19 +42,14 @@ export default function LoadingPage() {
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-64 h-1 bg-gray-300 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-            initial={{ x: "-100%" }}
-            animate={{ x: "100%" }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </div>
+        <motion.h2
+          className="text-md font-semibold text-gray-800"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          Loading
+        </motion.h2>
       </div>
     </div>
   );

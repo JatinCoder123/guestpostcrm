@@ -390,6 +390,7 @@ export default function App() {
   return (
     <>
       <Toaster />
+
       {isAuthenticated && !loading && (
         <>
           <MeetingWidget />
@@ -397,8 +398,8 @@ export default function App() {
           <RouterProvider router={router} />
         </>
       )}
-
       {!isAuthenticated && loading && <LoadingPage />}
+
 
       {!isAuthenticated && !loading && <Login />}
 
