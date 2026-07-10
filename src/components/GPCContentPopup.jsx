@@ -26,6 +26,7 @@ const buildAnchorPattern = (anchor) => {
 };
 
 export default function GPCContentPopup({
+  email,
   data,
   onClose,
   website,
@@ -537,7 +538,7 @@ export default function GPCContentPopup({
           }
 
           dispatchedIds.add(edited.id);
-          dispatch(updateSeoLink(orderId, payload));
+          dispatch(updateSeoLink(orderId, payload,email));
         });
 
         // Fallback: ensure the primary link still gets the post URL even if

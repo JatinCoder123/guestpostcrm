@@ -3,8 +3,9 @@ import Loading, { LoadingChase } from "./Loading";
 import { X } from "lucide-react";
 import { useCrmUsers } from "../queries/users.queries";
 import { getCurrentUser } from "../services/utils";
+import { useTimeline } from "../context/TimelineContext";
 
-const UserDropdown = ({ forwardHandler, onClose }) => {
+const UserDropdown = ({assignedId, forwardHandler, onClose }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const dropdownRef = useRef(null);
   const { data: users, isPending: loading } = useCrmUsers();
@@ -41,7 +42,7 @@ const UserDropdown = ({ forwardHandler, onClose }) => {
                 No users available
               </p>
             ) : (
-              users?.filter((user) => user.id !== getCurrentUser()?.id).map((user, index) => (
+              users?.filter((user) => user.id !== getCurrentUser()?.id && user.id !== assignedId).map((user, index) => (
                 <div
                   key={index}
                   onClick={() => setSelectedUser(user)}

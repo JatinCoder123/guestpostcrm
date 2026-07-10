@@ -655,18 +655,6 @@ export default function ContactDetail({ email }) {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Email
-                                        </label>
-                                        <input
-                                            type="email"
-                                            name="email1"
-                                            value={formData.contact.email1 || ""}
-                                            onChange={(e) => handleChange(e, "contact")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
                                             PayPal Email
                                         </label>
                                         <input

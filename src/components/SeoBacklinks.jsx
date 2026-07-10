@@ -497,7 +497,7 @@ function LIInsertPopup({ link, orderId, onClose, onInserted }) {
   );
 }
 
-export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
+export default function SeoBacklinkList({ email, seo_backlink, orderId, id }) {
   const gpLinks = seo_backlink.filter((l) => l.type_c === "GP");
   const liLinks = seo_backlink.filter((l) => l.type_c === "LI");
   const { updateLinkLoading, deleting, updateLinkMessage } = useSelector(
@@ -509,7 +509,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
   const dispatch = useDispatch();
 
   const handleUpdate = (data) => {
-    dispatch(updateSeoLink(orderId, { ...item, ...data }));
+    dispatch(updateSeoLink(orderId, { ...item, ...data }, email));
   };
 
   useEffect(() => {
@@ -623,6 +623,7 @@ export default function SeoBacklinkList({ seo_backlink, orderId, id }) {
                   #{groupIndex + 1}
                 </span>
                 <GPLinksTable
+                email={email}
                   gpLinks={links}
                   orderId={orderId}
                   linkId={linkId}
@@ -1230,6 +1231,7 @@ function LinkTableRow({
    GPLinksTable
 ───────────────────────────────────────────── */
 function GPLinksTable({
+  email,
   gpLinks,
   groupIndex,
   setItem,
@@ -1244,6 +1246,7 @@ function GPLinksTable({
   return (
     <div className="overflow-hidden mb-4 border-2 border-blue-300 rounded-xl">
       <DocumentAnalysisCard
+      email={email}
         website={rep.name}
         docLink={rep.gp_doc_url_c}
         orderId={orderId}
@@ -1322,6 +1325,7 @@ function LILinksTable({
    DocumentAnalysisCard  –  GP header
 ───────────────────────────────────────────── */
 function DocumentAnalysisCard({
+  email,
   docLink,
   docNiche,
   website,
@@ -1471,6 +1475,7 @@ function DocumentAnalysisCard({
         </div>
         {openPopup && analysisData && (
           <GPCContentPopup
+          email={email}
             data={analysisData}
             website={website}
             orderId={orderId}
