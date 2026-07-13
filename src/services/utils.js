@@ -101,6 +101,7 @@ export const applyHashtag = async ({
       method,
       params: { type: "hashtag", email, memo_no: memo_no, domain },
     });
+    console.log("METHOD", method)
 
     showConsole && console.log("Hashtag Applied", data);
     queryClient.invalidateQueries({ queryKey: contactKeys.all })

@@ -29,6 +29,7 @@ import { forwardedKeys } from "../queries/forwarded.queries";
 import { marketPlaceKeys, useAddMarketPlace, useDelMarketPlace, useMarketPlace } from "../queries/marketplace.queries";
 import { toggleFav } from "../api/contact.api";
 import { movedEmailsKeys } from "../queries/movedEmail.queries";
+import { useInfiniteTags } from "../queries/tag.queries";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -55,7 +56,7 @@ const ActionButton = () => {
     queryFn: getRighteeUsers
   })
   const { data: tagsData, isPending: tagLoading } = useMarkTags()
-  const tags = tagsData?.fields ?? []
+  const tags = tagsData?.records ?? []
 
   const { mutate, isPending: sendingNote } = useMutation({
     mutationFn: async () => {
@@ -134,6 +135,7 @@ Open Contact
   const { data: contactData } = useContact(currentEmail)
   const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
+  const hashtags = contactInfo?.hashtag?.data?.hashtags
   const threadId = contactInfo?.thread_id;
   const assignedId = contactInfo?.gpc_assigned_to;
 
@@ -435,7 +437,7 @@ Open Contact
 
                 {showUsers && btn.label === "Assign" && (
                   <UserDropdown
-                  assignedId={assignedId}
+                    assignedId={assignedId}
                     forwardHandler={handleForwardWithHashtag}
                     onClose={() => setShowUsers(false)}
                   />
@@ -448,8 +450,16 @@ Open Contact
                         <div className="py-6 flex justify-center">
                           <LoadingChase />
                         </div>
-                      ) : <CustomDropdown defaultOpen={true} options={tags?.map(tag => ({ label: tag.label, value: tag.name }))} onChange={(tag) => {
-                        dispatch(applyTag({ email, tag }))
+                      ) : <CustomDropdown defaultOpen={true} options={tags?.map(tag => ({ label: tag.name, value: tag.memo_c }))} onChange={(tag) => {
+                        // dispatch(applyTag({ email, tag }))
+                        if (!hashtags.find((hashtag) => hashtag.memo_c == tag)) {
+                          triggerHashtag(tag, "GET")
+                        }
+                        else {
+                          triggerHashtag(tag, "DELETE")
+
+                        }
+
                         setShowTags(false)
                       }} outsideClickHandle={() => setShowTags(false)} />}
                     </div>
