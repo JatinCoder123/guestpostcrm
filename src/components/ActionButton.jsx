@@ -116,7 +116,9 @@ Open Contact
       }
     },
     onSuccess: () => {
+      updateActivity(email, "Tag Applied")
       queryClient.invalidateQueries({ queryKey: contactKeys.all })
+
 
       setShowTags(false);
     },
