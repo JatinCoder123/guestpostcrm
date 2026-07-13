@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { extractEmail } from "../assets/assets";
 import { Titletooltip } from "./TitleTooltip";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useMemo } from "react";
 import { LoadingSpin } from "./Loading";
 import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
@@ -30,7 +30,6 @@ import { useOffersByEmail } from "../queries/offers.queries";
 import { useInfiniteEmails } from "../queries/email.queries";
 import { useEmailInvoices } from "../queries/invoice.queries";
 
-/* ===================== MAIN ===================== */
 const MailerSummaryHeader = () => {
   const { currentEmail } = useTimeline()
   const email = currentEmail;
@@ -54,12 +53,14 @@ const MailerSummaryHeader = () => {
   const invoices = invoiceData?.records ?? []
   const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
 
-  const [emailData, setEmailData] = useState({
-    orders: [],
-    offers: [],
-    deals: [],
-    invoices: [],
-  });
+  const emailData = useMemo(() => ({
+    orders: orders.filter(
+      d => !["wrong", "rejected_nontechnical", "completed"].includes(d.order_status)
+    ),
+    deals: deals.filter(d => d.status === "active"),
+    offers: offers.filter(d => d.offer_status === "active"),
+    invoices: invoices.filter(d => d.status_c === "SENT"),
+  }), [orders, deals, offers, invoices, email]);
   const handleSync = (type) => {
     setShowSyncData(true);
     dispatch(getSync(type));
@@ -76,33 +77,6 @@ const MailerSummaryHeader = () => {
       dispatch(syncAction.clearAllErrors());
     }
   }, [message, error]);
-
-  /* ---------------- DEALS ---------------- */
-  useEffect(() => {
-    const filtered = orders?.filter(
-      (d) =>
-        !["wrong", "rejected_nontechnical", "completed"].includes(
-          d.order_status
-        )
-    );
-
-    setEmailData((prev) => ({ ...prev, orders: filtered }));
-  }, [email, orders, showBrandTimeline]);
-  useEffect(() => {
-    const deal = deals?.filter((d) => d?.status === "active");
-    setEmailData((prev) => ({ ...prev, deals: deal }));
-  }, [email, deals, showBrandTimeline]);
-  useEffect(() => {
-    const invoice = invoices?.filter((d) => d?.status_c === "SENT");
-    setEmailData((prev) => ({ ...prev, invoices: invoice }));
-  }, [email, invoices, showBrandTimeline]);
-
-  /* ---------------- OFFERS ---------------- */
-  useEffect(() => {
-    const offer = offers?.filter((d) => d.offer_status === "active");
-    setEmailData((prev) => ({ ...prev, offers: offer }));
-  }, [email, offers, showBrandTimeline]);
-  /* ---------------- UI ---------------- */
   return (
     <>
       {showSyncData && count > 0 && (

@@ -97,6 +97,30 @@ Open Contact
 
     },
   })
+  const { mutate: applyTagMutation, isPending: applyTagLoading } = useMutation({
+    mutationFn: async ({ tag, method = "GET" }) => {
+      const { data } = await fetchGpc({
+        method,
+        params: { type: "hashtag", email, memo_no: tag, domain: false },
+      });
+      console.log(data)
+      if (data.success) {
+        toast.success(
+          `Tag ${method == "GET" ? "Applied" : "Removed"} Successfully!`
+        );
+      }
+      else {
+        toast.error(
+          data.message || `Tag ${method == "GET" ? "Failed" : "Failed"} `
+        );
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
+
+      setShowTags(false);
+    },
+  })
 
   const noteRef = useRef(null);
   const [searchUser, setSearchUser] = useState("");
@@ -160,7 +184,6 @@ Open Contact
       method,
     });
   };
-
   /* side effects */
   useEffect(() => {
     if (forwardError) {
@@ -226,7 +249,7 @@ Open Contact
       action: () => navigate("/ip"),
     },
     {
-      icon: markTagLoading ? <LoadingChase /> : <img
+      icon: markTagLoading || applyTagLoading ? <LoadingChase /> : <img
         src="https://img.icons8.com/color/48/tags--v1.png"
         className="w-6 h-6"
         alt="tag"
@@ -450,13 +473,15 @@ Open Contact
                         <div className="py-6 flex justify-center">
                           <LoadingChase />
                         </div>
-                      ) : <CustomDropdown defaultOpen={true} options={tags?.map(tag => ({ label: tag.name, value: tag.memo_c }))} onChange={(tag) => {
-                        // dispatch(applyTag({ email, tag }))
+                      ) : <CustomDropdown defaultOpen={true} options={[
+                        ...new Map(tags.map(tag => [tag.name, tag])).values()
+                      ]?.map(tag => ({ label: tag.name, value: tag.memo_c }))} onChange={(tag) => {
                         if (!hashtags.find((hashtag) => hashtag.memo_c == tag)) {
-                          triggerHashtag(tag, "GET")
+                          applyTagMutation({ tag, method: "GET" })
+
                         }
                         else {
-                          triggerHashtag(tag, "DELETE")
+                          applyTagMutation({ tag, method: "DELETE" })
 
                         }
 
