@@ -112,14 +112,16 @@ export const getContactStats = async (
                     "key": "forwarded",
                     "module": "Contacts",
                     "filters": {
-                        "forwarded": "1"
+                        "forwarded": "1",
+                        "direction": "inbound"
                     }
                 },
                 {
                     "key": "favorite",
                     "module": "Contacts",
                     "filters": {
-                        "favorite": "1"
+                        "favorite": "1",
+                        "direction": "inbound"
                     }
                 },
                 {

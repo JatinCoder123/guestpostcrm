@@ -69,6 +69,7 @@ import BootApp from "./components/BootApp";
 import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
 import BillingSettings from "./components/pages/BillingSettings";
+import InternetStatus from "./components/InternetStatus";
 
 const router = createBrowserRouter([
   {
@@ -390,6 +391,8 @@ export default function App() {
   return (
     <>
       <Toaster />
+      <InternetStatus />
+
 
       {isAuthenticated && !loading && (
         <>

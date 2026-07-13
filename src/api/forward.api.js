@@ -15,7 +15,8 @@ export const getForwardStats = async (
                     "key": "forwarded",
                     "module": "Contacts",
                     "filters": {
-                        "gpc_assigned_to": userId
+                        "gpc_assigned_to": userId,
+                        "direction": "inbound"
                     }
                 },
 
