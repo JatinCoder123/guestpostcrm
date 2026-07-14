@@ -299,7 +299,7 @@ export default function ViewReports() {
 
   const [selectedUser, setSelectedUser] = useState("");
   const [appliedFilters, setAppliedFilters] = useState({
-    user: selectedUser,
+    user: '',
     date: "today",
   });
   useEffect(() => {
@@ -310,9 +310,13 @@ export default function ViewReports() {
         (u) => u.description?.toLowerCase() === email.toLowerCase()
       );
 
-      setSelectedUser(user?.id || "");
-    } else {
-      setSelectedUser(users[0]?.id || "");
+      const userId = user?.id || "";
+
+      setSelectedUser(userId);
+      setAppliedFilters(prev => ({
+        ...prev,
+        user: userId,
+      }));
     }
   }, [email, users]);
   const [activeSection, setActiveSection] = useState(storedReportFilter.phase || "conversations");
@@ -496,21 +500,28 @@ export default function ViewReports() {
               filterActive={
                 dateFilter.filterActive
               }
-              onApply={({
-                fromDate,
-                fromTime,
-                toDate,
-                toTime,
-              }) => {
+              onApply={({ fromDate, fromTime, toDate, toTime }) => {
                 setDateFilter({
                   filterActive: true,
-
                   fromDate,
                   fromTime,
-
                   toDate,
                   toTime,
                 });
+
+                dispatch(
+                  preferencesAction.updateMultipleTablePreferences({
+                    table: "report",
+                    data: {
+                      date_filter: {
+                        date_range: "custom",
+                        date_field: "date_entered",
+                        date_from: `${fromDate} ${fromTime}`,
+                        date_to: `${toDate} ${toTime}`,
+                      },
+                    },
+                  })
+                );
               }}
               onReset={() => {
                 setDateFilter({
@@ -524,9 +535,19 @@ export default function ViewReports() {
                   toTime:
                     "23:59:59",
                 });
-                setSelectedUser("");
-                setAppliedFilters((prev) => ({ ...prev, user: "" }));
-                localStorage.removeItem("reportFilter");
+                dispatch(
+                  preferencesAction.updateMultipleTablePreferences({
+                    table: "report",
+                    data: {
+                      date_filter: {
+                        date_range: "",
+                        date_field: "",
+                        date_from: "",
+                        date_to: "",
+                      },
+                    },
+                  })
+                );
               }}
             />
 
