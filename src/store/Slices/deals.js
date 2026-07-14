@@ -90,6 +90,7 @@ const dealsSlice = createSlice({
       state.deals = action.payload.deals;
       state.count = action.payload.count;
       state.deleteDealId = null;
+      state.message = "Deal Deleted Succesfully"
       state.error = null;
     },
     deleteDealFailed(state, action) {

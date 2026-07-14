@@ -21,10 +21,8 @@ export const useThreadContext = () => {
   const handleMove = ({
     email,
     threadId,
-    viewEmail = null,
     reply = false,
     addActivity = false,
-    loadAiReply = false,
     htmlFile = null,
     handleAfterSuccessMailSent = null,
   }) => {

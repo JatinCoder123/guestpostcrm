@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { FETCH_GPC_X_API_KEY } from "../../../store/constants";
 import { toast } from "react-toastify";
@@ -12,6 +12,7 @@ import { useOutletContext } from "react-router-dom";
 import { useFetchOrderByMessage } from "../../../queries/orders.queries";
 import { useTemplateByName } from "../../../queries/template.queries";
 import DealDetectionModal from "../../DealDetectionModal";
+import { orderAction, createOrder } from "../../../store/Slices/orders";
 const STAGE_STYLES = [
   {
     label: "Deal",
@@ -73,7 +74,9 @@ const Inbox = ({
   showReplyPanel,
   setShowReplyPanel,
 }) => {
+  const dispatch = useDispatch()
   const { businessEmail } = useSelector((s) => s.user);
+  const { creating, message, error: fetchingOrderError } = useSelector((s) => s.orders);
   const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
   const attachmentBoxRef = useRef(null);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
@@ -86,13 +89,6 @@ const Inbox = ({
     isPending: fetchingDeals,
     error,
   } = useFetchDealByMessage();
-  const {
-    mutate: fetchOrder,
-    mutateAsync: fetchOrderAsync,
-    data: orderData,
-    isPending: orderPending,
-    error: fetchOrderError,
-  } = useFetchOrderByMessage();
   const downloadAttachment = async (att) => {
     try {
       const axios = (await import("axios")).default;
@@ -173,6 +169,18 @@ const Inbox = ({
 
     return doc.body.innerHTML;
   };
+  useEffect(() => {
+    if (message) {
+      setSelectedMessageId(null)
+      toast.success(message)
+      dispatch(orderAction.clearAllMessages())
+    }
+    if (fetchingOrderError) {
+      setSelectedMessageId(null)
+      toast.error("Failed To Fetch Order")
+      dispatch(orderAction.clearAllErrors())
+    }
+  }, [message, fetchingOrderError])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -246,7 +254,7 @@ const Inbox = ({
                     label="Fetch Deal"
                     tooltipClassName="bg-blue-600 text-white"
                     tooltipPosition="top"
-                    disabled={orderPending || fetchingDeals}
+                    disabled={creating || fetchingDeals}
 
                     className=" rounded-full bg-white border border-gray-200 text-gray-800"
                     loading={fetchingDeals && selectedMessageId == mail.message_id}
@@ -280,28 +288,14 @@ const Inbox = ({
                     iconColor="blue"
                     tooltipPosition="bottom"
 
-                    loading={orderPending && selectedMessageId == mail.message_id}
-                    disabled={orderPending || fetchingDeals}
+                    loading={creating && selectedMessageId == mail.message_id}
+                    disabled={creating || fetchingDeals}
                     tooltipClassName="bg-blue-600 text-white"
                     className=" rounded-full bg-white border border-gray-200 text-gray-800"
                     onClick={() => {
-                      // setSelectedMessageId(mail.message_id)
-                      // fetchOrder(
-                      //   {
-                      //     email: mail.from_email,
-                      //     message_id: mail.message_id,
-                      //   },
-                      //   {
-                      //     onSuccess: (data) => {
-                      //       console.log(data);
-                      //       // Open modal, update state, etc.
-                      //     },
-                      //     onError: (error) => {
-                      //       console.error(error);
-                      //     },
-                      //   }
-                      // )
-                      alert("Work In Progress")
+                      setSelectedMessageId(mail.message_id)
+
+                      dispatch(createOrder(email, mail.message_id))
                     }}
                   />
                 </div>
