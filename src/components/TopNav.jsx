@@ -26,7 +26,7 @@ import { SocketContext } from "../context/SocketContext";
 import GlobalSearch from "./GlobalSearch";
 import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
-import {useTodayPaymentReminderStats} from "../queries/reminder.queries";
+import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
@@ -144,19 +144,19 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   }, []);
 
   /* Split: show current user first, then others (max 3 avatars in stack) */
-const onlineUsers = activeUsers.filter((u) => u.status === "online");
-const idleUsers = activeUsers.filter((u) => u.status !== "online");
+  const onlineUsers = activeUsers.filter((u) => u.status === "online");
+  const idleUsers = activeUsers.filter((u) => u.status !== "online");
 
-const meOnline = onlineUsers.find((u) => u.email === currentUserEmail);
-const otherOnlineUsers = onlineUsers.filter((u) => u.email !== currentUserEmail);
+  const meOnline = onlineUsers.find((u) => u.email === currentUserEmail);
+  const otherOnlineUsers = onlineUsers.filter((u) => u.email !== currentUserEmail);
 
-const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
-const ordered = [...orderedOnline, ...idleUsers];
+  const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
+  const ordered = [...orderedOnline, ...idleUsers];
 
-const stackVisible = orderedOnline.slice(0, 4);
-const overflow = Math.max(0, orderedOnline.length - 4);
+  const stackVisible = orderedOnline.slice(0, 4);
+  const overflow = Math.max(0, orderedOnline.length - 4);
 
-const onlineCount = onlineUsers.length;
+  const onlineCount = onlineUsers.length;
 
   return (
     <div ref={ref} className="relative flex items-center">
@@ -262,6 +262,8 @@ const onlineCount = onlineUsers.length;
                   return (
                     <div
                       key={u.email}
+                      onClick={() => navigateTo(`/view-reports?email=${encodeURIComponent(u.email)}`)}
+
                       className="flex items-center gap-3 border-b border-slate-50 px-4 py-3 last:border-none hover:bg-slate-50/60 transition"
                     >
                       {/* Avatar */}
@@ -351,9 +353,9 @@ export function TopNav() {
   /* ── Data ── */
   const { data: outboxData, isPending: outboxPending } = useOutboxStats();
   const {
-  data: paymentReminderData,
-  isPending: paymentReminderPending,
-} = useTodayPaymentReminderStats();
+    data: paymentReminderData,
+    isPending: paymentReminderPending,
+  } = useTodayPaymentReminderStats();
   const { enteredEmail, handleClear } = useContext(PageContext);
   // ↓ activeUsers added alongside existing notificationCount
   const { notificationCount, activeUsers = [] } = useContext(SocketContext);
@@ -379,14 +381,14 @@ export function TopNav() {
   const isSearchActive = Boolean(enteredEmail?.trim());
   const outboxCount = outboxData?.stats?.all?.count ?? 0;
   const paymentReminderCount =
-  paymentReminderData?.total ??
-  paymentReminderData?.total_records ??
-  paymentReminderData?.count ??
-  paymentReminderData?.records?.length ??
-  0;
+    paymentReminderData?.total ??
+    paymentReminderData?.total_records ??
+    paymentReminderData?.count ??
+    paymentReminderData?.records?.length ??
+    0;
 
-const showPaymentReminders =
-  paymentReminderCount > 0 && !paymentReminderPending;
+  const showPaymentReminders =
+    paymentReminderCount > 0 && !paymentReminderPending;
   const showOutbox = outboxCount > 0 && !outboxPending;
   const showErrorLog = Boolean(notificationCount?.error_log_created);
 
@@ -437,19 +439,19 @@ const showPaymentReminders =
   };
 
   const handleCopyEmail = async () => {
-  try {
-    await navigator.clipboard.writeText(enteredEmail);
+    try {
+      await navigator.clipboard.writeText(enteredEmail);
 
-    setCopied(true);
-    toast.success("Email copied");
+      setCopied(true);
+      toast.success("Email copied");
 
-    setTimeout(() => {
-      setCopied(false);
-    }, 1500);
-  } catch (err) {
-    toast.error("Failed to copy email");
-  }
-};
+      setTimeout(() => {
+        setCopied(false);
+      }, 1500);
+    } catch (err) {
+      toast.error("Failed to copy email");
+    }
+  };
 
 
   const handleProfileUpload = (e) => {
@@ -548,29 +550,29 @@ const showPaymentReminders =
                 </span>
               </span>
               <div className="ml-1 flex items-center gap-1 shrink-0">
-  <button
-    type="button"
-    aria-label="Copy email"
-    title={copied ? "Copied!" : "Copy email"}
-    onClick={handleCopyEmail}
-    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 transition hover:bg-cyan-200 hover:text-cyan-700 active:scale-90"
-  >
-    {copied ? (
-      <Check size={11} strokeWidth={2.5} />
-    ) : (
-      <Copy size={11} strokeWidth={2.5} />
-    )}
-  </button>
+                <button
+                  type="button"
+                  aria-label="Copy email"
+                  title={copied ? "Copied!" : "Copy email"}
+                  onClick={handleCopyEmail}
+                  className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 transition hover:bg-cyan-200 hover:text-cyan-700 active:scale-90"
+                >
+                  {copied ? (
+                    <Check size={11} strokeWidth={2.5} />
+                  ) : (
+                    <Copy size={11} strokeWidth={2.5} />
+                  )}
+                </button>
 
-  <button
-    type="button"
-    aria-label="Clear current record"
-    onClick={handleClear}
-    className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
-  >
-    <X size={11} strokeWidth={2.5} />
-  </button>
-</div>
+                <button
+                  type="button"
+                  aria-label="Clear current record"
+                  onClick={handleClear}
+                  className="flex h-[22px] w-[22px] items-center justify-center rounded-lg bg-indigo-100 text-indigo-500 transition hover:bg-indigo-200 hover:text-indigo-700 active:scale-90"
+                >
+                  <X size={11} strokeWidth={2.5} />
+                </button>
+              </div>
             </motion.div>
           ) : (
             <GlobalSearch />
@@ -592,7 +594,7 @@ const showPaymentReminders =
         {/* Thin divider between activity panel and icon buttons */}
         <div className="mx-1 h-6 w-px bg-blue-500" aria-hidden="true" />
 
-        
+
         {/* AI Credits */}
         <NavBtn
           icon={Sparkles}
@@ -602,21 +604,21 @@ const showPaymentReminders =
         />
 
         {/* Payment Reminders */}
-       {showPaymentReminders && (
-  <NavBtn
-    icon={BellIcon}
-    label="Payment Reminders"
-    color="purple"
-    count={paymentReminderCount}
-    onClick={() =>
-  navigateTo("/reminders", {
-    state: {
-      reminderFilter: "today-payment",
-    },
-  })
-}
-  />
-)}
+        {showPaymentReminders && (
+          <NavBtn
+            icon={BellIcon}
+            label="Payment Reminders"
+            color="purple"
+            count={paymentReminderCount}
+            onClick={() =>
+              navigateTo("/reminders", {
+                state: {
+                  reminderFilter: "today-payment",
+                },
+              })
+            }
+          />
+        )}
 
         {/* Outbox — conditional */}
         {showOutbox && (
