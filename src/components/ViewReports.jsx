@@ -93,6 +93,7 @@ const getCount = (row) => Number(row?.total_count ?? row?.total ?? row?.count ??
 
 const getStoredReportFilter = () => {
   try {
+
     const preferences = JSON.parse(localStorage.getItem("preferences") || "{}");
     const reportPreference = preferences?.tables?.report || {};
     const filters = reportPreference?.filters || {};
@@ -110,7 +111,19 @@ const getStoredReportFilter = () => {
   }
 };
 
-const getInitialDateFilter = () => {
+const getInitialDateFilter = (hasEmail) => {
+  if (hasEmail) {
+    const today = getDateRange("today");
+
+    return {
+      filterActive: true,
+      fromDate: today.from,
+      fromTime: today.from_time,
+      toDate: today.to,
+      toTime: today.to_time,
+    };
+  }
+
   const storedFilter = getStoredReportFilter();
   const hasStoredRange = storedFilter.from || storedFilter.to;
 
@@ -284,11 +297,11 @@ export default function ViewReports() {
   const [searchParams] = useSearchParams();
 
   const email = searchParams.get("email");
-  console.log(email)
   const { data: users } = useCrmUsers();
   const storedReportFilter = useMemo(() => getStoredReportFilter(), []);
-  const [dateFilter, setDateFilter] = useState(() => getInitialDateFilter());
-  const stages = useSelector(selectStages);
+  const [dateFilter, setDateFilter] = useState(() =>
+    getInitialDateFilter(!!email)
+  ); const stages = useSelector(selectStages);
   const categories = useSelector(selectCategories);
   const details = useSelector(selectDetails);
   const stats = useSelector(selectReportStats);
@@ -311,7 +324,7 @@ export default function ViewReports() {
       );
 
       const userId = user?.id || "";
-
+      setDateFilter(() => getInitialDateFilter(true))
       setSelectedUser(userId);
       setAppliedFilters(prev => ({
         ...prev,
