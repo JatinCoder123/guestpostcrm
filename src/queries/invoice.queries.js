@@ -84,27 +84,14 @@ export const useEmailInvoices =
     (
         email = ''
     ) =>
-        useInfiniteQuery({
+        useQuery({
             queryKey: invoiceKeys.byEmail(email),
 
-            queryFn: ({
-                pageParam = 1,
-            }) =>
+            queryFn: () =>
                 getAllInvoice({
                     preferences: {},
-                    page: pageParam,
                     email
                 }),
-            initialPageParam: 1,
-
-            getNextPageParam: (
-                lastPage
-            ) =>
-                lastPage.page <
-                    lastPage.total_pages
-                    ? lastPage.page +
-                    1
-                    : undefined,
 
         });
 export const useUpdateInvoice = () => {

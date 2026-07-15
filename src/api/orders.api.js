@@ -152,7 +152,7 @@ export const getOrderStats = (
         },
     });
 }
-
+export const getOrdersByMessageId = ({ email, message_id }) => fetchGpc({ params: { type: "sync_opr" }, body: { email, message_id, sync_type: "order" }, method: "POST" })
 export const getOrdersByEmail = (
     email
 ) =>

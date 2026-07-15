@@ -11,6 +11,7 @@ import {
     deleteDeal,
     getDealById,
     getDealsByEmail,
+    getDealsByMessageId,
 } from "../api/deals.api";
 
 import toast from "react-hot-toast";
@@ -42,6 +43,13 @@ export const dealKeys = {
     ],
     byEmail: (email) => [
         "deals",
+        "email",
+        email,
+    ],
+    byMessageId: ({ email, message_id }) => [
+        "deals",
+        "message_id",
+        message_id,
         "email",
         email,
     ],
@@ -101,6 +109,13 @@ export const useDealsByEmail = (email = "") =>
         queryKey: dealKeys.byEmail(email),
         queryFn: () => getDealsByEmail(email),
     });
+
+export const useFetchDealByMessage = () => {
+    return useMutation({
+        mutationFn: ({ email, message_id }) =>
+            getDealsByMessageId({ email, message_id }),
+    });
+};
 
 export const useDeleteDeal =
     () => {

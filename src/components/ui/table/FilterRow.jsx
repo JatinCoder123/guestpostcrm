@@ -84,9 +84,9 @@ function FilterRow() {
 
             <button
                 onClick={clearFilters}
-                className="ml-2 text-sm text-red-500 hover:underline"
+                className="ml-2 text-md text-red-500 hover:underline cursor-pointer"
             >
-                Clear All
+                Clear Filters
             </button>
         </div>
     );

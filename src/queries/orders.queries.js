@@ -12,6 +12,7 @@ import {
     updateOrder,
     getOrderStats,
     getOrdersByEmail,
+    getOrdersByMessageId,
 } from "../api/orders.api";
 
 import toast from "react-hot-toast";
@@ -44,6 +45,13 @@ export const orderKeys = {
     ],
     byEmail: (email) => [
         "orders",
+        "email",
+        email,
+    ],
+    byMessageId: ({ email, message_id }) => [
+        "orders",
+        "message_id",
+        message_id,
         "email",
         email,
     ],
@@ -130,6 +138,11 @@ export const useInfiniteOrders = (
     });
 };
 
+export const useFetchOrderByMessage = () =>
+    useMutation({
+        mutationFn: ({ email, message_id }) =>
+            getOrdersByMessageId({ email, message_id }),
+    });
 /**
  * Create Order
  */

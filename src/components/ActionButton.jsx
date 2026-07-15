@@ -29,6 +29,7 @@ import { forwardedKeys } from "../queries/forwarded.queries";
 import { marketPlaceKeys, useAddMarketPlace, useDelMarketPlace, useMarketPlace } from "../queries/marketplace.queries";
 import { toggleFav } from "../api/contact.api";
 import { movedEmailsKeys } from "../queries/movedEmail.queries";
+import { useInfiniteTags } from "../queries/tag.queries";
 /* Memo numbers from CRM */
 const MEMO = {
   marketplace: 1,
@@ -55,7 +56,7 @@ const ActionButton = () => {
     queryFn: getRighteeUsers
   })
   const { data: tagsData, isPending: tagLoading } = useMarkTags()
-  const tags = tagsData?.fields ?? []
+  const tags = tagsData?.records ?? []
 
   const { mutate, isPending: sendingNote } = useMutation({
     mutationFn: async () => {
@@ -96,6 +97,32 @@ Open Contact
 
     },
   })
+  const { mutate: applyTagMutation, isPending: applyTagLoading } = useMutation({
+    mutationFn: async ({ tag, method = "GET" }) => {
+      const { data } = await fetchGpc({
+        method,
+        params: { type: "hashtag", email, memo_no: tag, domain: false },
+      });
+      console.log(data)
+      if (data.success) {
+        toast.success(
+          `Tag ${method == "GET" ? "Applied" : "Removed"} Successfully!`
+        );
+      }
+      else {
+        toast.error(
+          data.message || `Tag ${method == "GET" ? "Failed" : "Failed"} `
+        );
+      }
+    },
+    onSuccess: () => {
+      updateActivity(email, "Tag Applied")
+      queryClient.invalidateQueries({ queryKey: contactKeys.all })
+
+
+      setShowTags(false);
+    },
+  })
 
   const noteRef = useRef(null);
   const [searchUser, setSearchUser] = useState("");
@@ -134,7 +161,9 @@ Open Contact
   const { data: contactData } = useContact(currentEmail)
   const contactInfo = contactData?.contact
   const email = contactInfo?.email1;
+  const hashtags = contactInfo?.hashtag?.data?.hashtags
   const threadId = contactInfo?.thread_id;
+  const assignedId = contactInfo?.gpc_assigned_to;
 
   const { forward, error: forwardError, message: forwardMessage } = useSelector((s) => s.forwarded);
   const { exchanging, error: changeError, message: changeMessage } = useSelector((s) => s.linkExchange);
@@ -157,7 +186,6 @@ Open Contact
       method,
     });
   };
-
   /* side effects */
   useEffect(() => {
     if (forwardError) {
@@ -223,7 +251,7 @@ Open Contact
       action: () => navigate("/ip"),
     },
     {
-      icon: markTagLoading ? <LoadingChase /> : <img
+      icon: markTagLoading || applyTagLoading ? <LoadingChase /> : <img
         src="https://img.icons8.com/color/48/tags--v1.png"
         className="w-6 h-6"
         alt="tag"
@@ -434,6 +462,7 @@ Open Contact
 
                 {showUsers && btn.label === "Assign" && (
                   <UserDropdown
+                    assignedId={assignedId}
                     forwardHandler={handleForwardWithHashtag}
                     onClose={() => setShowUsers(false)}
                   />
@@ -446,8 +475,18 @@ Open Contact
                         <div className="py-6 flex justify-center">
                           <LoadingChase />
                         </div>
-                      ) : <CustomDropdown defaultOpen={true} options={tags?.map(tag => ({ label: tag.label, value: tag.name }))} onChange={(tag) => {
-                        dispatch(applyTag({ email, tag }))
+                      ) : <CustomDropdown defaultOpen={true} options={[
+                        ...new Map(tags.map(tag => [tag.name, tag])).values()
+                      ]?.map(tag => ({ label: tag.name, value: tag.memo_c }))} onChange={(tag) => {
+                        if (!hashtags.find((hashtag) => hashtag.memo_c == tag)) {
+                          applyTagMutation({ tag, method: "GET" })
+
+                        }
+                        else {
+                          applyTagMutation({ tag, method: "DELETE" })
+
+                        }
+
                         setShowTags(false)
                       }} outsideClickHandle={() => setShowTags(false)} />}
                     </div>

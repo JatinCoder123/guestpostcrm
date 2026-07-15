@@ -82,6 +82,11 @@ const Thread = () => {
     }
   }, [sendError]);
   useEffect(() => {
+    if (state?.initialContent) {
+      setEditorContent(state?.initialContent)
+    }
+  }, [state]);
+  useEffect(() => {
     const processFiles = async () => {
       if (!htmlfile) return;
 

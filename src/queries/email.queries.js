@@ -58,7 +58,7 @@ export const useUnreadCount = (
 export const useInfiniteEmails = (
     preferences = {}
 ) => {
-    const unread = preferences?.filters.status == 'unread';
+    const unread = preferences?.filters?.status == 'unread';
     const effectivePreferences = unread ? {} : preferences;
     return useInfiniteQuery({
         queryKey:

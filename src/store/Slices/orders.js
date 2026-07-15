@@ -240,7 +240,7 @@ export const getOrders = ({
   };
 };
 
-export const createOrder = (email) => {
+export const createOrder = (email, message_id) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.createOrderRequest());
     const domain = getState().user.crmEndpoint.split("?")[0];
@@ -258,6 +258,7 @@ export const createOrder = (email) => {
         params: {
           email,
           assigned_user_id: getCurrentUser().id,
+          ...(message_id ? { message_id } : {}),
         },
         headers: {
           "X-Api-Key": FETCH_GPC_X_API_KEY,
@@ -504,7 +505,7 @@ export const updateOrder = ({ order }) => {
     }
   };
 };
-export const updateSeoLink = (orderId, link) => {
+export const updateSeoLink = (orderId, link, email) => {
   return async (dispatch, getState) => {
     dispatch(ordersSlice.actions.updateLinkRequest());
     showConsole && console.log("Update Seo Link", link);
@@ -544,10 +545,10 @@ export const updateSeoLink = (orderId, link) => {
           message: "Order Link Updated Successfully",
         }),
       );
-
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
       dispatch(ordersSlice.actions.clearAllErrors());
       updateActivity(
-        getState().ladger.email,
+        email,
         " Order Link Updated ",
       );
     } catch (error) {

@@ -1,12 +1,18 @@
 
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { FETCH_GPC_X_API_KEY } from "../../../store/constants";
 import { toast } from "react-toastify";
 import NavigationBar from "./NavigationBar";
 import IconButton from "../../ui/Buttons/IconButton";
-import { EllipsisVertical, User } from "lucide-react";
+import { EllipsisVertical, Handshake, ShoppingCart, User } from "lucide-react";
+import { useFetchDealByMessage } from "../../../queries/deals.queries";
+import { useOutletContext } from "react-router-dom";
+import { useFetchOrderByMessage } from "../../../queries/orders.queries";
+import { useTemplateByName } from "../../../queries/template.queries";
+import DealDetectionModal from "../../DealDetectionModal";
+import { orderAction, createOrder } from "../../../store/Slices/orders";
 const STAGE_STYLES = [
   {
     label: "Deal",
@@ -68,10 +74,21 @@ const Inbox = ({
   showReplyPanel,
   setShowReplyPanel,
 }) => {
+  const dispatch = useDispatch()
   const { businessEmail } = useSelector((s) => s.user);
+  const { creating, message, error: fetchingOrderError } = useSelector((s) => s.orders);
   const [openAttachmentsFor, setOpenAttachmentsFor] = useState(null);
   const attachmentBoxRef = useRef(null);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [open, setOpen] = useState(false);
+  const { email, threadId } = useOutletContext()
 
+  const {
+    mutate: fetchDeal,
+    data: dealData,
+    isPending: fetchingDeals,
+    error,
+  } = useFetchDealByMessage();
   const downloadAttachment = async (att) => {
     try {
       const axios = (await import("axios")).default;
@@ -152,6 +169,18 @@ const Inbox = ({
 
     return doc.body.innerHTML;
   };
+  useEffect(() => {
+    if (message) {
+      setSelectedMessageId(null)
+      toast.success(message)
+      dispatch(orderAction.clearAllMessages())
+    }
+    if (fetchingOrderError) {
+      setSelectedMessageId(null)
+      toast.error("Failed To Fetch Order")
+      dispatch(orderAction.clearAllErrors())
+    }
+  }, [message, fetchingOrderError])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -170,6 +199,15 @@ const Inbox = ({
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white">
+
+
+      <DealDetectionModal
+        open={open}
+        threadId={threadId}
+        email={email}
+        data={dealData}
+        onClose={() => setOpen(false)}
+      />
       <NavigationBar
         messageLimit={messageLimit}
         setMessageLimit={setMessageLimit}
@@ -206,8 +244,62 @@ const Inbox = ({
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
-              className="flex flex-col gap-4 items-end "
+              className={`flex ${!isUser ? 'flex-row items-center justify-end gap-3' : 'flex-col items-end'}  `}
             >
+              {!isUser && (
+                <div className="flex flex-col items-end gap-4">
+                  <IconButton
+                    icon={Handshake}
+                    iconColor="blue"
+                    label="Fetch Deal"
+                    tooltipClassName="bg-blue-600 text-white"
+                    tooltipPosition="top"
+                    disabled={creating || fetchingDeals}
+
+                    className=" rounded-full bg-white border border-gray-200 text-gray-800"
+                    loading={fetchingDeals && selectedMessageId == mail.message_id}
+                    onClick={() => {
+                      setSelectedMessageId(mail.message_id)
+
+                      fetchDeal(
+                        {
+                          email: mail.from_email,
+                          message_id: mail.message_id,
+                        },
+                        {
+                          onSuccess: (data) => {
+                            console.log(data);
+                            setOpen(true)
+                            // Open modal, update state, etc.
+                          },
+                          onError: (error) => {
+                            console.error(error);
+                          },
+                        }
+                      )
+                    }
+
+                    }
+                  />
+
+                  <IconButton
+                    icon={ShoppingCart}
+                    label="Fetch Order"
+                    iconColor="blue"
+                    tooltipPosition="bottom"
+
+                    loading={creating && selectedMessageId == mail.message_id}
+                    disabled={creating || fetchingDeals}
+                    tooltipClassName="bg-blue-600 text-white"
+                    className=" rounded-full bg-white border border-gray-200 text-gray-800"
+                    onClick={() => {
+                      setSelectedMessageId(mail.message_id)
+
+                      dispatch(createOrder(email, mail.message_id))
+                    }}
+                  />
+                </div>
+              )}
               <div
                 className={`relative
 w-full sm:w-[85%] 
@@ -232,6 +324,7 @@ flex flex-col justify-end
       `}
                     />
                   )}
+
                   <div
                     className={`mb-4 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-sm ${isUser
                       ? "bg-white/20 text-white"
@@ -240,6 +333,8 @@ flex flex-col justify-end
                   >
                     {/* NAME */}
                     <div className="flex items-center gap-2 font-semibold">
+
+
                       <User className="w-3.5 h-3.5 opacity-70" />
                       <span>{mail.from_name}</span>
                     </div>

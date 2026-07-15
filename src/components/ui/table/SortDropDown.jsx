@@ -83,7 +83,7 @@ function SortDropdown() {
                 visibleColumns?.filter(
                     (column) =>
                         column?.accessor &&
-                    column?.sortable
+                        column?.sortable
                 ) || []
             );
         }, [visibleColumns]);
@@ -153,11 +153,6 @@ function SortDropdown() {
 
                         setOpen((prev) => !prev);
                     }}
-                    text={
-                        hasActiveSort
-                            ? `${selectedColumn?.label ?? ""} (${sorting?.order_dir})`
-                            : ""
-                    }
                     textClassName="text-xs text-blue-600"
                     label="Sort Table"
                     iconColor={
@@ -211,7 +206,7 @@ function SortDropdown() {
                 transition-all
             "
                     >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3" />
                     </button>
                 )}
             </div>
