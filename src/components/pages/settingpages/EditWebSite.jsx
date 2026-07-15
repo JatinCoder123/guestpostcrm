@@ -126,6 +126,7 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
         da: item.da || "",
         pa: item.pa || "",
         dr: item.dr || "",
+        description: item.name || "",
         spam_score: item.spam_score || "",
         google_traffic: item.google_traffic || "",
         traffic: item.traffic || "",
@@ -144,12 +145,17 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
     }
   }, [item]);
 
-  const updateField = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+const updateField = (key, value) => {
+  setForm((prev) => ({
+    ...prev,
+    [key]: value,
+
+    // Keep description synchronized with website name
+    ...(key === "name" && {
+      description: value,
+    }),
+  }));
+};
 
   const handleSave = () => {
     if (!form.name?.trim()) {
@@ -158,7 +164,10 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
     }
     console.log(form);
 
-    const updated = { ...item, ...form };
+    const updated = { ...item, ...form, name: form.name?.trim(),
+    description: form.name?.trim(), };
+
+    console.log("Submitted website:", updated);
 
     if (item.type === "new") {
       props.handleCreate(updated);
