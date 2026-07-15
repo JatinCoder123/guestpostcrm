@@ -230,19 +230,17 @@ export default function EditWebSite({ item, onClose, handleUpdate, ...props }) {
                       </div>
 
                       {/* INPUT */}
-                      {(field.type === "text" ||
-                        field.type === "number" ||
-                        field.type === "url") && (
-                        <input
-                          type={field.type}
-                          value={form[field.key] || ""}
-                          onChange={(e) =>
-  updateField(field.key, e.target.checked ? 1 : 0)
-}
-                          placeholder={`Enter ${field.label}`}
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      )}
+                    {(field.type === "text" ||
+  field.type === "number" ||
+  field.type === "url") && (
+  <input
+    type={field.type}
+    value={form[field.key] ?? ""}
+    onChange={(e) => updateField(field.key, e.target.value)}
+    placeholder={`Enter ${field.label}`}
+    className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+  />
+)}
 
                       {/* CHECKBOX */}
                       {field.type === "checkbox" && (
