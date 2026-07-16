@@ -135,7 +135,7 @@ export function OffersPage() {
       onClick: (row) =>
         handleDateClick({
           email:
-            row?.email,
+            row?.email_c,
           navigate: "/",
         }),
 
