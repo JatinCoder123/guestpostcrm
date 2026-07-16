@@ -234,8 +234,7 @@ const Inbox = ({
 
           const baseIndex = emails?.length - visibleMessages?.length;
           const realIndex = baseIndex + idx + 1;
-
-          const stage = getStageData(realIndex);
+          const hastage = mail?.hashtag && mail?.hashtag?.length > 0 ? mail.hashtag[0].description : null;
 
           return (
             <motion.div
@@ -337,6 +336,9 @@ flex flex-col justify-end
 
                       <User className="w-3.5 h-3.5 opacity-70" />
                       <span>{mail.from_name}</span>
+                      {hastage &&
+                        <p className="font-medium text-sm text-white bg-violet-500 px-2 py-1 rounded-full">{hastage ? `#${hastage.toLowerCase().replace(/_/g, ' ')}` : ""}</p>
+                      }
                     </div>
 
                     {/* DATE & TIME */}
