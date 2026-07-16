@@ -78,8 +78,8 @@ export function DateRangeFilter({
 
   const activePresetLabel = PRESETS.find((p) => p.id === activePreset)?.label;
   const rangeLabel = filterActive
-    ? `${fmtDisplay(localFromDate, localFromTime)} → ${fmtDisplay(localToDate, localToTime)}`
-    : "Select a period…";
+  ? `${fmtDisplay(localFromDate, localFromTime)} → ${fmtDisplay(localToDate, localToTime)}`
+  : "Today, 00:00:00 → 23:59:59";
 
   const pickerFields = [
     {
