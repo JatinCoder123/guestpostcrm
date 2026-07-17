@@ -137,11 +137,11 @@ export default function CreateDeals({ email }) {
   }, [message, error]);
   useEffect(() => {
     const currentOfferWithoutDeal = offers.filter((o) => {
-      const isSameThread = (o.thread_id == threadId && o.offer_status !== "expired");
+      const isSameThread = (o.name == email && o.offer_status !== "expired");
 
       // ✅ check against ALL deals (not only active)
       const alreadyHasDeal = deals.some(
-        (d) => d.thread_id == threadId && d.website_c == o.website,
+        (d) => d.email == email && d.website_c == o.website,
       );
 
       return isSameThread && !alreadyHasDeal;
@@ -155,7 +155,7 @@ export default function CreateDeals({ email }) {
 
       setNewDeals(newDeals);
     }
-  }, [deals, offers, threadId]);
+  }, [deals, offers, email]);
   return (
     <div className="w-full flex gap-6 items-start">
       {/* LEFT SIDE */}

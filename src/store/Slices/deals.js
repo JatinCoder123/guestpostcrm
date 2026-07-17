@@ -9,6 +9,8 @@ import {
 } from "../../services/utils";
 import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
+import { queryClient } from "../../lib/queryClient";
+import { dealKeys } from "../../queries/deals.queries";
 
 const dealsSlice = createSlice({
   name: "deals",
@@ -337,7 +339,7 @@ export const updateDeal = ({ deals = [] }) => {
 export const deleteDeal = (deal, id) => {
   0;
   return async (dispatch, getState) => {
-    const email = extractEmail(deal?.real_name ?? deal?.email);
+    const email = extractEmail(deal?.email);
     const getDomain1 = (url) => {
       try {
         return new URL(url).hostname.replace(/^www\./, "");
@@ -388,7 +390,7 @@ export const deleteDeal = (deal, id) => {
       );
 
       console.log(`Deal`, deal);
-
+      queryClient.invalidateQueries({ queryKey: dealKeys.all })
       const res = await createLedgerEntry({
         domain: state.user.crmEndpoint.split("?")[0],
         email: email,

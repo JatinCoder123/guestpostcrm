@@ -127,12 +127,12 @@ export const getOrderStats = (
                     }
                 },
                 {
-                    "key": "marketplace",
+                    "key": "Marketplace",
                     "module": "outr_order_gp_li",
                     sum_of: ['total_amount_c'],
 
                     "filters": {
-                        "order_status": "marketplace"
+                        "order_type": "Marketplace"
                     }
                 },
                 {

@@ -120,7 +120,7 @@ const ContactHeader = () => {
     { Icon: Hourglass, label: "Status", value: data?.status },
     { Icon: Lock, label: "Category", value: data?.customer_type },
     { Icon: ArrowBigDown, label: "Direction", value: contactInfo?.direction ?? "-" },
-    { Icon: Flame, label: "Assign To", value: users?.find((user) => user.id === contactInfo?.gpc_assigned_to)?.name || "-" },
+    { Icon: Flame, label: "Assign To", value: users?.find((user) => user.id === contactInfo?.gpc_assigned_to)?.name || "Unassigned" },
     { Icon: Signature, label: "Last Activity", value: contactInfo?.last_activity ?? "-" },
     { Icon: CircleUser, label: "Last Activity By", value: contactInfo?.last_user ?? "-" },
     { Icon: Clock, label: "Last Updated At", value: contactInfo?.last_activity_date ?? "-" },

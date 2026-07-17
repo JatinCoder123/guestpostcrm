@@ -27,6 +27,7 @@ import GlobalSearch from "./GlobalSearch";
 import ProfileImageCropper from "./ProfileImageCropper";
 import { useOutboxStats } from "../queries/outbox.queries";
 import { useTodayPaymentReminderStats } from "../queries/reminder.queries";
+import { useCrmUsers } from "../queries/users.queries";
 
 /* ─────────────────────────────────────────────────────────────
    Reusable icon button — coloured tint + badge + tooltip
@@ -133,6 +134,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigateTo = useNavigate();
+  const { data: crmUsers } = useCrmUsers()
 
   /* Close on outside click */
   useEffect(() => {
@@ -180,12 +182,13 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
         <div className="flex items-center w-full h-2">
           {stackVisible.map((u, i) => {
             const c = getColorForUser(u.email);
-            const initials = getInitials(u.name, u.email);
+            const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+            const initials = getInitials(name || u.name, u.email);
             const isMe = u.email === currentUserEmail;
             return (
               <span
                 key={u.email}
-                title={isMe ? "You" : u.name || u.email}
+                title={isMe ? "You" : name || u.email}
                 className={`relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ring-2 ring-white
                   ${c.bg} ${c.text}
                   ${i > 0 ? "-ml-1.5" : ""}
@@ -255,7 +258,8 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
               ) : (
                 ordered.map((u) => {
                   const c = getColorForUser(u.email);
-                  const initials = getInitials(u.name, u.email);
+                  const name = crmUsers?.find((user) => user?.description === u.email)?.name;
+                  const initials = getInitials(name || u.name, u.email);
                   const isMe = u.email === currentUserEmail;
                   const isOnline = u?.status === "online";
 
@@ -282,7 +286,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="truncate text-sm font-semibold text-slate-800">
-                            {u.name || "Unknown"}
+                            {name || u.name}
                           </p>
                           {isMe && (
                             <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-500">

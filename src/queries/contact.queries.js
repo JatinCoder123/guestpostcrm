@@ -13,11 +13,13 @@ import {
     createContact,
     updateContact,
     getContactStats,
+    updateAccount,
 } from "../api/contact.api";
 import toast from "react-hot-toast";
 import { useContext } from "react";
 import { PageContext } from "../context/pageContext";
 import { useTablePreference } from "../hooks/useTablePreference";
+import { emailKeys } from "./email.queries";
 
 /**
  * Query Keys
@@ -166,15 +168,26 @@ export const useUpdateContact = () => {
                 queryKey:
                     contactKeys.all,
             });
+            queryClient.invalidateQueries({ queryKey: emailKeys.all })
 
-            if (variables?.email) {
-                queryClient.invalidateQueries({
-                    queryKey:
-                        contactKeys.byEmail(
-                            variables.email
-                        ),
-                });
-            }
+            toast.success("Contact updated");
+        },
+    });
+};
+export const useUpdateAccount = () => {
+    const queryClient =
+        useQueryClient();
+
+    return useMutation({
+        mutationFn: updateAccount,
+
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({
+                queryKey:
+                    contactKeys.all,
+            });
+
+            toast.success("Account updated");
         },
     });
 };
