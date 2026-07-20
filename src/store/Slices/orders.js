@@ -7,7 +7,6 @@ import {
   createLedgerEntry,
   buildLedgerItem,
 } from "../../services/utils";
-import { getLadger } from "./ladger";
 import { apiRequest, fetchGpc } from "../../services/api";
 import { queryClient } from "../../lib/queryClient";
 import { orderKeys } from "../../queries/orders.queries";
@@ -488,7 +487,6 @@ export const updateOrder = ({ order }) => {
         email: email,
         thread_id: order.thread_id,
         group: "Order",
-        okHandler: () => dispatch(getLadger({ email })),
         items: [
           buildLedgerItem({
             status: ledgerStatus,

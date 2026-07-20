@@ -74,67 +74,9 @@ const eventSlice = createSlice({
 });
 
 
-export const getEvents = ({ timeFilter = null, search = null, page = 1 }) => {
-    return async (dispatch, getState) => {
-        dispatch(eventSlice.actions.getEventsRequest());
-
-        try {
-            const data = await fetchGpc({ params: { type: "recent_activities", ...(timeFilter ? { filter: timeline } : {}), ...(search ? { search } : {}), page, page_size: 50 } });
-            showConsole && console.log(`events`, data);
-            dispatch(
-                eventSlice.actions.getEventsSucess({
-                    count: data?.data_count,
-                    events: data.data ?? [],
-                    pageCount: data.total_pages,
-                    pageIndex: data.current_page,
-                })
-            );
-
-            dispatch(eventSlice.actions.clearAllErrors());
-        } catch (error) {
-            showConsole && console.error("❌ Fetch Error:", error);
-            dispatch(eventSlice.actions.getEventsFailed("Fetching Event Failed"));
-        }
-    };
-};
 
 
 
-
-export const addEvent = (event) => {
-    return async (dispatch, getState) => {
-        dispatch(eventSlice.actions.addEventRequest());
-        try {
-            showConsole && console.log(event);
-            const domain = getState().user.crmEndpoint.split("?")[0];
-            const data = await apiRequest({
-                endpoint: `${domain}?entryPoint=get_post_all`, method: "POST", params: { action_type: "post_data" }, body: {
-                    parent_bean: {
-                        module: "outr_recent_activity",
-                        name: event.email,
-                        thread_id: event.thread_id,
-                        recent_activity: event.recent_activity,
-                        assigned_user_id: getState().user.id,
-                    },
-                }, headers: {
-                    "X-Api-Key": `${CREATE_DEAL_API_KEY}`,
-                    "Content-Type": "aplication/json",
-                },
-            }
-
-            );
-            showConsole && console.log(`Add Event`, data);
-            dispatch(eventSlice.actions.updateCount(1));
-
-            dispatch(
-                eventSlice.actions.addEventSucess("Event Added Successfully")
-            );
-            dispatch(eventSlice.actions.clearAllErrors());
-        } catch (error) {
-            dispatch(eventSlice.actions.addEventFailed("Event Adding Failed"));
-        }
-    };
-};
 
 export const eventActions = eventSlice.actions;
 export default eventSlice.reducer;

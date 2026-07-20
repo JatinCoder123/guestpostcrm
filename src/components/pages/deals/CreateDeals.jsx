@@ -10,8 +10,7 @@ import { Trash2 } from "lucide-react";
 import { Save, Send } from "lucide-react";
 import IconButton from "../../ui/Buttons/IconButton";
 import { toast } from "react-toastify";
-import { createDeal, dealsAction, getDeals } from "../../../store/Slices/deals";
-import { getOffers } from "../../../store/Slices/offers";
+import { createDeal, dealsAction } from "../../../store/Slices/deals";
 import { offerKeys, useOffersByEmail } from "../../../queries/offers.queries";
 import { useTemplateByName } from "../../../queries/template.queries";
 import { dealKeys, useDealsByEmail } from "../../../queries/deals.queries";
@@ -26,7 +25,6 @@ export default function CreateDeals({ email }) {
 
   const { data: webSitesData } = useWebsites();
   const websiteLists = webSitesData?.data ?? []
-  const { showBrandTimeline } = useSelector((state) => state.brandTimeline);
   // 🔥 now using deals everywhere
   const { creating, message, error } = useSelector(
     (state) => state.deals,

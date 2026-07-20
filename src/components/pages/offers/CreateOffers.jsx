@@ -12,7 +12,6 @@ import IconButton from "../../ui/Buttons/IconButton";
 
 import {
   createOffer,
-  getOffers,
   offersAction,
 } from "../../../store/Slices/offers";
 import { toast } from "react-toastify";

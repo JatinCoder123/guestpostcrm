@@ -4,7 +4,7 @@ import { Titletooltip } from "./TitleTooltip";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext, useMemo } from "react";
 import { LoadingSpin } from "./Loading";
-import { createOrder, getOrders, orderAction } from "../store/Slices/orders";
+import { createOrder, orderAction } from "../store/Slices/orders";
 import { toast } from "react-toastify";
 import { PageContext } from "../context/pageContext";
 import { useRef } from "react";

@@ -4,10 +4,7 @@ import { UnrepliedEmailsPage } from "./components/pages/UnrepliedEmailsPage";
 import { Marketplace } from "./components/pages/Marketplace";
 import { RecentEntry } from "./components/pages/RecentEntry";
 import { Duplicate } from "./components/pages/DuplicatePage";
-import { SpamDetectionPage } from "./components/pages/SpamDetectionPage";
 import { TagManagerpage } from "./components/pages/TagManagerpage";
-import { SystemSuggestionsPage } from "./components/pages/SystemSuggestionsPage";
-import { DraftInvoice } from "./components/pages/DraftInvoice";
 import { InvoicesPage } from "./components/pages/InvoicesPage";
 import { SettingsPage } from "./components/pages/settingpages/SettingsPage";
 import { useDispatch, useSelector } from "react-redux";
@@ -123,23 +120,12 @@ const router = createBrowserRouter([
         element: <PlansPage />,
       },
 
-      {
-        path: "spam-detection",
-        element: <SpamDetectionPage />,
-      },
+
       {
         path: "tag-manager",
         element: <TagManagerpage />,
       },
-      {
-        path: "system-suggestion",
-        element: <SystemSuggestionsPage />,
-      },
 
-      {
-        path: "draft-invoice",
-        element: <DraftInvoice />,
-      },
       {
         path: "contacts/:id?",
         element: <Contactpage />,
