@@ -94,32 +94,41 @@ const RootLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="flex h-screen bg-background ">
 
-      <TopNav />
+      {/* LEFT */}
+      <Sidebar />
 
-      <div className="flex h-[calc(100vh-100px)]">
-        <div className="overflow-y-auto overflow-x-hidden custom-scrollbar">
-          <Sidebar />
-        </div>
 
+      {/* RIGHT */}
+      <div className="flex flex-1 flex-col overflow-hidden p-2">
+
+        {/* Top Navigation */}
+        <TopNav />
+
+        {/* Scrollable Content */}
         <main
           ref={mainRef}
-          className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-300 ${collapsed ? "ml-4" : "ml-0"
-            }`}
+          className="flex-1 overflow-y-auto hide-scrollbar"
         >
-          <div className="p-3" data-tour="main-workspace">
-            <LowCreditWarning open={showRechargeWarn} score={currentScore} onClose={() => setShowRechargeWarn(false)} />
-            <div className="p-3">
-              <WelcomeHeader />
+          <div className="p-3">
+            <LowCreditWarning
+              open={showRechargeWarn}
+              score={currentScore}
+              onClose={() => setShowRechargeWarn(false)}
+            />
+
+            {/* <WelcomeHeader /> */}
+
+            <div className="mt-3">
               <Outlet />
             </div>
           </div>
-
-          <OnBoarding />
-
-          <Footer />
         </main>
+
+        {/* Bottom */}
+        <OnBoarding />
+        <Footer />
       </div>
     </div>
   );

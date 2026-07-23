@@ -28,7 +28,7 @@ function TableHeader(props) {
     return (
         <div
 
-            className={`${props.headerStyle} ${props.layoutStyle} `}
+            className={`bg-gradient-to-r from-[#054FD1] via-[#043EA5] to-[#03286B]  ${props.layoutStyle} `}
 
         >
 

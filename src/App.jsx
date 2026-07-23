@@ -61,7 +61,7 @@ import { Toaster } from "react-hot-toast";
 import ReminderManagementPage from "./components/pages/ReminderManagement";
 import { TimelineProvider } from "./context/TimelineContext";
 import MeetingWidget from "./components/MeetingWidget";
-import TwakChat from "./components/TwakTo";
+// import TwakChat from "./components/TwakTo";
 import BootApp from "./components/BootApp";
 import Recharge from "./components/pages/Recharge";
 import PlansPage from "./components/pages/PlansPage";
@@ -382,8 +382,8 @@ export default function App() {
 
       {isAuthenticated && !loading && (
         <>
-          <MeetingWidget />
-          <TwakChat />
+          {/* <MeetingWidget /> */}
+          {/* <TwakChat /> */}
           <RouterProvider router={router} />
         </>
       )}
