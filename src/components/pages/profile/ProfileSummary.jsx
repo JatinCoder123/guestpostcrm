@@ -1,6 +1,7 @@
 import { motion as Motion } from "framer-motion";
 import { Loader2, Trash2, UserCircle2 } from "lucide-react";
 import { getUserName } from "./profileUtils";
+import { useCrmUsers } from "../../../queries/users.queries";
 
 export function MetricCard({ label, value, tone }) {
   const toneClasses = {
@@ -30,6 +31,7 @@ function ProfileSummary({
   profileDeleting,
   onDeleteProfile,
 }) {
+  const { data } = useCrmUsers()
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -42,7 +44,7 @@ function ProfileSummary({
               Profile Setup
             </p>
             <h1 className="text-2xl font-black text-slate-950">
-              {getUserName(user)}
+              {data?.find(u => u.description === user.email)?.name ?? user.name}
             </h1>
             <p className="text-sm text-slate-500">{profileEmail}</p>
           </div>
@@ -71,11 +73,10 @@ function ProfileSummary({
                 initial={{ width: 0 }}
                 animate={{ width: onboardingLoading ? "35%" : `${completion}%` }}
                 transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                className={`h-full rounded-full transition-all ${
-                  onboardingLoading
-                    ? "animate-pulse bg-slate-300"
-                    : "bg-linear-to-r from-emerald-500 via-indigo-500 to-cyan-500"
-                }`}
+                className={`h-full rounded-full transition-all ${onboardingLoading
+                  ? "animate-pulse bg-slate-300"
+                  : "bg-linear-to-r from-emerald-500 via-indigo-500 to-cyan-500"
+                  }`}
               />
             </div>
           </div>
@@ -90,7 +91,7 @@ function ProfileSummary({
             ) : (
               <Trash2 size={16} />
             )}
-          
+
           </button>
         </div>
       </div>

@@ -35,9 +35,11 @@ import {
   normalizeTemplateRows,
 } from "./profile/profileUtils";
 import { queryClient } from "../../lib/queryClient";
+import { useCrmUsers } from "../../queries/users.queries";
 
 const Profile = () => {
   const { handleDateClick } = useContext(PageContext);
+  const { data } = useCrmUsers()
   const navigate = useNavigate();
   const location = useLocation();
   const { user, businessEmail, currentScore, crmEndpoint } = useSelector(
