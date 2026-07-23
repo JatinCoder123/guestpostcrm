@@ -265,6 +265,7 @@ export function OrdersPage() {
                   dispatch(
                     updateOrder({
                       order: { ...row, order_status: "completed" },
+                      email: row?.client_email,
                     }),
                   );
                   setUpdateOrderId(row.order_id);

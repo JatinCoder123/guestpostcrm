@@ -592,18 +592,7 @@ export default function ContactDetail({ email }) {
                                             className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-600 mb-1">
-                                            Date Entered
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="date_entered"
-                                            value={formData.contact.date_entered || ""}
-                                            onChange={(e) => handleChange(e, "contact")}
-                                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
-                                        />
-                                    </div>
+
                                 </div>
                             </div>
 
