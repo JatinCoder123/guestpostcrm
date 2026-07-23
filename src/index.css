@@ -208,7 +208,7 @@ html {
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  scrollbar-color: rgba(208, 214, 226, 0.2) transparent;
 }
 /* Hide scrollbar for Chrome, Safari and Edge */
 .scrollbar-hide::-webkit-scrollbar {

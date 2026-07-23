@@ -42,10 +42,12 @@ import { userKeys } from "../queries/users.queries";
 import { getAllUsers } from "../api/users.api";
 import logo, { headingLogo } from "../assets/assets";
 import { useGpcController } from "../queries/controller.queries";
+import { useLayoutPreferences } from "../queries/prefrences.queries";
 
 export function Sidebar() {
   const navigateTo = useNavigate();
   const { enteredEmail: email } = useContext(PageContext)
+  const { data: sidebarData, isPending: sidebarLoading } = useLayoutPreferences()
   const { user } = useSelector(s => s.user)
   const { data: usersData, isPending: usersPending } = useQuery({ queryKey: userKeys.lists, queryFn: getAllUsers })
   const { data } = useGpcController();
@@ -226,6 +228,7 @@ export function Sidebar() {
       hover: "hover:bg-red-50",
       countBg: "bg-blue-500 text-white",
     },
+
     {
       id: "view-reports",
       label: "Reports",
@@ -346,47 +349,56 @@ shadow-2xl"
         </button>
 
         {/* MENU ITEMS */}
-        <div className="mt-4 space-y-2 flex-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setSidebarCollapsed(true);
-                setActivePage(item.id);
-                navigateTo(item.id);
-              }}
-              className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer hover:bg-white/5
+        <div
+          className="
+    mt-4
+    flex-1
+    min-h-0
+    overflow-y-auto
+    space-y-2
+    pr-1
+    custom-scrollbar
+  "
+        >          {menuItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => {
+              setSidebarCollapsed(true);
+              setActivePage(item.id);
+              navigateTo(item.id);
+            }}
+            className={`w-full flex items-center gap-2 p-2  transition-all duration-200 cursor-pointer hover:bg-white/5
                 ${collapsed ? "justify-center" : ""}
                     ${activePage === item.id
-                  ? `bg-white/10 shadow-2xl rounded-full `
-                  : `  rounded-lg`
-                }
+                ? `bg-white/10 shadow-2xl rounded-full `
+                : `  rounded-lg`
+              }
                 `}
-            >
-              {/* FIXED ICON SIZE ALWAYS */}
-              <item.icon
-                className={`w-5 h-5 transition-all duration-100 ease-out
+          >
+            {/* FIXED ICON SIZE ALWAYS */}
+            <item.icon
+              className={`w-5 h-5 transition-all duration-100 ease-out
     ${activePage === item.id
-                    ? " scale-120" : ""
+                  ? " scale-120" : ""
 
-                  }`}
-              />
+                }`}
+            />
 
-              {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
-              {!collapsed && (
-                <>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.count != null && (
-                    <span
-                      className={`px-2 py-0.5 rounded-full bg-[#7657ff]/20 ${activePage == item.id ? "text-md" : "text-xs"} `}
-                    >
-                      {item.loading ? <LoadingSpin /> : item.count}
-                    </span>
-                  )}
-                </>
-              )}
-            </button>
-          ))}
+            {/* SHOW LABEL + COUNT ONLY WHEN NOT COLLAPSED */}
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.count != null && (
+                  <span
+                    className={`px-2 py-0.5 rounded-full bg-[#7657ff]/20 ${activePage == item.id ? "text-md" : "text-xs"} `}
+                  >
+                    {item.loading ? <LoadingSpin /> : item.count}
+                  </span>
+                )}
+              </>
+            )}
+          </button>
+        ))}
         </div>
         <div onClick={() => navigateTo("/settings/controller")}
           className="my-6 flex items-center justify-center cursor-pointer">
