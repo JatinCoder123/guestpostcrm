@@ -132,7 +132,7 @@ export function OrdersPage() {
       accessor: "date_entered",
       headerClasses: "",
       icon: Calendar,
-      sortable:true,
+      sortable: true,
 
       onClick: (row) =>
         handleDateClick({ email: row?.client_email, navigate: "/" }),
@@ -167,7 +167,7 @@ export function OrdersPage() {
       accessor: "website",
       headerClasses: "",
       icon: DollarSign,
-      sortable:true,
+      sortable: true,
       classes: "truncate  max-w-[100px]",
       render: (row) => (
         <span className="font-medium text-blue-700 ">
@@ -261,6 +261,7 @@ export function OrdersPage() {
                   dispatch(
                     updateOrder({
                       order: { ...row, order_status: "completed" },
+                      email: row?.client_email,
                     }),
                   );
                   setUpdateOrderId(row.order_id);
