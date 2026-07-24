@@ -102,7 +102,7 @@ function UserActivityPanel({ activeUsers = [], currentUserEmail = "" }) {
   const onlineUsers = activeUsers.filter((u) => u?.status === "online");
   const idleUsers = activeUsers.filter((u) => u?.status !== "online");
 
-  const meOnline = onlineUsers.find((u) => u?.email === currentUserEmail);
+  const meOnline = onlineUsers?.find((u) => u?.email === currentUserEmail);
   const otherOnlineUsers = onlineUsers.filter((u) => u?.email !== currentUserEmail);
 
   const orderedOnline = meOnline ? [meOnline, ...otherOnlineUsers] : otherOnlineUsers;
@@ -370,9 +370,19 @@ export function TopNav() {
     loadStats();
   }, []);
   /* ── Data ── */
+<<<<<<< HEAD
 
   const { enteredEmail, handleClear, setMobileSidebarOpen } = useContext(PageContext);
   const { activeUsers = [] } = useContext(SocketContext);
+=======
+  const { data: outboxData, isPending: outboxPending } = useOutboxStats();
+  const { data } = useCrmUsers()
+  const {
+    data: paymentReminderData,
+    isPending: paymentReminderPending,
+  } = useTodayPaymentReminderStats();
+  const { enteredEmail, handleClear } = useContext(PageContext);
+>>>>>>> 492b37edbb4dc39fecd3ee294be735dff18fdea3
   // ↓ activeUsers added alongside existing notificationCount
   const { user, error } = useSelector((s) => s.user);
 
@@ -408,6 +418,10 @@ export function TopNav() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 492b37edbb4dc39fecd3ee294be735dff18fdea3
 
   const handleLogout = () => {
     dispatch(logout());
@@ -444,8 +458,9 @@ export function TopNav() {
   };
 
   const getUserInitials = () => {
-    if (!user?.name) return "U";
-    const parts = user.name.trim().split(" ");
+    const name = data?.find((d) => d.description === user?.email)?.name || user?.name;
+    if (!name) return "U";
+    const parts = name.trim().split(" ");
     return parts.length === 1
       ? parts[0][0].toUpperCase()
       : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -644,7 +659,7 @@ export function TopNav() {
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-slate-800">
-                      {user?.name || "User"}
+                      {data?.find((d) => d.description === user?.email)?.name || user?.name}
                     </p>
                     <p className="truncate text-xs text-slate-400 mt-0.5">
                       {user?.email}

@@ -42,11 +42,11 @@ export const getDealStats = ({ filters, email }) => {
                     }
                 },
                 {
-                    "key": "expiry",
+                    "key": "expire",
                     "module": "outr_deal_fetch",
                     sum_of: ['dealamount'],
                     "filters": {
-                        "status": "expiry"
+                        "status": "expire"
                     }
                 },
             ]
