@@ -32,8 +32,8 @@ const STATUS_CONFIG = [
     filter: 'status'
   },
   {
-    value: "expiry",
-    label: "Expiry",
+    value: "expire",
+    label: "Expire",
     icon: ShieldAlert,
     showAmount: true,
 
