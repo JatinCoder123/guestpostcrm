@@ -467,12 +467,13 @@ shadow-2xl"
                     `}
                           >
                             <Icon
-                              name={'Home'}
+                              name={item.icon}
+                              library={item.library}
                               className={`
                         h-4 w-4 shrink-0
                         ${activePage === item.id
-                                  ? "scale-125 text-blue-400"
-                                  : "text-slate-300"
+                                  ? "scale-125 text-blue-400 "
+                                  : ""
                                 }
                       `}
                             />
